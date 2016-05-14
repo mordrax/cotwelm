@@ -7165,15 +7165,11 @@ var _elm_lang$html$Html_Events$Options = F2(
 	});
 var _user$project$Main$update = F2(
 	function (action, model) {
-		var _p0 = action;
-		if (_p0.ctor === 'Inc') {
-			return model + 1;
-		} else {
-			return model - 1;
-		}
+		return model;
 	});
-var _user$project$Main$Dec = {ctor: 'Dec'};
-var _user$project$Main$Inc = {ctor: 'Inc'};
+var _user$project$Main$Overview = {ctor: 'Overview'};
+var _user$project$Main$LoadGame = {ctor: 'LoadGame'};
+var _user$project$Main$NewGame = {ctor: 'NewGame'};
 var _user$project$Main$view = function (model) {
 	var bgStyle = _elm_lang$core$Native_List.fromArray(
 		[
@@ -7251,7 +7247,7 @@ var _user$project$Main$view = function (model) {
 										_elm_lang$core$Native_List.fromArray(
 											[
 												_elm_lang$html$Html_Attributes$class('ui button primary'),
-												_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
+												_elm_lang$html$Html_Events$onClick(_user$project$Main$NewGame)
 											]),
 										_elm_lang$core$Native_List.fromArray(
 											[
@@ -7262,7 +7258,7 @@ var _user$project$Main$view = function (model) {
 										_elm_lang$core$Native_List.fromArray(
 											[
 												_elm_lang$html$Html_Attributes$class('ui button'),
-												_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
+												_elm_lang$html$Html_Events$onClick(_user$project$Main$LoadGame)
 											]),
 										_elm_lang$core$Native_List.fromArray(
 											[
@@ -7273,7 +7269,7 @@ var _user$project$Main$view = function (model) {
 										_elm_lang$core$Native_List.fromArray(
 											[
 												_elm_lang$html$Html_Attributes$class('ui button'),
-												_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
+												_elm_lang$html$Html_Events$onClick(_user$project$Main$Overview)
 											]),
 										_elm_lang$core$Native_List.fromArray(
 											[

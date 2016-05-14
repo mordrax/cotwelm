@@ -10,15 +10,13 @@ main = Html.App.beginnerProgram
   }
 
 type alias Model = Int
-type Action = Inc | Dec
+type Msg = NewGame | LoadGame | Overview
 
-update: Action -> Model -> Model
+update: Msg -> Model -> Model
 update action model =
-  case action of
-    Inc -> model + 1
-    Dec -> model - 1
-
-view: Model -> Html Action
+  model
+  
+view: Model -> Html Msg
 view model =
   let 
     bgStyle = [("backgroundColor", "black")]
@@ -36,9 +34,9 @@ view model =
 
       div [class "ui column"] [
         div [class "ui buttons"] [
-          button [class "ui button primary", onClick Inc] [text "New Game"],
-          button [class "ui button", onClick Inc] [text "Load Game"],
-          button [class "ui button", onClick Inc] [text "Overview"]
+          button [class "ui button primary", onClick NewGame] [text "New Game"],
+          button [class "ui button", onClick LoadGame] [text "Load Game"],
+          button [class "ui button", onClick Overview] [text "Overview"]
         ]
       ]
     ]
