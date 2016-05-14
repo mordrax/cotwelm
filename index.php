@@ -1,6 +1,12 @@
 <!DOCTYPE HTML>
-<html><head><meta charset="UTF-8"><title>Main</title><style>html,head,body { padding:0; margin:0; }
-body { font-family: calibri, helvetica, arial, sans-serif; }</style><script type="text/javascript">
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Main</title>
+  <style>
+    html,head,body { padding:0; margin:0; }body { font-family: calibri, helvetica, arial, sans-serif; }
+  </style>
+<script type="text/javascript">
 (function() {
 'use strict';
 
