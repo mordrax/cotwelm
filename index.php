@@ -1,8 +1,6 @@
 <!DOCTYPE HTML>
 <html><head><meta charset="UTF-8"><title>Main</title><style>html,head,body { padding:0; margin:0; }
-body { font-family: calibri, helvetica, arial, sans-serif; }</style>
-<link rel="stylesheet" type="text/css" href="public/css/semantic/semantic.min.css">
-<script type="text/javascript">
+body { font-family: calibri, helvetica, arial, sans-serif; }</style><link rel="stylesheet" type="text/css" href="public/css/semantic/semantic.min.css"/><script type="text/javascript">
 (function() {
 'use strict';
 
@@ -7177,11 +7175,16 @@ var _user$project$Main$update = F2(
 var _user$project$Main$Dec = {ctor: 'Dec'};
 var _user$project$Main$Inc = {ctor: 'Inc'};
 var _user$project$Main$view = function (model) {
+	var bgStyle = _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'backgroundColor', _1: 'black'}
+		]);
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html_Attributes$class('ui middle aligned center aligned grid fullscreen')
+				_elm_lang$html$Html_Attributes$class('ui middle aligned center aligned grid fullscreen'),
+				_elm_lang$html$Html_Attributes$style(bgStyle)
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
@@ -7209,73 +7212,73 @@ var _user$project$Main$view = function (model) {
 									]),
 								_elm_lang$core$Native_List.fromArray(
 									[]))
-							]))
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('ui column')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$img,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$src('public/assets/landing_cotw2.jpg')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[]))
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('ui column')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
+							])),
 						A2(
 						_elm_lang$html$Html$div,
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html_Attributes$class('ui buttons')
+								_elm_lang$html$Html_Attributes$class('ui column')
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[
 								A2(
-								_elm_lang$html$Html$button,
+								_elm_lang$html$Html$img,
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$class('ui button primary'),
-										_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
+										_elm_lang$html$Html_Attributes$src('public/assets/landing_cotw2.jpg')
 									]),
 								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('New Game')
-									])),
+									[]))
+							])),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui column')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
 								A2(
-								_elm_lang$html$Html$button,
+								_elm_lang$html$Html$div,
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$class('ui button'),
-										_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
+										_elm_lang$html$Html_Attributes$class('ui buttons')
 									]),
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html$text('Load Game')
-									])),
-								A2(
-								_elm_lang$html$Html$button,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('ui button'),
-										_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('Overview')
+										A2(
+										_elm_lang$html$Html$button,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$class('ui button primary'),
+												_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('New Game')
+											])),
+										A2(
+										_elm_lang$html$Html$button,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$class('ui button'),
+												_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('Load Game')
+											])),
+										A2(
+										_elm_lang$html$Html$button,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$class('ui button'),
+												_elm_lang$html$Html_Events$onClick(_user$project$Main$Inc)
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('Overview')
+											]))
 									]))
 							]))
 					]))
