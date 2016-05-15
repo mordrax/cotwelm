@@ -7167,6 +7167,9 @@ var _mordrax$cotwelm$CharCreation_Msg$Model = F7(
 	function (a, b, c, d, e, f, g) {
 		return {name: a, str: b, dex: c, con: d, agi: e, gender: f, difficulty: g};
 	});
+var _mordrax$cotwelm$CharCreation_Msg$Difficulty = function (a) {
+	return {ctor: 'Difficulty', _0: a};
+};
 var _mordrax$cotwelm$CharCreation_Msg$Gender = function (a) {
 	return {ctor: 'Gender', _0: a};
 };
@@ -7179,6 +7182,161 @@ var _mordrax$cotwelm$CharCreation_Msg$Impossible = {ctor: 'Impossible'};
 var _mordrax$cotwelm$CharCreation_Msg$Hard = {ctor: 'Hard'};
 var _mordrax$cotwelm$CharCreation_Msg$Intermediate = {ctor: 'Intermediate'};
 var _mordrax$cotwelm$CharCreation_Msg$Easy = {ctor: 'Easy'};
+var _mordrax$cotwelm$CharCreation_Difficulty$view = function (difficulty) {
+	var activeImpossible = _elm_lang$core$Native_Utils.eq(difficulty, _mordrax$cotwelm$CharCreation_Msg$Impossible) ? 'active' : '';
+	var activeHard = _elm_lang$core$Native_Utils.eq(difficulty, _mordrax$cotwelm$CharCreation_Msg$Hard) ? 'active' : '';
+	var activeIntermediate = _elm_lang$core$Native_Utils.eq(difficulty, _mordrax$cotwelm$CharCreation_Msg$Intermediate) ? 'active' : '';
+	var activeEasy = _elm_lang$core$Native_Utils.eq(difficulty, _mordrax$cotwelm$CharCreation_Msg$Easy) ? 'active' : '';
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('four ui buttons')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class(
+						A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', activeEasy)),
+						_elm_lang$html$Html_Events$onClick(
+						_mordrax$cotwelm$CharCreation_Msg$Difficulty(_mordrax$cotwelm$CharCreation_Msg$Easy))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$i,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('huge green circle icon')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[]))
+							])),
+						A2(
+						_elm_lang$html$Html$label,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Easy')
+							]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class(
+						A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', activeIntermediate)),
+						_elm_lang$html$Html_Events$onClick(
+						_mordrax$cotwelm$CharCreation_Msg$Difficulty(_mordrax$cotwelm$CharCreation_Msg$Intermediate))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$i,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('huge blue square icon')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[]))
+							])),
+						A2(
+						_elm_lang$html$Html$label,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Intermediate')
+							]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class(
+						A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', activeHard)),
+						_elm_lang$html$Html_Events$onClick(
+						_mordrax$cotwelm$CharCreation_Msg$Difficulty(_mordrax$cotwelm$CharCreation_Msg$Hard))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$i,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('huge black square icon')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[]))
+							])),
+						A2(
+						_elm_lang$html$Html$label,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Hard')
+							]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class(
+						A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', activeImpossible)),
+						_elm_lang$html$Html_Events$onClick(
+						_mordrax$cotwelm$CharCreation_Msg$Difficulty(_mordrax$cotwelm$CharCreation_Msg$Impossible))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$i,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('huge yellow warning sign icon')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[]))
+							])),
+						A2(
+						_elm_lang$html$Html$label,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Impossible')
+							]))
+					]))
+			]));
+};
 var _mordrax$cotwelm$CharCreation_Gender$view = function (gender) {
 	var activeFemale = _elm_lang$core$Native_Utils.eq(gender, _mordrax$cotwelm$CharCreation_Msg$Female) ? 'active' : '';
 	var activeMale = _elm_lang$core$Native_Utils.eq(gender, _mordrax$cotwelm$CharCreation_Msg$Male) ? 'active' : '';
@@ -7316,8 +7474,14 @@ var _mordrax$cotwelm$CharCreation_Main$view = function (model) {
 								model.name,
 								A2(
 									_elm_lang$core$Basics_ops['++'],
-									' Gender: ',
-									_elm_lang$core$Basics$toString(model.gender)))))
+									' Difficulty: ',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_elm_lang$core$Basics$toString(model.difficulty),
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											' Gender: ',
+											_elm_lang$core$Basics$toString(model.gender)))))))
 					])),
 				A2(
 				_elm_lang$html$Html$div,
@@ -7382,14 +7546,7 @@ var _mordrax$cotwelm$CharCreation_Main$view = function (model) {
 												_mordrax$cotwelm$CharCreation_Gender$view(model.gender)
 											]))
 									])),
-								A2(
-								_elm_lang$html$Html$div,
-								_elm_lang$core$Native_List.fromArray(
-									[]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('TODO: Difficulty')
-									])),
+								_mordrax$cotwelm$CharCreation_Difficulty$view(model.difficulty),
 								A2(
 								_elm_lang$html$Html$div,
 								_elm_lang$core$Native_List.fromArray(
@@ -7437,14 +7594,19 @@ var _mordrax$cotwelm$CharCreation_Main$view = function (model) {
 var _mordrax$cotwelm$CharCreation_Main$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
-		if (_p0.ctor === 'Name') {
-			return _elm_lang$core$Native_Utils.update(
-				model,
-				{name: _p0._0});
-		} else {
-			return _elm_lang$core$Native_Utils.update(
-				model,
-				{gender: _p0._0});
+		switch (_p0.ctor) {
+			case 'Name':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{name: _p0._0});
+			case 'Gender':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{gender: _p0._0});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{difficulty: _p0._0});
 		}
 	});
 var _mordrax$cotwelm$CharCreation_Main$initModel = {name: 'testing', str: 50, dex: 50, con: 50, agi: 50, gender: _mordrax$cotwelm$CharCreation_Msg$Female, difficulty: _mordrax$cotwelm$CharCreation_Msg$Hard};
@@ -7628,7 +7790,7 @@ var _mordrax$cotwelm$Main$update = F2(
 				});
 		}
 	});
-var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwMsg$CharCreationPage, character: _mordrax$cotwelm$CharCreation_Main$initModel};
+var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwMsg$SplashPage, character: _mordrax$cotwelm$CharCreation_Main$initModel};
 var _mordrax$cotwelm$Main$main = {
 	main: _elm_lang$html$Html_App$beginnerProgram(
 		{model: _mordrax$cotwelm$Main$initModel, update: _mordrax$cotwelm$Main$update, view: _mordrax$cotwelm$Main$view})
