@@ -1,5 +1,6 @@
 import SplashView exposing (..)
-import CharCreation exposing (..)
+import CharCreation.Main exposing (..)
+import CharCreation.Msg exposing (..)
 import CotwMsg as Cotw exposing (Msg(..), Page(..))
 
 import Html exposing (..)
@@ -16,13 +17,13 @@ main = Html.App.beginnerProgram
 
 initModel: Model
 initModel = {
-    currentPage = SplashPage,
-    character = CharCreation.initModel
+    currentPage = CharCreationPage,
+    character = CharCreation.Main.initModel
   }
 
 type alias Model = {
   currentPage: Page,
-  character: CharCreation.Model
+  character: CharCreation.Msg.Model
   }
 
 update: Cotw.Msg -> Model -> Model
@@ -33,13 +34,13 @@ update msg model =
     SplashMsg _ ->
       { model | currentPage = NotImplementedPage }
     CharCreationMsg msg ->
-      { model | character = CharCreation.update msg model.character }
+      { model | character = CharCreation.Main.update msg model.character }
 
 view: Model -> Html Cotw.Msg
 view model = 
   case model.currentPage of
     CharCreationPage ->
-      div [] [map CharCreationMsg (CharCreation.view model.character)]
+      div [] [map CharCreationMsg (CharCreation.Main.view model.character)]
 
     SplashPage ->
       div [] [map SplashMsg SplashView.view]
