@@ -1,17 +1,21 @@
-module SplashView exposing (view) -- where
+module SplashView exposing (view, Msg(..)) -- where
 
 {-| Shows the splash screen
 @docs view
 -}
-
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
 
+type Msg = 
+  NewGame | 
+  LoadGame | 
+  Overview
+
 {-| Shows the splash screen
   @doc view
 -}
-view: Html String
+view: Html Msg
 view =
   let 
     bgStyle = [("backgroundColor", "black")]
@@ -29,9 +33,9 @@ view =
 
       div [class "ui column"] [
         div [class "ui buttons"] [
-          button [class "ui button primary", onClick "new"] [text "New Game"],
-          button [class "ui button", onClick "load"] [text "Load Game"],
-          button [class "ui button", onClick "overview"] [text "Overview"]
+          button [class "ui button primary", onClick NewGame] [text "New Game"],
+          button [class "ui button", onClick LoadGame] [text "Load Game"],
+          button [class "ui button", onClick Overview] [text "Overview"]
         ]
       ]
     ]

@@ -1,34 +1,49 @@
-import SplashView exposing (view)
-import CharCreation exposing (view)
+import SplashView exposing (..)
+import CharCreation exposing (..)
+import CotwMsg as Cotw exposing (Msg(..), Page(..))
 
 import Html exposing (..)
-import Html.App
+import Html.App exposing (map)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
 
 
 main = Html.App.beginnerProgram
-  { model = {currentPage = "splash"}
-  , update = update
-  , view = view
+  { model = initModel,
+    update = update,
+    view = view
+  }
+
+initModel: Model
+initModel = {
+    currentPage = SplashPage,
+    character = CharCreation.initModel
   }
 
 type alias Model = {
-  currentPage: String
+  currentPage: Page,
+  character: CharCreation.Model
   }
 
-type Msg = NewGame | LoadGame | Overview
-
-update: String -> Model -> Model
+update: Cotw.Msg -> Model -> Model
 update msg model =
   case msg of
-    "new" -> 
-      { model | currentPage = "new" }
-    _ -> 
-      model
+    SplashMsg NewGame ->
+      { model | currentPage = CharCreationPage }
+    SplashMsg _ ->
+      { model | currentPage = NotImplementedPage }
+    CharCreationMsg msg ->
+      { model | character = CharCreation.update msg model.character }
 
-view: Model -> Html String
+view: Model -> Html Cotw.Msg
 view model = 
   case model.currentPage of
-    "new" -> CharCreation.view
-    _ -> SplashView.view
+    CharCreationPage ->
+      div [] [map CharCreationMsg (CharCreation.view model.character)]
+
+    SplashPage ->
+      div [] [map SplashMsg SplashView.view]
+
+    _ ->
+      h1 [] [text "Page not implemented!"]
+
