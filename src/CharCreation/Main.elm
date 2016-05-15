@@ -7,15 +7,16 @@ import Html.Attributes exposing (..)
 import CharCreation.Name exposing (view)
 import CharCreation.Gender exposing (view)
 import CharCreation.Msg exposing (..)
+import CharCreation.Difficulty exposing (view)
 
 initModel: Model
 initModel = {
-  name = "testing",
-  str = 50,
-  dex = 50,
-  con = 50,
-  agi = 50,
-  gender = Female,
+  name       = "testing",
+  str        = 50,
+  dex        = 50,
+  con        = 50,
+  agi        = 50,
+  gender     = Female,
   difficulty = Hard 
   }
 
@@ -23,8 +24,9 @@ initModel = {
 update: Msg -> Model -> Model
 update msg model =
   case msg of
-    Name newName -> { model | name = newName }
-    Gender gender -> {model | gender = gender}
+    Name newName          -> {model | name       = newName   }
+    Gender gender         -> {model | gender     = gender    }
+    Difficulty difficulty -> {model | difficulty = difficulty}
 
 view: Model -> Html Msg
 view model =
@@ -32,7 +34,7 @@ view model =
     bgStyle = [("backgroundColor", "black")]
   in
   div [] [
-    div [] [text ("Name: " ++ model.name ++ " Gender: " ++ (toString model.gender))],
+    div [] [text ("Name: " ++ model.name ++ " Difficulty: " ++ (toString model.difficulty) ++ " Gender: " ++ (toString model.gender))],
     div [class "ui middle aligned center aligned grid"] [    
       div [class "ui one column"] [
         div [class "ui stacked vertical segment"] [
@@ -49,7 +51,7 @@ view model =
           ]
         ],
 
-        div [] [text "TODO: Difficulty"],
+        CharCreation.Difficulty.view model.difficulty,
 
         div [class "ui button primary"] [text "Ok"],
         div [class "ui button"] [text "Cancel"],

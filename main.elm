@@ -17,7 +17,7 @@ main = Html.App.beginnerProgram
 
 initModel: Model
 initModel = {
-    currentPage = CharCreationPage,
+    currentPage = SplashPage,
     character = CharCreation.Main.initModel
   }
 

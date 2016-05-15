@@ -1,6 +1,6 @@
 module CharCreation.Msg exposing (..) --where
 
-type Msg = Name String | Gender Gender
+type Msg = Name String | Gender Gender | Difficulty Difficulty
 
 type alias Model = {
   name: String,
