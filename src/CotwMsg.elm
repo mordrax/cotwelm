@@ -1,11 +1,11 @@
 module CotwMsg exposing (..) -- where
 
 import SplashView exposing (Msg)
-import CharCreation.Msg exposing (Msg)
+import CharCreation.Data exposing (Msg)
 
 type Msg = 
   SplashMsg SplashView.Msg | 
-  CharCreationMsg CharCreation.Msg.Msg
+  CharCreationMsg CharCreation.Data.Msg
 
 type Page =
   SplashPage |

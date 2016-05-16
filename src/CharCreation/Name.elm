@@ -1,6 +1,6 @@
 module CharCreation.Name exposing (view) -- where
 
-import CharCreation.Msg exposing (..)
+import CharCreation.Data exposing (..)
 import Html exposing (..)
 import Html.Events exposing (onInput)
 import Html.Attributes exposing (..)

@@ -4,18 +4,17 @@ import Html exposing (..)
 import Html.App exposing (map)
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
+
 import CharCreation.Name exposing (view)
 import CharCreation.Gender exposing (view)
-import CharCreation.Msg exposing (..)
+import CharCreation.Data exposing (..)
 import CharCreation.Difficulty exposing (view)
+import CharCreation.Attributes exposing (view)
 
 initModel: Model
 initModel = {
   name       = "testing",
-  str        = 50,
-  dex        = 50,
-  con        = 50,
-  agi        = 50,
+  attributes = CharCreation.Attributes.initModel,
   gender     = Female,
   difficulty = Hard 
   }
@@ -27,6 +26,7 @@ update msg model =
     Name newName          -> {model | name       = newName   }
     Gender gender         -> {model | gender     = gender    }
     Difficulty difficulty -> {model | difficulty = difficulty}
+    Attributes attr val   -> {model | attributes = CharCreation.Attributes.update attr val model.attributes}
 
 view: Model -> Html Msg
 view model =
@@ -42,7 +42,9 @@ view model =
           CharCreation.Name.view model.name
         ],
 
-        div [] [text "TODO: Attributes"],
+        div [] [
+          CharCreation.Attributes.view model.attributes
+        ],
 
         div [class "ui vertical segments"] [
           div [class "ui vertical segment"] [text "Character Gender"],
@@ -53,10 +55,10 @@ view model =
 
         CharCreation.Difficulty.view model.difficulty,
 
-        div [class "ui button primary"] [text "Ok"],
-        div [class "ui button"] [text "Cancel"],
-        div [class "ui button"] [text "View Icon"],
-        div [class "ui button"] [text "Help"]
+        button [class "ui button primary"] [text "Ok"],
+        button [class "ui button"] [text "Cancel"],
+        button [class "ui button"] [text "View Icon"],
+        button [class "ui button"] [text "Help"]
       ]
     ]
   ]
