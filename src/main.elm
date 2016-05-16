@@ -1,6 +1,6 @@
 import SplashView exposing (..)
 import CharCreation.Main exposing (..)
-import CharCreation.Msg exposing (..)
+import CharCreation.Data exposing (..)
 import CotwMsg as Cotw exposing (Msg(..), Page(..))
 
 import Html exposing (..)
@@ -17,13 +17,13 @@ main = Html.App.beginnerProgram
 
 initModel: Model
 initModel = {
-    currentPage = SplashPage,
+    currentPage = CharCreationPage,
     character = CharCreation.Main.initModel
   }
 
 type alias Model = {
   currentPage: Page,
-  character: CharCreation.Msg.Model
+  character: CharCreation.Data.Model
   }
 
 update: Cotw.Msg -> Model -> Model
@@ -47,4 +47,3 @@ view model =
 
     _ ->
       h1 [] [text "Page not implemented!"]
-

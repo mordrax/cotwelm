@@ -1,6 +1,6 @@
 module CharCreation.Gender exposing (view) -- where
 
-import CharCreation.Msg exposing (..)
+import CharCreation.Data exposing (..)
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
@@ -13,14 +13,14 @@ view gender =
   in
     div [class "equal width column"] [
       div [class "ui large buttons"] [ 
-        div [ class ("ui labeled icon button " ++ activeMale), 
+        button [ class ("ui labeled icon button " ++ activeMale), 
               onClick (Gender Male) ]
             [ 
               i [ class "large male icon" ] [], 
               text "Male" 
             ],
-        div [class "or"] [],
-        div [class ("ui labeled icon button " ++ activeFemale),
+        div [ class "or"] [],
+        button [ class ("ui labeled icon button " ++ activeFemale),
              onClick (Gender Female)] [
           i [class "large female icon"] [],
           text "Female"

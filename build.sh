@@ -3,7 +3,7 @@
 echo '====================================================='
 echo '============           elm make          ============'
 echo '====================================================='
-elm make main.elm --output index.html
+elm make src/main.elm --output index.html
 
 #inject semantic ui css
 echo -n 'Injecting Semantic UI CSS ...............'

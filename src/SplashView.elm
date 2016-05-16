@@ -24,11 +24,11 @@ view =
        style bgStyle] [
     div [class "ui one column"] [
       div [class "ui column"] [
-        img [src "public/assets/landing_cotw1.jpg"] []
+        img [src "/public/assets/landing_cotw1.jpg"] []
       ],
 
       div [class "ui column"] [
-        img [src "public/assets/landing_cotw2.jpg"] []
+        img [src "/public/assets/landing_cotw2.jpg"] []
       ],
 
       div [class "ui column"] [

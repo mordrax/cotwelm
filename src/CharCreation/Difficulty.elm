@@ -1,6 +1,6 @@
 module CharCreation.Difficulty exposing (view) -- where
 
-import CharCreation.Msg exposing (..)
+import CharCreation.Data exposing (..)
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
@@ -14,19 +14,19 @@ view difficulty =
     activeImpossible = if difficulty == Impossible then "active" else ""
   in
     div [class "four ui buttons"] [
-      div [class ("ui icon button " ++ activeEasy), onClick (Difficulty Easy)] [
+      button [class ("ui icon button " ++ activeEasy), onClick (Difficulty Easy)] [
         div [] [i [class "huge green circle icon"] []],
         label [] [text "Easy"]
       ],
-      div [class ("ui icon button " ++ activeIntermediate), onClick (Difficulty Intermediate)] [
+      button [class ("ui icon button " ++ activeIntermediate), onClick (Difficulty Intermediate)] [
         div [] [i [class "huge blue square icon"] []],
         label [] [text "Intermediate"]
       ],
-      div [class ("ui icon button " ++ activeHard), onClick (Difficulty Hard)] [
+      button [class ("ui icon button " ++ activeHard), onClick (Difficulty Hard)] [
         div [] [i [class "huge black square icon"] []],
         label [] [text "Hard"]
       ],
-      div [class ("ui icon button " ++ activeImpossible), onClick (Difficulty Impossible)] [
+      button [class ("ui icon button " ++ activeImpossible), onClick (Difficulty Impossible)] [
         div [] [i [class "huge yellow warning sign icon"] []],
         label [] [text "Impossible"]
       ]
