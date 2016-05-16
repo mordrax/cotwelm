@@ -7195,6 +7195,47 @@ var _mordrax$cotwelm$CharCreation_Data$Constitution = {ctor: 'Constitution'};
 var _mordrax$cotwelm$CharCreation_Data$Intelligence = {ctor: 'Intelligence'};
 var _mordrax$cotwelm$CharCreation_Data$Strength = {ctor: 'Strength'};
 var _mordrax$cotwelm$CharCreation_Data$Available = {ctor: 'Available'};
+var _mordrax$cotwelm$CharCreation_Attributes$getAttributeDescription = F2(
+	function (attr, val) {
+		return 'DOING: Attribute description';
+	});
+var _mordrax$cotwelm$CharCreation_Attributes$getDataPercent = function (val) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'data-percent',
+		_elm_lang$core$Basics$toString(val));
+};
+var _mordrax$cotwelm$CharCreation_Attributes$getAttributeValue = F2(
+	function (attr, model) {
+		var _p0 = attr;
+		switch (_p0.ctor) {
+			case 'Available':
+				return model.ava;
+			case 'Strength':
+				return model.str;
+			case 'Intelligence':
+				return model.$int;
+			case 'Constitution':
+				return model.con;
+			default:
+				return model.dex;
+		}
+	});
+var _mordrax$cotwelm$CharCreation_Attributes$progressBarStyle = function (val) {
+	return _elm_lang$html$Html_Attributes$style(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: 'width',
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(val),
+					'%')
+			},
+				{ctor: '_Tuple2', _0: 'min-width', _1: '0'}
+			]));
+};
 var _mordrax$cotwelm$CharCreation_Attributes$viewButtons = function (attr) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -7244,47 +7285,10 @@ var _mordrax$cotwelm$CharCreation_Attributes$viewButtons = function (attr) {
 					]))
 			]));
 };
-var _mordrax$cotwelm$CharCreation_Attributes$getAttributeValue = F2(
-	function (attr, model) {
-		var _p0 = attr;
-		switch (_p0.ctor) {
-			case 'Available':
-				return model.ava;
-			case 'Strength':
-				return model.str;
-			case 'Intelligence':
-				return model.$int;
-			case 'Constitution':
-				return model.con;
-			default:
-				return model.dex;
-		}
-	});
-var _mordrax$cotwelm$CharCreation_Attributes$getDataPercent = F2(
-	function (attr, model) {
-		return A2(
-			_elm_lang$html$Html_Attributes$attribute,
-			'data-percent',
-			_elm_lang$core$Basics$toString(
-				A2(_mordrax$cotwelm$CharCreation_Attributes$getAttributeValue, attr, model)));
-	});
-var _mordrax$cotwelm$CharCreation_Attributes$progressBarStyle = function (val) {
-	return _elm_lang$html$Html_Attributes$style(
-		_elm_lang$core$Native_List.fromArray(
-			[
-				{
-				ctor: '_Tuple2',
-				_0: 'width',
-				_1: A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(val),
-					'%')
-			},
-				{ctor: '_Tuple2', _0: 'min-width', _1: '0'}
-			]));
-};
 var _mordrax$cotwelm$CharCreation_Attributes$viewAttribute = F3(
 	function (attr, model, buttons) {
+		var val = A2(_mordrax$cotwelm$CharCreation_Attributes$getAttributeValue, attr, model);
+		var description = A2(_mordrax$cotwelm$CharCreation_Attributes$getAttributeDescription, attr, val);
 		return A2(
 			_elm_lang$html$Html$div,
 			_elm_lang$core$Native_List.fromArray(
@@ -7317,7 +7321,7 @@ var _mordrax$cotwelm$CharCreation_Attributes$viewAttribute = F3(
 							_elm_lang$core$Native_List.fromArray(
 								[
 									_elm_lang$html$Html_Attributes$class('ui indicating progress'),
-									A2(_mordrax$cotwelm$CharCreation_Attributes$getDataPercent, attr, model)
+									_mordrax$cotwelm$CharCreation_Attributes$getDataPercent(val)
 								]),
 							_elm_lang$core$Native_List.fromArray(
 								[
@@ -7326,8 +7330,7 @@ var _mordrax$cotwelm$CharCreation_Attributes$viewAttribute = F3(
 									_elm_lang$core$Native_List.fromArray(
 										[
 											_elm_lang$html$Html_Attributes$class('bar'),
-											_mordrax$cotwelm$CharCreation_Attributes$progressBarStyle(
-											A2(_mordrax$cotwelm$CharCreation_Attributes$getAttributeValue, attr, model))
+											_mordrax$cotwelm$CharCreation_Attributes$progressBarStyle(val)
 										]),
 									_elm_lang$core$Native_List.fromArray(
 										[])),
@@ -7339,7 +7342,7 @@ var _mordrax$cotwelm$CharCreation_Attributes$viewAttribute = F3(
 										]),
 									_elm_lang$core$Native_List.fromArray(
 										[
-											_elm_lang$html$Html$text('TODO: Add label')
+											_elm_lang$html$Html$text(description)
 										]))
 								])),
 							buttons ? _mordrax$cotwelm$CharCreation_Attributes$viewButtons(attr) : A2(
