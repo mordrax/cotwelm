@@ -22,7 +22,7 @@ then
 fi
 
 echo -n 'Commiting changes........................'
-git commit -m "${1}"
+git commit -am "${1}"
 echo 'OK!'
 
 echo -n 'Pushing changes to repo..................'
