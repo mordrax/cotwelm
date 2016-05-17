@@ -7,6 +7,7 @@ import Html.App exposing (map)
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
 import CharCreation.Data as Data exposing (..)
+import CharCreation.AttributeDescriptions exposing (getDescription)
 
 
 initModel : AttributeModel
@@ -115,4 +116,4 @@ getDataPercent val =
 
 getAttributeDescription : Data.Attribute -> Int -> String
 getAttributeDescription attr val =
-    "DOING: Attribute description"
+    getDescription attr val

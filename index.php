@@ -7195,9 +7195,83 @@ var _mordrax$cotwelm$CharCreation_Data$Constitution = {ctor: 'Constitution'};
 var _mordrax$cotwelm$CharCreation_Data$Intelligence = {ctor: 'Intelligence'};
 var _mordrax$cotwelm$CharCreation_Data$Strength = {ctor: 'Strength'};
 var _mordrax$cotwelm$CharCreation_Data$Available = {ctor: 'Available'};
+var _mordrax$cotwelm$CharCreation_AttributeDescriptions$initModel = {
+	ava: _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 0, _1: 'You are at your maximum potential! Go get\'em tiger!'},
+			{ctor: '_Tuple2', _0: 100, _1: 'Training is for wimps, you like pain, you like it alot!'}
+		]),
+	str: _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 0, _1: 'Unable to push open a unlocked door whos hinges has recently been serviced with WD40.'},
+			{ctor: '_Tuple2', _0: 50, _1: 'Of average strength!'},
+			{ctor: '_Tuple2', _0: 100, _1: 'Hammers are for wimps!! You hit with your FISTS!'}
+		]),
+	$int: _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 0, _1: 'Dumb'},
+			{ctor: '_Tuple2', _0: 50, _1: 'Smart enough to be at the peak of the standard distribution curve.'},
+			{ctor: '_Tuple2', _0: 100, _1: 'Smart'}
+		]),
+	con: _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 0, _1: 'You\'re having a BAD day, everyday! It\'s like you\'ve got two kids that keep waking you up at night, EVERY night!'},
+			{ctor: '_Tuple2', _0: 50, _1: 'Able to outrun a hungry hippo!'}
+		]),
+	dex: _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 50, _1: ''}
+		])
+};
+var _mordrax$cotwelm$CharCreation_AttributeDescriptions$maybeDescriptionToString = function (desc) {
+	var _p0 = desc;
+	if (_p0.ctor === 'Nothing') {
+		return 'No description matches';
+	} else {
+		return _elm_lang$core$Basics$snd(_p0._0);
+	}
+};
+var _mordrax$cotwelm$CharCreation_AttributeDescriptions$isLessThanAttribute = F2(
+	function (val, _p1) {
+		var _p2 = _p1;
+		return _elm_lang$core$Native_Utils.cmp(val, _p2._0) < 0;
+	});
+var _mordrax$cotwelm$CharCreation_AttributeDescriptions$firstMatchingDescription = F2(
+	function (val, descriptions) {
+		return _elm_lang$core$List$head(
+			A2(
+				_elm_lang$core$List$filter,
+				_mordrax$cotwelm$CharCreation_AttributeDescriptions$isLessThanAttribute(val),
+				descriptions));
+	});
+var _mordrax$cotwelm$CharCreation_AttributeDescriptions$getDescription = F2(
+	function (attr, val) {
+		var _p3 = attr;
+		switch (_p3.ctor) {
+			case 'Strength':
+				return _mordrax$cotwelm$CharCreation_AttributeDescriptions$maybeDescriptionToString(
+					A2(_mordrax$cotwelm$CharCreation_AttributeDescriptions$firstMatchingDescription, val, _mordrax$cotwelm$CharCreation_AttributeDescriptions$initModel.str));
+			case 'Available':
+				return _mordrax$cotwelm$CharCreation_AttributeDescriptions$maybeDescriptionToString(
+					A2(_mordrax$cotwelm$CharCreation_AttributeDescriptions$firstMatchingDescription, val, _mordrax$cotwelm$CharCreation_AttributeDescriptions$initModel.ava));
+			case 'Intelligence':
+				return _mordrax$cotwelm$CharCreation_AttributeDescriptions$maybeDescriptionToString(
+					A2(_mordrax$cotwelm$CharCreation_AttributeDescriptions$firstMatchingDescription, val, _mordrax$cotwelm$CharCreation_AttributeDescriptions$initModel.$int));
+			case 'Constitution':
+				return _mordrax$cotwelm$CharCreation_AttributeDescriptions$maybeDescriptionToString(
+					A2(_mordrax$cotwelm$CharCreation_AttributeDescriptions$firstMatchingDescription, val, _mordrax$cotwelm$CharCreation_AttributeDescriptions$initModel.con));
+			default:
+				return _mordrax$cotwelm$CharCreation_AttributeDescriptions$maybeDescriptionToString(
+					A2(_mordrax$cotwelm$CharCreation_AttributeDescriptions$firstMatchingDescription, val, _mordrax$cotwelm$CharCreation_AttributeDescriptions$initModel.dex));
+		}
+	});
+var _mordrax$cotwelm$CharCreation_AttributeDescriptions$Model = F5(
+	function (a, b, c, d, e) {
+		return {str: a, $int: b, dex: c, con: d, ava: e};
+	});
 var _mordrax$cotwelm$CharCreation_Attributes$getAttributeDescription = F2(
 	function (attr, val) {
-		return 'DOING: Attribute description';
+		return A2(_mordrax$cotwelm$CharCreation_AttributeDescriptions$getDescription, attr, val);
 	});
 var _mordrax$cotwelm$CharCreation_Attributes$getDataPercent = function (val) {
 	return A2(
@@ -7395,6 +7469,147 @@ var _mordrax$cotwelm$CharCreation_Attributes$update = F3(
 		}
 	});
 var _mordrax$cotwelm$CharCreation_Attributes$initModel = {ava: 100, str: 20, dex: 30, con: 40, $int: 60};
+var _mordrax$cotwelm$CharCreation_Difficulty$iconButton = F3(
+	function (diff, active, a) {
+		return A2(
+			_elm_lang$html$Html$button,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$class(
+					A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', active)),
+					_elm_lang$html$Html_Events$onClick(
+					_mordrax$cotwelm$CharCreation_Data$Difficulty(diff))
+				]),
+			a);
+	});
+var _mordrax$cotwelm$CharCreation_Difficulty$easyButton = function (active) {
+	return A3(
+		_mordrax$cotwelm$CharCreation_Difficulty$iconButton,
+		_mordrax$cotwelm$CharCreation_Data$Easy,
+		active,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$i,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('huge green circle icon')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[]))
+					])),
+				A2(
+				_elm_lang$html$Html$label,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Easy')
+					]))
+			]));
+};
+var _mordrax$cotwelm$CharCreation_Difficulty$intermediateButton = function (active) {
+	return A3(
+		_mordrax$cotwelm$CharCreation_Difficulty$iconButton,
+		_mordrax$cotwelm$CharCreation_Data$Intermediate,
+		active,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$i,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('huge blue square icon')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[]))
+					])),
+				A2(
+				_elm_lang$html$Html$label,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Intermediate')
+					]))
+			]));
+};
+var _mordrax$cotwelm$CharCreation_Difficulty$hardButton = function (active) {
+	return A3(
+		_mordrax$cotwelm$CharCreation_Difficulty$iconButton,
+		_mordrax$cotwelm$CharCreation_Data$Hard,
+		active,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$i,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('huge black square icon')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[]))
+					])),
+				A2(
+				_elm_lang$html$Html$label,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Hard')
+					]))
+			]));
+};
+var _mordrax$cotwelm$CharCreation_Difficulty$impossibleButton = function (active) {
+	return A3(
+		_mordrax$cotwelm$CharCreation_Difficulty$iconButton,
+		_mordrax$cotwelm$CharCreation_Data$Impossible,
+		active,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$i,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('huge yellow warning sign icon')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[]))
+					])),
+				A2(
+				_elm_lang$html$Html$label,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Impossible')
+					]))
+			]));
+};
 var _mordrax$cotwelm$CharCreation_Difficulty$view = function (difficulty) {
 	var activeImpossible = _elm_lang$core$Native_Utils.eq(difficulty, _mordrax$cotwelm$CharCreation_Data$Impossible) ? 'active' : '';
 	var activeHard = _elm_lang$core$Native_Utils.eq(difficulty, _mordrax$cotwelm$CharCreation_Data$Hard) ? 'active' : '';
@@ -7408,146 +7623,10 @@ var _mordrax$cotwelm$CharCreation_Difficulty$view = function (difficulty) {
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				A2(
-				_elm_lang$html$Html$button,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class(
-						A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', activeEasy)),
-						_elm_lang$html$Html_Events$onClick(
-						_mordrax$cotwelm$CharCreation_Data$Difficulty(_mordrax$cotwelm$CharCreation_Data$Easy))
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$i,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('huge green circle icon')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[]))
-							])),
-						A2(
-						_elm_lang$html$Html$label,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('Easy')
-							]))
-					])),
-				A2(
-				_elm_lang$html$Html$button,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class(
-						A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', activeIntermediate)),
-						_elm_lang$html$Html_Events$onClick(
-						_mordrax$cotwelm$CharCreation_Data$Difficulty(_mordrax$cotwelm$CharCreation_Data$Intermediate))
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$i,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('huge blue square icon')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[]))
-							])),
-						A2(
-						_elm_lang$html$Html$label,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('Intermediate')
-							]))
-					])),
-				A2(
-				_elm_lang$html$Html$button,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class(
-						A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', activeHard)),
-						_elm_lang$html$Html_Events$onClick(
-						_mordrax$cotwelm$CharCreation_Data$Difficulty(_mordrax$cotwelm$CharCreation_Data$Hard))
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$i,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('huge black square icon')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[]))
-							])),
-						A2(
-						_elm_lang$html$Html$label,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('Hard')
-							]))
-					])),
-				A2(
-				_elm_lang$html$Html$button,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class(
-						A2(_elm_lang$core$Basics_ops['++'], 'ui icon button ', activeImpossible)),
-						_elm_lang$html$Html_Events$onClick(
-						_mordrax$cotwelm$CharCreation_Data$Difficulty(_mordrax$cotwelm$CharCreation_Data$Impossible))
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$i,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('huge yellow warning sign icon')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[]))
-							])),
-						A2(
-						_elm_lang$html$Html$label,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('Impossible')
-							]))
-					]))
+				_mordrax$cotwelm$CharCreation_Difficulty$easyButton(activeEasy),
+				_mordrax$cotwelm$CharCreation_Difficulty$intermediateButton(activeIntermediate),
+				_mordrax$cotwelm$CharCreation_Difficulty$hardButton(activeHard),
+				_mordrax$cotwelm$CharCreation_Difficulty$impossibleButton(activeImpossible)
 			]));
 };
 var _mordrax$cotwelm$CharCreation_Gender$view = function (gender) {
