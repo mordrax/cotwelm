@@ -48,7 +48,9 @@ initModel =
         ]
     , str =
         [ ( 0, "Unable to push open a unlocked door whos hinges has recently been serviced with WD40." )
+        , ( 20, "Stunted by a career in software engineering, the mind is strong but there is high muscle atrophy" )
         , ( 50, "Of average strength!!!" )
+        , ( 60, "Likes to gym during lunch.." )
         , ( 100, "Hammers are for wimps!! You hit with your FISTS!" )
         ]
     , int =
