@@ -7234,7 +7234,9 @@ var _mordrax$cotwelm$CharCreation_AttributeDescriptions$initModel = {
 	str: _elm_lang$core$Native_List.fromArray(
 		[
 			{ctor: '_Tuple2', _0: 0, _1: 'Unable to push open a unlocked door whos hinges has recently been serviced with WD40.'},
+			{ctor: '_Tuple2', _0: 20, _1: 'Stunted by a career in software engineering, the mind is strong but there is high muscle atrophy'},
 			{ctor: '_Tuple2', _0: 50, _1: 'Of average strength!!!'},
+			{ctor: '_Tuple2', _0: 60, _1: 'Likes to gym during lunch..'},
 			{ctor: '_Tuple2', _0: 100, _1: 'Hammers are for wimps!! You hit with your FISTS!'}
 		]),
 	$int: _elm_lang$core$Native_List.fromArray(
