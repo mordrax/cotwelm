@@ -4,7 +4,7 @@
         "elm-lang/html": "1.0.0 <= v < 2.0.0",
         "etaque/elm-route-parser": "2.2.1 <= v < 3.0.0"
     },
-    "make-info": {"main": "src/main.elm", "out": "public/cotw.js"},
+    "make-info": {"main": "src/main.elm", "out": "dist/js/cotw.js"},
     "elm-version": "0.17.0 <= v < 0.18.0",
     "exposed-modules": [],
     "license": "BSD3",

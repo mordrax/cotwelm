@@ -48,7 +48,7 @@ initModel =
         ]
     , str =
         [ ( 0, "Unable to push open a unlocked door whos hinges has recently been serviced with WD40." )
-        , ( 50, "Of average strength!" )
+        , ( 50, "Of average strength!!!" )
         , ( 100, "Hammers are for wimps!! You hit with your FISTS!" )
         ]
     , int =
