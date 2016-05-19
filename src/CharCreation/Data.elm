@@ -8,6 +8,8 @@ type Msg
     | Gender Gender
     | Difficulty Difficulty
     | Attributes Attribute Int
+    | StartGame
+    | CancelGame
 
 
 type alias AttributeModel =

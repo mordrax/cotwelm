@@ -1,20 +1,19 @@
-module CharCreation.Main exposing (view, initModel, update)
+module CharCreation.CharCreation exposing (view, initChar, update)
 
 -- where
 
 import Html exposing (..)
-import Html.App exposing (map)
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
 import CharCreation.Name exposing (view)
 import CharCreation.Gender exposing (view)
-import CharCreation.Data exposing (..)
+import CharCreation.Data as Data exposing (..)
 import CharCreation.Difficulty exposing (view)
 import CharCreation.Attributes exposing (view)
 
 
-initModel : Model
-initModel =
+initChar : Model
+initChar =
     { name = "testing"
     , attributes = CharCreation.Attributes.initModel
     , gender = Female
@@ -22,7 +21,7 @@ initModel =
     }
 
 
-update : Msg -> Model -> Model
+update : Data.Msg -> Model -> Model
 update msg model =
     case msg of
         Name newName ->
@@ -37,8 +36,11 @@ update msg model =
         Attributes attr val ->
             { model | attributes = CharCreation.Attributes.update attr val model.attributes }
 
+        _ ->
+            model
 
-view : Model -> Html Msg
+
+view : Model -> Html Data.Msg
 view model =
     let
         bgStyle =
@@ -62,7 +64,7 @@ view model =
                             ]
                         ]
                     , CharCreation.Difficulty.view model.difficulty
-                    , button [ class "ui button primary" ] [ text "Ok" ]
+                    , button [ class "ui button primary", onClick Data.StartGame ] [ text "Ok" ]
                     , button [ class "ui button" ] [ text "Cancel" ]
                     , button [ class "ui button" ] [ text "View Icon" ]
                     , button [ class "ui button" ] [ text "Help" ]
