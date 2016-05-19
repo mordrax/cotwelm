@@ -8271,7 +8271,7 @@ var _mordrax$cotwelm$Main$update = F2(
 					});
 		}
 	});
-var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwData$GamePage, character: _mordrax$cotwelm$CharCreation_CharCreation$initChar, game: _mordrax$cotwelm$Game_Game$initGame};
+var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwData$SplashPage, character: _mordrax$cotwelm$CharCreation_CharCreation$initChar, game: _mordrax$cotwelm$Game_Game$initGame};
 var _mordrax$cotwelm$Main$main = {
 	main: _elm_lang$html$Html_App$beginnerProgram(
 		{model: _mordrax$cotwelm$Main$initModel, update: _mordrax$cotwelm$Main$update, view: _mordrax$cotwelm$Main$view})
