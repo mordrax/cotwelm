@@ -8030,7 +8030,7 @@ var _mordrax$cotwelm$SplashView$view = function () {
 								_elm_lang$html$Html$img,
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$src('/public/assets/landing_cotw1.jpg')
+										_elm_lang$html$Html_Attributes$src('/assets/landing_cotw1.jpg')
 									]),
 								_elm_lang$core$Native_List.fromArray(
 									[]))
@@ -8047,7 +8047,7 @@ var _mordrax$cotwelm$SplashView$view = function () {
 								_elm_lang$html$Html$img,
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$src('/public/assets/landing_cotw2.jpg')
+										_elm_lang$html$Html_Attributes$src('/assets/landing_cotw2.jpg')
 									]),
 								_elm_lang$core$Native_List.fromArray(
 									[]))
