@@ -21,7 +21,7 @@ main =
 
 initModel : Model
 initModel =
-    { currentPage = GamePage
+    { currentPage = SplashPage
     , character = CharCreation.initChar
     , game = Game.initGame
     }
