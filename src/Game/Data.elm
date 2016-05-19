@@ -7,4 +7,12 @@ type Msg
 
 type alias Model =
     { name : String
+    , map : Map
     }
+
+
+type Map
+    = Village
+    | OutsideVillage
+    | DungeonLevelOne
+    | Dungeon
