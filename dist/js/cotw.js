@@ -8107,26 +8107,64 @@ var _mordrax$cotwelm$SplashView$view = function () {
 			]));
 }();
 
-var _mordrax$cotwelm$Game_Data$Model = function (a) {
-	return {name: a};
-};
+var _mordrax$cotwelm$Game_Data$Model = F2(
+	function (a, b) {
+		return {name: a, map: b};
+	});
 var _mordrax$cotwelm$Game_Data$Nothing = {ctor: 'Nothing'};
+var _mordrax$cotwelm$Game_Data$Dungeon = {ctor: 'Dungeon'};
+var _mordrax$cotwelm$Game_Data$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
+var _mordrax$cotwelm$Game_Data$OutsideVillage = {ctor: 'OutsideVillage'};
+var _mordrax$cotwelm$Game_Data$Village = {ctor: 'Village'};
 
-var _mordrax$cotwelm$CotwMsg$GameMsg = function (a) {
+var _mordrax$cotwelm$CotwData$GameMsg = function (a) {
 	return {ctor: 'GameMsg', _0: a};
 };
-var _mordrax$cotwelm$CotwMsg$CharCreationMsg = function (a) {
+var _mordrax$cotwelm$CotwData$CharCreationMsg = function (a) {
 	return {ctor: 'CharCreationMsg', _0: a};
 };
-var _mordrax$cotwelm$CotwMsg$SplashMsg = function (a) {
+var _mordrax$cotwelm$CotwData$SplashMsg = function (a) {
 	return {ctor: 'SplashMsg', _0: a};
 };
-var _mordrax$cotwelm$CotwMsg$NotImplementedPage = {ctor: 'NotImplementedPage'};
-var _mordrax$cotwelm$CotwMsg$ShopPage = {ctor: 'ShopPage'};
-var _mordrax$cotwelm$CotwMsg$GamePage = {ctor: 'GamePage'};
-var _mordrax$cotwelm$CotwMsg$CharCreationPage = {ctor: 'CharCreationPage'};
-var _mordrax$cotwelm$CotwMsg$SplashPage = {ctor: 'SplashPage'};
+var _mordrax$cotwelm$CotwData$NotImplementedPage = {ctor: 'NotImplementedPage'};
+var _mordrax$cotwelm$CotwData$ShopPage = {ctor: 'ShopPage'};
+var _mordrax$cotwelm$CotwData$GamePage = {ctor: 'GamePage'};
+var _mordrax$cotwelm$CotwData$CharCreationPage = {ctor: 'CharCreationPage'};
+var _mordrax$cotwelm$CotwData$SplashPage = {ctor: 'SplashPage'};
 
+var _mordrax$cotwelm$Game_Game$viewVillage = A2(
+	_elm_lang$html$Html$div,
+	_elm_lang$core$Native_List.fromArray(
+		[]),
+	_elm_lang$core$Native_List.fromArray(
+		[
+			_elm_lang$html$Html$text('Map of village')
+		]));
+var _mordrax$cotwelm$Game_Game$viewMap = function (map) {
+	var _p0 = map;
+	if (_p0.ctor === 'Village') {
+		return _mordrax$cotwelm$Game_Game$viewVillage;
+	} else {
+		return A2(
+			_elm_lang$html$Html$h2,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							{ctor: '_Tuple2', _0: 'color', _1: 'red'}
+						]))
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'Not implemented map specified: ',
+						_elm_lang$core$Basics$toString(_p0)))
+				]));
+	}
+};
 var _mordrax$cotwelm$Game_Game$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -8140,29 +8178,17 @@ var _mordrax$cotwelm$Game_Game$view = function (model) {
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('Main game view')
+						_elm_lang$html$Html$text(
+						A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', model.name))
 					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('tile Grass'),
-						_elm_lang$html$Html_Attributes$style(
-						_elm_lang$core$Native_List.fromArray(
-							[
-								{ctor: '_Tuple2', _0: 'left', _1: '32px'},
-								{ctor: '_Tuple2', _0: 'top', _1: '64px'}
-							]))
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[]))
+				_mordrax$cotwelm$Game_Game$viewMap(model.map)
 			]));
 };
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
 		return model;
 	});
-var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game'};
+var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game', map: _mordrax$cotwelm$Game_Data$Village};
 
 var _mordrax$cotwelm$Main$view = function (model) {
 	var _p0 = model.currentPage;
@@ -8176,7 +8202,7 @@ var _mordrax$cotwelm$Main$view = function (model) {
 					[
 						A2(
 						_elm_lang$html$Html_App$map,
-						_mordrax$cotwelm$CotwMsg$CharCreationMsg,
+						_mordrax$cotwelm$CotwData$CharCreationMsg,
 						_mordrax$cotwelm$CharCreation_CharCreation$view(model.character))
 					]));
 		case 'SplashPage':
@@ -8186,7 +8212,7 @@ var _mordrax$cotwelm$Main$view = function (model) {
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						A2(_elm_lang$html$Html_App$map, _mordrax$cotwelm$CotwMsg$SplashMsg, _mordrax$cotwelm$SplashView$view)
+						A2(_elm_lang$html$Html_App$map, _mordrax$cotwelm$CotwData$SplashMsg, _mordrax$cotwelm$SplashView$view)
 					]));
 		case 'GamePage':
 			return A2(
@@ -8197,7 +8223,7 @@ var _mordrax$cotwelm$Main$view = function (model) {
 					[
 						A2(
 						_elm_lang$html$Html_App$map,
-						_mordrax$cotwelm$CotwMsg$GameMsg,
+						_mordrax$cotwelm$CotwData$GameMsg,
 						_mordrax$cotwelm$Game_Game$view(model.game))
 					]));
 		default:
@@ -8219,17 +8245,17 @@ var _mordrax$cotwelm$Main$update = F2(
 				if (_p1._0.ctor === 'NewGame') {
 					return _elm_lang$core$Native_Utils.update(
 						model,
-						{currentPage: _mordrax$cotwelm$CotwMsg$CharCreationPage});
+						{currentPage: _mordrax$cotwelm$CotwData$CharCreationPage});
 				} else {
 					return _elm_lang$core$Native_Utils.update(
 						model,
-						{currentPage: _mordrax$cotwelm$CotwMsg$NotImplementedPage});
+						{currentPage: _mordrax$cotwelm$CotwData$NotImplementedPage});
 				}
 			case 'CharCreationMsg':
 				if (_p1._0.ctor === 'StartGame') {
 					return _elm_lang$core$Native_Utils.update(
 						model,
-						{currentPage: _mordrax$cotwelm$CotwMsg$GamePage});
+						{currentPage: _mordrax$cotwelm$CotwData$GamePage});
 				} else {
 					return _elm_lang$core$Native_Utils.update(
 						model,
@@ -8245,7 +8271,7 @@ var _mordrax$cotwelm$Main$update = F2(
 					});
 		}
 	});
-var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwMsg$GamePage, character: _mordrax$cotwelm$CharCreation_CharCreation$initChar, game: _mordrax$cotwelm$Game_Game$initGame};
+var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwData$GamePage, character: _mordrax$cotwelm$CharCreation_CharCreation$initChar, game: _mordrax$cotwelm$Game_Game$initGame};
 var _mordrax$cotwelm$Main$main = {
 	main: _elm_lang$html$Html_App$beginnerProgram(
 		{model: _mordrax$cotwelm$Main$initModel, update: _mordrax$cotwelm$Main$update, view: _mordrax$cotwelm$Main$view})

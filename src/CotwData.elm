@@ -1,4 +1,4 @@
-module CotwMsg exposing (..)
+module CotwData exposing (..)
 
 -- where
 

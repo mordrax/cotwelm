@@ -5,7 +5,7 @@ import CharCreation.CharCreation as CharCreation exposing (..)
 import CharCreation.Data exposing (..)
 import Game.Game as Game exposing (..)
 import Game.Data exposing (..)
-import CotwMsg as Cotw exposing (Msg(..), Page(..))
+import CotwData as Cotw exposing (Msg(..), Page(..))
 import Html exposing (..)
 import Html.App exposing (map)
 

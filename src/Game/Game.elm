@@ -8,6 +8,7 @@ import Html.Attributes exposing (..)
 initGame : Model
 initGame =
     { name = "A new game"
+    , map = Village
     }
 
 
@@ -19,6 +20,21 @@ update msg model =
 view : Model -> Html Data.Msg
 view model =
     div []
-        [ h1 [] [ text "Main game view" ]
-        , div [ class "tile Grass", style [ ( "left", "32px" ), ( "top", "64px" ) ] ] []
+        [ h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
+        , viewMap model.map
         ]
+
+
+viewMap : Map -> Html Data.Msg
+viewMap map =
+    case map of
+        Village ->
+            viewVillage
+
+        notImplemented ->
+            h2 [ style [ ( "color", "red" ) ] ] [ text ("Not implemented map specified: " ++ toString notImplemented) ]
+
+
+viewVillage : Html Data.Msg
+viewVillage =
+    div [] [ text "Map of village" ]
