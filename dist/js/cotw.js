@@ -7200,6 +7200,8 @@ var _mordrax$cotwelm$CharCreation_Data$Model = F4(
 	function (a, b, c, d) {
 		return {name: a, attributes: b, gender: c, difficulty: d};
 	});
+var _mordrax$cotwelm$CharCreation_Data$CancelGame = {ctor: 'CancelGame'};
+var _mordrax$cotwelm$CharCreation_Data$StartGame = {ctor: 'StartGame'};
 var _mordrax$cotwelm$CharCreation_Data$Attributes = F2(
 	function (a, b) {
 		return {ctor: 'Attributes', _0: a, _1: b};
@@ -7229,30 +7231,72 @@ var _mordrax$cotwelm$CharCreation_AttributeDescriptions$initModel = {
 	ava: _elm_lang$core$Native_List.fromArray(
 		[
 			{ctor: '_Tuple2', _0: 0, _1: 'You are at your maximum potential! Go get\'em tiger!'},
+			{ctor: '_Tuple2', _0: 10, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 20, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 30, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 40, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 50, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 60, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 70, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 80, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 90, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
 			{ctor: '_Tuple2', _0: 100, _1: 'Training is for wimps, you like pain, you like it alot!'}
 		]),
 	str: _elm_lang$core$Native_List.fromArray(
 		[
 			{ctor: '_Tuple2', _0: 0, _1: 'Unable to push open a unlocked door whos hinges has recently been serviced with WD40.'},
+			{ctor: '_Tuple2', _0: 10, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
 			{ctor: '_Tuple2', _0: 20, _1: 'Stunted by a career in software engineering, the mind is strong but there is high muscle atrophy'},
+			{ctor: '_Tuple2', _0: 30, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 40, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
 			{ctor: '_Tuple2', _0: 50, _1: 'Of average strength!!!'},
 			{ctor: '_Tuple2', _0: 60, _1: 'Likes to gym during lunch..'},
+			{ctor: '_Tuple2', _0: 70, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 80, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 90, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
 			{ctor: '_Tuple2', _0: 100, _1: 'Hammers are for wimps!! You hit with your FISTS!'}
 		]),
 	$int: _elm_lang$core$Native_List.fromArray(
 		[
 			{ctor: '_Tuple2', _0: 0, _1: 'Dumb'},
+			{ctor: '_Tuple2', _0: 10, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 20, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 30, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 40, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
 			{ctor: '_Tuple2', _0: 50, _1: 'Smart enough to be at the peak of the standard distribution curve.'},
+			{ctor: '_Tuple2', _0: 60, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 70, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 80, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 90, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
 			{ctor: '_Tuple2', _0: 100, _1: 'Smart'}
 		]),
 	con: _elm_lang$core$Native_List.fromArray(
 		[
 			{ctor: '_Tuple2', _0: 0, _1: 'You\'re having a BAD day, everyday! It\'s like you\'ve got two kids that keep waking you up at night, EVERY night!'},
-			{ctor: '_Tuple2', _0: 50, _1: 'Able to outrun a hungry hippo!'}
+			{ctor: '_Tuple2', _0: 10, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 20, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 30, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 40, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 50, _1: 'Able to outrun a hungry hippo!'},
+			{ctor: '_Tuple2', _0: 60, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 70, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 80, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 90, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 100, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'}
 		]),
 	dex: _elm_lang$core$Native_List.fromArray(
 		[
-			{ctor: '_Tuple2', _0: 50, _1: ''}
+			{ctor: '_Tuple2', _0: 0, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 10, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 20, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 30, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 40, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 50, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 60, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 70, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 80, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 90, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'},
+			{ctor: '_Tuple2', _0: 100, _1: 'TODO: Write something funny and informative about this level of attribute. PRs welcome!'}
 		])
 };
 var _mordrax$cotwelm$CharCreation_AttributeDescriptions$maybeDescriptionToString = function (desc) {
@@ -7503,6 +7547,119 @@ var _mordrax$cotwelm$CharCreation_Attributes$update = F3(
 	});
 var _mordrax$cotwelm$CharCreation_Attributes$initModel = {ava: 100, str: 20, dex: 30, con: 40, $int: 60};
 
+var _mordrax$cotwelm$CharCreation_Name$view = function (playerName) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('ui vertical segment')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('ui labeled fluid input')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui label')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[])),
+						A2(
+						_elm_lang$html$Html$input,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$name('name'),
+								_elm_lang$html$Html_Attributes$placeholder('What word did your mother utter as you came kicking and screaming into this world?'),
+								_elm_lang$html$Html_Events$onInput(_mordrax$cotwelm$CharCreation_Data$Name),
+								_elm_lang$html$Html_Attributes$value(playerName)
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[]))
+					]))
+			]));
+};
+
+var _mordrax$cotwelm$CharCreation_Gender$view = function (gender) {
+	var activeFemale = _elm_lang$core$Native_Utils.eq(gender, _mordrax$cotwelm$CharCreation_Data$Female) ? 'active' : '';
+	var activeMale = _elm_lang$core$Native_Utils.eq(gender, _mordrax$cotwelm$CharCreation_Data$Male) ? 'active' : '';
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('equal width column')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('ui large buttons')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class(
+								A2(_elm_lang$core$Basics_ops['++'], 'ui labeled icon button ', activeMale)),
+								_elm_lang$html$Html_Events$onClick(
+								_mordrax$cotwelm$CharCreation_Data$Gender(_mordrax$cotwelm$CharCreation_Data$Male))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$i,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('large male icon')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[])),
+								_elm_lang$html$Html$text('Male')
+							])),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('or')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[])),
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class(
+								A2(_elm_lang$core$Basics_ops['++'], 'ui labeled icon button ', activeFemale)),
+								_elm_lang$html$Html_Events$onClick(
+								_mordrax$cotwelm$CharCreation_Data$Gender(_mordrax$cotwelm$CharCreation_Data$Female))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$i,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('large female icon')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[])),
+								_elm_lang$html$Html$text('Female')
+							]))
+					]))
+			]));
+};
+
 var _mordrax$cotwelm$CharCreation_Difficulty$iconButton = F3(
 	function (diff, active, a) {
 		return A2(
@@ -7664,120 +7821,7 @@ var _mordrax$cotwelm$CharCreation_Difficulty$view = function (difficulty) {
 			]));
 };
 
-var _mordrax$cotwelm$CharCreation_Gender$view = function (gender) {
-	var activeFemale = _elm_lang$core$Native_Utils.eq(gender, _mordrax$cotwelm$CharCreation_Data$Female) ? 'active' : '';
-	var activeMale = _elm_lang$core$Native_Utils.eq(gender, _mordrax$cotwelm$CharCreation_Data$Male) ? 'active' : '';
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('equal width column')
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('ui large buttons')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$button,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class(
-								A2(_elm_lang$core$Basics_ops['++'], 'ui labeled icon button ', activeMale)),
-								_elm_lang$html$Html_Events$onClick(
-								_mordrax$cotwelm$CharCreation_Data$Gender(_mordrax$cotwelm$CharCreation_Data$Male))
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$i,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('large male icon')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[])),
-								_elm_lang$html$Html$text('Male')
-							])),
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('or')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[])),
-						A2(
-						_elm_lang$html$Html$button,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class(
-								A2(_elm_lang$core$Basics_ops['++'], 'ui labeled icon button ', activeFemale)),
-								_elm_lang$html$Html_Events$onClick(
-								_mordrax$cotwelm$CharCreation_Data$Gender(_mordrax$cotwelm$CharCreation_Data$Female))
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$i,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('large female icon')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[])),
-								_elm_lang$html$Html$text('Female')
-							]))
-					]))
-			]));
-};
-
-var _mordrax$cotwelm$CharCreation_Name$view = function (playerName) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('ui vertical segment')
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('ui labeled fluid input')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('ui label')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[])),
-						A2(
-						_elm_lang$html$Html$input,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$name('name'),
-								_elm_lang$html$Html_Attributes$placeholder('What word did your mother utter as you came kicking and screaming into this world?'),
-								_elm_lang$html$Html_Events$onInput(_mordrax$cotwelm$CharCreation_Data$Name),
-								_elm_lang$html$Html_Attributes$value(playerName)
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[]))
-					]))
-			]));
-};
-
-var _mordrax$cotwelm$CharCreation_Main$view = function (model) {
+var _mordrax$cotwelm$CharCreation_CharCreation$view = function (model) {
 	var bgStyle = _elm_lang$core$Native_List.fromArray(
 		[
 			{ctor: '_Tuple2', _0: 'backgroundColor', _1: 'black'}
@@ -7880,7 +7924,8 @@ var _mordrax$cotwelm$CharCreation_Main$view = function (model) {
 								_elm_lang$html$Html$button,
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$class('ui button primary')
+										_elm_lang$html$Html_Attributes$class('ui button primary'),
+										_elm_lang$html$Html_Events$onClick(_mordrax$cotwelm$CharCreation_Data$StartGame)
 									]),
 								_elm_lang$core$Native_List.fromArray(
 									[
@@ -7920,7 +7965,7 @@ var _mordrax$cotwelm$CharCreation_Main$view = function (model) {
 					]))
 			]));
 };
-var _mordrax$cotwelm$CharCreation_Main$update = F2(
+var _mordrax$cotwelm$CharCreation_CharCreation$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
 		switch (_p0.ctor) {
@@ -7936,15 +7981,17 @@ var _mordrax$cotwelm$CharCreation_Main$update = F2(
 				return _elm_lang$core$Native_Utils.update(
 					model,
 					{difficulty: _p0._0});
-			default:
+			case 'Attributes':
 				return _elm_lang$core$Native_Utils.update(
 					model,
 					{
 						attributes: A3(_mordrax$cotwelm$CharCreation_Attributes$update, _p0._0, _p0._1, model.attributes)
 					});
+			default:
+				return model;
 		}
 	});
-var _mordrax$cotwelm$CharCreation_Main$initModel = {name: 'testing', attributes: _mordrax$cotwelm$CharCreation_Attributes$initModel, gender: _mordrax$cotwelm$CharCreation_Data$Female, difficulty: _mordrax$cotwelm$CharCreation_Data$Hard};
+var _mordrax$cotwelm$CharCreation_CharCreation$initChar = {name: 'testing', attributes: _mordrax$cotwelm$CharCreation_Attributes$initModel, gender: _mordrax$cotwelm$CharCreation_Data$Female, difficulty: _mordrax$cotwelm$CharCreation_Data$Hard};
 
 var _mordrax$cotwelm$SplashView$Overview = {ctor: 'Overview'};
 var _mordrax$cotwelm$SplashView$LoadGame = {ctor: 'LoadGame'};
@@ -8060,6 +8107,14 @@ var _mordrax$cotwelm$SplashView$view = function () {
 			]));
 }();
 
+var _mordrax$cotwelm$Game_Data$Model = function (a) {
+	return {name: a};
+};
+var _mordrax$cotwelm$Game_Data$Nothing = {ctor: 'Nothing'};
+
+var _mordrax$cotwelm$CotwMsg$GameMsg = function (a) {
+	return {ctor: 'GameMsg', _0: a};
+};
 var _mordrax$cotwelm$CotwMsg$CharCreationMsg = function (a) {
 	return {ctor: 'CharCreationMsg', _0: a};
 };
@@ -8068,9 +8123,46 @@ var _mordrax$cotwelm$CotwMsg$SplashMsg = function (a) {
 };
 var _mordrax$cotwelm$CotwMsg$NotImplementedPage = {ctor: 'NotImplementedPage'};
 var _mordrax$cotwelm$CotwMsg$ShopPage = {ctor: 'ShopPage'};
-var _mordrax$cotwelm$CotwMsg$MainGamePage = {ctor: 'MainGamePage'};
+var _mordrax$cotwelm$CotwMsg$GamePage = {ctor: 'GamePage'};
 var _mordrax$cotwelm$CotwMsg$CharCreationPage = {ctor: 'CharCreationPage'};
 var _mordrax$cotwelm$CotwMsg$SplashPage = {ctor: 'SplashPage'};
+
+var _mordrax$cotwelm$Game_Game$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$h1,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Main game view')
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('tile Grass'),
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'left', _1: '32px'},
+								{ctor: '_Tuple2', _0: 'top', _1: '64px'}
+							]))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[]))
+			]));
+};
+var _mordrax$cotwelm$Game_Game$update = F2(
+	function (msg, model) {
+		return model;
+	});
+var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game'};
 
 var _mordrax$cotwelm$Main$view = function (model) {
 	var _p0 = model.currentPage;
@@ -8085,7 +8177,7 @@ var _mordrax$cotwelm$Main$view = function (model) {
 						A2(
 						_elm_lang$html$Html_App$map,
 						_mordrax$cotwelm$CotwMsg$CharCreationMsg,
-						_mordrax$cotwelm$CharCreation_Main$view(model.character))
+						_mordrax$cotwelm$CharCreation_CharCreation$view(model.character))
 					]));
 		case 'SplashPage':
 			return A2(
@@ -8095,6 +8187,18 @@ var _mordrax$cotwelm$Main$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						A2(_elm_lang$html$Html_App$map, _mordrax$cotwelm$CotwMsg$SplashMsg, _mordrax$cotwelm$SplashView$view)
+					]));
+		case 'GamePage':
+			return A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html_App$map,
+						_mordrax$cotwelm$CotwMsg$GameMsg,
+						_mordrax$cotwelm$Game_Game$view(model.game))
 					]));
 		default:
 			return A2(
@@ -8110,32 +8214,45 @@ var _mordrax$cotwelm$Main$view = function (model) {
 var _mordrax$cotwelm$Main$update = F2(
 	function (msg, model) {
 		var _p1 = msg;
-		if (_p1.ctor === 'SplashMsg') {
-			if (_p1._0.ctor === 'NewGame') {
+		switch (_p1.ctor) {
+			case 'SplashMsg':
+				if (_p1._0.ctor === 'NewGame') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{currentPage: _mordrax$cotwelm$CotwMsg$CharCreationPage});
+				} else {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{currentPage: _mordrax$cotwelm$CotwMsg$NotImplementedPage});
+				}
+			case 'CharCreationMsg':
+				if (_p1._0.ctor === 'StartGame') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{currentPage: _mordrax$cotwelm$CotwMsg$GamePage});
+				} else {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							character: A2(_mordrax$cotwelm$CharCreation_CharCreation$update, _p1._0, model.character)
+						});
+				}
+			default:
 				return _elm_lang$core$Native_Utils.update(
 					model,
-					{currentPage: _mordrax$cotwelm$CotwMsg$CharCreationPage});
-			} else {
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{currentPage: _mordrax$cotwelm$CotwMsg$NotImplementedPage});
-			}
-		} else {
-			return _elm_lang$core$Native_Utils.update(
-				model,
-				{
-					character: A2(_mordrax$cotwelm$CharCreation_Main$update, _p1._0, model.character)
-				});
+					{
+						game: A2(_mordrax$cotwelm$Game_Game$update, _p1._0, model.game)
+					});
 		}
 	});
-var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwMsg$CharCreationPage, character: _mordrax$cotwelm$CharCreation_Main$initModel};
+var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwMsg$GamePage, character: _mordrax$cotwelm$CharCreation_CharCreation$initChar, game: _mordrax$cotwelm$Game_Game$initGame};
 var _mordrax$cotwelm$Main$main = {
 	main: _elm_lang$html$Html_App$beginnerProgram(
 		{model: _mordrax$cotwelm$Main$initModel, update: _mordrax$cotwelm$Main$update, view: _mordrax$cotwelm$Main$view})
 };
-var _mordrax$cotwelm$Main$Model = F2(
-	function (a, b) {
-		return {currentPage: a, character: b};
+var _mordrax$cotwelm$Main$Model = F3(
+	function (a, b, c) {
+		return {currentPage: a, character: b, game: c};
 	});
 
 var Elm = {};

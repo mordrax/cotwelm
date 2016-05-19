@@ -1,0 +1,98 @@
+.tile {
+    height: 32px;
+    width: 32px;
+    display: inline-block;
+    position: absolute;
+}
+
+.Rock {
+    background: url('/assets/original/tiles.png') -0px -0px;
+}
+.Grass {
+    background: url('/assets/original/tiles.png') -0px -32px;
+}
+.DarkDgn {
+    background: url('/assets/original/tiles.png') -0px -64px;
+}
+.Water {
+    background: url('/assets/original/tiles.png') -0px -96px;
+}
+.Path {
+    background: url('/assets/original/tiles.png') -0px -128px;
+}
+.LitDgn {
+    background: url('/assets/original/tiles.png') -0px -160px;
+}
+.PathRock {
+    background: url('/assets/original/tiles.png') -32px -0px;
+}
+.PathGrass {
+    background: url('/assets/original/tiles.png') -32px -32px;
+}
+.WallDarkDgn {
+    background: url('/assets/original/tiles.png') -32px -64px;
+}
+.WaterGrass {
+    background: url('/assets/original/tiles.png') -32px -96px;
+}
+.WaterPath {
+    background: url('/assets/original/tiles.png') -32px -128px;
+}
+.WallLitDgn {
+    background: url('/assets/original/tiles.png') -32px -160px;
+}
+.Grass50Cave50 {
+    background: url('/assets/original/tiles.png') -0px -192px;
+}
+.Grass10Cave90 {
+    background: url('/assets/original/tiles.png') -32px -192px;
+}
+.White50Cave50 {
+    background: url('/assets/original/tiles.png') -0px -224px;
+}
+.White90Cave10 {
+    background: url('/assets/original/tiles.png') -32px -224px;
+}
+.Crop {
+    background: url('/assets/original/tiles.png') -64px -32px;
+}
+.MineEntrance {
+    background: url('/assets/original/tiles.png') -0px -32px;
+}
+.Well {
+    background: url('/assets/original/tiles.png') -160px -32px;
+}
+.Building {
+    /*blank*/
+}
+.TreasurePile {
+    background: url('/assets/original/tiles.png') -128px -640px;
+}
+
+.Fountain {
+    background: url('/assets/original/tiles.png') -96px -96px;
+}
+.Sign {
+    background: url('/assets/original/tiles.png') -160px -0px;
+}
+.Well {
+    background: url('/assets/original/tiles.png') -160px -32px;
+}
+.VegePatch {
+    background: url('/assets/original/tiles.png') -128px -32px;
+}
+.Wagon {
+    background: url('/assets/original/tiles.png') -192px -32px;
+}
+.StairsDown {
+    background: url('/assets/original/tiles.png') -96px -128px;
+}
+.StairsUp {
+    background: url('/assets/original/tiles.png') -64px -128px;
+}
+.DoorClosed {
+    background: url('/assets/original/tiles.png') -64px -160px;
+}
+.DoorOpen {
+    background: url('/assets/original/tiles.png') -96px -160px;
+}
