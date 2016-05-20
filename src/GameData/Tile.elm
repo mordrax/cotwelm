@@ -1,4 +1,4 @@
-module GameData.Tile exposing (Tile(..))
+module GameData.Tile exposing (..)
 
 
 type alias TileModel =

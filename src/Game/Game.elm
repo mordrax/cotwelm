@@ -1,6 +1,7 @@
 module Game.Game exposing (..)
 
 import Game.Data as Data exposing (..)
+import Maps.Maps exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
@@ -29,7 +30,7 @@ viewMap : Map -> Html Data.Msg
 viewMap map =
     case map of
         Village ->
-            viewVillage
+            villageMap Data.Nothing
 
         notImplemented ->
             h2 [ style [ ( "color", "red" ) ] ] [ text ("Not implemented map specified: " ++ toString notImplemented) ]

@@ -8132,6 +8132,389 @@ var _mordrax$cotwelm$CotwData$GamePage = {ctor: 'GamePage'};
 var _mordrax$cotwelm$CotwData$CharCreationPage = {ctor: 'CharCreationPage'};
 var _mordrax$cotwelm$CotwData$SplashPage = {ctor: 'SplashPage'};
 
+var _mordrax$cotwelm$GameData_Tile$tile = function (tile) {
+	var _p0 = tile;
+	switch (_p0.ctor) {
+		case 'Rock':
+			return {$class: 'Rock'};
+		case 'Grass':
+			return {$class: 'Grass'};
+		case 'DarkDgn':
+			return {$class: 'DarkDgn'};
+		case 'Water':
+			return {$class: 'Water'};
+		case 'Path':
+			return {$class: 'Path'};
+		case 'LitDgn':
+			return {$class: 'LitDgn'};
+		case 'PathRock':
+			return {$class: 'PathRock'};
+		case 'PathGrass':
+			return {$class: 'PathGrass'};
+		case 'WallDarkDgn':
+			return {$class: 'WallDarkDgn'};
+		case 'WaterGrass':
+			return {$class: 'WaterGrass'};
+		case 'WaterPath':
+			return {$class: 'WaterPath'};
+		case 'WallLitDgn':
+			return {$class: 'WallLitDgn'};
+		case 'Grass50Cave50':
+			return {$class: 'Grass50Cave50'};
+		case 'Grass10Cave90':
+			return {$class: 'Grass10Cave90'};
+		case 'White50Cave50':
+			return {$class: 'White50Cave50'};
+		case 'White90Cave10':
+			return {$class: 'White90Cave10'};
+		case 'Crop':
+			return {$class: 'Crop'};
+		case 'MineEntrance':
+			return {$class: 'MineEntrance'};
+		case 'Well':
+			return {$class: 'Well'};
+		case 'Building':
+			return {$class: 'Building'};
+		default:
+			return {$class: 'TreasurePile'};
+	}
+};
+var _mordrax$cotwelm$GameData_Tile$TileModel = function (a) {
+	return {$class: a};
+};
+var _mordrax$cotwelm$GameData_Tile$TreasurePile = {ctor: 'TreasurePile'};
+var _mordrax$cotwelm$GameData_Tile$Building = {ctor: 'Building'};
+var _mordrax$cotwelm$GameData_Tile$Well = {ctor: 'Well'};
+var _mordrax$cotwelm$GameData_Tile$MineEntrance = {ctor: 'MineEntrance'};
+var _mordrax$cotwelm$GameData_Tile$Crop = {ctor: 'Crop'};
+var _mordrax$cotwelm$GameData_Tile$White90Cave10 = {ctor: 'White90Cave10'};
+var _mordrax$cotwelm$GameData_Tile$White50Cave50 = {ctor: 'White50Cave50'};
+var _mordrax$cotwelm$GameData_Tile$Grass10Cave90 = {ctor: 'Grass10Cave90'};
+var _mordrax$cotwelm$GameData_Tile$Grass50Cave50 = {ctor: 'Grass50Cave50'};
+var _mordrax$cotwelm$GameData_Tile$WallLitDgn = {ctor: 'WallLitDgn'};
+var _mordrax$cotwelm$GameData_Tile$WaterPath = {ctor: 'WaterPath'};
+var _mordrax$cotwelm$GameData_Tile$WaterGrass = {ctor: 'WaterGrass'};
+var _mordrax$cotwelm$GameData_Tile$WallDarkDgn = {ctor: 'WallDarkDgn'};
+var _mordrax$cotwelm$GameData_Tile$PathGrass = {ctor: 'PathGrass'};
+var _mordrax$cotwelm$GameData_Tile$PathRock = {ctor: 'PathRock'};
+var _mordrax$cotwelm$GameData_Tile$LitDgn = {ctor: 'LitDgn'};
+var _mordrax$cotwelm$GameData_Tile$Path = {ctor: 'Path'};
+var _mordrax$cotwelm$GameData_Tile$Water = {ctor: 'Water'};
+var _mordrax$cotwelm$GameData_Tile$DarkDgn = {ctor: 'DarkDgn'};
+var _mordrax$cotwelm$GameData_Tile$Grass = {ctor: 'Grass'};
+var _mordrax$cotwelm$GameData_Tile$Rock = {ctor: 'Rock'};
+var _mordrax$cotwelm$GameData_Tile$asciiToTile = function ($char) {
+	var _p1 = $char;
+	switch (_p1.valueOf()) {
+		case '^':
+			return _mordrax$cotwelm$GameData_Tile$Rock;
+		case ',':
+			return _mordrax$cotwelm$GameData_Tile$Grass;
+		case 'o':
+			return _mordrax$cotwelm$GameData_Tile$DarkDgn;
+		case '~':
+			return _mordrax$cotwelm$GameData_Tile$Water;
+		case '.':
+			return _mordrax$cotwelm$GameData_Tile$Path;
+		case 'O':
+			return _mordrax$cotwelm$GameData_Tile$LitDgn;
+		case '_':
+			return _mordrax$cotwelm$GameData_Tile$PathRock;
+		case ';':
+			return _mordrax$cotwelm$GameData_Tile$PathGrass;
+		case 'd':
+			return _mordrax$cotwelm$GameData_Tile$WallDarkDgn;
+		case 'w':
+			return _mordrax$cotwelm$GameData_Tile$WaterGrass;
+		case 'W':
+			return _mordrax$cotwelm$GameData_Tile$WaterPath;
+		case 'D':
+			return _mordrax$cotwelm$GameData_Tile$WallLitDgn;
+		case 'g':
+			return _mordrax$cotwelm$GameData_Tile$Grass50Cave50;
+		case 'G':
+			return _mordrax$cotwelm$GameData_Tile$Grass10Cave90;
+		case 'c':
+			return _mordrax$cotwelm$GameData_Tile$White50Cave50;
+		case 'C':
+			return _mordrax$cotwelm$GameData_Tile$White90Cave10;
+		case '=':
+			return _mordrax$cotwelm$GameData_Tile$Crop;
+		case 'M':
+			return _mordrax$cotwelm$GameData_Tile$MineEntrance;
+		case '#':
+			return _mordrax$cotwelm$GameData_Tile$Building;
+		case 'e':
+			return _mordrax$cotwelm$GameData_Tile$Well;
+		default:
+			return _mordrax$cotwelm$GameData_Tile$Grass;
+	}
+};
+
+var _mordrax$cotwelm$GameData_Maps$villageMapASCII = _elm_lang$core$Native_List.fromArray(
+	['========,,###,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '===,,,,,;...,,,!###=====', '===###!;.;,.,,;.###=====', '===###..;,,.,;.;###=====', '===###,,,,,...;,,,,,,===', '===,,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,!###,,,,===', '====,,,##.....###,,,,===', '====,,,##!,.,,###,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,###!...!###,======', '====,,###..e..###,======', '====,,###,...,###,======', '====,,,,,,,.,,,,,,======', '====,,,,,,,.!,,,,,======', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '========================']);
+
+var _mordrax$cotwelm$Maps_Maps$tileToHtml = F3(
+	function (y, x, tile) {
+		var yInPixel = _elm_lang$core$Basics$toString(y * 32);
+		var xInPixel = _elm_lang$core$Basics$toString(x * 32);
+		var tileStyle = _elm_lang$html$Html_Attributes$style(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: 'left',
+					_1: A2(_elm_lang$core$Basics_ops['++'], xInPixel, 'px')
+				},
+					{
+					ctor: '_Tuple2',
+					_0: 'top',
+					_1: A2(_elm_lang$core$Basics_ops['++'], yInPixel, 'px')
+				}
+				]));
+		var _p0 = tile;
+		switch (_p0.ctor) {
+			case 'Rock':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Rock'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Grass':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Grass'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'DarkDgn':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile DarkDgn'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Water':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Water'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Path':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Path'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'LitDgn':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile LitDgn'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'PathRock':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile PathRock'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'PathGrass':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile PathGrass'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'WallDarkDgn':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile WallDarkDgn'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'WaterGrass':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile WaterGrass'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'WaterPath':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile WaterPath'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'WallLitDgn':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile WallLitDgn'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Grass50Cave50':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Grass50Cave50'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Grass10Cave90':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Grass10Cave90'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'White50Cave50':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile White50Cave50'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'White90Cave10':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile White90Cave10'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Crop':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Crop'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'MineEntrance':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile MineEntrance'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Well':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Well'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Building':
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile Building'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			default:
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('tile TreasurePile'),
+							tileStyle
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+		}
+	});
+var _mordrax$cotwelm$Maps_Maps$tilesToHtml = F2(
+	function (x, tiles) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			A2(
+				_elm_lang$core$List$indexedMap,
+				_mordrax$cotwelm$Maps_Maps$tileToHtml(x),
+				tiles));
+	});
+var _mordrax$cotwelm$Maps_Maps$indexTileRow = F2(
+	function (x, tiles) {
+		return tiles;
+	});
+var _mordrax$cotwelm$Maps_Maps$asciiRowToHtml = F2(
+	function (x, asciiRow) {
+		var rowOfAsciiMapChars = _elm_lang$core$String$toList(asciiRow);
+		var rowOfTiles = A2(_elm_lang$core$List$map, _mordrax$cotwelm$GameData_Tile$asciiToTile, rowOfAsciiMapChars);
+		return A2(_mordrax$cotwelm$Maps_Maps$tilesToHtml, x, rowOfTiles);
+	});
+var _mordrax$cotwelm$Maps_Maps$villageMap = function (a) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		A2(_elm_lang$core$List$indexedMap, _mordrax$cotwelm$Maps_Maps$asciiRowToHtml, _mordrax$cotwelm$GameData_Maps$villageMapASCII));
+};
+
 var _mordrax$cotwelm$Game_Game$viewVillage = A2(
 	_elm_lang$html$Html$div,
 	_elm_lang$core$Native_List.fromArray(
@@ -8143,7 +8526,7 @@ var _mordrax$cotwelm$Game_Game$viewVillage = A2(
 var _mordrax$cotwelm$Game_Game$viewMap = function (map) {
 	var _p0 = map;
 	if (_p0.ctor === 'Village') {
-		return _mordrax$cotwelm$Game_Game$viewVillage;
+		return _mordrax$cotwelm$Maps_Maps$villageMap(_mordrax$cotwelm$Game_Data$Nothing);
 	} else {
 		return A2(
 			_elm_lang$html$Html$h2,
@@ -8271,7 +8654,7 @@ var _mordrax$cotwelm$Main$update = F2(
 					});
 		}
 	});
-var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwData$SplashPage, character: _mordrax$cotwelm$CharCreation_CharCreation$initChar, game: _mordrax$cotwelm$Game_Game$initGame};
+var _mordrax$cotwelm$Main$initModel = {currentPage: _mordrax$cotwelm$CotwData$GamePage, character: _mordrax$cotwelm$CharCreation_CharCreation$initChar, game: _mordrax$cotwelm$Game_Game$initGame};
 var _mordrax$cotwelm$Main$main = {
 	main: _elm_lang$html$Html_App$beginnerProgram(
 		{model: _mordrax$cotwelm$Main$initModel, update: _mordrax$cotwelm$Main$update, view: _mordrax$cotwelm$Main$view})
