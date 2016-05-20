@@ -2,6 +2,7 @@ module Game.Game exposing (..)
 
 import Game.Data as Data exposing (..)
 import Maps.Maps exposing (..)
+import Hero.Hero exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
@@ -10,6 +11,7 @@ initGame : Model
 initGame =
     { name = "A new game"
     , map = Village
+    , hero = initHero
     }
 
 
@@ -34,8 +36,3 @@ viewMap map =
 
         notImplemented ->
             h2 [ style [ ( "color", "red" ) ] ] [ text ("Not implemented map specified: " ++ toString notImplemented) ]
-
-
-viewVillage : Html Data.Msg
-viewVillage =
-    div [] [ text "Map of village" ]
