@@ -3,11 +3,13 @@ module Game.Game exposing (..)
 import Game.Data as Data exposing (..)
 import Maps.Maps exposing (..)
 import Hero.Hero exposing (..)
+import Hero.Data exposing (..)
+import Lib exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-initGame : Model
+initGame : Data.Model
 initGame =
     { name = "A new game"
     , map = Village
@@ -15,24 +17,35 @@ initGame =
     }
 
 
-update : Data.Msg -> Model -> Model
+update : Data.Msg -> Data.Model -> Data.Model
 update msg model =
     model
 
 
-view : Model -> Html Data.Msg
+view : Data.Model -> Html Data.Msg
 view model =
-    div []
-        [ h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
-        , viewMap model.map
-        ]
+    let
+        title =
+            h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
+    in
+        div []
+            [ title
+            , viewMap model.map
+            , viewHero model.hero
+            ]
 
 
-viewMap : Map -> Html Data.Msg
+viewMap : Map -> Html Msg
 viewMap map =
     case map of
         Village ->
             villageMap Data.Nothing
 
         notImplemented ->
-            h2 [ style [ ( "color", "red" ) ] ] [ text ("Not implemented map specified: " ++ toString notImplemented) ]
+            h2 [ style [ ( "color", "red" ) ] ]
+                [ text ("Not implemented map specified: " ++ toString notImplemented) ]
+
+
+viewHero : Hero.Data.Model -> Html Data.Msg
+viewHero hero =
+    div [ class "tile maleHero", coordToHtmlStyle hero.pos ] []

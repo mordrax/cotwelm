@@ -1,16 +1,10 @@
 module Hero.Hero exposing (..)
 
-import Lib exposing (..)
-
-
-type alias Model =
-    { name : String
-    , pos : Coordinate
-    }
+import Hero.Data exposing (..)
 
 
 initHero : Model
 initHero =
     { name = "Bob the Brave"
-    , pos = ( 5, 10 )
+    , pos = { x = 11, y = 17 }
     }

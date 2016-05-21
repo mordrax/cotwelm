@@ -1,30 +1,64 @@
 module Main exposing (..)
 
 import SplashView exposing (..)
+
+
+-- Character creation
+
 import CharCreation.CharCreation as CharCreation exposing (..)
 import CharCreation.Data exposing (..)
+
+
+-- Main game screen
+
 import Game.Game as Game exposing (..)
 import Game.Data exposing (..)
-import CotwData as Cotw exposing (Msg(..), Page(..))
+
+
+-- Cotw specific data
+
+import CotwData exposing (Msg(..), Page(..))
+
+
+-- Keyboard/Controller subscriptions
+
+import Controller.Keyboard exposing (..)
+
+
+-- Core/Elm imports
+
 import Html exposing (..)
 import Html.App exposing (map)
 
 
 main : Platform.Program Basics.Never
 main =
-    Html.App.beginnerProgram
-        { model = initModel
+    Html.App.program
+        { init = initModel
         , update = update
         , view = view
+        , subscriptions = subscriptions
         }
 
 
-initModel : Model
+subscriptions : Model -> Sub CotwData.Msg
+subscriptions model =
+    Sub.map Keyboard Controller.Keyboard.subscriptions
+
+
+keyboardMsgToCotwMsg : Sub (Maybe Controller.Keyboard.Msg) -> Sub CotwData.Msg
+keyboardMsgToCotwMsg msg =
+    Sub.none
+
+
+initModel : ( Model, Cmd a )
 initModel =
-    { currentPage = GamePage
-    , character = CharCreation.initChar
-    , game = Game.initGame
-    }
+    ( { currentPage = GamePage
+      , character = CharCreation.initChar
+      , game = Game.initGame
+      }
+    , Cmd.none
+    )
 
 
 type alias Model =
@@ -34,28 +68,30 @@ type alias Model =
     }
 
 
-update : Cotw.Msg -> Model -> Model
+update : CotwData.Msg -> Model -> ( Model, Cmd CotwData.Msg )
 update msg model =
     case msg of
         SplashMsg NewGame ->
-            { model | currentPage = CharCreationPage }
+            ( { model | currentPage = CharCreationPage }, Cmd.none )
 
         SplashMsg _ ->
-            { model | currentPage = NotImplementedPage }
+            ( { model | currentPage = NotImplementedPage }, Cmd.none )
 
         CharCreationMsg StartGame ->
-            { model | currentPage = GamePage }
+            ( { model | currentPage = GamePage }, Cmd.none )
 
         CharCreationMsg msg ->
-            { model | character = CharCreation.update msg model.character }
+            ( { model | character = CharCreation.update msg model.character }, Cmd.none )
 
         GameMsg msg ->
-            { model
-                | game = Game.update msg model.game
-            }
+            ( { model | game = Game.update msg model.game }, Cmd.none )
+
+        Keyboard (Just a) ->       (model, Cmd.none)
+
+        Keyboard Maybe.Nothing -> (model, Cmd.none)
 
 
-view : Model -> Html Cotw.Msg
+view : Model -> Html CotwData.Msg
 view model =
     case model.currentPage of
         CharCreationPage ->
@@ -65,7 +101,7 @@ view model =
             div [] [ map SplashMsg SplashView.view ]
 
         GamePage ->
-            div [] [ map Cotw.GameMsg (Game.view model.game) ]
+            div [] [ map CotwData.GameMsg (Game.view model.game) ]
 
         _ ->
             h1 [] [ text "Page not implemented!" ]
