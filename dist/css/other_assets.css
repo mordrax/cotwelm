@@ -3,5 +3,5 @@
     width: 230px;
     display: inline-block;
     padding: 0;
-    background: url('assets/original/equipment-dude.jpg') no-repeat;
+    background: url('/assets/original/equipment-dude.jpg') no-repeat;
 }

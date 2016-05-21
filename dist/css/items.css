@@ -4,279 +4,279 @@
     display: inline-block;
 }
 .Club                  {
-	background: url('assets/original/items.png') -0px   -896px;
-}                     
+	background: url('/assets/original/items.png') -0px   -896px;
+}
 .Hammer                {
-	background: url('assets/original/items.png') -0px   -768px;
-}                   
+	background: url('/assets/original/items.png') -0px   -768px;
+}
 .Spear                 {
-	background: url('assets/original/items.png') -0px   -864px;
-}                    
+	background: url('/assets/original/items.png') -0px   -864px;
+}
 .Sword                 {
-	background: url('assets/original/items.png') -0px   -192px;
-}                    
+	background: url('/assets/original/items.png') -0px   -192px;
+}
 .Mace                  {
-	background: url('assets/original/items.png') -0px   -224px;
-}                     
+	background: url('/assets/original/items.png') -0px   -224px;
+}
 .Flail                 {
-	background: url('assets/original/items.png') -0px   -736px;
-}                    
+	background: url('/assets/original/items.png') -0px   -736px;
+}
 .Axe                   {
-	background: url('assets/original/items.png') -0px   -160px;
-}                      
+	background: url('/assets/original/items.png') -0px   -160px;
+}
 .MorningStar           {
-	background: url('assets/original/items.png') -0px   -832px;
-}              
+	background: url('/assets/original/items.png') -0px   -832px;
+}
 
 .LeatherArmour         {
-	background: url('assets/original/items.png') -0px   -256px;
-}            
+	background: url('/assets/original/items.png') -0px   -256px;
+}
 .MetalArmour           {
-	background: url('assets/original/items.png') -0px   -288px;
-}              
+	background: url('/assets/original/items.png') -0px   -288px;
+}
 
 .WoodShield            {
-	background: url('assets/original/items.png') -0px   -352px;
-}               
+	background: url('/assets/original/items.png') -0px   -352px;
+}
 .MetalShield           {
-	background: url('assets/original/items.png') -0px   -320px;
-}              
+	background: url('/assets/original/items.png') -0px   -320px;
+}
 
 .LeatherHelmet         {
-	background: url('assets/original/items.png') -0px   -416px;
-}            
+	background: url('/assets/original/items.png') -0px   -416px;
+}
 .MetalHelmet           {
-	background: url('assets/original/items.png') -0px   -384px;
-}              
+	background: url('/assets/original/items.png') -0px   -384px;
+}
 .HelmetOfDetectMonsters{
-	background: url('assets/original/items.png') -98px  -384px;
-}   
+	background: url('/assets/original/items.png') -98px  -384px;
+}
 
 .Bracers               {
-	background: url('assets/original/items.png') -0px   -448px;
-}                  
+	background: url('/assets/original/items.png') -0px   -448px;
+}
 .BracersEnchanted      {
-	background: url('assets/original/items.png') -32px  -448px;
-}         
+	background: url('/assets/original/items.png') -32px  -448px;
+}
 .Gauntlet              {
-	background: url('assets/original/items.png') -0px   -480px;
-}                 
+	background: url('/assets/original/items.png') -0px   -480px;
+}
 .GauntletEnchanted     {
-	background: url('assets/original/items.png') -32px  -480px;
-}        
+	background: url('/assets/original/items.png') -32px  -480px;
+}
 .GauntletOfSlaying     {
-	background: url('assets/original/items.png') -92px  -480px;
-}        
+	background: url('/assets/original/items.png') -92px  -480px;
+}
 
 .SlotBelt              {
-	background: url('assets/original/items.png') -0px   -672px;
-}                 
+	background: url('/assets/original/items.png') -0px   -672px;
+}
 .WandQuiverBelt        {
-	background: url('assets/original/items.png') -32px  -672px;
-}           
+	background: url('/assets/original/items.png') -32px  -672px;
+}
 .UtilityBelt           {
-	background: url('assets/original/items.png') -64px  -672px;
-}              
+	background: url('/assets/original/items.png') -64px  -672px;
+}
 
 .Boots                 {
-	background: url('assets/original/items.png') -0px   -544px;
-}                    
+	background: url('/assets/original/items.png') -0px   -544px;
+}
 .BootsOfSpeed          {
-	background: url('assets/original/items.png') -64px  -544px;
-}             
+	background: url('/assets/original/items.png') -64px  -544px;
+}
 .BootsOfLevitation     {
-	background: url('assets/original/items.png') -96px  -544px;
-}        
+	background: url('/assets/original/items.png') -96px  -544px;
+}
 
 .Cloak                 {
-	background: url('assets/original/items.png') -0px   -512px;
-}                    
+	background: url('/assets/original/items.png') -0px   -512px;
+}
 .Ring                  {
-	background: url('assets/original/items.png') -0px   -576px;
-}                     
+	background: url('/assets/original/items.png') -0px   -576px;
+}
 
 .Amulet                {
-	background: url('assets/original/items.png') -0px   -128px;
-}                   
+	background: url('/assets/original/items.png') -0px   -128px;
+}
 .AmuletCursed          {
-	background: url('assets/original/items.png') -32px  -128px;
-}             
+	background: url('/assets/original/items.png') -32px  -128px;
+}
 .AmuletResistFire      {
-	background: url('assets/original/items.png') -64px  -128px;
-}         
+	background: url('/assets/original/items.png') -64px  -128px;
+}
 .AmuletResistLightning {
-	background: url('assets/original/items.png') -96px  -128px;
-}    
+	background: url('/assets/original/items.png') -96px  -128px;
+}
 .AmuletResistCold      {
-	background: url('assets/original/items.png') -128px -128px;
-}         
+	background: url('/assets/original/items.png') -128px -128px;
+}
 .AmuletResistDrain     {
-	background: url('assets/original/items.png') -160px -128px;
-}        
+	background: url('/assets/original/items.png') -160px -128px;
+}
 
 .Wand                  {
-	background: url('assets/original/items.png') -0px   -96px;
-}                     
+	background: url('/assets/original/items.png') -0px   -96px;
+}
 .WandOfFireBall        {
-	background: url('assets/original/items.png') -32px  -96px;
-}           
+	background: url('/assets/original/items.png') -32px  -96px;
+}
 .WandOfLightningBall   {
-	background: url('assets/original/items.png') -64px  -96px;
-}      
+	background: url('/assets/original/items.png') -64px  -96px;
+}
 .WandOfLight           {
-	background: url('assets/original/items.png') -96px  -96px;
-}              
+	background: url('/assets/original/items.png') -96px  -96px;
+}
 .WandOfDivination      {
-	background: url('assets/original/items.png') -128px -96px;
-}         
+	background: url('/assets/original/items.png') -128px -96px;
+}
 .WandOfNothing         {
-	background: url('assets/original/items.png') -160px -96px;
-}            
+	background: url('/assets/original/items.png') -160px -96px;
+}
 .WandOfColdBall        {
-	background: url('assets/original/items.png') -192px -96px;
-}           
+	background: url('/assets/original/items.png') -192px -96px;
+}
 .WandOfColdBolt        {
-	background: url('assets/original/items.png') -224px -96px;
-}           
+	background: url('/assets/original/items.png') -224px -96px;
+}
 .WandOfFireBolt        {
-	background: url('assets/original/items.png') -256px -96px;
-}           
+	background: url('/assets/original/items.png') -256px -96px;
+}
 .WandOfLightning       {
-	background: url('assets/original/items.png') -288px -96px;
-}          
+	background: url('/assets/original/items.png') -288px -96px;
+}
 
 .Staff                 {
-	background: url('assets/original/items.png') -0px   -64px;
-}                    
+	background: url('/assets/original/items.png') -0px   -64px;
+}
 .StaffFire             {
-	background: url('assets/original/items.png') -32px  -64px;
-}                
+	background: url('/assets/original/items.png') -32px  -64px;
+}
 .StaffSmoke            {
-	background: url('assets/original/items.png') -64px  -64px;
-}               
+	background: url('/assets/original/items.png') -64px  -64px;
+}
 .StaffMinor            {
-	background: url('assets/original/items.png') -96px  -64px;
-}               
+	background: url('/assets/original/items.png') -96px  -64px;
+}
 .StaffMedium           {
-	background: url('assets/original/items.png') -128px -64px;
-}              
+	background: url('/assets/original/items.png') -128px -64px;
+}
 .StaffMajor            {
-	background: url('assets/original/items.png') -160px -64px;
-}               
+	background: url('/assets/original/items.png') -160px -64px;
+}
 .StaffGreen            {
-	background: url('assets/original/items.png') -192px -64px;
-}               
+	background: url('/assets/original/items.png') -192px -64px;
+}
 .StaffLight            {
-	background: url('assets/original/items.png') -224px -64px;
-}               
+	background: url('/assets/original/items.png') -224px -64px;
+}
 
 .Scroll                {
-	background: url('assets/original/items.png') -256px -32px;
-}                   
+	background: url('/assets/original/items.png') -256px -32px;
+}
 .SpellBook             {
-	background: url('assets/original/items.png') -32px  -32px;
-}                
+	background: url('/assets/original/items.png') -32px  -32px;
+}
 
 .Potion                {
-	background: url('assets/original/items.png') -0px   -0px;
-}                   
+	background: url('/assets/original/items.png') -0px   -0px;
+}
 .PotionWater           {
-	background: url('assets/original/items.png') -32px  -0px;
-}              
+	background: url('/assets/original/items.png') -32px  -0px;
+}
 .PotionMinorHeal       {
-	background: url('assets/original/items.png') -64px  -0px;
-}          
+	background: url('/assets/original/items.png') -64px  -0px;
+}
 .PotionMediumHeal      {
-	background: url('assets/original/items.png') -96px  -0px;
-}         
+	background: url('/assets/original/items.png') -96px  -0px;
+}
 .PotionMajorHeal       {
-	background: url('assets/original/items.png') -128px -0px;
-}          
+	background: url('/assets/original/items.png') -128px -0px;
+}
 .PotionGainAttribute   {
-	background: url('assets/original/items.png') -160px -0px;
-}      
+	background: url('/assets/original/items.png') -160px -0px;
+}
 .PotionLoseAttribute   {
-	background: url('assets/original/items.png') -192px -0px;
-}      
+	background: url('/assets/original/items.png') -192px -0px;
+}
 .PotionDivination      {
-	background: url('assets/original/items.png') -224px -0px;
-}         
+	background: url('/assets/original/items.png') -224px -0px;
+}
 
 .Purse                 {
-	background: url('assets/original/items.png') -0px   -608px;
-}                    
+	background: url('/assets/original/items.png') -0px   -608px;
+}
 .Bag                   {
-	background: url('assets/original/items.png') -32px  -608px;
-}                      
+	background: url('/assets/original/items.png') -32px  -608px;
+}
 .Pack                  {
-	background: url('assets/original/items.png') -96px  -608px;
-}                     
+	background: url('/assets/original/items.png') -96px  -608px;
+}
 .Chest                 {
-	background: url('assets/original/items.png') -64px  -608px;
-}                    
+	background: url('/assets/original/items.png') -64px  -608px;
+}
 .EnchantedPack         {
-	background: url('assets/original/items.png') -128px -608px;
-}            
+	background: url('/assets/original/items.png') -128px -608px;
+}
 
 .CoinsCopper           {
-	background: url('assets/original/items.png') -0px   -640px;
-}              
+	background: url('/assets/original/items.png') -0px   -640px;
+}
 .CoinsSilver           {
-	background: url('assets/original/items.png') -32px  -640px;
-}              
+	background: url('/assets/original/items.png') -32px  -640px;
+}
 .CoinsGold             {
-	background: url('assets/original/items.png') -64px  -640px;
-}                
+	background: url('/assets/original/items.png') -64px  -640px;
+}
 .CoinsPlatinum         {
-	background: url('assets/original/items.png') -96px  -640px;
-}            
+	background: url('/assets/original/items.png') -96px  -640px;
+}
 
 .TreasurePile          {
-	background: url('assets/original/items.png') -128px -640px;
-}             
+	background: url('/assets/original/items.png') -128px -640px;
+}
 .Parchment             {
-	background: url('assets/original/items.png') -0px   -704px;
-}                
+	background: url('/assets/original/items.png') -0px   -704px;
+}
 .EnchantedHelmOfStorms {
-	background: url('assets/original/items.png') -32px  -704px;
-}    
+	background: url('/assets/original/items.png') -32px  -704px;
+}
 .ElementalPortal       {
-	background: url('assets/original/items.png') -64px  -704px;
-}          
+	background: url('/assets/original/items.png') -64px  -704px;
+}
 .AmuletOfKings         {
-	background: url('assets/original/items.png') -96px  -704px;
-}            
+	background: url('/assets/original/items.png') -96px  -704px;
+}
 .Apple                 {
-	background: url('assets/original/items.png') -128px -704px;
-}                    
+	background: url('/assets/original/items.png') -128px -704px;
+}
 
 .BrokenSword           {
-	background: url('assets/original/items.png') -0px   -800px;
-}              
+	background: url('/assets/original/items.png') -0px   -800px;
+}
 .BrokenArmour          {
-	background: url('assets/original/items.png') -32px  -800px;
-}             
+	background: url('/assets/original/items.png') -32px  -800px;
+}
 .BrokenShield          {
-	background: url('assets/original/items.png') -64px  -800px;
-}             
+	background: url('/assets/original/items.png') -64px  -800px;
+}
 .BrokenHelmet          {
-	background: url('assets/original/items.png') -96px  -800px;
-}             
+	background: url('/assets/original/items.png') -96px  -800px;
+}
 .BrokenBelt            {
-	background: url('assets/original/items.png') -128px -800px;
-}               
+	background: url('/assets/original/items.png') -128px -800px;
+}
 .BrokenGauntlet        {
-	background: url('assets/original/items.png') -160px -800px;
-}           
+	background: url('/assets/original/items.png') -160px -800px;
+}
 .BrokenBracer          {
-	background: url('assets/original/items.png') -192px -800px;
-}             
+	background: url('/assets/original/items.png') -192px -800px;
+}
 .BrokenCloak           {
-	background: url('assets/original/items.png') -224px -800px;
-}              
+	background: url('/assets/original/items.png') -224px -800px;
+}
 .BrokenPack            {
-	background: url('assets/original/items.png') -256px -800px;
-}               
+	background: url('/assets/original/items.png') -256px -800px;
+}
 .BrokenBoot            {
-	background: url('assets/original/items.png') -288px -800px;
-}               
+	background: url('/assets/original/items.png') -288px -800px;
+}

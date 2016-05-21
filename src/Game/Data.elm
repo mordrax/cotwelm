@@ -1,5 +1,7 @@
 module Game.Data exposing (..)
 
+import Hero.Data exposing (..)
+
 
 type Msg
     = Nothing
@@ -8,6 +10,7 @@ type Msg
 type alias Model =
     { name : String
     , map : Map
+    , hero : Hero.Data.Model
     }
 
 
