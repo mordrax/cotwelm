@@ -1,18 +1,8 @@
-module Controller.Keyboard exposing (..)
+module Game.Keyboard exposing (..)
 
 import Keyboard exposing (..)
 import Dict exposing (..)
-
-
-type Direction
-    = Up
-    | Down
-    | Left
-    | Right
-
-
-type Msg
-    = Move Direction
+import Game.Data exposing (..)
 
 
 subscriptions : Sub (Maybe Msg)

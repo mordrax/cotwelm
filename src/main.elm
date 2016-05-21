@@ -22,7 +22,7 @@ import CotwData exposing (Msg(..), Page(..))
 
 -- Keyboard/Controller subscriptions
 
-import Controller.Keyboard exposing (..)
+import Game.Keyboard exposing (..)
 
 
 -- Core/Elm imports
@@ -43,12 +43,7 @@ main =
 
 subscriptions : Model -> Sub CotwData.Msg
 subscriptions model =
-    Sub.map Keyboard Controller.Keyboard.subscriptions
-
-
-keyboardMsgToCotwMsg : Sub (Maybe Controller.Keyboard.Msg) -> Sub CotwData.Msg
-keyboardMsgToCotwMsg msg =
-    Sub.none
+    Sub.map GameMsg Game.Keyboard.subscriptions
 
 
 initModel : ( Model, Cmd a )
@@ -83,12 +78,11 @@ update msg model =
         CharCreationMsg msg ->
             ( { model | character = CharCreation.update msg model.character }, Cmd.none )
 
-        GameMsg msg ->
+        GameMsg (Just msg) ->
             ( { model | game = Game.update msg model.game }, Cmd.none )
 
-        Keyboard (Just a) ->       (model, Cmd.none)
-
-        Keyboard Maybe.Nothing -> (model, Cmd.none)
+        GameMsg Nothing ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html CotwData.Msg

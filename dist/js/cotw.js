@@ -8653,33 +8653,6 @@ var _mordrax$cotwelm$CharCreation_CharCreation$update = F2(
 	});
 var _mordrax$cotwelm$CharCreation_CharCreation$initChar = {name: 'testing', attributes: _mordrax$cotwelm$CharCreation_Attributes$initModel, gender: _mordrax$cotwelm$CharCreation_Data$Female, difficulty: _mordrax$cotwelm$CharCreation_Data$Hard};
 
-var _mordrax$cotwelm$Controller_Keyboard$Right = {ctor: 'Right'};
-var _mordrax$cotwelm$Controller_Keyboard$Left = {ctor: 'Left'};
-var _mordrax$cotwelm$Controller_Keyboard$Down = {ctor: 'Down'};
-var _mordrax$cotwelm$Controller_Keyboard$Up = {ctor: 'Up'};
-var _mordrax$cotwelm$Controller_Keyboard$playerKeymap = _elm_lang$core$Dict$fromList(
-	_elm_lang$core$Native_List.fromArray(
-		[
-			{ctor: '_Tuple2', _0: 87, _1: _mordrax$cotwelm$Controller_Keyboard$Up},
-			{ctor: '_Tuple2', _0: 119, _1: _mordrax$cotwelm$Controller_Keyboard$Up},
-			{ctor: '_Tuple2', _0: 83, _1: _mordrax$cotwelm$Controller_Keyboard$Down},
-			{ctor: '_Tuple2', _0: 115, _1: _mordrax$cotwelm$Controller_Keyboard$Down},
-			{ctor: '_Tuple2', _0: 65, _1: _mordrax$cotwelm$Controller_Keyboard$Left},
-			{ctor: '_Tuple2', _0: 97, _1: _mordrax$cotwelm$Controller_Keyboard$Left},
-			{ctor: '_Tuple2', _0: 68, _1: _mordrax$cotwelm$Controller_Keyboard$Right},
-			{ctor: '_Tuple2', _0: 100, _1: _mordrax$cotwelm$Controller_Keyboard$Right}
-		]));
-var _mordrax$cotwelm$Controller_Keyboard$Move = function (a) {
-	return {ctor: 'Move', _0: a};
-};
-var _mordrax$cotwelm$Controller_Keyboard$keycodeToMsg = function (code) {
-	return A2(
-		_elm_lang$core$Maybe$map,
-		_mordrax$cotwelm$Controller_Keyboard$Move,
-		A2(_elm_lang$core$Dict$get, code, _mordrax$cotwelm$Controller_Keyboard$playerKeymap));
-};
-var _mordrax$cotwelm$Controller_Keyboard$subscriptions = _elm_lang$keyboard$Keyboard$presses(_mordrax$cotwelm$Controller_Keyboard$keycodeToMsg);
-
 var _mordrax$cotwelm$SplashView$Overview = {ctor: 'Overview'};
 var _mordrax$cotwelm$SplashView$LoadGame = {ctor: 'LoadGame'};
 var _mordrax$cotwelm$SplashView$NewGame = {ctor: 'NewGame'};
@@ -8830,7 +8803,13 @@ var _mordrax$cotwelm$Game_Data$Model = F3(
 	function (a, b, c) {
 		return {name: a, map: b, hero: c};
 	});
-var _mordrax$cotwelm$Game_Data$Nothing = {ctor: 'Nothing'};
+var _mordrax$cotwelm$Game_Data$Right = {ctor: 'Right'};
+var _mordrax$cotwelm$Game_Data$Left = {ctor: 'Left'};
+var _mordrax$cotwelm$Game_Data$Down = {ctor: 'Down'};
+var _mordrax$cotwelm$Game_Data$Up = {ctor: 'Up'};
+var _mordrax$cotwelm$Game_Data$Move = function (a) {
+	return {ctor: 'Move', _0: a};
+};
 var _mordrax$cotwelm$Game_Data$Dungeon = {ctor: 'Dungeon'};
 var _mordrax$cotwelm$Game_Data$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
 var _mordrax$cotwelm$Game_Data$OutsideVillage = {ctor: 'OutsideVillage'};
@@ -8838,9 +8817,6 @@ var _mordrax$cotwelm$Game_Data$Village = {ctor: 'Village'};
 
 var _mordrax$cotwelm$CotwData$GameMsg = function (a) {
 	return {ctor: 'GameMsg', _0: a};
-};
-var _mordrax$cotwelm$CotwData$Keyboard = function (a) {
-	return {ctor: 'Keyboard', _0: a};
 };
 var _mordrax$cotwelm$CotwData$CharCreationMsg = function (a) {
 	return {ctor: 'CharCreationMsg', _0: a};
@@ -8982,14 +8958,28 @@ var _mordrax$cotwelm$Maps_Maps$asciiRowToHtml = F2(
 		var rowOfTiles = A2(_elm_lang$core$List$map, _mordrax$cotwelm$GameData_Tile$asciiToTile, rowOfAsciiMapChars);
 		return A2(_mordrax$cotwelm$Maps_Maps$tilesToHtml, x, rowOfTiles);
 	});
-var _mordrax$cotwelm$Maps_Maps$villageMap = function (a) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		A2(_elm_lang$core$List$indexedMap, _mordrax$cotwelm$Maps_Maps$asciiRowToHtml, _mordrax$cotwelm$GameData_Maps$villageMapASCII));
-};
+var _mordrax$cotwelm$Maps_Maps$villageMap = A2(
+	_elm_lang$html$Html$div,
+	_elm_lang$core$Native_List.fromArray(
+		[]),
+	A2(_elm_lang$core$List$indexedMap, _mordrax$cotwelm$Maps_Maps$asciiRowToHtml, _mordrax$cotwelm$GameData_Maps$villageMapASCII));
 
+var _mordrax$cotwelm$Hero_Hero$moveX = F2(
+	function (dx, model) {
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				pos: {y: model.pos.y, x: model.pos.x + dx}
+			});
+	});
+var _mordrax$cotwelm$Hero_Hero$moveY = F2(
+	function (dy, model) {
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				pos: {x: model.pos.x, y: model.pos.y + dy}
+			});
+	});
 var _mordrax$cotwelm$Hero_Hero$initHero = {
 	name: 'Bob the Brave',
 	pos: {x: 11, y: 17}
@@ -9009,7 +8999,7 @@ var _mordrax$cotwelm$Game_Game$viewHero = function (hero) {
 var _mordrax$cotwelm$Game_Game$viewMap = function (map) {
 	var _p0 = map;
 	if (_p0.ctor === 'Village') {
-		return _mordrax$cotwelm$Maps_Maps$villageMap(_mordrax$cotwelm$Game_Data$Nothing);
+		return _mordrax$cotwelm$Maps_Maps$villageMap;
 	} else {
 		return A2(
 			_elm_lang$html$Html$h2,
@@ -9054,9 +9044,55 @@ var _mordrax$cotwelm$Game_Game$view = function (model) {
 };
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
-		return model;
+		var _p1 = msg;
+		switch (_p1._0.ctor) {
+			case 'Up':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						hero: A2(_mordrax$cotwelm$Hero_Hero$moveY, -1, model.hero)
+					});
+			case 'Down':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						hero: A2(_mordrax$cotwelm$Hero_Hero$moveY, 1, model.hero)
+					});
+			case 'Left':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						hero: A2(_mordrax$cotwelm$Hero_Hero$moveX, -1, model.hero)
+					});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						hero: A2(_mordrax$cotwelm$Hero_Hero$moveX, 1, model.hero)
+					});
+		}
 	});
 var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game', map: _mordrax$cotwelm$Game_Data$Village, hero: _mordrax$cotwelm$Hero_Hero$initHero};
+
+var _mordrax$cotwelm$Game_Keyboard$playerKeymap = _elm_lang$core$Dict$fromList(
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 87, _1: _mordrax$cotwelm$Game_Data$Up},
+			{ctor: '_Tuple2', _0: 119, _1: _mordrax$cotwelm$Game_Data$Up},
+			{ctor: '_Tuple2', _0: 83, _1: _mordrax$cotwelm$Game_Data$Down},
+			{ctor: '_Tuple2', _0: 115, _1: _mordrax$cotwelm$Game_Data$Down},
+			{ctor: '_Tuple2', _0: 65, _1: _mordrax$cotwelm$Game_Data$Left},
+			{ctor: '_Tuple2', _0: 97, _1: _mordrax$cotwelm$Game_Data$Left},
+			{ctor: '_Tuple2', _0: 68, _1: _mordrax$cotwelm$Game_Data$Right},
+			{ctor: '_Tuple2', _0: 100, _1: _mordrax$cotwelm$Game_Data$Right}
+		]));
+var _mordrax$cotwelm$Game_Keyboard$keycodeToMsg = function (code) {
+	return A2(
+		_elm_lang$core$Maybe$map,
+		_mordrax$cotwelm$Game_Data$Move,
+		A2(_elm_lang$core$Dict$get, code, _mordrax$cotwelm$Game_Keyboard$playerKeymap));
+};
+var _mordrax$cotwelm$Game_Keyboard$subscriptions = _elm_lang$keyboard$Keyboard$presses(_mordrax$cotwelm$Game_Keyboard$keycodeToMsg);
 
 var _mordrax$cotwelm$Main$view = function (model) {
 	var _p0 = model.currentPage;
@@ -9147,19 +9183,17 @@ var _mordrax$cotwelm$Main$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				}
-			case 'GameMsg':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							game: A2(_mordrax$cotwelm$Game_Game$update, _p1._0, model.game)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
 			default:
 				if (_p1._0.ctor === 'Just') {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								game: A2(_mordrax$cotwelm$Game_Game$update, _p1._0._0, model.game)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				} else {
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
@@ -9170,11 +9204,8 @@ var _mordrax$cotwelm$Main$initModel = {
 	_0: {currentPage: _mordrax$cotwelm$CotwData$GamePage, character: _mordrax$cotwelm$CharCreation_CharCreation$initChar, game: _mordrax$cotwelm$Game_Game$initGame},
 	_1: _elm_lang$core$Platform_Cmd$none
 };
-var _mordrax$cotwelm$Main$keyboardMsgToCotwMsg = function (msg) {
-	return _elm_lang$core$Platform_Sub$none;
-};
 var _mordrax$cotwelm$Main$subscriptions = function (model) {
-	return A2(_elm_lang$core$Platform_Sub$map, _mordrax$cotwelm$CotwData$Keyboard, _mordrax$cotwelm$Controller_Keyboard$subscriptions);
+	return A2(_elm_lang$core$Platform_Sub$map, _mordrax$cotwelm$CotwData$GameMsg, _mordrax$cotwelm$Game_Keyboard$subscriptions);
 };
 var _mordrax$cotwelm$Main$main = {
 	main: _elm_lang$html$Html_App$program(
