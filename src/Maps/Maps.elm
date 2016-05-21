@@ -7,8 +7,8 @@ import GameData.Maps exposing (..)
 import GameData.Tile exposing (..)
 
 
-villageMap : a -> Html a
-villageMap a =
+villageMap : Html a
+villageMap =
     div []
         (List.indexedMap asciiRowToHtml
             villageMapASCII

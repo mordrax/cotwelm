@@ -3,8 +3,15 @@ module Game.Data exposing (..)
 import Hero.Data exposing (..)
 
 
+type Direction
+    = Up
+    | Down
+    | Left
+    | Right
+
+
 type Msg
-    = Nothing
+    = Move Direction
 
 
 type alias Model =

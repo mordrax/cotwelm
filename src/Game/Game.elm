@@ -19,10 +19,21 @@ initGame =
 
 update : Data.Msg -> Data.Model -> Data.Model
 update msg model =
-    model
+    case msg of
+        Move Up ->
+            { model | hero = Hero.Hero.moveY -1 model.hero }
+
+        Move Down ->
+            { model | hero = Hero.Hero.moveY 1 model.hero }
+
+        Move Left ->
+            { model | hero = Hero.Hero.moveX -1 model.hero }
+
+        Move Right ->
+            { model | hero = Hero.Hero.moveX 1 model.hero }
 
 
-view : Data.Model -> Html Data.Msg
+view : Data.Model -> Html (Maybe Data.Msg)
 view model =
     let
         title =
@@ -35,17 +46,17 @@ view model =
             ]
 
 
-viewMap : Map -> Html Msg
+viewMap : Map -> Html (Maybe Data.Msg)
 viewMap map =
     case map of
         Village ->
-            villageMap Data.Nothing
+            villageMap
 
         notImplemented ->
             h2 [ style [ ( "color", "red" ) ] ]
                 [ text ("Not implemented map specified: " ++ toString notImplemented) ]
 
 
-viewHero : Hero.Data.Model -> Html Data.Msg
+viewHero : Hero.Data.Model -> Html (Maybe Data.Msg)
 viewHero hero =
     div [ class "tile maleHero", coordToHtmlStyle hero.pos ] []
