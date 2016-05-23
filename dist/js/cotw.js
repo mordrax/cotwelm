@@ -8767,6 +8767,10 @@ var _mordrax$cotwelm$SplashView$view = function () {
 			]));
 }();
 
+var _mordrax$cotwelm$Lib$coordAdd = F2(
+	function (c1, c2) {
+		return {x: c1.x + c2.x, y: c1.y + c2.y};
+	});
 var _mordrax$cotwelm$Lib$coordToHtmlStyle = function (coords) {
 	return _elm_lang$html$Html_Attributes$style(
 		_elm_lang$core$Native_List.fromArray(
@@ -8807,8 +8811,8 @@ var _mordrax$cotwelm$Game_Data$Right = {ctor: 'Right'};
 var _mordrax$cotwelm$Game_Data$Left = {ctor: 'Left'};
 var _mordrax$cotwelm$Game_Data$Down = {ctor: 'Down'};
 var _mordrax$cotwelm$Game_Data$Up = {ctor: 'Up'};
-var _mordrax$cotwelm$Game_Data$Move = function (a) {
-	return {ctor: 'Move', _0: a};
+var _mordrax$cotwelm$Game_Data$Key = function (a) {
+	return {ctor: 'Key', _0: a};
 };
 var _mordrax$cotwelm$Game_Data$Dungeon = {ctor: 'Dungeon'};
 var _mordrax$cotwelm$Game_Data$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
@@ -9116,35 +9120,51 @@ var _mordrax$cotwelm$Game_Game$view = function (model) {
 				_mordrax$cotwelm$Game_Game$viewHero(model.hero)
 			]));
 };
+var _mordrax$cotwelm$Game_Game$isTileObstructed = F2(
+	function (pos, model) {
+		return false;
+	});
+var _mordrax$cotwelm$Game_Game$moveIfNotObstructed = F2(
+	function (dir, model) {
+		var hero = model.hero;
+		var heroPos = model.hero.pos;
+		var newPos = function () {
+			var _p1 = dir;
+			switch (_p1.ctor) {
+				case 'Up':
+					return A2(
+						_mordrax$cotwelm$Lib$coordAdd,
+						heroPos,
+						{x: 0, y: -1});
+				case 'Down':
+					return A2(
+						_mordrax$cotwelm$Lib$coordAdd,
+						heroPos,
+						{x: 0, y: 1});
+				case 'Left':
+					return A2(
+						_mordrax$cotwelm$Lib$coordAdd,
+						heroPos,
+						{x: -1, y: 0});
+				default:
+					return A2(
+						_mordrax$cotwelm$Lib$coordAdd,
+						heroPos,
+						{x: 1, y: 0});
+			}
+		}();
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				hero: A2(_mordrax$cotwelm$Game_Game$isTileObstructed, newPos, model) ? model.hero : _elm_lang$core$Native_Utils.update(
+					hero,
+					{pos: newPos})
+			});
+	});
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1._0.ctor) {
-			case 'Up':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						hero: A2(_mordrax$cotwelm$Hero_Hero$moveY, -1, model.hero)
-					});
-			case 'Down':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						hero: A2(_mordrax$cotwelm$Hero_Hero$moveY, 1, model.hero)
-					});
-			case 'Left':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						hero: A2(_mordrax$cotwelm$Hero_Hero$moveX, -1, model.hero)
-					});
-			default:
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						hero: A2(_mordrax$cotwelm$Hero_Hero$moveX, 1, model.hero)
-					});
-		}
+		var _p2 = msg;
+		return A2(_mordrax$cotwelm$Game_Game$moveIfNotObstructed, _p2._0, model);
 	});
 var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game', map: _mordrax$cotwelm$Game_Data$Village, hero: _mordrax$cotwelm$Hero_Hero$initHero};
 
@@ -9163,7 +9183,7 @@ var _mordrax$cotwelm$Game_Keyboard$playerKeymap = _elm_lang$core$Dict$fromList(
 var _mordrax$cotwelm$Game_Keyboard$keycodeToMsg = function (code) {
 	return A2(
 		_elm_lang$core$Maybe$map,
-		_mordrax$cotwelm$Game_Data$Move,
+		_mordrax$cotwelm$Game_Data$Key,
 		A2(_elm_lang$core$Dict$get, code, _mordrax$cotwelm$Game_Keyboard$playerKeymap));
 };
 var _mordrax$cotwelm$Game_Keyboard$subscriptions = _elm_lang$keyboard$Keyboard$presses(_mordrax$cotwelm$Game_Keyboard$keycodeToMsg);
