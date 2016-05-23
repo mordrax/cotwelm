@@ -62,9 +62,6 @@
 .Well {
     background: url('/assets/original/tiles.png') -160px -32px;
 }
-.Building {
-    /*blank*/
-}
 .TreasurePile {
     background: url('/assets/original/tiles.png') -128px -640px;
 }

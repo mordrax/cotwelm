@@ -1,7 +1,7 @@
 module Game.Game exposing (..)
 
 import Game.Data as Data exposing (..)
-import Maps.Maps exposing (..)
+import Maps.Village exposing (..)
 import Hero.Hero exposing (..)
 import Hero.Data exposing (..)
 import Lib exposing (..)
