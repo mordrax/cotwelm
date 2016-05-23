@@ -1,12 +1,23 @@
 module GameData.Tile exposing (..)
 
+import Lib exposing (..)
 
-type alias TileModel =
-    { class : String
+
+type alias Tile =
+    { solid : Bool
+    , tile : TileType
     }
 
 
-type Tile
+type alias Building =
+    { tile : BuildingType
+    , entry : Coordinate
+    , pos : Coordinate
+    , name : String
+    }
+
+
+type TileType
     = Rock
     | Grass
     | DarkDgn
@@ -26,11 +37,19 @@ type Tile
     | Crop
     | MineEntrance
     | Well
-    | Building
     | TreasurePile
 
 
-asciiToTile : Char -> Tile
+type BuildingType
+    = Gate_NS
+    | Hut_EF
+    | StrawHouse_EF
+    | StrawHouse_WF
+    | BurntStrawHouse_WF
+    | HutTemple_NF
+
+
+asciiToTile : Char -> TileType
 asciiToTile char =
     case char of
         '^' ->
@@ -86,9 +105,6 @@ asciiToTile char =
 
         'M' ->
             MineEntrance
-
-        '#' ->
-            Building
 
         'e' ->
             Well
