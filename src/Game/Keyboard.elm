@@ -26,4 +26,4 @@ playerKeymap =
 
 keycodeToMsg : Keyboard.KeyCode -> Maybe Msg
 keycodeToMsg code =
-    playerKeymap |> Dict.get code |> Maybe.map Move
+    playerKeymap |> Dict.get code |> Maybe.map Key

@@ -17,20 +17,48 @@ initGame =
     }
 
 
+moveIfNotObstructed : Direction -> Data.Model -> Data.Model
+moveIfNotObstructed dir model =
+    let
+        heroPos =
+            model.hero.pos
+
+        newPos =
+            case dir of
+                Up ->
+                    coordAdd heroPos { x = 0, y = -1 }
+
+                Down ->
+                    coordAdd heroPos { x = 0, y = 1 }
+
+                Left ->
+                    coordAdd heroPos { x = -1, y = 0 }
+
+                Right ->
+                    coordAdd heroPos { x = 1, y = 0 }
+
+        hero =
+            model.hero
+    in
+        { model
+            | hero =
+                if (isTileObstructed newPos model) then
+                    model.hero
+                else
+                    { hero | pos = newPos }
+        }
+
+
+isTileObstructed : Coordinate -> Data.Model -> Bool
+isTileObstructed pos model =
+    False
+
+
 update : Data.Msg -> Data.Model -> Data.Model
 update msg model =
     case msg of
-        Move Up ->
-            { model | hero = Hero.Hero.moveY -1 model.hero }
-
-        Move Down ->
-            { model | hero = Hero.Hero.moveY 1 model.hero }
-
-        Move Left ->
-            { model | hero = Hero.Hero.moveX -1 model.hero }
-
-        Move Right ->
-            { model | hero = Hero.Hero.moveX 1 model.hero }
+        Key dir ->
+            moveIfNotObstructed dir model
 
 
 view : Data.Model -> Html (Maybe Data.Msg)

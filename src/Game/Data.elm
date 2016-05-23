@@ -11,7 +11,7 @@ type Direction
 
 
 type Msg
-    = Move Direction
+    = Key Direction
 
 
 type alias Model =
