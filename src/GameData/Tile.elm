@@ -6,6 +6,7 @@ import Lib exposing (..)
 type alias Tile =
     { solid : Bool
     , tile : TileType
+    , pos : Coordinate
     }
 
 
