@@ -8803,40 +8803,9 @@ var _mordrax$cotwelm$Hero_Data$Model = F2(
 		return {name: a, pos: b};
 	});
 
-var _mordrax$cotwelm$Game_Data$Model = F3(
+var _mordrax$cotwelm$GameData_Tile$Tile = F3(
 	function (a, b, c) {
-		return {name: a, map: b, hero: c};
-	});
-var _mordrax$cotwelm$Game_Data$Right = {ctor: 'Right'};
-var _mordrax$cotwelm$Game_Data$Left = {ctor: 'Left'};
-var _mordrax$cotwelm$Game_Data$Down = {ctor: 'Down'};
-var _mordrax$cotwelm$Game_Data$Up = {ctor: 'Up'};
-var _mordrax$cotwelm$Game_Data$Key = function (a) {
-	return {ctor: 'Key', _0: a};
-};
-var _mordrax$cotwelm$Game_Data$Dungeon = {ctor: 'Dungeon'};
-var _mordrax$cotwelm$Game_Data$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
-var _mordrax$cotwelm$Game_Data$OutsideVillage = {ctor: 'OutsideVillage'};
-var _mordrax$cotwelm$Game_Data$Village = {ctor: 'Village'};
-
-var _mordrax$cotwelm$CotwData$GameMsg = function (a) {
-	return {ctor: 'GameMsg', _0: a};
-};
-var _mordrax$cotwelm$CotwData$CharCreationMsg = function (a) {
-	return {ctor: 'CharCreationMsg', _0: a};
-};
-var _mordrax$cotwelm$CotwData$SplashMsg = function (a) {
-	return {ctor: 'SplashMsg', _0: a};
-};
-var _mordrax$cotwelm$CotwData$NotImplementedPage = {ctor: 'NotImplementedPage'};
-var _mordrax$cotwelm$CotwData$ShopPage = {ctor: 'ShopPage'};
-var _mordrax$cotwelm$CotwData$GamePage = {ctor: 'GamePage'};
-var _mordrax$cotwelm$CotwData$CharCreationPage = {ctor: 'CharCreationPage'};
-var _mordrax$cotwelm$CotwData$SplashPage = {ctor: 'SplashPage'};
-
-var _mordrax$cotwelm$GameData_Tile$Tile = F2(
-	function (a, b) {
-		return {solid: a, tile: b};
+		return {solid: a, tile: b, pos: c};
 	});
 var _mordrax$cotwelm$GameData_Tile$Building = F4(
 	function (a, b, c, d) {
@@ -8968,56 +8937,29 @@ var _mordrax$cotwelm$GameData_ASCIIMaps$villageBuildings = _elm_lang$core$Native
 var _mordrax$cotwelm$GameData_ASCIIMaps$villageMapASCII = _elm_lang$core$Native_List.fromArray(
 	['========,,###,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '===,,,,,;...,,,!###=====', '===###!;.;,.,,;.###=====', '===###..;,,.,;.;###=====', '===###,,,,,...;,,,,,,===', '===,,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,!###,,,,===', '====,,,##.....###,,,,===', '====,,,##!,.,,###,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,###!...!###,======', '====,,###..e..###,======', '====,,###,...,###,======', '====,,,,,,,.,,,,,,======', '====,,,,,,,.!,,,,,======', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '========================']);
 
-var _mordrax$cotwelm$Maps_Village$tileToHtml = F3(
-	function (y, x, tile) {
-		var yInPixel = _elm_lang$core$Basics$toString(y * 32);
-		var xInPixel = _elm_lang$core$Basics$toString(x * 32);
-		var tileStyle = _elm_lang$html$Html_Attributes$style(
-			_elm_lang$core$Native_List.fromArray(
-				[
-					{
-					ctor: '_Tuple2',
-					_0: 'left',
-					_1: A2(_elm_lang$core$Basics_ops['++'], xInPixel, 'px')
-				},
-					{
-					ctor: '_Tuple2',
-					_0: 'top',
-					_1: A2(_elm_lang$core$Basics_ops['++'], yInPixel, 'px')
-				}
-				]));
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$class(
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						'tile ',
-						_elm_lang$core$Basics$toString(tile))),
-					tileStyle
-				]),
-			_elm_lang$core$Native_List.fromArray(
-				[]));
+var _mordrax$cotwelm$Game_Maps$toTile = F3(
+	function (y, x, tileType) {
+		var pos = {x: x, y: y};
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$toString(pos),
+			_1: {pos: pos, tile: tileType, solid: false}
+		};
 	});
-var _mordrax$cotwelm$Maps_Village$tilesToHtml = F2(
+var _mordrax$cotwelm$Game_Maps$toTiles = F2(
 	function (y, tiles) {
 		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[]),
-			A2(
-				_elm_lang$core$List$indexedMap,
-				_mordrax$cotwelm$Maps_Village$tileToHtml(y),
-				tiles));
+			_elm_lang$core$List$indexedMap,
+			_mordrax$cotwelm$Game_Maps$toTile(y),
+			tiles);
 	});
-var _mordrax$cotwelm$Maps_Village$asciiRowToHtml = F2(
+var _mordrax$cotwelm$Game_Maps$asciiRowToTiles = F2(
 	function (y, asciiRow) {
 		var rowOfAsciiMapChars = _elm_lang$core$String$toList(asciiRow);
 		var rowOfTiles = A2(_elm_lang$core$List$map, _mordrax$cotwelm$GameData_Tile$asciiToTile, rowOfAsciiMapChars);
-		return A2(_mordrax$cotwelm$Maps_Village$tilesToHtml, y, rowOfTiles);
+		return A2(_mordrax$cotwelm$Game_Maps$toTiles, y, rowOfTiles);
 	});
-var _mordrax$cotwelm$Maps_Village$buildingToHtml = function (building) {
+var _mordrax$cotwelm$Game_Maps$buildingToHtml = function (building) {
 	var posStyle = _mordrax$cotwelm$Lib$coordToHtmlStyle(building.pos);
 	return A2(
 		_elm_lang$html$Html$div,
@@ -9033,14 +8975,125 @@ var _mordrax$cotwelm$Maps_Village$buildingToHtml = function (building) {
 		_elm_lang$core$Native_List.fromArray(
 			[]));
 };
-var _mordrax$cotwelm$Maps_Village$villageMap = A2(
-	_elm_lang$html$Html$div,
-	_elm_lang$core$Native_List.fromArray(
-		[]),
-	A2(
-		_elm_lang$core$Basics_ops['++'],
-		A2(_elm_lang$core$List$indexedMap, _mordrax$cotwelm$Maps_Village$asciiRowToHtml, _mordrax$cotwelm$GameData_ASCIIMaps$villageMapASCII),
-		A2(_elm_lang$core$List$map, _mordrax$cotwelm$Maps_Village$buildingToHtml, _mordrax$cotwelm$GameData_ASCIIMaps$villageBuildings)));
+var _mordrax$cotwelm$Game_Maps$tileToHtml = function (tile) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'tile ',
+					_elm_lang$core$Basics$toString(tile.tile))),
+				_mordrax$cotwelm$Lib$coordToHtmlStyle(tile.pos)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+};
+var _mordrax$cotwelm$Game_Maps$getMap = F2(
+	function (area, model) {
+		var maybeMap = A2(_elm_lang$core$Dict$get, area, model.maps);
+		var _p0 = maybeMap;
+		if (_p0.ctor === 'Just') {
+			return _p0._0;
+		} else {
+			return _elm_lang$core$Dict$empty;
+		}
+	});
+var _mordrax$cotwelm$Game_Maps$Model = F2(
+	function (a, b) {
+		return {currentArea: a, maps: b};
+	});
+var _mordrax$cotwelm$Game_Maps$DungeonLevel = function (a) {
+	return {ctor: 'DungeonLevel', _0: a};
+};
+var _mordrax$cotwelm$Game_Maps$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
+var _mordrax$cotwelm$Game_Maps$OutsideVillage = {ctor: 'OutsideVillage'};
+var _mordrax$cotwelm$Game_Maps$Village = {ctor: 'Village'};
+var _mordrax$cotwelm$Game_Maps$initMaps = {
+	currentArea: _mordrax$cotwelm$Game_Maps$Village,
+	maps: _elm_lang$core$Dict$fromList(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$Game_Maps$Village),
+				_1: _elm_lang$core$Dict$fromList(
+					_elm_lang$core$List$concat(
+						A2(_elm_lang$core$List$indexedMap, _mordrax$cotwelm$Game_Maps$asciiRowToTiles, _mordrax$cotwelm$GameData_ASCIIMaps$villageMapASCII)))
+			}
+			]))
+};
+var _mordrax$cotwelm$Game_Maps$villageMap = function (model) {
+	var listOfTiles = A2(
+		_elm_lang$core$List$map,
+		_elm_lang$core$Basics$snd,
+		_elm_lang$core$Dict$toList(
+			A2(
+				_mordrax$cotwelm$Game_Maps$getMap,
+				_elm_lang$core$Basics$toString(_mordrax$cotwelm$Game_Maps$Village),
+				model)));
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Game_Maps$tileToHtml, listOfTiles),
+			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Game_Maps$buildingToHtml, _mordrax$cotwelm$GameData_ASCIIMaps$villageBuildings)));
+};
+var _mordrax$cotwelm$Game_Maps$view = function (model) {
+	var _p1 = model.currentArea;
+	if (_p1.ctor === 'Village') {
+		return _mordrax$cotwelm$Game_Maps$villageMap(model);
+	} else {
+		return A2(
+			_elm_lang$html$Html$h2,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							{ctor: '_Tuple2', _0: 'color', _1: 'red'}
+						]))
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'Not implemented map specified: ',
+						_elm_lang$core$Basics$toString(_p1)))
+				]));
+	}
+};
+
+var _mordrax$cotwelm$Game_Data$Model = F3(
+	function (a, b, c) {
+		return {name: a, hero: b, map: c};
+	});
+var _mordrax$cotwelm$Game_Data$Right = {ctor: 'Right'};
+var _mordrax$cotwelm$Game_Data$Left = {ctor: 'Left'};
+var _mordrax$cotwelm$Game_Data$Down = {ctor: 'Down'};
+var _mordrax$cotwelm$Game_Data$Up = {ctor: 'Up'};
+var _mordrax$cotwelm$Game_Data$Key = function (a) {
+	return {ctor: 'Key', _0: a};
+};
+
+var _mordrax$cotwelm$CotwData$GameMsg = function (a) {
+	return {ctor: 'GameMsg', _0: a};
+};
+var _mordrax$cotwelm$CotwData$CharCreationMsg = function (a) {
+	return {ctor: 'CharCreationMsg', _0: a};
+};
+var _mordrax$cotwelm$CotwData$SplashMsg = function (a) {
+	return {ctor: 'SplashMsg', _0: a};
+};
+var _mordrax$cotwelm$CotwData$NotImplementedPage = {ctor: 'NotImplementedPage'};
+var _mordrax$cotwelm$CotwData$ShopPage = {ctor: 'ShopPage'};
+var _mordrax$cotwelm$CotwData$GamePage = {ctor: 'GamePage'};
+var _mordrax$cotwelm$CotwData$CharCreationPage = {ctor: 'CharCreationPage'};
+var _mordrax$cotwelm$CotwData$SplashPage = {ctor: 'SplashPage'};
 
 var _mordrax$cotwelm$Hero_Hero$moveX = F2(
 	function (dx, model) {
@@ -9074,31 +9127,6 @@ var _mordrax$cotwelm$Game_Game$viewHero = function (hero) {
 		_elm_lang$core$Native_List.fromArray(
 			[]));
 };
-var _mordrax$cotwelm$Game_Game$viewMap = function (map) {
-	var _p0 = map;
-	if (_p0.ctor === 'Village') {
-		return _mordrax$cotwelm$Maps_Village$villageMap;
-	} else {
-		return A2(
-			_elm_lang$html$Html$h2,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$style(
-					_elm_lang$core$Native_List.fromArray(
-						[
-							{ctor: '_Tuple2', _0: 'color', _1: 'red'}
-						]))
-				]),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html$text(
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						'Not implemented map specified: ',
-						_elm_lang$core$Basics$toString(_p0)))
-				]));
-	}
-};
 var _mordrax$cotwelm$Game_Game$view = function (model) {
 	var title = A2(
 		_elm_lang$html$Html$h1,
@@ -9116,7 +9144,7 @@ var _mordrax$cotwelm$Game_Game$view = function (model) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				title,
-				_mordrax$cotwelm$Game_Game$viewMap(model.map),
+				_mordrax$cotwelm$Game_Maps$view(model.map),
 				_mordrax$cotwelm$Game_Game$viewHero(model.hero)
 			]));
 };
@@ -9124,13 +9152,13 @@ var _mordrax$cotwelm$Game_Game$isTileObstructed = F2(
 	function (pos, model) {
 		return false;
 	});
-var _mordrax$cotwelm$Game_Game$moveIfNotObstructed = F2(
+var _mordrax$cotwelm$Game_Game$moveHero = F2(
 	function (dir, model) {
 		var hero = model.hero;
 		var heroPos = model.hero.pos;
 		var newPos = function () {
-			var _p1 = dir;
-			switch (_p1.ctor) {
+			var _p0 = dir;
+			switch (_p0.ctor) {
 				case 'Up':
 					return A2(
 						_mordrax$cotwelm$Lib$coordAdd,
@@ -9154,19 +9182,21 @@ var _mordrax$cotwelm$Game_Game$moveIfNotObstructed = F2(
 			}
 		}();
 		return _elm_lang$core$Native_Utils.update(
-			model,
+			hero,
 			{
-				hero: A2(_mordrax$cotwelm$Game_Game$isTileObstructed, newPos, model) ? model.hero : _elm_lang$core$Native_Utils.update(
-					hero,
-					{pos: newPos})
+				pos: A2(_mordrax$cotwelm$Game_Game$isTileObstructed, newPos, model) ? model.hero.pos : newPos
 			});
 	});
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
-		var _p2 = msg;
-		return A2(_mordrax$cotwelm$Game_Game$moveIfNotObstructed, _p2._0, model);
+		var _p1 = msg;
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				hero: A2(_mordrax$cotwelm$Game_Game$moveHero, _p1._0, model)
+			});
 	});
-var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game', map: _mordrax$cotwelm$Game_Data$Village, hero: _mordrax$cotwelm$Hero_Hero$initHero};
+var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game', hero: _mordrax$cotwelm$Hero_Hero$initHero, map: _mordrax$cotwelm$Game_Maps$initMaps};
 
 var _mordrax$cotwelm$Game_Keyboard$playerKeymap = _elm_lang$core$Dict$fromList(
 	_elm_lang$core$Native_List.fromArray(

@@ -1,6 +1,8 @@
 module Game.Data exposing (..)
 
 import Hero.Data exposing (..)
+import Game.Maps exposing (..)
+import Dict exposing (..)
 
 
 type Direction
@@ -16,13 +18,6 @@ type Msg
 
 type alias Model =
     { name : String
-    , map : Map
     , hero : Hero.Data.Model
+    , map : Game.Maps.Model
     }
-
-
-type Map
-    = Village
-    | OutsideVillage
-    | DungeonLevelOne
-    | Dungeon

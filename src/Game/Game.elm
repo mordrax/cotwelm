@@ -1,7 +1,7 @@
 module Game.Game exposing (..)
 
-import Game.Data as Data exposing (..)
-import Maps.Village exposing (..)
+import Game.Data as Game exposing (..)
+import Game.Maps exposing (..)
 import Hero.Hero exposing (..)
 import Hero.Data exposing (..)
 import Lib exposing (..)
@@ -9,16 +9,16 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-initGame : Data.Model
+initGame : Game.Model
 initGame =
     { name = "A new game"
-    , map = Village
-    , hero = initHero
+    , hero = Hero.Hero.initHero
+    , map = Game.Maps.initMaps
     }
 
 
-moveIfNotObstructed : Direction -> Data.Model -> Data.Model
-moveIfNotObstructed dir model =
+moveHero : Direction -> Game.Model -> Hero.Data.Model
+moveHero dir model =
     let
         heroPos =
             model.hero.pos
@@ -40,28 +40,28 @@ moveIfNotObstructed dir model =
         hero =
             model.hero
     in
-        { model
-            | hero =
+        { hero
+            | pos =
                 if (isTileObstructed newPos model) then
-                    model.hero
+                    model.hero.pos
                 else
-                    { hero | pos = newPos }
+                    newPos
         }
 
 
-isTileObstructed : Coordinate -> Data.Model -> Bool
+isTileObstructed : Coordinate -> Game.Model -> Bool
 isTileObstructed pos model =
     False
 
 
-update : Data.Msg -> Data.Model -> Data.Model
+update : Game.Msg -> Game.Model -> Game.Model
 update msg model =
     case msg of
         Key dir ->
-            moveIfNotObstructed dir model
+            { model | hero = moveHero dir model }
 
 
-view : Data.Model -> Html (Maybe Data.Msg)
+view : Game.Model -> Html (Maybe Game.Msg)
 view model =
     let
         title =
@@ -69,22 +69,11 @@ view model =
     in
         div []
             [ title
-            , viewMap model.map
+            , Game.Maps.view model.map
             , viewHero model.hero
             ]
 
 
-viewMap : Map -> Html (Maybe Data.Msg)
-viewMap map =
-    case map of
-        Village ->
-            villageMap
-
-        notImplemented ->
-            h2 [ style [ ( "color", "red" ) ] ]
-                [ text ("Not implemented map specified: " ++ toString notImplemented) ]
-
-
-viewHero : Hero.Data.Model -> Html (Maybe Data.Msg)
+viewHero : Hero.Data.Model -> Html (Maybe Game.Msg)
 viewHero hero =
     div [ class "tile maleHero", coordToHtmlStyle hero.pos ] []
