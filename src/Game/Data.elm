@@ -1,8 +1,8 @@
 module Game.Data exposing (..)
 
 import Hero.Data exposing (..)
-import Game.Maps exposing (..)
 import Dict exposing (..)
+import GameData.Tile exposing (..)
 
 
 type Direction
@@ -16,8 +16,12 @@ type Msg
     = Key Direction
 
 
-type alias Model =
-    { name : String
-    , hero : Hero.Data.Model
-    , map : Game.Maps.Model
-    }
+type Area
+    = Village
+    | Farm
+    | DungeonLevelOne
+    | DungeonLevel Int
+
+
+type alias Map =
+    Dict String Tile

@@ -59,7 +59,7 @@ initModel =
 type alias Model =
     { currentPage : Page
     , character : CharCreation.Data.Model
-    , game : Game.Data.Model
+    , game : Game.Model
     }
 
 

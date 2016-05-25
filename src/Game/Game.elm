@@ -9,7 +9,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-initGame : Game.Model
+type alias Model =
+    { name : String
+    , hero : Hero.Data.Model
+    , map : Game.Maps.Model
+    }
+
+
+initGame : Model
 initGame =
     { name = "A new game"
     , hero = Hero.Hero.initHero
@@ -17,7 +24,7 @@ initGame =
     }
 
 
-moveHero : Direction -> Game.Model -> Hero.Data.Model
+moveHero : Direction -> Model -> Hero.Data.Model
 moveHero dir model =
     let
         heroPos =
@@ -49,19 +56,19 @@ moveHero dir model =
         }
 
 
-isTileObstructed : Coordinate -> Game.Model -> Bool
+isTileObstructed : Coordinate -> Model -> Bool
 isTileObstructed pos model =
     False
 
 
-update : Game.Msg -> Game.Model -> Game.Model
+update : Game.Msg -> Model -> Model
 update msg model =
     case msg of
         Key dir ->
             { model | hero = moveHero dir model }
 
 
-view : Game.Model -> Html (Maybe Game.Msg)
+view : Model -> Html (Maybe Game.Msg)
 view model =
     let
         title =

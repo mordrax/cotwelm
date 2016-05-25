@@ -14,22 +14,12 @@ Mines lvl 1 - 8
 
 import GameData.ASCIIMaps exposing (..)
 import GameData.Tile exposing (..)
+import Game.Data exposing (..)
 import Lib exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import String exposing (..)
 import Dict exposing (..)
-
-
-type Area
-    = Village
-    | OutsideVillage
-    | DungeonLevelOne
-    | DungeonLevel Int
-
-
-type alias Map =
-    Dict String Tile
 
 
 type alias Model =
@@ -43,7 +33,7 @@ initMaps =
     { currentArea = Village
     , maps =
         Dict.fromList
-            [ ( toString Village, Dict.fromList (List.concat (List.indexedMap asciiRowToTiles villageMapASCII)) )
+            [ ( toString Village, Dict.fromList (List.concat (List.indexedMap asciiRowToTiles (getASCIIMap Village))) )
             ]
     }
 
@@ -81,7 +71,7 @@ villageMap model =
     in
         div []
             ((List.map tileToHtml listOfTiles)
-                ++ (List.map buildingToHtml villageBuildings)
+                ++ (List.map buildingToHtml (getBuildings Village))
             )
 
 
@@ -97,6 +87,13 @@ buildingToHtml building =
             coordToHtmlStyle building.pos
     in
         div [ class ("tile " ++ (toString building.tile)), posStyle ] []
+
+
+{-| Given a ASCII list of strings representing tiles, output a list of tiles
+-}
+mapToTiles : List String -> List GameData.Tile.Tile
+mapToTiles asciiMap =
+    []
 
 
 {-| Given a row of ascii, turn it into a row of Html
@@ -120,7 +117,7 @@ toTiles y tiles =
     List.indexedMap (toTile y) tiles
 
 
-{-| Place each tile in it's correct (x,y) absolute location
+{-| Create a (Coordinate, Tile) from some x,y coordinates and a tile type
 -}
 toTile : Int -> Int -> TileType -> ( String, Tile )
 toTile y x tileType =
@@ -128,4 +125,4 @@ toTile y x tileType =
         pos =
             { x = x, y = y }
     in
-        ( toString pos, { pos = pos, tile = tileType, solid = False } )
+        ( toString pos, { pos = pos, tile = tileType, solid = False, building = Nothing } )
