@@ -8803,9 +8803,9 @@ var _mordrax$cotwelm$Hero_Data$Model = F2(
 		return {name: a, pos: b};
 	});
 
-var _mordrax$cotwelm$GameData_Tile$Tile = F3(
-	function (a, b, c) {
-		return {solid: a, tile: b, pos: c};
+var _mordrax$cotwelm$GameData_Tile$Tile = F4(
+	function (a, b, c, d) {
+		return {solid: a, tile: b, pos: c, building: d};
 	});
 var _mordrax$cotwelm$GameData_Tile$Building = F4(
 	function (a, b, c, d) {
@@ -8813,7 +8813,6 @@ var _mordrax$cotwelm$GameData_Tile$Building = F4(
 	});
 var _mordrax$cotwelm$GameData_Tile$TreasurePile = {ctor: 'TreasurePile'};
 var _mordrax$cotwelm$GameData_Tile$Well = {ctor: 'Well'};
-var _mordrax$cotwelm$GameData_Tile$MineEntrance = {ctor: 'MineEntrance'};
 var _mordrax$cotwelm$GameData_Tile$Crop = {ctor: 'Crop'};
 var _mordrax$cotwelm$GameData_Tile$White90Cave10 = {ctor: 'White90Cave10'};
 var _mordrax$cotwelm$GameData_Tile$White50Cave50 = {ctor: 'White50Cave50'};
@@ -8868,14 +8867,13 @@ var _mordrax$cotwelm$GameData_Tile$asciiToTile = function ($char) {
 			return _mordrax$cotwelm$GameData_Tile$White90Cave10;
 		case '=':
 			return _mordrax$cotwelm$GameData_Tile$Crop;
-		case 'M':
-			return _mordrax$cotwelm$GameData_Tile$MineEntrance;
 		case 'e':
 			return _mordrax$cotwelm$GameData_Tile$Well;
 		default:
 			return _mordrax$cotwelm$GameData_Tile$Grass;
 	}
 };
+var _mordrax$cotwelm$GameData_Tile$MineEntrance = {ctor: 'MineEntrance'};
 var _mordrax$cotwelm$GameData_Tile$HutTemple_NF = {ctor: 'HutTemple_NF'};
 var _mordrax$cotwelm$GameData_Tile$BurntStrawHouse_WF = {ctor: 'BurntStrawHouse_WF'};
 var _mordrax$cotwelm$GameData_Tile$StrawHouse_WF = {ctor: 'StrawHouse_WF'};
@@ -8883,6 +8881,60 @@ var _mordrax$cotwelm$GameData_Tile$StrawHouse_EF = {ctor: 'StrawHouse_EF'};
 var _mordrax$cotwelm$GameData_Tile$Hut_EF = {ctor: 'Hut_EF'};
 var _mordrax$cotwelm$GameData_Tile$Gate_NS = {ctor: 'Gate_NS'};
 
+var _mordrax$cotwelm$Game_Data$Right = {ctor: 'Right'};
+var _mordrax$cotwelm$Game_Data$Left = {ctor: 'Left'};
+var _mordrax$cotwelm$Game_Data$Down = {ctor: 'Down'};
+var _mordrax$cotwelm$Game_Data$Up = {ctor: 'Up'};
+var _mordrax$cotwelm$Game_Data$Key = function (a) {
+	return {ctor: 'Key', _0: a};
+};
+var _mordrax$cotwelm$Game_Data$DungeonLevel = function (a) {
+	return {ctor: 'DungeonLevel', _0: a};
+};
+var _mordrax$cotwelm$Game_Data$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
+var _mordrax$cotwelm$Game_Data$Farm = {ctor: 'Farm'};
+var _mordrax$cotwelm$Game_Data$Village = {ctor: 'Village'};
+
+var _mordrax$cotwelm$CotwData$GameMsg = function (a) {
+	return {ctor: 'GameMsg', _0: a};
+};
+var _mordrax$cotwelm$CotwData$CharCreationMsg = function (a) {
+	return {ctor: 'CharCreationMsg', _0: a};
+};
+var _mordrax$cotwelm$CotwData$SplashMsg = function (a) {
+	return {ctor: 'SplashMsg', _0: a};
+};
+var _mordrax$cotwelm$CotwData$NotImplementedPage = {ctor: 'NotImplementedPage'};
+var _mordrax$cotwelm$CotwData$ShopPage = {ctor: 'ShopPage'};
+var _mordrax$cotwelm$CotwData$GamePage = {ctor: 'GamePage'};
+var _mordrax$cotwelm$CotwData$CharCreationPage = {ctor: 'CharCreationPage'};
+var _mordrax$cotwelm$CotwData$SplashPage = {ctor: 'SplashPage'};
+
+var _mordrax$cotwelm$GameData_ASCIIMaps$dungeonLevelOneMap = _elm_lang$core$Native_List.fromArray(
+	['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^dooo^^ood^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^doooooddooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^doddoooooooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^dod^^oooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^od^^^oooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^o^^^^dooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^o^^^^^dod^dod^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^dood^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^ooood^^^^^o^^^^^^^^^^doood^^^', '^^^^^^^^^^^^oooooo^^^^o^^^^^^^^^^ooooo^^^', '^^^^^^^^^^^^dooooo^^^^o^^^^^^^^^^ooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^^^^^^dooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^^dooooooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^dod^^^doooo^^^', '^^^^^^^^^^^^^od^^^^^^^od^^dod^^^^^^^oo^^^', '^^^^^^^^^^^^^dod^^^^^^doddod^^^^^^^ood^^^', '^^^^^^^^^^^^^^dod^^^^^^dood^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^do^^^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^od^^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^dod^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^dod^^^do^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^dod^^od^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^doddo^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^dood^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^']);
+var _mordrax$cotwelm$GameData_ASCIIMaps$farmBuildings = _elm_lang$core$Native_List.fromArray(
+	[
+		{
+		name: 'Farm Gate',
+		tile: _mordrax$cotwelm$GameData_Tile$Gate_NS,
+		entry: {x: 1, y: 0},
+		pos: {x: 10, y: 32}
+	},
+		{
+		name: 'Adopted Parents House',
+		tile: _mordrax$cotwelm$GameData_Tile$StrawHouse_WF,
+		pos: {x: 43, y: 23},
+		entry: {x: 2, y: 1}
+	},
+		{
+		name: 'Mine Entrance',
+		tile: _mordrax$cotwelm$GameData_Tile$MineEntrance,
+		pos: {x: 24, y: 1},
+		entry: {x: 0, y: 0}
+	}
+	]);
+var _mordrax$cotwelm$GameData_ASCIIMaps$farmMap = _elm_lang$core$Native_List.fromArray(
+	['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^#^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^.,,,^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^,,.,,,,,^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^,,,,,,,.,,,,,,^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^,,,,,,,,.,,,,,,,,,^^^^^^^^^^^^^^^', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', '.................................................', '.................................................', ',,,,,,,,,,,,,,,,,,,,,,,..;,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,###,,=', ',,,,,,,,,,,,,,,,;..........................###,,=', ',,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,###,,=', ',,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,=======', ',,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,.,,,,,=======,,,,,,,,,,,,,,,,,,=======', '========,,###,,,,=======,,,,,,,,,,,,,,,,,,,,,,,,,']);
 var _mordrax$cotwelm$GameData_ASCIIMaps$villageBuildings = _elm_lang$core$Native_List.fromArray(
 	[
 		{
@@ -8934,8 +8986,34 @@ var _mordrax$cotwelm$GameData_ASCIIMaps$villageBuildings = _elm_lang$core$Native
 		entry: {x: 2, y: 0}
 	}
 	]);
-var _mordrax$cotwelm$GameData_ASCIIMaps$villageMapASCII = _elm_lang$core$Native_List.fromArray(
+var _mordrax$cotwelm$GameData_ASCIIMaps$villageMap = _elm_lang$core$Native_List.fromArray(
 	['========,,###,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '===,,,,,;...,,,!###=====', '===###!;.;,.,,;.###=====', '===###..;,,.,;.;###=====', '===###,,,,,...;,,,,,,===', '===,,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,!###,,,,===', '====,,,##.....###,,,,===', '====,,,##!,.,,###,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,###!...!###,======', '====,,###..e..###,======', '====,,###,...,###,======', '====,,,,,,,.,,,,,,======', '====,,,,,,,.!,,,,,======', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '========================']);
+var _mordrax$cotwelm$GameData_ASCIIMaps$getBuildings = function (area) {
+	var _p0 = area;
+	switch (_p0.ctor) {
+		case 'Village':
+			return _mordrax$cotwelm$GameData_ASCIIMaps$villageBuildings;
+		case 'Farm':
+			return _mordrax$cotwelm$GameData_ASCIIMaps$farmBuildings;
+		default:
+			return _elm_lang$core$Native_List.fromArray(
+				[]);
+	}
+};
+var _mordrax$cotwelm$GameData_ASCIIMaps$getASCIIMap = function (area) {
+	var _p1 = area;
+	switch (_p1.ctor) {
+		case 'Village':
+			return _mordrax$cotwelm$GameData_ASCIIMaps$villageMap;
+		case 'Farm':
+			return _mordrax$cotwelm$GameData_ASCIIMaps$farmMap;
+		case 'DungeonLevelOne':
+			return _mordrax$cotwelm$GameData_ASCIIMaps$dungeonLevelOneMap;
+		default:
+			return _elm_lang$core$Native_List.fromArray(
+				[]);
+	}
+};
 
 var _mordrax$cotwelm$Game_Maps$toTile = F3(
 	function (y, x, tileType) {
@@ -8943,7 +9021,7 @@ var _mordrax$cotwelm$Game_Maps$toTile = F3(
 		return {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$Basics$toString(pos),
-			_1: {pos: pos, tile: tileType, solid: false}
+			_1: {pos: pos, tile: tileType, solid: false, building: _elm_lang$core$Maybe$Nothing}
 		};
 	});
 var _mordrax$cotwelm$Game_Maps$toTiles = F2(
@@ -9000,30 +9078,6 @@ var _mordrax$cotwelm$Game_Maps$getMap = F2(
 			return _elm_lang$core$Dict$empty;
 		}
 	});
-var _mordrax$cotwelm$Game_Maps$Model = F2(
-	function (a, b) {
-		return {currentArea: a, maps: b};
-	});
-var _mordrax$cotwelm$Game_Maps$DungeonLevel = function (a) {
-	return {ctor: 'DungeonLevel', _0: a};
-};
-var _mordrax$cotwelm$Game_Maps$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
-var _mordrax$cotwelm$Game_Maps$OutsideVillage = {ctor: 'OutsideVillage'};
-var _mordrax$cotwelm$Game_Maps$Village = {ctor: 'Village'};
-var _mordrax$cotwelm$Game_Maps$initMaps = {
-	currentArea: _mordrax$cotwelm$Game_Maps$Village,
-	maps: _elm_lang$core$Dict$fromList(
-		_elm_lang$core$Native_List.fromArray(
-			[
-				{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$Game_Maps$Village),
-				_1: _elm_lang$core$Dict$fromList(
-					_elm_lang$core$List$concat(
-						A2(_elm_lang$core$List$indexedMap, _mordrax$cotwelm$Game_Maps$asciiRowToTiles, _mordrax$cotwelm$GameData_ASCIIMaps$villageMapASCII)))
-			}
-			]))
-};
 var _mordrax$cotwelm$Game_Maps$villageMap = function (model) {
 	var listOfTiles = A2(
 		_elm_lang$core$List$map,
@@ -9031,7 +9085,7 @@ var _mordrax$cotwelm$Game_Maps$villageMap = function (model) {
 		_elm_lang$core$Dict$toList(
 			A2(
 				_mordrax$cotwelm$Game_Maps$getMap,
-				_elm_lang$core$Basics$toString(_mordrax$cotwelm$Game_Maps$Village),
+				_elm_lang$core$Basics$toString(_mordrax$cotwelm$Game_Data$Village),
 				model)));
 	return A2(
 		_elm_lang$html$Html$div,
@@ -9040,7 +9094,10 @@ var _mordrax$cotwelm$Game_Maps$villageMap = function (model) {
 		A2(
 			_elm_lang$core$Basics_ops['++'],
 			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Game_Maps$tileToHtml, listOfTiles),
-			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Game_Maps$buildingToHtml, _mordrax$cotwelm$GameData_ASCIIMaps$villageBuildings)));
+			A2(
+				_elm_lang$core$List$map,
+				_mordrax$cotwelm$Game_Maps$buildingToHtml,
+				_mordrax$cotwelm$GameData_ASCIIMaps$getBuildings(_mordrax$cotwelm$Game_Data$Village))));
 };
 var _mordrax$cotwelm$Game_Maps$view = function (model) {
 	var _p1 = model.currentArea;
@@ -9067,33 +9124,27 @@ var _mordrax$cotwelm$Game_Maps$view = function (model) {
 				]));
 	}
 };
-
-var _mordrax$cotwelm$Game_Data$Model = F3(
-	function (a, b, c) {
-		return {name: a, hero: b, map: c};
+var _mordrax$cotwelm$Game_Maps$initMaps = {
+	currentArea: _mordrax$cotwelm$Game_Data$Village,
+	maps: _elm_lang$core$Dict$fromList(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$Game_Data$Village),
+				_1: _elm_lang$core$Dict$fromList(
+					_elm_lang$core$List$concat(
+						A2(
+							_elm_lang$core$List$indexedMap,
+							_mordrax$cotwelm$Game_Maps$asciiRowToTiles,
+							_mordrax$cotwelm$GameData_ASCIIMaps$getASCIIMap(_mordrax$cotwelm$Game_Data$Village))))
+			}
+			]))
+};
+var _mordrax$cotwelm$Game_Maps$Model = F2(
+	function (a, b) {
+		return {currentArea: a, maps: b};
 	});
-var _mordrax$cotwelm$Game_Data$Right = {ctor: 'Right'};
-var _mordrax$cotwelm$Game_Data$Left = {ctor: 'Left'};
-var _mordrax$cotwelm$Game_Data$Down = {ctor: 'Down'};
-var _mordrax$cotwelm$Game_Data$Up = {ctor: 'Up'};
-var _mordrax$cotwelm$Game_Data$Key = function (a) {
-	return {ctor: 'Key', _0: a};
-};
-
-var _mordrax$cotwelm$CotwData$GameMsg = function (a) {
-	return {ctor: 'GameMsg', _0: a};
-};
-var _mordrax$cotwelm$CotwData$CharCreationMsg = function (a) {
-	return {ctor: 'CharCreationMsg', _0: a};
-};
-var _mordrax$cotwelm$CotwData$SplashMsg = function (a) {
-	return {ctor: 'SplashMsg', _0: a};
-};
-var _mordrax$cotwelm$CotwData$NotImplementedPage = {ctor: 'NotImplementedPage'};
-var _mordrax$cotwelm$CotwData$ShopPage = {ctor: 'ShopPage'};
-var _mordrax$cotwelm$CotwData$GamePage = {ctor: 'GamePage'};
-var _mordrax$cotwelm$CotwData$CharCreationPage = {ctor: 'CharCreationPage'};
-var _mordrax$cotwelm$CotwData$SplashPage = {ctor: 'SplashPage'};
 
 var _mordrax$cotwelm$Hero_Hero$moveX = F2(
 	function (dx, model) {
@@ -9197,6 +9248,10 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 			});
 	});
 var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game', hero: _mordrax$cotwelm$Hero_Hero$initHero, map: _mordrax$cotwelm$Game_Maps$initMaps};
+var _mordrax$cotwelm$Game_Game$Model = F3(
+	function (a, b, c) {
+		return {name: a, hero: b, map: c};
+	});
 
 var _mordrax$cotwelm$Game_Keyboard$playerKeymap = _elm_lang$core$Dict$fromList(
 	_elm_lang$core$Native_List.fromArray(

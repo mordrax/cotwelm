@@ -7,6 +7,7 @@ type alias Tile =
     { solid : Bool
     , tile : TileType
     , pos : Coordinate
+    , building : Maybe Building
     }
 
 
@@ -36,7 +37,6 @@ type TileType
     | White50Cave50
     | White90Cave10
     | Crop
-    | MineEntrance
     | Well
     | TreasurePile
 
@@ -48,6 +48,7 @@ type BuildingType
     | StrawHouse_WF
     | BurntStrawHouse_WF
     | HutTemple_NF
+    | MineEntrance
 
 
 asciiToTile : Char -> TileType
@@ -103,9 +104,6 @@ asciiToTile char =
 
         '=' ->
             Crop
-
-        'M' ->
-            MineEntrance
 
         'e' ->
             Well
