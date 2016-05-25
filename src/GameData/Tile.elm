@@ -51,8 +51,8 @@ type BuildingType
     | MineEntrance
 
 
-asciiToTile : Char -> TileType
-asciiToTile char =
+asciiToTileType : Char -> TileType
+asciiToTileType char =
     case char of
         '^' ->
             Rock
