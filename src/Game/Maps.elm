@@ -30,23 +30,30 @@ type alias Model =
 
 initMaps : Model
 initMaps =
-    { currentArea = Village
-    , maps =
-        Dict.fromList
-            [ ( toString Village, Dict.fromList (List.concat (List.indexedMap asciiRowToTiles (getASCIIMap Village))) )
-            ]
-    }
+    let
+        getTiles =
+            \area ->
+                mapToTiles (getASCIIMap area)
+
+        toTuple =
+            \tile -> ( toString tile.pos, tile )
+
+        tilesToTuples =
+            \area -> List.map toTuple (getTiles area)
+    in
+        { currentArea = Farm
+        , maps =
+            Dict.fromList
+                [ ( toString Village, Dict.fromList (tilesToTuples Village) )
+                , ( toString Farm, Dict.fromList (tilesToTuples Farm) )
+                , ( toString DungeonLevelOne, Dict.fromList (tilesToTuples DungeonLevelOne) )
+                ]
+        }
 
 
 view : Model -> Html a
 view model =
-    case model.currentArea of
-        Village ->
-            villageMap model
-
-        notImplemented ->
-            h2 [ style [ ( "color", "red" ) ] ]
-                [ text ("Not implemented map specified: " ++ toString notImplemented) ]
+    villageMap model.currentArea model
 
 
 getMap : String -> Model -> Map
@@ -63,16 +70,19 @@ getMap area model =
                 Dict.empty
 
 
-villageMap : Model -> Html a
-villageMap model =
+villageMap : Area -> Model -> Html a
+villageMap area model =
     let
         listOfTiles =
-            Dict.toList (getMap (toString Village) model) |> List.map snd
+            Dict.toList (getMap (toString area) model) |> List.map snd
+
+        tilesHtml =
+            List.map tileToHtml listOfTiles
+
+        buildingsHtml =
+            List.map buildingToHtml (getBuildings area)
     in
-        div []
-            ((List.map tileToHtml listOfTiles)
-                ++ (List.map buildingToHtml (getBuildings Village))
-            )
+        div [] (tilesHtml ++ buildingsHtml)
 
 
 tileToHtml : Tile -> Html a
@@ -93,36 +103,40 @@ buildingToHtml building =
 -}
 mapToTiles : List String -> List GameData.Tile.Tile
 mapToTiles asciiMap =
-    []
+    let
+        tiles =
+            List.indexedMap mapOneRowToTiles asciiMap
+    in
+        List.concat tiles
 
 
 {-| Given a row of ascii, turn it into a row of Html
 -}
-asciiRowToTiles : Int -> String -> List ( String, Tile )
-asciiRowToTiles y asciiRow =
+mapOneRowToTiles : Int -> String -> List Tile
+mapOneRowToTiles y asciiRow =
     let
         -- turn a row of string into a list of chars
-        rowOfAsciiMapChars =
+        asciiChars =
             String.toList asciiRow
 
         -- turn a list of chars which is a row of the ascii map into a list of tiles
-        rowOfTiles =
-            List.map asciiToTile rowOfAsciiMapChars
+        tileTypes =
+            List.map asciiToTileType asciiChars
     in
-        toTiles y rowOfTiles
+        toTiles y tileTypes
 
 
-toTiles : Int -> List TileType -> List ( String, Tile )
+toTiles : Int -> List TileType -> List Tile
 toTiles y tiles =
     List.indexedMap (toTile y) tiles
 
 
-{-| Create a (Coordinate, Tile) from some x,y coordinates and a tile type
+{-| Create a Tile from some x,y coordinates and a tile type
 -}
-toTile : Int -> Int -> TileType -> ( String, Tile )
+toTile : Int -> Int -> TileType -> Tile
 toTile y x tileType =
     let
         pos =
             { x = x, y = y }
     in
-        ( toString pos, { pos = pos, tile = tileType, solid = False, building = Nothing } )
+        { pos = pos, tile = tileType, solid = False, building = Nothing }

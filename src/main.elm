@@ -12,7 +12,6 @@ import CharCreation.Data exposing (..)
 -- Main game screen
 
 import Game.Game as Game exposing (..)
-import Game.Data exposing (..)
 
 
 -- Cotw specific data
