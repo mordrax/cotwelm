@@ -16,6 +16,7 @@ type alias Building =
     , entry : Coordinate
     , pos : Coordinate
     , name : String
+    , size : Coordinate
     }
 
 
