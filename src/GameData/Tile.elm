@@ -51,62 +51,62 @@ type BuildingType
     | MineEntrance
 
 
-asciiToTileType : Char -> TileType
-asciiToTileType char =
+asciiTileData : Char -> ( TileType, Bool )
+asciiTileData char =
     case char of
         '^' ->
-            Rock
+            ( Rock, True )
 
         ',' ->
-            Grass
+            ( Grass, False )
 
         'o' ->
-            DarkDgn
+            ( DarkDgn, False )
 
         '~' ->
-            Water
+            ( Water, False )
 
         '.' ->
-            Path
+            ( Path, False )
 
         'O' ->
-            LitDgn
+            ( LitDgn, False )
 
         '_' ->
-            PathRock
+            ( PathRock, False )
 
         ';' ->
-            PathGrass
+            ( PathGrass, False )
 
         'd' ->
-            WallDarkDgn
+            ( WallDarkDgn, False )
 
         'w' ->
-            WaterGrass
+            ( WaterGrass, False )
 
         'W' ->
-            WaterPath
+            ( WaterPath, False )
 
         'D' ->
-            WallLitDgn
+            ( WallLitDgn, False )
 
         'g' ->
-            Grass50Cave50
+            ( Grass50Cave50, False )
 
         'G' ->
-            Grass10Cave90
+            ( Grass10Cave90, True )
 
         'c' ->
-            White50Cave50
+            ( White50Cave50, True )
 
         'C' ->
-            White90Cave10
+            ( White90Cave10, False )
 
         '=' ->
-            Crop
+            ( Crop, True )
 
         'e' ->
-            Well
+            ( Well, True )
 
         _ ->
-            Grass
+            ( Grass, False )
