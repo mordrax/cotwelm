@@ -8807,9 +8807,9 @@ var _mordrax$cotwelm$GameData_Tile$Tile = F4(
 	function (a, b, c, d) {
 		return {solid: a, tile: b, pos: c, building: d};
 	});
-var _mordrax$cotwelm$GameData_Tile$Building = F4(
-	function (a, b, c, d) {
-		return {tile: a, entry: b, pos: c, name: d};
+var _mordrax$cotwelm$GameData_Tile$Building = F5(
+	function (a, b, c, d, e) {
+		return {tile: a, entry: b, pos: c, name: d, size: e};
 	});
 var _mordrax$cotwelm$GameData_Tile$TreasurePile = {ctor: 'TreasurePile'};
 var _mordrax$cotwelm$GameData_Tile$Well = {ctor: 'Well'};
@@ -8918,19 +8918,22 @@ var _mordrax$cotwelm$GameData_ASCIIMaps$farmBuildings = _elm_lang$core$Native_Li
 		name: 'Farm Gate',
 		tile: _mordrax$cotwelm$GameData_Tile$Gate_NS,
 		entry: {x: 1, y: 0},
-		pos: {x: 10, y: 32}
+		pos: {x: 10, y: 32},
+		size: {x: 3, y: 1}
 	},
 		{
 		name: 'Adopted Parents House',
 		tile: _mordrax$cotwelm$GameData_Tile$StrawHouse_WF,
 		pos: {x: 43, y: 23},
-		entry: {x: 2, y: 1}
+		entry: {x: 2, y: 1},
+		size: {x: 3, y: 3}
 	},
 		{
 		name: 'Mine Entrance',
 		tile: _mordrax$cotwelm$GameData_Tile$MineEntrance,
 		pos: {x: 24, y: 1},
-		entry: {x: 0, y: 0}
+		entry: {x: 0, y: 0},
+		size: {x: 1, y: 1}
 	}
 	]);
 var _mordrax$cotwelm$GameData_ASCIIMaps$farmMap = _elm_lang$core$Native_List.fromArray(
@@ -8941,49 +8944,57 @@ var _mordrax$cotwelm$GameData_ASCIIMaps$villageBuildings = _elm_lang$core$Native
 		name: 'Village Gate',
 		tile: _mordrax$cotwelm$GameData_Tile$Gate_NS,
 		entry: {x: 1, y: 0},
-		pos: {x: 10, y: 0}
+		pos: {x: 10, y: 0},
+		size: {x: 3, y: 1}
 	},
 		{
 		name: 'Junk Shop',
 		tile: _mordrax$cotwelm$GameData_Tile$StrawHouse_EF,
 		pos: {x: 3, y: 6},
-		entry: {x: 2, y: 1}
+		entry: {x: 2, y: 1},
+		size: {x: 3, y: 3}
 	},
 		{
 		name: 'Private House',
 		tile: _mordrax$cotwelm$GameData_Tile$StrawHouse_WF,
 		pos: {x: 16, y: 5},
-		entry: {x: 2, y: 2}
+		entry: {x: 2, y: 2},
+		size: {x: 3, y: 3}
 	},
 		{
 		name: 'Potion Store',
 		tile: _mordrax$cotwelm$GameData_Tile$Hut_EF,
 		pos: {x: 7, y: 13},
-		entry: {x: 2, y: 1}
+		entry: {x: 2, y: 1},
+		size: {x: 3, y: 3}
 	},
 		{
 		name: 'Private House 2',
 		tile: _mordrax$cotwelm$GameData_Tile$StrawHouse_WF,
 		pos: {x: 14, y: 12},
-		entry: {x: 2, y: 2}
+		entry: {x: 2, y: 2},
+		size: {x: 3, y: 3}
 	},
 		{
 		name: 'Weapon Shop',
 		tile: _mordrax$cotwelm$GameData_Tile$StrawHouse_EF,
 		pos: {x: 6, y: 17},
-		entry: {x: 2, y: 1}
+		entry: {x: 2, y: 1},
+		size: {x: 3, y: 3}
 	},
 		{
 		name: 'General Store',
 		tile: _mordrax$cotwelm$GameData_Tile$StrawHouse_WF,
 		pos: {x: 14, y: 17},
-		entry: {x: 0, y: 1}
+		entry: {x: 0, y: 1},
+		size: {x: 3, y: 3}
 	},
 		{
 		name: 'Odin\'s Temple',
 		tile: _mordrax$cotwelm$GameData_Tile$HutTemple_NF,
 		pos: {x: 9, y: 22},
-		entry: {x: 2, y: 0}
+		entry: {x: 2, y: 0},
+		size: {x: 5, y: 5}
 	}
 	]);
 var _mordrax$cotwelm$GameData_ASCIIMaps$villageMap = _elm_lang$core$Native_List.fromArray(
@@ -9153,9 +9164,27 @@ var _mordrax$cotwelm$Game_Maps$Model = F2(
 		return {currentArea: a, maps: b};
 	});
 
+var _mordrax$cotwelm$Game_Collision$isBuildingAtPosition = F2(
+	function (target, building) {
+		var bs = building.size;
+		var bp = building.pos;
+		var t = target;
+		var isWithinX = (_elm_lang$core$Native_Utils.cmp(t.x, bp.x) > -1) && (_elm_lang$core$Native_Utils.cmp(t.x, bp.x + bs.x) < 1);
+		var isWithinY = (_elm_lang$core$Native_Utils.cmp(t.y, bp.y) > -1) && (_elm_lang$core$Native_Utils.cmp(t.y, bp.y + bs.y) < 1);
+		return isWithinX && isWithinY;
+	});
 var _mordrax$cotwelm$Game_Collision$buildingAtPosition = F2(
 	function (pos, buildings) {
-		return _elm_lang$core$Maybe$Nothing;
+		var buildingsAtTile = A2(
+			_elm_lang$core$List$filter,
+			_mordrax$cotwelm$Game_Collision$isBuildingAtPosition(pos),
+			buildings);
+		var _p0 = buildingsAtTile;
+		if ((_p0.ctor === '::') && (_p0._1.ctor === '[]')) {
+			return _elm_lang$core$Maybe$Just(_p0._0);
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
 	});
 var _mordrax$cotwelm$Game_Collision$thingsAtPosition = F2(
 	function (pos, model) {
@@ -9171,26 +9200,26 @@ var _mordrax$cotwelm$Game_Collision$thingsAtPosition = F2(
 	});
 var _mordrax$cotwelm$Game_Collision$isTileObstructed = F2(
 	function (pos, mapModel) {
-		var _p0 = A2(_mordrax$cotwelm$Game_Collision$thingsAtPosition, pos, mapModel);
-		var maybeTile = _p0._0;
-		var maybeBuilding = _p0._1;
-		var isTileObstruction = function () {
-			var _p1 = maybeTile;
-			if (_p1.ctor === 'Just') {
-				return _p1._0.solid;
+		var _p1 = A2(_mordrax$cotwelm$Game_Collision$thingsAtPosition, pos, mapModel);
+		var maybeTile = _p1._0;
+		var maybeBuilding = _p1._1;
+		var tileObstruction = function () {
+			var _p2 = maybeTile;
+			if (_p2.ctor === 'Just') {
+				return _p2._0.solid;
 			} else {
 				return false;
 			}
 		}();
-		var isBuildingObstruction = function () {
-			var _p2 = maybeBuilding;
-			if (_p2.ctor === 'Just') {
+		var buildingObstruction = function () {
+			var _p3 = maybeBuilding;
+			if (_p3.ctor === 'Just') {
 				return true;
 			} else {
 				return false;
 			}
 		}();
-		return isBuildingObstruction || isTileObstruction;
+		return buildingObstruction || tileObstruction;
 	});
 
 var _mordrax$cotwelm$Hero_Hero$moveX = F2(

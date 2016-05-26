@@ -18,7 +18,7 @@ isTileObstructed pos mapModel =
         ( maybeTile, maybeBuilding ) =
             (thingsAtPosition pos mapModel)
 
-        isTileObstruction =
+        tileObstruction =
             case maybeTile of
                 Just tile ->
                     tile.solid
@@ -26,7 +26,7 @@ isTileObstructed pos mapModel =
                 Nothing ->
                     False
 
-        isBuildingObstruction =
+        buildingObstruction =
             case maybeBuilding of
                 Just building ->
                     True
@@ -34,7 +34,7 @@ isTileObstructed pos mapModel =
                 _ ->
                     False
     in
-        isBuildingObstruction || isTileObstruction
+        buildingObstruction || tileObstruction
 
 
 thingsAtPosition : Coordinate -> Model -> ( Maybe Tile, Maybe Building )
@@ -60,4 +60,34 @@ thingsAtPosition pos model =
 
 buildingAtPosition : Coordinate -> List Building -> Maybe Building
 buildingAtPosition pos buildings =
-    Nothing
+    let
+        buildingsAtTile =
+            List.filter (isBuildingAtPosition pos) buildings
+    in
+        case buildingsAtTile of
+            [ b ] ->
+                Just b
+
+            _ ->
+                Nothing
+
+
+isBuildingAtPosition : Coordinate -> Building -> Bool
+isBuildingAtPosition target building =
+    let
+        t =
+            target
+
+        bp =
+            building.pos
+
+        bs =
+            building.size
+
+        isWithinX =
+            t.x >= bp.x && t.x <= bp.x + bs.x
+
+        isWithinY =
+            t.y >= bp.y && t.y <= bp.y + bs.y
+    in
+        isWithinX && isWithinY
