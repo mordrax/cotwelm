@@ -35,11 +35,11 @@ initMaps =
             \area ->
                 mapToTiles (getASCIIMap area)
 
-        toTuple =
-            \tile -> ( toString tile.pos, tile )
-
         tilesToTuples =
-            \area -> List.map toTuple (getTiles area)
+            \area -> List.map toKVPair (getTiles area)
+
+        toKVPair =
+            \tile -> ( toString tile.pos, tile )
     in
         { currentArea = Farm
         , maps =
@@ -56,11 +56,13 @@ view model =
     villageMap model.currentArea model
 
 
-getMap : String -> Model -> Map
+{-| Given an area, will return a map of that area or an empty dictionary if invalid area
+-}
+getMap : Area -> Model -> Map
 getMap area model =
     let
         maybeMap =
-            Dict.get area model.maps
+            Dict.get (toString area) model.maps
     in
         case maybeMap of
             Just map ->
@@ -70,11 +72,24 @@ getMap area model =
                 Dict.empty
 
 
+getBuildings : Area -> List Building
+getBuildings area =
+    case area of
+        Village ->
+            villageBuildings
+
+        Farm ->
+            farmBuildings
+
+        _ ->
+            []
+
+
 villageMap : Area -> Model -> Html a
 villageMap area model =
     let
         listOfTiles =
-            Dict.toList (getMap (toString area) model) |> List.map snd
+            Dict.toList (getMap area model) |> List.map snd
 
         tilesHtml =
             List.map tileToHtml listOfTiles
@@ -83,6 +98,12 @@ villageMap area model =
             List.map buildingToHtml (getBuildings area)
     in
         div [] (tilesHtml ++ buildingsHtml)
+
+
+
+------------------------------------------
+-- Draw map props (tiles and buildings) --
+------------------------------------------
 
 
 tileToHtml : Tile -> Html a
@@ -97,6 +118,12 @@ buildingToHtml building =
             coordToHtmlStyle building.pos
     in
         div [ class ("tile " ++ (toString building.tile)), posStyle ] []
+
+
+
+-----------------------------------------------------------------------------------
+-- Turn a list of strings which represents ascii encoded tiles into actual Tiles --
+-----------------------------------------------------------------------------------
 
 
 {-| Given a ASCII list of strings representing tiles, output a list of tiles
@@ -118,25 +145,24 @@ mapOneRowToTiles y asciiRow =
         -- turn a row of string into a list of chars
         asciiChars =
             String.toList asciiRow
-
-        -- turn a list of chars which is a row of the ascii map into a list of tiles
-        tileTypes =
-            List.map asciiToTileType asciiChars
     in
-        toTiles y tileTypes
+        toTiles y asciiChars
 
 
-toTiles : Int -> List TileType -> List Tile
-toTiles y tiles =
-    List.indexedMap (toTile y) tiles
+toTiles : Int -> List Char -> List Tile
+toTiles y asciiTiles =
+    List.indexedMap (toTile y) asciiTiles
 
 
 {-| Create a Tile from some x,y coordinates and a tile type
 -}
-toTile : Int -> Int -> TileType -> Tile
-toTile y x tileType =
+toTile : Int -> Int -> Char -> Tile
+toTile y x asciiTile =
     let
         pos =
             { x = x, y = y }
+
+        ( tileType, solid ) =
+            asciiTileData asciiTile
     in
-        { pos = pos, tile = tileType, solid = False, building = Nothing }
+        { pos = pos, tile = tileType, solid = solid, building = Nothing }

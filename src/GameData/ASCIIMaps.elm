@@ -1,4 +1,9 @@
-module GameData.ASCIIMaps exposing (getASCIIMap, getBuildings)
+module GameData.ASCIIMaps exposing (..)
+
+{-| Holds all static map data:
+- ASCII maps for each area
+- Buildings, their location and purpose (inventory) for each area
+-}
 
 import GameData.Tile exposing (..)
 import Game.Data exposing (..)
@@ -15,19 +20,6 @@ getASCIIMap area =
 
         DungeonLevelOne ->
             dungeonLevelOneMap
-
-        _ ->
-            []
-
-
-getBuildings : Area -> List Building
-getBuildings area =
-    case area of
-        Village ->
-            villageBuildings
-
-        Farm ->
-            farmBuildings
 
         _ ->
             []

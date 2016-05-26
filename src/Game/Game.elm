@@ -2,6 +2,7 @@ module Game.Game exposing (..)
 
 import Game.Data as Game exposing (..)
 import Game.Maps exposing (..)
+import Game.Collision exposing (..)
 import Hero.Hero exposing (..)
 import Hero.Data exposing (..)
 import Lib exposing (..)
@@ -49,16 +50,11 @@ moveHero dir model =
     in
         { hero
             | pos =
-                if (isTileObstructed newPos model) then
+                if (isTileObstructed newPos model.map) then
                     model.hero.pos
                 else
                     newPos
         }
-
-
-isTileObstructed : Coordinate -> Model -> Bool
-isTileObstructed pos model =
-    False
 
 
 update : Game.Msg -> Model -> Model
