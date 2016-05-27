@@ -1,9 +1,9 @@
 module Hero.Data exposing (..)
 
-import Lib exposing (..)
+import Vector exposing (..)
 
 
 type alias Model =
     { name : String
-    , pos : Coordinate
+    , pos : Vector
     }
