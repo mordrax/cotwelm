@@ -13,8 +13,10 @@ Mines lvl 1 - 8
 -}
 
 import GameData.ASCIIMaps exposing (..)
+import GameData.Building as Building exposing (..)
 import GameData.Tile exposing (..)
-import Game.Data exposing (..)
+import GameData.Types exposing (..)
+import Vector exposing (..)
 import Lib exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -25,7 +27,12 @@ import Dict exposing (..)
 type alias Model =
     { currentArea : Area
     , maps : Dict String Map
+    , buildings : Dict String (List Building)
     }
+
+
+type alias Map =
+    Dict String Tile
 
 
 initMaps : Model
@@ -48,12 +55,23 @@ initMaps =
                 , ( toString Farm, Dict.fromList (tilesToTuples Farm) )
                 , ( toString DungeonLevelOne, Dict.fromList (tilesToTuples DungeonLevelOne) )
                 ]
+        , buildings =
+            Dict.fromList
+                [ ( toString Village, villageBuildings )
+                , ( toString Farm, farmBuildings )
+                , ( toString DungeonLevelOne, dungeonLevelOneBuildings )
+                ]
         }
+
+
+updateArea : GameData.Types.Area -> Model -> Model
+updateArea area model =
+    { model | currentArea = area }
 
 
 view : Model -> Html a
 view model =
-    villageMap model.currentArea model
+    mapToHtml model.currentArea model
 
 
 {-| Given an area, will return a map of that area or an empty dictionary if invalid area
@@ -72,32 +90,82 @@ getMap area model =
                 Dict.empty
 
 
-getBuildings : Area -> List Building
-getBuildings area =
+getBuildings : Area -> Model -> List Building
+getBuildings area model =
+    let
+        maybeBuildings =
+            Dict.get (toString area) model.buildings
+    in
+        case maybeBuildings of
+            Just buildings ->
+                buildings
+
+            Nothing ->
+                []
+
+
+getASCIIMap : Area -> List String
+getASCIIMap area =
     case area of
         Village ->
-            villageBuildings
+            villageMap
 
         Farm ->
-            farmBuildings
+            farmMap
+
+        DungeonLevelOne ->
+            dungeonLevelOneMap
 
         _ ->
             []
 
 
-villageMap : Area -> Model -> Html a
-villageMap area model =
+
+--------------------------
+-- Initialise buildings --
+--------------------------
+
+
+villageBuildings : List Building
+villageBuildings =
     let
-        listOfTiles =
-            Dict.toList (getMap area model) |> List.map snd
-
-        tilesHtml =
-            List.map tileToHtml listOfTiles
-
-        buildingsHtml =
-            List.map buildingToHtml (getBuildings area)
+        farmGate =
+            { area = Farm, pos = (Vector.new 11 31) }
     in
-        div [] (tilesHtml ++ buildingsHtml)
+        [ Building.newWithLink Gate_NS (Vector.new 10 0) "Village Gate" (Just farmGate)
+        , Building.new StrawHouse_EF (Vector.new 3 6) "Junk Shop"
+        , Building.new StrawHouse_WF (Vector.new 16 5) "Private House"
+        , Building.new Hut_EF (Vector.new 7 13) "Potion Store"
+        , Building.new StrawHouse_WF (Vector.new 14 12) "Private House 2"
+        , Building.new StrawHouse_EF (Vector.new 6 17) "Weapon Shop"
+        , Building.new StrawHouse_WF (Vector.new 14 17) "General Store"
+        , Building.new HutTemple_NF (Vector.new 9 22) "Odin's Temple"
+        ]
+
+
+farmBuildings : List Building
+farmBuildings =
+    let
+        villageGate =
+            { area = Village, pos = Vector.new 11 1 }
+
+        mineExit =
+            { area = DungeonLevelOne, pos = Vector.new 22 39 }
+    in
+        [ Building.newWithLink Gate_NS (Vector.new 10 32) "Farm Gate" (Just villageGate)
+        , Building.new StrawHouse_WF (Vector.new 43 23) "Adopted Parents House"
+        , Building.newWithLink MineEntrance (Vector.new 24 1) "Mine Entrance" (Just mineExit)
+        ]
+
+
+dungeonLevelOneBuildings : List Building
+dungeonLevelOneBuildings =
+    let
+        mineEntrance =
+            { area = Farm, pos = Vector.new 24 2 }
+    in
+        [ Building.newWithLink MineEntrance (Vector.new 22 40) "Mine Exit" (Just mineEntrance)
+        ]
 
 
 
@@ -106,16 +174,31 @@ villageMap area model =
 ------------------------------------------
 
 
+mapToHtml : Area -> Model -> Html a
+mapToHtml area model =
+    let
+        listOfTiles =
+            Dict.toList (getMap area model) |> List.map snd
+
+        tilesHtml =
+            List.map tileToHtml listOfTiles
+
+        buildingsHtml =
+            List.map buildingToHtml (getBuildings area model)
+    in
+        div [] (tilesHtml ++ buildingsHtml)
+
+
 tileToHtml : Tile -> Html a
 tileToHtml tile =
-    div [ class ("tile " ++ toString tile.tile), coordToHtmlStyle tile.pos ] []
+    div [ class ("tile " ++ toString tile.tile), vectorToHtmlStyle tile.pos ] []
 
 
 buildingToHtml : Building -> Html a
 buildingToHtml building =
     let
         posStyle =
-            coordToHtmlStyle building.pos
+            vectorToHtmlStyle building.pos
     in
         div [ class ("tile " ++ (toString building.tile)), posStyle ] []
 

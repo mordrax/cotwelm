@@ -57,7 +57,7 @@
     background: url('/assets/original/tiles.png') -64px -32px;
 }
 .MineEntrance {
-    background: url('/assets/original/tiles.png') -0px -32px;
+    background: url('/assets/original/tiles.png') -64px -0px;
 }
 .Well {
     background: url('/assets/original/tiles.png') -160px -32px;

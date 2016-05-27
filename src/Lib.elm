@@ -2,20 +2,12 @@ module Lib exposing (..)
 
 import Html.Attributes exposing (style)
 import Html exposing (..)
+import Vector exposing (..)
 
 
-type alias Coordinate =
-    { x : Int, y : Int }
-
-
-coordToHtmlStyle : Coordinate -> Attribute msg
-coordToHtmlStyle coords =
+vectorToHtmlStyle : Vector -> Attribute msg
+vectorToHtmlStyle v =
     style
-        [ ( "top", (toString (coords.y * 32)) ++ "px" )
-        , ( "left", (toString (coords.x * 32)) ++ "px" )
+        [ ( "top", (toString (v.y * 32)) ++ "px" )
+        , ( "left", (toString (v.x * 32)) ++ "px" )
         ]
-
-
-coordAdd : Coordinate -> Coordinate -> Coordinate
-coordAdd c1 c2 =
-    { x = c1.x + c2.x, y = c1.y + c2.y }

@@ -11,7 +11,8 @@ import CharCreation.Data exposing (..)
 
 -- Main game screen
 
-import Game.Game as Game exposing (..)
+import Game.Game exposing (..)
+import Game.Data exposing (..)
 
 
 -- Cotw specific data
@@ -49,7 +50,7 @@ initModel : ( Model, Cmd a )
 initModel =
     ( { currentPage = GamePage
       , character = CharCreation.initChar
-      , game = Game.initGame
+      , game = Game.Game.initGame
       }
     , Cmd.none
     )
@@ -58,7 +59,7 @@ initModel =
 type alias Model =
     { currentPage : Page
     , character : CharCreation.Data.Model
-    , game : Game.Model
+    , game : Game.Data.Model
     }
 
 
@@ -78,7 +79,11 @@ update msg model =
             ( { model | character = CharCreation.update msg model.character }, Cmd.none )
 
         GameMsg (Just msg) ->
-            ( { model | game = Game.update msg model.game }, Cmd.none )
+            let
+                ( game', cmd ) =
+                    Game.Game.update msg model.game
+            in
+                ( { model | game = game' }, Cmd.none )
 
         GameMsg Nothing ->
             ( model, Cmd.none )
@@ -94,7 +99,7 @@ view model =
             div [] [ map SplashMsg SplashView.view ]
 
         GamePage ->
-            div [] [ map CotwData.GameMsg (Game.view model.game) ]
+            div [] [ map CotwData.GameMsg (Game.Game.view model.game) ]
 
         _ ->
             h1 [] [ text "Page not implemented!" ]

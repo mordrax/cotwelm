@@ -1,22 +1,14 @@
 module GameData.Tile exposing (..)
 
-import Lib exposing (..)
+import Vector exposing (..)
+import GameData.Building exposing (..)
 
 
 type alias Tile =
     { solid : Bool
     , tile : TileType
-    , pos : Coordinate
+    , pos : Vector
     , building : Maybe Building
-    }
-
-
-type alias Building =
-    { tile : BuildingType
-    , entry : Coordinate
-    , pos : Coordinate
-    , name : String
-    , size : Coordinate
     }
 
 
@@ -40,16 +32,6 @@ type TileType
     | Crop
     | Well
     | TreasurePile
-
-
-type BuildingType
-    = Gate_NS
-    | Hut_EF
-    | StrawHouse_EF
-    | StrawHouse_WF
-    | BurntStrawHouse_WF
-    | HutTemple_NF
-    | MineEntrance
 
 
 asciiTileData : Char -> ( TileType, Bool )

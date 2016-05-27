@@ -1,8 +1,9 @@
 module Game.Game exposing (..)
 
-import Game.Data as Game exposing (..)
+import Game.Data exposing (..)
 import Game.Maps exposing (..)
 import Game.Collision exposing (..)
+import GameData.Building exposing (..)
 import Hero.Hero exposing (..)
 import Hero.Data exposing (..)
 import Lib exposing (..)
@@ -10,62 +11,38 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-type alias Model =
-    { name : String
-    , hero : Hero.Data.Model
-    , map : Game.Maps.Model
-    }
-
-
-initGame : Model
+initGame : Game.Data.Model
 initGame =
     { name = "A new game"
     , hero = Hero.Hero.initHero
     , map = Game.Maps.initMaps
+    , currentBuilding = Nothing
     }
 
 
-moveHero : Direction -> Model -> Hero.Data.Model
-moveHero dir model =
-    let
-        heroPos =
-            model.hero.pos
-
-        newPos =
-            case dir of
-                Up ->
-                    coordAdd heroPos { x = 0, y = -1 }
-
-                Down ->
-                    coordAdd heroPos { x = 0, y = 1 }
-
-                Left ->
-                    coordAdd heroPos { x = -1, y = 0 }
-
-                Right ->
-                    coordAdd heroPos { x = 1, y = 0 }
-
-        hero =
-            model.hero
-    in
-        { hero
-            | pos =
-                if (isTileObstructed newPos model.map) then
-                    model.hero.pos
-                else
-                    newPos
-        }
-
-
-update : Game.Msg -> Model -> Model
+update : Msg -> Game.Data.Model -> ( Game.Data.Model, Cmd Msg )
 update msg model =
     case msg of
-        Key dir ->
-            { model | hero = moveHero dir model }
+        KeyDir dir ->
+            tryMoveHero dir model
+
+        Map ->
+            Debug.log "escaping"
+                ( { model | currentBuilding = Nothing }, Cmd.none )
 
 
-view : Model -> Html (Maybe Game.Msg)
+view : Game.Data.Model -> Html (Maybe Game.Data.Msg)
 view model =
+    case model.currentBuilding of
+        Nothing ->
+            viewMap model
+
+        Just building ->
+            viewBuilding building
+
+
+viewMap : Game.Data.Model -> Html (Maybe Game.Data.Msg)
+viewMap model =
     let
         title =
             h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
@@ -77,6 +54,11 @@ view model =
             ]
 
 
-viewHero : Hero.Data.Model -> Html (Maybe Game.Msg)
+viewBuilding : GameData.Building.Building -> Html (Maybe Game.Data.Msg)
+viewBuilding building =
+    div [] [ h1 [] [ text building.name ] ]
+
+
+viewHero : Hero.Data.Model -> Html (Maybe Game.Data.Msg)
 viewHero hero =
-    div [ class "tile maleHero", coordToHtmlStyle hero.pos ] []
+    div [ class "tile maleHero", vectorToHtmlStyle hero.pos ] []
