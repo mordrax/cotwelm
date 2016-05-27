@@ -48,7 +48,7 @@ initMaps =
         toKVPair =
             \tile -> ( toString tile.pos, tile )
     in
-        { currentArea = Farm
+        { currentArea = Village
         , maps =
             Dict.fromList
                 [ ( toString Village, Dict.fromList (tilesToTuples Village) )

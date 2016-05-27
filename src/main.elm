@@ -1,5 +1,7 @@
 module Main exposing (..)
 
+--Splash Screen
+
 import SplashView exposing (..)
 
 
@@ -29,14 +31,16 @@ import Game.Keyboard exposing (..)
 
 import Html exposing (..)
 import Html.App exposing (map)
+import Navigation
+import String exposing (..)
 
 
-main : Platform.Program Basics.Never
 main =
-    Html.App.program
+    Navigation.program urlParser
         { init = initModel
         , update = update
         , view = view
+        , urlUpdate = urlUpdate
         , subscriptions = subscriptions
         }
 
@@ -46,14 +50,16 @@ subscriptions model =
     Sub.map GameMsg Game.Keyboard.subscriptions
 
 
-initModel : ( Model, Cmd a )
-initModel =
-    ( { currentPage = GamePage
-      , character = CharCreation.initChar
-      , game = Game.Game.initGame
-      }
-    , Cmd.none
-    )
+initModel : String -> ( Model, Cmd CotwData.Msg )
+initModel url =
+    let
+        model =
+            { currentPage = GamePage
+            , character = CharCreation.initChar
+            , game = Game.Game.initGame
+            }
+    in
+        urlUpdate url model
 
 
 type alias Model =
@@ -67,13 +73,13 @@ update : CotwData.Msg -> Model -> ( Model, Cmd CotwData.Msg )
 update msg model =
     case msg of
         SplashMsg NewGame ->
-            ( { model | currentPage = CharCreationPage }, Cmd.none )
+            ( model, Navigation.newUrl "#/charCreation" )
 
         SplashMsg _ ->
             ( { model | currentPage = NotImplementedPage }, Cmd.none )
 
         CharCreationMsg StartGame ->
-            ( { model | currentPage = GamePage }, Cmd.none )
+            ( model, Navigation.newUrl "#/game" )
 
         CharCreationMsg msg ->
             ( { model | character = CharCreation.update msg model.character }, Cmd.none )
@@ -93,13 +99,37 @@ view : Model -> Html CotwData.Msg
 view model =
     case model.currentPage of
         CharCreationPage ->
-            div [] [ map CharCreationMsg (CharCreation.view model.character) ]
+            div [] [ Html.App.map CharCreationMsg (CharCreation.view model.character) ]
 
         SplashPage ->
-            div [] [ map SplashMsg SplashView.view ]
+            div [] [ Html.App.map SplashMsg SplashView.view ]
 
         GamePage ->
-            div [] [ map CotwData.GameMsg (Game.Game.view model.game) ]
+            div [] [ Html.App.map CotwData.GameMsg (Game.Game.view model.game) ]
 
         _ ->
             h1 [] [ text "Page not implemented!" ]
+
+
+urlUpdate : String -> Model -> ( Model, Cmd CotwData.Msg )
+urlUpdate url model =
+    if url == "charCreation" then
+        ( { model | currentPage = CharCreationPage }, Cmd.none )
+    else if url == "game" then
+        ( { model | currentPage = GamePage }, Cmd.none )
+    else
+        ( { model | currentPage = SplashPage }, Cmd.none )
+
+
+
+-- URL PARSERS - check out evancz/url-parser for fancier URL parsing
+
+
+fromUrl : String -> String
+fromUrl url =
+    String.dropLeft 2 url
+
+
+urlParser : Navigation.Parser String
+urlParser =
+    Navigation.makeParser (fromUrl << .hash)
