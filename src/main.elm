@@ -35,6 +35,7 @@ import Navigation
 import String exposing (..)
 
 
+main : Program Never
 main =
     Navigation.program urlParser
         { init = initModel
