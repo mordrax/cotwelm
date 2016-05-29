@@ -1,13 +1,21 @@
-module Hero.Hero exposing (..)
+module Hero exposing (..)
 
-import Hero.Data exposing (..)
+import Equipment exposing (..)
 import Vector exposing (..)
+
+
+type alias Model =
+    { name : String
+    , pos : Vector
+    , equipment : Equipment.Model
+    }
 
 
 initHero : Model
 initHero =
     { name = "Bob the Brave"
     , pos = { x = 11, y = 17 }
+    , equipment = Equipment.initModel
     }
 
 

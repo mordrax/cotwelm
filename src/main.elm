@@ -48,7 +48,7 @@ main =
 
 subscriptions : Model -> Sub CotwData.Msg
 subscriptions model =
-    Sub.map GameMsg Game.Keyboard.subscriptions
+    Sub.batch (List.map (Sub.map GameMsg) Game.Keyboard.subscriptions)
 
 
 initModel : String -> ( Model, Cmd CotwData.Msg )

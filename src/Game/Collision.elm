@@ -10,14 +10,14 @@ import Game.Keyboard exposing (..)
 import Game.Maps exposing (..)
 import GameData.Tile exposing (..)
 import GameData.Building as Building exposing (..)
-import Hero.Hero exposing (..)
+import Hero exposing (..)
 
 
 tryMoveHero : Direction -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Msg )
 tryMoveHero dir model =
     let
         movedHero =
-            Hero.Hero.update (dirToVector dir) model.hero
+            Hero.update (dirToVector dir) model.hero
 
         obstructions =
             getObstructions movedHero.pos model.map
@@ -40,10 +40,10 @@ enterBuilding : Building -> Game.Data.Model -> Game.Data.Model
 enterBuilding building model =
     case building.link of
         Nothing ->
-            { model | currentBuilding = Just building }
+            { model | currentScreen = BuildingScreen building }
 
         Just link ->
-            { model | map = Game.Maps.updateArea link.area model.map, hero = Hero.Hero.teleport link.pos model.hero }
+            { model | map = Game.Maps.updateArea link.area model.map, hero = Hero.teleport link.pos model.hero }
 
 
 {-| Given a position and a map, work out what is on the square

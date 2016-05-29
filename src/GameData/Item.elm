@@ -1,9 +1,7 @@
 module GameData.Item exposing (..)
 
-import Dict exposing (..)
 
-
-type Item
+type ItemType
     = Weapon WeaponModel
     | Armour ArmourModel
     | Shield
@@ -28,22 +26,13 @@ type ItemStatus
     | Enchanted
 
 
-type alias Model =
-    Dict String Item
-
-
-initModel : Model
-initModel =
-    Dict.empty
-
-
 
 ----------------------------------------------------------------------
 ---------------------------- Base items ------------------------------
 ----------------------------------------------------------------------
 
 
-type alias BaseItemModel =
+type alias Model =
     { name : String
     , buy : Int
     , sell : Int
@@ -52,11 +41,12 @@ type alias BaseItemModel =
     , css : String
     , status : ItemStatus
     , isIdentified : Bool
+    , itemType : ItemType
     }
 
 
-newBaseItem : String -> Int -> Int -> Int -> Int -> String -> BaseItemModel
-newBaseItem name weight bulk buy sell css =
+newItem : ItemType -> String -> Int -> Int -> Int -> Int -> String -> Model
+newItem itemType name weight bulk buy sell css =
     { name = name
     , buy = buy
     , sell = sell
@@ -65,12 +55,8 @@ newBaseItem name weight bulk buy sell css =
     , css = css
     , status = Normal
     , isIdentified = True
+    , itemType = itemType
     }
-
-
-emptyBaseItem : BaseItemModel
-emptyBaseItem =
-    newBaseItem "" 0 0 0 0 ""
 
 
 
@@ -101,72 +87,66 @@ type WeaponType
 
 
 type alias WeaponModel =
-    { id : String
-    , class : Int
-    , base : BaseItemModel
+    { class : Int
     }
 
 
-newWeapon : String -> WeaponType -> WeaponModel
-newWeapon id weaponType =
-    let
-        model =
-            { id = id, class = 0, base = emptyBaseItem }
-    in
-        case weaponType of
-            BrokenSword ->
-                { model | class = 0, base = (newBaseItem "Broken Sword" 1000 5000 0 25 "BrokenSword") }
+newWeapon : WeaponType -> Model
+newWeapon weaponType =
+    case weaponType of
+        BrokenSword ->
+            newItem (Weapon { class = 0 }) "Broken Sword" 1000 5000 0 25 "BrokenSword"
 
-            Club ->
-                { model | class = 1, base = newBaseItem "Club" 1500 3000 105 60 "Club" }
+        Club ->
+            newItem (Weapon { class = 1 }) "Club" 1500 3000 105 60 "Club"
 
-            Dagger ->
-                { model | class = 2, base = newBaseItem "Dagger" 500 500 420 240 "Sword" }
+        Dagger ->
+            newItem (Weapon { class = 2 }) "Dagger" 500 500 420 240 "Sword"
 
-            Hammer ->
-                { model | class = 2, base = newBaseItem "Hammer" 2000 3000 420 240 "Hammer" }
+        Hammer ->
+            newItem (Weapon { class = 2 }) "Hammer" 2000 3000 420 240 "Hammer"
 
-            HandAxe ->
-                { model | class = 3, base = newBaseItem "Hand Axe" 1000 3000 472 270 "Axe" }
+        HandAxe ->
+            newItem (Weapon { class = 3 }) "Hand Axe" 1000 3000 472 270 "Axe"
 
-            Quarterstaff ->
-                { model | class = 3, base = newBaseItem "Quarterstaff" 750 5000 648 360 "Spear" }
+        Quarterstaff ->
+            newItem (Weapon { class = 3 }) "Quarterstaff" 750 5000 648 360 "Spear"
 
-            Spear ->
-                { model | class = 4, base = newBaseItem "Spear" 1500 5000 840 480 "Spear" }
+        Spear ->
+            newItem (Weapon { class = 4 }) "Spear" 1500 5000 840 480 "Spear"
 
-            ShortSword ->
-                { model | class = 5, base = newBaseItem "Short Sword" 1000 5000 1470 840 "Sword" }
+        ShortSword ->
+            newItem (Weapon { class = 5 }) "Short Sword" 1000 5000 1470 840 "Sword"
 
-            Mace ->
-                { model | class = 5, base = newBaseItem "Mace" 2500 4375 1728 960 "Mace" }
+        Mace ->
+            newItem (Weapon { class = 5 }) "Mace" 2500 4375 1728 960 "Mace"
 
-            Flail ->
-                { model | class = 6, base = newBaseItem "Flail" 2000 3250 1512 840 "Flail" }
+        Flail ->
+            newItem (Weapon { class = 6 }) "Flail" 2000 3250 1512 840 "Flail"
 
-            Axe ->
-                { model | class = 6, base = newBaseItem "Axe" 2000 5000 1944 1080 "Axe" }
+        Axe ->
+            newItem (Weapon { class = 6 }) "Axe" 2000 5000 1944 1080 "Axe"
 
-            WarHammer ->
-                { model | class = 7, base = newBaseItem "War Hammer" 1400 7500 2160 1200 "Hammer" }
+        WarHammer ->
+            newItem (Weapon { class = 7 }) "War Hammer" 1400 7500 2160 1200 "Hammer"
 
-            LongSword ->
-                { model | class = 8, base = newBaseItem "Long Sword" 1500 8000 3240 1800 "Sword" }
+        LongSword ->
+            newItem (Weapon { class = 8 }) "Long Sword" 1500 8000 3240 1800 "Sword"
 
-            BattleAxe ->
-                { model | class = 8, base = newBaseItem "Battle Axe" 3000 6000 2160 1200 "Axe" }
+        BattleAxe ->
+            newItem (Weapon { class = 8 }) "Battle Axe" 3000 6000 2160 1200 "Axe"
 
-            BroadSword ->
-                { model | class = 9, base = newBaseItem "Broad Sword" 1600 9000 3240 1800 "Sword" }
+        BroadSword ->
+            newItem (Weapon { class = 9 }) "Broad Sword" 1600 9000 3240 1800 "Sword"
 
-            MorningStar ->
-                { model | class = 10, base = newBaseItem "Morning Star" 3000 9000 2160 1200 "MorningStar" }
+        MorningStar ->
+            newItem (Weapon { class = 10 }) "Morning Star" 3000 9000 2160 1200 "MorningStar"
 
-            BastardSword ->
-                { model | class = 11, base = newBaseItem "Bastard Sword" 3000 10000 4320 2400 "Sword" }
+        BastardSword ->
+            newItem (Weapon { class = 11 }) "Bastard Sword" 3000 10000 4320 2400 "Sword"
 
-            TwoHandedSword ->
-                { model | class = 12, base = newBaseItem "Two Handed Sword" 5000 12000 6360 3600 "Sword" }
+        TwoHandedSword ->
+            newItem (Weapon { class = 12 }) "Two Handed Sword" 5000 12000 6360 3600 "Sword"
 
 
 
@@ -190,45 +170,41 @@ type ArmourType
 
 
 type alias ArmourModel =
-    { id : String, ac : Int, base : BaseItemModel }
+    { ac : Int }
 
 
-newArmour : String -> ArmourType -> ArmourModel
-newArmour id armourType =
-    let
-        model =
-            { id = id, ac = 0, base = emptyBaseItem }
-    in
-        case armourType of
-            RustyArmour ->
-                { model | ac = 0, base = newBaseItem "Rusty Armour" 10000 30000 0 25 "BrokenArmour" }
+newArmour : ArmourType -> Model
+newArmour armourType =
+    case armourType of
+        RustyArmour ->
+            newItem (Armour { ac = 0 }) "Rusty Armour" 10000 30000 0 25 "BrokenArmour"
 
-            LeatherArmour ->
-                { model | ac = 6, base = newBaseItem "Leather Armour" 5000 2400 1080 600 "LeatherArmour" }
+        LeatherArmour ->
+            newItem (Armour { ac = 6 }) "Leather Armour" 5000 2400 1080 600 "LeatherArmour"
 
-            StuddedLeatherArmour ->
-                { model | ac = 12, base = newBaseItem "Studded Leather Armour" 7000 25000 3150 1800 "LeatherArmour" }
+        StuddedLeatherArmour ->
+            newItem (Armour { ac = 12 }) "Studded Leather Armour" 7000 25000 3150 1800 "LeatherArmour"
 
-            RingMail ->
-                { model | ac = 18, base = newBaseItem "Ring Mail" 8000 30000 6300 3600 "MetalArmour" }
+        RingMail ->
+            newItem (Armour { ac = 18 }) "Ring Mail" 8000 30000 6300 3600 "MetalArmour"
 
-            ScaleMail ->
-                { model | ac = 24, base = newBaseItem "Scale Mail" 9000 30000 10800 6000 "MetalArmour" }
+        ScaleMail ->
+            newItem (Armour { ac = 24 }) "Scale Mail" 9000 30000 10800 6000 "MetalArmour"
 
-            ChainMail ->
-                { model | ac = 30, base = newBaseItem "Chain Mail" 10000 30000 16200 9000 "MetalArmour" }
+        ChainMail ->
+            newItem (Armour { ac = 30 }) "Chain Mail" 10000 30000 16200 9000 "MetalArmour"
 
-            SplintMail ->
-                { model | ac = 36, base = newBaseItem "Splint Mail" 12000 40000 27000 15000 "MetalArmour" }
+        SplintMail ->
+            newItem (Armour { ac = 36 }) "Splint Mail" 12000 40000 27000 15000 "MetalArmour"
 
-            PlateMail ->
-                { model | ac = 42, base = newBaseItem "Plate Mail" 15000 40000 42000 24000 "MetalArmour" }
+        PlateMail ->
+            newItem (Armour { ac = 42 }) "Plate Mail" 15000 40000 42000 24000 "MetalArmour"
 
-            PlateArmour ->
-                { model | ac = 48, base = newBaseItem "Plate Armour" 15000 60000 42000 24000 "MetalArmour" }
+        PlateArmour ->
+            newItem (Armour { ac = 48 }) "Plate Armour" 15000 60000 42000 24000 "MetalArmour"
 
-            MeteoricSteelPlate ->
-                { model | ac = 54, base = newBaseItem "Meteoric Steel Plate" 5000 30000 105000 60000 "MetalArmour" }
+        MeteoricSteelPlate ->
+            newItem (Armour { ac = 54 }) "Meteoric Steel Plate" 5000 30000 105000 60000 "MetalArmour"
 
-            ElvenChainMail ->
-                { model | ac = 52, base = newBaseItem "Elven Chain Mail" 50000 24000 162000 90000 "MetalArmour" }
+        ElvenChainMail ->
+            newItem (Armour { ac = 52 }) "Elven Chain Mail" 50000 24000 162000 90000 "MetalArmour"
