@@ -1,16 +1,22 @@
 module Game.Data exposing (..)
 
-import Hero.Data exposing (..)
+import Hero exposing (..)
 import GameData.Building exposing (..)
 import Game.Maps exposing (..)
 
 
 type alias Model =
     { name : String
-    , hero : Hero.Data.Model
+    , hero : Hero.Model
     , map : Game.Maps.Model
-    , currentBuilding : Maybe GameData.Building.Building
+    , currentScreen : Screen
     }
+
+
+type Screen
+    = MapScreen
+    | InventoryScreen
+    | BuildingScreen Building
 
 
 type Direction
@@ -23,6 +29,7 @@ type Direction
 type KeyCmd
     = KeyDir Direction
     | Map
+    | Inventory
 
 
 type alias Msg =
