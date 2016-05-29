@@ -9,6 +9,7 @@ import Hero.Data exposing (..)
 import Lib exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import GameData.Item exposing (..)
 
 
 initGame : Game.Data.Model
