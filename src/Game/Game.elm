@@ -8,8 +8,7 @@ import Hero exposing (..)
 import Lib exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import GameData.Item exposing (..)
-import GameData.Item exposing (..)
+import Equipment exposing (..)
 
 
 initGame : Game.Data.Model
@@ -44,7 +43,7 @@ view model =
             viewBuilding building
 
         InventoryScreen ->
-            viewInventory model.hero
+            viewInventory model
 
 
 viewMap : Game.Data.Model -> Html (Maybe Game.Data.Msg)
@@ -70,51 +69,31 @@ viewHero hero =
     div [ class "tile maleHero", vectorToHtmlStyle hero.pos ] []
 
 
-viewInventory : Hero.Model -> Html (Maybe Game.Data.Msg)
-viewInventory hero =
+viewInventory : Game.Data.Model -> Html (Maybe Game.Data.Msg)
+viewInventory model =
     let
-        weapon =
-            case hero.equipment.weapon of
-                Nothing ->
-                    div [] []
+        shopView =
+            case model.currentScreen of
+                BuildingScreen b ->
+                    viewShop b
 
-                Just item ->
-                    viewItem item
+                _ ->
+                    div [] []
     in
-        div [ class "ui two column grid" ]
-            [ div [ class "six wide column" ]
-                [ div [ class "ui grid" ]
-                    [ div [ class "three wide column equipmentSilot" ]
-                        [ weapon
+        div []
+            [ span [ class "ui text container segment" ]
+                [ text "Inventory screen" ]
+            , div [ class "ui two column grid" ]
+                [ div [ class "six wide column" ]
+                    [ viewEquipment model.hero.equipment
+                    , div [ class "ten wide column" ]
+                        [ shopView
                         ]
                     ]
                 ]
             ]
 
 
-viewItem : GameData.Item.Model -> Html (Maybe Game.Data.Msg)
-viewItem item =
-    div
-        [ class "ui item"
-        , style
-            [ ( "opacity", "1" )
-            , ( "cursor", "move" )
-            , ( "width", "32px" )
-            , ( "height", "64px" )
-            ]
-        ]
-        [ div [ class "image" ]
-            [ i [ class ("cotwItem " ++ item.css) ] []
-            ]
-        , div [ class "content" ]
-            [ a [ class "header" ]
-                [--text (toString item.itemType)
-                ]
-            , div [ class "meta" ]
-                [ span [ class "date" ] []
-                ]
-            , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
-                [ text item.name
-                ]
-            ]
-        ]
+viewShop : Building -> Html (Maybe Game.Data.Msg)
+viewShop building =
+    div [ class "ui block header" ] [ text "shop" ]
