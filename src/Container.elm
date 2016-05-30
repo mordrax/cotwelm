@@ -16,12 +16,3 @@ initModel =
     , bulk = 0
     , weight = 0
     }
-
-
-new : Int -> Int -> Model
-new bulkCapacity weightCapacity =
-    { bulkCapacity = bulkCapacity
-    , weightCapacity = weightCapacity
-    , bulk = 0
-    , weight = 0
-    }
