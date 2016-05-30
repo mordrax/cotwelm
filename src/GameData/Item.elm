@@ -1,5 +1,8 @@
 module GameData.Item exposing (..)
 
+import Html exposing (..)
+import Html.Attributes exposing (..)
+
 
 type ItemType
     = Weapon WeaponModel
@@ -57,6 +60,34 @@ newItem itemType name weight bulk buy sell css =
     , isIdentified = True
     , itemType = itemType
     }
+
+
+viewItem : Model -> Html msg
+viewItem item =
+    div
+        [ class "ui item"
+        , style
+            [ ( "opacity", "1" )
+            , ( "cursor", "move" )
+            , ( "width", "32px" )
+            , ( "height", "64px" )
+            ]
+        ]
+        [ div [ class "image" ]
+            [ i [ class ("cotwItem " ++ item.css) ] []
+            ]
+        , div [ class "content" ]
+            [ a [ class "header" ]
+                [--text (toString item.itemType)
+                ]
+            , div [ class "meta" ]
+                [ span [ class "date" ] []
+                ]
+            , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
+                [ text item.name
+                ]
+            ]
+        ]
 
 
 
