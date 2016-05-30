@@ -9141,6 +9141,92 @@ var _mordrax$cotwelm$SplashView$view = function () {
 			]));
 }();
 
+var _mordrax$cotwelm$GameData_Item$viewItem = function (item) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('ui item'),
+				_elm_lang$html$Html_Attributes$style(
+				_elm_lang$core$Native_List.fromArray(
+					[
+						{ctor: '_Tuple2', _0: 'opacity', _1: '1'},
+						{ctor: '_Tuple2', _0: 'cursor', _1: 'move'},
+						{ctor: '_Tuple2', _0: 'width', _1: '32px'},
+						{ctor: '_Tuple2', _0: 'height', _1: '64px'}
+					]))
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('image')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$i,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class(
+								A2(_elm_lang$core$Basics_ops['++'], 'cotwItem ', item.css))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('content')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('header')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[])),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('meta')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$span,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('date')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[]))
+							])),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('description'),
+								_elm_lang$html$Html_Attributes$style(
+								_elm_lang$core$Native_List.fromArray(
+									[
+										{ctor: '_Tuple2', _0: 'maxWidth', _1: '7em'}
+									]))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text(item.name)
+							]))
+					]))
+			]));
+};
 var _mordrax$cotwelm$GameData_Item$Model = F9(
 	function (a, b, c, d, e, f, g, h, i) {
 		return {name: a, buy: b, sell: c, weight: d, bulk: e, css: f, status: g, isIdentified: h, itemType: i};
@@ -9537,6 +9623,46 @@ var _mordrax$cotwelm$GameData_Item$StuddedLeatherArmour = {ctor: 'StuddedLeather
 var _mordrax$cotwelm$GameData_Item$LeatherArmour = {ctor: 'LeatherArmour'};
 var _mordrax$cotwelm$GameData_Item$RustyArmour = {ctor: 'RustyArmour'};
 
+var _mordrax$cotwelm$Equipment$maybeItemView = function (maybeItem) {
+	var _p0 = maybeItem;
+	if (_p0.ctor === 'Just') {
+		return _mordrax$cotwelm$GameData_Item$viewItem(_p0._0);
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	}
+};
+var _mordrax$cotwelm$Equipment$viewEquipment = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('ui grid')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('three wide column equipmentSlot')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_mordrax$cotwelm$Equipment$maybeItemView(model.weapon),
+						_mordrax$cotwelm$Equipment$maybeItemView(model.armour)
+					]))
+			]));
+};
+var _mordrax$cotwelm$Equipment$equipmentSlotStyle = _elm_lang$html$Html_Attributes$style(
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'border', _1: '1px Solid Black'}
+		]));
 var _mordrax$cotwelm$Equipment$initModel = {
 	weapon: _elm_lang$core$Maybe$Just(
 		_mordrax$cotwelm$GameData_Item$newWeapon(_mordrax$cotwelm$GameData_Item$Dagger)),
@@ -10329,119 +10455,53 @@ var _mordrax$cotwelm$Game_Collision$tryMoveHero = F2(
 		};
 	});
 
-var _mordrax$cotwelm$Game_Game$viewItem = function (item) {
+var _mordrax$cotwelm$Game_Game$viewShop = function (building) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html_Attributes$class('ui item'),
-				_elm_lang$html$Html_Attributes$style(
-				_elm_lang$core$Native_List.fromArray(
-					[
-						{ctor: '_Tuple2', _0: 'opacity', _1: '1'},
-						{ctor: '_Tuple2', _0: 'cursor', _1: 'move'},
-						{ctor: '_Tuple2', _0: 'width', _1: '32px'},
-						{ctor: '_Tuple2', _0: 'height', _1: '64px'}
-					]))
+				_elm_lang$html$Html_Attributes$class('ui block header')
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('image')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$i,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class(
-								A2(_elm_lang$core$Basics_ops['++'], 'cotwItem ', item.css))
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[]))
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('content')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$a,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('header')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[])),
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('meta')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$span,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('date')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[]))
-							])),
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('description'),
-								_elm_lang$html$Html_Attributes$style(
-								_elm_lang$core$Native_List.fromArray(
-									[
-										{ctor: '_Tuple2', _0: 'maxWidth', _1: '7em'}
-									]))
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text(item.name)
-							]))
-					]))
+				_elm_lang$html$Html$text('shop')
 			]));
 };
-var _mordrax$cotwelm$Game_Game$viewInventory = function (hero) {
-	var weapon = function () {
-		var _p0 = hero.equipment.weapon;
-		if (_p0.ctor === 'Nothing') {
+var _mordrax$cotwelm$Game_Game$viewInventory = function (model) {
+	var shopView = function () {
+		var _p0 = model.currentScreen;
+		if (_p0.ctor === 'BuildingScreen') {
+			return _mordrax$cotwelm$Game_Game$viewShop(_p0._0);
+		} else {
 			return A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[]));
-		} else {
-			return _mordrax$cotwelm$Game_Game$viewItem(_p0._0);
 		}
 	}();
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('ui two column grid')
-			]),
+			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
+				A2(
+				_elm_lang$html$Html$span,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('ui text container segment')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Inventory screen')
+					])),
 				A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Attributes$class('six wide column')
+						_elm_lang$html$Html_Attributes$class('ui two column grid')
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -10449,18 +10509,19 @@ var _mordrax$cotwelm$Game_Game$viewInventory = function (hero) {
 						_elm_lang$html$Html$div,
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html_Attributes$class('ui grid')
+								_elm_lang$html$Html_Attributes$class('six wide column')
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[
+								_mordrax$cotwelm$Equipment$viewEquipment(model.hero.equipment),
 								A2(
 								_elm_lang$html$Html$div,
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$class('three wide column equipmentSilot')
+										_elm_lang$html$Html_Attributes$class('ten wide column')
 									]),
 								_elm_lang$core$Native_List.fromArray(
-									[weapon]))
+									[shopView]))
 							]))
 					]))
 			]));
@@ -10522,7 +10583,7 @@ var _mordrax$cotwelm$Game_Game$view = function (model) {
 		case 'BuildingScreen':
 			return _mordrax$cotwelm$Game_Game$viewBuilding(_p1._0);
 		default:
-			return _mordrax$cotwelm$Game_Game$viewInventory(model.hero);
+			return _mordrax$cotwelm$Game_Game$viewInventory(model);
 	}
 };
 var _mordrax$cotwelm$Game_Game$update = F2(
