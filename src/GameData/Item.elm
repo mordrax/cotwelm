@@ -2,19 +2,20 @@ module GameData.Item exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Container exposing (..)
 
 
 type ItemType
     = Weapon WeaponModel
     | Armour ArmourModel
-    | Shield
-    | Helmet
-    | Bracers
-    | Gauntlets
-    | Belt
+    | Shield ArmourModel
+    | Helmet ArmourModel
+    | Bracers ArmourModel
+    | Gauntlets ArmourModel
+    | Belt BeltModel
     | Purse
     | Bag
-    | Pack
+    | Pack PackModel
     | Chest
     | PackOfHolding
     | Neckwear
@@ -239,3 +240,275 @@ newArmour armourType =
 
         ElvenChainMail ->
             newItem (Armour { ac = 52 }) "Elven Chain Mail" 50000 24000 162000 90000 "MetalArmour"
+
+
+type ShieldType
+    = BrokenShield
+    | SmallWoodenShield
+    | MediumWoodenShield
+    | LargeWoodenShield
+    | SmallIronShield
+    | MediumIronShield
+    | LargeIronShield
+    | SmallSteelShield
+    | MediumSteelShield
+    | LargeSteelShield
+    | SmallMeteoricSteelShield
+    | MediumMeteoricSteelShield
+    | LargeMeteoricSteelShield
+
+
+newShield : ShieldType -> Model
+newShield shieldType =
+    case shieldType of
+        BrokenShield ->
+            newItem (Shield { ac = 0 }) "Broken Shield" 4000 35000 0 25 "BrokenShield"
+
+        SmallWoodenShield ->
+            newItem (Shield { ac = 3 }) "Small Wooden Shield" 3000 15000 525 300 "WoodShield"
+
+        MediumWoodenShield ->
+            newItem (Shield { ac = 6 }) "Medium Wooden Shield" 4000 35000 1050 600 "WoodShield"
+
+        LargeWoodenShield ->
+            newItem (Shield { ac = 9 }) "Large Wooden Shield" 5000 50000 2100 1200 "WoodShield"
+
+        SmallIronShield ->
+            newItem (Shield { ac = 6 }) "Small Iron Shield" 4000 15000 1260 720 "MetalShield"
+
+        MediumIronShield ->
+            newItem (Shield { ac = 9 }) "Medium Iron Shield" 5000 35000 2592 1440 "MetalShield"
+
+        LargeIronShield ->
+            newItem (Shield { ac = 12 }) "Large Iron Shield" 6000 50000 3150 1800 "MetalShield"
+
+        SmallSteelShield ->
+            newItem (Shield { ac = 9 }) "Small Steel Shield" 4000 15000 2730 1560 "MetalShield"
+
+        MediumSteelShield ->
+            newItem (Shield { ac = 12 }) "Medium Steel Shield" 5000 35000 3360 1920 "MetalShield"
+
+        LargeSteelShield ->
+            newItem (Shield { ac = 15 }) "Large Steel Shield" 6000 50000 4200 2400 "MetalShield"
+
+        SmallMeteoricSteelShield ->
+            newItem (Shield { ac = 15 }) "Small Meteoric Steel Shield" 2500 10000 4620 2640 "MetalShield"
+
+        MediumMeteoricSteelShield ->
+            newItem (Shield { ac = 18 }) "Medium Meteoric Steel Shield" 3500 25000 5940 3300 "MetalShield"
+
+        LargeMeteoricSteelShield ->
+            newItem (Shield { ac = 21 }) "Large Meteoric Steel Shield" 4500 35000 7560 4200 "MetalShield"
+
+
+type HelmetType
+    = BrokenHelmet
+    | LeatherHelmet
+    | IronHelmet
+    | SteelHelmet
+    | MeteoricSteelHelmet
+    | HelmetOfDetectMonsters
+    | EnchantedHelmOfStorms
+
+
+newHelmet : HelmetType -> Model
+newHelmet helmetType =
+    case helmetType of
+        BrokenHelmet ->
+            newItem (Helmet { ac = 0 }) "Broken Helmet" 1000 1000 0 25 "BrokenHelmet"
+
+        LeatherHelmet ->
+            newItem (Helmet { ac = 3 }) "Leather Helmet" 500 500 525 300 "LeatherHelmet"
+
+        IronHelmet ->
+            newItem (Helmet { ac = 6 }) "Iron Helmet" 2000 2000 1050 600 "MetalHelmet"
+
+        SteelHelmet ->
+            newItem (Helmet { ac = 9 }) "Steel Helmet" 2500 2000 3150 1800 "MetalHelmet"
+
+        MeteoricSteelHelmet ->
+            newItem (Helmet { ac = 15 }) "Meteoric Steel Helmet" 1000 2000 10500 6000 "MetalHelmet"
+
+        HelmetOfDetectMonsters ->
+            newItem (Helmet { ac = 9 }) "Helmet Of Detect Monsters" 2500 2000 42000 24000 "HelmetOfDetectMonsters"
+
+        EnchantedHelmOfStorms ->
+            newItem (Helmet { ac = 25 }) "Enchanted Helm Of Storms" 1000 2000 1050000 600000 "EnchantedHelmOfStorms"
+
+
+type BracersType
+    = NormalBracers
+    | BracersOfDefenseNormal
+    | BracersOfDefenseS
+    | BracersOfDefenseVS
+
+
+newBracers : BracersType -> Model
+newBracers bracersType =
+    case bracersType of
+        NormalBracers ->
+            newItem (Bracers { ac = 3 }) "Bracers" 500 2000 108 60 "Bracers"
+
+        BracersOfDefenseNormal ->
+            newItem (Bracers { ac = 8 }) "Bracers Of Defense Normal" 500 2000 1836 1020 "BracersEnchanted"
+
+        BracersOfDefenseS ->
+            newItem (Bracers { ac = 13 }) "Bracers Of Defense Strong" 500 2000 5616 3120 "BracersEnchanted"
+
+        BracersOfDefenseVS ->
+            newItem (Bracers { ac = 18 }) "Bracers Of Defense Very Strong" 500 2000 11556 6420 "BracersEnchanted"
+
+
+type GauntletType
+    = NormalGauntlet
+    | GauntletOfProtection
+    | GauntletOfProtectionS
+    | GauntletOfProtectionVS
+    | GauntletOfSlaying
+    | GauntletOfSlayingS_S
+    | GauntletOfSlayingVS_VS
+    | GauntletOfDexterity
+    | GauntletOfDexterityS
+    | GauntletOfDexterityVS
+    | GauntletOfStrength
+    | GauntletOfStrengthS
+    | GauntletOfStrengthVS
+
+
+newGauntlets : GauntletType -> Model
+newGauntlets gauntletType =
+    case gauntletType of
+        NormalGauntlet ->
+            newItem (Gauntlets { ac = 5 }) "Gauntlet" 500 2000 105 60 "Gauntlet"
+
+        GauntletOfProtection ->
+            newItem (Gauntlets { ac = 10 }) "Gauntlet Of Protection" 500 2000 2625 1500 "GauntletEnchanted"
+
+        GauntletOfProtectionS ->
+            newItem (Gauntlets { ac = 15 }) "Gauntlet Of Protection Strong" 500 2000 6300 3600 "GauntletEnchanted"
+
+        GauntletOfProtectionVS ->
+            newItem (Gauntlets { ac = 20 }) "Gauntlet Of Protection Very Strong" 500 2000 12420 6900 "GauntletEnchanted"
+
+        GauntletOfSlaying ->
+            newItem (Gauntlets { ac = 0 }) "Gauntlet Of Slaying" 500 2000 3780 2100 "GauntletOfSlaying"
+
+        GauntletOfSlayingS_S ->
+            newItem (Gauntlets { ac = 0 }) "Gauntlet Of Slaying Strong" 500 2000 7560 4200 "GauntletOfSlaying"
+
+        GauntletOfSlayingVS_VS ->
+            newItem (Gauntlets { ac = 0 }) "Gauntlet Of Slaying Very Strong" 500 2000 13125 7500 "GauntletOfSlaying"
+
+        GauntletOfDexterity ->
+            newItem (Gauntlets { ac = 5 }) "Gauntlet Of Dexterity" 500 2000 3240 1800 "GauntletEnchanted"
+
+        GauntletOfDexterityS ->
+            newItem (Gauntlets { ac = 5 }) "Gauntlet Of Dexterity Strong" 500 2000 7020 3900 "GauntletEnchanted"
+
+        GauntletOfDexterityVS ->
+            newItem (Gauntlets { ac = 5 }) "Gauntlet Of Dexterity Very Strong" 500 2000 12960 7200 "GauntletEnchanted"
+
+        GauntletOfStrength ->
+            newItem (Gauntlets { ac = 5 }) "Gauntlet Of Strength" 500 2000 3240 1800 "GauntletEnchanted"
+
+        GauntletOfStrengthS ->
+            newItem (Gauntlets { ac = 5 }) "Gauntlet Of Strength Strong" 500 2000 0 0 "GauntletEnchanted"
+
+        GauntletOfStrengthVS ->
+            newItem (Gauntlets { ac = 5 }) "Gauntlet Of Strength Very Strong" 500 2000 12960 7200 "GauntletEnchanted"
+
+
+type BeltType
+    = TwoSlotBelt
+    | ThreeSlotBelt
+    | FourSlotBelt
+    | UtilityBelt
+    | WandQuiverBelt
+
+
+type alias BeltModel =
+    { slot : Int
+    , scroll : Int
+    , wand : Int
+    , potion : Int
+    , container : Container.Model
+    }
+
+
+newBelt : BeltType -> Model
+newBelt beltType =
+    case beltType of
+        TwoSlotBelt ->
+            newItem (Belt { slot = 2, scroll = 0, potion = 0, wand = 0, container = Container.new 2100 3100 }) "Two Slot Belt" 300 300 0 0 "SlotBelt"
+
+        ThreeSlotBelt ->
+            newItem (Belt { slot = 3, scroll = 0, potion = 0, wand = 0, container = Container.new 2600 3600 }) "Three Slot Belt" 300 300 0 0 "SlotBelt"
+
+        FourSlotBelt ->
+            newItem (Belt { slot = 4, scroll = 0, potion = 0, wand = 0, container = Container.new 3100 4100 }) "Four Slot Belt" 300 300 0 0 "SlotBelt"
+
+        UtilityBelt ->
+            newItem (Belt { slot = 2, scroll = 4, potion = 4, wand = 0, container = Container.new 3100 4100 }) "Utility Belt" 1350 1800 0 0 "UtilityBelt"
+
+        WandQuiverBelt ->
+            newItem (Belt { slot = 2, scroll = 0, potion = 0, wand = 4, container = Container.new 3100 4100 }) "Wand Quiver Belt" 300 300 0 0 "WandQuiverBelt"
+
+
+type PackType
+    = SmallBag
+    | MediumBag
+    | LargeBag
+    | SmallPack
+    | MediumPack
+    | LargePack
+    | SmallChest
+    | MediumChest
+    | LargeChest
+    | EnchantedSmallPackOfHolding
+    | EnchantedMediumPackOfHolding
+    | EnchantedLargePackOfHolding
+
+
+type alias PackModel =
+    { container : Container.Model
+    }
+
+
+newPack : PackType -> Model
+newPack packType =
+    case packType of
+        SmallBag ->
+            newItem (Pack { container = Container.new 5000 6000 }) "Small Bag" 300 500 0 0 "Bag"
+
+        MediumBag ->
+            newItem (Pack { container = Container.new 10000 12000 }) "Medium Bag" 500 700 0 0 "Bag"
+
+        LargeBag ->
+            newItem (Pack { container = Container.new 15000 18000 }) "Large Bag" 900 900 0 0 "Bag"
+
+        SmallPack ->
+            newItem (Pack { container = Container.new 12000 50000 }) "Small Pack" 1000 1000 0 0 "Pack"
+
+        MediumPack ->
+            newItem (Pack { container = Container.new 22000 75000 }) "Medium Pack" 2000 1500 0 0 "Pack"
+
+        LargePack ->
+            newItem (Pack { container = Container.new 35000 100000 }) "Large Pack" 4000 100000 0 0 "Pack"
+
+        SmallChest ->
+            newItem (Pack { container = Container.new 100000 50000 }) "Small Chest" 5000 100000 0 0 "Chest"
+
+        MediumChest ->
+            newItem (Pack { container = Container.new 100000 150000 }) "Medium Chest" 15000 150000 0 0 "Chest"
+
+        LargeChest ->
+            newItem (Pack { container = Container.new 100000 250000 }) "Large Chest" 25000 250000 0 0 "Chest"
+
+        EnchantedSmallPackOfHolding ->
+            newItem (Pack { container = Container.new 50000 150000 }) "Enchanted Small Pack Of Holding" 5000 75000 0 0 "EnchantedPack"
+
+        EnchantedMediumPackOfHolding ->
+            newItem (Pack { container = Container.new 75000 200000 }) "Enchanted Medium Pack Of Holding" 7500 100000 0 0 "EnchantedPack"
+
+        EnchantedLargePackOfHolding ->
+            newItem (Pack { container = Container.new 100000 250000 }) "Enchanted Large Pack Of Holding" 10000 125000 0 0 "EnchantedPack"
