@@ -1,18 +1,19 @@
-module Container exposing (..)
+module Container exposing (Container, new)
+
+import Mass exposing (..)
 
 
 type alias Model =
     { bulkCapacity : Int
     , weightCapacity : Int
-    , bulk : Int
-    , weight : Int
+    , mass : Mass
     }
 
 
-initModel : Model
-initModel =
-    { bulkCapacity = 0
-    , weightCapacity = 0
-    , bulk = 0
-    , weight = 0
-    }
+type Container
+    = Container Model
+
+
+new : Int -> Int -> Container
+new bulkCap weightCap =
+    Container <| Model bulkCap weightCap (Mass.new 0 0)
