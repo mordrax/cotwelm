@@ -4,6 +4,7 @@ module GameData.Item
         , new
         , ItemType(..)
         , ItemStatus(..)
+        , IdentificationStatus(..)
         , WeaponType(..)
         , ArmourType(..)
         , ShieldType(..)
@@ -62,6 +63,11 @@ type Item
     = Item Model
 
 
+type IdentificationStatus
+    = Identified
+    | Unidentified
+
+
 
 ----------------------------------------------------------------------
 ---------------------------- Base items ------------------------------
@@ -77,7 +83,7 @@ type alias Model =
     , bulk : Int
     , css : String
     , status : ItemStatus
-    , isIdentified : Bool
+    , isIdentified : IdentificationStatus
     }
 
 
@@ -109,7 +115,7 @@ viewItem (Item item) =
         ]
 
 
-new : ItemType -> ItemStatus -> Bool -> Item
+new : ItemType -> ItemStatus -> IdentificationStatus -> Item
 new item status isIdentified =
     case item of
         Weapon weaponType ->
@@ -177,7 +183,7 @@ type alias WeaponModel =
     }
 
 
-newWeapon : WeaponType -> ItemStatus -> Bool -> Model
+newWeapon : WeaponType -> ItemStatus -> IdentificationStatus -> Model
 newWeapon weaponType =
     case weaponType of
         BrokenSword ->
@@ -259,7 +265,7 @@ type alias ArmourModel =
     { ac : Int }
 
 
-newArmour : ArmourType -> ItemStatus -> Bool -> Model
+newArmour : ArmourType -> ItemStatus -> IdentificationStatus -> Model
 newArmour armourType =
     case armourType of
         RustyArmour ->
@@ -312,7 +318,7 @@ type ShieldType
     | LargeMeteoricSteelShield
 
 
-newShield : ShieldType -> ItemStatus -> Bool -> Model
+newShield : ShieldType -> ItemStatus -> IdentificationStatus -> Model
 newShield shieldType =
     case shieldType of
         BrokenShield ->
@@ -365,7 +371,7 @@ type HelmetType
     | EnchantedHelmOfStorms
 
 
-newHelmet : HelmetType -> ItemStatus -> Bool -> Model
+newHelmet : HelmetType -> ItemStatus -> IdentificationStatus -> Model
 newHelmet helmetType =
     case helmetType of
         BrokenHelmet ->
@@ -397,7 +403,7 @@ type BracersType
     | BracersOfDefenseVS
 
 
-newBracers : BracersType -> ItemStatus -> Bool -> Model
+newBracers : BracersType -> ItemStatus -> IdentificationStatus -> Model
 newBracers bracersType =
     case bracersType of
         NormalBracers ->
@@ -429,7 +435,7 @@ type GauntletsType
     | GauntletOfStrengthVS
 
 
-newGauntlets : GauntletsType -> ItemStatus -> Bool -> Model
+newGauntlets : GauntletsType -> ItemStatus -> IdentificationStatus -> Model
 newGauntlets gauntletType =
     case gauntletType of
         NormalGauntlets ->
@@ -489,7 +495,7 @@ type alias BeltModel =
     }
 
 
-newBelt : BeltType -> ItemStatus -> Bool -> Model
+newBelt : BeltType -> ItemStatus -> IdentificationStatus -> Model
 newBelt beltType =
     case beltType of
         TwoSlotBelt ->
@@ -527,7 +533,7 @@ type alias PackModel =
     { container : Container }
 
 
-newPack : PackType -> ItemStatus -> Bool -> Model
+newPack : PackType -> ItemStatus -> IdentificationStatus -> Model
 newPack packType =
     case packType of
         SmallBag ->
