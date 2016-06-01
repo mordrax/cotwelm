@@ -2,37 +2,37 @@ module Equipment exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import GameData.Item exposing (..)
+import GameData.Item as Item exposing (..)
 
 
 type alias Model =
-    { weapon : Maybe GameData.Item.Model
-    , armour : Maybe GameData.Item.Model
-    , shield : Maybe GameData.Item.Model
-    , helmet : Maybe GameData.Item.Model
-    , bracers : Maybe GameData.Item.Model
-    , gauntlets : Maybe GameData.Item.Model
-    , belt : Maybe GameData.Item.Model
-    , purse : Maybe GameData.Item.Model
-    , pack : Maybe GameData.Item.Model
-    , neckwear : Maybe GameData.Item.Model
-    , overgarment : Maybe GameData.Item.Model
-    , ring : Maybe GameData.Item.Model
-    , boots : Maybe GameData.Item.Model
+    { weapon : Maybe Item
+    , armour : Maybe Item
+    , shield : Maybe Item
+    , helmet : Maybe Item
+    , bracers : Maybe Item
+    , gauntlets : Maybe Item
+    , belt : Maybe Item
+    , purse : Maybe Item
+    , pack : Maybe Item
+    , neckwear : Maybe Item
+    , overgarment : Maybe Item
+    , ring : Maybe Item
+    , boots : Maybe Item
     }
 
 
 initModel : Model
 initModel =
-    { weapon = Just (GameData.Item.newWeapon Dagger Normal True)
-    , armour = Just (GameData.Item.newArmour LeatherArmour Normal True)
-    , shield = Just (GameData.Item.newShield SmallWoodenShield Normal True)
-    , helmet = Just (GameData.Item.newHelmet LeatherHelmet Normal True)
-    , bracers = Just (GameData.Item.newBracers NormalBracers Normal True)
-    , gauntlets = Just (GameData.Item.newGauntlets NormalGauntlet Normal True)
-    , belt = Just (GameData.Item.newBelt TwoSlotBelt Normal True)
+    { weapon = Just (Item.new (Weapon Dagger) Normal True)
+    , armour = Just (Item.new (Armour LeatherArmour) Normal True)
+    , shield = Just (Item.new (Shield SmallWoodenShield) Normal True)
+    , helmet = Just (Item.new (Helmet LeatherHelmet) Normal True)
+    , bracers = Just (Item.new (Bracers NormalBracers) Normal True)
+    , gauntlets = Just (Item.new (Gauntlets NormalGauntlets) Normal True)
+    , belt = Just (Item.new (Belt TwoSlotBelt) Normal True)
     , purse = Nothing
-    , pack = Just (GameData.Item.newPack MediumPack Normal True)
+    , pack = Just (Item.new (Pack MediumPack) Normal True)
     , neckwear = Nothing
     , overgarment = Nothing
     , ring = Nothing
@@ -66,7 +66,7 @@ viewEquipment model =
         ]
 
 
-maybeItemView : Maybe GameData.Item.Model -> Html msg
+maybeItemView : Maybe Item -> Html msg
 maybeItemView maybeItem =
     case maybeItem of
         Just item ->
