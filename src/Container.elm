@@ -9,15 +9,17 @@ Items can also be containers, so containers can hold containers.
 import Mass exposing (..)
 
 
-type alias Model =
+type alias Model a =
     { bulkCapacity : Int
     , weightCapacity : Int
     , currentMass : Mass
+    , items : List a
+    , getMass : a -> Mass
     }
 
 
-type Container
-    = ContainerModel Model
+type Container a
+    = ContainerModel (Model a)
 
 
 type Msg
@@ -26,9 +28,9 @@ type Msg
     | TooBulky
 
 
-new : Int -> Int -> Container
-new bulkCap weightCap =
-    ContainerModel <| Model bulkCap weightCap (Mass.new 0 0)
+new : { bulkCap : Int, weightCap : Int, getMass : a -> Mass } -> Container a
+new { bulkCap, weightCap, getMass } =
+    ContainerModel <| Model bulkCap weightCap (Mass.new 0 0) [] getMass
 
 
 list : Container -> List a
@@ -36,11 +38,11 @@ list container =
     []
 
 
-add : a -> (a -> Mass) -> Container -> ( Container, Msg )
-add item itemToMass (ContainerModel model) =
+add : a -> Container a -> ( Container a, Msg )
+add item (ContainerModel model) =
     let
         ( itemBulk, itemWeight ) =
-            Mass.getMass <| itemToMass item
+            Mass.getMass <| model.getMass item
 
         ( curBulk, curWeight ) =
             Mass.getMass model.currentMass
