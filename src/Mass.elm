@@ -1,4 +1,4 @@
-module Mass exposing (Mass, new)
+module Mass exposing (Mass, new, getMass)
 
 
 type alias Model =
@@ -14,3 +14,8 @@ type Mass
 new : Int -> Int -> Mass
 new bulk weight =
     Mass <| Model bulk weight
+
+
+getMass : Mass -> ( Int, Int )
+getMass (Mass model) =
+    ( model.bulk, model.weight )

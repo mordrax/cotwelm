@@ -18,7 +18,7 @@ module GameData.Item
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Container exposing (..)
+import Container exposing (Container)
 
 
 type ItemType
