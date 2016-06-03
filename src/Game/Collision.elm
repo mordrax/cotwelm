@@ -20,7 +20,7 @@ tryMoveHero dir model =
             Hero.update (dirToVector dir) model.hero
 
         obstructions =
-            getObstructions movedHero.pos model.map
+            getObstructions (Hero.pos movedHero) model.map
     in
         case obstructions of
             -- entering a building

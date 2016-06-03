@@ -4,7 +4,7 @@ module Equipment
         , Msg
         , Equipment
         , getPack
-        , initModel
+        , init
         , viewEquipment
         )
 
@@ -15,6 +15,7 @@ import GameData.Item as Item exposing (..)
 
 type alias Model =
     { weapon : Maybe Item
+    , freehand : Maybe Item
     , armour : Maybe Item
     , shield : Maybe Item
     , helmet : Maybe Item
@@ -25,7 +26,8 @@ type alias Model =
     , pack : Maybe Item
     , neckwear : Maybe Item
     , overgarment : Maybe Item
-    , ring : Maybe Item
+    , leftring : Maybe Item
+    , rightring : Maybe Item
     , boots : Maybe Item
     }
 
@@ -58,10 +60,11 @@ type Msg
     | InvalidSlot
 
 
-initModel : Equipment
-initModel =
+init : Equipment
+init =
     EM
         { weapon = Just (new (Item.Weapon Dagger) Normal Identified)
+        , freehand = Nothing
         , armour = Just (new (Item.Armour LeatherArmour) Normal Identified)
         , shield = Just (new (Item.Shield SmallWoodenShield) Normal Identified)
         , helmet = Just (new (Item.Helmet LeatherHelmet) Normal Identified)
@@ -72,7 +75,8 @@ initModel =
         , pack = Just (new (Item.Pack MediumPack) Normal Identified)
         , neckwear = Nothing
         , overgarment = Nothing
-        , ring = Nothing
+        , leftring = Nothing
+        , rightring = Nothing
         , boots = Nothing
         }
 
@@ -91,8 +95,8 @@ equip slot item model =
                 ( model, Ok )
 
 
-getPack : Model -> Maybe Item
-getPack model =
+getPack : Equipment -> Maybe Item
+getPack (EM model) =
     model.pack
 
 
@@ -101,10 +105,11 @@ equipmentSlotStyle =
     style [ ( "border", "1px Solid Black" ) ]
 
 
-viewEquipment : Model -> Html msg
-viewEquipment model =
+viewEquipment : Equipment -> Html msg
+viewEquipment (EM model) =
     div []
         [ viewIfItem model.weapon
+        , viewIfItem model.freehand
         , viewIfItem model.armour
         , viewIfItem model.shield
         , viewIfItem model.helmet
@@ -115,17 +120,22 @@ viewEquipment model =
         , viewIfItem model.pack
         , viewIfItem model.neckwear
         , viewIfItem model.overgarment
-        , viewIfItem model.ring
+        , viewIfItem model.leftring
+        , viewIfItem model.rightring
         , viewIfItem model.boots
         ]
 
 
 viewIfItem : Maybe Item -> Html msg
 viewIfItem maybeItem =
-    case maybeItem of
-        Just item ->
-            div [ class "three wide column equipmentSlot" ]
-                [ Item.view item ]
+    let
+        slotCss =
+            class "three wide column equipmentSlot"
+    in
+        case maybeItem of
+            Just item ->
+                div [ slotCss ]
+                    [ Item.view item ]
 
-        Nothing ->
-            div [] []
+            Nothing ->
+                div [ slotCss ] [ text "Empty" ]
