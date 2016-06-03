@@ -1,4 +1,12 @@
-module Hero exposing (..)
+module Hero
+    exposing
+        ( Hero
+        , init
+        , teleport
+        , update
+        , equipment
+        , pos
+        )
 
 import Equipment exposing (..)
 import Vector exposing (..)
@@ -11,29 +19,44 @@ type alias Model =
     }
 
 
-initHero : Model
-initHero =
-    { name = "Bob the Brave"
-    , pos = { x = 11, y = 17 }
-    , equipment = Equipment.initModel
-    }
+type Hero
+    = Hero Model
 
 
-update : Vector -> Model -> Model
-update dir model =
-    { model | pos = Vector.add dir model.pos }
+init : Hero
+init =
+    Hero
+        { name = "Bob the Brave"
+        , pos = { x = 11, y = 17 }
+        , equipment = Equipment.init
+        }
 
 
-moveY : Int -> Model -> Model
+pos : Hero -> Vector
+pos (Hero hero) =
+    hero.pos
+
+
+equipment : Hero -> Equipment
+equipment (Hero hero) =
+    hero.equipment
+
+
+update : Vector -> Hero -> Hero
+update dir (Hero model) =
+    Hero { model | pos = Vector.add dir model.pos }
+
+
+moveY : Int -> Model -> Hero
 moveY dy model =
-    { model | pos = { x = model.pos.x, y = model.pos.y + dy } }
+    Hero { model | pos = { x = model.pos.x, y = model.pos.y + dy } }
 
 
-moveX : Int -> Model -> Model
+moveX : Int -> Model -> Hero
 moveX dx model =
-    { model | pos = { y = model.pos.y, x = model.pos.x + dx } }
+    Hero { model | pos = { y = model.pos.y, x = model.pos.x + dx } }
 
 
-teleport : Vector -> Model -> Model
-teleport pos model =
-    { model | pos = pos }
+teleport : Vector -> Hero -> Hero
+teleport pos (Hero model) =
+    Hero { model | pos = pos }

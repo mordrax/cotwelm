@@ -32,7 +32,7 @@ import Html.Attributes exposing (..)
 initGame : Game.Data.Model
 initGame =
     { name = "A new game"
-    , hero = Hero.initHero
+    , hero = Hero.init
     , map = Game.Maps.initMaps
     , currentScreen = InventoryScreen
     }
@@ -61,7 +61,7 @@ view model =
             viewBuilding building
 
         InventoryScreen ->
-            Inventory.view model
+            Inventory.view model.hero
 
 
 viewMap : Game.Data.Model -> Html (Maybe Game.Data.Msg)
@@ -82,6 +82,6 @@ viewBuilding building =
     div [] [ h1 [] [ text building.name ] ]
 
 
-viewHero : Hero.Model -> Html (Maybe Game.Data.Msg)
+viewHero : Hero -> Html (Maybe Game.Data.Msg)
 viewHero hero =
-    div [ class "tile maleHero", vectorToHtmlStyle hero.pos ] []
+    div [ class "tile maleHero", vectorToHtmlStyle <| Hero.pos hero ] []

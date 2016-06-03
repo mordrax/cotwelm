@@ -7,7 +7,7 @@ import Game.Maps exposing (..)
 
 type alias Model =
     { name : String
-    , hero : Hero.Model
+    , hero : Hero
     , map : Game.Maps.Model
     , currentScreen : Screen
     }
