@@ -13,7 +13,8 @@ module GameData.Item
         , GauntletsType(..)
         , BeltType(..)
         , PackType(..)
-        , viewItem
+        , view
+        , getType
         )
 
 import Html exposing (..)
@@ -61,7 +62,7 @@ type ItemStatus
 
 
 type Item
-    = Item Model
+    = Item ItemType Model
 
 
 type IdentificationStatus
@@ -87,34 +88,41 @@ type alias Model =
     }
 
 
+getType : Item -> ItemType
+getType (Item itemType _) =
+    itemType
+
+
 getMass : Item -> Mass
-getMass (Item item) =
+getMass (Item itemType item) =
     item.mass
 
 
-viewItem : Item -> Html msg
-viewItem (Item item) =
-    div
-        [ class "ui item"
-        , style
-            [ ( "opacity", "1" )
-            , ( "cursor", "move" )
-            , ( "width", "32px" )
-            , ( "height", "64px" )
-            ]
-        ]
-        [ div [ class "image" ]
-            [ i [ class ("cotwItem " ++ item.css) ] []
-            ]
-        , div [ class "content" ]
-            [ a [ class "header" ]
-                [--text (toString item.itemType)
+view : Item -> Html msg
+view (Item itemType item) =
+    div [ class "ui grid" ]
+        [ div
+            [ class "ui item"
+            , style
+                [ ( "opacity", "1" )
+                , ( "cursor", "move" )
+                , ( "width", "32px" )
+                , ( "height", "64px" )
                 ]
-            , div [ class "meta" ]
-                [ span [ class "date" ] []
+            ]
+            [ div [ class "image" ]
+                [ i [ class ("cotwItem " ++ item.css) ] []
                 ]
-            , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
-                [ text item.name
+            , div [ class "content" ]
+                [ a [ class "header" ]
+                    [--text (toString item.itemType)
+                    ]
+                , div [ class "meta" ]
+                    [ span [ class "date" ] []
+                    ]
+                , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
+                    [ text item.name
+                    ]
                 ]
             ]
         ]
@@ -124,28 +132,28 @@ new : ItemType -> ItemStatus -> IdentificationStatus -> Item
 new item status isIdentified =
     case item of
         Weapon weaponType ->
-            Item <| newWeapon weaponType status isIdentified
+            Item item (newWeapon weaponType status isIdentified)
 
         Armour armourType ->
-            Item <| newArmour armourType status isIdentified
+            Item item <| newArmour armourType status isIdentified
 
         Shield shieldType ->
-            Item <| newShield shieldType status isIdentified
+            Item item <| newShield shieldType status isIdentified
 
         Helmet helmetType ->
-            Item <| newHelmet helmetType status isIdentified
+            Item item <| newHelmet helmetType status isIdentified
 
         Bracers bracersType ->
-            Item <| newBracers bracersType status isIdentified
+            Item item <| newBracers bracersType status isIdentified
 
         Gauntlets gauntletsType ->
-            Item <| newGauntlets gauntletsType status isIdentified
+            Item item <| newGauntlets gauntletsType status isIdentified
 
         Belt beltType ->
-            Item <| newBelt beltType status isIdentified
+            Item item <| newBelt beltType status isIdentified
 
         Pack packType ->
-            Item <| newPack packType status isIdentified
+            Item item <| newPack packType status isIdentified
 
         -- Purse
         -- Neckwear
@@ -153,7 +161,7 @@ new item status isIdentified =
         --        Ring
         --        Boots
         _ ->
-            Item <| newWeapon Dagger status isIdentified
+            Item (Weapon Dagger) <| newWeapon Dagger status isIdentified
 
 
 
@@ -504,19 +512,19 @@ newBelt : BeltType -> ItemStatus -> IdentificationStatus -> Model
 newBelt beltType =
     case beltType of
         TwoSlotBelt ->
-            Model (BeltSM <| BeltModel 2 0 0 0 <| Container.new { bulkCap = 2100, weightCap = 3100, getMass = getMass }) "Two Slot Belt" 300 300 "SlotBelt" <| Mass.new 0 0
+            Model (BeltSM <| BeltModel 2 0 0 0 <| Container.new { capacity = Mass.new 2100 3100, getMass = getMass }) "Two Slot Belt" 300 300 "SlotBelt" <| Mass.new 0 0
 
         ThreeSlotBelt ->
-            Model (BeltSM <| BeltModel 3 0 0 0 <| Container.new { bulkCap = 2600, weightCap = 3600, getMass = getMass }) "Three Slot Belt" 300 300 "SlotBelt" <| Mass.new 0 0
+            Model (BeltSM <| BeltModel 3 0 0 0 <| Container.new { capacity = Mass.new 2600 3600, getMass = getMass }) "Three Slot Belt" 300 300 "SlotBelt" <| Mass.new 0 0
 
         FourSlotBelt ->
-            Model (BeltSM <| BeltModel 4 0 0 0 <| Container.new { bulkCap = 3100, weightCap = 4100, getMass = getMass }) "Four Slot Belt" 300 300 "SlotBelt" <| Mass.new 0 0
+            Model (BeltSM <| BeltModel 4 0 0 0 <| Container.new { capacity = Mass.new 3100 4100, getMass = getMass }) "Four Slot Belt" 300 300 "SlotBelt" <| Mass.new 0 0
 
         UtilityBelt ->
-            Model (BeltSM <| BeltModel 2 4 4 0 <| Container.new { bulkCap = 3100, weightCap = 4100, getMass = getMass }) "Utility Belt" 1350 1800 "UtilityBelt" <| Mass.new 0 0
+            Model (BeltSM <| BeltModel 2 4 4 0 <| Container.new { capacity = Mass.new 3100 4100, getMass = getMass }) "Utility Belt" 1350 1800 "UtilityBelt" <| Mass.new 0 0
 
         WandQuiverBelt ->
-            Model (BeltSM <| BeltModel 2 0 0 4 <| Container.new { bulkCap = 3100, weightCap = 4100, getMass = getMass }) "Wand Quiver Belt" 300 300 "WandQuiverBelt" <| Mass.new 0 0
+            Model (BeltSM <| BeltModel 2 0 0 4 <| Container.new { capacity = Mass.new 3100 4100, getMass = getMass }) "Wand Quiver Belt" 300 300 "WandQuiverBelt" <| Mass.new 0 0
 
 
 type PackType
@@ -542,37 +550,37 @@ newPack : PackType -> ItemStatus -> IdentificationStatus -> Model
 newPack packType =
     case packType of
         SmallBag ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 5000, weightCap = 6000, getMass = getMass }) "Small Bag" 300 500 "Bag" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 5000 6000, getMass = getMass }) "Small Bag" 300 500 "Bag" <| Mass.new 0 0
 
         MediumBag ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 10000, weightCap = 12000, getMass = getMass }) "Medium Bag" 500 700 "Bag" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 10000 12000, getMass = getMass }) "Medium Bag" 500 700 "Bag" <| Mass.new 0 0
 
         LargeBag ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 15000, weightCap = 18000, getMass = getMass }) "Large Bag" 900 900 "Bag" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 15000 18000, getMass = getMass }) "Large Bag" 900 900 "Bag" <| Mass.new 0 0
 
         SmallPack ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 12000, weightCap = 50000, getMass = getMass }) "Small Pack" 1000 1000 "Pack" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 12000 50000, getMass = getMass }) "Small Pack" 1000 1000 "Pack" <| Mass.new 0 0
 
         MediumPack ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 22000, weightCap = 75000, getMass = getMass }) "Medium Pack" 2000 1500 "Pack" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 22000 75000, getMass = getMass }) "Medium Pack" 2000 1500 "Pack" <| Mass.new 0 0
 
         LargePack ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 35000, weightCap = 100000, getMass = getMass }) "Large Pack" 4000 100000 "Pack" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 35000 100000, getMass = getMass }) "Large Pack" 4000 100000 "Pack" <| Mass.new 0 0
 
         SmallChest ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 100000, weightCap = 50000, getMass = getMass }) "Small Chest" 5000 100000 "Chest" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 100000 50000, getMass = getMass }) "Small Chest" 5000 100000 "Chest" <| Mass.new 0 0
 
         MediumChest ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 100000, weightCap = 150000, getMass = getMass }) "Medium Chest" 15000 150000 "Chest" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 100000 150000, getMass = getMass }) "Medium Chest" 15000 150000 "Chest" <| Mass.new 0 0
 
         LargeChest ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 100000, weightCap = 250000, getMass = getMass }) "Large Chest" 25000 250000 "Chest" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 100000 250000, getMass = getMass }) "Large Chest" 25000 250000 "Chest" <| Mass.new 0 0
 
         EnchantedSmallPackOfHolding ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 50000, weightCap = 150000, getMass = getMass }) "Enchanted Small Pack Of Holding" 5000 75000 "EnchantedPack" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 50000 150000, getMass = getMass }) "Enchanted Small Pack Of Holding" 5000 75000 "EnchantedPack" <| Mass.new 0 0
 
         EnchantedMediumPackOfHolding ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 75000, weightCap = 200000, getMass = getMass }) "Enchanted Medium Pack Of Holding" 7500 100000 "EnchantedPack" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 75000 200000, getMass = getMass }) "Enchanted Medium Pack Of Holding" 7500 100000 "EnchantedPack" <| Mass.new 0 0
 
         EnchantedLargePackOfHolding ->
-            Model (PackSM <| PackModel <| Container.new { bulkCap = 100000, weightCap = 250000, getMass = getMass }) "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" <| Mass.new 0 0
+            Model (PackSM <| PackModel <| Container.new { capacity = Mass.new 100000 250000, getMass = getMass }) "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" <| Mass.new 0 0

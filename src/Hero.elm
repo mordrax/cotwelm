@@ -7,7 +7,7 @@ import Vector exposing (..)
 type alias Model =
     { name : String
     , pos : Vector
-    , equipment : Equipment.Model
+    , equipment : Equipment
     }
 
 
