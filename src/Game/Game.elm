@@ -1,14 +1,32 @@
 module Game.Game exposing (..)
 
+-- Game
+
 import Game.Data exposing (..)
 import Game.Maps exposing (..)
 import Game.Collision exposing (..)
+import Inventory exposing (..)
+
+
+-- Data
+
 import GameData.Building exposing (..)
+
+
+--Hero
+
 import Hero exposing (..)
+
+
+-- Common
+
 import Lib exposing (..)
+
+
+-- Core
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Equipment exposing (..)
 
 
 initGame : Game.Data.Model
@@ -16,7 +34,7 @@ initGame =
     { name = "A new game"
     , hero = Hero.initHero
     , map = Game.Maps.initMaps
-    , currentScreen = MapScreen
+    , currentScreen = InventoryScreen
     }
 
 
@@ -43,7 +61,7 @@ view model =
             viewBuilding building
 
         InventoryScreen ->
-            viewInventory model
+            Inventory.view model
 
 
 viewMap : Game.Data.Model -> Html (Maybe Game.Data.Msg)
@@ -67,33 +85,3 @@ viewBuilding building =
 viewHero : Hero.Model -> Html (Maybe Game.Data.Msg)
 viewHero hero =
     div [ class "tile maleHero", vectorToHtmlStyle hero.pos ] []
-
-
-viewInventory : Game.Data.Model -> Html (Maybe Game.Data.Msg)
-viewInventory model =
-    let
-        shopView =
-            case model.currentScreen of
-                BuildingScreen b ->
-                    viewShop b
-
-                _ ->
-                    div [] []
-    in
-        div []
-            [ span [ class "ui text container segment" ]
-                [ text "Inventory screen" ]
-            , div [ class "ui two column grid" ]
-                [ div [ class "six wide column" ]
-                    [ viewEquipment model.hero.equipment
-                    , div [ class "ten wide column" ]
-                        [ shopView
-                        ]
-                    ]
-                ]
-            ]
-
-
-viewShop : Building -> Html (Maybe Game.Data.Msg)
-viewShop building =
-    div [ class "ui block header" ] [ text "shop" ]

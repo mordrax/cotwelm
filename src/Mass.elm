@@ -1,4 +1,4 @@
-module Mass exposing (Mass, new, getMass)
+module Mass exposing (Mass, new, lessThanOrEqualTo, Msg(..), add)
 
 
 type alias Model =
@@ -11,11 +11,37 @@ type Mass
     = Mass Model
 
 
+type Msg
+    = Ok
+    | TooHeavy
+    | TooBulky
+
+
 new : Int -> Int -> Mass
 new bulk weight =
     Mass <| Model bulk weight
 
 
-getMass : Mass -> ( Int, Int )
-getMass (Mass model) =
-    ( model.bulk, model.weight )
+add : Mass -> Mass -> Mass
+add (Mass a) (Mass b) =
+    Mass
+        { bulk = a.bulk + b.bulk
+        , weight = a.weight + b.weight
+        }
+
+
+lessThanOrEqualTo : Mass -> Mass -> Msg
+lessThanOrEqualTo (Mass a) (Mass b) =
+    let
+        bulkWeight =
+            ( a.bulk > b.bulk, a.weight > b.weight )
+    in
+        case bulkWeight of
+            ( True, _ ) ->
+                TooBulky
+
+            ( _, True ) ->
+                TooHeavy
+
+            _ ->
+                Ok

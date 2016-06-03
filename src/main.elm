@@ -118,6 +118,8 @@ urlUpdate url model =
         ( { model | currentPage = CharCreationPage }, Cmd.none )
     else if url == "game" then
         ( { model | currentPage = GamePage }, Cmd.none )
+    else if url == "inventory" then
+        ( { model | currentPage = GamePage }, Cmd.none )
     else
         ( { model | currentPage = SplashPage }, Cmd.none )
 

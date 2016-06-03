@@ -1,4 +1,12 @@
-module Equipment exposing (..)
+module Equipment
+    exposing
+        ( EquipmentSlot
+        , Msg
+        , Equipment
+        , getPack
+        , initModel
+        , viewEquipment
+        )
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,22 +30,70 @@ type alias Model =
     }
 
 
-initModel : Model
+type Equipment
+    = EM Model
+
+
+type EquipmentSlot
+    = Weapon
+    | Freehand
+    | Armour
+    | Shield
+    | Helmet
+    | Bracers
+    | Gauntlets
+    | Belt
+    | Purse
+    | Pack
+    | Neckwear
+    | Overgarment
+    | LeftRing
+    | RightRing
+    | Boots
+
+
+type Msg
+    = Ok
+    | SlotTaken
+    | InvalidSlot
+
+
+initModel : Equipment
 initModel =
-    { weapon = Just (Item.new (Weapon Dagger) Normal Identified)
-    , armour = Just (Item.new (Armour LeatherArmour) Normal Identified)
-    , shield = Just (Item.new (Shield SmallWoodenShield) Normal Identified)
-    , helmet = Just (Item.new (Helmet LeatherHelmet) Normal Identified)
-    , bracers = Just (Item.new (Bracers NormalBracers) Normal Identified)
-    , gauntlets = Just (Item.new (Gauntlets NormalGauntlets) Normal Identified)
-    , belt = Just (Item.new (Belt TwoSlotBelt) Normal Identified)
-    , purse = Nothing
-    , pack = Just (Item.new (Pack MediumPack) Normal Identified)
-    , neckwear = Nothing
-    , overgarment = Nothing
-    , ring = Nothing
-    , boots = Nothing
-    }
+    EM
+        { weapon = Just (new (Item.Weapon Dagger) Normal Identified)
+        , armour = Just (new (Item.Armour LeatherArmour) Normal Identified)
+        , shield = Just (new (Item.Shield SmallWoodenShield) Normal Identified)
+        , helmet = Just (new (Item.Helmet LeatherHelmet) Normal Identified)
+        , bracers = Just (new (Item.Bracers NormalBracers) Normal Identified)
+        , gauntlets = Just (new (Item.Gauntlets NormalGauntlets) Normal Identified)
+        , belt = Just (new (Item.Belt TwoSlotBelt) Normal Identified)
+        , purse = Nothing
+        , pack = Just (new (Item.Pack MediumPack) Normal Identified)
+        , neckwear = Nothing
+        , overgarment = Nothing
+        , ring = Nothing
+        , boots = Nothing
+        }
+
+
+equip : EquipmentSlot -> Item -> Model -> ( Model, Msg )
+equip slot item model =
+    let
+        itemType =
+            Item.getType item
+    in
+        case itemType of
+            Item.Weapon _ ->
+                ( model, Ok )
+
+            _ ->
+                ( model, Ok )
+
+
+getPack : Model -> Maybe Item
+getPack model =
+    model.pack
 
 
 equipmentSlotStyle : Html.Attribute msg
@@ -47,30 +103,29 @@ equipmentSlotStyle =
 
 viewEquipment : Model -> Html msg
 viewEquipment model =
-    div [ class "ui grid" ]
-        [ div [ class "three wide column equipmentSlot" ]
-            [ maybeItemView model.weapon
-            , maybeItemView model.armour
-            , maybeItemView model.shield
-            , maybeItemView model.helmet
-            , maybeItemView model.bracers
-            , maybeItemView model.gauntlets
-            , maybeItemView model.belt
-            , maybeItemView model.purse
-            , maybeItemView model.pack
-            , maybeItemView model.neckwear
-            , maybeItemView model.overgarment
-            , maybeItemView model.ring
-            , maybeItemView model.boots
-            ]
+    div []
+        [ viewIfItem model.weapon
+        , viewIfItem model.armour
+        , viewIfItem model.shield
+        , viewIfItem model.helmet
+        , viewIfItem model.bracers
+        , viewIfItem model.gauntlets
+        , viewIfItem model.belt
+        , viewIfItem model.purse
+        , viewIfItem model.pack
+        , viewIfItem model.neckwear
+        , viewIfItem model.overgarment
+        , viewIfItem model.ring
+        , viewIfItem model.boots
         ]
 
 
-maybeItemView : Maybe Item -> Html msg
-maybeItemView maybeItem =
+viewIfItem : Maybe Item -> Html msg
+viewIfItem maybeItem =
     case maybeItem of
         Just item ->
-            viewItem item
+            div [ class "three wide column equipmentSlot" ]
+                [ Item.view item ]
 
         Nothing ->
             div [] []

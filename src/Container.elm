@@ -1,4 +1,4 @@
-module Container exposing (Container, new)
+module Container exposing (Container, new, list, add)
 
 {-| A container holds Items with a Mass up to a certain amount. This amount is specified by the weight and bulk capacity of the container.
 You can add/remove Items and look through a list of them.
@@ -10,8 +10,7 @@ import Mass exposing (..)
 
 
 type alias Model a =
-    { bulkCapacity : Int
-    , weightCapacity : Int
+    { capacity : Mass
     , currentMass : Mass
     , items : List a
     , getMass : a -> Mass
@@ -22,38 +21,31 @@ type Container a
     = ContainerModel (Model a)
 
 
-type Msg
-    = Ok
-    | TooHeavy
-    | TooBulky
+new : { capacity : Mass, getMass : a -> Mass } -> Container a
+new { capacity, getMass } =
+    ContainerModel <| Model capacity (Mass.new 0 0) [] getMass
 
 
-new : { bulkCap : Int, weightCap : Int, getMass : a -> Mass } -> Container a
-new { bulkCap, weightCap, getMass } =
-    ContainerModel <| Model bulkCap weightCap (Mass.new 0 0) [] getMass
+list : Container a -> List a
+list (ContainerModel model) =
+    model.items
 
 
-list : Container -> List a
-list container =
-    []
-
-
-add : a -> Container a -> ( Container a, Msg )
+add : a -> Container a -> ( Container a, Mass.Msg )
 add item (ContainerModel model) =
     let
-        ( itemBulk, itemWeight ) =
-            Mass.getMass <| model.getMass item
+        itemMass =
+            model.getMass item
 
-        ( curBulk, curWeight ) =
-            Mass.getMass model.currentMass
+        newMass =
+            Mass.add itemMass model.currentMass
 
-        newBulk =
-            itemBulk + curBulk
-
-        newWeight =
-            itemWeight + curWeight
+        massMsg =
+            Mass.lessThanOrEqualTo newMass model.capacity
     in
-        if (newWeight <= model.weightCapacity && newBulk <= model.bulkCapacity) then
-            ( ContainerModel { model | currentMass = Mass.new newBulk newWeight }, Ok )
-        else
-            ( ContainerModel model, TooHeavy )
+        case massMsg of
+            Mass.Ok ->
+                ( ContainerModel { model | currentMass = newMass, items = item :: model.items }, Mass.Ok )
+
+            _ ->
+                ( ContainerModel model, Mass.TooHeavy )
