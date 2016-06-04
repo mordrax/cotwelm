@@ -37,21 +37,21 @@ type Equipment
 
 
 type EquipmentSlot
-    = Weapon
-    | Freehand
-    | Armour
-    | Shield
-    | Helmet
-    | Bracers
-    | Gauntlets
-    | Belt
-    | Purse
-    | Pack
-    | Neckwear
-    | Overgarment
-    | LeftRing
-    | RightRing
-    | Boots
+    = WeaponSlot
+    | FreehandSlot
+    | ArmourSlot
+    | ShieldSlot
+    | HelmetSlot
+    | BracersSlot
+    | GauntletsSlot
+    | BeltSlot
+    | PurseSlot
+    | PackSlot
+    | NeckwearSlot
+    | OvergarmentSlot
+    | LeftRingSlot
+    | RightRingSlot
+    | BootsSlot
 
 
 type Msg
@@ -62,37 +62,43 @@ type Msg
 
 init : Equipment
 init =
-    EM
-        { weapon = Just (new (Item.Weapon Dagger) Normal Identified)
-        , freehand = Nothing
-        , armour = Just (new (Item.Armour LeatherArmour) Normal Identified)
-        , shield = Just (new (Item.Shield SmallWoodenShield) Normal Identified)
-        , helmet = Just (new (Item.Helmet LeatherHelmet) Normal Identified)
-        , bracers = Just (new (Item.Bracers NormalBracers) Normal Identified)
-        , gauntlets = Just (new (Item.Gauntlets NormalGauntlets) Normal Identified)
-        , belt = Just (new (Item.Belt TwoSlotBelt) Normal Identified)
-        , purse = Nothing
-        , pack = Just (new (Item.Pack MediumPack) Normal Identified)
-        , neckwear = Nothing
-        , overgarment = Nothing
-        , leftring = Nothing
-        , rightring = Nothing
-        , boots = Nothing
-        }
+    let
+        pack =
+            newPack MediumPack Normal Identified
+
+        ths =
+            new (Weapon TwoHandedSword) Normal Identified
+
+        pack' =
+            Item.addToPack ths pack
+    in
+        EM
+            { weapon = Just (new (Weapon Dagger) Normal Identified)
+            , freehand = Nothing
+            , armour = Just (new (Armour LeatherArmour) Normal Identified)
+            , shield = Just (new (Shield SmallWoodenShield) Normal Identified)
+            , helmet = Just (new (Helmet LeatherHelmet) Normal Identified)
+            , bracers = Just (new (Bracers NormalBracers) Normal Identified)
+            , gauntlets = Just (new (Gauntlets NormalGauntlets) Normal Identified)
+            , belt = Just (new (Belt TwoSlotBelt) Normal Identified)
+            , purse = Nothing
+            , pack = Just (ItemPack pack')
+            , neckwear = Nothing
+            , overgarment = Nothing
+            , leftring = Nothing
+            , rightring = Nothing
+            , boots = Nothing
+            }
 
 
 equip : EquipmentSlot -> Item -> Model -> ( Model, Msg )
 equip slot item model =
-    let
-        itemType =
-            Item.getType item
-    in
-        case itemType of
-            Item.Weapon _ ->
-                ( model, Ok )
+    case item of
+        ItemWeapon _ ->
+            ( model, Ok )
 
-            _ ->
-                ( model, Ok )
+        _ ->
+            ( model, Ok )
 
 
 getPack : Equipment -> Maybe Item
