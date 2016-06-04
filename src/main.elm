@@ -49,10 +49,24 @@ main =
 
 subscriptions : Model -> Sub CotwData.Msg
 subscriptions model =
-    Sub.batch
-        (List.append (List.map (Sub.map GameMsg) Game.Keyboard.subscriptions)
-            (List.map (Sub.map GameMsg) (List.map (Sub.map InventoryMsg) (Inventory.subscriptions model.game.inventory)))
-        )
+    let
+        convertToMainMsg =
+            \x -> Sub.map GameMsg x
+
+        convertToGameMsg =
+            \x -> Sub.map InventoryMsg x
+
+        keyboardSubs =
+            List.map convertToMainMsg Game.Keyboard.subscriptions
+
+        inventorySubs =
+            Inventory.subscriptions model.game.inventory
+
+        inventorySubsGameMsg =
+            List.map convertToMainMsg (List.map convertToGameMsg inventorySubs)
+    in
+        Sub.batch
+            <| List.append keyboardSubs inventorySubsGameMsg
 
 
 initModel : String -> ( Model, Cmd CotwData.Msg )
