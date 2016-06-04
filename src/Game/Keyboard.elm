@@ -6,13 +6,13 @@ import Game.Data exposing (..)
 import Vector exposing (..)
 
 
-subscriptions : List (Sub (Maybe Msg))
+subscriptions : List (Sub Msg)
 subscriptions =
     [ ups (keycodeToMsg playerKeymapUps), presses (keycodeToMsg playerKeymap) ]
 
 
 type alias KeyMap =
-    Dict Int KeyCmd
+    Dict Int Msg
 
 
 playerKeymap : KeyMap
@@ -55,10 +55,18 @@ dirToVector dir =
             Vector.new 1 0
 
 
-keycodeToMsg : KeyMap -> Keyboard.KeyCode -> Maybe Msg
+keycodeToMsg : KeyMap -> Keyboard.KeyCode -> Msg
 keycodeToMsg map code =
     let
         a =
             Debug.log ("keycode: " ++ toString code) 1
+
+        maybeMsg =
+            map |> Dict.get code
     in
-        map |> Dict.get code
+        case maybeMsg of
+            Just msg ->
+                msg
+
+            Nothing ->
+                NoOp

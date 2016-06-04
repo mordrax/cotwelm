@@ -50,8 +50,14 @@ update msg model =
         Inventory ->
             ( { model | currentScreen = InventoryScreen }, Cmd.none )
 
+        MouseDrag _ ->
+            ( model, Cmd.none )
 
-view : Game.Data.Model -> Html (Maybe Game.Data.Msg)
+        NoOp ->
+            ( model, Cmd.none )
+
+
+view : Game.Data.Model -> Html Game.Data.Msg
 view model =
     case model.currentScreen of
         MapScreen ->
@@ -64,7 +70,7 @@ view model =
             Inventory.view model.hero
 
 
-viewMap : Game.Data.Model -> Html (Maybe Game.Data.Msg)
+viewMap : Game.Data.Model -> Html Game.Data.Msg
 viewMap model =
     let
         title =
@@ -77,11 +83,11 @@ viewMap model =
             ]
 
 
-viewBuilding : GameData.Building.Building -> Html (Maybe Game.Data.Msg)
+viewBuilding : GameData.Building.Building -> Html Game.Data.Msg
 viewBuilding building =
     div [] [ h1 [] [ text building.name ] ]
 
 
-viewHero : Hero -> Html (Maybe Game.Data.Msg)
+viewHero : Hero -> Html Game.Data.Msg
 viewHero hero =
     div [ class "tile maleHero", vectorToHtmlStyle <| Hero.pos hero ] []

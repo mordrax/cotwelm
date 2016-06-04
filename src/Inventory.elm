@@ -5,16 +5,30 @@ Player inventory
 
 -}
 
-import GameData.Item as Item exposing (..)
-import Equipment exposing (..)
-import Html.Attributes exposing (..)
-import Game.Data exposing (..)
 import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Game.Data exposing (..)
+import GameData.Item as Item exposing (..)
 import Hero exposing (..)
 import Container exposing (..)
+import Mouse exposing (..)
+import Json.Decode as Json exposing (..)
+import Equipment exposing (..)
 
 
-view : Hero -> Html (Maybe Game.Data.Msg)
+type alias Model =
+    { dragging : Maybe Item
+    , position : Position
+    }
+
+
+init : Model
+init =
+    { dragging = Nothing, position = Position 0 0 }
+
+
+view : Hero -> Html Game.Data.Msg
 view hero =
     let
         equipment =
@@ -39,7 +53,22 @@ view hero =
             ]
 
 
-packView : Maybe Item -> Html (Maybe Game.Data.Msg)
+subscriptions : Model -> List (Sub Game.Data.Msg)
+subscriptions model =
+    case model.dragging of
+        Nothing ->
+            Sub.none
+
+        Just item ->
+            Sub.batch [ Mouse.moves (MouseDrag << (At item)), Mouse.ups End ]
+
+
+
+-- Position -> Drag
+-- MouseDrag: Drag -> Msg
+
+
+packView : Maybe Item -> Html Game.Data.Msg
 packView maybeItem =
     case maybeItem of
         Just item ->
@@ -49,17 +78,26 @@ packView maybeItem =
             div [] [ text "Pack is empty" ]
 
 
-viewContainer : Item -> Html (Maybe Game.Data.Msg)
+viewContainer : Item -> Html Game.Data.Msg
 viewContainer item =
     case (item) of
         ItemPack pack ->
-            div [] (List.map Item.view <| Container.list (Item.getContainer pack))
+            div [] (List.map draggableItem <| Container.list (Item.getContainer pack))
 
         _ ->
             div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
 
 
-viewShop : Screen -> Html (Maybe Game.Data.Msg)
+draggableItem : Item -> Html Game.Data.Msg
+draggableItem item =
+    let
+        onMouseDown =
+            on "mousedown" (Json.map (MouseDrag << Start item) Mouse.position)
+    in
+        div [ onMouseDown ] [ Item.view item ]
+
+
+viewShop : Screen -> Html Game.Data.Msg
 viewShop screen =
     case screen of
         BuildingScreen b ->
