@@ -20,6 +20,7 @@ import Game.Data exposing (..)
 -- Cotw specific data
 
 import CotwData exposing (Msg(..), Page(..))
+import Inventory exposing (..)
 
 
 -- Keyboard/Controller subscriptions
@@ -49,6 +50,7 @@ main =
 subscriptions : Model -> Sub CotwData.Msg
 subscriptions model =
     Sub.batch (List.map (Sub.map GameMsg) Game.Keyboard.subscriptions)
+        ++ (List.map (Sub.map GameMsg) Inventory.subscriptions)
 
 
 initModel : String -> ( Model, Cmd CotwData.Msg )
@@ -85,15 +87,12 @@ update msg model =
         CharCreationMsg msg ->
             ( { model | character = CharCreation.update msg model.character }, Cmd.none )
 
-        GameMsg (Just msg) ->
+        GameMsg msg ->
             let
                 ( game', cmd ) =
                     Game.Game.update msg model.game
             in
                 ( { model | game = game' }, Cmd.none )
-
-        GameMsg Nothing ->
-            ( model, Cmd.none )
 
 
 view : Model -> Html CotwData.Msg

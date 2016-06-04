@@ -3,6 +3,8 @@ module Game.Data exposing (..)
 import Hero exposing (..)
 import GameData.Building exposing (..)
 import Game.Maps exposing (..)
+import Mouse exposing (..)
+import GameData.Item exposing (..)
 
 
 type alias Model =
@@ -26,11 +28,15 @@ type Direction
     | Right
 
 
-type KeyCmd
+type Msg
     = KeyDir Direction
     | Map
     | Inventory
+    | MouseDrag Drag
+    | NoOp
 
 
-type alias Msg =
-    KeyCmd
+type Drag
+    = Start Item Position
+    | At Item Position
+    | End Position

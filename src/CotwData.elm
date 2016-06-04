@@ -10,7 +10,7 @@ import Game.Data exposing (Msg)
 type Msg
     = SplashMsg SplashView.Msg
     | CharCreationMsg CharCreation.Data.Msg
-    | GameMsg (Maybe Game.Data.Msg)
+    | GameMsg (Game.Data.Msg)
 
 
 type Page
