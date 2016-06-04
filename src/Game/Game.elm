@@ -27,6 +27,7 @@ import Lib exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.App exposing (map)
 
 
 initGame : Game.Data.Model
@@ -35,10 +36,11 @@ initGame =
     , hero = Hero.init
     , map = Game.Maps.initMaps
     , currentScreen = InventoryScreen
+    , inventory = Inventory.init
     }
 
 
-update : Msg -> Game.Data.Model -> ( Game.Data.Model, Cmd Msg )
+update : Game.Data.Msg -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Msg )
 update msg model =
     case msg of
         KeyDir dir ->
@@ -50,8 +52,8 @@ update msg model =
         Inventory ->
             ( { model | currentScreen = InventoryScreen }, Cmd.none )
 
-        MouseDrag _ ->
-            ( model, Cmd.none )
+        InventoryMsg msg ->
+            ( { model | inventory = Inventory.update msg model.inventory }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -67,7 +69,7 @@ view model =
             viewBuilding building
 
         InventoryScreen ->
-            Inventory.view model.hero
+            Html.App.map InventoryMsg (Inventory.view model.hero)
 
 
 viewMap : Game.Data.Model -> Html Game.Data.Msg
