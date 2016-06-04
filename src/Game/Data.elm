@@ -3,8 +3,7 @@ module Game.Data exposing (..)
 import Hero exposing (..)
 import GameData.Building exposing (..)
 import Game.Maps exposing (..)
-import Mouse exposing (..)
-import GameData.Item exposing (..)
+import Inventory exposing (..)
 
 
 type alias Model =
@@ -12,6 +11,7 @@ type alias Model =
     , hero : Hero
     , map : Game.Maps.Model
     , currentScreen : Screen
+    , inventory : Inventory
     }
 
 
@@ -32,11 +32,5 @@ type Msg
     = KeyDir Direction
     | Map
     | Inventory
-    | MouseDrag Drag
+    | InventoryMsg Inventory.Msg
     | NoOp
-
-
-type Drag
-    = Start Item Position
-    | At Item Position
-    | End Position
