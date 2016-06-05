@@ -48,6 +48,7 @@ type Msg
     = Start Item Position
     | At Item Position
     | End Position
+    | MouseOver
 
 
 init : Inventory
@@ -74,7 +75,7 @@ view hero (InventoryModel model) =
                     [ div [ headerClass ] [ text "Shop" ]
                     , div [] []
                     , div [ headerClass ] [ text "Pack" ]
-                    , packView (Equipment.getPack equipment)
+                    , droppableDiv <| packView (Equipment.get Equipment.Pack equipment)
                     ]
                 , draggedItemView model
                 ]
@@ -88,12 +89,8 @@ getPosition { draggedItem, position, drag } =
             position
 
         Just { start, current } ->
-            let
-                _ =
-                    Debug.log "start" [ start, current, position ]
-            in
-                Position (position.x + current.x - start.x)
-                    (position.y + current.y - start.y)
+            Position (position.x + current.x - start.x)
+                (position.y + current.y - start.y)
 
 
 draggedItemView : Model -> Html Msg
@@ -120,20 +117,22 @@ draggedItemView ({ draggedItem, position, drag } as model) =
 
 update : Msg -> Inventory -> Inventory
 update msg (InventoryModel model) =
-    {- let
-            _ =
-               Debug.log "msg" msg
-       in
-    -}
-    case msg of
-        Start item pos ->
-            InventoryModel { model | draggedItem = Just item, drag = Just (Drag pos pos), position = pos }
+    let
+        _ =
+            Debug.log "msg" msg
+    in
+        case msg of
+            Start item pos ->
+                InventoryModel { model | draggedItem = Just item, drag = Just (Drag pos pos), position = pos }
 
-        At item pos ->
-            (InventoryModel { model | drag = (Maybe.map (\{ start } -> Drag start pos) model.drag) })
+            At item pos ->
+                (InventoryModel { model | drag = (Maybe.map (\{ start } -> Drag start pos) model.drag) })
 
-        End _ ->
-            InventoryModel { model | draggedItem = Nothing, drag = Nothing }
+            End _ ->
+                InventoryModel { model | draggedItem = Nothing, drag = Nothing }
+
+            MouseOver ->
+                InventoryModel model
 
 
 subscriptions : Inventory -> List (Sub Msg)
@@ -144,11 +143,6 @@ subscriptions (InventoryModel model) =
 
         Just item ->
             [ Mouse.moves (At item), Mouse.ups End ]
-
-
-
--- Position -> Drag
--- MouseDrag: Drag -> Msg
 
 
 packView : Maybe Item -> Html Msg
@@ -171,6 +165,15 @@ viewContainer item =
             div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
 
 
+droppableDiv : Html Msg -> Html Msg
+droppableDiv html =
+    let
+        mouseOverStyle =
+            onMouseOver MouseOver
+    in
+        div [ mouseOverStyle ] [ html ]
+
+
 draggableItem : Item -> Html Msg
 draggableItem item =
     let
@@ -178,6 +181,53 @@ draggableItem item =
             onWithOptions "mousedown" { stopPropagation = True, preventDefault = True } (Json.map (Start item) Mouse.position)
     in
         div [ onMouseDown ] [ Item.view item ]
+
+
+
+--------------------
+-- Equipment View --
+--------------------
+
+
+equipmentSlotStyle : Html.Attribute Msg
+equipmentSlotStyle =
+    style [ ( "border", "1px Solid Black" ) ]
+
+
+viewEquipment : Equipment -> Html Msg
+viewEquipment equipment =
+    div []
+        [ viewEquipmentSlot <| Equipment.get Equipment.Weapon equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Freehand equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Armour equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Shield equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Helmet equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Bracers equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Gauntlets equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Belt equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Purse equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Pack equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Neckwear equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Overgarment equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.LeftRing equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.RightRing equipment
+        , viewEquipmentSlot <| Equipment.get Equipment.Boots equipment
+        ]
+
+
+viewEquipmentSlot : Maybe Item -> Html Msg
+viewEquipmentSlot maybeItem =
+    let
+        slotCss =
+            class "three wide column equipmentSlot"
+    in
+        case maybeItem of
+            Just item ->
+                div [ slotCss ]
+                    [ draggableItem item ]
+
+            Nothing ->
+                div [ slotCss ] [ text "Empty" ]
 
 
 
