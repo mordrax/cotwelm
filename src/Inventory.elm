@@ -83,7 +83,7 @@ viewLayout equipment maybePack dnd =
             header "Shop"
 
         packDiv =
-            div [] [ header "Pack", viewPack maybePack ]
+            div [] [ header "Pack", viewPack maybePack dnd ]
     in
         div []
             [ heading "Inventory screen"
@@ -117,13 +117,14 @@ update msg ({ dnd } as model) =
             At item pos ->
                 ( { model | dnd = atdnd item pos }, Cmd.none )
 
+            -- on drag end, check if it's over a droppable container
             End _ ->
                 let
-                    dnd' =
+                    resetDnD =
                         DnDModel Nothing (Position 0 0) Nothing Nothing
 
                     model' =
-                        { model | dnd = dnd' }
+                        { model | dnd = init }
                 in
                     case dnd.drop of
                         Nothing ->
@@ -134,13 +135,16 @@ update msg ({ dnd } as model) =
                                 model' =
                                     dropItem model
                             in
-                                ( { model' | dnd = dnd' }, Cmd.none )
+                                ( { model' | dnd = init }, Cmd.none )
 
                         Just (DropEquipment slot) ->
                             Debug.crash "TODO"
 
             MouseOver dropTarget ->
                 ( { model | dnd = { dnd | drop = Just dropTarget } }, Cmd.none )
+
+            MouseLeave ->
+                ( { model | dnd = { dnd | drop = Nothing } }, Cmd.none )
 
 
 dropItem : Model -> Model
@@ -176,10 +180,16 @@ dropItem ({ hero, dnd } as model) =
 droppableDiv : Drop -> Html MouseMsg -> Html MouseMsg
 droppableDiv drop html =
     let
+        borderStyle =
+            style [ ( "border", "1px solid" ) ]
+
         mouseOverStyle =
             onMouseOver (MouseOver drop)
+
+        mouseLeaveStyle =
+            onMouseLeave MouseLeave
     in
-        div [ mouseOverStyle ] [ html ]
+        div [ mouseOverStyle, borderStyle ] [ html ]
 
 
 draggableItem : Item -> Html MouseMsg
@@ -196,8 +206,8 @@ draggableItem item =
 {-| DnDModel tracks where the mouse starts and where it currently is to get the absolute
 movement from when mouse down happens. This is the actual drag distance.
 -}
-getRelativePos : DnDModel -> Position
-getRelativePos { draggedItem, position, drag, drop } =
+getDisplacemnt : DnDModel -> Position
+getDisplacemnt { draggedItem, position, drag, drop } =
     case drag of
         Nothing ->
             position
@@ -213,13 +223,13 @@ viewDraggedItem ({ draggedItem, position, drag } as model) =
         px =
             \x -> toString x ++ "px"
 
-        relativePos =
-            getRelativePos model
+        newPos =
+            getDisplacemnt model
 
         positionStyle =
             style
-                [ ( "top", px relativePos.y )
-                , ( "left", px relativePos.x )
+                [ ( "top", px newPos.y )
+                , ( "left", px newPos.x )
                 , ( "position", "absolute" )
                 , ( "cursor", "move" )
                 ]
@@ -238,15 +248,19 @@ viewDraggedItem ({ draggedItem, position, drag } as model) =
 ---------------
 
 
-viewPack : Maybe Item -> Html MouseMsg
-viewPack maybeItem =
-    case maybeItem of
-        Just (ItemPack pack) ->
-            droppableDiv (DropPack pack)
-                <| div [] [ viewContainer (ItemPack pack) ]
+viewPack : Maybe Item -> DnDModel -> Html MouseMsg
+viewPack maybeItem ({ drop } as model) =
+    let
+        highlightStyle =
+            style [ ( "background", "light blue" ) ]
+    in
+        case maybeItem of
+            Just (ItemPack pack) ->
+                droppableDiv (DropPack pack)
+                    <| div [ highlightStyle ] [ viewContainer (ItemPack pack) ]
 
-        _ ->
-            div [] [ text "Pack is empty" ]
+            _ ->
+                div [] [ text "Pack is empty" ]
 
 
 viewContainer : Item -> Html MouseMsg
