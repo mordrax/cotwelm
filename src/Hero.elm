@@ -6,10 +6,12 @@ module Hero
         , update
         , equipment
         , pos
+        , pickup
         )
 
 import Equipment exposing (..)
 import Vector exposing (..)
+import GameData.Item exposing (..)
 
 
 type alias Model =
@@ -35,6 +37,15 @@ init =
 pos : Hero -> Vector
 pos (Hero hero) =
     hero.pos
+
+
+pickup : Item -> Hero -> Hero
+pickup item (Hero model) =
+    let
+        equipment' =
+            Equipment.putInPack item model.equipment
+    in
+        Hero { model | equipment = equipment' }
 
 
 equipment : Hero -> Equipment

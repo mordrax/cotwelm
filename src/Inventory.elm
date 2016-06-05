@@ -1,8 +1,7 @@
 module Inventory
+    --where
     exposing
-        ( Inventory
-        , Msg
-        , view
+        ( view
         , subscriptions
         , update
         , init
@@ -20,6 +19,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import GameData.Item as Item exposing (..)
+import Game.Data exposing (..)
 import Hero exposing (..)
 import Container exposing (..)
 import Mouse exposing (..)
@@ -27,43 +27,26 @@ import Json.Decode as Json exposing (..)
 import Equipment exposing (..)
 
 
-type alias Model =
-    { draggedItem : Maybe Item
-    , position : Position
-    , drag : Maybe Drag
-    }
-
-
-type alias Drag =
-    { start : Position
-    , current : Position
-    }
-
-
-type Inventory
-    = InventoryModel Model
-
-
-type Msg
-    = Start Item Position
-    | At Item Position
-    | End Position
-    | MouseOver
-
-
-init : Inventory
+init : DnDModel
 init =
-    InventoryModel { draggedItem = Nothing, position = Position 0 0, drag = Nothing }
+    { draggedItem = Nothing
+    , position = Position 0 0
+    , drag = Nothing
+    , drop = Nothing
+    }
 
 
-view : Hero -> Inventory -> Html Msg
-view hero (InventoryModel model) =
+view : Game.Data.Model -> Html MouseMsg
+view ({ hero } as model) =
     let
         equipment =
             Hero.equipment hero
 
         headerClass =
             class "ui block header"
+
+        pack =
+            Equipment.get Equipment.Pack equipment
     in
         div []
             [ span [ class "ui text container segment" ]
@@ -75,15 +58,15 @@ view hero (InventoryModel model) =
                     [ div [ headerClass ] [ text "Shop" ]
                     , div [] []
                     , div [ headerClass ] [ text "Pack" ]
-                    , droppableDiv <| packView (Equipment.get Equipment.Pack equipment)
+                    , packView pack
                     ]
-                , draggedItemView model
+                , draggedItemView model.dnd
                 ]
             ]
 
 
-getPosition : Model -> Position
-getPosition { draggedItem, position, drag } =
+getPosition : DnDModel -> Position
+getPosition { draggedItem, position, drag, drop } =
     case drag of
         Nothing ->
             position
@@ -93,7 +76,7 @@ getPosition { draggedItem, position, drag } =
                 (position.y + current.y - start.y)
 
 
-draggedItemView : Model -> Html Msg
+draggedItemView : DnDModel -> Html MouseMsg
 draggedItemView ({ draggedItem, position, drag } as model) =
     let
         realPosition =
@@ -115,29 +98,75 @@ draggedItemView ({ draggedItem, position, drag } as model) =
                 div [ positionStyle ] [ Item.view item ]
 
 
-update : Msg -> Inventory -> Inventory
-update msg (InventoryModel model) =
+update : MouseMsg -> Model -> ( Model, Cmd Game.Data.Msg )
+update msg ({ dnd } as model) =
     let
-        _ =
-            Debug.log "msg" msg
+        startdnd =
+            \item pos -> DnDModel (Just item) pos (Just (Drag pos pos)) dnd.drop
+
+        atdnd =
+            \item pos -> DnDModel (Just item) dnd.position (Maybe.map (\{ start } -> (Drag start pos)) dnd.drag) dnd.drop
     in
         case msg of
             Start item pos ->
-                InventoryModel { model | draggedItem = Just item, drag = Just (Drag pos pos), position = pos }
+                ( { model | dnd = startdnd item pos }, Cmd.none )
 
             At item pos ->
-                (InventoryModel { model | drag = (Maybe.map (\{ start } -> Drag start pos) model.drag) })
+                ( { model | dnd = atdnd item pos }, Cmd.none )
 
             End _ ->
-                InventoryModel { model | draggedItem = Nothing, drag = Nothing }
+                let
+                    dnd' =
+                        DnDModel Nothing (Position 0 0) Nothing Nothing
 
-            MouseOver ->
-                InventoryModel model
+                    model' =
+                        { model | dnd = dnd' }
+                in
+                    case dnd.drop of
+                        Nothing ->
+                            ( model', Cmd.none )
+
+                        Just (DropPack pack) ->
+                            let
+                                model' =
+                                    dropItem model
+                            in
+                                ( { model' | dnd = dnd' }, Cmd.none )
+
+                        Just (DropEquipment slot) ->
+                            Debug.crash "TODO"
+
+            MouseOver dropTarget ->
+                ( { model | dnd = { dnd | drop = Just dropTarget } }, Cmd.none )
 
 
-subscriptions : Inventory -> List (Sub Msg)
-subscriptions (InventoryModel model) =
-    case model.draggedItem of
+dropItem : Model -> Model
+dropItem ({ hero, dnd } as model) =
+    let
+        { draggedItem, position, drag, drop } =
+            dnd
+    in
+        case ( draggedItem, drop ) of
+            ( Nothing, _ ) ->
+                model
+
+            ( _, Nothing ) ->
+                model
+
+            ( Just item, Just (DropPack pack) ) ->
+                let
+                    hero' =
+                        Hero.pickup item hero
+                in
+                    { model | hero = hero' }
+
+            ( Just item, Just (DropEquipment slot) ) ->
+                Debug.crash "TODO: drop equipment"
+
+
+subscriptions : Game.Data.Model -> List (Sub MouseMsg)
+subscriptions ({ dnd } as model) =
+    case dnd.draggedItem of
         Nothing ->
             [ Sub.none ]
 
@@ -145,17 +174,18 @@ subscriptions (InventoryModel model) =
             [ Mouse.moves (At item), Mouse.ups End ]
 
 
-packView : Maybe Item -> Html Msg
+packView : Maybe Item -> Html MouseMsg
 packView maybeItem =
     case maybeItem of
-        Just item ->
-            div [] [ viewContainer item ]
+        Just (ItemPack pack) ->
+            droppableDiv (DropPack pack)
+                <| div [] [ viewContainer (ItemPack pack) ]
 
         _ ->
             div [] [ text "Pack is empty" ]
 
 
-viewContainer : Item -> Html Msg
+viewContainer : Item -> Html MouseMsg
 viewContainer item =
     case (item) of
         ItemPack pack ->
@@ -165,20 +195,22 @@ viewContainer item =
             div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
 
 
-droppableDiv : Html Msg -> Html Msg
-droppableDiv html =
+droppableDiv : Drop -> Html MouseMsg -> Html MouseMsg
+droppableDiv drop html =
     let
         mouseOverStyle =
-            onMouseOver MouseOver
+            onMouseOver (MouseOver drop)
     in
         div [ mouseOverStyle ] [ html ]
 
 
-draggableItem : Item -> Html Msg
+draggableItem : Item -> Html MouseMsg
 draggableItem item =
     let
         onMouseDown =
-            onWithOptions "mousedown" { stopPropagation = True, preventDefault = True } (Json.map (Start item) Mouse.position)
+            onWithOptions "mousedown"
+                { stopPropagation = True, preventDefault = True }
+                (Json.map (Start item) Mouse.position)
     in
         div [ onMouseDown ] [ Item.view item ]
 
@@ -189,50 +221,51 @@ draggableItem item =
 --------------------
 
 
-equipmentSlotStyle : Html.Attribute Msg
+equipmentSlotStyle : Html.Attribute Game.Data.Msg
 equipmentSlotStyle =
-    style [ ( "border", "1px Solid Black" ) ]
+    style [ ( "border", "1px solid black" ) ]
 
 
-viewEquipment : Equipment -> Html Msg
+viewEquipment : Equipment -> Html MouseMsg
 viewEquipment equipment =
-    div []
-        [ viewEquipmentSlot <| Equipment.get Equipment.Weapon equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Freehand equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Armour equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Shield equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Helmet equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Bracers equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Gauntlets equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Belt equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Purse equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Pack equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Neckwear equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Overgarment equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.LeftRing equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.RightRing equipment
-        , viewEquipmentSlot <| Equipment.get Equipment.Boots equipment
-        ]
-
-
-viewEquipmentSlot : Maybe Item -> Html Msg
-viewEquipmentSlot maybeItem =
     let
-        slotCss =
-            class "three wide column equipmentSlot"
-    in
-        case maybeItem of
-            Just item ->
-                div [ slotCss ]
-                    [ draggableItem item ]
+        getEquipment =
+            \slot -> Equipment.get slot equipment
 
-            Nothing ->
-                div [ slotCss ] [ text "Empty" ]
+        drawItem =
+            \item -> div [ class "three wide column equipmentSlot" ] [ draggableItem item ]
+
+        drawSlot =
+            \slot ->
+                case (getEquipment slot) of
+                    Just item ->
+                        drawItem item
+
+                    Nothing ->
+                        div [] []
+    in
+        div []
+            [ drawSlot Equipment.Weapon
+            , drawSlot Equipment.Freehand
+            , drawSlot Equipment.Armour
+            , drawSlot Equipment.Shield
+            , drawSlot Equipment.Helmet
+            , drawSlot Equipment.Bracers
+            , drawSlot Equipment.Gauntlets
+            , drawSlot Equipment.Belt
+            , drawSlot Equipment.Purse
+            , drawSlot Equipment.Pack
+            , drawSlot Equipment.Neckwear
+            , drawSlot Equipment.Overgarment
+            , drawSlot Equipment.LeftRing
+            , drawSlot Equipment.RightRing
+            , drawSlot Equipment.Boots
+            ]
 
 
 
 {-
-   viewShop : Screen -> Html Msg
+   viewShop : Screen -> Html Game.Data.Msg
    viewShop screen =
        case screen of
            BuildingScreen b ->

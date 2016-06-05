@@ -36,7 +36,7 @@ initGame =
     , hero = Hero.init
     , map = Game.Maps.initMaps
     , currentScreen = InventoryScreen
-    , inventory = Inventory.init
+    , dnd = Inventory.init
     }
 
 
@@ -52,8 +52,8 @@ update msg model =
         Inventory ->
             ( { model | currentScreen = InventoryScreen }, Cmd.none )
 
-        InventoryMsg msg ->
-            ( { model | inventory = Inventory.update msg model.inventory }, Cmd.none )
+        MouseEvent msg ->
+            Inventory.update msg model
 
         NoOp ->
             ( model, Cmd.none )
@@ -69,7 +69,7 @@ view model =
             viewBuilding building
 
         InventoryScreen ->
-            Html.App.map InventoryMsg (Inventory.view model.hero model.inventory)
+            Html.App.map MouseEvent (Inventory.view model)
 
 
 viewMap : Game.Data.Model -> Html Game.Data.Msg
