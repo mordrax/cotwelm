@@ -54,6 +54,7 @@ type MouseMsg
     | At Item Position
     | End Position
     | MouseOver Drop
+    | MouseLeave
 
 
 type Msg
