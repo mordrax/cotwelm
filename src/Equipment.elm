@@ -10,6 +10,12 @@ module Equipment
 
 {-| Manages equipment slots and any items that are equipped in those slots.
 Does not render equipment but will provide a API to retrieve them.
+
+# Equipment basics
+@docs EquipmentSlot, Msg, Equipment
+
+# Ingame interactions
+@docs get, init, putInPack
 -}
 
 import GameData.Item as Item exposing (..)
@@ -103,6 +109,8 @@ equip slot item model =
             ( model, Ok )
 
 
+{-| Puts an item in the pack slot of the equipment if there is currently a pack there.
+-}
 putInPack : Item -> Equipment -> Equipment
 putInPack item (EquipmentModel model) =
     case model.pack of

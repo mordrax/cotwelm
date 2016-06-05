@@ -1,5 +1,4 @@
 module Inventory
-    --where
     exposing
         ( view
         , subscriptions
@@ -36,66 +35,70 @@ init =
     }
 
 
+
+----------
+-- View --
+----------
+
+
 view : Game.Data.Model -> Html MouseMsg
-view ({ hero } as model) =
+view ({ hero, dnd } as model) =
     let
         equipment =
             Hero.equipment hero
 
-        headerClass =
-            class "ui block header"
-
         pack =
             Equipment.get Equipment.Pack equipment
     in
-        div []
-            [ span [ class "ui text container segment" ]
-                [ text "Inventory screen" ]
-            , div [ class "ui two column grid" ]
-                [ div [ class "six wide column" ]
-                    [ div [ class "ui grid" ] [ viewEquipment equipment ] ]
-                , div [ class "ten wide column" ]
-                    [ div [ headerClass ] [ text "Shop" ]
-                    , div [] []
-                    , div [ headerClass ] [ text "Pack" ]
-                    , packView pack
+        viewLayout equipment pack dnd
+
+
+viewLayout : Equipment -> Maybe Item -> DnDModel -> Html MouseMsg
+viewLayout equipment maybePack dnd =
+    let
+        headerClass =
+            class "ui block header"
+
+        header =
+            \title -> div [ headerClass ] [ text title ]
+
+        heading =
+            \title ->
+                span [ class "ui text container segment" ] [ text title ]
+
+        columnWidth =
+            \width children -> div [ class (width ++ " wide column") ] children
+
+        equipmentColumn =
+            columnWidth "six"
+                [ div [ class "ui grid" ]
+                    [ viewEquipmentSlots equipment
                     ]
-                , draggedItemView model.dnd
                 ]
+
+        shopPackColumn =
+            columnWidth "ten" [ shopDiv, packDiv ]
+
+        shopDiv =
+            header "Shop"
+
+        packDiv =
+            div [] [ header "Pack", viewPack maybePack ]
+    in
+        div []
+            [ heading "Inventory screen"
+            , div [ class "ui two column grid" ]
+                [ equipmentColumn
+                , shopPackColumn
+                ]
+            , viewDraggedItem dnd
             ]
 
 
-getPosition : DnDModel -> Position
-getPosition { draggedItem, position, drag, drop } =
-    case drag of
-        Nothing ->
-            position
 
-        Just { start, current } ->
-            Position (position.x + current.x - start.x)
-                (position.y + current.y - start.y)
-
-
-draggedItemView : DnDModel -> Html MouseMsg
-draggedItemView ({ draggedItem, position, drag } as model) =
-    let
-        realPosition =
-            getPosition model
-
-        positionStyle =
-            style
-                [ ( "top", (toString realPosition.y) ++ "px" )
-                , ( "left", toString realPosition.x ++ "px" )
-                , ( "position", "absolute" )
-                , ( "cursor", "move" )
-                ]
-    in
-        case draggedItem of
-            Nothing ->
-                div [] []
-
-            Just item ->
-                div [ positionStyle ] [ Item.view item ]
+------------
+-- Update --
+------------
 
 
 update : MouseMsg -> Model -> ( Model, Cmd Game.Data.Msg )
@@ -164,35 +167,10 @@ dropItem ({ hero, dnd } as model) =
                 Debug.crash "TODO: drop equipment"
 
 
-subscriptions : Game.Data.Model -> List (Sub MouseMsg)
-subscriptions ({ dnd } as model) =
-    case dnd.draggedItem of
-        Nothing ->
-            [ Sub.none ]
 
-        Just item ->
-            [ Mouse.moves (At item), Mouse.ups End ]
-
-
-packView : Maybe Item -> Html MouseMsg
-packView maybeItem =
-    case maybeItem of
-        Just (ItemPack pack) ->
-            droppableDiv (DropPack pack)
-                <| div [] [ viewContainer (ItemPack pack) ]
-
-        _ ->
-            div [] [ text "Pack is empty" ]
-
-
-viewContainer : Item -> Html MouseMsg
-viewContainer item =
-    case (item) of
-        ItemPack pack ->
-            div [] (List.map draggableItem <| Container.list (Item.getContainer pack))
-
-        _ ->
-            div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
+---------------
+-- Drag Drop --
+---------------
 
 
 droppableDiv : Drop -> Html MouseMsg -> Html MouseMsg
@@ -215,6 +193,72 @@ draggableItem item =
         div [ onMouseDown ] [ Item.view item ]
 
 
+{-| DnDModel tracks where the mouse starts and where it currently is to get the absolute
+movement from when mouse down happens. This is the actual drag distance.
+-}
+getRelativePos : DnDModel -> Position
+getRelativePos { draggedItem, position, drag, drop } =
+    case drag of
+        Nothing ->
+            position
+
+        Just { start, current } ->
+            Position (position.x + current.x - start.x)
+                (position.y + current.y - start.y)
+
+
+viewDraggedItem : DnDModel -> Html MouseMsg
+viewDraggedItem ({ draggedItem, position, drag } as model) =
+    let
+        px =
+            \x -> toString x ++ "px"
+
+        relativePos =
+            getRelativePos model
+
+        positionStyle =
+            style
+                [ ( "top", px relativePos.y )
+                , ( "left", px relativePos.x )
+                , ( "position", "absolute" )
+                , ( "cursor", "move" )
+                ]
+    in
+        case draggedItem of
+            Nothing ->
+                div [] []
+
+            Just item ->
+                div [ positionStyle ] [ Item.view item ]
+
+
+
+---------------
+-- Pack view --
+---------------
+
+
+viewPack : Maybe Item -> Html MouseMsg
+viewPack maybeItem =
+    case maybeItem of
+        Just (ItemPack pack) ->
+            droppableDiv (DropPack pack)
+                <| div [] [ viewContainer (ItemPack pack) ]
+
+        _ ->
+            div [] [ text "Pack is empty" ]
+
+
+viewContainer : Item -> Html MouseMsg
+viewContainer item =
+    case (item) of
+        ItemPack pack ->
+            div [] (List.map draggableItem <| Container.list (Item.getContainer pack))
+
+        _ ->
+            div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
+
+
 
 --------------------
 -- Equipment View --
@@ -226,8 +270,8 @@ equipmentSlotStyle =
     style [ ( "border", "1px solid black" ) ]
 
 
-viewEquipment : Equipment -> Html MouseMsg
-viewEquipment equipment =
+viewEquipmentSlots : Equipment -> Html MouseMsg
+viewEquipmentSlots equipment =
     let
         getEquipment =
             \slot -> Equipment.get slot equipment
@@ -261,6 +305,22 @@ viewEquipment equipment =
             , drawSlot Equipment.RightRing
             , drawSlot Equipment.Boots
             ]
+
+
+
+------------------
+-- Subscription --
+------------------
+
+
+subscriptions : Game.Data.Model -> List (Sub MouseMsg)
+subscriptions ({ dnd } as model) =
+    case dnd.draggedItem of
+        Nothing ->
+            [ Sub.none ]
+
+        Just item ->
+            [ Mouse.moves (At item), Mouse.ups End ]
 
 
 
