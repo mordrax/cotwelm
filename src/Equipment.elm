@@ -5,6 +5,7 @@ module Equipment
         , Equipment
         , get
         , init
+        , putInPack
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
@@ -100,6 +101,23 @@ equip slot item model =
 
         _ ->
             ( model, Ok )
+
+
+putInPack : Item -> Equipment -> Equipment
+putInPack item (EquipmentModel model) =
+    case model.pack of
+        Nothing ->
+            EquipmentModel model
+
+        Just (ItemPack pack) ->
+            let
+                pack' =
+                    Item.addToPack item pack
+            in
+                EquipmentModel { model | pack = Just <| ItemPack pack' }
+
+        _ ->
+            EquipmentModel model
 
 
 get : EquipmentSlot -> Equipment -> Maybe Item

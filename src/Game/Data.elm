@@ -3,7 +3,9 @@ module Game.Data exposing (..)
 import Hero exposing (..)
 import GameData.Building exposing (..)
 import Game.Maps exposing (..)
-import Inventory exposing (..)
+import GameData.Item as Item exposing (..)
+import Mouse exposing (Position)
+import Equipment exposing (..)
 
 
 type alias Model =
@@ -11,8 +13,27 @@ type alias Model =
     , hero : Hero
     , map : Game.Maps.Model
     , currentScreen : Screen
-    , inventory : Inventory
+    , dnd : DnDModel
     }
+
+
+type alias DnDModel =
+    { draggedItem : Maybe Item
+    , position : Position
+    , drag : Maybe Drag
+    , drop : Maybe Drop
+    }
+
+
+type alias Drag =
+    { start : Position
+    , current : Position
+    }
+
+
+type Drop
+    = DropPack Item.Pack
+    | DropEquipment EquipmentSlot
 
 
 type Screen
@@ -28,9 +49,16 @@ type Direction
     | Right
 
 
+type MouseMsg
+    = Start Item Position
+    | At Item Position
+    | End Position
+    | MouseOver Drop
+
+
 type Msg
     = KeyDir Direction
     | Map
     | Inventory
-    | InventoryMsg Inventory.Msg
+    | MouseEvent MouseMsg
     | NoOp

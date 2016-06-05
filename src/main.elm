@@ -54,13 +54,13 @@ subscriptions model =
             \x -> Sub.map GameMsg x
 
         convertToGameMsg =
-            \x -> Sub.map InventoryMsg x
+            \x -> Sub.map MouseEvent x
 
         keyboardSubs =
             List.map convertToMainMsg Game.Keyboard.subscriptions
 
         inventorySubs =
-            Inventory.subscriptions model.game.inventory
+            Inventory.subscriptions model.game
 
         inventorySubsGameMsg =
             List.map convertToMainMsg (List.map convertToGameMsg inventorySubs)
