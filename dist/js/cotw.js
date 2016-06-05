@@ -7879,6 +7879,188 @@ var _elm_lang$keyboard$Keyboard$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Keyboard'] = {pkg: 'elm-lang/keyboard', init: _elm_lang$keyboard$Keyboard$init, onEffects: _elm_lang$keyboard$Keyboard$onEffects, onSelfMsg: _elm_lang$keyboard$Keyboard$onSelfMsg, tag: 'sub', subMap: _elm_lang$keyboard$Keyboard$subMap};
 
+var _elm_lang$mouse$Mouse$onSelfMsg = F3(
+	function (router, _p0, state) {
+		var _p1 = _p0;
+		var _p2 = A2(_elm_lang$core$Dict$get, _p1.category, state);
+		if (_p2.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var send = function (tagger) {
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					tagger(_p1.position));
+			};
+			return A2(
+				_elm_lang$core$Task$andThen,
+				_elm_lang$core$Task$sequence(
+					A2(_elm_lang$core$List$map, send, _p2._0.taggers)),
+				function (_p3) {
+					return _elm_lang$core$Task$succeed(state);
+				});
+		}
+	});
+var _elm_lang$mouse$Mouse_ops = _elm_lang$mouse$Mouse_ops || {};
+_elm_lang$mouse$Mouse_ops['&>'] = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			t1,
+			function (_p4) {
+				return t2;
+			});
+	});
+var _elm_lang$mouse$Mouse$init = _elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty);
+var _elm_lang$mouse$Mouse$categorizeHelpHelp = F2(
+	function (value, maybeValues) {
+		var _p5 = maybeValues;
+		if (_p5.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Just(
+				_elm_lang$core$Native_List.fromArray(
+					[value]));
+		} else {
+			return _elm_lang$core$Maybe$Just(
+				A2(_elm_lang$core$List_ops['::'], value, _p5._0));
+		}
+	});
+var _elm_lang$mouse$Mouse$categorizeHelp = F2(
+	function (subs, subDict) {
+		categorizeHelp:
+		while (true) {
+			var _p6 = subs;
+			if (_p6.ctor === '[]') {
+				return subDict;
+			} else {
+				var _v4 = _p6._1,
+					_v5 = A3(
+					_elm_lang$core$Dict$update,
+					_p6._0._0,
+					_elm_lang$mouse$Mouse$categorizeHelpHelp(_p6._0._1),
+					subDict);
+				subs = _v4;
+				subDict = _v5;
+				continue categorizeHelp;
+			}
+		}
+	});
+var _elm_lang$mouse$Mouse$categorize = function (subs) {
+	return A2(_elm_lang$mouse$Mouse$categorizeHelp, subs, _elm_lang$core$Dict$empty);
+};
+var _elm_lang$mouse$Mouse$subscription = _elm_lang$core$Native_Platform.leaf('Mouse');
+var _elm_lang$mouse$Mouse$Position = F2(
+	function (a, b) {
+		return {x: a, y: b};
+	});
+var _elm_lang$mouse$Mouse$position = A3(
+	_elm_lang$core$Json_Decode$object2,
+	_elm_lang$mouse$Mouse$Position,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageX', _elm_lang$core$Json_Decode$int),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageY', _elm_lang$core$Json_Decode$int));
+var _elm_lang$mouse$Mouse$Watcher = F2(
+	function (a, b) {
+		return {taggers: a, pid: b};
+	});
+var _elm_lang$mouse$Mouse$Msg = F2(
+	function (a, b) {
+		return {category: a, position: b};
+	});
+var _elm_lang$mouse$Mouse$onEffects = F3(
+	function (router, newSubs, oldState) {
+		var rightStep = F3(
+			function (category, taggers, task) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					task,
+					function (state) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							_elm_lang$core$Process$spawn(
+								A3(
+									_elm_lang$dom$Dom_LowLevel$onDocument,
+									category,
+									_elm_lang$mouse$Mouse$position,
+									function (_p7) {
+										return A2(
+											_elm_lang$core$Platform$sendToSelf,
+											router,
+											A2(_elm_lang$mouse$Mouse$Msg, category, _p7));
+									})),
+							function (pid) {
+								return _elm_lang$core$Task$succeed(
+									A3(
+										_elm_lang$core$Dict$insert,
+										category,
+										A2(_elm_lang$mouse$Mouse$Watcher, taggers, pid),
+										state));
+							});
+					});
+			});
+		var bothStep = F4(
+			function (category, _p8, taggers, task) {
+				var _p9 = _p8;
+				return A2(
+					_elm_lang$core$Task$andThen,
+					task,
+					function (state) {
+						return _elm_lang$core$Task$succeed(
+							A3(
+								_elm_lang$core$Dict$insert,
+								category,
+								A2(_elm_lang$mouse$Mouse$Watcher, taggers, _p9.pid),
+								state));
+					});
+			});
+		var leftStep = F3(
+			function (category, _p10, task) {
+				var _p11 = _p10;
+				return A2(
+					_elm_lang$mouse$Mouse_ops['&>'],
+					_elm_lang$core$Process$kill(_p11.pid),
+					task);
+			});
+		return A6(
+			_elm_lang$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			oldState,
+			_elm_lang$mouse$Mouse$categorize(newSubs),
+			_elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty));
+	});
+var _elm_lang$mouse$Mouse$MySub = F2(
+	function (a, b) {
+		return {ctor: 'MySub', _0: a, _1: b};
+	});
+var _elm_lang$mouse$Mouse$clicks = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'click', tagger));
+};
+var _elm_lang$mouse$Mouse$moves = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mousemove', tagger));
+};
+var _elm_lang$mouse$Mouse$downs = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mousedown', tagger));
+};
+var _elm_lang$mouse$Mouse$ups = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mouseup', tagger));
+};
+var _elm_lang$mouse$Mouse$subMap = F2(
+	function (func, _p12) {
+		var _p13 = _p12;
+		return A2(
+			_elm_lang$mouse$Mouse$MySub,
+			_p13._0,
+			function (_p14) {
+				return func(
+					_p13._1(_p14));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
+
 var _elm_lang$navigation$Native_Navigation = function() {
 
 function go(n)
@@ -9027,10 +9209,110 @@ var _mordrax$cotwelm$CharCreation_CharCreation$update = F2(
 	});
 var _mordrax$cotwelm$CharCreation_CharCreation$initChar = {name: 'testing', attributes: _mordrax$cotwelm$CharCreation_Attributes$initModel, gender: _mordrax$cotwelm$CharCreation_Data$Female, difficulty: _mordrax$cotwelm$CharCreation_Data$Hard};
 
-var _mordrax$cotwelm$Container$initModel = {bulkCapacity: 0, weightCapacity: 0, bulk: 0, weight: 0};
+var _mordrax$cotwelm$Mass$Model = F2(
+	function (a, b) {
+		return {bulk: a, weight: b};
+	});
+var _mordrax$cotwelm$Mass$Mass = function (a) {
+	return {ctor: 'Mass', _0: a};
+};
+var _mordrax$cotwelm$Mass$new = F2(
+	function (bulk, weight) {
+		return _mordrax$cotwelm$Mass$Mass(
+			A2(_mordrax$cotwelm$Mass$Model, bulk, weight));
+	});
+var _mordrax$cotwelm$Mass$add = F2(
+	function (_p1, _p0) {
+		var _p2 = _p1;
+		var _p5 = _p2._0;
+		var _p3 = _p0;
+		var _p4 = _p3._0;
+		return _mordrax$cotwelm$Mass$Mass(
+			{bulk: _p5.bulk + _p4.bulk, weight: _p5.weight + _p4.weight});
+	});
+var _mordrax$cotwelm$Mass$TooBulky = {ctor: 'TooBulky'};
+var _mordrax$cotwelm$Mass$TooHeavy = {ctor: 'TooHeavy'};
+var _mordrax$cotwelm$Mass$Ok = {ctor: 'Ok'};
+var _mordrax$cotwelm$Mass$lessThanOrEqualTo = F2(
+	function (_p7, _p6) {
+		var _p8 = _p7;
+		var _p12 = _p8._0;
+		var _p9 = _p6;
+		var _p11 = _p9._0;
+		var bulkWeight = {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.cmp(_p12.bulk, _p11.bulk) > 0,
+			_1: _elm_lang$core$Native_Utils.cmp(_p12.weight, _p11.weight) > 0
+		};
+		var _p10 = bulkWeight;
+		_v4_2:
+		do {
+			if (_p10.ctor === '_Tuple2') {
+				if (_p10._0 === true) {
+					return _mordrax$cotwelm$Mass$TooBulky;
+				} else {
+					if (_p10._1 === true) {
+						return _mordrax$cotwelm$Mass$TooHeavy;
+					} else {
+						break _v4_2;
+					}
+				}
+			} else {
+				break _v4_2;
+			}
+		} while(false);
+		return _mordrax$cotwelm$Mass$Ok;
+	});
+
+var _mordrax$cotwelm$Container$list = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0.items;
+};
 var _mordrax$cotwelm$Container$Model = F4(
 	function (a, b, c, d) {
-		return {bulkCapacity: a, weightCapacity: b, bulk: c, weight: d};
+		return {capacity: a, currentMass: b, items: c, getMass: d};
+	});
+var _mordrax$cotwelm$Container$ContainerModel = function (a) {
+	return {ctor: 'ContainerModel', _0: a};
+};
+var _mordrax$cotwelm$Container$new = function (_p2) {
+	var _p3 = _p2;
+	return _mordrax$cotwelm$Container$ContainerModel(
+		A4(
+			_mordrax$cotwelm$Container$Model,
+			_p3.capacity,
+			A2(_mordrax$cotwelm$Mass$new, 0, 0),
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_p3.getMass));
+};
+var _mordrax$cotwelm$Container$add = F2(
+	function (item, _p4) {
+		var _p5 = _p4;
+		var _p7 = _p5._0;
+		var itemMass = _p7.getMass(item);
+		var newMass = A2(_mordrax$cotwelm$Mass$add, itemMass, _p7.currentMass);
+		var massMsg = A2(_mordrax$cotwelm$Mass$lessThanOrEqualTo, newMass, _p7.capacity);
+		var _p6 = massMsg;
+		if (_p6.ctor === 'Ok') {
+			return {
+				ctor: '_Tuple2',
+				_0: _mordrax$cotwelm$Container$ContainerModel(
+					_elm_lang$core$Native_Utils.update(
+						_p7,
+						{
+							currentMass: newMass,
+							items: A2(_elm_lang$core$List_ops['::'], item, _p7.items)
+						})),
+				_1: _mordrax$cotwelm$Mass$Ok
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: _mordrax$cotwelm$Container$ContainerModel(_p7),
+				_1: _mordrax$cotwelm$Mass$TooHeavy
+			};
+		}
 	});
 
 var _mordrax$cotwelm$SplashView$Overview = {ctor: 'Overview'};
@@ -9147,20 +9429,48 @@ var _mordrax$cotwelm$SplashView$view = function () {
 			]));
 }();
 
-var _mordrax$cotwelm$GameData_Item$viewItem = function (item) {
+var _mordrax$cotwelm$GameData_Item$getContainer = function (_p0) {
+	var _p1 = _p0;
+	return _p1._2.container;
+};
+var _mordrax$cotwelm$GameData_Item$getModel = function (item) {
+	var _p2 = item;
+	switch (_p2.ctor) {
+		case 'ItemWeapon':
+			return _p2._0._1;
+		case 'ItemArmour':
+			return _p2._0._1;
+		case 'ItemShield':
+			return _p2._0._1;
+		case 'ItemHelmet':
+			return _p2._0._1;
+		case 'ItemBracers':
+			return _p2._0._1;
+		case 'ItemGauntlets':
+			return _p2._0._1;
+		case 'ItemBelt':
+			return _p2._0._1;
+		case 'ItemPurse':
+			return _p2._0._0;
+		case 'ItemPack':
+			return _p2._0._1;
+		case 'ItemNeckwear':
+			return _p2._0._1;
+		case 'ItemOvergarment':
+			return _p2._0._1;
+		case 'ItemRing':
+			return _p2._0._1;
+		default:
+			return _p2._0._1;
+	}
+};
+var _mordrax$cotwelm$GameData_Item$view = function (item) {
+	var model = _mordrax$cotwelm$GameData_Item$getModel(item);
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html_Attributes$class('ui item'),
-				_elm_lang$html$Html_Attributes$style(
-				_elm_lang$core$Native_List.fromArray(
-					[
-						{ctor: '_Tuple2', _0: 'opacity', _1: '1'},
-						{ctor: '_Tuple2', _0: 'cursor', _1: 'move'},
-						{ctor: '_Tuple2', _0: 'width', _1: '32px'},
-						{ctor: '_Tuple2', _0: 'height', _1: '64px'}
-					]))
+				_elm_lang$html$Html_Attributes$class('ui grid')
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
@@ -9168,49 +9478,32 @@ var _mordrax$cotwelm$GameData_Item$viewItem = function (item) {
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Attributes$class('image')
+						_elm_lang$html$Html_Attributes$class('ui item'),
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'opacity', _1: '1'},
+								{ctor: '_Tuple2', _0: 'cursor', _1: 'move'},
+								{ctor: '_Tuple2', _0: 'width', _1: '32px'},
+								{ctor: '_Tuple2', _0: 'height', _1: '64px'}
+							]))
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						A2(
-						_elm_lang$html$Html$i,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class(
-								A2(_elm_lang$core$Basics_ops['++'], 'cotwItem ', item.css))
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[]))
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('content')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$a,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('header')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[])),
 						A2(
 						_elm_lang$html$Html$div,
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html_Attributes$class('meta')
+								_elm_lang$html$Html_Attributes$class('image')
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[
 								A2(
-								_elm_lang$html$Html$span,
+								_elm_lang$html$Html$i,
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$class('date')
+										_elm_lang$html$Html_Attributes$class(
+										A2(_elm_lang$core$Basics_ops['++'], 'cotwItem ', model.css))
 									]),
 								_elm_lang$core$Native_List.fromArray(
 									[]))
@@ -9219,23 +9512,74 @@ var _mordrax$cotwelm$GameData_Item$viewItem = function (item) {
 						_elm_lang$html$Html$div,
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html_Attributes$class('description'),
-								_elm_lang$html$Html_Attributes$style(
-								_elm_lang$core$Native_List.fromArray(
-									[
-										{ctor: '_Tuple2', _0: 'maxWidth', _1: '7em'}
-									]))
+								_elm_lang$html$Html_Attributes$class('content')
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html$text(item.name)
+								A2(
+								_elm_lang$html$Html$a,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('header')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[])),
+								A2(
+								_elm_lang$html$Html$div,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('meta')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										A2(
+										_elm_lang$html$Html$span,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$class('date')
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[]))
+									])),
+								A2(
+								_elm_lang$html$Html$div,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('description'),
+										_elm_lang$html$Html_Attributes$style(
+										_elm_lang$core$Native_List.fromArray(
+											[
+												{ctor: '_Tuple2', _0: 'maxWidth', _1: '7em'}
+											]))
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html$text(model.name)
+									]))
 							]))
 					]))
 			]));
 };
-var _mordrax$cotwelm$GameData_Item$Model = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {itemType: a, name: b, buy: c, sell: d, weight: e, bulk: f, css: g, status: h, isIdentified: i};
+var _mordrax$cotwelm$GameData_Item$viewMaybe = function (maybeItem) {
+	var _p3 = maybeItem;
+	if (_p3.ctor === 'Just') {
+		return _mordrax$cotwelm$GameData_Item$view(_p3._0);
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	}
+};
+var _mordrax$cotwelm$GameData_Item$getMass = function (item) {
+	var model = _mordrax$cotwelm$GameData_Item$getModel(item);
+	return model.mass;
+};
+var _mordrax$cotwelm$GameData_Item$Model = F7(
+	function (a, b, c, d, e, f, g) {
+		return {name: a, buy: b, sell: c, css: d, status: e, isIdentified: f, mass: g};
 	});
 var _mordrax$cotwelm$GameData_Item$WeaponModel = function (a) {
 	return {$class: a};
@@ -9250,1033 +9594,160 @@ var _mordrax$cotwelm$GameData_Item$BeltModel = F5(
 var _mordrax$cotwelm$GameData_Item$PackModel = function (a) {
 	return {container: a};
 };
-var _mordrax$cotwelm$GameData_Item$Boots = {ctor: 'Boots'};
-var _mordrax$cotwelm$GameData_Item$Ring = {ctor: 'Ring'};
-var _mordrax$cotwelm$GameData_Item$Overgarment = {ctor: 'Overgarment'};
-var _mordrax$cotwelm$GameData_Item$Neckwear = {ctor: 'Neckwear'};
+var _mordrax$cotwelm$GameData_Item$Enchanted = {ctor: 'Enchanted'};
+var _mordrax$cotwelm$GameData_Item$Cursed = {ctor: 'Cursed'};
+var _mordrax$cotwelm$GameData_Item$Normal = {ctor: 'Normal'};
+var _mordrax$cotwelm$GameData_Item$Boots = function (a) {
+	return {ctor: 'Boots', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$Ring = function (a) {
+	return {ctor: 'Ring', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$Overgarment = function (a) {
+	return {ctor: 'Overgarment', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$Neckwear = function (a) {
+	return {ctor: 'Neckwear', _0: a};
+};
 var _mordrax$cotwelm$GameData_Item$Pack = function (a) {
 	return {ctor: 'Pack', _0: a};
-};
-var _mordrax$cotwelm$GameData_Item$newPack = function (packType) {
-	var _p0 = packType;
-	switch (_p0.ctor) {
-		case 'SmallBag':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 5000, 6000, 0, 0))),
-				'Small Bag',
-				300,
-				500,
-				0,
-				0,
-				'Bag');
-		case 'MediumBag':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 10000, 12000, 0, 0))),
-				'Medium Bag',
-				500,
-				700,
-				0,
-				0,
-				'Bag');
-		case 'LargeBag':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 15000, 18000, 0, 0))),
-				'Large Bag',
-				900,
-				900,
-				0,
-				0,
-				'Bag');
-		case 'SmallPack':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 12000, 50000, 0, 0))),
-				'Small Pack',
-				1000,
-				1000,
-				0,
-				0,
-				'Pack');
-		case 'MediumPack':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 22000, 75000, 0, 0))),
-				'Medium Pack',
-				2000,
-				1500,
-				0,
-				0,
-				'Pack');
-		case 'LargePack':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 35000, 100000, 0, 0))),
-				'Large Pack',
-				4000,
-				100000,
-				0,
-				0,
-				'Pack');
-		case 'SmallChest':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 100000, 50000, 0, 0))),
-				'Small Chest',
-				5000,
-				100000,
-				0,
-				0,
-				'Chest');
-		case 'MediumChest':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 100000, 150000, 0, 0))),
-				'Medium Chest',
-				15000,
-				150000,
-				0,
-				0,
-				'Chest');
-		case 'LargeChest':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 100000, 250000, 0, 0))),
-				'Large Chest',
-				25000,
-				250000,
-				0,
-				0,
-				'Chest');
-		case 'EnchantedSmallPackOfHolding':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 50000, 150000, 0, 0))),
-				'Enchanted Small Pack Of Holding',
-				5000,
-				75000,
-				0,
-				0,
-				'EnchantedPack');
-		case 'EnchantedMediumPackOfHolding':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 75000, 200000, 0, 0))),
-				'Enchanted Medium Pack Of Holding',
-				7500,
-				100000,
-				0,
-				0,
-				'EnchantedPack');
-		default:
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Pack(
-					_mordrax$cotwelm$GameData_Item$PackModel(
-						A4(_mordrax$cotwelm$Container$Model, 100000, 250000, 0, 0))),
-				'Enchanted Large Pack Of Holding',
-				10000,
-				125000,
-				0,
-				0,
-				'EnchantedPack');
-	}
 };
 var _mordrax$cotwelm$GameData_Item$Purse = {ctor: 'Purse'};
 var _mordrax$cotwelm$GameData_Item$Belt = function (a) {
 	return {ctor: 'Belt', _0: a};
 };
-var _mordrax$cotwelm$GameData_Item$newBelt = function (beltType) {
-	var _p1 = beltType;
-	switch (_p1.ctor) {
-		case 'TwoSlotBelt':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Belt(
-					A5(
-						_mordrax$cotwelm$GameData_Item$BeltModel,
-						2,
-						0,
-						0,
-						0,
-						A4(_mordrax$cotwelm$Container$Model, 2100, 3100, 0, 0))),
-				'Two Slot Belt',
-				300,
-				300,
-				0,
-				0,
-				'SlotBelt');
-		case 'ThreeSlotBelt':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Belt(
-					A5(
-						_mordrax$cotwelm$GameData_Item$BeltModel,
-						3,
-						0,
-						0,
-						0,
-						A4(_mordrax$cotwelm$Container$Model, 2600, 3600, 0, 0))),
-				'Three Slot Belt',
-				300,
-				300,
-				0,
-				0,
-				'SlotBelt');
-		case 'FourSlotBelt':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Belt(
-					A5(
-						_mordrax$cotwelm$GameData_Item$BeltModel,
-						4,
-						0,
-						0,
-						0,
-						A4(_mordrax$cotwelm$Container$Model, 3100, 4100, 0, 0))),
-				'Four Slot Belt',
-				300,
-				300,
-				0,
-				0,
-				'SlotBelt');
-		case 'UtilityBelt':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Belt(
-					A5(
-						_mordrax$cotwelm$GameData_Item$BeltModel,
-						2,
-						4,
-						4,
-						0,
-						A4(_mordrax$cotwelm$Container$Model, 3100, 4100, 0, 0))),
-				'Utility Belt',
-				1350,
-				1800,
-				0,
-				0,
-				'UtilityBelt');
-		default:
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Belt(
-					A5(
-						_mordrax$cotwelm$GameData_Item$BeltModel,
-						2,
-						0,
-						0,
-						4,
-						A4(_mordrax$cotwelm$Container$Model, 3100, 4100, 0, 0))),
-				'Wand Quiver Belt',
-				300,
-				300,
-				0,
-				0,
-				'WandQuiverBelt');
-	}
-};
 var _mordrax$cotwelm$GameData_Item$Gauntlets = function (a) {
 	return {ctor: 'Gauntlets', _0: a};
-};
-var _mordrax$cotwelm$GameData_Item$newGauntlets = function (gauntletType) {
-	var _p2 = gauntletType;
-	switch (_p2.ctor) {
-		case 'NormalGauntlet':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(5)),
-				'Gauntlet',
-				500,
-				2000,
-				105,
-				60,
-				'Gauntlet');
-		case 'GauntletOfProtection':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(10)),
-				'Gauntlet Of Protection',
-				500,
-				2000,
-				2625,
-				1500,
-				'GauntletEnchanted');
-		case 'GauntletOfProtectionS':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(15)),
-				'Gauntlet Of Protection Strong',
-				500,
-				2000,
-				6300,
-				3600,
-				'GauntletEnchanted');
-		case 'GauntletOfProtectionVS':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(20)),
-				'Gauntlet Of Protection Very Strong',
-				500,
-				2000,
-				12420,
-				6900,
-				'GauntletEnchanted');
-		case 'GauntletOfSlaying':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(0)),
-				'Gauntlet Of Slaying',
-				500,
-				2000,
-				3780,
-				2100,
-				'GauntletOfSlaying');
-		case 'GauntletOfSlayingS_S':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(0)),
-				'Gauntlet Of Slaying Strong',
-				500,
-				2000,
-				7560,
-				4200,
-				'GauntletOfSlaying');
-		case 'GauntletOfSlayingVS_VS':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(0)),
-				'Gauntlet Of Slaying Very Strong',
-				500,
-				2000,
-				13125,
-				7500,
-				'GauntletOfSlaying');
-		case 'GauntletOfDexterity':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(5)),
-				'Gauntlet Of Dexterity',
-				500,
-				2000,
-				3240,
-				1800,
-				'GauntletEnchanted');
-		case 'GauntletOfDexterityS':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(5)),
-				'Gauntlet Of Dexterity Strong',
-				500,
-				2000,
-				7020,
-				3900,
-				'GauntletEnchanted');
-		case 'GauntletOfDexterityVS':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(5)),
-				'Gauntlet Of Dexterity Very Strong',
-				500,
-				2000,
-				12960,
-				7200,
-				'GauntletEnchanted');
-		case 'GauntletOfStrength':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(5)),
-				'Gauntlet Of Strength',
-				500,
-				2000,
-				3240,
-				1800,
-				'GauntletEnchanted');
-		case 'GauntletOfStrengthS':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(5)),
-				'Gauntlet Of Strength Strong',
-				500,
-				2000,
-				0,
-				0,
-				'GauntletEnchanted');
-		default:
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Gauntlets(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(5)),
-				'Gauntlet Of Strength Very Strong',
-				500,
-				2000,
-				12960,
-				7200,
-				'GauntletEnchanted');
-	}
 };
 var _mordrax$cotwelm$GameData_Item$Bracers = function (a) {
 	return {ctor: 'Bracers', _0: a};
 };
-var _mordrax$cotwelm$GameData_Item$newBracers = function (bracersType) {
-	var _p3 = bracersType;
-	switch (_p3.ctor) {
-		case 'NormalBracers':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Bracers(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(3)),
-				'Bracers',
-				500,
-				2000,
-				108,
-				60,
-				'Bracers');
-		case 'BracersOfDefenseNormal':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Bracers(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(8)),
-				'Bracers Of Defense Normal',
-				500,
-				2000,
-				1836,
-				1020,
-				'BracersEnchanted');
-		case 'BracersOfDefenseS':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Bracers(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(13)),
-				'Bracers Of Defense Strong',
-				500,
-				2000,
-				5616,
-				3120,
-				'BracersEnchanted');
-		default:
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Bracers(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(18)),
-				'Bracers Of Defense Very Strong',
-				500,
-				2000,
-				11556,
-				6420,
-				'BracersEnchanted');
-	}
-};
 var _mordrax$cotwelm$GameData_Item$Helmet = function (a) {
 	return {ctor: 'Helmet', _0: a};
-};
-var _mordrax$cotwelm$GameData_Item$newHelmet = function (helmetType) {
-	var _p4 = helmetType;
-	switch (_p4.ctor) {
-		case 'BrokenHelmet':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Helmet(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(0)),
-				'Broken Helmet',
-				1000,
-				1000,
-				0,
-				25,
-				'BrokenHelmet');
-		case 'LeatherHelmet':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Helmet(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(3)),
-				'Leather Helmet',
-				500,
-				500,
-				525,
-				300,
-				'LeatherHelmet');
-		case 'IronHelmet':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Helmet(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(6)),
-				'Iron Helmet',
-				2000,
-				2000,
-				1050,
-				600,
-				'MetalHelmet');
-		case 'SteelHelmet':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Helmet(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(9)),
-				'Steel Helmet',
-				2500,
-				2000,
-				3150,
-				1800,
-				'MetalHelmet');
-		case 'MeteoricSteelHelmet':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Helmet(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(15)),
-				'Meteoric Steel Helmet',
-				1000,
-				2000,
-				10500,
-				6000,
-				'MetalHelmet');
-		case 'HelmetOfDetectMonsters':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Helmet(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(9)),
-				'Helmet Of Detect Monsters',
-				2500,
-				2000,
-				42000,
-				24000,
-				'HelmetOfDetectMonsters');
-		default:
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Helmet(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(25)),
-				'Enchanted Helm Of Storms',
-				1000,
-				2000,
-				1050000,
-				600000,
-				'EnchantedHelmOfStorms');
-	}
 };
 var _mordrax$cotwelm$GameData_Item$Shield = function (a) {
 	return {ctor: 'Shield', _0: a};
 };
-var _mordrax$cotwelm$GameData_Item$newShield = function (shieldType) {
-	var _p5 = shieldType;
-	switch (_p5.ctor) {
-		case 'BrokenShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(0)),
-				'Broken Shield',
-				4000,
-				35000,
-				0,
-				25,
-				'BrokenShield');
-		case 'SmallWoodenShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(3)),
-				'Small Wooden Shield',
-				3000,
-				15000,
-				525,
-				300,
-				'WoodShield');
-		case 'MediumWoodenShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(6)),
-				'Medium Wooden Shield',
-				4000,
-				35000,
-				1050,
-				600,
-				'WoodShield');
-		case 'LargeWoodenShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(9)),
-				'Large Wooden Shield',
-				5000,
-				50000,
-				2100,
-				1200,
-				'WoodShield');
-		case 'SmallIronShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(6)),
-				'Small Iron Shield',
-				4000,
-				15000,
-				1260,
-				720,
-				'MetalShield');
-		case 'MediumIronShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(9)),
-				'Medium Iron Shield',
-				5000,
-				35000,
-				2592,
-				1440,
-				'MetalShield');
-		case 'LargeIronShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(12)),
-				'Large Iron Shield',
-				6000,
-				50000,
-				3150,
-				1800,
-				'MetalShield');
-		case 'SmallSteelShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(9)),
-				'Small Steel Shield',
-				4000,
-				15000,
-				2730,
-				1560,
-				'MetalShield');
-		case 'MediumSteelShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(12)),
-				'Medium Steel Shield',
-				5000,
-				35000,
-				3360,
-				1920,
-				'MetalShield');
-		case 'LargeSteelShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(15)),
-				'Large Steel Shield',
-				6000,
-				50000,
-				4200,
-				2400,
-				'MetalShield');
-		case 'SmallMeteoricSteelShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(15)),
-				'Small Meteoric Steel Shield',
-				2500,
-				10000,
-				4620,
-				2640,
-				'MetalShield');
-		case 'MediumMeteoricSteelShield':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(18)),
-				'Medium Meteoric Steel Shield',
-				3500,
-				25000,
-				5940,
-				3300,
-				'MetalShield');
-		default:
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Shield(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(21)),
-				'Large Meteoric Steel Shield',
-				4500,
-				35000,
-				7560,
-				4200,
-				'MetalShield');
-	}
-};
 var _mordrax$cotwelm$GameData_Item$Armour = function (a) {
 	return {ctor: 'Armour', _0: a};
-};
-var _mordrax$cotwelm$GameData_Item$newArmour = function (armourType) {
-	var _p6 = armourType;
-	switch (_p6.ctor) {
-		case 'RustyArmour':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(0)),
-				'Rusty Armour',
-				10000,
-				30000,
-				0,
-				25,
-				'BrokenArmour');
-		case 'LeatherArmour':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(6)),
-				'Leather Armour',
-				5000,
-				2400,
-				1080,
-				600,
-				'LeatherArmour');
-		case 'StuddedLeatherArmour':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(12)),
-				'Studded Leather Armour',
-				7000,
-				25000,
-				3150,
-				1800,
-				'LeatherArmour');
-		case 'RingMail':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(18)),
-				'Ring Mail',
-				8000,
-				30000,
-				6300,
-				3600,
-				'MetalArmour');
-		case 'ScaleMail':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(24)),
-				'Scale Mail',
-				9000,
-				30000,
-				10800,
-				6000,
-				'MetalArmour');
-		case 'ChainMail':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(30)),
-				'Chain Mail',
-				10000,
-				30000,
-				16200,
-				9000,
-				'MetalArmour');
-		case 'SplintMail':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(36)),
-				'Splint Mail',
-				12000,
-				40000,
-				27000,
-				15000,
-				'MetalArmour');
-		case 'PlateMail':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(42)),
-				'Plate Mail',
-				15000,
-				40000,
-				42000,
-				24000,
-				'MetalArmour');
-		case 'PlateArmour':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(48)),
-				'Plate Armour',
-				15000,
-				60000,
-				42000,
-				24000,
-				'MetalArmour');
-		case 'MeteoricSteelPlate':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(54)),
-				'Meteoric Steel Plate',
-				5000,
-				30000,
-				105000,
-				60000,
-				'MetalArmour');
-		default:
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Armour(
-					_mordrax$cotwelm$GameData_Item$ArmourModel(52)),
-				'Elven Chain Mail',
-				50000,
-				24000,
-				162000,
-				90000,
-				'MetalArmour');
-	}
 };
 var _mordrax$cotwelm$GameData_Item$Weapon = function (a) {
 	return {ctor: 'Weapon', _0: a};
 };
-var _mordrax$cotwelm$GameData_Item$newWeapon = function (weaponType) {
-	var _p7 = weaponType;
-	switch (_p7.ctor) {
-		case 'BrokenSword':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(0)),
-				'Broken Sword',
-				1000,
-				5000,
-				0,
-				25,
-				'BrokenSword');
-		case 'Club':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(1)),
-				'Club',
-				1500,
-				3000,
-				105,
-				60,
-				'Club');
-		case 'Dagger':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(2)),
-				'Dagger',
-				500,
-				500,
-				420,
-				240,
-				'Sword');
-		case 'Hammer':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(2)),
-				'Hammer',
-				2000,
-				3000,
-				420,
-				240,
-				'Hammer');
-		case 'HandAxe':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(3)),
-				'Hand Axe',
-				1000,
-				3000,
-				472,
-				270,
-				'Axe');
-		case 'Quarterstaff':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(3)),
-				'Quarterstaff',
-				750,
-				5000,
-				648,
-				360,
-				'Spear');
-		case 'Spear':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(4)),
-				'Spear',
-				1500,
-				5000,
-				840,
-				480,
-				'Spear');
-		case 'ShortSword':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(5)),
-				'Short Sword',
-				1000,
-				5000,
-				1470,
-				840,
-				'Sword');
-		case 'Mace':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(5)),
-				'Mace',
-				2500,
-				4375,
-				1728,
-				960,
-				'Mace');
-		case 'Flail':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(6)),
-				'Flail',
-				2000,
-				3250,
-				1512,
-				840,
-				'Flail');
-		case 'Axe':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(6)),
-				'Axe',
-				2000,
-				5000,
-				1944,
-				1080,
-				'Axe');
-		case 'WarHammer':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(7)),
-				'War Hammer',
-				1400,
-				7500,
-				2160,
-				1200,
-				'Hammer');
-		case 'LongSword':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(8)),
-				'Long Sword',
-				1500,
-				8000,
-				3240,
-				1800,
-				'Sword');
-		case 'BattleAxe':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(8)),
-				'Battle Axe',
-				3000,
-				6000,
-				2160,
-				1200,
-				'Axe');
-		case 'BroadSword':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(9)),
-				'Broad Sword',
-				1600,
-				9000,
-				3240,
-				1800,
-				'Sword');
-		case 'MorningStar':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(10)),
-				'Morning Star',
-				3000,
-				9000,
-				2160,
-				1200,
-				'MorningStar');
-		case 'BastardSword':
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(11)),
-				'Bastard Sword',
-				3000,
-				10000,
-				4320,
-				2400,
-				'Sword');
-		default:
-			return A7(
-				_mordrax$cotwelm$GameData_Item$Model,
-				_mordrax$cotwelm$GameData_Item$Weapon(
-					_mordrax$cotwelm$GameData_Item$WeaponModel(12)),
-				'Two Handed Sword',
-				5000,
-				12000,
-				6360,
-				3600,
-				'Sword');
-	}
+var _mordrax$cotwelm$GameData_Item$ItemBoots = function (a) {
+	return {ctor: 'ItemBoots', _0: a};
 };
-var _mordrax$cotwelm$GameData_Item$Enchanted = {ctor: 'Enchanted'};
-var _mordrax$cotwelm$GameData_Item$Cursed = {ctor: 'Cursed'};
-var _mordrax$cotwelm$GameData_Item$Normal = {ctor: 'Normal'};
+var _mordrax$cotwelm$GameData_Item$ItemRing = function (a) {
+	return {ctor: 'ItemRing', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemOvergarment = function (a) {
+	return {ctor: 'ItemOvergarment', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemNeckwear = function (a) {
+	return {ctor: 'ItemNeckwear', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemPack = function (a) {
+	return {ctor: 'ItemPack', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemPurse = function (a) {
+	return {ctor: 'ItemPurse', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemBelt = function (a) {
+	return {ctor: 'ItemBelt', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemGauntlets = function (a) {
+	return {ctor: 'ItemGauntlets', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemBracers = function (a) {
+	return {ctor: 'ItemBracers', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemHelmet = function (a) {
+	return {ctor: 'ItemHelmet', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemShield = function (a) {
+	return {ctor: 'ItemShield', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemArmour = function (a) {
+	return {ctor: 'ItemArmour', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$ItemWeapon = function (a) {
+	return {ctor: 'ItemWeapon', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$WeaponModelTag = F3(
+	function (a, b, c) {
+		return {ctor: 'WeaponModelTag', _0: a, _1: b, _2: c};
+	});
+var _mordrax$cotwelm$GameData_Item$ArmourModelTag = F3(
+	function (a, b, c) {
+		return {ctor: 'ArmourModelTag', _0: a, _1: b, _2: c};
+	});
+var _mordrax$cotwelm$GameData_Item$ShieldModelTag = F3(
+	function (a, b, c) {
+		return {ctor: 'ShieldModelTag', _0: a, _1: b, _2: c};
+	});
+var _mordrax$cotwelm$GameData_Item$HelmetModelTag = F3(
+	function (a, b, c) {
+		return {ctor: 'HelmetModelTag', _0: a, _1: b, _2: c};
+	});
+var _mordrax$cotwelm$GameData_Item$BracersModelTag = F3(
+	function (a, b, c) {
+		return {ctor: 'BracersModelTag', _0: a, _1: b, _2: c};
+	});
+var _mordrax$cotwelm$GameData_Item$GauntletsModelTag = F3(
+	function (a, b, c) {
+		return {ctor: 'GauntletsModelTag', _0: a, _1: b, _2: c};
+	});
+var _mordrax$cotwelm$GameData_Item$BeltModelTag = F3(
+	function (a, b, c) {
+		return {ctor: 'BeltModelTag', _0: a, _1: b, _2: c};
+	});
+var _mordrax$cotwelm$GameData_Item$PurseModelTag = function (a) {
+	return {ctor: 'PurseModelTag', _0: a};
+};
+var _mordrax$cotwelm$GameData_Item$PackModelTag = F3(
+	function (a, b, c) {
+		return {ctor: 'PackModelTag', _0: a, _1: b, _2: c};
+	});
+var _mordrax$cotwelm$GameData_Item$addToPack = F2(
+	function (item, _p4) {
+		var _p5 = _p4;
+		var _p10 = _p5._0;
+		var _p9 = _p5._2;
+		var _p8 = _p5._1;
+		var _p6 = A2(_mordrax$cotwelm$Container$add, item, _p9.container);
+		var newContainer = _p6._0;
+		var msg = _p6._1;
+		var _p7 = msg;
+		if (_p7.ctor === 'Ok') {
+			return A3(
+				_mordrax$cotwelm$GameData_Item$PackModelTag,
+				_p10,
+				_p8,
+				_elm_lang$core$Native_Utils.update(
+					_p9,
+					{container: newContainer}));
+		} else {
+			return A3(_mordrax$cotwelm$GameData_Item$PackModelTag, _p10, _p8, _p9);
+		}
+	});
+var _mordrax$cotwelm$GameData_Item$NeckwearModelTag = F2(
+	function (a, b) {
+		return {ctor: 'NeckwearModelTag', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$GameData_Item$OvergarmentModelTag = F2(
+	function (a, b) {
+		return {ctor: 'OvergarmentModelTag', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$GameData_Item$RingModelTag = F2(
+	function (a, b) {
+		return {ctor: 'RingModelTag', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$GameData_Item$BootsModelTag = F2(
+	function (a, b) {
+		return {ctor: 'BootsModelTag', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$GameData_Item$Unidentified = {ctor: 'Unidentified'};
+var _mordrax$cotwelm$GameData_Item$Identified = {ctor: 'Identified'};
 var _mordrax$cotwelm$GameData_Item$TwoHandedSword = {ctor: 'TwoHandedSword'};
 var _mordrax$cotwelm$GameData_Item$BastardSword = {ctor: 'BastardSword'};
 var _mordrax$cotwelm$GameData_Item$MorningStar = {ctor: 'MorningStar'};
@@ -10295,6 +9766,264 @@ var _mordrax$cotwelm$GameData_Item$Hammer = {ctor: 'Hammer'};
 var _mordrax$cotwelm$GameData_Item$Dagger = {ctor: 'Dagger'};
 var _mordrax$cotwelm$GameData_Item$Club = {ctor: 'Club'};
 var _mordrax$cotwelm$GameData_Item$BrokenSword = {ctor: 'BrokenSword'};
+var _mordrax$cotwelm$GameData_Item$newWeapon = F3(
+	function (weaponType, status, id) {
+		var _p11 = weaponType;
+		switch (_p11.ctor) {
+			case 'BrokenSword':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$BrokenSword,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Broken Sword',
+						1000,
+						5000,
+						'BrokenSword',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 25)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(0));
+			case 'Club':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$Club,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Club',
+						1500,
+						3000,
+						'Club',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 105, 60)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(1));
+			case 'Dagger':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$Dagger,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Dagger',
+						500,
+						500,
+						'Sword',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 420, 240)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(2));
+			case 'Hammer':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$Hammer,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Hammer',
+						2000,
+						3000,
+						'Hammer',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 420, 240)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(2));
+			case 'HandAxe':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$HandAxe,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Hand Axe',
+						1000,
+						3000,
+						'Axe',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 472, 270)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(3));
+			case 'Quarterstaff':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$Quarterstaff,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Quarterstaff',
+						750,
+						5000,
+						'Spear',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 648, 360)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(3));
+			case 'Spear':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$Spear,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Spear',
+						1500,
+						5000,
+						'Spear',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 840, 480)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(4));
+			case 'ShortSword':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$ShortSword,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Short Sword',
+						1000,
+						5000,
+						'Sword',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1470, 840)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(5));
+			case 'Mace':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$Mace,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Mace',
+						2500,
+						4375,
+						'Mace',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1728, 960)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(5));
+			case 'Flail':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$Flail,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Flail',
+						2000,
+						3250,
+						'Flail',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1512, 840)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(6));
+			case 'Axe':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$Axe,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Axe',
+						2000,
+						5000,
+						'Axe',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1944, 1080)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(6));
+			case 'WarHammer':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$WarHammer,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'War Hammer',
+						1400,
+						7500,
+						'Hammer',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 2160, 1200)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(7));
+			case 'LongSword':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$LongSword,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Long Sword',
+						1500,
+						8000,
+						'Sword',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3240, 1800)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(8));
+			case 'BattleAxe':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$BattleAxe,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Battle Axe',
+						3000,
+						6000,
+						'Axe',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 2160, 1200)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(8));
+			case 'BroadSword':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$BroadSword,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Broad Sword',
+						1600,
+						9000,
+						'Sword',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3240, 1800)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(9));
+			case 'MorningStar':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$MorningStar,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Morning Star',
+						3000,
+						9000,
+						'MorningStar',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 2160, 1200)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(10));
+			case 'BastardSword':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$BastardSword,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Bastard Sword',
+						3000,
+						10000,
+						'Sword',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 4320, 2400)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(11));
+			default:
+				return A3(
+					_mordrax$cotwelm$GameData_Item$WeaponModelTag,
+					_mordrax$cotwelm$GameData_Item$TwoHandedSword,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Two Handed Sword',
+						5000,
+						12000,
+						'Sword',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 6360, 3600)),
+					_mordrax$cotwelm$GameData_Item$WeaponModel(12));
+		}
+	});
 var _mordrax$cotwelm$GameData_Item$ElvenChainMail = {ctor: 'ElvenChainMail'};
 var _mordrax$cotwelm$GameData_Item$MeteoricSteelPlate = {ctor: 'MeteoricSteelPlate'};
 var _mordrax$cotwelm$GameData_Item$PlateArmour = {ctor: 'PlateArmour'};
@@ -10306,6 +10035,166 @@ var _mordrax$cotwelm$GameData_Item$RingMail = {ctor: 'RingMail'};
 var _mordrax$cotwelm$GameData_Item$StuddedLeatherArmour = {ctor: 'StuddedLeatherArmour'};
 var _mordrax$cotwelm$GameData_Item$LeatherArmour = {ctor: 'LeatherArmour'};
 var _mordrax$cotwelm$GameData_Item$RustyArmour = {ctor: 'RustyArmour'};
+var _mordrax$cotwelm$GameData_Item$newArmour = F3(
+	function (armourType, status, id) {
+		var _p12 = armourType;
+		switch (_p12.ctor) {
+			case 'RustyArmour':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$RustyArmour,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Rusty Armour',
+						10000,
+						30000,
+						'BrokenArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 25)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(0));
+			case 'LeatherArmour':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$LeatherArmour,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Leather Armour',
+						5000,
+						2400,
+						'LeatherArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1080, 600)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(6));
+			case 'StuddedLeatherArmour':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$StuddedLeatherArmour,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Studded Leather Armour',
+						7000,
+						25000,
+						'LeatherArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3150, 1800)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(12));
+			case 'RingMail':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$RingMail,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Ring Mail',
+						8000,
+						30000,
+						'MetalArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 6300, 3600)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(18));
+			case 'ScaleMail':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$ScaleMail,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Scale Mail',
+						9000,
+						30000,
+						'MetalArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 10800, 6000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(24));
+			case 'ChainMail':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$ChainMail,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Chain Mail',
+						10000,
+						30000,
+						'MetalArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 16200, 9000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(30));
+			case 'SplintMail':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$SplintMail,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Splint Mail',
+						12000,
+						40000,
+						'MetalArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 27000, 15000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(36));
+			case 'PlateMail':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$PlateMail,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Plate Mail',
+						15000,
+						40000,
+						'MetalArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 42000, 24000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(42));
+			case 'PlateArmour':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$PlateArmour,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Plate Armour',
+						15000,
+						60000,
+						'MetalArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 42000, 24000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(48));
+			case 'MeteoricSteelPlate':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$MeteoricSteelPlate,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Meteoric Steel Plate',
+						5000,
+						30000,
+						'MetalArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 105000, 60000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(54));
+			default:
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ArmourModelTag,
+					_mordrax$cotwelm$GameData_Item$ElvenChainMail,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Elven Chain Mail',
+						50000,
+						24000,
+						'MetalArmour',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 162000, 90000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(52));
+		}
+	});
 var _mordrax$cotwelm$GameData_Item$LargeMeteoricSteelShield = {ctor: 'LargeMeteoricSteelShield'};
 var _mordrax$cotwelm$GameData_Item$MediumMeteoricSteelShield = {ctor: 'MediumMeteoricSteelShield'};
 var _mordrax$cotwelm$GameData_Item$SmallMeteoricSteelShield = {ctor: 'SmallMeteoricSteelShield'};
@@ -10319,6 +10208,194 @@ var _mordrax$cotwelm$GameData_Item$LargeWoodenShield = {ctor: 'LargeWoodenShield
 var _mordrax$cotwelm$GameData_Item$MediumWoodenShield = {ctor: 'MediumWoodenShield'};
 var _mordrax$cotwelm$GameData_Item$SmallWoodenShield = {ctor: 'SmallWoodenShield'};
 var _mordrax$cotwelm$GameData_Item$BrokenShield = {ctor: 'BrokenShield'};
+var _mordrax$cotwelm$GameData_Item$newShield = F3(
+	function (shieldType, status, id) {
+		var _p13 = shieldType;
+		switch (_p13.ctor) {
+			case 'BrokenShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$BrokenShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Broken Shield',
+						4000,
+						35000,
+						'BrokenShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 25)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(0));
+			case 'SmallWoodenShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$SmallWoodenShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Small Wooden Shield',
+						3000,
+						15000,
+						'WoodShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 525, 300)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(3));
+			case 'MediumWoodenShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$MediumWoodenShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Medium Wooden Shield',
+						4000,
+						35000,
+						'WoodShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1050, 600)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(6));
+			case 'LargeWoodenShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$LargeWoodenShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Large Wooden Shield',
+						5000,
+						50000,
+						'WoodShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 2100, 1200)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(9));
+			case 'SmallIronShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$SmallIronShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Small Iron Shield',
+						4000,
+						15000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1260, 720)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(6));
+			case 'MediumIronShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$MediumIronShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Medium Iron Shield',
+						5000,
+						35000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 2592, 1440)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(9));
+			case 'LargeIronShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$LargeIronShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Large Iron Shield',
+						6000,
+						50000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3150, 1800)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(12));
+			case 'SmallSteelShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$SmallSteelShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Small Steel Shield',
+						4000,
+						15000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 2730, 1560)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(9));
+			case 'MediumSteelShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$MediumSteelShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Medium Steel Shield',
+						5000,
+						35000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3360, 1920)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(12));
+			case 'LargeSteelShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$LargeSteelShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Large Steel Shield',
+						6000,
+						50000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 4200, 2400)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(15));
+			case 'SmallMeteoricSteelShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$SmallMeteoricSteelShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Small Meteoric Steel Shield',
+						2500,
+						10000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 4620, 2640)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(15));
+			case 'MediumMeteoricSteelShield':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$MediumMeteoricSteelShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Medium Meteoric Steel Shield',
+						3500,
+						25000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 5940, 3300)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(18));
+			default:
+				return A3(
+					_mordrax$cotwelm$GameData_Item$ShieldModelTag,
+					_mordrax$cotwelm$GameData_Item$LargeMeteoricSteelShield,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Large Meteoric Steel Shield',
+						4500,
+						35000,
+						'MetalShield',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 7560, 4200)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(21));
+		}
+	});
 var _mordrax$cotwelm$GameData_Item$EnchantedHelmOfStorms = {ctor: 'EnchantedHelmOfStorms'};
 var _mordrax$cotwelm$GameData_Item$HelmetOfDetectMonsters = {ctor: 'HelmetOfDetectMonsters'};
 var _mordrax$cotwelm$GameData_Item$MeteoricSteelHelmet = {ctor: 'MeteoricSteelHelmet'};
@@ -10326,10 +10403,176 @@ var _mordrax$cotwelm$GameData_Item$SteelHelmet = {ctor: 'SteelHelmet'};
 var _mordrax$cotwelm$GameData_Item$IronHelmet = {ctor: 'IronHelmet'};
 var _mordrax$cotwelm$GameData_Item$LeatherHelmet = {ctor: 'LeatherHelmet'};
 var _mordrax$cotwelm$GameData_Item$BrokenHelmet = {ctor: 'BrokenHelmet'};
+var _mordrax$cotwelm$GameData_Item$newHelmet = F3(
+	function (helmetType, status, id) {
+		var _p14 = helmetType;
+		switch (_p14.ctor) {
+			case 'BrokenHelmet':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$HelmetModelTag,
+					_mordrax$cotwelm$GameData_Item$BrokenHelmet,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Broken Helmet',
+						1000,
+						1000,
+						'BrokenHelmet',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 25)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(0));
+			case 'LeatherHelmet':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$HelmetModelTag,
+					_mordrax$cotwelm$GameData_Item$LeatherHelmet,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Leather Helmet',
+						500,
+						500,
+						'LeatherHelmet',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 525, 300)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(3));
+			case 'IronHelmet':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$HelmetModelTag,
+					_mordrax$cotwelm$GameData_Item$IronHelmet,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Iron Helmet',
+						2000,
+						2000,
+						'MetalHelmet',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1050, 600)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(6));
+			case 'SteelHelmet':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$HelmetModelTag,
+					_mordrax$cotwelm$GameData_Item$SteelHelmet,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Steel Helmet',
+						2500,
+						2000,
+						'MetalHelmet',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3150, 1800)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(9));
+			case 'MeteoricSteelHelmet':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$HelmetModelTag,
+					_mordrax$cotwelm$GameData_Item$MeteoricSteelHelmet,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Meteoric Steel Helmet',
+						1000,
+						2000,
+						'MetalHelmet',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 10500, 6000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(15));
+			case 'HelmetOfDetectMonsters':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$HelmetModelTag,
+					_mordrax$cotwelm$GameData_Item$HelmetOfDetectMonsters,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Helmet Of Detect Monsters',
+						2500,
+						2000,
+						'HelmetOfDetectMonsters',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 42000, 24000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(9));
+			default:
+				return A3(
+					_mordrax$cotwelm$GameData_Item$HelmetModelTag,
+					_mordrax$cotwelm$GameData_Item$EnchantedHelmOfStorms,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Enchanted Helm Of Storms',
+						1000,
+						2000,
+						'EnchantedHelmOfStorms',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1050000, 600000)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(25));
+		}
+	});
 var _mordrax$cotwelm$GameData_Item$BracersOfDefenseVS = {ctor: 'BracersOfDefenseVS'};
 var _mordrax$cotwelm$GameData_Item$BracersOfDefenseS = {ctor: 'BracersOfDefenseS'};
 var _mordrax$cotwelm$GameData_Item$BracersOfDefenseNormal = {ctor: 'BracersOfDefenseNormal'};
 var _mordrax$cotwelm$GameData_Item$NormalBracers = {ctor: 'NormalBracers'};
+var _mordrax$cotwelm$GameData_Item$newBracers = F3(
+	function (bracersType, status, id) {
+		var _p15 = bracersType;
+		switch (_p15.ctor) {
+			case 'NormalBracers':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BracersModelTag,
+					_mordrax$cotwelm$GameData_Item$NormalBracers,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Bracers',
+						500,
+						2000,
+						'Bracers',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 108, 60)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(3));
+			case 'BracersOfDefenseNormal':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BracersModelTag,
+					_mordrax$cotwelm$GameData_Item$BracersOfDefenseNormal,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Bracers Of Defense Normal',
+						500,
+						2000,
+						'BracersEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 1836, 1020)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(8));
+			case 'BracersOfDefenseS':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BracersModelTag,
+					_mordrax$cotwelm$GameData_Item$BracersOfDefenseS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Bracers Of Defense Strong',
+						500,
+						2000,
+						'BracersEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 5616, 3120)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(13));
+			default:
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BracersModelTag,
+					_mordrax$cotwelm$GameData_Item$BracersOfDefenseVS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Bracers Of Defense Very Strong',
+						500,
+						2000,
+						'BracersEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 11556, 6420)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(18));
+		}
+	});
 var _mordrax$cotwelm$GameData_Item$GauntletOfStrengthVS = {ctor: 'GauntletOfStrengthVS'};
 var _mordrax$cotwelm$GameData_Item$GauntletOfStrengthS = {ctor: 'GauntletOfStrengthS'};
 var _mordrax$cotwelm$GameData_Item$GauntletOfStrength = {ctor: 'GauntletOfStrength'};
@@ -10342,12 +10585,326 @@ var _mordrax$cotwelm$GameData_Item$GauntletOfSlaying = {ctor: 'GauntletOfSlaying
 var _mordrax$cotwelm$GameData_Item$GauntletOfProtectionVS = {ctor: 'GauntletOfProtectionVS'};
 var _mordrax$cotwelm$GameData_Item$GauntletOfProtectionS = {ctor: 'GauntletOfProtectionS'};
 var _mordrax$cotwelm$GameData_Item$GauntletOfProtection = {ctor: 'GauntletOfProtection'};
-var _mordrax$cotwelm$GameData_Item$NormalGauntlet = {ctor: 'NormalGauntlet'};
+var _mordrax$cotwelm$GameData_Item$NormalGauntlets = {ctor: 'NormalGauntlets'};
+var _mordrax$cotwelm$GameData_Item$newGauntlets = F3(
+	function (gauntletType, status, id) {
+		var _p16 = gauntletType;
+		switch (_p16.ctor) {
+			case 'NormalGauntlets':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$NormalGauntlets,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet',
+						500,
+						2000,
+						'Gauntlet',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 105, 60)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(5));
+			case 'GauntletOfProtection':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfProtection,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Protection',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 2625, 1500)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(10));
+			case 'GauntletOfProtectionS':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfProtectionS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Protection Strong',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 6300, 3600)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(15));
+			case 'GauntletOfProtectionVS':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfProtectionVS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Protection Very Strong',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 12420, 6900)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(20));
+			case 'GauntletOfSlaying':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfSlaying,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Slaying',
+						500,
+						2000,
+						'GauntletOfSlaying',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3780, 2100)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(0));
+			case 'GauntletOfSlayingS_S':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfSlayingS_S,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Slaying Strong',
+						500,
+						2000,
+						'GauntletOfSlaying',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 7560, 4200)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(0));
+			case 'GauntletOfSlayingVS_VS':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfSlayingVS_VS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Slaying Very Strong',
+						500,
+						2000,
+						'GauntletOfSlaying',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 13125, 7500)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(0));
+			case 'GauntletOfDexterity':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfDexterity,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Dexterity',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3240, 1800)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(5));
+			case 'GauntletOfDexterityS':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfDexterityS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Dexterity Strong',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 7020, 3900)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(5));
+			case 'GauntletOfDexterityVS':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfDexterityVS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Dexterity Very Strong',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 12960, 7200)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(5));
+			case 'GauntletOfStrength':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfStrength,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Strength',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 3240, 1800)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(5));
+			case 'GauntletOfStrengthS':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfStrengthS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Strength Strong',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(5));
+			default:
+				return A3(
+					_mordrax$cotwelm$GameData_Item$GauntletsModelTag,
+					_mordrax$cotwelm$GameData_Item$GauntletOfStrengthVS,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Gauntlet Of Strength Very Strong',
+						500,
+						2000,
+						'GauntletEnchanted',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 12960, 7200)),
+					_mordrax$cotwelm$GameData_Item$ArmourModel(5));
+		}
+	});
 var _mordrax$cotwelm$GameData_Item$WandQuiverBelt = {ctor: 'WandQuiverBelt'};
 var _mordrax$cotwelm$GameData_Item$UtilityBelt = {ctor: 'UtilityBelt'};
 var _mordrax$cotwelm$GameData_Item$FourSlotBelt = {ctor: 'FourSlotBelt'};
 var _mordrax$cotwelm$GameData_Item$ThreeSlotBelt = {ctor: 'ThreeSlotBelt'};
 var _mordrax$cotwelm$GameData_Item$TwoSlotBelt = {ctor: 'TwoSlotBelt'};
+var _mordrax$cotwelm$GameData_Item$newBelt = F3(
+	function (beltType, status, id) {
+		var _p17 = beltType;
+		switch (_p17.ctor) {
+			case 'TwoSlotBelt':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BeltModelTag,
+					_mordrax$cotwelm$GameData_Item$TwoSlotBelt,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Two Slot Belt',
+						300,
+						300,
+						'SlotBelt',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					A5(
+						_mordrax$cotwelm$GameData_Item$BeltModel,
+						2,
+						0,
+						0,
+						0,
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 2100, 3100),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'ThreeSlotBelt':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BeltModelTag,
+					_mordrax$cotwelm$GameData_Item$ThreeSlotBelt,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Three Slot Belt',
+						300,
+						300,
+						'SlotBelt',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					A5(
+						_mordrax$cotwelm$GameData_Item$BeltModel,
+						3,
+						0,
+						0,
+						0,
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 2600, 3600),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'FourSlotBelt':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BeltModelTag,
+					_mordrax$cotwelm$GameData_Item$FourSlotBelt,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Four Slot Belt',
+						300,
+						300,
+						'SlotBelt',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					A5(
+						_mordrax$cotwelm$GameData_Item$BeltModel,
+						4,
+						0,
+						0,
+						0,
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 3100, 4100),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'UtilityBelt':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BeltModelTag,
+					_mordrax$cotwelm$GameData_Item$UtilityBelt,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Utility Belt',
+						1350,
+						1800,
+						'UtilityBelt',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					A5(
+						_mordrax$cotwelm$GameData_Item$BeltModel,
+						2,
+						4,
+						4,
+						0,
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 3100, 4100),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			default:
+				return A3(
+					_mordrax$cotwelm$GameData_Item$BeltModelTag,
+					_mordrax$cotwelm$GameData_Item$WandQuiverBelt,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Wand Quiver Belt',
+						300,
+						300,
+						'WandQuiverBelt',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					A5(
+						_mordrax$cotwelm$GameData_Item$BeltModel,
+						2,
+						0,
+						0,
+						4,
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 3100, 4100),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+		}
+	});
 var _mordrax$cotwelm$GameData_Item$EnchantedLargePackOfHolding = {ctor: 'EnchantedLargePackOfHolding'};
 var _mordrax$cotwelm$GameData_Item$EnchantedMediumPackOfHolding = {ctor: 'EnchantedMediumPackOfHolding'};
 var _mordrax$cotwelm$GameData_Item$EnchantedSmallPackOfHolding = {ctor: 'EnchantedSmallPackOfHolding'};
@@ -10360,81 +10917,316 @@ var _mordrax$cotwelm$GameData_Item$SmallPack = {ctor: 'SmallPack'};
 var _mordrax$cotwelm$GameData_Item$LargeBag = {ctor: 'LargeBag'};
 var _mordrax$cotwelm$GameData_Item$MediumBag = {ctor: 'MediumBag'};
 var _mordrax$cotwelm$GameData_Item$SmallBag = {ctor: 'SmallBag'};
+var _mordrax$cotwelm$GameData_Item$newPack = F3(
+	function (packType, status, id) {
+		var _p18 = packType;
+		switch (_p18.ctor) {
+			case 'SmallBag':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$SmallBag,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Small Bag',
+						300,
+						500,
+						'Bag',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 5000, 6000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'MediumBag':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$MediumBag,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Medium Bag',
+						500,
+						700,
+						'Bag',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 10000, 12000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'LargeBag':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$LargeBag,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Large Bag',
+						900,
+						900,
+						'Bag',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 15000, 18000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'SmallPack':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$SmallPack,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Small Pack',
+						1000,
+						1000,
+						'Pack',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 12000, 50000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'MediumPack':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$MediumPack,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Medium Pack',
+						2000,
+						1500,
+						'Pack',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 22000, 75000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'LargePack':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$LargePack,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Large Pack',
+						4000,
+						100000,
+						'Pack',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 35000, 100000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'SmallChest':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$SmallChest,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Small Chest',
+						5000,
+						100000,
+						'Chest',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 100000, 50000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'MediumChest':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$MediumChest,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Medium Chest',
+						15000,
+						150000,
+						'Chest',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 100000, 150000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'LargeChest':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$LargeChest,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Large Chest',
+						25000,
+						250000,
+						'Chest',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 100000, 250000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'EnchantedSmallPackOfHolding':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$EnchantedSmallPackOfHolding,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Enchanted Small Pack Of Holding',
+						5000,
+						75000,
+						'EnchantedPack',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 50000, 150000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			case 'EnchantedMediumPackOfHolding':
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$EnchantedMediumPackOfHolding,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Enchanted Medium Pack Of Holding',
+						7500,
+						100000,
+						'EnchantedPack',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 75000, 200000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+			default:
+				return A3(
+					_mordrax$cotwelm$GameData_Item$PackModelTag,
+					_mordrax$cotwelm$GameData_Item$EnchantedLargePackOfHolding,
+					A7(
+						_mordrax$cotwelm$GameData_Item$Model,
+						'Enchanted Large Pack Of Holding',
+						10000,
+						125000,
+						'EnchantedPack',
+						status,
+						id,
+						A2(_mordrax$cotwelm$Mass$new, 0, 0)),
+					_mordrax$cotwelm$GameData_Item$PackModel(
+						_mordrax$cotwelm$Container$new(
+							{
+								capacity: A2(_mordrax$cotwelm$Mass$new, 100000, 250000),
+								getMass: _mordrax$cotwelm$GameData_Item$getMass
+							})));
+		}
+	});
+var _mordrax$cotwelm$GameData_Item$new = F3(
+	function (itemType, status, id) {
+		var _p19 = itemType;
+		switch (_p19.ctor) {
+			case 'Weapon':
+				return _mordrax$cotwelm$GameData_Item$ItemWeapon(
+					A3(_mordrax$cotwelm$GameData_Item$newWeapon, _p19._0, status, id));
+			case 'Armour':
+				return _mordrax$cotwelm$GameData_Item$ItemArmour(
+					A3(_mordrax$cotwelm$GameData_Item$newArmour, _p19._0, status, id));
+			case 'Shield':
+				return _mordrax$cotwelm$GameData_Item$ItemShield(
+					A3(_mordrax$cotwelm$GameData_Item$newShield, _p19._0, status, id));
+			case 'Helmet':
+				return _mordrax$cotwelm$GameData_Item$ItemHelmet(
+					A3(_mordrax$cotwelm$GameData_Item$newHelmet, _p19._0, status, id));
+			case 'Bracers':
+				return _mordrax$cotwelm$GameData_Item$ItemBracers(
+					A3(_mordrax$cotwelm$GameData_Item$newBracers, _p19._0, status, id));
+			case 'Gauntlets':
+				return _mordrax$cotwelm$GameData_Item$ItemGauntlets(
+					A3(_mordrax$cotwelm$GameData_Item$newGauntlets, _p19._0, status, id));
+			case 'Belt':
+				return _mordrax$cotwelm$GameData_Item$ItemBelt(
+					A3(_mordrax$cotwelm$GameData_Item$newBelt, _p19._0, status, id));
+			case 'Pack':
+				return _mordrax$cotwelm$GameData_Item$ItemPack(
+					A3(_mordrax$cotwelm$GameData_Item$newPack, _p19._0, status, id));
+			default:
+				return _mordrax$cotwelm$GameData_Item$ItemWeapon(
+					A3(_mordrax$cotwelm$GameData_Item$newWeapon, _mordrax$cotwelm$GameData_Item$Dagger, status, id));
+		}
+	});
+var _mordrax$cotwelm$GameData_Item$NoOp1 = {ctor: 'NoOp1'};
+var _mordrax$cotwelm$GameData_Item$NoOp2 = {ctor: 'NoOp2'};
+var _mordrax$cotwelm$GameData_Item$NoOp3 = {ctor: 'NoOp3'};
+var _mordrax$cotwelm$GameData_Item$NoOp4 = {ctor: 'NoOp4'};
 
-var _mordrax$cotwelm$Equipment$maybeItemView = function (maybeItem) {
-	var _p0 = maybeItem;
-	if (_p0.ctor === 'Just') {
-		return _mordrax$cotwelm$GameData_Item$viewItem(_p0._0);
-	} else {
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[]),
-			_elm_lang$core$Native_List.fromArray(
-				[]));
-	}
-};
-var _mordrax$cotwelm$Equipment$viewEquipment = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('ui grid')
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('three wide column equipmentSlot')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_mordrax$cotwelm$Equipment$maybeItemView(model.weapon),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.armour),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.shield),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.helmet),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.bracers),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.gauntlets),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.belt),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.purse),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.pack),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.neckwear),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.overgarment),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.ring),
-						_mordrax$cotwelm$Equipment$maybeItemView(model.boots)
-					]))
-			]));
-};
-var _mordrax$cotwelm$Equipment$equipmentSlotStyle = _elm_lang$html$Html_Attributes$style(
-	_elm_lang$core$Native_List.fromArray(
-		[
-			{ctor: '_Tuple2', _0: 'border', _1: '1px Solid Black'}
-		]));
-var _mordrax$cotwelm$Equipment$initModel = {
-	weapon: _elm_lang$core$Maybe$Just(
-		A3(_mordrax$cotwelm$GameData_Item$newWeapon, _mordrax$cotwelm$GameData_Item$Dagger, _mordrax$cotwelm$GameData_Item$Normal, true)),
-	armour: _elm_lang$core$Maybe$Just(
-		A3(_mordrax$cotwelm$GameData_Item$newArmour, _mordrax$cotwelm$GameData_Item$LeatherArmour, _mordrax$cotwelm$GameData_Item$Normal, true)),
-	shield: _elm_lang$core$Maybe$Just(
-		A3(_mordrax$cotwelm$GameData_Item$newShield, _mordrax$cotwelm$GameData_Item$SmallWoodenShield, _mordrax$cotwelm$GameData_Item$Normal, true)),
-	helmet: _elm_lang$core$Maybe$Just(
-		A3(_mordrax$cotwelm$GameData_Item$newHelmet, _mordrax$cotwelm$GameData_Item$LeatherHelmet, _mordrax$cotwelm$GameData_Item$Normal, true)),
-	bracers: _elm_lang$core$Maybe$Just(
-		A3(_mordrax$cotwelm$GameData_Item$newBracers, _mordrax$cotwelm$GameData_Item$NormalBracers, _mordrax$cotwelm$GameData_Item$Normal, true)),
-	gauntlets: _elm_lang$core$Maybe$Just(
-		A3(_mordrax$cotwelm$GameData_Item$newGauntlets, _mordrax$cotwelm$GameData_Item$NormalGauntlet, _mordrax$cotwelm$GameData_Item$Normal, true)),
-	belt: _elm_lang$core$Maybe$Just(
-		A3(_mordrax$cotwelm$GameData_Item$newBelt, _mordrax$cotwelm$GameData_Item$TwoSlotBelt, _mordrax$cotwelm$GameData_Item$Normal, true)),
-	purse: _elm_lang$core$Maybe$Nothing,
-	pack: _elm_lang$core$Maybe$Just(
-		A3(_mordrax$cotwelm$GameData_Item$newPack, _mordrax$cotwelm$GameData_Item$MediumPack, _mordrax$cotwelm$GameData_Item$Normal, true)),
-	neckwear: _elm_lang$core$Maybe$Nothing,
-	overgarment: _elm_lang$core$Maybe$Nothing,
-	ring: _elm_lang$core$Maybe$Nothing,
-	boots: _elm_lang$core$Maybe$Nothing
-};
+var _mordrax$cotwelm$Equipment$get = F2(
+	function (slot, _p0) {
+		var _p1 = _p0;
+		var _p3 = _p1._0;
+		var _p2 = slot;
+		switch (_p2.ctor) {
+			case 'Weapon':
+				return _p3.weapon;
+			case 'Freehand':
+				return _p3.freehand;
+			case 'Armour':
+				return _p3.armour;
+			case 'Shield':
+				return _p3.shield;
+			case 'Helmet':
+				return _p3.helmet;
+			case 'Bracers':
+				return _p3.bracers;
+			case 'Gauntlets':
+				return _p3.gauntlets;
+			case 'Belt':
+				return _p3.belt;
+			case 'Purse':
+				return _p3.purse;
+			case 'Pack':
+				return _p3.pack;
+			case 'Neckwear':
+				return _p3.neckwear;
+			case 'Overgarment':
+				return _p3.overgarment;
+			case 'LeftRing':
+				return _p3.leftRing;
+			case 'RightRing':
+				return _p3.rightRing;
+			default:
+				return _p3.boots;
+		}
+	});
 var _mordrax$cotwelm$Equipment$Model = function (a) {
 	return function (b) {
 		return function (c) {
@@ -10448,7 +11240,11 @@ var _mordrax$cotwelm$Equipment$Model = function (a) {
 										return function (k) {
 											return function (l) {
 												return function (m) {
-													return {weapon: a, armour: b, shield: c, helmet: d, bracers: e, gauntlets: f, belt: g, purse: h, pack: i, neckwear: j, overgarment: k, ring: l, boots: m};
+													return function (n) {
+														return function (o) {
+															return {weapon: a, freehand: b, armour: c, shield: d, helmet: e, bracers: f, gauntlets: g, belt: h, purse: i, pack: j, neckwear: k, overgarment: l, leftRing: m, rightRing: n, boots: o};
+														};
+													};
 												};
 											};
 										};
@@ -10462,6 +11258,99 @@ var _mordrax$cotwelm$Equipment$Model = function (a) {
 		};
 	};
 };
+var _mordrax$cotwelm$Equipment$EquipmentModel = function (a) {
+	return {ctor: 'EquipmentModel', _0: a};
+};
+var _mordrax$cotwelm$Equipment$init = function () {
+	var ths = A3(
+		_mordrax$cotwelm$GameData_Item$new,
+		_mordrax$cotwelm$GameData_Item$Weapon(_mordrax$cotwelm$GameData_Item$TwoHandedSword),
+		_mordrax$cotwelm$GameData_Item$Normal,
+		_mordrax$cotwelm$GameData_Item$Identified);
+	var pack = A3(_mordrax$cotwelm$GameData_Item$newPack, _mordrax$cotwelm$GameData_Item$MediumPack, _mordrax$cotwelm$GameData_Item$Normal, _mordrax$cotwelm$GameData_Item$Identified);
+	var pack$ = A2(_mordrax$cotwelm$GameData_Item$addToPack, ths, pack);
+	return _mordrax$cotwelm$Equipment$EquipmentModel(
+		{
+			weapon: _elm_lang$core$Maybe$Just(
+				A3(
+					_mordrax$cotwelm$GameData_Item$new,
+					_mordrax$cotwelm$GameData_Item$Weapon(_mordrax$cotwelm$GameData_Item$Dagger),
+					_mordrax$cotwelm$GameData_Item$Normal,
+					_mordrax$cotwelm$GameData_Item$Identified)),
+			freehand: _elm_lang$core$Maybe$Nothing,
+			armour: _elm_lang$core$Maybe$Just(
+				A3(
+					_mordrax$cotwelm$GameData_Item$new,
+					_mordrax$cotwelm$GameData_Item$Armour(_mordrax$cotwelm$GameData_Item$LeatherArmour),
+					_mordrax$cotwelm$GameData_Item$Normal,
+					_mordrax$cotwelm$GameData_Item$Identified)),
+			shield: _elm_lang$core$Maybe$Just(
+				A3(
+					_mordrax$cotwelm$GameData_Item$new,
+					_mordrax$cotwelm$GameData_Item$Shield(_mordrax$cotwelm$GameData_Item$SmallWoodenShield),
+					_mordrax$cotwelm$GameData_Item$Normal,
+					_mordrax$cotwelm$GameData_Item$Identified)),
+			helmet: _elm_lang$core$Maybe$Just(
+				A3(
+					_mordrax$cotwelm$GameData_Item$new,
+					_mordrax$cotwelm$GameData_Item$Helmet(_mordrax$cotwelm$GameData_Item$LeatherHelmet),
+					_mordrax$cotwelm$GameData_Item$Normal,
+					_mordrax$cotwelm$GameData_Item$Identified)),
+			bracers: _elm_lang$core$Maybe$Just(
+				A3(
+					_mordrax$cotwelm$GameData_Item$new,
+					_mordrax$cotwelm$GameData_Item$Bracers(_mordrax$cotwelm$GameData_Item$NormalBracers),
+					_mordrax$cotwelm$GameData_Item$Normal,
+					_mordrax$cotwelm$GameData_Item$Identified)),
+			gauntlets: _elm_lang$core$Maybe$Just(
+				A3(
+					_mordrax$cotwelm$GameData_Item$new,
+					_mordrax$cotwelm$GameData_Item$Gauntlets(_mordrax$cotwelm$GameData_Item$NormalGauntlets),
+					_mordrax$cotwelm$GameData_Item$Normal,
+					_mordrax$cotwelm$GameData_Item$Identified)),
+			belt: _elm_lang$core$Maybe$Just(
+				A3(
+					_mordrax$cotwelm$GameData_Item$new,
+					_mordrax$cotwelm$GameData_Item$Belt(_mordrax$cotwelm$GameData_Item$TwoSlotBelt),
+					_mordrax$cotwelm$GameData_Item$Normal,
+					_mordrax$cotwelm$GameData_Item$Identified)),
+			purse: _elm_lang$core$Maybe$Nothing,
+			pack: _elm_lang$core$Maybe$Just(
+				_mordrax$cotwelm$GameData_Item$ItemPack(pack$)),
+			neckwear: _elm_lang$core$Maybe$Nothing,
+			overgarment: _elm_lang$core$Maybe$Nothing,
+			leftRing: _elm_lang$core$Maybe$Nothing,
+			rightRing: _elm_lang$core$Maybe$Nothing,
+			boots: _elm_lang$core$Maybe$Nothing
+		});
+}();
+var _mordrax$cotwelm$Equipment$Boots = {ctor: 'Boots'};
+var _mordrax$cotwelm$Equipment$RightRing = {ctor: 'RightRing'};
+var _mordrax$cotwelm$Equipment$LeftRing = {ctor: 'LeftRing'};
+var _mordrax$cotwelm$Equipment$Overgarment = {ctor: 'Overgarment'};
+var _mordrax$cotwelm$Equipment$Neckwear = {ctor: 'Neckwear'};
+var _mordrax$cotwelm$Equipment$Pack = {ctor: 'Pack'};
+var _mordrax$cotwelm$Equipment$Purse = {ctor: 'Purse'};
+var _mordrax$cotwelm$Equipment$Belt = {ctor: 'Belt'};
+var _mordrax$cotwelm$Equipment$Gauntlets = {ctor: 'Gauntlets'};
+var _mordrax$cotwelm$Equipment$Bracers = {ctor: 'Bracers'};
+var _mordrax$cotwelm$Equipment$Helmet = {ctor: 'Helmet'};
+var _mordrax$cotwelm$Equipment$Shield = {ctor: 'Shield'};
+var _mordrax$cotwelm$Equipment$Armour = {ctor: 'Armour'};
+var _mordrax$cotwelm$Equipment$Freehand = {ctor: 'Freehand'};
+var _mordrax$cotwelm$Equipment$Weapon = {ctor: 'Weapon'};
+var _mordrax$cotwelm$Equipment$InvalidSlot = {ctor: 'InvalidSlot'};
+var _mordrax$cotwelm$Equipment$SlotTaken = {ctor: 'SlotTaken'};
+var _mordrax$cotwelm$Equipment$Ok = {ctor: 'Ok'};
+var _mordrax$cotwelm$Equipment$equip = F3(
+	function (slot, item, model) {
+		var _p4 = item;
+		if (_p4.ctor === 'ItemWeapon') {
+			return {ctor: '_Tuple2', _0: model, _1: _mordrax$cotwelm$Equipment$Ok};
+		} else {
+			return {ctor: '_Tuple2', _0: model, _1: _mordrax$cotwelm$Equipment$Ok};
+		}
+	});
 
 var _mordrax$cotwelm$Vector$boxIntersect = F2(
 	function (target, _p0) {
@@ -10493,44 +11382,63 @@ var _mordrax$cotwelm$Vector$Vector = F2(
 		return {x: a, y: b};
 	});
 
-var _mordrax$cotwelm$Hero$teleport = F2(
-	function (pos, model) {
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{pos: pos});
-	});
-var _mordrax$cotwelm$Hero$moveX = F2(
-	function (dx, model) {
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				pos: {y: model.pos.y, x: model.pos.x + dx}
-			});
-	});
-var _mordrax$cotwelm$Hero$moveY = F2(
-	function (dy, model) {
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				pos: {x: model.pos.x, y: model.pos.y + dy}
-			});
-	});
-var _mordrax$cotwelm$Hero$update = F2(
-	function (dir, model) {
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				pos: A2(_mordrax$cotwelm$Vector$add, dir, model.pos)
-			});
-	});
-var _mordrax$cotwelm$Hero$initHero = {
-	name: 'Bob the Brave',
-	pos: {x: 11, y: 17},
-	equipment: _mordrax$cotwelm$Equipment$initModel
+var _mordrax$cotwelm$Hero$equipment = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0.equipment;
+};
+var _mordrax$cotwelm$Hero$pos = function (_p2) {
+	var _p3 = _p2;
+	return _p3._0.pos;
 };
 var _mordrax$cotwelm$Hero$Model = F3(
 	function (a, b, c) {
 		return {name: a, pos: b, equipment: c};
+	});
+var _mordrax$cotwelm$Hero$Hero = function (a) {
+	return {ctor: 'Hero', _0: a};
+};
+var _mordrax$cotwelm$Hero$init = _mordrax$cotwelm$Hero$Hero(
+	{
+		name: 'Bob the Brave',
+		pos: {x: 11, y: 17},
+		equipment: _mordrax$cotwelm$Equipment$init
+	});
+var _mordrax$cotwelm$Hero$update = F2(
+	function (dir, _p4) {
+		var _p5 = _p4;
+		var _p6 = _p5._0;
+		return _mordrax$cotwelm$Hero$Hero(
+			_elm_lang$core$Native_Utils.update(
+				_p6,
+				{
+					pos: A2(_mordrax$cotwelm$Vector$add, dir, _p6.pos)
+				}));
+	});
+var _mordrax$cotwelm$Hero$moveY = F2(
+	function (dy, model) {
+		return _mordrax$cotwelm$Hero$Hero(
+			_elm_lang$core$Native_Utils.update(
+				model,
+				{
+					pos: {x: model.pos.x, y: model.pos.y + dy}
+				}));
+	});
+var _mordrax$cotwelm$Hero$moveX = F2(
+	function (dx, model) {
+		return _mordrax$cotwelm$Hero$Hero(
+			_elm_lang$core$Native_Utils.update(
+				model,
+				{
+					pos: {y: model.pos.y, x: model.pos.x + dx}
+				}));
+	});
+var _mordrax$cotwelm$Hero$teleport = F2(
+	function (pos, _p7) {
+		var _p8 = _p7;
+		return _mordrax$cotwelm$Hero$Hero(
+			_elm_lang$core$Native_Utils.update(
+				_p8._0,
+				{pos: pos}));
 	});
 
 var _mordrax$cotwelm$GameData_Types$DungeonLevel = function (a) {
@@ -11013,9 +11921,375 @@ var _mordrax$cotwelm$Game_Maps$Model = F3(
 		return {currentArea: a, maps: b, buildings: c};
 	});
 
-var _mordrax$cotwelm$Game_Data$Model = F4(
-	function (a, b, c, d) {
-		return {name: a, hero: b, map: c, currentScreen: d};
+var _mordrax$cotwelm$Inventory$equipmentSlotStyle = _elm_lang$html$Html_Attributes$style(
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'border', _1: '1px Solid Black'}
+		]));
+var _mordrax$cotwelm$Inventory$getPosition = function (_p0) {
+	var _p1 = _p0;
+	var _p5 = _p1.position;
+	var _p2 = _p1.drag;
+	if (_p2.ctor === 'Nothing') {
+		return _p5;
+	} else {
+		var _p4 = _p2._0.start;
+		var _p3 = _p2._0.current;
+		return A2(_elm_lang$mouse$Mouse$Position, (_p5.x + _p3.x) - _p4.x, (_p5.y + _p3.y) - _p4.y);
+	}
+};
+var _mordrax$cotwelm$Inventory$draggedItemView = function (_p6) {
+	var _p7 = _p6;
+	var realPosition = _mordrax$cotwelm$Inventory$getPosition(_p7);
+	var positionStyle = _elm_lang$html$Html_Attributes$style(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: 'top',
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(realPosition.y),
+					'px')
+			},
+				{
+				ctor: '_Tuple2',
+				_0: 'left',
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(realPosition.x),
+					'px')
+			},
+				{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+				{ctor: '_Tuple2', _0: 'cursor', _1: 'move'}
+			]));
+	var _p8 = _p7.draggedItem;
+	if (_p8.ctor === 'Nothing') {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[positionStyle]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_mordrax$cotwelm$GameData_Item$view(_p8._0)
+				]));
+	}
+};
+var _mordrax$cotwelm$Inventory$Model = F3(
+	function (a, b, c) {
+		return {draggedItem: a, position: b, drag: c};
+	});
+var _mordrax$cotwelm$Inventory$Drag = F2(
+	function (a, b) {
+		return {start: a, current: b};
+	});
+var _mordrax$cotwelm$Inventory$InventoryModel = function (a) {
+	return {ctor: 'InventoryModel', _0: a};
+};
+var _mordrax$cotwelm$Inventory$init = _mordrax$cotwelm$Inventory$InventoryModel(
+	{
+		draggedItem: _elm_lang$core$Maybe$Nothing,
+		position: A2(_elm_lang$mouse$Mouse$Position, 0, 0),
+		drag: _elm_lang$core$Maybe$Nothing
+	});
+var _mordrax$cotwelm$Inventory$update = F2(
+	function (msg, _p9) {
+		var _p10 = _p9;
+		var _p16 = _p10._0;
+		var _p11 = A2(_elm_lang$core$Debug$log, 'msg', msg);
+		var _p12 = msg;
+		switch (_p12.ctor) {
+			case 'Start':
+				var _p13 = _p12._1;
+				return _mordrax$cotwelm$Inventory$InventoryModel(
+					_elm_lang$core$Native_Utils.update(
+						_p16,
+						{
+							draggedItem: _elm_lang$core$Maybe$Just(_p12._0),
+							drag: _elm_lang$core$Maybe$Just(
+								A2(_mordrax$cotwelm$Inventory$Drag, _p13, _p13)),
+							position: _p13
+						}));
+			case 'At':
+				return _mordrax$cotwelm$Inventory$InventoryModel(
+					_elm_lang$core$Native_Utils.update(
+						_p16,
+						{
+							drag: A2(
+								_elm_lang$core$Maybe$map,
+								function (_p14) {
+									var _p15 = _p14;
+									return A2(_mordrax$cotwelm$Inventory$Drag, _p15.start, _p12._1);
+								},
+								_p16.drag)
+						}));
+			case 'End':
+				return _mordrax$cotwelm$Inventory$InventoryModel(
+					_elm_lang$core$Native_Utils.update(
+						_p16,
+						{draggedItem: _elm_lang$core$Maybe$Nothing, drag: _elm_lang$core$Maybe$Nothing}));
+			default:
+				return _mordrax$cotwelm$Inventory$InventoryModel(_p16);
+		}
+	});
+var _mordrax$cotwelm$Inventory$MouseOver = {ctor: 'MouseOver'};
+var _mordrax$cotwelm$Inventory$droppableDiv = function (html) {
+	var mouseOverStyle = _elm_lang$html$Html_Events$onMouseOver(_mordrax$cotwelm$Inventory$MouseOver);
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[mouseOverStyle]),
+		_elm_lang$core$Native_List.fromArray(
+			[html]));
+};
+var _mordrax$cotwelm$Inventory$End = function (a) {
+	return {ctor: 'End', _0: a};
+};
+var _mordrax$cotwelm$Inventory$At = F2(
+	function (a, b) {
+		return {ctor: 'At', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$Inventory$subscriptions = function (_p17) {
+	var _p18 = _p17;
+	var _p19 = _p18._0.draggedItem;
+	if (_p19.ctor === 'Nothing') {
+		return _elm_lang$core$Native_List.fromArray(
+			[_elm_lang$core$Platform_Sub$none]);
+	} else {
+		return _elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$mouse$Mouse$moves(
+				_mordrax$cotwelm$Inventory$At(_p19._0)),
+				_elm_lang$mouse$Mouse$ups(_mordrax$cotwelm$Inventory$End)
+			]);
+	}
+};
+var _mordrax$cotwelm$Inventory$Start = F2(
+	function (a, b) {
+		return {ctor: 'Start', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$Inventory$draggableItem = function (item) {
+	var onMouseDown = A3(
+		_elm_lang$html$Html_Events$onWithOptions,
+		'mousedown',
+		{stopPropagation: true, preventDefault: true},
+		A2(
+			_elm_lang$core$Json_Decode$map,
+			_mordrax$cotwelm$Inventory$Start(item),
+			_elm_lang$mouse$Mouse$position));
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[onMouseDown]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_mordrax$cotwelm$GameData_Item$view(item)
+			]));
+};
+var _mordrax$cotwelm$Inventory$viewContainer = function (item) {
+	var _p20 = item;
+	if (_p20.ctor === 'ItemPack') {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			A2(
+				_elm_lang$core$List$map,
+				_mordrax$cotwelm$Inventory$draggableItem,
+				_mordrax$cotwelm$Container$list(
+					_mordrax$cotwelm$GameData_Item$getContainer(_p20._0))));
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text('Item in pack equipment slot is not a pack, how did it get there?!')
+				]));
+	}
+};
+var _mordrax$cotwelm$Inventory$packView = function (maybeItem) {
+	var _p21 = maybeItem;
+	if (_p21.ctor === 'Just') {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_mordrax$cotwelm$Inventory$viewContainer(_p21._0)
+				]));
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text('Pack is empty')
+				]));
+	}
+};
+var _mordrax$cotwelm$Inventory$viewEquipmentSlot = function (maybeItem) {
+	var slotCss = _elm_lang$html$Html_Attributes$class('three wide column equipmentSlot');
+	var _p22 = maybeItem;
+	if (_p22.ctor === 'Just') {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[slotCss]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_mordrax$cotwelm$Inventory$draggableItem(_p22._0)
+				]));
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[slotCss]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text('Empty')
+				]));
+	}
+};
+var _mordrax$cotwelm$Inventory$viewEquipment = function (equipment) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Weapon, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Freehand, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Armour, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Shield, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Helmet, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Bracers, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Gauntlets, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Belt, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Purse, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Pack, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Neckwear, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Overgarment, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$LeftRing, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$RightRing, equipment)),
+				_mordrax$cotwelm$Inventory$viewEquipmentSlot(
+				A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Boots, equipment))
+			]));
+};
+var _mordrax$cotwelm$Inventory$view = F2(
+	function (hero, _p23) {
+		var _p24 = _p23;
+		var headerClass = _elm_lang$html$Html_Attributes$class('ui block header');
+		var equipment = _mordrax$cotwelm$Hero$equipment(hero);
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html$span,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('ui text container segment')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text('Inventory screen')
+						])),
+					A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('ui two column grid')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$html$Html$div,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$class('six wide column')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									A2(
+									_elm_lang$html$Html$div,
+									_elm_lang$core$Native_List.fromArray(
+										[
+											_elm_lang$html$Html_Attributes$class('ui grid')
+										]),
+									_elm_lang$core$Native_List.fromArray(
+										[
+											_mordrax$cotwelm$Inventory$viewEquipment(equipment)
+										]))
+								])),
+							A2(
+							_elm_lang$html$Html$div,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$class('ten wide column')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									A2(
+									_elm_lang$html$Html$div,
+									_elm_lang$core$Native_List.fromArray(
+										[headerClass]),
+									_elm_lang$core$Native_List.fromArray(
+										[
+											_elm_lang$html$Html$text('Shop')
+										])),
+									A2(
+									_elm_lang$html$Html$div,
+									_elm_lang$core$Native_List.fromArray(
+										[]),
+									_elm_lang$core$Native_List.fromArray(
+										[])),
+									A2(
+									_elm_lang$html$Html$div,
+									_elm_lang$core$Native_List.fromArray(
+										[headerClass]),
+									_elm_lang$core$Native_List.fromArray(
+										[
+											_elm_lang$html$Html$text('Pack')
+										])),
+									_mordrax$cotwelm$Inventory$droppableDiv(
+									_mordrax$cotwelm$Inventory$packView(
+										A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$Pack, equipment)))
+								])),
+							_mordrax$cotwelm$Inventory$draggedItemView(_p24._0)
+						]))
+				]));
+	});
+
+var _mordrax$cotwelm$Game_Data$Model = F5(
+	function (a, b, c, d, e) {
+		return {name: a, hero: b, map: c, currentScreen: d, inventory: e};
 	});
 var _mordrax$cotwelm$Game_Data$BuildingScreen = function (a) {
 	return {ctor: 'BuildingScreen', _0: a};
@@ -11026,6 +12300,10 @@ var _mordrax$cotwelm$Game_Data$Right = {ctor: 'Right'};
 var _mordrax$cotwelm$Game_Data$Left = {ctor: 'Left'};
 var _mordrax$cotwelm$Game_Data$Down = {ctor: 'Down'};
 var _mordrax$cotwelm$Game_Data$Up = {ctor: 'Up'};
+var _mordrax$cotwelm$Game_Data$NoOp = {ctor: 'NoOp'};
+var _mordrax$cotwelm$Game_Data$InventoryMsg = function (a) {
+	return {ctor: 'InventoryMsg', _0: a};
+};
 var _mordrax$cotwelm$Game_Data$Inventory = {ctor: 'Inventory'};
 var _mordrax$cotwelm$Game_Data$Map = {ctor: 'Map'};
 var _mordrax$cotwelm$Game_Data$KeyDir = function (a) {
@@ -11049,6 +12327,7 @@ var _mordrax$cotwelm$CotwData$SplashPage = {ctor: 'SplashPage'};
 
 var _mordrax$cotwelm$Game_Keyboard$keycodeToMsg = F2(
 	function (map, code) {
+		var maybeMsg = A2(_elm_lang$core$Dict$get, code, map);
 		var a = A2(
 			_elm_lang$core$Debug$log,
 			A2(
@@ -11056,11 +12335,16 @@ var _mordrax$cotwelm$Game_Keyboard$keycodeToMsg = F2(
 				'keycode: ',
 				_elm_lang$core$Basics$toString(code)),
 			1);
-		return A2(_elm_lang$core$Dict$get, code, map);
+		var _p0 = maybeMsg;
+		if (_p0.ctor === 'Just') {
+			return _p0._0;
+		} else {
+			return _mordrax$cotwelm$Game_Data$NoOp;
+		}
 	});
 var _mordrax$cotwelm$Game_Keyboard$dirToVector = function (dir) {
-	var _p0 = dir;
-	switch (_p0.ctor) {
+	var _p1 = dir;
+	switch (_p1.ctor) {
 		case 'Up':
 			return A2(_mordrax$cotwelm$Vector$new, 0, -1);
 		case 'Down':
@@ -11213,7 +12497,10 @@ var _mordrax$cotwelm$Game_Collision$tryMoveHero = F2(
 			_mordrax$cotwelm$Hero$update,
 			_mordrax$cotwelm$Game_Keyboard$dirToVector(dir),
 			model.hero);
-		var obstructions = A2(_mordrax$cotwelm$Game_Collision$getObstructions, movedHero.pos, model.map);
+		var obstructions = A2(
+			_mordrax$cotwelm$Game_Collision$getObstructions,
+			_mordrax$cotwelm$Hero$pos(movedHero),
+			model.map);
 		var _p6 = obstructions;
 		_v4_0:
 		do {
@@ -11244,84 +12531,14 @@ var _mordrax$cotwelm$Game_Collision$tryMoveHero = F2(
 		};
 	});
 
-var _mordrax$cotwelm$Game_Game$viewShop = function (building) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('ui block header')
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html$text('shop')
-			]));
-};
-var _mordrax$cotwelm$Game_Game$viewInventory = function (model) {
-	var shopView = function () {
-		var _p0 = model.currentScreen;
-		if (_p0.ctor === 'BuildingScreen') {
-			return _mordrax$cotwelm$Game_Game$viewShop(_p0._0);
-		} else {
-			return A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[]));
-		}
-	}();
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html$span,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('ui text container segment')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Inventory screen')
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('ui two column grid')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('six wide column')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_mordrax$cotwelm$Equipment$viewEquipment(model.hero.equipment),
-								A2(
-								_elm_lang$html$Html$div,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$class('ten wide column')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[shopView]))
-							]))
-					]))
-			]));
-};
 var _mordrax$cotwelm$Game_Game$viewHero = function (hero) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$html$Html_Attributes$class('tile maleHero'),
-				_mordrax$cotwelm$Lib$vectorToHtmlStyle(hero.pos)
+				_mordrax$cotwelm$Lib$vectorToHtmlStyle(
+				_mordrax$cotwelm$Hero$pos(hero))
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[]));
@@ -11365,22 +12582,25 @@ var _mordrax$cotwelm$Game_Game$viewMap = function (model) {
 			]));
 };
 var _mordrax$cotwelm$Game_Game$view = function (model) {
-	var _p1 = model.currentScreen;
-	switch (_p1.ctor) {
+	var _p0 = model.currentScreen;
+	switch (_p0.ctor) {
 		case 'MapScreen':
 			return _mordrax$cotwelm$Game_Game$viewMap(model);
 		case 'BuildingScreen':
-			return _mordrax$cotwelm$Game_Game$viewBuilding(_p1._0);
+			return _mordrax$cotwelm$Game_Game$viewBuilding(_p0._0);
 		default:
-			return _mordrax$cotwelm$Game_Game$viewInventory(model);
+			return A2(
+				_elm_lang$html$Html_App$map,
+				_mordrax$cotwelm$Game_Data$InventoryMsg,
+				A2(_mordrax$cotwelm$Inventory$view, model.hero, model.inventory));
 	}
 };
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
-		var _p2 = msg;
-		switch (_p2.ctor) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
 			case 'KeyDir':
-				return A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p2._0, model);
+				return A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p1._0, model);
 			case 'Map':
 				return {
 					ctor: '_Tuple2',
@@ -11389,7 +12609,7 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 						{currentScreen: _mordrax$cotwelm$Game_Data$MapScreen}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			default:
+			case 'Inventory':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -11397,9 +12617,21 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 						{currentScreen: _mordrax$cotwelm$Game_Data$InventoryScreen}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			case 'InventoryMsg':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							inventory: A2(_mordrax$cotwelm$Inventory$update, _p1._0, model.inventory)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
-var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game', hero: _mordrax$cotwelm$Hero$initHero, map: _mordrax$cotwelm$Game_Maps$initMaps, currentScreen: _mordrax$cotwelm$Game_Data$MapScreen};
+var _mordrax$cotwelm$Game_Game$initGame = {name: 'A new game', hero: _mordrax$cotwelm$Hero$init, map: _mordrax$cotwelm$Game_Maps$initMaps, currentScreen: _mordrax$cotwelm$Game_Data$InventoryScreen, inventory: _mordrax$cotwelm$Inventory$init};
 
 var _mordrax$cotwelm$Main$fromUrl = function (url) {
 	return A2(_elm_lang$core$String$dropLeft, 2, url);
@@ -11425,13 +12657,19 @@ var _mordrax$cotwelm$Main$urlUpdate = F2(
 				model,
 				{currentPage: _mordrax$cotwelm$CotwData$GamePage}),
 			_1: _elm_lang$core$Platform_Cmd$none
+		} : (_elm_lang$core$Native_Utils.eq(url, 'inventory') ? {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{currentPage: _mordrax$cotwelm$CotwData$GamePage}),
+			_1: _elm_lang$core$Platform_Cmd$none
 		} : {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$Native_Utils.update(
 				model,
 				{currentPage: _mordrax$cotwelm$CotwData$SplashPage}),
 			_1: _elm_lang$core$Platform_Cmd$none
-		});
+		}));
 	});
 var _mordrax$cotwelm$Main$view = function (model) {
 	var _p1 = model.currentPage;
@@ -11519,20 +12757,16 @@ var _mordrax$cotwelm$Main$update = F2(
 					};
 				}
 			default:
-				if (_p2._0.ctor === 'Just') {
-					var _p3 = A2(_mordrax$cotwelm$Game_Game$update, _p2._0._0, model.game);
-					var game$ = _p3._0;
-					var cmd = _p3._1;
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{game: game$}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				}
+				var _p3 = A2(_mordrax$cotwelm$Game_Game$update, _p2._0, model.game);
+				var game$ = _p3._0;
+				var cmd = _p3._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{game: game$}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 		}
 	});
 var _mordrax$cotwelm$Main$initModel = function (url) {
@@ -11540,11 +12774,20 @@ var _mordrax$cotwelm$Main$initModel = function (url) {
 	return A2(_mordrax$cotwelm$Main$urlUpdate, url, model);
 };
 var _mordrax$cotwelm$Main$subscriptions = function (model) {
+	var inventorySubs = _mordrax$cotwelm$Inventory$subscriptions(model.game.inventory);
+	var convertToGameMsg = function (x) {
+		return A2(_elm_lang$core$Platform_Sub$map, _mordrax$cotwelm$Game_Data$InventoryMsg, x);
+	};
+	var convertToMainMsg = function (x) {
+		return A2(_elm_lang$core$Platform_Sub$map, _mordrax$cotwelm$CotwData$GameMsg, x);
+	};
+	var keyboardSubs = A2(_elm_lang$core$List$map, convertToMainMsg, _mordrax$cotwelm$Game_Keyboard$subscriptions);
+	var inventorySubsGameMsg = A2(
+		_elm_lang$core$List$map,
+		convertToMainMsg,
+		A2(_elm_lang$core$List$map, convertToGameMsg, inventorySubs));
 	return _elm_lang$core$Platform_Sub$batch(
-		A2(
-			_elm_lang$core$List$map,
-			_elm_lang$core$Platform_Sub$map(_mordrax$cotwelm$CotwData$GameMsg),
-			_mordrax$cotwelm$Game_Keyboard$subscriptions));
+		A2(_elm_lang$core$List$append, keyboardSubs, inventorySubsGameMsg));
 };
 var _mordrax$cotwelm$Main$main = {
 	main: A2(
