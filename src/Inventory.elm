@@ -9,8 +9,11 @@ module Inventory
         )
 
 {-|
-Player inventory
+The inventory module predominatelys acts as the user interface for the 'i'nventory and shop screen.
+It handles equiping, buy/sell, identification, moving items into packs and other general inventory related logic.
 
+The module subscribes to mouse events for item interactions and is generally high level because it needs
+to know about hero equipment, items, containers etc...
 -}
 
 import Html exposing (..)
@@ -25,8 +28,15 @@ import Equipment exposing (..)
 
 
 type alias Model =
-    { dragging : Maybe Item
+    { draggedItem : Maybe Item
     , position : Position
+    , drag : Maybe Drag
+    }
+
+
+type alias Drag =
+    { start : Position
+    , current : Position
     }
 
 
@@ -42,11 +52,11 @@ type Msg
 
 init : Inventory
 init =
-    InventoryModel { dragging = Nothing, position = Position 0 0 }
+    InventoryModel { draggedItem = Nothing, position = Position 0 0, drag = Nothing }
 
 
-view : Hero -> Html Msg
-view hero =
+view : Hero -> Inventory -> Html Msg
+view hero (InventoryModel model) =
     let
         equipment =
             Hero.equipment hero
@@ -66,18 +76,69 @@ view hero =
                     , div [ headerClass ] [ text "Pack" ]
                     , packView (Equipment.getPack equipment)
                     ]
+                , draggedItemView model
                 ]
             ]
 
 
+getPosition : Model -> Position
+getPosition { draggedItem, position, drag } =
+    case drag of
+        Nothing ->
+            position
+
+        Just { start, current } ->
+            let
+                _ =
+                    Debug.log "start" [ start, current, position ]
+            in
+                Position (position.x + current.x - start.x)
+                    (position.y + current.y - start.y)
+
+
+draggedItemView : Model -> Html Msg
+draggedItemView ({ draggedItem, position, drag } as model) =
+    let
+        realPosition =
+            getPosition model
+
+        positionStyle =
+            style
+                [ ( "top", (toString realPosition.y) ++ "px" )
+                , ( "left", toString realPosition.x ++ "px" )
+                , ( "position", "absolute" )
+                , ( "cursor", "move" )
+                ]
+    in
+        case draggedItem of
+            Nothing ->
+                div [] []
+
+            Just item ->
+                div [ positionStyle ] [ Item.view item ]
+
+
 update : Msg -> Inventory -> Inventory
-update msg inv =
-    inv
+update msg (InventoryModel model) =
+    {- let
+            _ =
+               Debug.log "msg" msg
+       in
+    -}
+    case msg of
+        Start item pos ->
+            InventoryModel { model | draggedItem = Just item, drag = Just (Drag pos pos), position = pos }
+
+        At item pos ->
+            (InventoryModel { model | drag = (Maybe.map (\{ start } -> Drag start pos) model.drag) })
+
+        End _ ->
+            InventoryModel { model | draggedItem = Nothing, drag = Nothing }
 
 
 subscriptions : Inventory -> List (Sub Msg)
 subscriptions (InventoryModel model) =
-    case model.dragging of
+    case model.draggedItem of
         Nothing ->
             [ Sub.none ]
 
@@ -114,7 +175,7 @@ draggableItem : Item -> Html Msg
 draggableItem item =
     let
         onMouseDown =
-            on "mousedown" (Json.map (Start item) Mouse.position)
+            onWithOptions "mousedown" { stopPropagation = True, preventDefault = True } (Json.map (Start item) Mouse.position)
     in
         div [ onMouseDown ] [ Item.view item ]
 

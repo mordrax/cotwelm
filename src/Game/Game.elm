@@ -69,7 +69,7 @@ view model =
             viewBuilding building
 
         InventoryScreen ->
-            Html.App.map InventoryMsg (Inventory.view model.hero)
+            Html.App.map InventoryMsg (Inventory.view model.hero model.inventory)
 
 
 viewMap : Game.Data.Model -> Html Game.Data.Msg
