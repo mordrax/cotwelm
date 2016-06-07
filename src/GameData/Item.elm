@@ -254,31 +254,31 @@ view item =
 
 
 new : ItemType -> ItemStatus -> IdentificationStatus -> Item
-new itemType status id =
+new itemType status idStatus =
     case itemType of
         Weapon weaponType ->
-            ItemWeapon (newWeapon weaponType status id)
+            ItemWeapon (newWeapon weaponType status idStatus)
 
         Armour armourType ->
-            ItemArmour (newArmour armourType status id)
+            ItemArmour (newArmour armourType status idStatus)
 
         Shield shieldType ->
-            ItemShield (newShield shieldType status id)
+            ItemShield (newShield shieldType status idStatus)
 
         Helmet helmetType ->
-            ItemHelmet (newHelmet helmetType status id)
+            ItemHelmet (newHelmet helmetType status idStatus)
 
         Bracers bracersType ->
-            ItemBracers (newBracers bracersType status id)
+            ItemBracers (newBracers bracersType status idStatus)
 
         Gauntlets gauntletsType ->
-            ItemGauntlets (newGauntlets gauntletsType status id)
+            ItemGauntlets (newGauntlets gauntletsType status idStatus)
 
         Belt beltType ->
-            ItemBelt (newBelt beltType status id)
+            ItemBelt (newBelt beltType status idStatus)
 
         Pack packType ->
-            ItemPack (newPack packType status id)
+            ItemPack (newPack packType status idStatus)
 
         -- Purse
         -- Neckwear
@@ -286,7 +286,7 @@ new itemType status id =
         --        Ring
         --        Boots
         _ ->
-            ItemWeapon (newWeapon Dagger status id)
+            ItemWeapon (newWeapon Dagger status idStatus)
 
 
 

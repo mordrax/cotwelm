@@ -1,11 +1,11 @@
 module Equipment
     exposing
         ( EquipmentSlot(..)
-        , Msg
+        , Msg(..)
         , Equipment
         , get
         , init
-        , putInPack
+        , update
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
@@ -63,9 +63,9 @@ type EquipmentSlot
 
 
 type Msg
-    = Ok
-    | SlotTaken
-    | InvalidSlot
+    = Equip EquipmentSlot Item
+    | Unequip EquipmentSlot
+    | PutInPack Item
 
 
 init : Equipment
@@ -99,14 +99,19 @@ init =
             }
 
 
-equip : EquipmentSlot -> Item -> Model -> ( Model, Msg )
+update : Msg -> Equipment -> Equipment
+update msg (EquipmentModel model) =
+    (EquipmentModel model)
+
+
+equip : EquipmentSlot -> Item -> Model -> Model
 equip slot item model =
     case item of
         ItemWeapon _ ->
-            ( model, Ok )
+            Debug.crash "TODO: What is this?"
 
         _ ->
-            ( model, Ok )
+            Debug.crash "TODO: What is this?"
 
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.

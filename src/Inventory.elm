@@ -42,11 +42,8 @@ init =
 
 
 view : Game.Data.Model -> Html MouseMsg
-view ({ hero, dnd } as model) =
+view ({ equipment, dnd } as model) =
     let
-        equipment =
-            Hero.equipment hero
-
         pack =
             Equipment.get Equipment.Pack equipment
     in
@@ -148,7 +145,7 @@ update msg ({ dnd } as model) =
 
 
 dropItem : Model -> Model
-dropItem ({ hero, dnd } as model) =
+dropItem ({ equipment, dnd } as model) =
     let
         { draggedItem, position, drag, drop } =
             dnd
@@ -162,10 +159,10 @@ dropItem ({ hero, dnd } as model) =
 
             ( Just item, Just (DropPack pack) ) ->
                 let
-                    hero' =
-                        Hero.pickup item hero
+                    equipment' =
+                        Equipment.update (Equipment.PutInPack item) equipment
                 in
-                    { model | hero = hero' }
+                    { model | equipment = equipment' }
 
             ( Just item, Just (DropEquipment slot) ) ->
                 Debug.crash "TODO: drop equipment"
@@ -277,11 +274,6 @@ viewContainer item =
 --------------------
 -- Equipment View --
 --------------------
-
-
-equipmentSlotStyle : Html.Attribute Game.Data.Msg
-equipmentSlotStyle =
-    style [ ( "border", "1px solid black" ) ]
 
 
 viewEquipmentSlots : Equipment -> Html MouseMsg
