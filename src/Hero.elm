@@ -1,12 +1,10 @@
 module Hero
     exposing
         ( Hero
+        , Msg(Move, Teleport)
         , init
-        , teleport
         , update
-        , equipment
         , pos
-        , pickup
         )
 
 import Equipment exposing (..)
@@ -17,7 +15,6 @@ import GameData.Item exposing (..)
 type alias Model =
     { name : String
     , pos : Vector
-    , equipment : Equipment
     }
 
 
@@ -25,12 +22,16 @@ type Hero
     = Hero Model
 
 
+type Msg
+    = Move Vector
+    | Teleport Vector
+
+
 init : Hero
 init =
     Hero
         { name = "Bob the Brave"
         , pos = { x = 11, y = 17 }
-        , equipment = Equipment.init
         }
 
 
@@ -39,35 +40,11 @@ pos (Hero hero) =
     hero.pos
 
 
-pickup : Item -> Hero -> Hero
-pickup item (Hero model) =
-    let
-        equipment' =
-            Equipment.putInPack item model.equipment
-    in
-        Hero { model | equipment = equipment' }
+update : Msg -> Hero -> Hero
+update msg (Hero model) =
+    case msg of
+        Move dir ->
+            Hero { model | pos = Vector.add dir model.pos }
 
-
-equipment : Hero -> Equipment
-equipment (Hero hero) =
-    hero.equipment
-
-
-update : Vector -> Hero -> Hero
-update dir (Hero model) =
-    Hero { model | pos = Vector.add dir model.pos }
-
-
-moveY : Int -> Model -> Hero
-moveY dy model =
-    Hero { model | pos = { x = model.pos.x, y = model.pos.y + dy } }
-
-
-moveX : Int -> Model -> Hero
-moveX dx model =
-    Hero { model | pos = { y = model.pos.y, x = model.pos.x + dx } }
-
-
-teleport : Vector -> Hero -> Hero
-teleport pos (Hero model) =
-    Hero { model | pos = pos }
+        Teleport pos ->
+            Hero { model | pos = pos }

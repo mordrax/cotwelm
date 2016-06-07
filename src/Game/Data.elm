@@ -14,6 +14,7 @@ type alias Model =
     , map : Game.Maps.Model
     , currentScreen : Screen
     , dnd : DnDModel
+    , equipment : Equipment
     }
 
 
@@ -63,3 +64,4 @@ type Msg
     | Inventory
     | MouseEvent MouseMsg
     | NoOp
+    | EquipmentMsg Equipment.Msg

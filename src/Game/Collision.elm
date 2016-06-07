@@ -17,7 +17,7 @@ tryMoveHero : Direction -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.M
 tryMoveHero dir model =
     let
         movedHero =
-            Hero.update (dirToVector dir) model.hero
+            Hero.update (Hero.Move <| dirToVector dir) model.hero
 
         obstructions =
             getObstructions (Hero.pos movedHero) model.map
@@ -43,7 +43,7 @@ enterBuilding building model =
             { model | currentScreen = BuildingScreen building }
 
         Just link ->
-            { model | map = Game.Maps.updateArea link.area model.map, hero = Hero.teleport link.pos model.hero }
+            { model | map = Game.Maps.updateArea link.area model.map, hero = Hero.update (Hero.Teleport link.pos) model.hero }
 
 
 {-| Given a position and a map, work out what is on the square
