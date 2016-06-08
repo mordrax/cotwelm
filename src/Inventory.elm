@@ -19,11 +19,11 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import GameData.Item as Item exposing (..)
 import Game.Data exposing (..)
-import Hero exposing (..)
 import Container exposing (..)
 import Mouse exposing (..)
 import Json.Decode as Json exposing (..)
 import Equipment exposing (..)
+import Maybe.Extra exposing (..)
 
 
 init : DnDModel
@@ -101,6 +101,9 @@ viewLayout equipment maybePack dnd =
 update : MouseMsg -> Model -> ( Model, Cmd Game.Data.Msg )
 update msg ({ dnd } as model) =
     let
+        _ =
+            Debug.log "msg: " msg
+
         startdnd =
             \item pos -> DnDModel (Just item) pos (Just (Drag pos pos)) dnd.drop
 
@@ -138,10 +141,18 @@ update msg ({ dnd } as model) =
                             Debug.crash "TODO"
 
             MouseOver dropTarget ->
-                ( { model | dnd = { dnd | drop = Just dropTarget } }, Cmd.none )
+                let
+                    _ =
+                        Debug.log "mouse over" 1
+                in
+                    ( { model | dnd = { dnd | drop = Just dropTarget } }, Cmd.none )
 
             MouseLeave ->
-                ( { model | dnd = { dnd | drop = Nothing } }, Cmd.none )
+                let
+                    _ =
+                        Debug.log "mouse in" 1
+                in
+                    ( { model | dnd = { dnd | drop = Nothing } }, Cmd.none )
 
 
 dropItem : Model -> Model
@@ -174,19 +185,22 @@ dropItem ({ equipment, dnd } as model) =
 ---------------
 
 
-droppableDiv : Drop -> Html MouseMsg -> Html MouseMsg
-droppableDiv drop html =
+droppableDiv : Drop -> DnDModel -> Html MouseMsg -> Html MouseMsg
+droppableDiv dropTarget model html =
     let
         borderStyle =
-            style [ ( "border", "1px solid" ) ]
+            if isJust model.drop then
+                style [ ( "border", "1px solid" ) ]
+            else
+                style [ ( "border", "none" ) ]
 
         mouseOverStyle =
-            onMouseOver (MouseOver drop)
+            on "mouseover" (Json.succeed <| MouseOver dropTarget)
 
         mouseLeaveStyle =
             onMouseLeave MouseLeave
     in
-        div [ mouseOverStyle, borderStyle ] [ html ]
+        div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
 
 
 draggableItem : Item -> Html MouseMsg
@@ -246,15 +260,18 @@ viewDraggedItem ({ draggedItem, position, drag } as model) =
 
 
 viewPack : Maybe Item -> DnDModel -> Html MouseMsg
-viewPack maybeItem ({ drop } as model) =
+viewPack maybeItem dnd =
     let
         highlightStyle =
             style [ ( "background", "light blue" ) ]
+
+        droppableHtml =
+            \pack ->
+                (div [ highlightStyle ] [ viewContainer (ItemPack pack) ])
     in
         case maybeItem of
             Just (ItemPack pack) ->
-                droppableDiv (DropPack pack)
-                    <| div [ highlightStyle ] [ viewContainer (ItemPack pack) ]
+                droppableDiv (DropPack pack) dnd (droppableHtml pack)
 
             _ ->
                 div [] [ text "Pack is empty" ]
