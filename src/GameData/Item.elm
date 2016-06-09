@@ -29,7 +29,6 @@ module GameData.Item
         , BeltType(..)
         , PackType(..)
         , view
-        , viewMaybe
         , getContainer
         , addToPack
         )
@@ -207,16 +206,6 @@ getModel item =
 getContainer : Pack -> Container Item
 getContainer (PackModelTag _ _ specificModel) =
     specificModel.container
-
-
-viewMaybe : Maybe Item -> Html msg
-viewMaybe maybeItem =
-    case maybeItem of
-        Just item ->
-            view item
-
-        Nothing ->
-            div [] []
 
 
 view : Item -> Html msg

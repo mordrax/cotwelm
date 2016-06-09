@@ -69,7 +69,7 @@ viewLayout equipment maybePack dnd =
         equipmentColumn =
             columnWidth "six"
                 [ div [ class "ui grid" ]
-                    [ viewEquipmentSlots equipment
+                    [ viewEquipmentSlots equipment dnd
                     ]
                 ]
 
@@ -203,15 +203,23 @@ droppableDiv dropTarget model html =
         div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
 
 
-draggableItem : Item -> Html MouseMsg
-draggableItem item =
+draggableItem : Item -> DnDModel -> Html MouseMsg
+draggableItem item dnd =
     let
         onMouseDown =
             onWithOptions "mousedown"
                 { stopPropagation = True, preventDefault = True }
                 (Json.map (Start item) Mouse.position)
+
+        pointerEventStyle =
+            case dnd.drag of
+                Just _ ->
+                    style [ ( "pointer-events", "none" ) ]
+
+                Nothing ->
+                    style [ ( "pointer-events", "inherit" ) ]
     in
-        div [ onMouseDown ] [ Item.view item ]
+        div [ onMouseDown, pointerEventStyle ] [ Item.view item ]
 
 
 {-| DnDModel tracks where the mouse starts and where it currently is to get the absolute
@@ -244,13 +252,16 @@ viewDraggedItem ({ draggedItem, position, drag } as model) =
                 , ( "position", "absolute" )
                 , ( "cursor", "move" )
                 ]
+
+        pointerEventStyle =
+            style [ ( "pointer-events", "none" ) ]
     in
         case draggedItem of
             Nothing ->
                 div [] []
 
             Just item ->
-                div [ positionStyle ] [ Item.view item ]
+                div [ positionStyle, pointerEventStyle ] [ Item.view item ]
 
 
 
@@ -267,7 +278,7 @@ viewPack maybeItem dnd =
 
         droppableHtml =
             \pack ->
-                (div [ highlightStyle ] [ viewContainer (ItemPack pack) ])
+                (div [ highlightStyle ] [ viewContainer (ItemPack pack) dnd ])
     in
         case maybeItem of
             Just (ItemPack pack) ->
@@ -277,11 +288,11 @@ viewPack maybeItem dnd =
                 div [] [ text "Pack is empty" ]
 
 
-viewContainer : Item -> Html MouseMsg
-viewContainer item =
+viewContainer : Item -> DnDModel -> Html MouseMsg
+viewContainer item dnd =
     case (item) of
         ItemPack pack ->
-            div [] (List.map draggableItem <| Container.list (Item.getContainer pack))
+            div [] (List.map (\x -> draggableItem x dnd) (Container.list (Item.getContainer pack)))
 
         _ ->
             div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
@@ -293,14 +304,14 @@ viewContainer item =
 --------------------
 
 
-viewEquipmentSlots : Equipment -> Html MouseMsg
-viewEquipmentSlots equipment =
+viewEquipmentSlots : Equipment -> DnDModel -> Html MouseMsg
+viewEquipmentSlots equipment dnd =
     let
         getEquipment =
             \slot -> Equipment.get slot equipment
 
         drawItem =
-            \item -> div [ class "three wide column equipmentSlot" ] [ draggableItem item ]
+            \item -> div [ class "three wide column equipmentSlot" ] [ draggableItem item dnd ]
 
         drawSlot =
             \slot ->
