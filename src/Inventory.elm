@@ -101,9 +101,6 @@ viewLayout equipment maybePack dnd =
 update : MouseMsg -> Model -> ( Model, Cmd Game.Data.Msg )
 update msg ({ dnd } as model) =
     let
-        _ =
-            Debug.log "msg: " msg
-
         startdnd =
             \item pos -> DnDModel (Just item) pos (Just (Drag pos pos)) dnd.drop
 
@@ -119,40 +116,130 @@ update msg ({ dnd } as model) =
 
             -- on drag end, check if it's over a droppable container
             End _ ->
-                let
-                    resetDnD =
-                        DnDModel Nothing (Position 0 0) Nothing Nothing
-
-                    model' =
-                        { model | dnd = init }
-                in
-                    case dnd.drop of
-                        Nothing ->
-                            ( model', Cmd.none )
-
-                        Just (DropPack pack) ->
-                            let
-                                model' =
-                                    dropItem model
-                            in
-                                ( { model' | dnd = init }, Cmd.none )
-
-                        Just (DropEquipment slot) ->
-                            Debug.crash "TODO"
+                handleMouseUp model
 
             MouseOver dropTarget ->
-                let
-                    _ =
-                        Debug.log "mouse over" 1
-                in
-                    ( { model | dnd = { dnd | drop = Just dropTarget } }, Cmd.none )
+                ( { model | dnd = { dnd | drop = Just dropTarget } }, Cmd.none )
 
             MouseLeave ->
+                ( { model | dnd = { dnd | drop = Nothing } }, Cmd.none )
+
+
+
+---------------------
+-- Drag drop logic --
+---------------------
+
+
+{-| If the mouseup happens on a pack, equipment slot or shop, do something.
+
+Drag
+- Shop:
+  - Check player can afford item
+
+- Equipment slot:
+  - Check it's not cursed
+
+- Pack:
+  - Nothing
+
+Drop
+- Shop:
+  - Nothing
+
+- Equipment slot:
+  - Check if an item is already equipped
+
+- Pack
+  - Check pack capacity
+-}
+handleMouseUp : Model -> ( Model, Cmd Game.Data.Msg )
+handleMouseUp ({ dnd } as model) =
+    let
+        modelWithoutDnD =
+            { model | dnd = init }
+
+        noChange =
+            ( modelWithoutDnD, Cmd.none )
+    in
+        case ( dnd.draggedItem, dnd.drop ) of
+            ( Nothing, _ ) ->
                 let
                     _ =
-                        Debug.log "mouse in" 1
+                        Debug.log "Nochange" 1
                 in
-                    ( { model | dnd = { dnd | drop = Nothing } }, Cmd.none )
+                    noChange
+
+            ( _, Nothing ) ->
+                let
+                    _ =
+                        Debug.log "Nochange" 1
+                in
+                    noChange
+
+            ( Just item, Just drop ) ->
+                let
+                    {- dragRes =
+                       checkDrag item model
+                    -}
+                    dropRes =
+                        checkDrop drop item modelWithoutDnD
+                in
+                    case dropRes of
+                        Ok newModel ->
+                            let
+                                _ =
+                                    Debug.log "New model" 1
+                            in
+                                ( newModel, Cmd.none )
+
+                        Err _ ->
+                            let
+                                _ =
+                                    Debug.log "Nochange" 1
+                            in
+                                noChange
+
+
+{-| checkDrag
+- Shop:
+  - Check player can afford item
+
+- Equipment slot:
+  - Check it's not cursed
+
+- Pack:
+  - Nothing
+-}
+checkDrag : Drag -> Model -> Result Int Model
+checkDrag drag model =
+    case drag of
+        _ ->
+            Result.Ok model
+
+
+{-| checkDrop
+- Shop:
+  - Nothing
+
+- Equipment slot:
+  - Check if an item is already equipped
+
+- Pack
+  - Check pack capacity
+-}
+checkDrop : Drop -> Item -> Model -> Result Int Model
+checkDrop drop item model =
+    case drop of
+        DropPack pack ->
+            let
+                equipment' =
+                    Equipment.update (PutInPack item) model.equipment
+            in
+                Result.Ok { model | equipment = equipment' }
+
+        DropEquipment slot ->
+            Result.Ok model
 
 
 dropItem : Model -> Model

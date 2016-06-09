@@ -101,7 +101,12 @@ init =
 
 update : Msg -> Equipment -> Equipment
 update msg (EquipmentModel model) =
-    (EquipmentModel model)
+    case msg of
+        PutInPack item ->
+            EquipmentModel (putInPack item model)
+
+        _ ->
+            Debug.crash "Handle equipping and unequipping"
 
 
 equip : EquipmentSlot -> Item -> Model -> Model
@@ -116,21 +121,21 @@ equip slot item model =
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
 -}
-putInPack : Item -> Equipment -> Equipment
-putInPack item (EquipmentModel model) =
+putInPack : Item -> Model -> Model
+putInPack item model =
     case model.pack of
         Nothing ->
-            EquipmentModel model
+            model
 
         Just (ItemPack pack) ->
             let
                 pack' =
                     Item.addToPack item pack
             in
-                EquipmentModel { model | pack = Just <| ItemPack pack' }
+                { model | pack = Just <| ItemPack pack' }
 
         _ ->
-            EquipmentModel model
+            model
 
 
 get : EquipmentSlot -> Equipment -> Maybe Item
