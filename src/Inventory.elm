@@ -30,8 +30,9 @@ init : DnDModel
 init =
     { draggedItem = Nothing
     , position = Position 0 0
-    , drag = Nothing
-    , drop = Nothing
+    , dragging = Nothing
+    , drop = NoDrop
+    , drag = NoDrag
     }
 
 
@@ -102,14 +103,14 @@ update : MouseMsg -> Model -> ( Model, Cmd Game.Data.Msg )
 update msg ({ dnd } as model) =
     let
         startdnd =
-            \item pos -> DnDModel (Just item) pos (Just (Drag pos pos)) dnd.drop
+            \item pos drag -> DnDModel (Just item) pos drag (Just (Dragging pos pos)) dnd.drop
 
         atdnd =
-            \item pos -> DnDModel (Just item) dnd.position (Maybe.map (\{ start } -> (Drag start pos)) dnd.drag) dnd.drop
+            \item pos -> DnDModel (Just item) dnd.position NoDrag (Maybe.map (\{ start } -> (Dragging start pos)) dnd.dragging) dnd.drop
     in
         case msg of
-            Start item pos ->
-                ( { model | dnd = startdnd item pos }, Cmd.none )
+            Start item drag pos ->
+                ( { model | dnd = startdnd item pos drag }, Cmd.none )
 
             At item pos ->
                 ( { model | dnd = atdnd item pos }, Cmd.none )
@@ -119,10 +120,10 @@ update msg ({ dnd } as model) =
                 handleMouseUp model
 
             MouseOver dropTarget ->
-                ( { model | dnd = { dnd | drop = Just dropTarget } }, Cmd.none )
+                ( { model | dnd = { dnd | drop = dropTarget } }, Cmd.none )
 
             MouseLeave ->
-                ( { model | dnd = { dnd | drop = Nothing } }, Cmd.none )
+                ( { model | dnd = { dnd | drop = NoDrop } }, Cmd.none )
 
 
 
@@ -164,20 +165,12 @@ handleMouseUp ({ dnd } as model) =
     in
         case ( dnd.draggedItem, dnd.drop ) of
             ( Nothing, _ ) ->
-                let
-                    _ =
-                        Debug.log "Nochange" 1
-                in
-                    noChange
+                noChange
 
-            ( _, Nothing ) ->
-                let
-                    _ =
-                        Debug.log "Nochange" 1
-                in
-                    noChange
+            ( _, NoDrop ) ->
+                noChange
 
-            ( Just item, Just drop ) ->
+            ( Just item, drop ) ->
                 let
                     {- dragRes =
                        checkDrag item model
@@ -211,9 +204,9 @@ handleMouseUp ({ dnd } as model) =
 - Pack:
   - Nothing
 -}
-checkDrag : Drag -> Model -> Result Int Model
-checkDrag drag model =
-    case drag of
+checkDrag : Dragging -> Model -> Result Int Model
+checkDrag dragging model =
+    case dragging of
         _ ->
             Result.Ok model
 
@@ -241,28 +234,31 @@ checkDrop drop item model =
         DropEquipment slot ->
             Result.Ok model
 
+        NoDrop ->
+            Result.Ok model
+
 
 dropItem : Model -> Model
 dropItem ({ equipment, dnd } as model) =
     let
-        { draggedItem, position, drag, drop } =
+        { draggedItem, position, dragging, drop } =
             dnd
     in
         case ( draggedItem, drop ) of
             ( Nothing, _ ) ->
                 model
 
-            ( _, Nothing ) ->
+            ( _, NoDrop ) ->
                 model
 
-            ( Just item, Just (DropPack pack) ) ->
+            ( Just item, DropPack pack ) ->
                 let
                     equipment' =
                         Equipment.update (Equipment.PutInPack item) equipment
                 in
                     { model | equipment = equipment' }
 
-            ( Just item, Just (DropEquipment slot) ) ->
+            ( Just item, DropEquipment slot ) ->
                 Debug.crash "TODO: drop equipment"
 
 
@@ -273,16 +269,16 @@ dropItem ({ equipment, dnd } as model) =
 
 
 droppableDiv : Drop -> DnDModel -> Html MouseMsg -> Html MouseMsg
-droppableDiv dropTarget model html =
+droppableDiv drop model html =
     let
         borderStyle =
-            if isJust model.drop then
+            if model.drop /= NoDrop then
                 style [ ( "border", "1px solid" ) ]
             else
                 style [ ( "border", "none" ) ]
 
         mouseOverStyle =
-            on "mouseover" (Json.succeed <| MouseOver dropTarget)
+            on "mouseover" (Json.succeed <| MouseOver drop)
 
         mouseLeaveStyle =
             onMouseLeave MouseLeave
@@ -290,16 +286,16 @@ droppableDiv dropTarget model html =
         div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
 
 
-draggableItem : Item -> DnDModel -> Html MouseMsg
-draggableItem item dnd =
+draggableItem : Item -> Drag -> DnDModel -> Html MouseMsg
+draggableItem item drag dnd =
     let
         onMouseDown =
             onWithOptions "mousedown"
                 { stopPropagation = True, preventDefault = True }
-                (Json.map (Start item) Mouse.position)
+                (Json.map (Start item drag) Mouse.position)
 
         pointerEventStyle =
-            case dnd.drag of
+            case dnd.dragging of
                 Just _ ->
                     style [ ( "pointer-events", "none" ) ]
 
@@ -313,8 +309,8 @@ draggableItem item dnd =
 movement from when mouse down happens. This is the actual drag distance.
 -}
 getDisplacemnt : DnDModel -> Position
-getDisplacemnt { draggedItem, position, drag, drop } =
-    case drag of
+getDisplacemnt { draggedItem, position, dragging, drop } =
+    case dragging of
         Nothing ->
             position
 
@@ -324,7 +320,7 @@ getDisplacemnt { draggedItem, position, drag, drop } =
 
 
 viewDraggedItem : DnDModel -> Html MouseMsg
-viewDraggedItem ({ draggedItem, position, drag } as model) =
+viewDraggedItem ({ draggedItem, position, dragging } as model) =
     let
         px =
             \x -> toString x ++ "px"
@@ -376,13 +372,24 @@ viewPack maybeItem dnd =
 
 
 viewContainer : Item -> DnDModel -> Html MouseMsg
-viewContainer item dnd =
-    case (item) of
-        ItemPack pack ->
-            div [] (List.map (\x -> draggableItem x dnd) (Container.list (Item.getContainer pack)))
+viewContainer containerItem dnd =
+    let
+        getItems =
+            \pack -> Container.list (Item.getContainer pack)
 
-        _ ->
-            div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
+        makeDraggable =
+            \pack item -> draggableItem item (DragPack pack item) dnd
+    in
+        case (containerItem) of
+            ItemPack pack ->
+                div []
+                    (pack
+                        |> getItems
+                        |> List.map (makeDraggable pack)
+                    )
+
+            _ ->
+                div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
 
 
 
@@ -398,13 +405,13 @@ viewEquipmentSlots equipment dnd =
             \slot -> Equipment.get slot equipment
 
         drawItem =
-            \item -> div [ class "three wide column equipmentSlot" ] [ draggableItem item dnd ]
+            \item slot -> div [ class "three wide column equipmentSlot" ] [ draggableItem item (DragSlot slot item) dnd ]
 
         drawSlot =
             \slot ->
                 case (getEquipment slot) of
                     Just item ->
-                        drawItem item
+                        drawItem item slot
 
                     Nothing ->
                         div [] []
