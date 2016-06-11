@@ -45,7 +45,7 @@ view : Game.Data.Model -> Html MouseMsg
 view ({ equipment, dnd } as model) =
     let
         pack =
-            Equipment.get Equipment.Pack equipment
+            Equipment.getSlot Equipment.Pack equipment
     in
         viewLayout equipment pack dnd
 
@@ -131,27 +131,8 @@ update msg ({ dnd } as model) =
 ---------------------
 
 
-{-| If the mouseup happens on a pack, equipment slot or shop, do something.
-
-Drag
-- Shop:
-  - Check player can afford item
-
-- Equipment slot:
-  - Check it's not cursed
-
-- Pack:
-  - Nothing
-
-Drop
-- Shop:
-  - Nothing
-
-- Equipment slot:
-  - Check if an item is already equipped
-
-- Pack
-  - Check pack capacity
+{-| On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
+then call a function to handle the transaction, otherwise just clear the dndModel and return.
 -}
 handleMouseUp : Model -> ( Model, Cmd Game.Data.Msg )
 handleMouseUp ({ dnd } as model) =
@@ -173,29 +154,49 @@ handleMouseUp ({ dnd } as model) =
                 handleDragDrop dragSource dropTarget modelDnDReinit
 
 
+{-| Top level of drag/drop transaction.
+Algorithm:
+- Resolve dragging the item away from the dragSource, return the modelWithDrag and the item being dragged.
+- Resolve dropping the item into the dropTarget using the modelWithDrag. Return the modelWithDragDrop.
+- If at any time, either resolutions returns a Result.err, return the initial model.
+
+Drag
+- Shop: Check player can afford item
+- Equipment slot: Check item is not cursed
+- Pack: Nothing
+
+Drop
+- Shop: Nothing
+- Equipment slot: Check if an item is already equipped
+- Pack: Check pack capacity
+-}
 handleDragDrop : DragSource -> DropTarget -> Model -> ( Model, Cmd Game.Data.Msg )
 handleDragDrop dragSource dropTarget model =
     let
-        dragRes =
-            checkDrag dragSource model
+        dragResult =
+            handleDrag dragSource model
 
         noChange =
             ( model, Cmd.none )
-    in
-        case dragRes of
-            Ok ( modelWithDragRes, item ) ->
-                case (checkDrop dropTarget item modelWithDragRes) of
-                    Ok modelWithDragDropRes ->
-                        ( modelWithDragDropRes, Cmd.none )
+
+        handleDrop' =
+            \item modelWithDrag ->
+                case (handleDrop dropTarget item modelWithDrag) of
+                    Ok modelWithDragDrop ->
+                        ( modelWithDragDrop, Cmd.none )
 
                     Err _ ->
                         noChange
+    in
+        case dragResult of
+            Ok ( modelWithDrag, item ) ->
+                handleDrop' item modelWithDrag
 
             Err _ ->
                 noChange
 
 
-{-| checkDrag
+{-| handleDrag
 - Shop:
   - Check player can afford item
 
@@ -205,14 +206,23 @@ handleDragDrop dragSource dropTarget model =
 - Pack:
   - Nothing
 -}
-checkDrag : DragSource -> Model -> Result Model ( Model, Item )
-checkDrag dragSource model =
+handleDrag : DragSource -> Model -> Result Model ( Model, Item )
+handleDrag dragSource model =
     case dragSource of
         NoDrag ->
             Result.Err model
 
         DragSlot item slot ->
-            Result.Ok ( model, item )
+            let
+                unequipRes =
+                    Equipment.unequip slot model.equipment
+            in
+                case unequipRes of
+                    Result.Ok equipment' ->
+                        Result.Ok ( { model | equipment = equipment' }, item )
+
+                    Result.Err msg ->
+                        Result.Ok ( model, item )
 
         DragPack item pack ->
             Result.Ok ( model, item )
@@ -221,7 +231,7 @@ checkDrag dragSource model =
             Result.Ok ( model, item )
 
 
-{-| checkDrop
+{-| handleDrop
 - Shop:
   - Nothing
 
@@ -231,8 +241,8 @@ checkDrag dragSource model =
 - Pack
   - Check pack capacity
 -}
-checkDrop : DropTarget -> Item -> Model -> Result Int Model
-checkDrop dropTarget item model =
+handleDrop : DropTarget -> Item -> Model -> Result Int Model
+handleDrop dropTarget item model =
     case dropTarget of
         DropPack pack ->
             let
@@ -394,7 +404,7 @@ viewEquipmentSlots : Equipment -> DnDModel -> Html MouseMsg
 viewEquipmentSlots equipment dnd =
     let
         getEquipment =
-            \slot -> Equipment.get slot equipment
+            \slot -> Equipment.getSlot slot equipment
 
         drawItem =
             \item slot -> div [ class "three wide column equipmentSlot" ] [ draggableItem item (DragSlot item slot) dnd ]
