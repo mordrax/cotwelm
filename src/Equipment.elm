@@ -3,9 +3,10 @@ module Equipment
         ( EquipmentSlot(..)
         , Msg(..)
         , Equipment
-        , get
+        , getSlot
         , init
         , update
+        , unequip
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
@@ -109,14 +110,31 @@ update msg (EquipmentModel model) =
             Debug.crash "Handle equipping and unequipping"
 
 
-equip : EquipmentSlot -> Item -> Model -> Model
-equip slot item model =
+equip : EquipmentSlot -> Item -> Equipment -> Equipment
+equip slot item (EquipmentModel model) =
     case item of
         ItemWeapon _ ->
             Debug.crash "TODO: What is this?"
 
         _ ->
             Debug.crash "TODO: What is this?"
+
+
+unequip : EquipmentSlot -> Equipment -> Result String Equipment
+unequip slot (EquipmentModel model) =
+    let
+        maybeItem =
+            getSlot slot (EquipmentModel model)
+    in
+        case maybeItem of
+            Just item ->
+                if (Item.isCursed item) then
+                    Result.Err "You cannot remove a cursed item!"
+                else
+                    Result.Ok (EquipmentModel <| (setSlot slot Nothing model))
+
+            Nothing ->
+                Result.Ok (EquipmentModel model)
 
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
@@ -138,8 +156,14 @@ putInPack item model =
             model
 
 
-get : EquipmentSlot -> Equipment -> Maybe Item
-get slot (EquipmentModel model) =
+
+--------------------------
+-- Handle get/set slots --
+--------------------------
+
+
+getSlot : EquipmentSlot -> Equipment -> Maybe Item
+getSlot slot (EquipmentModel model) =
     case slot of
         Weapon ->
             model.weapon
@@ -185,3 +209,54 @@ get slot (EquipmentModel model) =
 
         Boots ->
             model.boots
+
+
+{-| Sets the equipment slot to the maybe item.
+-}
+setSlot : EquipmentSlot -> Maybe Item -> Model -> Model
+setSlot slot maybeItem model =
+    case slot of
+        Weapon ->
+            { model | weapon = maybeItem }
+
+        Freehand ->
+            { model | freehand = maybeItem }
+
+        Armour ->
+            { model | armour = maybeItem }
+
+        Shield ->
+            { model | shield = maybeItem }
+
+        Helmet ->
+            { model | helmet = maybeItem }
+
+        Bracers ->
+            { model | bracers = maybeItem }
+
+        Gauntlets ->
+            { model | gauntlets = maybeItem }
+
+        Belt ->
+            { model | belt = maybeItem }
+
+        Purse ->
+            { model | purse = maybeItem }
+
+        Pack ->
+            { model | pack = maybeItem }
+
+        Neckwear ->
+            { model | neckwear = maybeItem }
+
+        Overgarment ->
+            { model | overgarment = maybeItem }
+
+        LeftRing ->
+            { model | leftRing = maybeItem }
+
+        RightRing ->
+            { model | rightRing = maybeItem }
+
+        Boots ->
+            { model | boots = maybeItem }

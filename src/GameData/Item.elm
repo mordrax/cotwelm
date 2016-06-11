@@ -31,6 +31,7 @@ module GameData.Item
         , view
         , getContainer
         , addToPack
+        , isCursed
         )
 
 import Html exposing (..)
@@ -158,6 +159,20 @@ getMass item =
             getModel item
     in
         model.mass
+
+
+isCursed : Item -> Bool
+isCursed item =
+    let
+        { status } =
+            getModel item
+    in
+        case status of
+            Cursed ->
+                True
+
+            _ ->
+                False
 
 
 getModel : Item -> Model
