@@ -19,11 +19,10 @@ type alias Model =
 
 
 type alias DnDModel =
-    { draggedItem : Maybe Item
+    { dragSource : DragSource
+    , dropTarget : DropTarget
     , position : Position
-    , drag : Drag
     , dragging : Maybe Dragging
-    , drop : Drop
     }
 
 
@@ -33,14 +32,14 @@ type alias Dragging =
     }
 
 
-type Drag
-    = DragSlot EquipmentSlot Item
-    | DragPack Item.Pack Item
-    | DragShop
+type DragSource
+    = DragSlot Item EquipmentSlot
+    | DragPack Item Item.Pack
+    | DragShop Item
     | NoDrag
 
 
-type Drop
+type DropTarget
     = DropPack Item.Pack
     | DropEquipment EquipmentSlot
     | NoDrop
@@ -60,10 +59,10 @@ type Direction
 
 
 type MouseMsg
-    = Start Item Drag Position
-    | At Item Position
+    = Start DragSource Position
+    | At DragSource Position
     | End Position
-    | MouseOver Drop
+    | MouseOver DropTarget
     | MouseLeave
 
 
