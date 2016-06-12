@@ -7,6 +7,7 @@ module Equipment
         , init
         , update
         , unequip
+        , putInPack
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
@@ -20,6 +21,7 @@ Does not render equipment but will provide a API to retrieve them.
 -}
 
 import GameData.Item as Item exposing (..)
+import Mass exposing (..)
 
 
 type alias Model =
@@ -66,7 +68,6 @@ type EquipmentSlot
 type Msg
     = Equip EquipmentSlot Item
     | Unequip EquipmentSlot
-    | PutInPack Item
 
 
 init : Equipment
@@ -76,20 +77,21 @@ init =
             newPack MediumPack Normal Identified
 
         ths =
-            new (Item.Weapon TwoHandedSword) Normal Identified
+            Item.new (Item.Weapon TwoHandedSword) Normal Identified
 
-        pack' =
+        -- ignore mass comparison as this is a test case with a empty pack so should be able to hold a single two handed sword
+        ( pack', _ ) =
             Item.addToPack ths pack
     in
         EquipmentModel
-            { weapon = Just (new (Item.Weapon Dagger) Normal Identified)
+            { weapon = Just (Item.new (Item.Weapon Dagger) Normal Identified)
             , freehand = Nothing
-            , armour = Just (new (Item.Armour LeatherArmour) Normal Identified)
-            , shield = Just (new (Item.Shield SmallWoodenShield) Normal Identified)
-            , helmet = Just (new (Item.Helmet LeatherHelmet) Normal Identified)
-            , bracers = Just (new (Item.Bracers NormalBracers) Normal Identified)
-            , gauntlets = Just (new (Item.Gauntlets NormalGauntlets) Normal Identified)
-            , belt = Just (new (Item.Belt TwoSlotBelt) Normal Identified)
+            , armour = Just (Item.new (Item.Armour LeatherArmour) Normal Identified)
+            , shield = Just (Item.new (Item.Shield SmallWoodenShield) Normal Identified)
+            , helmet = Just (Item.new (Item.Helmet LeatherHelmet) Normal Identified)
+            , bracers = Just (Item.new (Item.Bracers NormalBracers) Normal Identified)
+            , gauntlets = Just (Item.new (Item.Gauntlets NormalGauntlets) Normal Identified)
+            , belt = Just (Item.new (Item.Belt TwoSlotBelt) Normal Identified)
             , purse = Nothing
             , pack = Just (ItemPack pack')
             , neckwear = Nothing
@@ -103,9 +105,6 @@ init =
 update : Msg -> Equipment -> Equipment
 update msg (EquipmentModel model) =
     case msg of
-        PutInPack item ->
-            EquipmentModel (putInPack item model)
-
         _ ->
             Debug.crash "Handle equipping and unequipping"
 
@@ -139,21 +138,25 @@ unequip slot (EquipmentModel model) =
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
 -}
-putInPack : Item -> Model -> Model
-putInPack item model =
-    case model.pack of
-        Nothing ->
-            model
+putInPack : Item -> Equipment -> ( Equipment, Mass.MassComparison )
+putInPack item (EquipmentModel model) =
+    let
+        noChange =
+            ( EquipmentModel model, Mass.Ok )
+    in
+        case model.pack of
+            Nothing ->
+                noChange
 
-        Just (ItemPack pack) ->
-            let
-                pack' =
-                    Item.addToPack item pack
-            in
-                { model | pack = Just <| ItemPack pack' }
+            Just (ItemPack pack) ->
+                let
+                    ( pack', massComparison ) =
+                        Item.addToPack item pack
+                in
+                    ( EquipmentModel { model | pack = Just <| ItemPack pack' }, massComparison )
 
-        _ ->
-            model
+            _ ->
+                noChange
 
 
 
