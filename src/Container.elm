@@ -1,4 +1,14 @@
-module Container exposing (Container, new, list, add)
+module Container
+    exposing
+        ( Container
+        , IDItem
+        , new
+        , list
+        , add
+        , getItem
+        , getMass
+        , capacity
+        )
 
 {-| A container holds Items with a Mass up to a certain amount. This amount is specified by the weight and bulk capacity of the container.
 You can add/remove Items and look through a list of them.
@@ -16,14 +26,33 @@ type alias ID =
 type alias Model a =
     { capacity : Mass
     , currentMass : Mass
-    , items : List ( ID, a )
+    , items : List (IDItem a)
     , getMass : a -> Mass
     , nextId : ID
     }
 
 
+type alias IDItem a =
+    ( ID, a )
+
+
 type Container a
     = ContainerModel (Model a)
+
+
+capacity : Container a -> Mass
+capacity (ContainerModel model) =
+    model.capacity
+
+
+getMass : Container a -> Mass
+getMass (ContainerModel model) =
+    model.currentMass
+
+
+getItem : IDItem a -> a
+getItem itemWithId =
+    snd itemWithId
 
 
 new : { capacity : Mass, getMass : a -> Mass } -> Container a
@@ -31,7 +60,7 @@ new { capacity, getMass } =
     ContainerModel <| Model capacity (Mass.new 0 0) [] getMass 0
 
 
-list : Container a -> List ( ID, a )
+list : Container a -> List (IDItem a)
 list (ContainerModel model) =
     model.items
 
