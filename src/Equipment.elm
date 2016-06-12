@@ -74,7 +74,7 @@ init : Equipment
 init =
     let
         pack =
-            newPack MediumPack Normal Identified
+            newPack SmallPack Normal Identified
 
         ths =
             Item.new (Item.Weapon TwoHandedSword) Normal Identified
@@ -86,8 +86,8 @@ init =
         EquipmentModel
             { weapon = Just (Item.new (Item.Weapon Dagger) Normal Identified)
             , freehand = Nothing
-            , armour = Just (Item.new (Item.Armour LeatherArmour) Normal Identified)
-            , shield = Just (Item.new (Item.Shield SmallWoodenShield) Normal Identified)
+            , armour = Just (Item.new (Item.Armour ScaleMail) Normal Identified)
+            , shield = Just (Item.new (Item.Shield LargeIronShield) Normal Identified)
             , helmet = Just (Item.new (Item.Helmet LeatherHelmet) Normal Identified)
             , bracers = Just (Item.new (Item.Bracers NormalBracers) Normal Identified)
             , gauntlets = Just (Item.new (Item.Gauntlets NormalGauntlets) Normal Identified)
