@@ -246,8 +246,8 @@ handleDrop dropTarget item model =
     case dropTarget of
         DropPack pack ->
             let
-                equipment' =
-                    Equipment.update (PutInPack item) model.equipment
+                ( equipment', massComparison ) =
+                    Equipment.putInPack item model.equipment
             in
                 Result.Ok { model | equipment = equipment' }
 

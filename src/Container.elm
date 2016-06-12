@@ -9,11 +9,16 @@ Items can also be containers, so containers can hold containers.
 import Mass exposing (..)
 
 
+type alias ID =
+    Int
+
+
 type alias Model a =
     { capacity : Mass
     , currentMass : Mass
-    , items : List a
+    , items : List ( ID, a )
     , getMass : a -> Mass
+    , nextId : ID
     }
 
 
@@ -23,29 +28,26 @@ type Container a
 
 new : { capacity : Mass, getMass : a -> Mass } -> Container a
 new { capacity, getMass } =
-    ContainerModel <| Model capacity (Mass.new 0 0) [] getMass
+    ContainerModel <| Model capacity (Mass.new 0 0) [] getMass 0
 
 
-list : Container a -> List a
+list : Container a -> List ( ID, a )
 list (ContainerModel model) =
     model.items
 
 
-add : a -> Container a -> ( Container a, Mass.Msg )
+add : a -> Container a -> ( Container a, Mass.MassComparison )
 add item (ContainerModel model) =
     let
-        itemMass =
+        mass =
             model.getMass item
 
-        newMass =
-            Mass.add itemMass model.currentMass
-
-        massMsg =
-            Mass.lessThanOrEqualTo newMass model.capacity
+        mass' =
+            Mass.add mass model.currentMass
     in
-        case massMsg of
+        case (Mass.ltOrEqTo mass' model.capacity) of
             Mass.Ok ->
-                ( ContainerModel { model | currentMass = newMass, items = item :: model.items }, Mass.Ok )
+                ( ContainerModel { model | currentMass = mass', items = ( model.nextId, item ) :: model.items, nextId = model.nextId + 1 }, Mass.Ok )
 
-            _ ->
-                ( ContainerModel model, Mass.TooHeavy )
+            msg ->
+                ( ContainerModel model, msg )

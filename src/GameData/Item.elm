@@ -675,18 +675,18 @@ type alias PackModel =
     { container : Container Item }
 
 
-addToPack : Item -> Pack -> Pack
+addToPack : Item -> Pack -> ( Pack, Mass.MassComparison )
 addToPack item (PackModelTag packType model packModel) =
     let
-        ( newContainer, msg ) =
+        ( container', msg ) =
             Container.add item packModel.container
     in
         case msg of
             Mass.Ok ->
-                PackModelTag packType model { packModel | container = newContainer }
+                ( PackModelTag packType model { packModel | container = container' }, Mass.Ok )
 
-            _ ->
-                (PackModelTag packType model packModel)
+            msg ->
+                ( (PackModelTag packType model packModel), msg )
 
 
 newPack : PackType -> ItemStatus -> IdentificationStatus -> Pack

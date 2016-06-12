@@ -1,4 +1,11 @@
-module Mass exposing (Mass, new, lessThanOrEqualTo, Msg(..), add)
+module Mass
+    exposing
+        ( Mass
+        , MassComparison(..)
+        , new
+        , ltOrEqTo
+        , add
+        )
 
 
 type alias Model =
@@ -11,7 +18,7 @@ type Mass
     = Mass Model
 
 
-type Msg
+type MassComparison
     = Ok
     | TooHeavy
     | TooBulky
@@ -30,8 +37,8 @@ add (Mass a) (Mass b) =
         }
 
 
-lessThanOrEqualTo : Mass -> Mass -> Msg
-lessThanOrEqualTo (Mass a) (Mass b) =
+ltOrEqTo : Mass -> Mass -> MassComparison
+ltOrEqTo (Mass a) (Mass b) =
     let
         bulkWeight =
             ( a.bulk > b.bulk, a.weight > b.weight )
