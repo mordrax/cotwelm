@@ -6,6 +6,7 @@ import Game.Maps exposing (..)
 import GameData.Item as Item exposing (..)
 import Mouse exposing (Position)
 import Equipment exposing (..)
+import Container exposing (..)
 
 
 type alias Model =
@@ -34,7 +35,7 @@ type alias Dragging =
 
 type DragSource
     = DragSlot Item EquipmentSlot
-    | DragPack Item Item.Pack
+    | DragPack (IDItem Item) Item.Pack
     | DragShop Item
     | NoDrag
 

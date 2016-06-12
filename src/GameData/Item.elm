@@ -32,6 +32,7 @@ module GameData.Item
         , getContainer
         , addToPack
         , isCursed
+        , packInfo
         )
 
 import Html exposing (..)
@@ -687,6 +688,13 @@ addToPack item (PackModelTag packType model packModel) =
 
             msg ->
                 ( (PackModelTag packType model packModel), msg )
+
+
+{-| Get the current mass and mass capacity for the given pack
+-}
+packInfo : Pack -> ( Mass, Mass )
+packInfo (PackModelTag _ model packModel) =
+    ( Container.getMass packModel.container, Container.capacity packModel.container )
 
 
 newPack : PackType -> ItemStatus -> IdentificationStatus -> Pack

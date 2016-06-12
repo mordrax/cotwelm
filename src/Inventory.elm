@@ -24,6 +24,7 @@ import Mouse exposing (..)
 import Json.Decode as Json exposing (..)
 import Equipment exposing (..)
 import Maybe.Extra exposing (..)
+import Mass exposing (..)
 
 
 init : DnDModel
@@ -80,7 +81,7 @@ viewLayout equipment maybePack dnd =
             header "Shop"
 
         packDiv =
-            div [] [ header "Pack", viewPack maybePack dnd ]
+            div [] [ header ("Pack: [" ++ (viewPackInfo maybePack) ++ "]"), viewPack maybePack dnd ]
     in
         div []
             [ heading "Inventory screen"
@@ -90,6 +91,29 @@ viewLayout equipment maybePack dnd =
                 ]
             , viewDraggedItem dnd
             ]
+
+
+viewPackInfo : Maybe Item -> String
+viewPackInfo maybeItem =
+    case maybeItem of
+        Just (ItemPack pack) ->
+            let
+                ( curMass, capMass ) =
+                    Item.packInfo pack
+
+                ( curBulk, curWeight ) =
+                    Mass.info curMass
+
+                ( capBulk, capWeight ) =
+                    Mass.info capMass
+
+                str =
+                    toString
+            in
+                "Bulk: ( " ++ (str curBulk) ++ " / " ++ (str capBulk) ++ " )  Weight: ( " ++ (str curWeight) ++ " / " ++ (str capWeight) ++ " )"
+
+        _ ->
+            ""
 
 
 
@@ -182,14 +206,14 @@ handleDragDrop dragSource dropTarget model =
         handleDrop' =
             \item modelWithDrag ->
                 case (handleDrop dropTarget item modelWithDrag) of
-                    Ok modelWithDragDrop ->
+                    Result.Ok modelWithDragDrop ->
                         ( modelWithDragDrop, Cmd.none )
 
                     Err _ ->
                         noChange
     in
         case dragResult of
-            Ok ( modelWithDrag, item ) ->
+            Result.Ok ( modelWithDrag, item ) ->
                 handleDrop' item modelWithDrag
 
             Err _ ->
@@ -224,8 +248,10 @@ handleDrag dragSource model =
                     Result.Err msg ->
                         Result.Ok ( model, item )
 
-        DragPack item pack ->
-            Result.Ok ( model, item )
+        DragPack idItem pack ->
+            Debug.log "TODO: Remove item from the pack.container and return just the item"
+                Result.Ok
+                ( model, (Container.getItem idItem) )
 
         DragShop item ->
             Result.Ok ( model, item )
@@ -282,25 +308,6 @@ droppableDiv dropTarget model html =
         div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
 
 
-draggableItem : Item -> DragSource -> DnDModel -> Html MouseMsg
-draggableItem item dragSource dnd =
-    let
-        onMouseDown =
-            onWithOptions "mousedown"
-                { stopPropagation = True, preventDefault = True }
-                (Json.map (Start dragSource) Mouse.position)
-
-        pointerEventStyle =
-            case dnd.dragging of
-                Just _ ->
-                    style [ ( "pointer-events", "none" ) ]
-
-                Nothing ->
-                    style [ ( "pointer-events", "inherit" ) ]
-    in
-        div [ onMouseDown, pointerEventStyle ] [ Item.view item ]
-
-
 {-| DnDModel tracks where the mouse starts and where it currently is to get the absolute
 movement from when mouse down happens. This is the actual drag distance.
 -}
@@ -334,6 +341,10 @@ viewDraggedItem ({ dragSource, position, dragging } as model) =
 
         pointerEventStyle =
             style [ ( "pointer-events", "none" ) ]
+
+        itemHtml =
+            \idItem ->
+                idItem |> Container.getItem |> Item.view
     in
         case dragSource of
             NoDrag ->
@@ -342,8 +353,8 @@ viewDraggedItem ({ dragSource, position, dragging } as model) =
             DragSlot item _ ->
                 div [ positionStyle, pointerEventStyle ] [ Item.view item ]
 
-            DragPack item _ ->
-                div [ positionStyle, pointerEventStyle ] [ Item.view item ]
+            DragPack idItem _ ->
+                div [ positionStyle, pointerEventStyle ] [ itemHtml idItem ]
 
             DragShop item ->
                 Debug.crash "Dragshop not implemented"
@@ -379,8 +390,14 @@ viewContainer containerItem dnd =
         getItems =
             \pack -> Container.list (Item.getContainer pack)
 
+        itemHtml =
+            \idItem ->
+                idItem
+                    |> Container.getItem
+                    |> Item.view
+
         makeDraggable =
-            \pack item -> draggableItem item (DragPack item pack) dnd
+            \pack idItem -> draggableItem (itemHtml idItem) (DragPack idItem pack) dnd
     in
         case (containerItem) of
             ItemPack pack ->
@@ -392,6 +409,25 @@ viewContainer containerItem dnd =
 
             _ ->
                 div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
+
+
+draggableItem : Html MouseMsg -> DragSource -> DnDModel -> Html MouseMsg
+draggableItem html dragSource dnd =
+    let
+        onMouseDown =
+            onWithOptions "mousedown"
+                { stopPropagation = True, preventDefault = True }
+                (Json.map (Start dragSource) Mouse.position)
+
+        pointerEventStyle =
+            case dnd.dragging of
+                Just _ ->
+                    style [ ( "pointer-events", "none" ) ]
+
+                Nothing ->
+                    style [ ( "pointer-events", "inherit" ) ]
+    in
+        div [ onMouseDown, pointerEventStyle ] [ html ]
 
 
 
@@ -407,7 +443,10 @@ viewEquipmentSlots equipment dnd =
             \slot -> Equipment.getSlot slot equipment
 
         drawItem =
-            \item slot -> div [ class "three wide column equipmentSlot" ] [ draggableItem item (DragSlot item slot) dnd ]
+            \item slot ->
+                div [ class "three wide column equipmentSlot" ]
+                    [ draggableItem (Item.view item) (DragSlot item slot) dnd
+                    ]
 
         drawSlot =
             \slot ->
