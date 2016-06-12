@@ -5,6 +5,7 @@ module Mass
         , new
         , ltOrEqTo
         , add
+        , info
         )
 
 
@@ -52,3 +53,16 @@ ltOrEqTo (Mass a) (Mass b) =
 
             _ ->
                 Ok
+
+
+info : Mass -> ( Int, Int )
+info (Mass model) =
+    ( model.bulk, model.weight )
+
+
+
+{- prettyPrint : Mass -> String
+   prettyPrint (Mass model) =
+       "Bulk: " ++ (toString model.bulk) ++ ", " ++ "Weight: " ++ (toString model.weight)
+       (toString model.bulk) ++ ", " ++ (toString model.weight)
+-}
