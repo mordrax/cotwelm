@@ -5,6 +5,7 @@ module Mass
         , new
         , ltOrEqTo
         , add
+        , subtract
         , info
         )
 
@@ -35,6 +36,14 @@ add (Mass a) (Mass b) =
     Mass
         { bulk = a.bulk + b.bulk
         , weight = a.weight + b.weight
+        }
+
+
+subtract : Mass -> Mass -> Mass
+subtract (Mass a) (Mass b) =
+    Mass
+        { bulk = a.bulk - b.bulk
+        , weight = a.weight - b.weight
         }
 
 
