@@ -45,15 +45,9 @@ init =
 view : Game.Data.Model -> Html MouseMsg
 view ({ equipment, dnd } as model) =
     let
-        pack =
+        maybePack =
             Equipment.getSlot Equipment.Pack equipment
-    in
-        viewLayout equipment pack dnd
 
-
-viewLayout : Equipment -> Maybe Item -> DnDModel -> Html MouseMsg
-viewLayout equipment maybePack dnd =
-    let
         headerClass =
             class "ui block header"
 
@@ -68,20 +62,16 @@ viewLayout equipment maybePack dnd =
             \width children -> div [ class (width ++ " wide column") ] children
 
         equipmentColumn =
-            columnWidth "six"
-                [ div [ class "ui grid" ]
-                    [ viewEquipmentSlots equipment dnd
-                    ]
-                ]
+            columnWidth "six" [ viewEquipment equipment dnd ]
 
         shopPackColumn =
-            columnWidth "ten" [ shopDiv, packDiv ]
+            columnWidth "ten" [ shopHtml, packHtml ]
 
-        shopDiv =
+        shopHtml =
             header "Shop"
 
-        packDiv =
-            div [] [ header ("Pack: [" ++ (viewPackInfo maybePack) ++ "]"), viewPack maybePack dnd ]
+        packHtml =
+            div [] [ header ("Pack: (" ++ (viewPackInfo maybePack) ++ ")"), viewPack maybePack model ]
     in
         div []
             [ heading "Inventory screen"
@@ -107,18 +97,10 @@ viewPackInfo maybeItem =
                 ( capBulk, capWeight ) =
                     Mass.info capMass
 
-                str =
-                    toString
+                print =
+                    \name a b -> name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
             in
-                "Bulk: ( "
-                    ++ (str curBulk)
-                    ++ " / "
-                    ++ (str capBulk)
-                    ++ " )  Weight: ( "
-                    ++ (str curWeight)
-                    ++ " / "
-                    ++ (str capWeight)
-                    ++ " )"
+                (print "Bulk" curBulk capBulk) ++ ", " ++ (print "Weight" curWeight capWeight)
 
         _ ->
             ""
@@ -257,9 +239,13 @@ handleDrag dragSource model =
                         Result.Ok ( model, item )
 
         DragPack idItem pack ->
-            Debug.log "TODO: Remove item from the pack.container and return just the item"
-                Result.Ok
-                ( model, (Container.getItem idItem) )
+            let
+                modelItemRemoved =
+                    { model | equipment = Equipment.removeFromPack idItem model.equipment }
+            in
+                Debug.log "TODO: Remove item from the pack.container and return just the item"
+                    Result.Ok
+                    ( modelItemRemoved, (Container.getItem idItem) )
 
         DragShop item ->
             Result.Ok ( model, item )
@@ -291,10 +277,10 @@ handleDrop dropTarget item model =
                         Debug.log "dropping into pack failed" Result.Err 1
 
         DropEquipment slot ->
-            Result.Ok model
+            Result.Ok { model | equipment = Equipment.equip slot item model.equipment }
 
         NoDrop ->
-            Result.Ok model
+            Debug.log "ERROR: Trying to drop but the DropTarget is NoDrop" Result.Ok model
 
 
 
@@ -303,11 +289,11 @@ handleDrop dropTarget item model =
 ---------------
 
 
-droppableDiv : DropTarget -> DnDModel -> Html MouseMsg -> Html MouseMsg
-droppableDiv dropTarget model html =
+droppable : DropTarget -> DnDModel -> Html MouseMsg -> Html MouseMsg
+droppable dropTarget model html =
     let
         borderStyle =
-            if model.dropTarget /= NoDrop then
+            if model.dropTarget == dropTarget then
                 style [ ( "border", "1px solid" ) ]
             else
                 style [ ( "border", "none" ) ]
@@ -379,29 +365,29 @@ viewDraggedItem ({ dragSource, position, dragging } as model) =
 ---------------
 
 
-viewPack : Maybe Item -> DnDModel -> Html MouseMsg
-viewPack maybeItem dnd =
+viewPack : Maybe Item -> Game.Data.Model -> Html MouseMsg
+viewPack maybeItem ({ dnd } as model) =
     let
         highlightStyle =
             style [ ( "background", "light blue" ) ]
 
         droppableHtml =
             \pack ->
-                (div [ highlightStyle ] [ viewContainer (ItemPack pack) dnd ])
+                (div [ highlightStyle ] [ viewContainer (ItemPack pack) model ])
     in
         case maybeItem of
             Just (ItemPack pack) ->
-                droppableDiv (DropPack pack) dnd (droppableHtml pack)
+                droppable (DropPack pack) dnd (droppableHtml pack)
 
             _ ->
                 div [] [ text "Pack is empty" ]
 
 
-viewContainer : Item -> DnDModel -> Html MouseMsg
-viewContainer containerItem dnd =
+viewContainer : Item -> Game.Data.Model -> Html MouseMsg
+viewContainer containerItem ({ equipment, dnd } as model) =
     let
-        getItems =
-            \pack -> Container.list (Item.getContainer pack)
+        idItems =
+            Equipment.getPackContent equipment
 
         itemHtml =
             \idItem ->
@@ -415,10 +401,7 @@ viewContainer containerItem dnd =
         case (containerItem) of
             ItemPack pack ->
                 div []
-                    (pack
-                        |> getItems
-                        |> List.map (makeDraggable pack)
-                    )
+                    (List.map (makeDraggable pack) idItems)
 
             _ ->
                 div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
@@ -449,28 +432,31 @@ draggableItem html dragSource dnd =
 --------------------
 
 
-viewEquipmentSlots : Equipment -> DnDModel -> Html MouseMsg
-viewEquipmentSlots equipment dnd =
+viewEquipment : Equipment -> DnDModel -> Html MouseMsg
+viewEquipment equipment dnd =
     let
         getEquipment =
             \slot -> Equipment.getSlot slot equipment
 
         drawItem =
             \item slot ->
-                div [ class "three wide column equipmentSlot" ]
-                    [ draggableItem (Item.view item) (DragSlot item slot) dnd
-                    ]
+                draggableItem (Item.view item) (DragSlot item slot) dnd
 
         drawSlot =
             \slot ->
-                case (getEquipment slot) of
-                    Just item ->
-                        drawItem item slot
+                let
+                    slotName =
+                        toString slot
+                in
+                    case (getEquipment slot) of
+                        Just item ->
+                            div [ class "three wide column equipmentSlot" ]
+                                [ drawItem item slot ]
 
-                    Nothing ->
-                        div [] []
+                        Nothing ->
+                            droppable (DropEquipment slot) dnd (div [] [ text slotName ])
     in
-        div []
+        div [ class "ui grid" ]
             [ drawSlot Equipment.Weapon
             , drawSlot Equipment.Freehand
             , drawSlot Equipment.Armour

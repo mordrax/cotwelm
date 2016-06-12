@@ -29,10 +29,11 @@ module GameData.Item
         , BeltType(..)
         , PackType(..)
         , view
-        , getContainer
         , addToPack
+        , removeFromPack
         , isCursed
         , packInfo
+        , packContents
         )
 
 import Html exposing (..)
@@ -217,11 +218,6 @@ getModel item =
 
         ItemBoots (BootsModelTag _ model) ->
             model
-
-
-getContainer : Pack -> Container Item
-getContainer (PackModelTag _ _ specificModel) =
-    specificModel.container
 
 
 view : Item -> Html msg
@@ -690,11 +686,21 @@ addToPack item (PackModelTag packType model packModel) =
                 ( (PackModelTag packType model packModel), msg )
 
 
+removeFromPack : Container.IDItem Item -> Pack -> Pack
+removeFromPack idItem (PackModelTag packType model packModel) =
+    PackModelTag packType model { packModel | container = Container.take idItem packModel.container }
+
+
 {-| Get the current mass and mass capacity for the given pack
 -}
 packInfo : Pack -> ( Mass, Mass )
 packInfo (PackModelTag _ model packModel) =
     ( Container.getMass packModel.container, Container.capacity packModel.container )
+
+
+packContents : Pack -> List (Container.IDItem Item)
+packContents (PackModelTag packType model packModel) =
+    Container.list packModel.container
 
 
 newPack : PackType -> ItemStatus -> IdentificationStatus -> Pack

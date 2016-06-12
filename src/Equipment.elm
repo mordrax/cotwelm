@@ -6,8 +6,11 @@ module Equipment
         , getSlot
         , init
         , update
+        , equip
         , unequip
         , putInPack
+        , removeFromPack
+        , getPackContent
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
@@ -22,6 +25,7 @@ Does not render equipment but will provide a API to retrieve them.
 
 import GameData.Item as Item exposing (..)
 import Mass exposing (..)
+import Container exposing (..)
 
 
 type alias Model =
@@ -111,12 +115,7 @@ update msg (EquipmentModel model) =
 
 equip : EquipmentSlot -> Item -> Equipment -> Equipment
 equip slot item (EquipmentModel model) =
-    case item of
-        ItemWeapon _ ->
-            Debug.crash "TODO: What is this?"
-
-        _ ->
-            Debug.crash "TODO: What is this?"
+    EquipmentModel (setSlot slot (Just item) model)
 
 
 unequip : EquipmentSlot -> Equipment -> Result String Equipment
@@ -157,6 +156,33 @@ putInPack item (EquipmentModel model) =
 
             _ ->
                 noChange
+
+
+removeFromPack : IDItem Item -> Equipment -> Equipment
+removeFromPack idItem (EquipmentModel model) =
+    let
+        noChange =
+            (EquipmentModel model)
+    in
+        case model.pack of
+            Nothing ->
+                noChange
+
+            Just (ItemPack pack) ->
+                EquipmentModel { model | pack = Just (ItemPack (Item.removeFromPack idItem pack)) }
+
+            _ ->
+                Debug.crash "The pack seems to be a non-pack!" 1
+
+
+getPackContent : Equipment -> List (IDItem Item)
+getPackContent (EquipmentModel model) =
+    case model.pack of
+        Just (ItemPack pack) ->
+            Item.packContents pack
+
+        _ ->
+            []
 
 
 

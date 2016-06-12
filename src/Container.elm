@@ -5,6 +5,7 @@ module Container
         , new
         , list
         , add
+        , take
         , getItem
         , getMass
         , capacity
@@ -80,3 +81,21 @@ add item (ContainerModel model) =
 
             msg ->
                 ( ContainerModel model, msg )
+
+
+take : IDItem a -> Container a -> Container a
+take idItem (ContainerModel model) =
+    let
+        itemsWithoutIdItem =
+            List.filter ((/=) idItem) model.items
+
+        ( id, item ) =
+            idItem
+
+        itemMass =
+            model.getMass item
+
+        mass' =
+            Mass.subtract model.currentMass itemMass
+    in
+        ContainerModel { model | items = itemsWithoutIdItem, currentMass = mass' }
