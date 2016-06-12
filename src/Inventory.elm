@@ -110,7 +110,15 @@ viewPackInfo maybeItem =
                 str =
                     toString
             in
-                "Bulk: ( " ++ (str curBulk) ++ " / " ++ (str capBulk) ++ " )  Weight: ( " ++ (str curWeight) ++ " / " ++ (str capWeight) ++ " )"
+                "Bulk: ( "
+                    ++ (str curBulk)
+                    ++ " / "
+                    ++ (str capBulk)
+                    ++ " )  Weight: ( "
+                    ++ (str curWeight)
+                    ++ " / "
+                    ++ (str capWeight)
+                    ++ " )"
 
         _ ->
             ""
@@ -275,7 +283,12 @@ handleDrop dropTarget item model =
                 ( equipment', massComparison ) =
                     Equipment.putInPack item model.equipment
             in
-                Result.Ok { model | equipment = equipment' }
+                case massComparison of
+                    Mass.Ok ->
+                        Result.Ok { model | equipment = equipment' }
+
+                    _ ->
+                        Debug.log "dropping into pack failed" Result.Err 1
 
         DropEquipment slot ->
             Result.Ok model
