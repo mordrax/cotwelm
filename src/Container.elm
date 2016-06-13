@@ -11,7 +11,7 @@ module Container
         , capacity
         )
 
-{-| A container holds Items with a Mass up to a certain amount. This amount is specified by the weight and bulk capacity of the container.
+{-| A container holds Items with a Mass up to a certain amount specified by the container's capacity.
 You can add/remove Items and look through a list of them.
 
 Items can also be containers, so containers can hold containers.
