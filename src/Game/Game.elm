@@ -7,6 +7,7 @@ import Game.Maps exposing (..)
 import Game.Collision exposing (..)
 import Inventory exposing (..)
 import Equipment exposing (..)
+import DragDrop exposing (new)
 
 
 -- Data
@@ -37,7 +38,7 @@ initGame =
     , hero = Hero.init
     , map = Game.Maps.initMaps
     , currentScreen = InventoryScreen
-    , dnd = Inventory.init
+    , dnd = DragDrop.new
     , equipment = Equipment.init
     }
 
@@ -57,8 +58,8 @@ update msg model =
         Inventory ->
             ( { model | currentScreen = InventoryScreen }, Cmd.none )
 
-        MouseEvent msg ->
-            Inventory.update msg model
+        InvMsg msg ->
+            ( Inventory.update msg model, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -74,7 +75,7 @@ view model =
             viewBuilding building
 
         InventoryScreen ->
-            Html.App.map MouseEvent (Inventory.view model)
+            Html.App.map InvMsg (Inventory.view model)
 
 
 viewMap : Game.Data.Model -> Html Game.Data.Msg

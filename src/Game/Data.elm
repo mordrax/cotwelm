@@ -15,7 +15,7 @@ type alias Model =
     , hero : Hero
     , map : Game.Maps.Model
     , currentScreen : Screen
-    , dnd : DragDrop
+    , dnd : DragDrop Drag Drop
     , equipment : Equipment
     }
 
@@ -44,10 +44,15 @@ type Direction
     | Right
 
 
+type InventoryMsg source target
+    = InventoryMsg
+    | DnDMsg (DragDropMsg source target)
+
+
 type Msg
     = KeyDir Direction
     | Map
     | Inventory
-      --     | MouseEvent MouseMsg
+    | InvMsg (InventoryMsg Drag Drop)
     | NoOp
     | EquipmentMsg Equipment.Msg
