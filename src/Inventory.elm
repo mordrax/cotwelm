@@ -14,6 +14,7 @@ to know about hero equipment, items, containers etc...
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.App exposing (..)
 import GameData.Item as Item exposing (..)
 import Game.Data exposing (..)
 import Container exposing (..)
@@ -22,9 +23,9 @@ import Mass exposing (..)
 import DragDrop exposing (..)
 
 
-type Msg
+type Msg source target
     = InventoryMsg
-    | DnDMsg
+    | DnDMsg (DragDropMsg source target)
 
 
 
@@ -105,7 +106,12 @@ viewPackInfo maybeItem =
 
 update : Msg -> Model -> Model
 update msg model =
-    { model | dnd = DragDrop.update msg model.dnd }
+    case msg of
+        DnDMsg dragDropMsg ->
+            { model | dnd = DragDrop.update dragDropMsg model.dnd }
+
+        _ ->
+            Debug.log "Update: No other messages implemented" model
 
 
 
@@ -257,7 +263,7 @@ handleDrop drop item model =
 ---------------
 
 
-viewPack : Maybe Item -> Game.Data.Model -> Html Msg
+viewPack : Maybe Item -> Game.Data.Model -> Html (Msg s t)
 viewPack maybeItem ({ dnd } as model) =
     let
         highlightStyle =
@@ -275,20 +281,24 @@ viewPack maybeItem ({ dnd } as model) =
                 div [] [ text "Pack is empty" ]
 
 
-viewContainer : Item -> Game.Data.Model -> Html Msg
+viewContainer : Item -> Game.Data.Model -> Html (Msg s t)
 viewContainer containerItem ({ equipment, dnd } as model) =
     let
         idItems =
             Equipment.getPackContent equipment
 
-        itemHtml =
+        itemToHtml =
             \idItem ->
                 idItem
                     |> Container.getItem
                     |> Item.view
 
+        toMsg : DragDropMsg a b -> Msg a b
+        toMsg =
+            \dragMsg -> DnDMsg dragMsg
+
         makeDraggable =
-            \pack idItem -> DragDrop.draggable (itemHtml idItem) (DragPack idItem pack) dnd
+            \pack idItem -> Html.App.map toMsg (DragDrop.draggable (itemToHtml idItem) (DragPack idItem pack) dnd)
     in
         case (containerItem) of
             ItemPack pack ->
