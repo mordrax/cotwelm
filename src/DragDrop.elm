@@ -9,10 +9,13 @@ module DragDrop
         , update
         , draggable
         , droppable
+        , getDragSourceDropTarget
+        , subscriptions
         )
 
 import Mouse exposing (..)
 import Html exposing (..)
+import Html.App exposing (map)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as JD exposing (..)
@@ -55,14 +58,19 @@ type DragDropMsg source target
     | MouseLeave
 
 
-new : source -> target -> DragDrop source target
-new source target =
+new : DragDrop s t
+new =
     DragDropModel
         { dragSource = NoDrag
         , dropTarget = NoDrop
         , position = Position 0 0
         , dragging = Nothing
         }
+
+
+getDragSourceDropTarget : DragDrop a b -> ( Drag a, Drop b )
+getDragSourceDropTarget (DragDropModel model) =
+    ( model.dragSource, model.dropTarget )
 
 
 update : DragDropMsg s t -> DragDrop s t -> DragDrop s t
@@ -83,7 +91,7 @@ update msg (DragDropModel model) =
 
             -- on drag end, check if it's over a droppable container
             End _ ->
-                Debug.crash "TODO: DragDrop.elm handleMouseUp"
+                Debug.crash "This needs to be handled higher up, DragDrop currently does not know how to tell the parent how to handle the End event"
 
             --(handleMouseUp model)
             MouseOver dropTarget ->
@@ -138,7 +146,7 @@ getDisplacement { dragSource, dropTarget, position, dragging } =
 {-| Takes a html snippet that can be dragged and drag it around the screen.
 The snippet is attached to a arbitrary Drag source which is given to the Drop target when dropped.
 -}
-draggable : Html (DragDropMsg s t) -> s -> DragDrop s t -> Html (DragDropMsg s t)
+draggable : Html (DragDropMsg a b) -> a -> DragDrop c d -> Html (DragDropMsg a b)
 draggable draggableHtml source (DragDropModel model) =
     let
         dragSource =

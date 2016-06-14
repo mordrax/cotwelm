@@ -54,7 +54,7 @@ subscriptions model =
             \x -> Sub.map GameMsg x
 
         convertToGameMsg =
-            \x -> Sub.map MouseEvent x
+            \x -> Sub.map InvMsg x
 
         keyboardSubs =
             List.map convertToMainMsg Game.Keyboard.subscriptions

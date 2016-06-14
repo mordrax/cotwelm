@@ -2,6 +2,7 @@ module Inventory
     exposing
         ( view
         , update
+        , subscriptions
         )
 
 {-|
@@ -23,18 +24,12 @@ import Mass exposing (..)
 import DragDrop exposing (..)
 
 
-type Msg source target
-    = InventoryMsg
-    | DnDMsg (DragDropMsg source target)
-
-
-
 ----------
 -- View --
 ----------
 
 
-view : Game.Data.Model -> Html Msg
+view : Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
 view ({ equipment, dnd } as model) =
     let
         maybePack =
@@ -68,10 +63,10 @@ view ({ equipment, dnd } as model) =
         div []
             [ heading "Inventory screen"
             , div [ class "ui two column grid" ]
-                [ equipmentColumn
-                , shopPackColumn
+                [ Html.App.map toInventoryMsg equipmentColumn
+                , Html.App.map toInventoryMsg shopPackColumn
                 ]
-            , DragDrop.view dnd
+            , Html.App.map toInventoryMsg (DragDrop.view dnd)
             ]
 
 
@@ -98,15 +93,23 @@ viewPackInfo maybeItem =
             ""
 
 
+toInventoryMsg : DragDropMsg s t -> InventoryMsg s t
+toInventoryMsg dragDropMsg =
+    DnDMsg dragDropMsg
+
+
 
 ------------
 -- Update --
 ------------
 
 
-update : Msg -> Model -> Model
+update : InventoryMsg Game.Data.Drag Game.Data.Drop -> Model -> Model
 update msg model =
     case msg of
+        DnDMsg (End _) ->
+            handleMouseUp model
+
         DnDMsg dragDropMsg ->
             { model | dnd = DragDrop.update dragDropMsg model.dnd }
 
@@ -123,29 +126,24 @@ update msg model =
 {-| On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
 then call a function to handle the transaction, otherwise just clear the dndModel and return.
 -}
-handleMouseUp : Model -> ( Model, Cmd Game.Data.Msg )
+handleMouseUp : Game.Data.Model -> Game.Data.Model
 handleMouseUp ({ dnd } as model) =
     let
         modelDnDReinit =
-            { model | dnd = init }
+            { model | dnd = DragDrop.new }
 
         noChange =
-            ( modelDnDReinit, Cmd.none )
+            modelDnDReinit
     in
-        noChange
+        case (DragDrop.getDragSourceDropTarget model.dnd) of
+            ( NoDrag, _ ) ->
+                noChange
 
+            ( _, NoDrop ) ->
+                noChange
 
-
-{- case ( dnd.dragSource, dnd.dropTarget ) of
-   ( NoDrag, _ ) ->
-       noChange
-
-   ( _, NoDrop ) ->
-       noChange
-
-   ( dragSource, dropTarget ) ->
-       handleDragDrop dragSource dropTarget modelDnDReinit
--}
+            ( DragSource dragSource, DropTarget dropTarget ) ->
+                handleDragDrop dragSource dropTarget modelDnDReinit
 
 
 {-| Top level of drag/drop transaction.
@@ -164,20 +162,20 @@ Drop
 - Equipment slot: Check if an item is already equipped
 - Pack: Check pack capacity
 -}
-handleDragDrop : Game.Data.Drag -> Game.Data.Drop -> Model -> ( Model, Cmd Game.Data.Msg )
+handleDragDrop : Game.Data.Drag -> Game.Data.Drop -> Model -> Model
 handleDragDrop dragSource dropTarget model =
     let
         dragResult =
             handleDrag dragSource model
 
         noChange =
-            ( model, Cmd.none )
+            model
 
         handleDrop' =
             \item modelWithDrag ->
                 case (handleDrop dropTarget item modelWithDrag) of
                     Result.Ok modelWithDragDrop ->
-                        ( modelWithDragDrop, Cmd.none )
+                        modelWithDragDrop
 
                     Err _ ->
                         noChange
@@ -263,7 +261,7 @@ handleDrop drop item model =
 ---------------
 
 
-viewPack : Maybe Item -> Game.Data.Model -> Html (Msg s t)
+viewPack : Maybe Item -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
 viewPack maybeItem ({ dnd } as model) =
     let
         highlightStyle =
@@ -281,7 +279,7 @@ viewPack maybeItem ({ dnd } as model) =
                 div [] [ text "Pack is empty" ]
 
 
-viewContainer : Item -> Game.Data.Model -> Html (Msg s t)
+viewContainer : Item -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
 viewContainer containerItem ({ equipment, dnd } as model) =
     let
         idItems =
@@ -293,12 +291,8 @@ viewContainer containerItem ({ equipment, dnd } as model) =
                     |> Container.getItem
                     |> Item.view
 
-        toMsg : DragDropMsg a b -> Msg a b
-        toMsg =
-            \dragMsg -> DnDMsg dragMsg
-
         makeDraggable =
-            \pack idItem -> Html.App.map toMsg (DragDrop.draggable (itemToHtml idItem) (DragPack idItem pack) dnd)
+            \pack idItem -> DragDrop.draggable (itemToHtml idItem) (DragPack idItem pack) dnd
     in
         case (containerItem) of
             ItemPack pack ->
@@ -356,3 +350,8 @@ viewEquipment equipment dnd =
             , drawSlot Equipment.RightRing
             , drawSlot Equipment.Boots
             ]
+
+
+subscriptions : Game.Data.Model -> List (Sub (InventoryMsg Game.Data.Drag Game.Data.Drop))
+subscriptions ({ dnd } as model) =
+    List.map (Sub.map toInventoryMsg) (DragDrop.subscriptions dnd)
