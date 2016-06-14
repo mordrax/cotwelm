@@ -26,6 +26,7 @@ Does not render equipment but will provide a API to retrieve them.
 import GameData.Item as Item exposing (..)
 import Mass exposing (..)
 import Container exposing (..)
+import Purse exposing (..)
 
 
 type alias Model =
@@ -37,7 +38,7 @@ type alias Model =
     , bracers : Maybe Item
     , gauntlets : Maybe Item
     , belt : Maybe Item
-    , purse : Maybe Item
+    , purse : Purse
     , pack : Maybe Item
     , neckwear : Maybe Item
     , overgarment : Maybe Item
@@ -96,7 +97,7 @@ init =
             , bracers = Just (Item.new (Item.Bracers NormalBracers) Normal Identified)
             , gauntlets = Just (Item.new (Item.Gauntlets NormalGauntlets) Normal Identified)
             , belt = Just (Item.new (Item.Belt TwoSlotBelt) Normal Identified)
-            , purse = Nothing
+            , purse = Purse.new
             , pack = Just (ItemPack pack')
             , neckwear = Just (ItemPack pack')
             , overgarment = Nothing
@@ -219,7 +220,7 @@ getSlot slot (EquipmentModel model) =
             model.belt
 
         Purse ->
-            model.purse
+            Nothing
 
         Pack ->
             model.pack
@@ -270,7 +271,7 @@ setSlot slot maybeItem model =
             { model | belt = maybeItem }
 
         Purse ->
-            { model | purse = maybeItem }
+            model
 
         Pack ->
             { model | pack = maybeItem }

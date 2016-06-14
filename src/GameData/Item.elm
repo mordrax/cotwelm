@@ -9,7 +9,6 @@ module GameData.Item
         , Bracers
         , Gauntlets
         , Belt
-        , Purse
         , Pack
         , Neckwear
         , Overgarment
@@ -56,7 +55,6 @@ type ItemType
     | Bracers BracersType
     | Gauntlets GauntletsType
     | Belt BeltType
-    | Purse
     | Pack PackType
     | Neckwear NeckwearType
     | Overgarment OvergarmentType
@@ -72,7 +70,6 @@ type Item
     | ItemBracers Bracers
     | ItemGauntlets Gauntlets
     | ItemBelt Belt
-    | ItemPurse Purse
     | ItemPack Pack
     | ItemNeckwear Neckwear
     | ItemOvergarment Overgarment
@@ -106,10 +103,6 @@ type Gauntlets
 
 type Belt
     = BeltModelTag BeltType Model BeltModel
-
-
-type Purse
-    = PurseModelTag Model
 
 
 type Pack
@@ -201,9 +194,6 @@ getModel item =
         ItemBelt (BeltModelTag _ model specificModel) ->
             model
 
-        ItemPurse (PurseModelTag model) ->
-            model
-
         ItemPack (PackModelTag _ model specificModel) ->
             model
 
@@ -281,7 +271,6 @@ new itemType status idStatus =
         Pack packType ->
             ItemPack (newPack packType status idStatus)
 
-        -- Purse
         -- Neckwear
         --        Overgarment
         --        Ring
