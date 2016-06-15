@@ -38,7 +38,7 @@ type alias Model =
     , bracers : Maybe Item
     , gauntlets : Maybe Item
     , belt : Maybe Item
-    , purse : Purse
+    , purse : Maybe Item
     , pack : Maybe Item
     , neckwear : Maybe Item
     , overgarment : Maybe Item
@@ -97,7 +97,7 @@ init =
             , bracers = Just (Item.new (Item.Bracers NormalBracers) Normal Identified)
             , gauntlets = Just (Item.new (Item.Gauntlets NormalGauntlets) Normal Identified)
             , belt = Just (Item.new (Item.Belt TwoSlotBelt) Normal Identified)
-            , purse = Purse.new
+            , purse = Just (Item.new Item.Purse Normal Identified)
             , pack = Just (ItemPack pack')
             , neckwear = Just (ItemPack pack')
             , overgarment = Nothing
@@ -220,7 +220,7 @@ getSlot slot (EquipmentModel model) =
             model.belt
 
         Purse ->
-            Nothing
+            model.purse
 
         Pack ->
             model.pack
@@ -271,7 +271,7 @@ setSlot slot maybeItem model =
             { model | belt = maybeItem }
 
         Purse ->
-            model
+            { model | purse = maybeItem }
 
         Pack ->
             { model | pack = maybeItem }

@@ -22,81 +22,7 @@ import Container exposing (..)
 import Equipment exposing (..)
 import Mass exposing (..)
 import DragDrop exposing (..)
-
-
-----------
--- View --
-----------
-
-
-view : Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
-view ({ equipment, dnd } as model) =
-    let
-        maybePack =
-            Equipment.getSlot Equipment.Pack equipment
-
-        headerClass =
-            class "ui block header"
-
-        header =
-            \title -> div [ headerClass ] [ text title ]
-
-        heading =
-            \title ->
-                span [ class "ui text container segment" ] [ text title ]
-
-        columnWidth =
-            \width children -> div [ class (width ++ " wide column") ] children
-
-        equipmentColumn =
-            columnWidth "six" [ viewEquipment equipment dnd ]
-
-        shopPackColumn =
-            columnWidth "ten" [ shopHtml, packHtml ]
-
-        shopHtml =
-            header "Shop"
-
-        packHtml =
-            div [] [ header ("Pack: (" ++ (viewPackInfo maybePack) ++ ")"), viewPack maybePack model ]
-    in
-        div []
-            [ heading "Inventory screen"
-            , div [ class "ui two column grid" ]
-                [ Html.App.map toInventoryMsg equipmentColumn
-                , Html.App.map toInventoryMsg shopPackColumn
-                ]
-            , Html.App.map toInventoryMsg (DragDrop.view dnd)
-            ]
-
-
-viewPackInfo : Maybe Item -> String
-viewPackInfo maybeItem =
-    case maybeItem of
-        Just (ItemPack pack) ->
-            let
-                ( curMass, capMass ) =
-                    Item.packInfo pack
-
-                ( curBulk, curWeight ) =
-                    Mass.info curMass
-
-                ( capBulk, capWeight ) =
-                    Mass.info capMass
-
-                print =
-                    \name a b -> name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
-            in
-                (print "Bulk" curBulk capBulk) ++ ", " ++ (print "Weight" curWeight capWeight)
-
-        _ ->
-            ""
-
-
-toInventoryMsg : DragDropMsg s t -> InventoryMsg s t
-toInventoryMsg dragDropMsg =
-    DnDMsg dragDropMsg
-
+import Purse exposing (..)
 
 
 ------------
@@ -256,6 +182,87 @@ handleDrop drop item model =
 
 
 
+----------
+-- View --
+----------
+
+
+view : Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
+view ({ equipment, dnd } as model) =
+    let
+        maybePack =
+            Equipment.getSlot Equipment.Pack equipment
+
+        headerClass =
+            class "ui block header"
+
+        header =
+            \title -> div [ headerClass ] [ text title ]
+
+        heading =
+            \title ->
+                span [ class "ui text container segment" ] [ text title ]
+
+        columnWidth =
+            \width children -> div [ class (width ++ " wide column") ] children
+
+        equipmentColumn =
+            columnWidth "six" [ viewEquipment equipment dnd ]
+
+        shopPackColumn =
+            columnWidth "ten" [ shopHtml, packHtml, purseHtml ]
+
+        shopHtml =
+            header "Shop"
+
+        packHtml =
+            div [] [ header ("Pack: (" ++ (viewPackInfo maybePack) ++ ")"), viewPack maybePack model ]
+
+        purseHtml =
+            div []
+                [ header "Purse"
+                , viewPurse model
+                ]
+    in
+        div []
+            [ heading "Inventory screen"
+            , div [ class "ui two column grid" ]
+                [ Html.App.map toInventoryMsg equipmentColumn
+                , Html.App.map toInventoryMsg shopPackColumn
+                ]
+            , Html.App.map toInventoryMsg (DragDrop.view dnd)
+            ]
+
+
+viewPackInfo : Maybe Item -> String
+viewPackInfo maybeItem =
+    case maybeItem of
+        Just (ItemPack pack) ->
+            let
+                ( curMass, capMass ) =
+                    Item.packInfo pack
+
+                ( curBulk, curWeight ) =
+                    Mass.info curMass
+
+                ( capBulk, capWeight ) =
+                    Mass.info capMass
+
+                print =
+                    \name a b -> name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
+            in
+                (print "Bulk" curBulk capBulk) ++ ", " ++ (print "Weight" curWeight capWeight)
+
+        _ ->
+            ""
+
+
+toInventoryMsg : DragDropMsg s t -> InventoryMsg s t
+toInventoryMsg dragDropMsg =
+    DnDMsg dragDropMsg
+
+
+
 ---------------
 -- Pack view --
 ---------------
@@ -296,7 +303,7 @@ viewContainer containerItem ({ equipment, dnd } as model) =
     in
         case (containerItem) of
             ItemPack pack ->
-                div []
+                div [ class "ui cards" ]
                     (List.map (makeDraggable pack) idItems)
 
             _ ->
@@ -317,13 +324,13 @@ viewEquipment equipment dnd =
 
         drawItem =
             \item slot ->
-                DragDrop.draggable (Item.view item) (DragSlot item slot) dnd
+                DragDrop.draggable (Item.viewSlot item ("Slot: " ++ (toString slot))) (DragSlot item slot) dnd
 
         drawSlot =
             \slot ->
                 let
                     slotName =
-                        toString slot
+                        "Slot: [" ++ (toString slot) ++ "]"
                 in
                     case (getEquipment slot) of
                         Just item ->
@@ -331,7 +338,9 @@ viewEquipment equipment dnd =
                                 [ drawItem item slot ]
 
                         Nothing ->
-                            DragDrop.droppable (DropEquipment slot) dnd (div [] [ text slotName ])
+                            div [ class "three wide column equipmentSlot" ]
+                                [ DragDrop.droppable (DropEquipment slot) dnd (div [] [ text slotName ])
+                                ]
     in
         div [ class "ui grid" ]
             [ drawSlot Equipment.Weapon
@@ -350,6 +359,31 @@ viewEquipment equipment dnd =
             , drawSlot Equipment.RightRing
             , drawSlot Equipment.Boots
             ]
+
+
+
+----------------
+-- Purse View --
+----------------
+
+
+viewPurse : Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewPurse ({ equipment } as model) =
+    let
+        maybePurse =
+            (Equipment.getSlot Equipment.Purse equipment) `Maybe.andThen` Item.getPurse
+    in
+        case maybePurse of
+            Just purse ->
+                div [ class "ui grid" ]
+                    [ div [ class "CoinsCopper cotwItem" ] [ text (toString (Purse.getCoins Copper purse)) ]
+                    , div [ class "CoinsSilver cotwItem" ] [ text (toString (Purse.getCoins Silver purse)) ]
+                    , div [ class "CoinsGold cotwItem" ] [ text (toString (Purse.getCoins Gold purse)) ]
+                    , div [ class "CoinsPlatinum cotwItem" ] [ text (toString (Purse.getCoins Platinum purse)) ]
+                    ]
+
+            _ ->
+                div [] []
 
 
 subscriptions : Game.Data.Model -> List (Sub (InventoryMsg Game.Data.Drag Game.Data.Drop))
