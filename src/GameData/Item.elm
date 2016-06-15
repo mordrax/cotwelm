@@ -28,11 +28,13 @@ module GameData.Item
         , BeltType(..)
         , PackType(..)
         , view
+        , viewSlot
         , addToPack
         , removeFromPack
         , isCursed
         , packInfo
         , packContents
+        , getPurse
         )
 
 import Html exposing (..)
@@ -222,34 +224,42 @@ getModel item =
 
 view : Item -> Html msg
 view item =
+    viewSlot item ""
+
+
+viewSlot : Item -> String -> Html msg
+viewSlot item extraContent =
     let
         model =
             getModel item
     in
-        div [ class "ui grid" ]
+        div [ class "card" ]
             [ div
-                [ class "ui item"
-                , style
-                    [ ( "opacity", "1" )
-                    , ( "cursor", "move" )
-                    , ( "width", "32px" )
-                    , ( "height", "64px" )
-                    ]
-                ]
+                {- [ class "ui item"
+                   , style
+                       [ ( "opacity", "1" )
+                       , ( "cursor", "move" )
+                       , ( "width", "32px" )
+                       , ( "height", "64px" )
+                       ]
+                   ]
+                -}
+                []
                 [ div [ class "image" ]
                     [ i [ class ("cotwItem " ++ model.css) ] []
                     ]
                 , div [ class "content" ]
                     [ a [ class "header" ]
-                        [--text (toString model.itemType)
-                        ]
-                    , div [ class "meta" ]
-                        [ span [ class "date" ] []
-                        ]
-                    , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
                         [ text model.name
                         ]
+                    , div [ class "meta" ]
+                        [ span [ class "date" ] [ text "" ]
+                        ]
+                    , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
+                        [ text ""
+                        ]
                     ]
+                , div [ class "extra content" ] [ text extraContent ]
                 ]
             ]
 
@@ -282,7 +292,7 @@ new itemType status idStatus =
             ItemPack (newPack packType status idStatus)
 
         Purse ->
-            ItemPurse newPurse
+            ItemPurse (newPurse status idStatus)
 
         -- Neckwear
         --        Overgarment
@@ -745,9 +755,19 @@ newPack packType status id =
             PackModelTag EnchantedLargePackOfHolding (Model "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" status id <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 100000 250000, getMass = getMass })
 
 
-newPurse : Purse
-newPurse =
-    PurseModelTag Purse.new (Model "Purse" 0 0 "Purse" Normal Identified <| Mass.new 0 0)
+newPurse : ItemStatus -> IdentificationStatus -> Purse
+newPurse status id =
+    PurseModelTag Purse.new (Model "Purse" 0 0 "Purse" status id <| Mass.new 0 0)
+
+
+getPurse : Item -> Maybe Purse.Purse
+getPurse item =
+    case item of
+        ItemPurse (PurseModelTag purse model) ->
+            Just purse
+
+        _ ->
+            Nothing
 
 
 type NeckwearType

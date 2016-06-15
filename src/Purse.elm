@@ -1,10 +1,12 @@
 module Purse
     exposing
         ( Purse
+        , CoinType(..)
         , new
         , add
         , merge
         , remove
+        , getCoins
         )
 
 
@@ -24,6 +26,13 @@ type Purse
     = PurseModel Model
 
 
+type CoinType
+    = Copper
+    | Silver
+    | Gold
+    | Platinum
+
+
 type Msg
     = Ok
     | NotEnoughCoins
@@ -32,6 +41,22 @@ type Msg
 new : Purse
 new =
     PurseModel <| Model 100 10 1 0
+
+
+getCoins : CoinType -> Purse -> Coins
+getCoins coinType (PurseModel model) =
+    case coinType of
+        Copper ->
+            model.copper
+
+        Silver ->
+            model.silver
+
+        Gold ->
+            model.gold
+
+        Platinum ->
+            model.platinum
 
 
 add : Coins -> Purse -> Purse
