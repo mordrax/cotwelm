@@ -39,6 +39,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Container exposing (Container)
 import Mass exposing (..)
+import Purse exposing (..)
 
 
 type ItemStatus
@@ -56,6 +57,7 @@ type ItemType
     | Gauntlets GauntletsType
     | Belt BeltType
     | Pack PackType
+    | Purse
     | Neckwear NeckwearType
     | Overgarment OvergarmentType
     | Ring RingType
@@ -71,6 +73,7 @@ type Item
     | ItemGauntlets Gauntlets
     | ItemBelt Belt
     | ItemPack Pack
+    | ItemPurse Purse
     | ItemNeckwear Neckwear
     | ItemOvergarment Overgarment
     | ItemRing Ring
@@ -107,6 +110,10 @@ type Belt
 
 type Pack
     = PackModelTag PackType Model PackModel
+
+
+type Purse
+    = PurseModelTag Purse.Purse Model
 
 
 type Neckwear
@@ -197,6 +204,9 @@ getModel item =
         ItemPack (PackModelTag _ model specificModel) ->
             model
 
+        ItemPurse (PurseModelTag _ model) ->
+            model
+
         ItemNeckwear (NeckwearModelTag _ model) ->
             model
 
@@ -270,6 +280,9 @@ new itemType status idStatus =
 
         Pack packType ->
             ItemPack (newPack packType status idStatus)
+
+        Purse ->
+            ItemPurse newPurse
 
         -- Neckwear
         --        Overgarment
@@ -730,6 +743,11 @@ newPack packType status id =
 
         EnchantedLargePackOfHolding ->
             PackModelTag EnchantedLargePackOfHolding (Model "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" status id <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 100000 250000, getMass = getMass })
+
+
+newPurse : Purse
+newPurse =
+    PurseModelTag Purse.new (Model "Purse" 0 0 "Purse" Normal Identified <| Mass.new 0 0)
 
 
 type NeckwearType
