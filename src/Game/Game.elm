@@ -23,6 +23,7 @@ import Hero exposing (..)
 -- Common
 
 import Lib exposing (..)
+import IdGenerator exposing (..)
 
 
 -- Core
@@ -40,6 +41,7 @@ initGame =
     , currentScreen = InventoryScreen
     , dnd = DragDrop.new
     , equipment = Equipment.init
+    , idGen = IdGenerator.new
     }
 
 
