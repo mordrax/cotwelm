@@ -75,36 +75,65 @@ type Msg
     | Unequip EquipmentSlot
 
 
-init : Equipment
-init =
+init : IdGenerator -> ( IdGenerator, Equipment )
+init idGen =
     let
+        -- ignore mass comparison as this is a test case with a empty pack so should be able to hold a single two handed sword
+        ( weaponId, weaponIdGen ) =
+            IdGenerator.get idGen
+
+        ( armourId, armourIdGen ) =
+            IdGenerator.get weaponIdGen
+
+        ( shieldId, shieldIdGen ) =
+            IdGenerator.get armourIdGen
+
+        ( helmetId, helmetIdGen ) =
+            IdGenerator.get shieldIdGen
+
+        ( bracersId, bracersIdGen ) =
+            IdGenerator.get helmetIdGen
+
+        ( gauntletsId, gauntletsIdGen ) =
+            IdGenerator.get bracersIdGen
+
+        ( beltId, beltIdGen ) =
+            IdGenerator.get gauntletsIdGen
+
+        ( purseId, purseIdGen ) =
+            IdGenerator.get beltIdGen
+
+        ( packId, packIdGen ) =
+            IdGenerator.get purseIdGen
+
         pack =
-            newPack SmallPack Normal Identified
+            Item.new Pack SmallPack
 
         ths =
-            Item.new (Item.Weapon TwoHandedSword) Normal Identified
+            Item.new (Item.Weapon TwoHandedSword)
 
-        -- ignore mass comparison as this is a test case with a empty pack so should be able to hold a single two handed sword
         ( pack', _ ) =
             Item.addToPack ths pack
     in
-        EquipmentModel
-            { weapon = Just (Item.new (Item.Weapon Dagger) Normal Identified)
+        ( ids'
+        , EquipmentModel
+            { weapon = Just (Item.new (Item.Weapon Dagger) weaponId)
             , freehand = Nothing
-            , armour = Just (Item.new (Item.Armour ScaleMail) Normal Identified)
-            , shield = Just (Item.new (Item.Shield LargeIronShield) Normal Identified)
-            , helmet = Just (Item.new (Item.Helmet LeatherHelmet) Normal Identified)
-            , bracers = Just (Item.new (Item.Bracers NormalBracers) Normal Identified)
-            , gauntlets = Just (Item.new (Item.Gauntlets NormalGauntlets) Normal Identified)
-            , belt = Just (Item.new (Item.Belt TwoSlotBelt) Normal Identified)
-            , purse = Just (Item.new Item.Purse Normal Identified)
-            , pack = Just (ItemPack pack')
+            , armour = Just (Item.new (Item.Armour ScaleMail) armourId)
+            , shield = Just (Item.new (Item.Shield LargeIronShield) shieldId)
+            , helmet = Just (Item.new (Item.Helmet LeatherHelmet) helmetId)
+            , bracers = Just (Item.new (Item.Bracers NormalBracers) bracersId)
+            , gauntlets = Just (Item.new (Item.Gauntlets NormalGauntlets) gauntletsId)
+            , belt = Just (Item.new (Item.Belt TwoSlotBelt) beltId)
+            , purse = Just (Item.new Item.Purse purseId)
+            , pack = Just (pack')
             , neckwear = Just (ItemPack pack')
             , overgarment = Nothing
             , leftRing = Nothing
             , rightRing = Nothing
             , boots = Nothing
             }
+        )
 
 
 update : Msg -> Equipment -> Equipment

@@ -1,12 +1,10 @@
 module Container
     exposing
         ( Container
-        , IDItem
         , new
         , list
         , add
         , take
-        , getItem
         , getMass
         , capacity
         )
@@ -27,14 +25,10 @@ type alias ID =
 type alias Model a =
     { capacity : Mass
     , currentMass : Mass
-    , items : List (IDItem a)
+    , items : List a
     , getMass : a -> Mass
-    , nextId : ID
+    , equals : a -> a -> Bool
     }
-
-
-type alias IDItem a =
-    ( ID, a )
 
 
 type Container a
@@ -51,17 +45,12 @@ getMass (ContainerModel model) =
     model.currentMass
 
 
-getItem : IDItem a -> a
-getItem itemWithId =
-    snd itemWithId
+new : { capacity : Mass, getMass : a -> Mass, equals : a -> a -> Bool } -> Container a
+new { capacity, getMass, equals } =
+    ContainerModel <| Model capacity (Mass.new 0 0) [] getMass equals
 
 
-new : { capacity : Mass, getMass : a -> Mass } -> Container a
-new { capacity, getMass } =
-    ContainerModel <| Model capacity (Mass.new 0 0) [] getMass 0
-
-
-list : Container a -> List (IDItem a)
+list : Container a -> List a
 list (ContainerModel model) =
     model.items
 
@@ -77,20 +66,20 @@ add item (ContainerModel model) =
     in
         case (Mass.ltOrEqTo mass' model.capacity) of
             Mass.Ok ->
-                ( ContainerModel { model | currentMass = mass', items = ( model.nextId, item ) :: model.items, nextId = model.nextId + 1 }, Mass.Ok )
+                ( ContainerModel { model | currentMass = mass', items = item :: model.items }, Mass.Ok )
 
             msg ->
                 ( ContainerModel model, msg )
 
 
-take : IDItem a -> Container a -> Container a
-take idItem (ContainerModel model) =
+take : a -> Container a -> Container a
+take item (ContainerModel model) =
     let
-        itemsWithoutIdItem =
-            List.filter ((/=) idItem) model.items
+        notEquals =
+            \x -> not <| model.equals item x
 
-        ( id, item ) =
-            idItem
+        itemsWithoutIdItem =
+            List.filter notEquals model.items
 
         itemMass =
             model.getMass item

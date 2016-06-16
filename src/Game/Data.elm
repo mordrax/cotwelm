@@ -8,6 +8,7 @@ import Mouse exposing (Position)
 import Equipment exposing (..)
 import Container exposing (..)
 import DragDrop exposing (..)
+import IdGenerator exposing (..)
 
 
 type alias Model =
@@ -17,6 +18,7 @@ type alias Model =
     , currentScreen : Screen
     , dnd : DragDrop Drag Drop
     , equipment : Equipment
+    , idGen : IdGenerator
     }
 
 
