@@ -57,4 +57,3 @@ type Msg
     | Inventory
     | InvMsg (InventoryMsg Drag Drop)
     | NoOp
-    | EquipmentMsg Equipment.Msg

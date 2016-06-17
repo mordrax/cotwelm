@@ -103,15 +103,23 @@ handleDragDrop dragSource dropTarget model =
                     Result.Ok modelWithDragDrop ->
                         modelWithDragDrop
 
-                    Err _ ->
-                        noChange
+                    Err msg ->
+                        let
+                            _ =
+                                Debug.log "Drop failed: " msg
+                        in
+                            noChange
     in
         case dragResult of
             Result.Ok ( modelWithDrag, item ) ->
                 handleDrop' item modelWithDrag
 
-            Err _ ->
-                noChange
+            Err msg ->
+                let
+                    _ =
+                        Debug.log "Drag failed: " msg
+                in
+                    noChange
 
 
 {-| handleDrag
@@ -162,20 +170,28 @@ handleDrag drag model =
 - Pack
   - Check pack capacity
 -}
-handleDrop : Game.Data.Drop -> Item -> Model -> Result Int Model
+handleDrop : Game.Data.Drop -> Item -> Model -> Result String Model
 handleDrop drop item model =
     case drop of
         DropPack pack ->
             let
-                ( equipment', massComparison ) =
+                ( equipment', equipMsg ) =
                     Equipment.putInPack item model.equipment
-            in
-                case massComparison of
-                    Mass.Ok ->
-                        Result.Ok { model | equipment = equipment' }
 
-                    _ ->
-                        Debug.log "dropping into pack failed" Result.Err 1
+                success =
+                    Result.Ok { model | equipment = equipment' }
+            in
+                case equipMsg of
+                    Equipment.Ok ->
+                        success
+                    ItemMsg Item.Ok ->
+                        success
+
+                    Equipment.NoPackEquipped ->
+                        Result.Err "Can't add to the pack. No packed equipped!"
+
+                    msg ->
+                        Result.Err ("Dropping into pack failed with unhanded msg: " ++ (toString msg))
 
         DropEquipment slot ->
             Result.Ok { model | equipment = Equipment.equip slot item model.equipment }

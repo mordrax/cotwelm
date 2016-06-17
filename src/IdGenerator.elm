@@ -3,7 +3,7 @@ module IdGenerator
         ( IdGenerator
         , ID
         , new
-        , get
+        , getUniqueId
         , equals
         , assignId
         )
@@ -29,8 +29,8 @@ new =
     IDModel 0
 
 
-get : IdGenerator -> ( ID, IdGenerator )
-get (IDModel model) =
+getUniqueId : IdGenerator -> ( ID, IdGenerator )
+getUniqueId (IDModel model) =
     ( ID (model + 1), IDModel (model + 1) )
 
 
@@ -39,22 +39,10 @@ equals (ID a) (ID b) =
     a == b
 
 
-assignId : (ID -> item) -> ( List item, IdGenerator ) -> ( List item, IdGenerator )
-assignId toItem ( items, gen ) =
+assignId : (ID -> a) -> ( List a, IdGenerator ) -> ( List a, IdGenerator )
+assignId toA ( listOfAs, generator ) =
     let
-        ( id, gen' ) =
-            get gen
+        ( id, generator' ) =
+            getUniqueId generator
     in
-        ( (toItem id) :: items, gen' )
-
-
-
-{-
-   assignId : itemWithoutId -> (itemWithoutId -> ID -> item) -> IdGenerator -> ( item, IdGenerator )
-   assignId noIdItem toItem gen =
-       let
-           ( id, gen' ) =
-               get gen
-       in
-           ( toItem noIdItem id, gen' )
--}
+        ( (toA id) :: listOfAs, generator' )
