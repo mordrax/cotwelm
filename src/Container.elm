@@ -1,6 +1,7 @@
 module Container
     exposing
         ( Container
+        , Msg(..)
         , new
         , list
         , add
@@ -20,6 +21,11 @@ import Mass exposing (..)
 
 type alias ID =
     Int
+
+
+type Msg
+    = Ok
+    | MassMsg Mass.Msg
 
 
 type alias Model a =
@@ -50,12 +56,16 @@ new capacity getMass equals =
     ContainerModel <| Model capacity (Mass.new 0 0) [] getMass equals
 
 
+{-| Get all the things in the container as a list
+-}
 list : Container a -> List a
 list (ContainerModel model) =
     model.items
 
 
-add : a -> Container a -> ( Container a, Mass.MassComparison )
+{-| Try to add a new item to the container. Makes sure that the item obeys mass/capacity rules.
+-}
+add : a -> Container a -> ( Container a, Msg )
 add item (ContainerModel model) =
     let
         mass =
@@ -66,12 +76,14 @@ add item (ContainerModel model) =
     in
         case (Mass.ltOrEqTo mass' model.capacity) of
             Mass.Ok ->
-                ( ContainerModel { model | currentMass = mass', items = item :: model.items }, Mass.Ok )
+                ( ContainerModel { model | currentMass = mass', items = item :: model.items }, Ok )
 
             msg ->
-                ( ContainerModel model, msg )
+                ( ContainerModel model, MassMsg msg )
 
 
+{-| Takes an item out of the container if it exists.
+-}
 take : a -> Container a -> Container a
 take item (ContainerModel model) =
     let

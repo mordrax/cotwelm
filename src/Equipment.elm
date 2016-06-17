@@ -1,11 +1,10 @@
 module Equipment
     exposing
         ( EquipmentSlot(..)
-        , Msg(..)
         , Equipment
+        , Msg(..)
         , getSlot
         , init
-        , update
         , equip
         , unequip
         , putInPack
@@ -73,8 +72,10 @@ type EquipmentSlot
 
 
 type Msg
-    = Equip EquipmentSlot Item
-    | Unequip EquipmentSlot
+    = Ok
+    | MassResult Mass.Msg
+    | ItemMsg Item.Msg
+    | NoPackEquipped
 
 
 init : IdGenerator -> ( IdGenerator, Equipment )
@@ -101,11 +102,8 @@ init idGenerator =
         itemDict =
             Dict.fromList idedItems
 
-        _ =
-            Debug.log "ided items" idedItems
-
         maybePack =
-            (Dict.get "pack" itemDict)
+            Dict.get "pack" itemDict
 
         maybeTHS =
             Dict.get "ths" itemDict
@@ -141,13 +139,6 @@ init idGenerator =
         )
 
 
-update : Msg -> Equipment -> Equipment
-update msg (EquipmentModel model) =
-    case msg of
-        _ ->
-            Debug.crash "Handle equipping and unequipping"
-
-
 equip : EquipmentSlot -> Item -> Equipment -> Equipment
 equip slot item (EquipmentModel model) =
     EquipmentModel (setSlot slot (Just item) model)
@@ -172,22 +163,22 @@ unequip slot (EquipmentModel model) =
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
 -}
-putInPack : Item -> Equipment -> ( Equipment, Mass.MassComparison )
+putInPack : Item -> Equipment -> ( Equipment, Msg )
 putInPack item (EquipmentModel model) =
     let
         noChange =
-            ( EquipmentModel model, Mass.Ok )
+            ( EquipmentModel model, Ok )
     in
         case model.pack of
             Nothing ->
-                noChange
+                ( EquipmentModel model, NoPackEquipped )
 
             Just (ItemPack pack) ->
                 let
-                    ( pack', massComparison ) =
+                    ( pack', msg ) =
                         Item.addToPack item pack
                 in
-                    ( EquipmentModel { model | pack = Just <| ItemPack pack' }, massComparison )
+                    ( EquipmentModel { model | pack = Just <| ItemPack pack' }, ItemMsg msg )
 
             _ ->
                 noChange

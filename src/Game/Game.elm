@@ -55,9 +55,6 @@ initGame =
 update : Game.Data.Msg -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Msg )
 update msg model =
     case msg of
-        EquipmentMsg x ->
-            ( { model | equipment = Equipment.update x model.equipment }, Cmd.none )
-
         KeyDir dir ->
             tryMoveHero dir model
 

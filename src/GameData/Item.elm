@@ -2,6 +2,7 @@ module GameData.Item
     -- where
     exposing
         ( Item(..)
+        , Msg(..)
         , Weapon
         , Armour
         , Shield
@@ -81,6 +82,12 @@ type Item
     | ItemOvergarment Overgarment
     | ItemRing Ring
     | ItemBoots Boots
+
+
+type Msg
+    = Ok
+    | NestedItem
+    | MassMsg Mass.Msg
 
 
 type Weapon
@@ -809,18 +816,27 @@ type alias PackModel =
     { container : Container Item }
 
 
-addToPack : Item -> Pack -> ( Pack, Mass.MassComparison )
+addToPack : Item -> Pack -> ( Pack, Msg )
 addToPack item (PackModelTag packType model packModel) =
     let
+        isItemThePack =
+            equals item (ItemPack (PackModelTag packType model packModel))
+
         ( container', msg ) =
             Container.add item packModel.container
-    in
-        case msg of
-            Mass.Ok ->
-                ( PackModelTag packType model { packModel | container = container' }, Mass.Ok )
 
-            msg ->
-                ( (PackModelTag packType model packModel), msg )
+        _ =
+            Debug.log "is item the pack: " isItemThePack
+    in
+        if isItemThePack == True then
+            ( (PackModelTag packType model packModel), NestedItem )
+        else
+            case msg of
+                Container.Ok ->
+                    ( PackModelTag packType model { packModel | container = container' }, Ok )
+
+                Container.MassMsg massMsg ->
+                    ( (PackModelTag packType model packModel), MassMsg massMsg )
 
 
 removeFromPack : Item -> Pack -> Pack

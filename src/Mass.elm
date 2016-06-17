@@ -1,7 +1,7 @@
 module Mass
     exposing
         ( Mass
-        , MassComparison(..)
+        , Msg(..)
         , new
         , ltOrEqTo
         , add
@@ -20,7 +20,7 @@ type Mass
     = Mass Model
 
 
-type MassComparison
+type Msg
     = Ok
     | TooHeavy
     | TooBulky
@@ -47,7 +47,7 @@ subtract (Mass a) (Mass b) =
         }
 
 
-ltOrEqTo : Mass -> Mass -> MassComparison
+ltOrEqTo : Mass -> Mass -> Msg
 ltOrEqTo (Mass a) (Mass b) =
     let
         bulkWeight =
