@@ -78,6 +78,15 @@ type Msg
 init : IdGenerator -> ( IdGenerator, Equipment )
 init idGen =
     let
+        ([1, 2, 3, 4, 5], idGen') = IdGenerator get 5 idGen
+
+        [
+        Item.new (Item.Weapon Dagger),
+        Item.new (Item.Weapon Dagger) weaponId
+        ]
+
+        [] = IdGenerator
+
         -- ignore mass comparison as this is a test case with a empty pack so should be able to hold a single two handed sword
         ( weaponId, weaponIdGen ) =
             IdGenerator.get idGen
@@ -122,7 +131,7 @@ init idGen =
             , armour = Just (Item.new (Item.Armour ScaleMail) armourId)
             , shield = Just (Item.new (Item.Shield LargeIronShield) shieldId)
             , helmet = Just (Item.new (Item.Helmet LeatherHelmet) helmetId)
-            , bracers = Just (Item.new (Item.Bracers NormalBracers) bracersId)
+            , bracers = Just (d (Item.Bracers NormalBracers) bracersId)
             , gauntlets = Just (Item.new (Item.Gauntlets NormalGauntlets) gauntletsId)
             , belt = Just (Item.new (Item.Belt TwoSlotBelt) beltId)
             , purse = Just (Item.new Item.Purse purseId)

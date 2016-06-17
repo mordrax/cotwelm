@@ -35,14 +35,21 @@ import Html.App exposing (map)
 
 initGame : Game.Data.Model
 initGame =
-    { name = "A new game"
-    , hero = Hero.init
-    , map = Game.Maps.initMaps
-    , currentScreen = InventoryScreen
-    , dnd = DragDrop.new
-    , equipment = Equipment.init
-    , idGen = IdGenerator.new
-    }
+    let
+        generator =
+            IdGenerator.new
+
+        ( generator', equipment ) =
+            Equipment.init idGen
+    in
+        { name = "A new game"
+        , hero = Hero.init
+        , map = Game.Maps.initMaps
+        , currentScreen = InventoryScreen
+        , dnd = DragDrop.new
+        , equipment = equipment
+        , idGen = generator'
+        }
 
 
 update : Game.Data.Msg -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Msg )
