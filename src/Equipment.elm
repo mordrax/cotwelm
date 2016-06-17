@@ -27,6 +27,8 @@ import GameData.Item as Item exposing (..)
 import Mass exposing (..)
 import Container exposing (..)
 import Purse exposing (..)
+import IdGenerator exposing (..)
+import Dict exposing (..)
 
 
 type alias Model =
@@ -76,67 +78,61 @@ type Msg
 
 
 init : IdGenerator -> ( IdGenerator, Equipment )
-init idGen =
+init idGenerator =
     let
-        ([1, 2, 3, 4, 5], idGen') = IdGenerator get 5 idGen
+        getPartialFold =
+            \key partialItem id -> ( key, partialItem id )
 
-        [
-        Item.new (Item.Weapon Dagger),
-        Item.new (Item.Weapon Dagger) weaponId
-        ]
+        preFoldedItems =
+            [ getPartialFold "weapon" (Item.new (Item.Weapon Dagger))
+            , getPartialFold "armour" (Item.new (Item.Armour ScaleMail))
+            , getPartialFold "shield" (Item.new (Item.Shield LargeIronShield))
+            , getPartialFold "helmet" (Item.new (Item.Helmet LeatherHelmet))
+            , getPartialFold "gauntlets" (Item.new (Item.Gauntlets NormalGauntlets))
+            , getPartialFold "belt" (Item.new (Item.Belt TwoSlotBelt))
+            , getPartialFold "purse" (Item.new (Item.Purse))
+            , getPartialFold "pack" (Item.new (Item.Pack MediumPack))
+            , getPartialFold "ths" (Item.new (Item.Weapon TwoHandedSword))
+            ]
 
-        [] = IdGenerator
+        ( idedItems, idGenerator' ) =
+            List.foldl IdGenerator.assignId ( [], idGenerator ) preFoldedItems
 
-        -- ignore mass comparison as this is a test case with a empty pack so should be able to hold a single two handed sword
-        ( weaponId, weaponIdGen ) =
-            IdGenerator.get idGen
+        itemDict =
+            Dict.fromList idedItems
 
-        ( armourId, armourIdGen ) =
-            IdGenerator.get weaponIdGen
+        _ =
+            Debug.log "ided items" idedItems
 
-        ( shieldId, shieldIdGen ) =
-            IdGenerator.get armourIdGen
+        maybePack =
+            (Dict.get "pack" itemDict)
 
-        ( helmetId, helmetIdGen ) =
-            IdGenerator.get shieldIdGen
-
-        ( bracersId, bracersIdGen ) =
-            IdGenerator.get helmetIdGen
-
-        ( gauntletsId, gauntletsIdGen ) =
-            IdGenerator.get bracersIdGen
-
-        ( beltId, beltIdGen ) =
-            IdGenerator.get gauntletsIdGen
-
-        ( purseId, purseIdGen ) =
-            IdGenerator.get beltIdGen
-
-        ( packId, packIdGen ) =
-            IdGenerator.get purseIdGen
-
-        pack =
-            Item.new Pack SmallPack
-
-        ths =
-            Item.new (Item.Weapon TwoHandedSword)
+        maybeTHS =
+            Dict.get "ths" itemDict
 
         ( pack', _ ) =
-            Item.addToPack ths pack
+            case ( maybePack, maybeTHS ) of
+                ( Just (ItemPack pack), Just ths ) ->
+                    Item.addToPack ths pack
+
+                _ ->
+                    Debug.crash "This is not possible!"
     in
-        ( ids'
+        ( idGenerator'
         , EquipmentModel
-            { weapon = Just (Item.new (Item.Weapon Dagger) weaponId)
+            { weapon = Dict.get "weapon" itemDict
             , freehand = Nothing
-            , armour = Just (Item.new (Item.Armour ScaleMail) armourId)
-            , shield = Just (Item.new (Item.Shield LargeIronShield) shieldId)
-            , helmet = Just (Item.new (Item.Helmet LeatherHelmet) helmetId)
-            , bracers = Just (d (Item.Bracers NormalBracers) bracersId)
-            , gauntlets = Just (Item.new (Item.Gauntlets NormalGauntlets) gauntletsId)
-            , belt = Just (Item.new (Item.Belt TwoSlotBelt) beltId)
-            , purse = Just (Item.new Item.Purse purseId)
-            , pack = Just (pack')
-            , neckwear = Just (ItemPack pack')
+            , armour = Dict.get "armour" itemDict
+            , shield = Dict.get "shield" itemDict
+            , helmet = Dict.get "helmet" itemDict
+            , bracers = Dict.get "bracers" itemDict
+            , gauntlets = Dict.get "gauntlets" itemDict
+            , belt = Dict.get "belt" itemDict
+            , purse = Dict.get "purse" itemDict
+            , pack = Just (ItemPack pack')
+            , neckwear =
+                Nothing
+                --Just (ItemPack pack')
             , overgarment = Nothing
             , leftRing = Nothing
             , rightRing = Nothing
@@ -197,8 +193,8 @@ putInPack item (EquipmentModel model) =
                 noChange
 
 
-removeFromPack : IDItem Item -> Equipment -> Equipment
-removeFromPack idItem (EquipmentModel model) =
+removeFromPack : Item -> Equipment -> Equipment
+removeFromPack item (EquipmentModel model) =
     let
         noChange =
             (EquipmentModel model)
@@ -208,13 +204,13 @@ removeFromPack idItem (EquipmentModel model) =
                 noChange
 
             Just (ItemPack pack) ->
-                EquipmentModel { model | pack = Just (ItemPack (Item.removeFromPack idItem pack)) }
+                EquipmentModel { model | pack = Just (ItemPack (Item.removeFromPack item pack)) }
 
             _ ->
                 Debug.crash "The pack seems to be a non-pack!" 1
 
 
-getPackContent : Equipment -> List (IDItem Item)
+getPackContent : Equipment -> List Item
 getPackContent (EquipmentModel model) =
     case model.pack of
         Just (ItemPack pack) ->

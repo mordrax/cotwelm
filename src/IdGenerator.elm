@@ -5,6 +5,7 @@ module IdGenerator
         , new
         , get
         , equals
+        , assignId
         )
 
 {-| A simple incremental ID which can be used to generate unique identifiers.
@@ -37,11 +38,23 @@ equals : ID -> ID -> Bool
 equals (ID a) (ID b) =
     a == b
 
-a: ID -> Item
-a = Item.new (Item.Weapon Dagger)
 
-b: Item
-b = Item.new (Item.Weapon Dagger) id
+assignId : (ID -> item) -> ( List item, IdGenerator ) -> ( List item, IdGenerator )
+assignId toItem ( items, gen ) =
+    let
+        ( id, gen' ) =
+            get gen
+    in
+        ( (toItem id) :: items, gen' )
 
-assignId: List a -> (a -> (ID, IdGenerator) -> b) -> IdGenerator -> (List b, IdGenerator)
-assignId num gen =
+
+
+{-
+   assignId : itemWithoutId -> (itemWithoutId -> ID -> item) -> IdGenerator -> ( item, IdGenerator )
+   assignId noIdItem toItem gen =
+       let
+           ( id, gen' ) =
+               get gen
+       in
+           ( toItem noIdItem id, gen' )
+-}

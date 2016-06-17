@@ -45,8 +45,8 @@ getMass (ContainerModel model) =
     model.currentMass
 
 
-new : { capacity : Mass, getMass : a -> Mass, equals : a -> a -> Bool } -> Container a
-new { capacity, getMass, equals } =
+new : Mass -> (a -> Mass) -> (a -> a -> Bool) -> Container a
+new capacity getMass equals =
     ContainerModel <| Model capacity (Mass.new 0 0) [] getMass equals
 
 

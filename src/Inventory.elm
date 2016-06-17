@@ -139,14 +139,14 @@ handleDrag drag model =
                     Result.Err msg ->
                         Result.Ok ( model, item )
 
-        DragPack idItem pack ->
+        DragPack item pack ->
             let
                 modelItemRemoved =
-                    { model | equipment = Equipment.removeFromPack idItem model.equipment }
+                    { model | equipment = Equipment.removeFromPack item model.equipment }
             in
                 Debug.log "TODO: Remove item from the pack.container and return just the item"
                     Result.Ok
-                    ( modelItemRemoved, (Container.getItem idItem) )
+                    ( modelItemRemoved, item )
 
         DragShop item ->
             Result.Ok ( model, item )
@@ -293,13 +293,10 @@ viewContainer containerItem ({ equipment, dnd } as model) =
             Equipment.getPackContent equipment
 
         itemToHtml =
-            \idItem ->
-                idItem
-                    |> Container.getItem
-                    |> Item.view
+            \item -> Item.view item
 
         makeDraggable =
-            \pack idItem -> DragDrop.draggable (itemToHtml idItem) (DragPack idItem pack) dnd
+            \pack item -> DragDrop.draggable (itemToHtml item) (DragPack item pack) dnd
     in
         case (containerItem) of
             ItemPack pack ->
