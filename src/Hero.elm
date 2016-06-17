@@ -9,7 +9,7 @@ module Hero
 
 import Equipment exposing (..)
 import Vector exposing (..)
-import GameData.Item exposing (..)
+import Item.Item exposing (..)
 
 
 type alias Model =
