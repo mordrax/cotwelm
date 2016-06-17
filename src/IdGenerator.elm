@@ -36,3 +36,12 @@ get (IDModel model) =
 equals : ID -> ID -> Bool
 equals (ID a) (ID b) =
     a == b
+
+a: ID -> Item
+a = Item.new (Item.Weapon Dagger)
+
+b: Item
+b = Item.new (Item.Weapon Dagger) id
+
+assignId: List a -> (a -> (ID, IdGenerator) -> b) -> IdGenerator -> (List b, IdGenerator)
+assignId num gen =

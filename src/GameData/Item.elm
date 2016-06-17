@@ -181,6 +181,11 @@ isCursed item =
                 False
 
 
+applyId : (ID -> Item) -> ( ID, IdGenerator ) -> Item
+applyId itemWithoutId idWithGen =
+    itemWithoutId
+
+
 getModel : Item -> Model
 getModel item =
     case item of
