@@ -16,7 +16,7 @@ to know about hero equipment, items, containers etc...
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.App exposing (..)
-import GameData.Item as Item exposing (..)
+import Item.Item as Item exposing (..)
 import Game.Data exposing (..)
 import Container exposing (..)
 import Equipment exposing (..)

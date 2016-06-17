@@ -22,7 +22,8 @@ Does not render equipment but will provide a API to retrieve them.
 @docs get, init, putInPack
 -}
 
-import GameData.Item as Item exposing (..)
+import Item.Item as Item exposing (..)
+import Item.TypeDef exposing (..)
 import Mass exposing (..)
 import Container exposing (..)
 import Purse exposing (..)
