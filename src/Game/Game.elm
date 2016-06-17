@@ -36,11 +36,11 @@ import Html.App exposing (map)
 initGame : Game.Data.Model
 initGame =
     let
-        generator =
+        idGenerator =
             IdGenerator.new
 
-        ( generator', equipment ) =
-            Equipment.init idGen
+        ( idGenerator', equipment ) =
+            Equipment.init idGenerator
     in
         { name = "A new game"
         , hero = Hero.init
@@ -48,7 +48,7 @@ initGame =
         , currentScreen = InventoryScreen
         , dnd = DragDrop.new
         , equipment = equipment
-        , idGen = generator'
+        , idGen = idGenerator'
         }
 
 

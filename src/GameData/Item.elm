@@ -181,11 +181,6 @@ isCursed item =
                 False
 
 
-applyId : (ID -> Item) -> ( ID, IdGenerator ) -> Item
-applyId itemWithoutId idWithGen =
-    itemWithoutId
-
-
 getModel : Item -> Model
 getModel item =
     case item of
@@ -227,6 +222,18 @@ getModel item =
 
         ItemBoots (BootsModelTag _ model) ->
             model
+
+
+equals : Item -> Item -> Bool
+equals a b =
+    let
+        modelA =
+            getModel a
+
+        modelB =
+            getModel b
+    in
+        IdGenerator.equals modelA.id modelB.id
 
 
 view : Item -> Html msg
@@ -273,7 +280,7 @@ viewSlot item extraContent =
 
 new : ItemType -> ID -> Item
 new itemType id =
-    new itemType id Normal Identified
+    newWithOptions itemType id Normal Identified
 
 
 newWithOptions : ItemType -> ID -> ItemStatus -> IdentificationStatus -> Item
@@ -432,37 +439,59 @@ newArmour : ArmourType -> ID -> ItemStatus -> IdentificationStatus -> Armour
 newArmour armourType id status idStatus =
     case armourType of
         RustyArmour ->
-            ArmourModelTag RustyArmour (Model "Rusty Armour" 10000 30000 "BrokenArmour" status idStatus <| Mass.new 0 25) (ArmourModel 0)
+            ArmourModelTag RustyArmour
+                (Model id "Rusty Armour" 10000 30000 "BrokenArmour" status idStatus <| Mass.new 0 25)
+                (ArmourModel 0)
 
         LeatherArmour ->
-            ArmourModelTag LeatherArmour (Model "Leather Armour" 5000 2400 "LeatherArmour" status idStatus <| Mass.new 1080 600) (ArmourModel 6)
+            ArmourModelTag LeatherArmour
+                (Model id "Leather Armour" 5000 2400 "LeatherArmour" status idStatus <| Mass.new 1080 600)
+                (ArmourModel 6)
 
         StuddedLeatherArmour ->
-            ArmourModelTag StuddedLeatherArmour (Model "Studded Leather Armour" 7000 25000 "LeatherArmour" status idStatus <| Mass.new 3150 1800) (ArmourModel 12)
+            ArmourModelTag StuddedLeatherArmour
+                (Model id "Studded Leather Armour" 7000 25000 "LeatherArmour" status idStatus <| Mass.new 3150 1800)
+                (ArmourModel 12)
 
         RingMail ->
-            ArmourModelTag RingMail (Model "Ring Mail" 8000 30000 "MetalArmour" status idStatus <| Mass.new 6300 3600) (ArmourModel 18)
+            ArmourModelTag RingMail
+                (Model id "Ring Mail" 8000 30000 "MetalArmour" status idStatus <| Mass.new 6300 3600)
+                (ArmourModel 18)
 
         ScaleMail ->
-            ArmourModelTag ScaleMail (Model "Scale Mail" 9000 30000 "MetalArmour" status idStatus <| Mass.new 10800 6000) (ArmourModel 24)
+            ArmourModelTag ScaleMail
+                (Model id "Scale Mail" 9000 30000 "MetalArmour" status idStatus <| Mass.new 10800 6000)
+                (ArmourModel 24)
 
         ChainMail ->
-            ArmourModelTag ChainMail (Model "Chain Mail" 10000 30000 "MetalArmour" status idStatus <| Mass.new 16200 9000) (ArmourModel 30)
+            ArmourModelTag ChainMail
+                (Model id "Chain Mail" 10000 30000 "MetalArmour" status idStatus <| Mass.new 16200 9000)
+                (ArmourModel 30)
 
         SplintMail ->
-            ArmourModelTag SplintMail (Model "Splint Mail" 12000 40000 "MetalArmour" status idStatus <| Mass.new 27000 15000) (ArmourModel 36)
+            ArmourModelTag SplintMail
+                (Model id "Splint Mail" 12000 40000 "MetalArmour" status idStatus <| Mass.new 27000 15000)
+                (ArmourModel 36)
 
         PlateMail ->
-            ArmourModelTag PlateMail (Model "Plate Mail" 15000 40000 "MetalArmour" status idStatus <| Mass.new 42000 24000) (ArmourModel 42)
+            ArmourModelTag PlateMail
+                (Model id "Plate Mail" 15000 40000 "MetalArmour" status idStatus <| Mass.new 42000 24000)
+                (ArmourModel 42)
 
         PlateArmour ->
-            ArmourModelTag PlateArmour (Model "Plate Armour" 15000 60000 "MetalArmour" status idStatus <| Mass.new 42000 24000) (ArmourModel 48)
+            ArmourModelTag PlateArmour
+                (Model id "Plate Armour" 15000 60000 "MetalArmour" status idStatus <| Mass.new 42000 24000)
+                (ArmourModel 48)
 
         MeteoricSteelPlate ->
-            ArmourModelTag MeteoricSteelPlate (Model "Meteoric Steel Plate" 5000 30000 "MetalArmour" status idStatus <| Mass.new 105000 60000) (ArmourModel 54)
+            ArmourModelTag MeteoricSteelPlate
+                (Model id "Meteoric Steel Plate" 5000 30000 "MetalArmour" status idStatus <| Mass.new 105000 60000)
+                (ArmourModel 54)
 
         ElvenChainMail ->
-            ArmourModelTag ElvenChainMail (Model "Elven Chain Mail" 50000 24000 "MetalArmour" status idStatus <| Mass.new 162000 90000) (ArmourModel 52)
+            ArmourModelTag ElvenChainMail
+                (Model id "Elven Chain Mail" 50000 24000 "MetalArmour" status idStatus <| Mass.new 162000 90000)
+                (ArmourModel 52)
 
 
 type ShieldType
@@ -485,43 +514,69 @@ newShield : ShieldType -> ID -> ItemStatus -> IdentificationStatus -> Shield
 newShield shieldType id status idStatus =
     case shieldType of
         BrokenShield ->
-            ShieldModelTag BrokenShield (Model "Broken Shield" 4000 35000 "BrokenShield" status idStatus <| Mass.new 0 25) (ArmourModel 0)
+            ShieldModelTag BrokenShield
+                (Model id "Broken Shield" 4000 35000 "BrokenShield" status idStatus <| Mass.new 0 25)
+                (ArmourModel 0)
 
         SmallWoodenShield ->
-            ShieldModelTag SmallWoodenShield (Model "Small Wooden Shield" 3000 15000 "WoodShield" status idStatus <| Mass.new 525 300) (ArmourModel 3)
+            ShieldModelTag SmallWoodenShield
+                (Model id "Small Wooden Shield" 3000 15000 "WoodShield" status idStatus <| Mass.new 525 300)
+                (ArmourModel 3)
 
         MediumWoodenShield ->
-            ShieldModelTag MediumWoodenShield (Model "Medium Wooden Shield" 4000 35000 "WoodShield" status idStatus <| Mass.new 1050 600) (ArmourModel 6)
+            ShieldModelTag MediumWoodenShield
+                (Model id "Medium Wooden Shield" 4000 35000 "WoodShield" status idStatus <| Mass.new 1050 600)
+                (ArmourModel 6)
 
         LargeWoodenShield ->
-            ShieldModelTag LargeWoodenShield (Model "Large Wooden Shield" 5000 50000 "WoodShield" status idStatus <| Mass.new 2100 1200) (ArmourModel 9)
+            ShieldModelTag LargeWoodenShield
+                (Model id "Large Wooden Shield" 5000 50000 "WoodShield" status idStatus <| Mass.new 2100 1200)
+                (ArmourModel 9)
 
         SmallIronShield ->
-            ShieldModelTag SmallIronShield (Model "Small Iron Shield" 4000 15000 "MetalShield" status idStatus <| Mass.new 1260 720) (ArmourModel 6)
+            ShieldModelTag SmallIronShield
+                (Model id "Small Iron Shield" 4000 15000 "MetalShield" status idStatus <| Mass.new 1260 720)
+                (ArmourModel 6)
 
         MediumIronShield ->
-            ShieldModelTag MediumIronShield (Model "Medium Iron Shield" 5000 35000 "MetalShield" status idStatus <| Mass.new 2592 1440) (ArmourModel 9)
+            ShieldModelTag MediumIronShield
+                (Model id "Medium Iron Shield" 5000 35000 "MetalShield" status idStatus <| Mass.new 2592 1440)
+                (ArmourModel 9)
 
         LargeIronShield ->
-            ShieldModelTag LargeIronShield (Model "Large Iron Shield" 6000 50000 "MetalShield" status idStatus <| Mass.new 3150 1800) (ArmourModel 12)
+            ShieldModelTag LargeIronShield
+                (Model id "Large Iron Shield" 6000 50000 "MetalShield" status idStatus <| Mass.new 3150 1800)
+                (ArmourModel 12)
 
         SmallSteelShield ->
-            ShieldModelTag SmallSteelShield (Model "Small Steel Shield" 4000 15000 "MetalShield" status idStatus <| Mass.new 2730 1560) (ArmourModel 9)
+            ShieldModelTag SmallSteelShield
+                (Model id "Small Steel Shield" 4000 15000 "MetalShield" status idStatus <| Mass.new 2730 1560)
+                (ArmourModel 9)
 
         MediumSteelShield ->
-            ShieldModelTag MediumSteelShield (Model "Medium Steel Shield" 5000 35000 "MetalShield" status idStatus <| Mass.new 3360 1920) (ArmourModel 12)
+            ShieldModelTag MediumSteelShield
+                (Model id "Medium Steel Shield" 5000 35000 "MetalShield" status idStatus <| Mass.new 3360 1920)
+                (ArmourModel 12)
 
         LargeSteelShield ->
-            ShieldModelTag LargeSteelShield (Model "Large Steel Shield" 6000 50000 "MetalShield" status idStatus <| Mass.new 4200 2400) (ArmourModel 15)
+            ShieldModelTag LargeSteelShield
+                (Model id "Large Steel Shield" 6000 50000 "MetalShield" status idStatus <| Mass.new 4200 2400)
+                (ArmourModel 15)
 
         SmallMeteoricSteelShield ->
-            ShieldModelTag SmallMeteoricSteelShield (Model "Small Meteoric Steel Shield" 2500 10000 "MetalShield" status idStatus <| Mass.new 4620 2640) (ArmourModel 15)
+            ShieldModelTag SmallMeteoricSteelShield
+                (Model id "Small Meteoric Steel Shield" 2500 10000 "MetalShield" status idStatus <| Mass.new 4620 2640)
+                (ArmourModel 15)
 
         MediumMeteoricSteelShield ->
-            ShieldModelTag MediumMeteoricSteelShield (Model "Medium Meteoric Steel Shield" 3500 25000 "MetalShield" status idStatus <| Mass.new 5940 3300) (ArmourModel 18)
+            ShieldModelTag MediumMeteoricSteelShield
+                (Model id "Medium Meteoric Steel Shield" 3500 25000 "MetalShield" status idStatus <| Mass.new 5940 3300)
+                (ArmourModel 18)
 
         LargeMeteoricSteelShield ->
-            ShieldModelTag LargeMeteoricSteelShield (Model "Large Meteoric Steel Shield" 4500 35000 "MetalShield" status idStatus <| Mass.new 7560 4200) (ArmourModel 21)
+            ShieldModelTag LargeMeteoricSteelShield
+                (Model id "Large Meteoric Steel Shield" 4500 35000 "MetalShield" status idStatus <| Mass.new 7560 4200)
+                (ArmourModel 21)
 
 
 type HelmetType
@@ -538,25 +593,39 @@ newHelmet : HelmetType -> ID -> ItemStatus -> IdentificationStatus -> Helmet
 newHelmet helmetType id status idStatus =
     case helmetType of
         BrokenHelmet ->
-            HelmetModelTag BrokenHelmet (Model "Broken Helmet" 1000 1000 "BrokenHelmet" status idStatus <| Mass.new 0 25) (ArmourModel 0)
+            HelmetModelTag BrokenHelmet
+                (Model id "Broken Helmet" 1000 1000 "BrokenHelmet" status idStatus <| Mass.new 0 25)
+                (ArmourModel 0)
 
         LeatherHelmet ->
-            HelmetModelTag LeatherHelmet (Model "Leather Helmet" 500 500 "LeatherHelmet" status idStatus <| Mass.new 525 300) (ArmourModel 3)
+            HelmetModelTag LeatherHelmet
+                (Model id "Leather Helmet" 500 500 "LeatherHelmet" status idStatus <| Mass.new 525 300)
+                (ArmourModel 3)
 
         IronHelmet ->
-            HelmetModelTag IronHelmet (Model "Iron Helmet" 2000 2000 "MetalHelmet" status idStatus <| Mass.new 1050 600) (ArmourModel 6)
+            HelmetModelTag IronHelmet
+                (Model id "Iron Helmet" 2000 2000 "MetalHelmet" status idStatus <| Mass.new 1050 600)
+                (ArmourModel 6)
 
         SteelHelmet ->
-            HelmetModelTag SteelHelmet (Model "Steel Helmet" 2500 2000 "MetalHelmet" status idStatus <| Mass.new 3150 1800) (ArmourModel 9)
+            HelmetModelTag SteelHelmet
+                (Model id "Steel Helmet" 2500 2000 "MetalHelmet" status idStatus <| Mass.new 3150 1800)
+                (ArmourModel 9)
 
         MeteoricSteelHelmet ->
-            HelmetModelTag MeteoricSteelHelmet (Model "Meteoric Steel Helmet" 1000 2000 "MetalHelmet" status idStatus <| Mass.new 10500 6000) (ArmourModel 15)
+            HelmetModelTag MeteoricSteelHelmet
+                (Model id "Meteoric Steel Helmet" 1000 2000 "MetalHelmet" status idStatus <| Mass.new 10500 6000)
+                (ArmourModel 15)
 
         HelmetOfDetectMonsters ->
-            HelmetModelTag HelmetOfDetectMonsters (Model "Helmet Of Detect Monsters" 2500 2000 "HelmetOfDetectMonsters" status idStatus <| Mass.new 42000 24000) (ArmourModel 9)
+            HelmetModelTag HelmetOfDetectMonsters
+                (Model id "Helmet Of Detect Monsters" 2500 2000 "HelmetOfDetectMonsters" status idStatus <| Mass.new 42000 24000)
+                (ArmourModel 9)
 
         EnchantedHelmOfStorms ->
-            HelmetModelTag EnchantedHelmOfStorms (Model "Enchanted Helm Of Storms" 1000 2000 "EnchantedHelmOfStorms" status idStatus <| Mass.new 1050000 600000) (ArmourModel 25)
+            HelmetModelTag EnchantedHelmOfStorms
+                (Model id "Enchanted Helm Of Storms" 1000 2000 "EnchantedHelmOfStorms" status idStatus <| Mass.new 1050000 600000)
+                (ArmourModel 25)
 
 
 type BracersType
@@ -570,16 +639,24 @@ newBracers : BracersType -> ID -> ItemStatus -> IdentificationStatus -> Bracers
 newBracers bracersType id status idStatus =
     case bracersType of
         NormalBracers ->
-            BracersModelTag NormalBracers (Model "Bracers" 500 2000 "Bracers" status idStatus <| Mass.new 108 60) (ArmourModel 3)
+            BracersModelTag NormalBracers
+                (Model id "Bracers" 500 2000 "Bracers" status idStatus <| Mass.new 108 60)
+                (ArmourModel 3)
 
         BracersOfDefenseNormal ->
-            BracersModelTag BracersOfDefenseNormal (Model "Bracers Of Defense Normal" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 1836 1020) (ArmourModel 8)
+            BracersModelTag BracersOfDefenseNormal
+                (Model id "Bracers Of Defense Normal" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 1836 1020)
+                (ArmourModel 8)
 
         BracersOfDefenseS ->
-            BracersModelTag BracersOfDefenseS (Model "Bracers Of Defense Strong" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 5616 3120) (ArmourModel 13)
+            BracersModelTag BracersOfDefenseS
+                (Model id "Bracers Of Defense Strong" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 5616 3120)
+                (ArmourModel 13)
 
         BracersOfDefenseVS ->
-            BracersModelTag BracersOfDefenseVS (Model "Bracers Of Defense Very Strong" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 11556 6420) (ArmourModel 18)
+            BracersModelTag BracersOfDefenseVS
+                (Model id "Bracers Of Defense Very Strong" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 11556 6420)
+                (ArmourModel 18)
 
 
 type GauntletsType
@@ -602,43 +679,69 @@ newGauntlets : GauntletsType -> ID -> ItemStatus -> IdentificationStatus -> Gaun
 newGauntlets gauntletType id status idStatus =
     case gauntletType of
         NormalGauntlets ->
-            GauntletsModelTag NormalGauntlets (Model "Gauntlet" 500 2000 "Gauntlet" status idStatus <| Mass.new 105 60) (ArmourModel 5)
+            GauntletsModelTag NormalGauntlets
+                (Model id "Gauntlet" 500 2000 "Gauntlet" status idStatus <| Mass.new 105 60)
+                (ArmourModel 5)
 
         GauntletOfProtection ->
-            GauntletsModelTag GauntletOfProtection (Model "Gauntlet Of Protection" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 2625 1500) (ArmourModel 10)
+            GauntletsModelTag GauntletOfProtection
+                (Model id "Gauntlet Of Protection" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 2625 1500)
+                (ArmourModel 10)
 
         GauntletOfProtectionS ->
-            GauntletsModelTag GauntletOfProtectionS (Model "Gauntlet Of Protection Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 6300 3600) (ArmourModel 15)
+            GauntletsModelTag GauntletOfProtectionS
+                (Model id "Gauntlet Of Protection Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 6300 3600)
+                (ArmourModel 15)
 
         GauntletOfProtectionVS ->
-            GauntletsModelTag GauntletOfProtectionVS (Model "Gauntlet Of Protection Very Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 12420 6900) (ArmourModel 20)
+            GauntletsModelTag GauntletOfProtectionVS
+                (Model id "Gauntlet Of Protection Very Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 12420 6900)
+                (ArmourModel 20)
 
         GauntletOfSlaying ->
-            GauntletsModelTag GauntletOfSlaying (Model "Gauntlet Of Slaying" 500 2000 "GauntletOfSlaying" status idStatus <| Mass.new 3780 2100) (ArmourModel 0)
+            GauntletsModelTag GauntletOfSlaying
+                (Model id "Gauntlet Of Slaying" 500 2000 "GauntletOfSlaying" status idStatus <| Mass.new 3780 2100)
+                (ArmourModel 0)
 
         GauntletOfSlayingS_S ->
-            GauntletsModelTag GauntletOfSlayingS_S (Model "Gauntlet Of Slaying Strong" 500 2000 "GauntletOfSlaying" status idStatus <| Mass.new 7560 4200) (ArmourModel 0)
+            GauntletsModelTag GauntletOfSlayingS_S
+                (Model id "Gauntlet Of Slaying Strong" 500 2000 "GauntletOfSlaying" status idStatus <| Mass.new 7560 4200)
+                (ArmourModel 0)
 
         GauntletOfSlayingVS_VS ->
-            GauntletsModelTag GauntletOfSlayingVS_VS (Model "Gauntlet Of Slaying Very Strong" 500 2000 "GauntletOfSlaying" status idStatus <| Mass.new 13125 7500) (ArmourModel 0)
+            GauntletsModelTag GauntletOfSlayingVS_VS
+                (Model id "Gauntlet Of Slaying Very Strong" 500 2000 "GauntletOfSlaying" status idStatus <| Mass.new 13125 7500)
+                (ArmourModel 0)
 
         GauntletOfDexterity ->
-            GauntletsModelTag GauntletOfDexterity (Model "Gauntlet Of Dexterity" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 3240 1800) (ArmourModel 5)
+            GauntletsModelTag GauntletOfDexterity
+                (Model id "Gauntlet Of Dexterity" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 3240 1800)
+                (ArmourModel 5)
 
         GauntletOfDexterityS ->
-            GauntletsModelTag GauntletOfDexterityS (Model "Gauntlet Of Dexterity Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 7020 3900) (ArmourModel 5)
+            GauntletsModelTag GauntletOfDexterityS
+                (Model id "Gauntlet Of Dexterity Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 7020 3900)
+                (ArmourModel 5)
 
         GauntletOfDexterityVS ->
-            GauntletsModelTag GauntletOfDexterityVS (Model "Gauntlet Of Dexterity Very Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 12960 7200) (ArmourModel 5)
+            GauntletsModelTag GauntletOfDexterityVS
+                (Model id "Gauntlet Of Dexterity Very Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 12960 7200)
+                (ArmourModel 5)
 
         GauntletOfStrength ->
-            GauntletsModelTag GauntletOfStrength (Model "Gauntlet Of Strength" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 3240 1800) (ArmourModel 5)
+            GauntletsModelTag GauntletOfStrength
+                (Model id "Gauntlet Of Strength" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 3240 1800)
+                (ArmourModel 5)
 
         GauntletOfStrengthS ->
-            GauntletsModelTag GauntletOfStrengthS (Model "Gauntlet Of Strength Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 0 0) (ArmourModel 5)
+            GauntletsModelTag GauntletOfStrengthS
+                (Model id "Gauntlet Of Strength Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 0 0)
+                (ArmourModel 5)
 
         GauntletOfStrengthVS ->
-            GauntletsModelTag GauntletOfStrengthVS (Model "Gauntlet Of Strength Very Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 12960 7200) (ArmourModel 5)
+            GauntletsModelTag GauntletOfStrengthVS
+                (Model id "Gauntlet Of Strength Very Strong" 500 2000 "GauntletEnchanted" status idStatus <| Mass.new 12960 7200)
+                (ArmourModel 5)
 
 
 type BeltType
@@ -662,19 +765,29 @@ newBelt : BeltType -> ID -> ItemStatus -> IdentificationStatus -> Belt
 newBelt beltType id status idStatus =
     case beltType of
         TwoSlotBelt ->
-            BeltModelTag TwoSlotBelt (Model "Two Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0) (BeltModel 2 0 0 0 <| Container.new { capacity = Mass.new 2100 3100, getMass = getMass })
+            BeltModelTag TwoSlotBelt
+                (Model id "Two Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0)
+                (BeltModel 2 0 0 0 <| Container.new (Mass.new 2100 3100) getMass equals)
 
         ThreeSlotBelt ->
-            BeltModelTag ThreeSlotBelt (Model "Three Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0) (BeltModel 3 0 0 0 <| Container.new { capacity = Mass.new 2600 3600, getMass = getMass })
+            BeltModelTag ThreeSlotBelt
+                (Model id "Three Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0)
+                (BeltModel 3 0 0 0 <| Container.new (Mass.new 2600 3600) getMass equals)
 
         FourSlotBelt ->
-            BeltModelTag FourSlotBelt (Model "Four Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0) (BeltModel 4 0 0 0 <| Container.new { capacity = Mass.new 3100 4100, getMass = getMass })
+            BeltModelTag FourSlotBelt
+                (Model id "Four Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0)
+                (BeltModel 4 0 0 0 <| Container.new (Mass.new 3100 4100) getMass equals)
 
         UtilityBelt ->
-            BeltModelTag UtilityBelt (Model "Utility Belt" 1350 1800 "UtilityBelt" status idStatus <| Mass.new 0 0) (BeltModel 2 4 4 0 <| Container.new { capacity = Mass.new 3100 4100, getMass = getMass })
+            BeltModelTag UtilityBelt
+                (Model id "Utility Belt" 1350 1800 "UtilityBelt" status idStatus <| Mass.new 0 0)
+                (BeltModel 2 4 4 0 <| Container.new (Mass.new 3100 4100) getMass equals)
 
         WandQuiverBelt ->
-            BeltModelTag WandQuiverBelt (Model "Wand Quiver Belt" 300 300 "WandQuiverBelt" status idStatus <| Mass.new 0 0) (BeltModel 2 0 0 4 <| Container.new { capacity = Mass.new 3100 4100, getMass = getMass })
+            BeltModelTag WandQuiverBelt
+                (Model id "Wand Quiver Belt" 300 300 "WandQuiverBelt" status idStatus <| Mass.new 0 0)
+                (BeltModel 2 0 0 4 <| Container.new (Mass.new 3100 4100) getMass equals)
 
 
 type PackType
@@ -731,40 +844,64 @@ newPack : PackType -> ID -> ItemStatus -> IdentificationStatus -> Pack
 newPack packType id status idStatus =
     case packType of
         SmallBag ->
-            PackModelTag SmallBag (Model "Small Bag" 300 500 "Bag" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 5000 6000, getMass = getMass })
+            PackModelTag SmallBag
+                (Model id "Small Bag" 300 500 "Bag" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 5000 6000) getMass equals)
 
         MediumBag ->
-            PackModelTag MediumBag (Model "Medium Bag" 500 700 "Bag" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 10000 12000, getMass = getMass })
+            PackModelTag MediumBag
+                (Model id "Medium Bag" 500 700 "Bag" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 10000 12000) getMass equals)
 
         LargeBag ->
-            PackModelTag LargeBag (Model "Large Bag" 900 900 "Bag" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 15000 18000, getMass = getMass })
+            PackModelTag LargeBag
+                (Model id "Large Bag" 900 900 "Bag" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 15000 18000) getMass equals)
 
         SmallPack ->
-            PackModelTag SmallPack (Model "Small Pack" 1000 1000 "Pack" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 12000 50000, getMass = getMass })
+            PackModelTag SmallPack
+                (Model id "Small Pack" 1000 1000 "Pack" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 12000 50000) getMass equals)
 
         MediumPack ->
-            PackModelTag MediumPack (Model "Medium Pack" 2000 1500 "Pack" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 22000 75000, getMass = getMass })
+            PackModelTag MediumPack
+                (Model id "Medium Pack" 2000 1500 "Pack" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 22000 75000) getMass equals)
 
         LargePack ->
-            PackModelTag LargePack (Model "Large Pack" 4000 100000 "Pack" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 35000 100000, getMass = getMass })
+            PackModelTag LargePack
+                (Model id "Large Pack" 4000 100000 "Pack" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 35000 100000) getMass equals)
 
         SmallChest ->
-            PackModelTag SmallChest (Model "Small Chest" 5000 100000 "Chest" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 100000 50000, getMass = getMass })
+            PackModelTag SmallChest
+                (Model id "Small Chest" 5000 100000 "Chest" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 100000 50000) getMass equals)
 
         MediumChest ->
-            PackModelTag MediumChest (Model "Medium Chest" 15000 150000 "Chest" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 100000 150000, getMass = getMass })
+            PackModelTag MediumChest
+                (Model id "Medium Chest" 15000 150000 "Chest" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 100000 150000) getMass equals)
 
         LargeChest ->
-            PackModelTag LargeChest (Model "Large Chest" 25000 250000 "Chest" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 100000 250000, getMass = getMass })
+            PackModelTag LargeChest
+                (Model id "Large Chest" 25000 250000 "Chest" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 100000 250000) getMass equals)
 
         EnchantedSmallPackOfHolding ->
-            PackModelTag EnchantedSmallPackOfHolding (Model "Enchanted Small Pack Of Holding" 5000 75000 "EnchantedPack" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 50000 150000, getMass = getMass })
+            PackModelTag EnchantedSmallPackOfHolding
+                (Model id "Enchanted Small Pack Of Holding" 5000 75000 "EnchantedPack" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 50000 150000) getMass equals)
 
         EnchantedMediumPackOfHolding ->
-            PackModelTag EnchantedMediumPackOfHolding (Model "Enchanted Medium Pack Of Holding" 7500 100000 "EnchantedPack" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 75000 200000, getMass = getMass })
+            PackModelTag EnchantedMediumPackOfHolding
+                (Model id "Enchanted Medium Pack Of Holding" 7500 100000 "EnchantedPack" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 75000 200000) getMass equals)
 
         EnchantedLargePackOfHolding ->
-            PackModelTag EnchantedLargePackOfHolding (Model "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" status idStatus <| Mass.new 0 0) (PackModel <| Container.new { capacity = Mass.new 100000 250000, getMass = getMass })
+            PackModelTag EnchantedLargePackOfHolding
+                (Model id "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" status idStatus <| Mass.new 0 0)
+                (PackModel <| Container.new (Mass.new 100000 250000) getMass equals)
 
 
 newPurse : ID -> ItemStatus -> IdentificationStatus -> Purse

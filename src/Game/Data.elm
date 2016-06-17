@@ -24,7 +24,7 @@ type alias Model =
 
 type Drag
     = DragSlot Item EquipmentSlot
-    | DragPack (IDItem Item) Item.Pack
+    | DragPack Item Item.Pack
     | DragShop Item
 
 
