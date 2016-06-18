@@ -1,5 +1,13 @@
 module Item.TypeDef exposing (..)
 
+import Mass exposing (Msg)
+
+
+type Msg
+    = Ok
+    | NestedItem
+    | MassMsg Mass.Msg
+
 
 type ItemStatus
     = Normal
@@ -117,3 +125,19 @@ type BeltType
     | FourSlotBelt
     | UtilityBelt
     | WandQuiverBelt
+
+
+type NeckwearType
+    = NoOp1
+
+
+type OvergarmentType
+    = NoOp2
+
+
+type RingType
+    = NoOp3
+
+
+type BootsType
+    = NoOp4

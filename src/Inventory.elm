@@ -16,7 +16,12 @@ to know about hero equipment, items, containers etc...
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.App exposing (..)
+
+-- item
 import Item.Item as Item exposing (..)
+import Item.TypeDef exposing (..)
+
+-- game
 import Game.Data exposing (..)
 import Container exposing (..)
 import Equipment exposing (..)
@@ -184,7 +189,7 @@ handleDrop drop item model =
                 case equipMsg of
                     Equipment.Ok ->
                         success
-                    ItemMsg Item.Ok ->
+                    ItemMsg Item.TypeDef.Ok ->
                         success
 
                     Equipment.NoPackEquipped ->
