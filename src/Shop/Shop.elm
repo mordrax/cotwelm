@@ -1,16 +1,36 @@
-module Shop.Shop exposing (..)
+module Shop.Shop
+    exposing
+        ( Shop
+        , new
+        , view
+        , update
+        )
 
 import Html exposing (..)
 import Shop.Data exposing (..)
 
 
+-- items
+
+import Item.Item as Item exposing (..)
+import Item.TypeDef exposing (..)
+
+
+type Msg
+    = Ok
+
+
+type Shop
+    = SM Model
+
+
 type alias Model =
-    Int
+    { items : List Item }
 
 
-initShop : Model
-initShop =
-    5
+new : Shop
+new =
+    SM (Model [])
 
 
 update : Msg -> Model -> Model
