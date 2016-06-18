@@ -3,6 +3,7 @@ module Item.Data exposing (..)
 import Mass exposing (..)
 import IdGenerator exposing (..)
 import Item.TypeDef exposing (..)
+import Container exposing (..)
 
 
 type alias Model =
@@ -17,5 +18,23 @@ type alias Model =
     }
 
 
+type alias WeaponModel =
+    { class : Int
+    }
+
+
 type alias ArmourModel =
     { ac : Int }
+
+
+type alias BeltModel a =
+    { slot : Int
+    , scroll : Int
+    , wand : Int
+    , potion : Int
+    , container : Container a
+    }
+
+
+type alias PackModel a =
+    { container : Container a }

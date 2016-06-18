@@ -6,11 +6,6 @@ import Item.Data exposing (..)
 import Item.TypeDef exposing (..)
 
 
-type alias WeaponModel =
-    { class : Int
-    }
-
-
 type Weapon
     = WeaponModelTag WeaponType Model WeaponModel
 

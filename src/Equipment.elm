@@ -75,7 +75,7 @@ type EquipmentSlot
 type Msg
     = Ok
     | MassResult Mass.Msg
-    | ItemMsg Item.Msg
+    | ItemMsg Item.TypeDef.Msg
     | NoPackEquipped
 
 

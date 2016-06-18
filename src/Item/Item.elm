@@ -1,7 +1,6 @@
 module Item.Item
     exposing
         ( Item(..)
-        , Msg(..)
         , Weapon
         , Shield
         , Helmet
@@ -14,16 +13,16 @@ module Item.Item
         , Ring
         , Boots
         , new
-        , newPack
         , ItemType(..)
         , view
         , viewSlot
+        , isCursed
+        , getPurse
+          -- pack functions
         , addToPack
         , removeFromPack
-        , isCursed
         , packInfo
         , packContents
-        , getPurse
         )
 
 import Html exposing (..)
@@ -40,15 +39,16 @@ import Item.Shield exposing (..)
 import Item.Helmet exposing (..)
 import Item.Bracers exposing (..)
 import Item.Gauntlets exposing (..)
+import Item.Belt exposing (..)
+import Item.Pack exposing (..)
 
 
-{- import Item.Belt exposing (..)
-   import Item.Pack exposing (..)
+{-
    import Item.Purse exposing (..)
-   import Item.Neckwear exposing (..)
-   import Item.Overgarment exposing (..)
-   import Item.Ring exposing (..)
-   import Item.Boots exposing (..)
+      import Item.Neckwear exposing (..)
+      import Item.Overgarment exposing (..)
+      import Item.Ring exposing (..)
+      import Item.Boots exposing (..)
 -}
 
 
@@ -72,16 +72,16 @@ type alias Gauntlets =
     Item.Gauntlets.Gauntlets
 
 
+type alias Belt a =
+    Item.Belt.Belt a
+
+
+type alias Pack a =
+    Item.Pack.Pack a
+
+
 
 {-
-   type alias Belt =
-       Item.Belt.Belt
-
-
-   type alias Pack =
-       Item.Pack.Pack
-
-
    type alias Purse =
        Item.Purse.Purse
 
@@ -126,23 +126,13 @@ type Item
     | ItemHelmet Helmet
     | ItemBracers Bracers
     | ItemGauntlets Gauntlets
-    | ItemBelt Belt
-    | ItemPack Pack
+    | ItemBelt (Belt Item)
+    | ItemPack (Pack Item)
     | ItemPurse Purse
     | ItemNeckwear Neckwear
     | ItemOvergarment Overgarment
     | ItemRing Ring
     | ItemBoots Boots
-
-
-type Msg
-    = Ok
-    | NestedItem
-    | MassMsg Mass.Msg
-
-
-type Belt
-    = BeltModelTag BeltType Model BeltModel
 
 
 type Purse
@@ -166,159 +156,74 @@ type Boots
 
 
 
-------------
--- Armour --
-------------
+{- addToPack : Item -> Pack Item -> ( Pack Item, Msg )
+   addToPack item pack =
+       let
+           isItemThePack =
+               equals item (ItemPack pack)
+
+           ( container', msg ) =
+               Container.add item packModel.container
+
+           (PM packType model packModel) =
+               pack
+       in
+           if isItemThePack == True then
+               ( pack, NestedItem )
+           else
+               case msg of
+                   Container.Ok ->
+                       ( PackModelTag packType model { packModel | container = container' }, Ok )
+
+                   Container.MassMsg massMsg ->
+                       ( pack, MassMsg massMsg )
+-}
+--------------------
+-- Pack functions --
+--------------------
 
 
-type alias BeltModel =
-    { slot : Int
-    , scroll : Int
-    , wand : Int
-    , potion : Int
-    , container : Container Item
-    }
-
-
-newBelt : BeltType -> ID -> ItemStatus -> IdentificationStatus -> Belt
-newBelt beltType id status idStatus =
-    case beltType of
-        TwoSlotBelt ->
-            BeltModelTag TwoSlotBelt
-                (Model id "Two Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0)
-                (BeltModel 2 0 0 0 <| Container.new (Mass.new 2100 3100) getMass equals)
-
-        ThreeSlotBelt ->
-            BeltModelTag ThreeSlotBelt
-                (Model id "Three Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0)
-                (BeltModel 3 0 0 0 <| Container.new (Mass.new 2600 3600) getMass equals)
-
-        FourSlotBelt ->
-            BeltModelTag FourSlotBelt
-                (Model id "Four Slot Belt" 300 300 "SlotBelt" status idStatus <| Mass.new 0 0)
-                (BeltModel 4 0 0 0 <| Container.new (Mass.new 3100 4100) getMass equals)
-
-        UtilityBelt ->
-            BeltModelTag UtilityBelt
-                (Model id "Utility Belt" 1350 1800 "UtilityBelt" status idStatus <| Mass.new 0 0)
-                (BeltModel 2 4 4 0 <| Container.new (Mass.new 3100 4100) getMass equals)
-
-        WandQuiverBelt ->
-            BeltModelTag WandQuiverBelt
-                (Model id "Wand Quiver Belt" 300 300 "WandQuiverBelt" status idStatus <| Mass.new 0 0)
-                (BeltModel 2 0 0 4 <| Container.new (Mass.new 3100 4100) getMass equals)
-
-
-addToPack : Item -> Pack -> ( Pack, Msg )
-addToPack item (PackModelTag packType model packModel) =
+addToPack : Item -> Pack Item -> ( Pack Item, Item.TypeDef.Msg )
+addToPack item pack =
     let
         isItemThePack =
-            equals item (ItemPack (PackModelTag packType model packModel))
+            equals item (ItemPack pack)
 
         ( container', msg ) =
             Container.add item packModel.container
+
+        (PM packType model packModel) =
+            pack
 
         _ =
             Debug.log "is item the pack: " isItemThePack
     in
         if isItemThePack == True then
-            ( (PackModelTag packType model packModel), NestedItem )
+            ( pack, NestedItem )
         else
             case msg of
                 Container.Ok ->
-                    ( PackModelTag packType model { packModel | container = container' }, Ok )
+                    ( PM packType model { packModel | container = container' }, Item.TypeDef.Ok )
 
                 Container.MassMsg massMsg ->
-                    ( (PackModelTag packType model packModel), MassMsg massMsg )
+                    ( pack, Item.TypeDef.MassMsg massMsg )
 
 
-removeFromPack : Item -> Pack -> Pack
-removeFromPack item (PackModelTag packType model packModel) =
-    PackModelTag packType model { packModel | container = Container.take item packModel.container }
+removeFromPack : a -> Pack a -> Pack a
+removeFromPack item (PM packType model packModel) =
+    PM packType model { packModel | container = Container.take item packModel.container }
 
 
 {-| Get the current mass and mass capacity for the given pack
 -}
-packInfo : Pack -> ( Mass, Mass )
-packInfo (PackModelTag _ model packModel) =
+packInfo : Pack a -> ( Mass, Mass )
+packInfo (PM _ _ packModel) =
     ( Container.getMass packModel.container, Container.capacity packModel.container )
 
 
-packContents : Pack -> List Item
-packContents (PackModelTag packType model packModel) =
+packContents : Pack a -> List a
+packContents (PM _ _ packModel) =
     Container.list packModel.container
-
-
-type Pack
-    = PackModelTag PackType Model PackModel
-
-
-type alias PackModel =
-    { container : Container Item }
-
-
-newPack : PackType -> ID -> ItemStatus -> IdentificationStatus -> Pack
-newPack packType id status idStatus =
-    case packType of
-        SmallBag ->
-            PackModelTag SmallBag
-                (Model id "Small Bag" 300 500 "Bag" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 5000 6000) getMass equals)
-
-        MediumBag ->
-            PackModelTag MediumBag
-                (Model id "Medium Bag" 500 700 "Bag" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 10000 12000) getMass equals)
-
-        LargeBag ->
-            PackModelTag LargeBag
-                (Model id "Large Bag" 900 900 "Bag" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 15000 18000) getMass equals)
-
-        SmallPack ->
-            PackModelTag SmallPack
-                (Model id "Small Pack" 1000 1000 "Pack" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 12000 50000) getMass equals)
-
-        MediumPack ->
-            PackModelTag MediumPack
-                (Model id "Medium Pack" 2000 1500 "Pack" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 22000 75000) getMass equals)
-
-        LargePack ->
-            PackModelTag LargePack
-                (Model id "Large Pack" 4000 100000 "Pack" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 35000 100000) getMass equals)
-
-        SmallChest ->
-            PackModelTag SmallChest
-                (Model id "Small Chest" 5000 100000 "Chest" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 100000 50000) getMass equals)
-
-        MediumChest ->
-            PackModelTag MediumChest
-                (Model id "Medium Chest" 15000 150000 "Chest" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 100000 150000) getMass equals)
-
-        LargeChest ->
-            PackModelTag LargeChest
-                (Model id "Large Chest" 25000 250000 "Chest" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 100000 250000) getMass equals)
-
-        EnchantedSmallPackOfHolding ->
-            PackModelTag EnchantedSmallPackOfHolding
-                (Model id "Enchanted Small Pack Of Holding" 5000 75000 "EnchantedPack" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 50000 150000) getMass equals)
-
-        EnchantedMediumPackOfHolding ->
-            PackModelTag EnchantedMediumPackOfHolding
-                (Model id "Enchanted Medium Pack Of Holding" 7500 100000 "EnchantedPack" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 75000 200000) getMass equals)
-
-        EnchantedLargePackOfHolding ->
-            PackModelTag EnchantedLargePackOfHolding
-                (Model id "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" status idStatus <| Mass.new 0 0)
-                (PackModel <| Container.new (Mass.new 100000 250000) getMass equals)
 
 
 
@@ -340,22 +245,6 @@ getPurse item =
 
         _ ->
             Nothing
-
-
-type NeckwearType
-    = NoOp1
-
-
-type OvergarmentType
-    = NoOp2
-
-
-type RingType
-    = NoOp3
-
-
-type BootsType
-    = NoOp4
 
 
 
@@ -390,28 +279,28 @@ isCursed item =
 getModel : Item -> Model
 getModel item =
     case item of
-        ItemWeapon (WeaponModelTag _ model specificModel) ->
+        ItemWeapon (WeaponModelTag _ model _) ->
             model
 
-        ItemArmour (ArmourModelTag _ model specificModel) ->
+        ItemArmour (ArmourModelTag _ model _) ->
             model
 
-        ItemShield (ShieldModelTag _ model specificModel) ->
+        ItemShield (ShieldModelTag _ model _) ->
             model
 
-        ItemHelmet (HelmetModelTag _ model specificModel) ->
+        ItemHelmet (HelmetModelTag _ model _) ->
             model
 
-        ItemBracers (BracersModelTag _ model specificModel) ->
+        ItemBracers (BracersModelTag _ model _) ->
             model
 
-        ItemGauntlets (GauntletsModelTag _ model specificModel) ->
+        ItemGauntlets (GauntletsModelTag _ model _) ->
             model
 
-        ItemBelt (BeltModelTag _ model specificModel) ->
+        ItemBelt (BeltModelTag _ model _) ->
             model
 
-        ItemPack (PackModelTag _ model specificModel) ->
+        ItemPack (PM _ model _) ->
             model
 
         ItemPurse (PurseModelTag _ model) ->
@@ -484,6 +373,11 @@ viewSlot item extraContent =
             ]
 
 
+newContainer : Mass -> Container Item
+newContainer mass =
+    Container.new mass getMass equals
+
+
 new : ItemType -> ID -> Item
 new itemType id =
     newWithOptions itemType id Normal Identified
@@ -511,10 +405,10 @@ newWithOptions itemType id status idStatus =
             ItemGauntlets (newGauntlets gauntletsType id status idStatus)
 
         Belt beltType ->
-            ItemBelt (newBelt beltType id status idStatus)
+            ItemBelt (newBelt beltType id status idStatus newContainer)
 
         Pack packType ->
-            ItemPack (newPack packType id status idStatus)
+            ItemPack (newPack packType id status idStatus newContainer)
 
         Purse ->
             ItemPurse (newPurse id status idStatus)
