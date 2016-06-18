@@ -5,9 +5,8 @@ module Game.Game exposing (..)
 import Game.Data exposing (..)
 import Game.Maps exposing (..)
 import Game.Collision exposing (..)
-import Inventory exposing (..)
+import Game.Inventory as Inventory exposing (..)
 import Equipment exposing (..)
-import DragDrop exposing (new)
 
 
 -- Data
@@ -22,8 +21,9 @@ import Hero exposing (..)
 
 -- Common
 
-import Lib exposing (..)
-import IdGenerator exposing (..)
+import Utils.DragDrop as DragDrop exposing (new)
+import Utils.Lib exposing (..)
+import Utils.IdGenerator as IdGenerator exposing (..)
 
 
 -- Core

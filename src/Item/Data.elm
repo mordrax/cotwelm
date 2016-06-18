@@ -1,7 +1,7 @@
 module Item.Data exposing (..)
 
-import Mass exposing (..)
-import IdGenerator exposing (..)
+import Utils.Mass exposing (..)
+import Utils.IdGenerator exposing (..)
 import Item.TypeDef exposing (..)
 import Container exposing (..)
 

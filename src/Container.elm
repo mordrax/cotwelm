@@ -16,7 +16,7 @@ You can add/remove Items and look through a list of them.
 Items can also be containers, so containers can hold containers.
 -}
 
-import Mass exposing (..)
+import Utils.Mass as Mass exposing (..)
 
 
 type alias ID =

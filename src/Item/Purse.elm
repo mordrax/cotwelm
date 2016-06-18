@@ -1,4 +1,4 @@
-module Purse
+module Item.Purse
     exposing
         ( Purse
         , CoinType(..)

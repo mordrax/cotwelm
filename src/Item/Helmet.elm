@@ -1,7 +1,7 @@
 module Item.Helmet exposing (..)
 
-import Mass exposing (..)
-import IdGenerator exposing (..)
+import Utils.Mass as Mass exposing (..)
+import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
 import Item.TypeDef exposing (..)
 

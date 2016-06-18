@@ -3,7 +3,7 @@ module Game.Keyboard exposing (..)
 import Keyboard exposing (..)
 import Dict exposing (..)
 import Game.Data exposing (..)
-import Vector exposing (..)
+import Utils.Vector as Vector exposing (..)
 
 
 subscriptions : List (Sub Msg)

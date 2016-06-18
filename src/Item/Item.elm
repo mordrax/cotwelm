@@ -28,9 +28,16 @@ module Item.Item
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Container exposing (Container)
-import Mass exposing (..)
-import Purse exposing (..)
-import IdGenerator exposing (..)
+
+
+-- utils
+
+import Utils.Mass as Mass exposing (..)
+import Utils.IdGenerator as IdGenerator exposing (..)
+
+
+-- sub items
+
 import Item.Data exposing (..)
 import Item.TypeDef exposing (..)
 import Item.Weapon exposing (..)
@@ -41,6 +48,7 @@ import Item.Bracers exposing (..)
 import Item.Gauntlets exposing (..)
 import Item.Belt exposing (..)
 import Item.Pack exposing (..)
+import Item.Purse as Purse exposing (..)
 
 
 {-
@@ -156,28 +164,6 @@ type Boots
 
 
 
-{- addToPack : Item -> Pack Item -> ( Pack Item, Msg )
-   addToPack item pack =
-       let
-           isItemThePack =
-               equals item (ItemPack pack)
-
-           ( container', msg ) =
-               Container.add item packModel.container
-
-           (PM packType model packModel) =
-               pack
-       in
-           if isItemThePack == True then
-               ( pack, NestedItem )
-           else
-               case msg of
-                   Container.Ok ->
-                       ( PackModelTag packType model { packModel | container = container' }, Ok )
-
-                   Container.MassMsg massMsg ->
-                       ( pack, MassMsg massMsg )
--}
 --------------------
 -- Pack functions --
 --------------------
