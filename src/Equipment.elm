@@ -22,12 +22,24 @@ Does not render equipment but will provide a API to retrieve them.
 @docs get, init, putInPack
 -}
 
+import Container exposing (..)
+
+
+--items
+
 import Item.Item as Item exposing (..)
 import Item.TypeDef exposing (..)
-import Mass exposing (..)
-import Container exposing (..)
-import Purse exposing (..)
-import IdGenerator exposing (..)
+import Item.Purse exposing (..)
+
+
+-- utils
+
+import Utils.Mass as Mass exposing (..)
+import Utils.IdGenerator as IdGenerator exposing (..)
+
+
+-- core
+
 import Dict exposing (..)
 
 

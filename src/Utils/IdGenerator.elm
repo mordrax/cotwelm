@@ -1,4 +1,4 @@
-module IdGenerator
+module Utils.IdGenerator
     exposing
         ( IdGenerator
         , ID

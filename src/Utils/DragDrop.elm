@@ -1,4 +1,4 @@
-module DragDrop
+module Utils.DragDrop
     exposing
         ( DragDrop
         , Drag(..)

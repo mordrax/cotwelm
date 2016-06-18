@@ -6,7 +6,7 @@ module GameData.ASCIIMaps exposing (..)
 -}
 
 import GameData.Building as Building exposing (..)
-import Vector exposing (..)
+import Utils.Vector exposing (..)
 
 
 villageMap : List String

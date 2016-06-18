@@ -7,8 +7,8 @@ import Item.Item as Item exposing (..)
 import Mouse exposing (Position)
 import Equipment exposing (..)
 import Container exposing (..)
-import DragDrop exposing (..)
-import IdGenerator exposing (..)
+import Utils.DragDrop exposing (..)
+import Utils.IdGenerator exposing (..)
 
 
 type alias Model =

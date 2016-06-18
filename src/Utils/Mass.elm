@@ -1,4 +1,4 @@
-module Mass
+module Utils.Mass
     exposing
         ( Mass
         , Msg(..)

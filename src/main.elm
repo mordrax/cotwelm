@@ -15,12 +15,12 @@ import CharCreation.Data exposing (..)
 
 import Game.Game exposing (..)
 import Game.Data exposing (..)
+import Game.Inventory as Inventory exposing (..)
 
 
 -- Cotw specific data
 
 import CotwData exposing (Msg(..), Page(..))
-import Inventory exposing (..)
 
 
 -- Keyboard/Controller subscriptions

@@ -1,12 +1,12 @@
 module Item.TypeDef exposing (..)
 
-import Mass exposing (Msg)
+import Utils.Mass exposing (Msg)
 
 
 type Msg
     = Ok
     | NestedItem
-    | MassMsg Mass.Msg
+    | MassMsg Utils.Mass.Msg
 
 
 type ItemStatus

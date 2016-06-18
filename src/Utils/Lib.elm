@@ -1,8 +1,8 @@
-module Lib exposing (..)
+module Utils.Lib exposing (..)
 
 import Html.Attributes exposing (style)
 import Html exposing (..)
-import Vector exposing (..)
+import Utils.Vector exposing (..)
 
 
 vectorToHtmlStyle : Vector -> Attribute msg

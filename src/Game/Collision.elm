@@ -4,7 +4,7 @@ module Game.Collision exposing (..)
 -}
 
 import Dict exposing (..)
-import Vector exposing (..)
+import Utils.Vector as Vector exposing (..)
 import Game.Data exposing (..)
 import Game.Keyboard exposing (..)
 import Game.Maps exposing (..)

@@ -8,7 +8,7 @@ module Hero
         )
 
 import Equipment exposing (..)
-import Vector exposing (..)
+import Utils.Vector as Vector exposing (..)
 import Item.Item exposing (..)
 
 

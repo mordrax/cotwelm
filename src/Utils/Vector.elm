@@ -1,4 +1,4 @@
-module Vector exposing (..)
+module Utils.Vector exposing (..)
 
 {-| 2D vector for representing coordinates as well as dimensions of objects
 # Model

@@ -1,4 +1,4 @@
-module Inventory
+module Game.Inventory
     exposing
         ( view
         , update
@@ -25,9 +25,9 @@ import Item.TypeDef exposing (..)
 import Game.Data exposing (..)
 import Container exposing (..)
 import Equipment exposing (..)
-import Mass exposing (..)
-import DragDrop exposing (..)
-import Purse exposing (..)
+import Utils.Mass as Mass exposing (..)
+import Utils.DragDrop as DragDrop exposing (..)
+import Item.Purse as Purse exposing (..)
 
 
 ------------

@@ -1,6 +1,6 @@
 module GameData.Building exposing (..)
 
-import Vector exposing (..)
+import Utils.Vector as Vector exposing (..)
 import GameData.Types exposing (..)
 
 
