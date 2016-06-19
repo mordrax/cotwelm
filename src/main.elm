@@ -72,13 +72,22 @@ subscriptions model =
 initModel : String -> ( Model, Cmd CotwData.Msg )
 initModel url =
     let
+        ( initGameState, gameCmds ) =
+            Game.Game.initGame
+
+        gameMainCmds =
+            Cmd.map (\x -> GameMsg x) gameCmds
+
         model =
             { currentPage = GamePage
             , character = CharCreation.initChar
-            , game = Game.Game.initGame
+            , game = initGameState
             }
+
+        ( modelWithUrl, urlCmds ) =
+            urlUpdate url model
     in
-        urlUpdate url model
+        ( modelWithUrl, Cmd.batch [ urlCmds, gameMainCmds ] )
 
 
 type alias Model =

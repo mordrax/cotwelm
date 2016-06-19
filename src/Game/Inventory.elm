@@ -23,12 +23,11 @@ import Item.TypeDef exposing (..)
 
 -- game
 import Game.Data exposing (..)
-import Container exposing (..)
 import Equipment exposing (..)
 import Utils.Mass as Mass exposing (..)
 import Utils.DragDrop as DragDrop exposing (..)
 import Item.Purse as Purse exposing (..)
-
+import Shop.Shop as Shop exposing (..)
 
 ------------
 -- Update --
@@ -234,7 +233,8 @@ view ({ equipment, dnd } as model) =
             columnWidth "ten" [ shopHtml, packHtml, purseHtml ]
 
         shopHtml =
-            header "Shop"
+            div [] [header "Shop",
+            viewShop model.shop]
 
         packHtml =
             div [] [ header ("Pack: (" ++ (viewPackInfo maybePack) ++ ")"), viewPack maybePack model ]
@@ -306,11 +306,20 @@ viewPack maybeItem ({ dnd } as model) =
             _ ->
                 div [] [ text "Pack is empty" ]
 
+viewShop: Shop -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewShop shop =
+  let
+
+
+    items = Shop.list shop
+
+  in
+    div [class "ui cards"] (List.map Item.view items)
 
 viewContainer : Item -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
 viewContainer containerItem ({ equipment, dnd } as model) =
     let
-        idItems =
+        items =
             Equipment.getPackContent equipment
 
         itemToHtml =
@@ -322,7 +331,7 @@ viewContainer containerItem ({ equipment, dnd } as model) =
         case (containerItem) of
             ItemPack pack ->
                 div [ class "ui cards" ]
-                    (List.map (makeDraggable pack) idItems)
+                    (List.map (makeDraggable pack) items)
 
             _ ->
                 div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
