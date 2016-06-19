@@ -22,14 +22,10 @@ Does not render equipment but will provide a API to retrieve them.
 @docs get, init, putInPack
 -}
 
-import Container exposing (..)
-
-
 --items
 
 import Item.Item as Item exposing (..)
 import Item.TypeDef exposing (..)
-import Item.Purse exposing (..)
 
 
 -- utils
@@ -94,20 +90,18 @@ type Msg
 init : IdGenerator -> ( IdGenerator, Equipment )
 init idGenerator =
     let
-        getPartialFold =
-            \key partialItem id -> ( key, partialItem id )
-
         preFoldedItems =
-            [ getPartialFold "weapon" (Item.new (Item.Weapon Dagger))
-            , getPartialFold "armour" (Item.new (Item.Armour ScaleMail))
-            , getPartialFold "shield" (Item.new (Item.Shield LargeIronShield))
-            , getPartialFold "helmet" (Item.new (Item.Helmet LeatherHelmet))
-            , getPartialFold "gauntlets" (Item.new (Item.Gauntlets NormalGauntlets))
-            , getPartialFold "belt" (Item.new (Item.Belt TwoSlotBelt))
-            , getPartialFold "purse" (Item.new (Item.Purse))
-            , getPartialFold "pack" (Item.new (Item.Pack MediumPack))
-            , getPartialFold "ths" (Item.new (Item.Weapon TwoHandedSword))
-            ]
+            List.map newFoldableItem
+                [ ( "weapon", (Item.new (Item.Weapon Dagger)) )
+                , ( "armour", (Item.new (Item.Armour ScaleMail)) )
+                , ( "shield", (Item.new (Item.Shield LargeIronShield)) )
+                , ( "helmet", (Item.new (Item.Helmet LeatherHelmet)) )
+                , ( "gauntlets", (Item.new (Item.Gauntlets NormalGauntlets)) )
+                , ( "belt", (Item.new (Item.Belt TwoSlotBelt)) )
+                , ( "purse", (Item.new (Item.Purse)) )
+                , ( "pack", (Item.new (Item.Pack MediumPack)) )
+                , ( "ths", (Item.new (Item.Weapon TwoHandedSword)) )
+                ]
 
         ( idedItems, idGenerator' ) =
             List.foldl IdGenerator.assignId ( [], idGenerator ) preFoldedItems

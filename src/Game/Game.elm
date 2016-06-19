@@ -7,6 +7,7 @@ import Game.Maps exposing (..)
 import Game.Collision exposing (..)
 import Game.Inventory as Inventory exposing (..)
 import Equipment exposing (..)
+import Shop.Shop as Shop exposing (..)
 
 
 -- Data
@@ -33,7 +34,7 @@ import Html.Attributes exposing (..)
 import Html.App exposing (map)
 
 
-initGame : Game.Data.Model
+initGame : ( Game.Data.Model, Cmd Game.Data.Msg )
 initGame =
     let
         idGenerator =
@@ -41,15 +42,24 @@ initGame =
 
         ( idGenerator', equipment ) =
             Equipment.init idGenerator
+
+        ( newShop, shopCmd ) =
+            Shop.new
+
+        cmd =
+            Cmd.map (\x -> ShopMsg x) shopCmd
     in
-        { name = "A new game"
-        , hero = Hero.init
-        , map = Game.Maps.initMaps
-        , currentScreen = InventoryScreen
-        , dnd = DragDrop.new
-        , equipment = equipment
-        , idGen = idGenerator'
-        }
+        ( { name = "A new game"
+          , hero = Hero.init
+          , map = Game.Maps.initMaps
+          , currentScreen = InventoryScreen
+          , dnd = DragDrop.new
+          , equipment = equipment
+          , shop = newShop
+          , idGen = idGenerator'
+          }
+        , cmd
+        )
 
 
 update : Game.Data.Msg -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Msg )
@@ -66,6 +76,13 @@ update msg model =
 
         InvMsg msg ->
             ( Inventory.update msg model, Cmd.none )
+
+        ShopMsg msg ->
+            let
+                ( shop', idGen' ) =
+                    Shop.update msg model.idGen model.shop
+            in
+                ( { model | shop = shop', idGen = idGen' }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )

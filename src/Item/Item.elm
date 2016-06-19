@@ -13,6 +13,7 @@ module Item.Item
         , Ring
         , Boots
         , new
+        , newFoldableItem
         , ItemType(..)
         , view
         , viewSlot
@@ -362,6 +363,11 @@ viewSlot item extraContent =
 newContainer : Mass -> Container Item
 newContainer mass =
     Container.new mass getMass equals
+
+
+newFoldableItem : ( key, ID -> Item ) -> ID -> ( key, Item )
+newFoldableItem ( key, itemFactory ) =
+    \id -> ( key, itemFactory id )
 
 
 new : ItemType -> ID -> Item

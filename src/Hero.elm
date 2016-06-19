@@ -7,9 +7,7 @@ module Hero
         , pos
         )
 
-import Equipment exposing (..)
 import Utils.Vector as Vector exposing (..)
-import Item.Item exposing (..)
 
 
 type alias Model =

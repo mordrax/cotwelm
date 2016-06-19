@@ -4,11 +4,11 @@ import Hero exposing (..)
 import GameData.Building exposing (..)
 import Game.Maps exposing (..)
 import Item.Item as Item exposing (..)
-import Mouse exposing (Position)
 import Equipment exposing (..)
-import Container exposing (..)
+import Shop.Shop as Shop exposing (..)
 import Utils.DragDrop exposing (..)
 import Utils.IdGenerator exposing (..)
+import Shop.Shop as Shop exposing (..)
 
 
 type alias Model =
@@ -18,6 +18,7 @@ type alias Model =
     , currentScreen : Screen
     , dnd : DragDrop Drag Drop
     , equipment : Equipment
+    , shop : Shop.Shop
     , idGen : IdGenerator
     }
 
@@ -56,4 +57,5 @@ type Msg
     | Map
     | Inventory
     | InvMsg (InventoryMsg Drag Drop)
+    | ShopMsg Shop.Msg
     | NoOp
