@@ -2,12 +2,14 @@ module Item.Item
     exposing
         ( Item(..)
         , Weapon
+        , Armour
         , Shield
         , Helmet
         , Bracers
         , Gauntlets
         , Belt
         , Pack
+        , Purse
         , Neckwear
         , Overgarment
         , Ring
@@ -65,6 +67,10 @@ type alias Weapon =
     Item.Weapon.Weapon
 
 
+type alias Armour =
+    Item.Armour.Armour
+
+
 type alias Shield =
     Item.Shield.Shield
 
@@ -90,12 +96,7 @@ type alias Pack a =
 
 
 
-{-
-   type alias Purse =
-       Item.Purse.Purse
-
-
-   type alias Neckwear =
+{- type alias Neckwear =
        Item.Neckwear.Neckwear
 
 

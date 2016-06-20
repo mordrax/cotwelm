@@ -40,21 +40,21 @@ import Dict exposing (..)
 
 
 type alias Model =
-    { weapon : Maybe Item
+    { weapon : Maybe Weapon
     , freehand : Maybe Item
-    , armour : Maybe Item
-    , shield : Maybe Item
-    , helmet : Maybe Item
-    , bracers : Maybe Item
-    , gauntlets : Maybe Item
-    , belt : Maybe Item
-    , purse : Maybe Item
-    , pack : Maybe Item
-    , neckwear : Maybe Item
-    , overgarment : Maybe Item
-    , leftRing : Maybe Item
-    , rightRing : Maybe Item
-    , boots : Maybe Item
+    , armour : Maybe Armour
+    , shield : Maybe Shield
+    , helmet : Maybe Helmet
+    , bracers : Maybe Bracers
+    , gauntlets : Maybe Gauntlets
+    , belt : Maybe (Belt Item)
+    , purse : Maybe Purse
+    , pack : Maybe (Pack Item)
+    , neckwear : Maybe Neckwear
+    , overgarment : Maybe Overgarment
+    , leftRing : Maybe Ring
+    , rightRing : Maybe Ring
+    , boots : Maybe Boots
     }
 
 
@@ -87,67 +87,62 @@ type Msg
     | NoPackEquipped
 
 
+new : Equipment
+new =
+    EquipmentModel
+        { weapon = Nothing
+        , freehand = Nothing
+        , armour = Nothing
+        , shield = Nothing
+        , helmet = Nothing
+        , bracers = Nothing
+        , gauntlets = Nothing
+        , belt = Nothing
+        , purse = Nothing
+        , pack = Nothing
+        , neckwear = Nothing
+        , overgarment = Nothing
+        , leftRing = Nothing
+        , rightRing = Nothing
+        , boots = Nothing
+        }
+
+
 init : IdGenerator -> ( IdGenerator, Equipment )
 init idGenerator =
     let
         preFoldedItems =
             List.map newFoldableItem
-                [ ( "weapon", (Item.new (Item.Weapon Dagger)) )
-                , ( "armour", (Item.new (Item.Armour ScaleMail)) )
-                , ( "shield", (Item.new (Item.Shield LargeIronShield)) )
-                , ( "helmet", (Item.new (Item.Helmet LeatherHelmet)) )
-                , ( "gauntlets", (Item.new (Item.Gauntlets NormalGauntlets)) )
-                , ( "belt", (Item.new (Item.Belt TwoSlotBelt)) )
-                , ( "purse", (Item.new (Item.Purse)) )
-                , ( "pack", (Item.new (Item.Pack MediumPack)) )
-                , ( "ths", (Item.new (Item.Weapon TwoHandedSword)) )
+                [ ( Weapon, (Item.new (Item.Weapon Dagger)) )
+                , ( Armour, (Item.new (Item.Armour ScaleMail)) )
+                , ( Shield, (Item.new (Item.Shield LargeIronShield)) )
+                , ( Helmet, (Item.new (Item.Helmet LeatherHelmet)) )
+                , ( Gauntlets, (Item.new (Item.Gauntlets NormalGauntlets)) )
+                , ( Belt, (Item.new (Item.Belt TwoSlotBelt)) )
+                , ( Purse, (Item.new (Item.Purse)) )
+                , ( Pack, (Item.new (Item.Pack MediumPack)) )
                 ]
 
-        ( idedItems, idGenerator' ) =
+        ( itemsWithSlots, idGenerator' ) =
             List.foldl IdGenerator.assignId ( [], idGenerator ) preFoldedItems
 
-        itemDict =
-            Dict.fromList idedItems
+        ( id, idGenerator'' ) =
+            IdGenerator.getUniqueId idGenerator'
 
-        maybePack =
-            Dict.get "pack" itemDict
+        ths =
+            Item.new (Item.Weapon TwoHandedSword) id
 
-        maybeTHS =
-            Dict.get "ths" itemDict
+        equipment' =
+            List.foldl equip new itemsWithSlots
 
-        ( pack', _ ) =
-            case ( maybePack, maybeTHS ) of
-                ( Just (ItemPack pack), Just ths ) ->
-                    Item.addToPack ths pack
-
-                _ ->
-                    Debug.crash "This is not possible!"
+        ( equipment'', _ ) =
+            putInPack ths equipment'
     in
-        ( idGenerator'
-        , EquipmentModel
-            { weapon = Dict.get "weapon" itemDict
-            , freehand = Nothing
-            , armour = Dict.get "armour" itemDict
-            , shield = Dict.get "shield" itemDict
-            , helmet = Dict.get "helmet" itemDict
-            , bracers = Dict.get "bracers" itemDict
-            , gauntlets = Dict.get "gauntlets" itemDict
-            , belt = Dict.get "belt" itemDict
-            , purse = Dict.get "purse" itemDict
-            , pack = Just (ItemPack pack')
-            , neckwear =
-                Nothing
-                --Just (ItemPack pack')
-            , overgarment = Nothing
-            , leftRing = Nothing
-            , rightRing = Nothing
-            , boots = Nothing
-            }
-        )
+        ( idGenerator', equipment'' )
 
 
-equip : EquipmentSlot -> Item -> Equipment -> Equipment
-equip slot item (EquipmentModel model) =
+equip : ( EquipmentSlot, Item ) -> Equipment -> Equipment
+equip ( slot, item ) (EquipmentModel model) =
     EquipmentModel (setSlot slot (Just item) model)
 
 
@@ -180,15 +175,17 @@ putInPack item (EquipmentModel model) =
             Nothing ->
                 ( EquipmentModel model, NoPackEquipped )
 
-            Just (ItemPack pack) ->
+            Just pack ->
                 let
                     ( pack', msg ) =
                         Item.addToPack item pack
                 in
-                    ( EquipmentModel { model | pack = Just <| ItemPack pack' }, ItemMsg msg )
+                    ( EquipmentModel { model | pack = Just pack' }, ItemMsg msg )
 
-            _ ->
-                noChange
+
+
+--             _ ->
+--                 noChange
 
 
 removeFromPack : Item -> Equipment -> Equipment
@@ -201,17 +198,19 @@ removeFromPack item (EquipmentModel model) =
             Nothing ->
                 noChange
 
-            Just (ItemPack pack) ->
-                EquipmentModel { model | pack = Just (ItemPack (Item.removeFromPack item pack)) }
+            Just pack ->
+                EquipmentModel { model | pack = Just (Item.removeFromPack item pack) }
 
-            _ ->
-                Debug.crash "The pack seems to be a non-pack!" 1
+
+
+--             _ ->
+--                 Debug.crash "The pack seems to be a non-pack!" 1
 
 
 getPackContent : Equipment -> List Item
 getPackContent (EquipmentModel model) =
     case model.pack of
-        Just (ItemPack pack) ->
+        Just pack ->
             Item.packContents pack
 
         _ ->
@@ -228,97 +227,161 @@ getSlot : EquipmentSlot -> Equipment -> Maybe Item
 getSlot slot (EquipmentModel model) =
     case slot of
         Weapon ->
-            model.weapon
+            Maybe.map ItemWeapon model.weapon
 
         Freehand ->
             model.freehand
 
         Armour ->
-            model.armour
+            Maybe.map ItemArmour model.armour
 
         Shield ->
-            model.shield
+            Maybe.map ItemShield model.shield
 
         Helmet ->
-            model.helmet
+            Maybe.map ItemHelmet model.helmet
 
         Bracers ->
-            model.bracers
+            Maybe.map ItemBracers model.bracers
 
         Gauntlets ->
-            model.gauntlets
+            Maybe.map ItemGauntlets model.gauntlets
 
         Belt ->
-            model.belt
+            Maybe.map ItemBelt model.belt
 
         Purse ->
-            model.purse
+            Maybe.map ItemPurse model.purse
 
         Pack ->
-            model.pack
+            Maybe.map ItemPack model.pack
 
         Neckwear ->
-            model.neckwear
+            Maybe.map ItemNeckwear model.neckwear
 
         Overgarment ->
-            model.overgarment
+            Maybe.map ItemOvergarment model.overgarment
 
         LeftRing ->
-            model.leftRing
+            Maybe.map ItemRing model.leftRing
 
         RightRing ->
-            model.rightRing
+            Maybe.map ItemRing model.rightRing
 
         Boots ->
-            model.boots
+            Maybe.map ItemBoots model.boots
 
 
 {-| Sets the equipment slot to the maybe item.
 -}
 setSlot : EquipmentSlot -> Maybe Item -> Model -> Model
-setSlot slot maybeItem model =
-    case slot of
-        Weapon ->
-            { model | weapon = maybeItem }
+setSlot slot item model =
+    case ( slot, item ) of
+        --        ( Weapon, Just (ItemWeapon weapon) ) ->
+        --            { model | weapon = Just weapon }
+        --
+        --        --
+        --        ( Weapon, Nothing ) ->
+        --            { model | weapon = Nothing }
+        --
+        --        --
+        --        ( Freehand, Just item ) ->
+        --            { model | freehand = Just item }
+        --
+        --        --
+        --        ( Freehand, Nothing ) ->
+        --            { model | freehand = Nothing }
+        --
+        --        --
+        --        ( Armour, Just (ItemArmour armour) ) ->
+        --            { model | armour = Just armour }
+        --
+        --        --
+        --        ( Armour, Nothing ) ->
+        --            { model | armour = Nothing }
+        --
+        --        --
+        --        ( Shield, Just (ItemShield shield) ) ->
+        --            { model | shield = Just shield }
+        --
+        --        --
+        --        ( Shield, Nothing ) ->
+        --            { model | shield = Nothing }
+        --
+        --        --
+        --        ( Helmet, Just (ItemHelmet helmet) ) ->
+        --            { model | helmet = Just helmet }
+        --
+        --        --
+        --        ( Helmet, Nothing ) ->
+        --            { model | helmet = Nothing }
+        --
+        --        --
+        --        ( Bracers, Just (ItemBracers bracers) ) ->
+        --            { model | bracers = Just bracers }
+        --
+        --        --
+        --        ( Bracers, Nothing ) ->
+        --            { model | bracers = Nothing }
+        --
+        --        --
+        --        ( Gauntlets, Just (ItemGauntlets gauntlets) ) ->
+        --            { model | gauntlets = Just gauntlets }
+        --
+        --        --
+        --        ( Gauntlets, Nothing ) ->
+        --            { model | gauntlets = Nothing }
+        --
+        ( Belt, Just (ItemBelt belt) ) ->
+            { model | belt = Just belt }
 
-        Freehand ->
-            { model | freehand = maybeItem }
+        --
+        ( Belt, Nothing ) ->
+            { model | belt = Nothing }
 
-        Armour ->
-            { model | armour = maybeItem }
+        --
+        ( Purse, Just (ItemPurse purse) ) ->
+            { model | purse = Just purse }
 
-        Shield ->
-            { model | shield = maybeItem }
+        --
+        ( Purse, Nothing ) ->
+            { model | purse = Nothing }
 
-        Helmet ->
-            { model | helmet = maybeItem }
-
-        Bracers ->
-            { model | bracers = maybeItem }
-
-        Gauntlets ->
-            { model | gauntlets = maybeItem }
-
-        Belt ->
-            { model | belt = maybeItem }
-
-        Purse ->
-            { model | purse = maybeItem }
-
-        Pack ->
-            { model | pack = maybeItem }
-
-        Neckwear ->
-            { model | neckwear = maybeItem }
-
-        Overgarment ->
-            { model | overgarment = maybeItem }
-
-        LeftRing ->
-            { model | leftRing = maybeItem }
-
-        RightRing ->
-            { model | rightRing = maybeItem }
-
-        Boots ->
-            { model | boots = maybeItem }
+        --
+        --        ( Pack, Just (ItemPack pack) ) ->
+        --            { model | pack = Just pack }
+        --
+        --        ( Pack, Nothing ) ->
+        --            { model | pack = Nothing }
+        --
+        --        ( Neckwear, Just (ItemNeckwear neckwear) ) ->
+        --            { model | neckwear = Just neckwear }
+        --
+        --        ( Neckwear, Nothing ) ->
+        --            { model | neckwear = Nothing }
+        --
+        --        ( Overgarment, Just (ItemOvergarment overgarment) ) ->
+        --            { model | overgarment = Just overgarment }
+        --
+        --        ( Overgarment, Nothing ) ->
+        --            { model | overgarment = Nothing }
+        --
+        --        ( LeftRing, Just (ItemRing leftRing) ) ->
+        --            { model | leftRing = Just leftRing }
+        --
+        --        ( LeftRing, Nothing ) ->
+        --            { model | leftRing = Nothing }
+        --
+        --        ( RightRing, Just (ItemRing rightRing) ) ->
+        --            { model | rightRing = Just rightRing }
+        --
+        --        ( RightRing, Nothing ) ->
+        --            { model | rightRing = Nothing }
+        --
+        --        ( Boots, Just (ItemBoots boots) ) ->
+        --            { model | boots = Just boots }
+        --
+        --        ( Boots, Nothing ) ->
+        --            { model | boots = Nothing }
+        ( _, _ ) ->
+            model
