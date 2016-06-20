@@ -34,6 +34,9 @@ import Shop.Shop as Shop exposing (..)
 ------------
 
 
+
+
+
 update : InventoryMsg Game.Data.Drag Game.Data.Drop -> Model -> Model
 update msg model =
     case msg of
@@ -174,6 +177,7 @@ handleDrag drag model =
 - Pack
   - Check pack capacity
 -}
+
 handleDrop : Game.Data.Drop -> Item -> Model -> Result String Model
 handleDrop drop item model =
     case drop of
@@ -185,10 +189,12 @@ handleDrop drop item model =
                 success =
                     Result.Ok { model | equipment = equipment' }
             in
+
+
                 case equipMsg of
                     Equipment.Ok ->
-                        success
-                    ItemMsg Item.TypeDef.Ok ->
+                            success
+                    Equipment.ItemMsg Item.TypeDef.Ok ->
                         success
 
                     Equipment.NoPackEquipped ->
@@ -210,14 +216,9 @@ handleDrop drop item model =
 view : Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
 view ({ equipment, dnd } as model) =
     let
-        maybePack =
-            Equipment.getSlot Equipment.Pack equipment
-
-        headerClass =
-            class "ui block header"
 
         header =
-            \title -> div [ headerClass ] [ text title ]
+            \title -> div [ class "ui block header" ] [ text title ]
 
         heading =
             \title ->
@@ -229,8 +230,28 @@ view ({ equipment, dnd } as model) =
         equipmentColumn =
             columnWidth "six" [ viewEquipment equipment dnd ]
 
-        shopPackColumn =
-            columnWidth "ten" [ shopHtml, packHtml, purseHtml ]
+
+
+    in
+        div []
+            [ heading "Inventory screen"
+            , div [ class "ui two column grid" ]
+                [ Html.App.map toInventoryMsg equipmentColumn
+                , viewShopPackPurse model
+                ]
+            , Html.App.map toInventoryMsg (DragDrop.view dnd)
+            ]
+
+viewShopPackPurse: Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
+viewShopPackPurse  ({ equipment, dnd } as model) =
+    let
+        header =
+            \title -> div [ class "ui block header" ] [ text title ]
+        columnWidth =
+          \width children -> div [ class (width ++ " wide column") ] children
+
+        maybePack =
+            Equipment.getSlot Equipment.Pack equipment
 
         shopHtml =
             div [] [header "Shop",
@@ -245,15 +266,8 @@ view ({ equipment, dnd } as model) =
                 , viewPurse model
                 ]
     in
-        div []
-            [ heading "Inventory screen"
-            , div [ class "ui two column grid" ]
-                [ Html.App.map toInventoryMsg equipmentColumn
-                , Html.App.map toInventoryMsg shopPackColumn
-                ]
-            , Html.App.map toInventoryMsg (DragDrop.view dnd)
-            ]
 
+            Html.App.map toInventoryMsg (columnWidth "ten" [ shopHtml, packHtml, purseHtml ])
 
 viewPackInfo : Maybe Item -> String
 viewPackInfo maybeItem =
