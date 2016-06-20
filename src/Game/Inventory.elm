@@ -17,11 +17,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.App exposing (..)
 
+
 -- item
+
 import Item.Item as Item exposing (..)
 import Item.TypeDef exposing (..)
 
+
 -- game
+
 import Game.Data exposing (..)
 import Equipment exposing (..)
 import Utils.Mass as Mass exposing (..)
@@ -29,12 +33,10 @@ import Utils.DragDrop as DragDrop exposing (..)
 import Item.Purse as Purse exposing (..)
 import Shop.Shop as Shop exposing (..)
 
+
 ------------
 -- Update --
 ------------
-
-
-
 
 
 update : InventoryMsg Game.Data.Drag Game.Data.Drop -> Model -> Model
@@ -177,7 +179,6 @@ handleDrag drag model =
 - Pack
   - Check pack capacity
 -}
-
 handleDrop : Game.Data.Drop -> Item -> Model -> Result String Model
 handleDrop drop item model =
     case drop of
@@ -189,22 +190,26 @@ handleDrop drop item model =
                 success =
                     Result.Ok { model | equipment = equipment' }
             in
-
-
                 case equipMsg of
                     Equipment.Ok ->
-                            success
-                    Equipment.ItemMsg Item.TypeDef.Ok ->
                         success
 
                     Equipment.NoPackEquipped ->
                         Result.Err "Can't add to the pack. No packed equipped!"
 
+                    Equipment.ItemMsg a ->
+                        case a of
+                            Item.TypeDef.Ok ->
+                                success
+
+                            _ ->
+                                Result.Err ("Dropping into pack with unhandled item msg" ++ (toString a))
+
                     msg ->
                         Result.Err ("Dropping into pack failed with unhanded msg: " ++ (toString msg))
 
         DropEquipment slot ->
-            Result.Ok { model | equipment = Equipment.equip slot item model.equipment }
+            Result.Ok { model | equipment = Equipment.equip ( slot, item ) model.equipment }
 
 
 
@@ -216,7 +221,6 @@ handleDrop drop item model =
 view : Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
 view ({ equipment, dnd } as model) =
     let
-
         header =
             \title -> div [ class "ui block header" ] [ text title ]
 
@@ -229,9 +233,6 @@ view ({ equipment, dnd } as model) =
 
         equipmentColumn =
             columnWidth "six" [ viewEquipment equipment dnd ]
-
-
-
     in
         div []
             [ heading "Inventory screen"
@@ -242,23 +243,30 @@ view ({ equipment, dnd } as model) =
             , Html.App.map toInventoryMsg (DragDrop.view dnd)
             ]
 
-viewShopPackPurse: Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
-viewShopPackPurse  ({ equipment, dnd } as model) =
+
+viewShopPackPurse : Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
+viewShopPackPurse ({ equipment, dnd } as model) =
     let
         header =
             \title -> div [ class "ui block header" ] [ text title ]
+
         columnWidth =
-          \width children -> div [ class (width ++ " wide column") ] children
+            \width children -> div [ class (width ++ " wide column") ] children
 
         maybePack =
             Equipment.getSlot Equipment.Pack equipment
 
         shopHtml =
-            div [] [header "Shop",
-            viewShop model.shop]
+            div []
+                [ header "Shop"
+                , viewShop model.shop
+                ]
 
         packHtml =
-            div [] [ header ("Pack: (" ++ (viewPackInfo maybePack) ++ ")"), viewPack maybePack model ]
+            div []
+                [ header ("Pack: (" ++ (viewPackInfo maybePack) ++ ")")
+                , viewPack maybePack model
+                ]
 
         purseHtml =
             div []
@@ -266,8 +274,14 @@ viewShopPackPurse  ({ equipment, dnd } as model) =
                 , viewPurse model
                 ]
     in
+        Html.App.map toInventoryMsg
+            (columnWidth "ten"
+                [ shopHtml
+                , packHtml
+                , purseHtml
+                ]
+            )
 
-            Html.App.map toInventoryMsg (columnWidth "ten" [ shopHtml, packHtml, purseHtml ])
 
 viewPackInfo : Maybe Item -> String
 viewPackInfo maybeItem =
@@ -320,15 +334,15 @@ viewPack maybeItem ({ dnd } as model) =
             _ ->
                 div [] [ text "Pack is empty" ]
 
-viewShop: Shop -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+
+viewShop : Shop -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
 viewShop shop =
-  let
+    let
+        items =
+            Shop.list shop
+    in
+        div [ class "ui cards" ] (List.map Item.view items)
 
-
-    items = Shop.list shop
-
-  in
-    div [class "ui cards"] (List.map Item.view items)
 
 viewContainer : Item -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
 viewContainer containerItem ({ equipment, dnd } as model) =
