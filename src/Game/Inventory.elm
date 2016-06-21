@@ -209,7 +209,19 @@ handleDrop drop item model =
                         Result.Err ("Dropping into pack failed with unhanded msg: " ++ (toString msg))
 
         DropEquipment slot ->
-            Result.Ok { model | equipment = Equipment.equip ( slot, item ) model.equipment }
+            case Equipment.equip ( slot, item ) model.equipment of
+                Result.Ok equipment' ->
+                    Result.Ok { model | equipment = equipment' }
+
+                Result.Err err ->
+                    Result.Err (toString err)
+
+        DropShop shop ->
+            let
+                _ =
+                    Debug.log "Dropping into shop" shop
+            in
+                Result.Ok model
 
 
 
@@ -253,14 +265,19 @@ viewShopPackPurse ({ equipment, dnd } as model) =
         columnWidth =
             \width children -> div [ class (width ++ " wide column") ] children
 
-        maybePack =
-            Equipment.getSlot Equipment.Pack equipment
-
         shopHtml =
             div []
                 [ header "Shop"
-                , viewShop model.shop
+                , viewShop model
                 ]
+
+        maybePack =
+            case Equipment.getSlot Equipment.Pack equipment of
+                Just (ItemPack pack) ->
+                    Just pack
+
+                _ ->
+                    Nothing
 
         packHtml =
             div []
@@ -283,10 +300,10 @@ viewShopPackPurse ({ equipment, dnd } as model) =
             )
 
 
-viewPackInfo : Maybe Item -> String
+viewPackInfo : Maybe (Pack Item) -> String
 viewPackInfo maybeItem =
     case maybeItem of
-        Just (ItemPack pack) ->
+        Just pack ->
             let
                 ( curMass, capMass ) =
                     Item.packInfo pack
@@ -317,8 +334,8 @@ toInventoryMsg dragDropMsg =
 ---------------
 
 
-viewPack : Maybe Item -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
-viewPack maybeItem ({ dnd } as model) =
+viewPack : Maybe (Pack Item) -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewPack maybePack ({ dnd } as model) =
     let
         highlightStyle =
             style [ ( "background", "lightblue" ) ]
@@ -327,21 +344,29 @@ viewPack maybeItem ({ dnd } as model) =
             \pack ->
                 (div [ highlightStyle ] [ viewContainer (ItemPack pack) model ])
     in
-        case maybeItem of
-            Just (ItemPack pack) ->
+        case maybePack of
+            Just pack ->
                 DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
 
             _ ->
                 div [] [ text "Pack is empty" ]
 
 
-viewShop : Shop -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
-viewShop shop =
+viewShop : Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewShop ({ shop, dnd } as model) =
     let
         items =
             Shop.list shop
+
+        droppableDiv =
+            div [ class "ui cards" ] (List.map Item.view items)
+
+        droppableShop =
+            DragDrop.droppable (DropShop shop) dnd droppableDiv
+
+        --DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
     in
-        div [ class "ui cards" ] (List.map Item.view items)
+        droppableShop
 
 
 viewContainer : Item -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
