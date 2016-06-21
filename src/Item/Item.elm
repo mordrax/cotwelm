@@ -19,8 +19,10 @@ module Item.Item
         , ItemType(..)
         , view
         , viewSlot
+          -- item functions
         , isCursed
         , getPurse
+        , priceOf
           -- pack functions
         , addToPack
         , removeFromPack
@@ -235,6 +237,11 @@ getPurse item =
 
         _ ->
             Nothing
+
+
+priceOf : Item -> Int
+priceOf item =
+    .buy (getModel item)
 
 
 

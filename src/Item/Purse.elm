@@ -10,6 +10,13 @@ module Item.Purse
         )
 
 
+type CoinType
+    = Copper
+    | Silver
+    | Gold
+    | Platinum
+
+
 type alias Model =
     { copper : Coins
     , silver : Coins
@@ -23,14 +30,7 @@ type alias Coins =
 
 
 type Purse
-    = PurseModel Model
-
-
-type CoinType
-    = Copper
-    | Silver
-    | Gold
-    | Platinum
+    = PM Model
 
 
 type Msg
@@ -40,48 +40,38 @@ type Msg
 
 new : Purse
 new =
-    PurseModel <| Model 100 10 1 0
+    PM <| Model 100 10 1 0
 
 
-getCoins : CoinType -> Purse -> Coins
-getCoins coinType (PurseModel model) =
-    case coinType of
-        Copper ->
-            model.copper
-
-        Silver ->
-            model.silver
-
-        Gold ->
-            model.gold
-
-        Platinum ->
-            model.platinum
+getCoins : Purse -> ( Coins, Coins, Coins, Coins )
+getCoins (PM model) =
+    ( model.copper
+    , model.silver
+    , model.gold
+    , model.platinum
+    )
 
 
 add : Coins -> Purse -> Purse
-add copper (PurseModel model) =
-    PurseModel model
+add copper (PM model) =
+    PM model
 
 
 merge : Purse -> Purse -> Purse
-merge (PurseModel p1) (PurseModel p2) =
-    PurseModel (purses (+) p1 p2)
+merge (PM p1) (PM p2) =
+    PM (purses (+) p1 p2)
 
 
-take : Purse -> Purse -> Purse
-take (PurseModel p1) (PurseModel p2) =
-    PurseModel (purses (-) p1 p2)
-
-
-purses : (Int -> Int -> Int) -> Model -> Model -> Model
+{-| Perform an operation (+, -, etc...) on each denomination of two purses
+-}
+purses : (Coins -> Coins -> Coins) -> Model -> Model -> Model
 purses op p1 p2 =
     Model (p1.copper `op` p2.copper) (p1.silver `op` p2.silver) (p1.gold `op` p2.gold) (p1.platinum `op` p2.platinum)
 
 
-remove : Coins -> Purse -> ( Purse, Msg )
-remove copper (PurseModel model) =
-    ( PurseModel model, Ok )
+remove : Coins -> Purse -> Result String Purse
+remove copper (PM model) =
+    Result.Ok (PM model)
 
 
 toPurseOfLeastCoins : Coins -> Purse
@@ -99,4 +89,4 @@ toPurseOfLeastCoins coins =
         c =
             coins - s * 100 - g * 10000 - p * 1000000
     in
-        PurseModel <| Model c s g p
+        PM <| Model c s g p

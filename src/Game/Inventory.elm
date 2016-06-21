@@ -175,7 +175,28 @@ handleDrag drag model =
                     ( modelItemRemoved, item )
 
         DragShop item shop ->
-            Result.Ok ( { model | shop = Shop.take item shop }, item )
+            -- get purse from equipment
+            -- if 
+                --purse doesn't exist, log and return existing state
+            -- else 
+                --buy from shop
+            -- if 
+                --can afford then return new state
+            -- else 
+                --return existing state
+                
+            case Shop.buy item shop of
+                Result.Ok (shop', purse') ->
+                    Result.Ok ({model | shop = shop'})
+
+                Result.Err msg ->
+                    let
+                        _ =
+                            Debug.log "Purchase failed: " ++ (toString msg)
+                    in
+                        shop
+
+            Result.Ok ( { model | shop = shop' }, item )
 
 
 {-| handleDrop
