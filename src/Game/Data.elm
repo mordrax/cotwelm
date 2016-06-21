@@ -26,7 +26,7 @@ type alias Model =
 type Drag
     = DragSlot Item EquipmentSlot
     | DragPack Item (Item.Pack Item)
-    | DragShop Item
+    | DragShop Item Shop
 
 
 type Drop
