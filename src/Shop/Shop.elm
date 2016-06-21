@@ -7,9 +7,10 @@ module Shop.Shop
         , list
         , update
         , give
-        , take
+        , buy
         )
 
+import Item.Purse as Purse exposing (..)
 import Item.Item as Item exposing (..)
 import Item.TypeDef exposing (..)
 
@@ -50,8 +51,20 @@ give item (SM model) =
     SM { model | items = item :: model.items }
 
 
-take : Item -> Shop -> Shop
-take item (SM ({ items } as model)) =
+buy : Item -> Purse.Purse -> Shop -> Result String ( Shop, Purse.Purse )
+buy item purse (SM model) =
+    case Purse.remove (Item.priceOf item) purse of
+        Result.Ok purse' ->
+            Result.Ok ( SM (take item model), purse' )
+
+        Result.Err msg ->
+            Result.Err "Cannot afford item!"
+
+
+{-| Take a item from the shop, no checks
+-}
+take : Item -> Model -> Model
+take item ({ items } as model) =
     let
         equals =
             Item.equals
@@ -59,7 +72,7 @@ take item (SM ({ items } as model)) =
         items' =
             List.filter (\x -> (not (equals item x))) items
     in
-        SM { model | items = items' }
+        { model | items = items' }
 
 
 replenish : IdGenerator -> Seed -> ( IdGenerator, List Item )
