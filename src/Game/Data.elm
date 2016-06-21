@@ -32,6 +32,7 @@ type Drag
 type Drop
     = DropPack (Item.Pack Item)
     | DropEquipment EquipmentSlot
+    | DropShop Shop
 
 
 type Screen
