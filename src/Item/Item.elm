@@ -26,6 +26,8 @@ module Item.Item
         , removeFromPack
         , packInfo
         , packContents
+          -- comparisons
+        , equals
         )
 
 import Html exposing (..)

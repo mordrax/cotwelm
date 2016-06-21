@@ -34,12 +34,21 @@ import Item.Purse as Purse exposing (..)
 import Shop.Shop as Shop exposing (..)
 
 
+type alias Drag =
+    Game.Data.Drag
+
+
+type alias Drop =
+    Game.Data.Drop
+
+
+
 ------------
 -- Update --
 ------------
 
 
-update : InventoryMsg Game.Data.Drag Game.Data.Drop -> Model -> Model
+update : InventoryMsg Drag Drop -> Model -> Model
 update msg model =
     case msg of
         DnDMsg (End _) ->
@@ -61,7 +70,7 @@ update msg model =
 {-| On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
 then call a function to handle the transaction, otherwise just clear the dndModel and return.
 -}
-handleMouseUp : Game.Data.Model -> Game.Data.Model
+handleMouseUp : Model -> Model
 handleMouseUp ({ dnd } as model) =
     let
         modelDnDReinit =
@@ -97,7 +106,7 @@ Drop
 - Equipment slot: Check if an item is already equipped
 - Pack: Check pack capacity
 -}
-handleDragDrop : Game.Data.Drag -> Game.Data.Drop -> Model -> Model
+handleDragDrop : Drag -> Drop -> Model -> Model
 handleDragDrop dragSource dropTarget model =
     let
         dragResult =
@@ -141,7 +150,7 @@ handleDragDrop dragSource dropTarget model =
 - Pack:
   - Nothing
 -}
-handleDrag : Game.Data.Drag -> Model -> Result Model ( Model, Item )
+handleDrag : Drag -> Model -> Result Model ( Model, Item )
 handleDrag drag model =
     case drag of
         DragSlot item slot ->
@@ -165,8 +174,8 @@ handleDrag drag model =
                     Result.Ok
                     ( modelItemRemoved, item )
 
-        DragShop item ->
-            Result.Ok ( model, item )
+        DragShop item shop ->
+            Result.Ok ( { model | shop = Shop.take item shop }, item )
 
 
 {-| handleDrop
@@ -179,7 +188,7 @@ handleDrag drag model =
 - Pack
   - Check pack capacity
 -}
-handleDrop : Game.Data.Drop -> Item -> Model -> Result String Model
+handleDrop : Drop -> Item -> Model -> Result String Model
 handleDrop drop item model =
     case drop of
         DropPack pack ->
@@ -221,7 +230,7 @@ handleDrop drop item model =
                 _ =
                     Debug.log "Dropping into shop" shop
             in
-                Result.Ok model
+                Result.Ok { model | shop = Shop.give item shop }
 
 
 
@@ -230,7 +239,7 @@ handleDrop drop item model =
 ----------
 
 
-view : Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
+view : Model -> Html (InventoryMsg Drag Drop)
 view ({ equipment, dnd } as model) =
     let
         header =
@@ -256,7 +265,7 @@ view ({ equipment, dnd } as model) =
             ]
 
 
-viewShopPackPurse : Game.Data.Model -> Html (InventoryMsg Game.Data.Drag Game.Data.Drop)
+viewShopPackPurse : Model -> Html (InventoryMsg Drag Drop)
 viewShopPackPurse ({ equipment, dnd } as model) =
     let
         header =
@@ -334,7 +343,7 @@ toInventoryMsg dragDropMsg =
 ---------------
 
 
-viewPack : Maybe (Pack Item) -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewPack : Maybe (Pack Item) -> Model -> Html (DragDropMsg Drag Drop)
 viewPack maybePack ({ dnd } as model) =
     let
         highlightStyle =
@@ -352,14 +361,17 @@ viewPack maybePack ({ dnd } as model) =
                 div [] [ text "Pack is empty" ]
 
 
-viewShop : Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewShop : Model -> Html (DragDropMsg Drag Drop)
 viewShop ({ shop, dnd } as model) =
     let
         items =
             Shop.list shop
 
+        makeDraggable =
+            \shop item -> DragDrop.draggable (Item.view item) (DragShop item shop) dnd
+
         droppableDiv =
-            div [ class "ui cards" ] (List.map Item.view items)
+            div [ class "ui cards" ] (List.map (makeDraggable shop) items)
 
         droppableShop =
             DragDrop.droppable (DropShop shop) dnd droppableDiv
@@ -369,17 +381,14 @@ viewShop ({ shop, dnd } as model) =
         droppableShop
 
 
-viewContainer : Item -> Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewContainer : Item -> Model -> Html (DragDropMsg Drag Drop)
 viewContainer containerItem ({ equipment, dnd } as model) =
     let
         items =
             Equipment.getPackContent equipment
 
-        itemToHtml =
-            \item -> Item.view item
-
         makeDraggable =
-            \pack item -> DragDrop.draggable (itemToHtml item) (DragPack item pack) dnd
+            \pack item -> DragDrop.draggable (Item.view item) (DragPack item pack) dnd
     in
         case (containerItem) of
             ItemPack pack ->
@@ -396,7 +405,7 @@ viewContainer containerItem ({ equipment, dnd } as model) =
 --------------------
 
 
-viewEquipment : Equipment -> DragDrop Game.Data.Drag Game.Data.Drop -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewEquipment : Equipment -> DragDrop Drag Drop -> Html (DragDropMsg Drag Drop)
 viewEquipment equipment dnd =
     let
         getEquipment =
@@ -447,7 +456,7 @@ viewEquipment equipment dnd =
 ----------------
 
 
-viewPurse : Game.Data.Model -> Html (DragDropMsg Game.Data.Drag Game.Data.Drop)
+viewPurse : Model -> Html (DragDropMsg Drag Drop)
 viewPurse ({ equipment } as model) =
     let
         maybePurse =
@@ -466,6 +475,6 @@ viewPurse ({ equipment } as model) =
                 div [] []
 
 
-subscriptions : Game.Data.Model -> List (Sub (InventoryMsg Game.Data.Drag Game.Data.Drop))
+subscriptions : Model -> List (Sub (InventoryMsg Drag Drop))
 subscriptions ({ dnd } as model) =
     List.map (Sub.map toInventoryMsg) (DragDrop.subscriptions dnd)

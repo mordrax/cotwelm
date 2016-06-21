@@ -3,7 +3,10 @@
     "summary": "Castle of the Winds using Elm",
     "repository": "https://github.com/mordrax/cotwelm.git",
     "license": "BSD3",
-    "make-info": {"main": "src/main.elm", "out": "dist/js/cotw.js"},
+    "make-info": {
+        "main": "src/main.elm",
+        "out": "dist/js/cotw.js"
+    },
     "source-directories": [
         ".",
         "src"
@@ -18,5 +21,15 @@
         "elm-lang/mouse": "1.0.0 <= v < 2.0.0",
         "elm-lang/navigation": "1.0.0 <= v < 2.0.0"
     },
-    "elm-version": "0.17.0 <= v < 0.18.0"
+    "elm-version": "0.17.0 <= v < 0.18.0",
+    "sublime-build": {
+        "main": "src/main.elm",
+        "output": {
+            "components": {
+                "ext": "js",
+                "dir": "dist/js",
+                "name": "cotw"
+            }
+        }
+    }
 }

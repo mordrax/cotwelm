@@ -6,6 +6,8 @@ module Shop.Shop
         , replenish
         , list
         , update
+        , give
+        , take
         )
 
 import Item.Item as Item exposing (..)
@@ -41,6 +43,23 @@ type alias Model =
 new : ( Shop, Cmd Msg )
 new =
     ( SM (Model []), getSeed )
+
+
+give : Item -> Shop -> Shop
+give item (SM model) =
+    SM { model | items = item :: model.items }
+
+
+take : Item -> Shop -> Shop
+take item (SM ({ items } as model)) =
+    let
+        equals =
+            Item.equals
+
+        items' =
+            List.filter (\x -> (not (equals item x))) items
+    in
+        SM { model | items = items' }
 
 
 replenish : IdGenerator -> Seed -> ( IdGenerator, List Item )
