@@ -276,112 +276,135 @@ getSlot slot (EquipmentModel model) =
 -}
 setSlot : EquipmentSlot -> Maybe Item -> Model -> Model
 setSlot slot item model =
-    case ( slot, item ) of
-        --        ( Weapon, Just (ItemWeapon weapon) ) ->
-        --            { model | weapon = Just weapon }
-        --
-        --        --
-        --        ( Weapon, Nothing ) ->
-        --            { model | weapon = Nothing }
-        --
-        --        --
-        --        ( Freehand, Just item ) ->
-        --            { model | freehand = Just item }
-        --
-        --        --
-        --        ( Freehand, Nothing ) ->
-        --            { model | freehand = Nothing }
-        --
-        --        --
-        --        ( Armour, Just (ItemArmour armour) ) ->
-        --            { model | armour = Just armour }
-        --
-        --        --
-        --        ( Armour, Nothing ) ->
-        --            { model | armour = Nothing }
-        --
-        --        --
-        --        ( Shield, Just (ItemShield shield) ) ->
-        --            { model | shield = Just shield }
-        --
-        --        --
-        --        ( Shield, Nothing ) ->
-        --            { model | shield = Nothing }
-        --
-        --        --
-        --        ( Helmet, Just (ItemHelmet helmet) ) ->
-        --            { model | helmet = Just helmet }
-        --
-        --        --
-        --        ( Helmet, Nothing ) ->
-        --            { model | helmet = Nothing }
-        --
-        --        --
-        --        ( Bracers, Just (ItemBracers bracers) ) ->
-        --            { model | bracers = Just bracers }
-        --
-        --        --
-        --        ( Bracers, Nothing ) ->
-        --            { model | bracers = Nothing }
-        --
-        --        --
-        --        ( Gauntlets, Just (ItemGauntlets gauntlets) ) ->
-        --            { model | gauntlets = Just gauntlets }
-        --
-        --        --
-        --        ( Gauntlets, Nothing ) ->
-        --            { model | gauntlets = Nothing }
-        --
-        ( Belt, Just (ItemBelt belt) ) ->
-            { model | belt = Just belt }
+    case slot of
+        Weapon ->
+            case item of
+                Just (ItemWeapon weapon) ->
+                    { model | weapon = Just weapon }
+
+                --
+                _ ->
+                    { model | weapon = Nothing }
+
+        Freehand ->
+            case item of
+                Just item ->
+                    { model | freehand = Just item }
+
+                _ ->
+                    { model | freehand = Nothing }
+
+        Armour ->
+            case item of
+                Just (ItemArmour armour) ->
+                    { model | armour = Just armour }
+
+                _ ->
+                    { model | armour = Nothing }
+
+        Shield ->
+            case item of
+                Just (ItemShield shield) ->
+                    { model | shield = Just shield }
+
+                _ ->
+                    { model | shield = Nothing }
+
+        Helmet ->
+            case item of
+                Just (ItemHelmet helmet) ->
+                    { model | helmet = Just helmet }
+
+                _ ->
+                    { model | helmet = Nothing }
+
+        Bracers ->
+            case item of
+                Just (ItemBracers bracers) ->
+                    { model | bracers = Just bracers }
+
+                _ ->
+                    { model | bracers = Nothing }
+
+        Gauntlets ->
+            case item of
+                Just (ItemGauntlets gauntlets) ->
+                    { model | gauntlets = Just gauntlets }
+
+                _ ->
+                    { model | gauntlets = Nothing }
+
+        Belt ->
+            case item of
+                Just (ItemBelt belt) ->
+                    { model | belt = Just belt }
+
+                _ ->
+                    { model | belt = Nothing }
+
+        Purse ->
+            case item of
+                Just (ItemPurse purse) ->
+                    { model | purse = Just purse }
+
+                _ ->
+                    { model | purse = Nothing }
+
+        Pack ->
+            case item of
+                Just (ItemPack pack) ->
+                    { model | pack = Just pack }
+
+                --
+                _ ->
+                    { model | pack = Nothing }
 
         --
-        ( Belt, Nothing ) ->
-            { model | belt = Nothing }
+        Neckwear ->
+            case item of
+                Just (ItemNeckwear neckwear) ->
+                    { model | neckwear = Just neckwear }
+
+                --
+                _ ->
+                    { model | neckwear = Nothing }
 
         --
-        ( Purse, Just (ItemPurse purse) ) ->
-            { model | purse = Just purse }
+        Overgarment ->
+            case item of
+                Just (ItemOvergarment overgarment) ->
+                    { model | overgarment = Just overgarment }
+
+                --
+                _ ->
+                    { model | overgarment = Nothing }
 
         --
-        ( Purse, Nothing ) ->
-            { model | purse = Nothing }
+        LeftRing ->
+            case item of
+                Just (ItemRing leftRing) ->
+                    { model | leftRing = Just leftRing }
+
+                --
+                _ ->
+                    { model | leftRing = Nothing }
 
         --
-        --        ( Pack, Just (ItemPack pack) ) ->
-        --            { model | pack = Just pack }
+        RightRing ->
+            case item of
+                Just (ItemRing rightRing) ->
+                    { model | rightRing = Just rightRing }
+
+                --
+                _ ->
+                    { model | rightRing = Nothing }
+
         --
-        --        ( Pack, Nothing ) ->
-        --            { model | pack = Nothing }
-        --
-        --        ( Neckwear, Just (ItemNeckwear neckwear) ) ->
-        --            { model | neckwear = Just neckwear }
-        --
-        --        ( Neckwear, Nothing ) ->
-        --            { model | neckwear = Nothing }
-        --
-        --        ( Overgarment, Just (ItemOvergarment overgarment) ) ->
-        --            { model | overgarment = Just overgarment }
-        --
-        --        ( Overgarment, Nothing ) ->
-        --            { model | overgarment = Nothing }
-        --
-        --        ( LeftRing, Just (ItemRing leftRing) ) ->
-        --            { model | leftRing = Just leftRing }
-        --
-        --        ( LeftRing, Nothing ) ->
-        --            { model | leftRing = Nothing }
-        --
-        --        ( RightRing, Just (ItemRing rightRing) ) ->
-        --            { model | rightRing = Just rightRing }
-        --
-        --        ( RightRing, Nothing ) ->
-        --            { model | rightRing = Nothing }
-        --
-        --        ( Boots, Just (ItemBoots boots) ) ->
-        --            { model | boots = Just boots }
-        --
-        --        ( Boots, Nothing ) ->
-        --            { model | boots = Nothing }
-        ( _, _ ) ->
-            model
+        Boots ->
+            case item of
+                Just (ItemBoots boots) ->
+                    { model | boots = Just boots }
+
+                --
+                _ ->
+                    { model | boots = Nothing }
