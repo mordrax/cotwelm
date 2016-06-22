@@ -150,7 +150,7 @@ handleDragDrop dragSource dropTarget model =
 - Pack:
   - Nothing
 -}
-handleDrag : Drag -> Model -> Result Model ( Model, Item )
+handleDrag : Drag -> Model -> Result String ( Model, Item )
 handleDrag drag model =
     case drag of
         DragSlot item slot ->
@@ -163,40 +163,51 @@ handleDrag drag model =
                         Result.Ok ( { model | equipment = equipment' }, item )
 
                     Result.Err msg ->
-                        Result.Ok ( model, item )
+                        Result.Err msg
 
         DragPack item pack ->
             let
                 modelItemRemoved =
                     { model | equipment = Equipment.removeFromPack item model.equipment }
+
+                _ =
+                    Debug.log "TODO: Remove item from the pack.container and return just the item" 1
             in
-                Debug.log "TODO: Remove item from the pack.container and return just the item"
-                    Result.Ok
-                    ( modelItemRemoved, item )
+                Result.Ok ( modelItemRemoved, item )
 
         DragShop item shop ->
-            -- get purse from equipment
-            -- if 
-                --purse doesn't exist, log and return existing state
-            -- else 
-                --buy from shop
-            -- if 
-                --can afford then return new state
-            -- else 
-                --return existing state
-                
-            case Shop.buy item shop of
-                Result.Ok (shop', purse') ->
-                    Result.Ok ({model | shop = shop'})
+            dragFromShop item shop model
 
-                Result.Err msg ->
-                    let
-                        _ =
-                            Debug.log "Purchase failed: " ++ (toString msg)
-                    in
-                        shop
 
-            Result.Ok ( { model | shop = shop' }, item )
+dragFromShop : Item -> Shop -> Model -> Result String ( Model, Item )
+dragFromShop item shop ({ equipment } as model) =
+    -- get purse from equipment
+    -- if
+    --purse doesn't exist, log and return existing state
+    -- else
+    --buy from shop
+    -- if
+    --can afford then return new state
+    -- else
+    --return existing state
+    let
+        maybePurse =
+            Equipment.get Equipment.Purse equipment `Maybe.andThen` toPurse
+
+        buyResult =
+            case maybePurse of
+                Just purse ->
+                    Shop.buy item purse shop
+
+                Nothing ->
+                    Result.Err "No purse to buy anything with!"
+    in
+        case buyResult of
+            Result.Ok ( shop', purse' ) ->
+                Result.Ok ( { model | shop = shop', equipment = Equipment.updatePurseContents purse' equipment }, item )
+
+            Result.Err msg ->
+                Result.Err msg
 
 
 {-| handleDrop
@@ -249,7 +260,7 @@ handleDrop drop item model =
         DropShop shop ->
             let
                 _ =
-                    Debug.log "Dropping into shop" shop
+                    Debug.log "Dropping into shop" item
             in
                 Result.Ok { model | shop = Shop.give item shop }
 
@@ -302,7 +313,7 @@ viewShopPackPurse ({ equipment, dnd } as model) =
                 ]
 
         maybePack =
-            case Equipment.getSlot Equipment.Pack equipment of
+            case Equipment.get Equipment.Pack equipment of
                 Just (ItemPack pack) ->
                     Just pack
 
@@ -430,7 +441,7 @@ viewEquipment : Equipment -> DragDrop Drag Drop -> Html (DragDropMsg Drag Drop)
 viewEquipment equipment dnd =
     let
         getEquipment =
-            \slot -> Equipment.getSlot slot equipment
+            \slot -> Equipment.get slot equipment
 
         drawItem =
             \item slot ->
@@ -480,16 +491,21 @@ viewEquipment equipment dnd =
 viewPurse : Model -> Html (DragDropMsg Drag Drop)
 viewPurse ({ equipment } as model) =
     let
-        maybePurse =
-            (Equipment.getSlot Equipment.Purse equipment) `Maybe.andThen` Item.getPurse
+        maybePurseContents =
+            (Equipment.get Equipment.Purse equipment)
+                `Maybe.andThen` Item.toPurse
+                `Maybe.andThen` maybeCoins
+
+        maybeCoins =
+            \x -> Just (Purse.getCoins x)
     in
-        case maybePurse of
-            Just purse ->
+        case maybePurseContents of
+            Just ( c, s, g, p ) ->
                 div [ class "ui grid" ]
-                    [ div [ class "CoinsCopper cotwItem" ] [ text (toString (Purse.getCoins Copper purse)) ]
-                    , div [ class "CoinsSilver cotwItem" ] [ text (toString (Purse.getCoins Silver purse)) ]
-                    , div [ class "CoinsGold cotwItem" ] [ text (toString (Purse.getCoins Gold purse)) ]
-                    , div [ class "CoinsPlatinum cotwItem" ] [ text (toString (Purse.getCoins Platinum purse)) ]
+                    [ div [ class "CoinsCopper cotwItem" ] [ text (toString c) ]
+                    , div [ class "CoinsSilver cotwItem" ] [ text (toString s) ]
+                    , div [ class "CoinsGold cotwItem" ] [ text (toString g) ]
+                    , div [ class "CoinsPlatinum cotwItem" ] [ text (toString p) ]
                     ]
 
             _ ->
