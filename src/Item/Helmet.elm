@@ -7,43 +7,50 @@ import Item.TypeDef exposing (..)
 
 
 type Helmet
-    = HelmetModelTag HelmetType Model ArmourModel
+    = HelmetM HelmetType ArmourModel
 
 
 newHelmet : HelmetType -> ID -> ItemStatus -> IdentificationStatus -> Helmet
 newHelmet helmetType id status idStatus =
     case helmetType of
         BrokenHelmet ->
-            HelmetModelTag BrokenHelmet
-                (Model id "Broken Helmet" 1000 1000 "BrokenHelmet" status idStatus <| Mass.new 0 25)
-                (ArmourModel 0)
+            HelmetM BrokenHelmet
+                { ac = 0
+                , baseItem = (Model id "Broken Helmet" 1000 1000 "BrokenHelmet" status idStatus <| Mass.new 0 25)
+                }
 
         LeatherHelmet ->
-            HelmetModelTag LeatherHelmet
-                (Model id "Leather Helmet" 500 500 "LeatherHelmet" status idStatus <| Mass.new 525 300)
-                (ArmourModel 3)
+            HelmetM LeatherHelmet
+                { ac = 3
+                , baseItem = (Model id "Leather Helmet" 500 500 "LeatherHelmet" status idStatus <| Mass.new 525 300)
+                }
 
         IronHelmet ->
-            HelmetModelTag IronHelmet
-                (Model id "Iron Helmet" 2000 2000 "MetalHelmet" status idStatus <| Mass.new 1050 600)
-                (ArmourModel 6)
+            HelmetM IronHelmet
+                { ac = 6
+                , baseItem = (Model id "Iron Helmet" 2000 2000 "MetalHelmet" status idStatus <| Mass.new 1050 600)
+                }
 
         SteelHelmet ->
-            HelmetModelTag SteelHelmet
-                (Model id "Steel Helmet" 2500 2000 "MetalHelmet" status idStatus <| Mass.new 3150 1800)
-                (ArmourModel 9)
+            HelmetM SteelHelmet
+                { ac = 9
+                , baseItem = (Model id "Steel Helmet" 2500 2000 "MetalHelmet" status idStatus <| Mass.new 3150 1800)
+                }
 
         MeteoricSteelHelmet ->
-            HelmetModelTag MeteoricSteelHelmet
-                (Model id "Meteoric Steel Helmet" 1000 2000 "MetalHelmet" status idStatus <| Mass.new 10500 6000)
-                (ArmourModel 15)
+            HelmetM MeteoricSteelHelmet
+                { ac = 15
+                , baseItem = (Model id "Meteoric Steel Helmet" 1000 2000 "MetalHelmet" status idStatus <| Mass.new 10500 6000)
+                }
 
         HelmetOfDetectMonsters ->
-            HelmetModelTag HelmetOfDetectMonsters
-                (Model id "Helmet Of Detect Monsters" 2500 2000 "HelmetOfDetectMonsters" status idStatus <| Mass.new 42000 24000)
-                (ArmourModel 9)
+            HelmetM HelmetOfDetectMonsters
+                { ac = 9
+                , baseItem = (Model id "Helmet Of Detect Monsters" 2500 2000 "HelmetOfDetectMonsters" status idStatus <| Mass.new 42000 24000)
+                }
 
         EnchantedHelmOfStorms ->
-            HelmetModelTag EnchantedHelmOfStorms
-                (Model id "Enchanted Helm Of Storms" 1000 2000 "EnchantedHelmOfStorms" status idStatus <| Mass.new 1050000 600000)
-                (ArmourModel 25)
+            HelmetM EnchantedHelmOfStorms
+                { ac = 25
+                , baseItem = (Model id "Enchanted Helm Of Storms" 1000 2000 "EnchantedHelmOfStorms" status idStatus <| Mass.new 1050000 600000)
+                }

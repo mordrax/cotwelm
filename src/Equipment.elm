@@ -3,13 +3,14 @@ module Equipment
         ( EquipmentSlot(..)
         , Equipment
         , Msg(..)
-        , getSlot
+        , get
         , init
         , equip
         , unequip
         , putInPack
         , removeFromPack
         , getPackContent
+        , updatePurseContents
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
@@ -36,8 +37,6 @@ import Utils.IdGenerator as IdGenerator exposing (..)
 
 -- core
 
-import Dict exposing (..)
-
 
 type alias Model =
     { weapon : Maybe Weapon
@@ -48,7 +47,7 @@ type alias Model =
     , bracers : Maybe Bracers
     , gauntlets : Maybe Gauntlets
     , belt : Maybe (Belt Item)
-    , purse : Maybe Purse
+    , purse : Maybe Item.Purse
     , pack : Maybe (Pack Item)
     , neckwear : Maybe Neckwear
     , overgarment : Maybe Overgarment
@@ -212,7 +211,7 @@ unequip : EquipmentSlot -> Equipment -> Result String Equipment
 unequip slot (EM model) =
     let
         maybeItem =
-            getSlot slot (EM model)
+            get slot (EM model)
     in
         case maybeItem of
             Just item ->
@@ -279,14 +278,19 @@ getPackContent (EM model) =
             []
 
 
+updatePurseContents : Item.Purse -> Equipment -> Equipment
+updatePurseContents purse (EM model) =
+    EM { model | purse = Just purse }
+
+
 
 --------------------------
 -- Handle get/set slots --
 --------------------------
 
 
-getSlot : EquipmentSlot -> Equipment -> Maybe Item
-getSlot slot (EM model) =
+get : EquipmentSlot -> Equipment -> Maybe Item
+get slot (EM model) =
     case slot of
         Weapon ->
             Maybe.map ItemWeapon model.weapon

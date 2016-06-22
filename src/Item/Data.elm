@@ -18,13 +18,22 @@ type alias Model =
     }
 
 
-type alias WeaponModel =
-    { class : Int
+type alias ItemModel =
+    { id : ID
+    , name : String
+    , buy : Int
+    , sell : Int
+    , css : String
+    , status : ItemStatus
+    , isIdentified : IdentificationStatus
+    , mass : Mass
     }
 
 
 type alias ArmourModel =
-    { ac : Int }
+    { ac : Int
+    , baseItem : ItemModel
+    }
 
 
 type alias BeltModel a =

@@ -21,7 +21,7 @@ module Item.Item
         , viewSlot
           -- item functions
         , isCursed
-        , getPurse
+        , toPurse
         , priceOf
           -- pack functions
         , addToPack
@@ -55,7 +55,7 @@ import Item.Bracers exposing (..)
 import Item.Gauntlets exposing (..)
 import Item.Belt exposing (..)
 import Item.Pack exposing (..)
-import Item.Purse as Purse exposing (..)
+import Item.Purse exposing (..)
 
 
 {-
@@ -97,6 +97,10 @@ type alias Belt a =
 
 type alias Pack a =
     Item.Pack.Pack a
+
+
+type alias Purse =
+    Item.Purse.Purse
 
 
 
@@ -147,10 +151,6 @@ type Item
     | ItemOvergarment Overgarment
     | ItemRing Ring
     | ItemBoots Boots
-
-
-type Purse
-    = PurseModelTag Purse.Purse Model
 
 
 type Neckwear
@@ -224,15 +224,10 @@ packContents (PM _ _ packModel) =
 -----------
 
 
-newPurse : ID -> ItemStatus -> IdentificationStatus -> Purse
-newPurse id status idStatus =
-    PurseModelTag Purse.new (Model id "Purse" 0 0 "Purse" status idStatus <| Mass.new 0 0)
-
-
-getPurse : Item -> Maybe Purse.Purse
-getPurse item =
+toPurse : Item -> Maybe Purse
+toPurse item =
     case item of
-        ItemPurse (PurseModelTag purse model) ->
+        ItemPurse purse ->
             Just purse
 
         _ ->
@@ -276,23 +271,23 @@ isCursed item =
 getModel : Item -> Model
 getModel item =
     case item of
-        ItemWeapon (WeaponModelTag _ model _) ->
-            model
+        ItemWeapon (WM _ { baseItem }) ->
+            baseItem
 
-        ItemArmour (ArmourModelTag _ model _) ->
-            model
+        ItemArmour (ArmourM _ { baseItem }) ->
+            baseItem
 
-        ItemShield (ShieldModelTag _ model _) ->
-            model
+        ItemShield (ShieldM _ { baseItem }) ->
+            baseItem
 
-        ItemHelmet (HelmetModelTag _ model _) ->
-            model
+        ItemHelmet (HelmetM _ { baseItem }) ->
+            baseItem
 
-        ItemBracers (BracersModelTag _ model _) ->
-            model
+        ItemBracers (BracersM _ { baseItem }) ->
+            baseItem
 
-        ItemGauntlets (GauntletsModelTag _ model _) ->
-            model
+        ItemGauntlets (GauntletsM _ { baseItem }) ->
+            baseItem
 
         ItemBelt (BeltModelTag _ model _) ->
             model
@@ -300,8 +295,8 @@ getModel item =
         ItemPack (PM _ model _) ->
             model
 
-        ItemPurse (PurseModelTag _ model) ->
-            model
+        ItemPurse (PurseM { baseItem }) ->
+            baseItem
 
         ItemNeckwear (NeckwearModelTag _ model) ->
             model
