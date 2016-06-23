@@ -23,6 +23,7 @@ module Item.Item
         , isCursed
         , toPurse
         , priceOf
+        , costOf
           -- pack functions
         , addToPack
         , removeFromPack
@@ -234,8 +235,17 @@ toPurse item =
             Nothing
 
 
+{-| The price that shops are willing to sell an Item for, the buy field
+-}
 priceOf : Item -> Int
 priceOf item =
+    .sell (getModel item)
+
+
+{-| The price that shops are willing to buy an Item for, the sell field
+-}
+costOf : Item -> Int
+costOf item =
     .buy (getModel item)
 
 

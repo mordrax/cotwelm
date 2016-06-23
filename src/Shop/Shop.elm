@@ -7,6 +7,7 @@ module Shop.Shop
         , list
         , update
         , give
+        , sell
         , buy
         )
 
@@ -51,14 +52,33 @@ give item (SM model) =
     SM { model | items = item :: model.items }
 
 
-buy : Item -> Purse.Purse -> Shop -> Result String ( Shop, Purse.Purse )
-buy item purse (SM model) =
-    case Purse.remove (Item.priceOf item) purse of
-        Result.Ok purse' ->
-            Result.Ok ( SM (take item model), purse' )
+sell : Item -> Purse.Purse -> Shop -> Result String ( Shop, Purse.Purse )
+sell item purse (SM model) =
+    let
+        price =
+            Item.priceOf item
 
-        Result.Err msg ->
-            Result.Err "Cannot afford item!"
+        _ =
+            Debug.log "Item purchase price:" price
+    in
+        case Purse.remove price purse of
+            Result.Ok purse' ->
+                Result.Ok ( SM (take item model), purse' )
+
+            Result.Err msg ->
+                Result.Err "Cannot afford item!"
+
+
+buy : Item -> Purse.Purse -> Shop -> ( Shop, Purse.Purse )
+buy item purse (SM model) =
+    let
+        _ =
+            Debug.log "Item sell price:" cost
+
+        cost =
+            Item.costOf item
+    in
+        ( SM { model | items = item :: model.items }, Purse.add cost purse )
 
 
 {-| Take a item from the shop, no checks
