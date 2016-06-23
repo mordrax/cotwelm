@@ -51,8 +51,12 @@ getCoins (PurseM model) =
 
 
 add : Int -> Purse -> Purse
-add copper (PurseM model) =
-    PurseM model
+add coppers (PurseM ({ copper, silver, gold, platinum } as model)) =
+    let
+        ( c, s, g, p ) =
+            toLeastCoins coppers
+    in
+        PurseM { model | copper = copper + c, silver = silver + s, gold = gold + g, platinum = platinum + p }
 
 
 merge : Purse -> Purse -> Purse
@@ -72,23 +76,59 @@ purses op p1 p2 =
 
 
 remove : Int -> Purse -> Result String Purse
-remove copper (PurseM model) =
-    Result.Ok (PurseM model)
-
-
-toLeaseCoins : Int -> ( Int, Int, Int, Int )
-toLeaseCoins coins =
+remove copperToRemove (PurseM ({ copper, silver, gold, platinum } as model)) =
     let
-        p =
-            coins // 1000000
+        totalSilvers =
+            copper + silver * 100
 
-        g =
-            coins // 10000 - p * 100
+        totalGold =
+            totalSilvers + gold * 10000
 
-        s =
-            coins // 100 - g * 100 - p * 10000
-
-        c =
-            coins - s * 100 - g * 10000 - p * 1000000
+        totalPlatinum =
+            totalGold + platinum * 1000000
     in
-        ( c, s, g, p )
+        if (copperToRemove <= copper) then
+            Result.Ok (PurseM { model | copper = copper - copperToRemove })
+        else if (copperToRemove <= totalSilvers) then
+            let
+                ( copper', silver' ) =
+                    toLeastSilvers (totalSilvers - copperToRemove)
+            in
+                Result.Ok (PurseM { model | copper = copper', silver = silver' })
+        else if (copperToRemove <= totalGold) then
+            let
+                ( copper', silver', gold' ) =
+                    toLeastGold (totalGold - copperToRemove)
+            in
+                Result.Ok (PurseM { model | copper = copper', silver = silver', gold = gold' })
+        else if (copperToRemove <= totalPlatinum) then
+            let
+                ( copper', silver', gold', platinum' ) =
+                    toLeastCoins (totalPlatinum - copperToRemove)
+            in
+                Result.Ok (PurseM { model | copper = copper', silver = silver', gold = gold', platinum = platinum' })
+        else
+            Result.Err "Not enough coins to remove!"
+
+
+toLeastCoins : Int -> ( Int, Int, Int, Int )
+toLeastCoins coins =
+    let
+        ( copper, silver, gold ) =
+            toLeastGold coins
+    in
+        ( copper, silver, gold % 100, gold // 100 )
+
+
+toLeastGold : Int -> ( Int, Int, Int )
+toLeastGold coins =
+    let
+        ( copper, silver ) =
+            toLeastSilvers coins
+    in
+        ( copper, silver % 100, silver // 100 )
+
+
+toLeastSilvers : Int -> ( Int, Int )
+toLeastSilvers coins =
+    ( coins % 100, coins // 100 )

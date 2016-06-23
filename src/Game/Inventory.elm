@@ -197,7 +197,7 @@ dragFromShop item shop ({ equipment } as model) =
         buyResult =
             case maybePurse of
                 Just purse ->
-                    Shop.buy item purse shop
+                    Shop.sell item purse shop
 
                 Nothing ->
                     Result.Err "No purse to buy anything with!"
@@ -259,10 +259,19 @@ handleDrop drop item model =
 
         DropShop shop ->
             let
-                _ =
-                    Debug.log "Dropping into shop" item
+                maybePurse =
+                    Equipment.get Equipment.Purse model.equipment `Maybe.andThen` toPurse
             in
-                Result.Ok { model | shop = Shop.give item shop }
+                case maybePurse of
+                    Just purse ->
+                        let
+                            ( shop', purse' ) =
+                                Shop.buy item purse shop
+                        in
+                            Result.Ok { model | shop = shop', equipment = Equipment.updatePurseContents purse' model.equipment }
+
+                    Nothing ->
+                        Result.Err "No purse to hold coins!"
 
 
 
