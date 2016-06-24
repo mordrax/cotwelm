@@ -27,7 +27,7 @@ import Dict exposing (..)
 type alias Model =
     { currentArea : Area
     , maps : Dict String Map
-    , buildings : Dict String (List Building)
+    , buildings : Dict String (List Building.Model)
     }
 
 
@@ -90,7 +90,7 @@ getMap area model =
                 Dict.empty
 
 
-getBuildings : Area -> Model -> List Building
+getBuildings : Area -> Model -> List Building.Model
 getBuildings area model =
     let
         maybeBuildings =
@@ -126,24 +126,24 @@ getASCIIMap area =
 --------------------------
 
 
-villageBuildings : List Building
+villageBuildings : List Building.Model
 villageBuildings =
     let
         farmGate =
             { area = Farm, pos = (Vector.new 11 31) }
     in
-        [ Building.newWithLink Gate_NS (Vector.new 10 0) "Village Gate" (Just farmGate)
-        , Building.new StrawHouse_EF (Vector.new 3 6) "Junk Shop"
-        , Building.new StrawHouse_WF (Vector.new 16 5) "Private House"
-        , Building.new Hut_EF (Vector.new 7 13) "Potion Store"
-        , Building.new StrawHouse_WF (Vector.new 14 12) "Private House 2"
-        , Building.new StrawHouse_EF (Vector.new 6 17) "Weapon Shop"
-        , Building.new StrawHouse_WF (Vector.new 14 17) "General Store"
-        , Building.new HutTemple_NF (Vector.new 9 22) "Odin's Temple"
+        [ Building.new Gate_NS (Vector.new 10 0) "Village Gate" (LinkType farmGate)
+        , Building.new StrawHouse_EF (Vector.new 3 6) "Junk Shop" Ordinary
+        , Building.new StrawHouse_WF (Vector.new 16 5) "Private House" Ordinary
+        , Building.new Hut_EF (Vector.new 7 13) "Potion Store" (ShopType PotionStore)
+        , Building.new StrawHouse_WF (Vector.new 14 12) "Private House 2" Ordinary
+        , Building.new StrawHouse_EF (Vector.new 6 17) "Weapon Shop" (ShopType WeaponSmith)
+        , Building.new StrawHouse_WF (Vector.new 14 17) "General Store" (ShopType GeneralStore)
+        , Building.new HutTemple_NF (Vector.new 9 22) "Odin's Temple" Ordinary
         ]
 
 
-farmBuildings : List Building
+farmBuildings : List Building.Model
 farmBuildings =
     let
         villageGate =
@@ -152,19 +152,19 @@ farmBuildings =
         mineExit =
             { area = DungeonLevelOne, pos = Vector.new 22 39 }
     in
-        [ Building.newWithLink Gate_NS (Vector.new 10 32) "Farm Gate" (Just villageGate)
-        , Building.new StrawHouse_WF (Vector.new 43 23) "Adopted Parents House"
-        , Building.newWithLink MineEntrance (Vector.new 24 1) "Mine Entrance" (Just mineExit)
+        [ Building.new Gate_NS (Vector.new 10 32) "Farm Gate" (LinkType villageGate)
+        , Building.new StrawHouse_WF (Vector.new 43 23) "Adopted Parents House" Ordinary
+        , Building.new MineEntrance (Vector.new 24 1) "Mine Entrance" (LinkType mineExit)
         ]
 
 
-dungeonLevelOneBuildings : List Building
+dungeonLevelOneBuildings : List Building.Model
 dungeonLevelOneBuildings =
     let
         mineEntrance =
             { area = Farm, pos = Vector.new 24 2 }
     in
-        [ Building.newWithLink MineEntrance (Vector.new 22 40) "Mine Exit" (Just mineEntrance)
+        [ Building.new MineEntrance (Vector.new 22 40) "Mine Exit" (LinkType mineEntrance)
         ]
 
 
@@ -194,7 +194,7 @@ tileToHtml tile =
     div [ class ("tile " ++ toString tile.tile), vectorToHtmlStyle tile.pos ] []
 
 
-buildingToHtml : Building -> Html a
+buildingToHtml : Building.Model -> Html a
 buildingToHtml building =
     let
         posStyle =

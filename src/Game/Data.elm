@@ -1,7 +1,7 @@
 module Game.Data exposing (..)
 
 import Hero exposing (..)
-import GameData.Building exposing (..)
+import GameData.Building as Building exposing (..)
 import Game.Maps exposing (..)
 import Item.Item as Item exposing (..)
 import Equipment exposing (..)
@@ -38,7 +38,7 @@ type Drop
 type Screen
     = MapScreen
     | InventoryScreen
-    | BuildingScreen Building
+    | BuildingScreen Building.Model
 
 
 type Direction

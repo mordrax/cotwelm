@@ -11,6 +11,7 @@ import Game.Maps exposing (..)
 import GameData.Tile exposing (..)
 import GameData.Building as Building exposing (..)
 import Hero exposing (..)
+import Shop.Shop as Shop exposing (..)
 
 
 tryMoveHero : Direction -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Msg )
@@ -36,20 +37,23 @@ tryMoveHero dir model =
                 ( { model | hero = movedHero }, Cmd.none )
 
 
-enterBuilding : Building -> Game.Data.Model -> Game.Data.Model
+enterBuilding : Building.Model -> Game.Data.Model -> Game.Data.Model
 enterBuilding building model =
-    case building.link of
-        Nothing ->
-            { model | currentScreen = BuildingScreen building }
-
-        Just link ->
+    case building.buildingType of
+        LinkType link ->
             { model | map = Game.Maps.updateArea link.area model.map, hero = Hero.update (Hero.Teleport link.pos) model.hero }
+
+        ShopType shopType ->
+            { model | currentScreen = BuildingScreen building, shop = Shop.setCurrentShopType shopType model.shop }
+
+        Ordinary ->
+            { model | currentScreen = BuildingScreen building }
 
 
 {-| Given a position and a map, work out what is on the square
 Returns (isTileObstructed, a building entry)
 -}
-getObstructions : Vector -> Game.Maps.Model -> ( Bool, Maybe Building )
+getObstructions : Vector -> Game.Maps.Model -> ( Bool, Maybe Building.Model )
 getObstructions pos mapModel =
     let
         ( maybeTile, maybeBuilding ) =
@@ -76,7 +80,7 @@ getObstructions pos mapModel =
 
 {-| Return the tile and possibly the building that is at a given point. Uses currentArea and maps from model to determine which area to look at
 -}
-thingsAtPosition : Vector -> Game.Maps.Model -> ( Maybe Tile, Maybe Building )
+thingsAtPosition : Vector -> Game.Maps.Model -> ( Maybe Tile, Maybe Building.Model )
 thingsAtPosition pos model =
     let
         area =
@@ -99,7 +103,7 @@ thingsAtPosition pos model =
 
 {-| Given a point and a list of buildings, return the building that the point is within or nothing
 -}
-buildingAtPosition : Vector -> List Building -> Maybe Building
+buildingAtPosition : Vector -> List Building.Model -> Maybe Building.Model
 buildingAtPosition pos buildings =
     let
         buildingsAtTile =
@@ -115,7 +119,7 @@ buildingAtPosition pos buildings =
 
 {-| Given a point and a building, will return true if the point is within the building
 -}
-isBuildingAtPosition : Vector -> Building -> Bool
+isBuildingAtPosition : Vector -> Building.Model -> Bool
 isBuildingAtPosition pos building =
     let
         bottomLeft =

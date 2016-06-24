@@ -238,13 +238,11 @@ handleDrop drop item model =
                     Equipment.NoPackEquipped ->
                         Result.Err "Can't add to the pack. No packed equipped!"
 
-                    Equipment.ItemMsg a ->
-                        case a of
-                            Item.TypeDef.Ok ->
-                                success
+                    Equipment.ItemMsg (Item.TypeDef.Ok) ->
+                        success
 
-                            _ ->
-                                Result.Err ("Dropping into pack with unhandled item msg" ++ (toString a))
+                    Equipment.ItemMsg msg ->
+                        Result.Err ("Dropping into pack with unhandled item msg" ++ (toString msg))
 
                     msg ->
                         Result.Err ("Dropping into pack failed with unhanded msg: " ++ (toString msg))
@@ -307,13 +305,16 @@ view ({ equipment, dnd } as model) =
 
 
 viewShopPackPurse : Model -> Html (InventoryMsg Drag Drop)
-viewShopPackPurse ({ equipment, dnd } as model) =
+viewShopPackPurse ({ equipment, dnd, currentScreen } as model) =
     let
         header =
             \title -> div [ class "ui block header" ] [ text title ]
 
         columnWidth =
             \width children -> div [ class (width ++ " wide column") ] children
+
+        groundHtml =
+            div [] [ header "Ground", viewGround model ]
 
         shopHtml =
             div []
@@ -329,6 +330,14 @@ viewShopPackPurse ({ equipment, dnd } as model) =
                 _ ->
                     Nothing
 
+        shopGroundHtml =
+            case currentScreen of
+                BuildingScreen building ->
+                    shopHtml
+
+                _ ->
+                    groundHtml
+
         packHtml =
             div []
                 [ header ("Pack: (" ++ (viewPackInfo maybePack) ++ ")")
@@ -343,11 +352,16 @@ viewShopPackPurse ({ equipment, dnd } as model) =
     in
         Html.App.map toInventoryMsg
             (columnWidth "ten"
-                [ shopHtml
+                [ shopGroundHtml
                 , packHtml
                 , purseHtml
                 ]
             )
+
+
+viewGround : Model -> Html (DragDropMsg Drag Drop)
+viewGround model =
+    div [] []
 
 
 viewPackInfo : Maybe (Pack Item) -> String
