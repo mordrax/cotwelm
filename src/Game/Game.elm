@@ -12,7 +12,7 @@ import Shop.Shop as Shop exposing (..)
 
 -- Data
 
-import GameData.Building exposing (..)
+import GameData.Building as Building exposing (..)
 
 
 --Hero
@@ -52,7 +52,7 @@ initGame =
         ( { name = "A new game"
           , hero = Hero.init
           , map = Game.Maps.initMaps
-          , currentScreen = InventoryScreen
+          , currentScreen = MapScreen
           , dnd = DragDrop.new
           , equipment = equipment
           , shop = newShop
@@ -95,7 +95,12 @@ view model =
             viewMap model
 
         BuildingScreen building ->
-            viewBuilding building
+            case building.buildingType of
+                ShopType shopType ->
+                    Html.App.map InvMsg (Inventory.view model)
+
+                _ ->
+                    viewBuilding building
 
         InventoryScreen ->
             Html.App.map InvMsg (Inventory.view model)
@@ -114,7 +119,7 @@ viewMap model =
             ]
 
 
-viewBuilding : GameData.Building.Building -> Html Game.Data.Msg
+viewBuilding : Building.Model -> Html Game.Data.Msg
 viewBuilding building =
     div [] [ h1 [] [ text building.name ] ]
 

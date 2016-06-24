@@ -1,14 +1,14 @@
 module GameData.Tile exposing (..)
 
 import Utils.Vector exposing (..)
-import GameData.Building exposing (..)
+import GameData.Building as Building exposing (..)
 
 
 type alias Tile =
     { solid : Bool
     , tile : TileType
     , pos : Vector
-    , building : Maybe Building
+    , building : Maybe Building.Model
     }
 
 

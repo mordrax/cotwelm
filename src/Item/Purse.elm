@@ -38,7 +38,7 @@ type Msg
 
 newPurse : ID -> ItemStatus -> IdentificationStatus -> Purse
 newPurse id status idStatus =
-    PurseM { copper = 100, silver = 10, gold = 1, platinum = 0, baseItem = (ItemModel id "Purse" 0 0 "Purse" status idStatus <| Mass.new 0 0) }
+    PurseM { copper = 100, silver = 10, gold = 1, platinum = 1, baseItem = (ItemModel id "Purse" 0 0 "Purse" status idStatus <| Mass.new 0 0) }
 
 
 getCoins : Purse -> ( Int, Int, Int, Int )

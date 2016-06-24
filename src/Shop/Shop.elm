@@ -3,6 +3,7 @@ module Shop.Shop
         ( Shop
         , Msg
         , new
+        , setCurrentShopType
         , replenish
         , list
         , update
@@ -11,9 +12,12 @@ module Shop.Shop
         , buy
         )
 
+-- items
+
 import Item.Purse as Purse exposing (..)
 import Item.Item as Item exposing (..)
 import Item.TypeDef exposing (..)
+import GameData.Building exposing (..)
 
 
 -- utils
@@ -39,17 +43,27 @@ type Shop
 
 
 type alias Model =
-    { items : List Item }
+    { currentShop : ShopType
+    , weaponSmith : List Item
+    , generalStore : List Item
+    , potionStore : List Item
+    , junkShop : List Item
+    }
 
 
 new : ( Shop, Cmd Msg )
 new =
-    ( SM (Model []), getSeed )
+    ( SM (Model WeaponSmith [] [] [] []), getSeed )
+
+
+setCurrentShopType : ShopType -> Shop -> Shop
+setCurrentShopType shopType (SM model) =
+    SM { model | currentShop = shopType }
 
 
 give : Item -> Shop -> Shop
 give item (SM model) =
-    SM { model | items = item :: model.items }
+    SM (addTo item model)
 
 
 sell : Item -> Purse.Purse -> Shop -> Result String ( Shop, Purse.Purse )
@@ -63,7 +77,7 @@ sell item purse (SM model) =
     in
         case Purse.remove price purse of
             Result.Ok purse' ->
-                Result.Ok ( SM (take item model), purse' )
+                Result.Ok ( SM (removeFrom item model), purse' )
 
             Result.Err msg ->
                 Result.Err "Cannot afford item!"
@@ -78,25 +92,51 @@ buy item purse (SM model) =
         cost =
             Item.costOf item
     in
-        ( SM { model | items = item :: model.items }, Purse.add cost purse )
+        ( SM (addTo item model), Purse.add cost purse )
 
 
-{-| Take a item from the shop, no checks
--}
-take : Item -> Model -> Model
-take item ({ items } as model) =
+addTo : Item -> Model -> Model
+addTo item model =
+    case model.currentShop of
+        WeaponSmith ->
+            { model | weaponSmith = item :: model.weaponSmith }
+
+        GeneralStore ->
+            { model | generalStore = item :: model.generalStore }
+
+        PotionStore ->
+            { model | potionStore = item :: model.potionStore }
+
+        JunkShop ->
+            { model | junkShop = item :: model.junkShop }
+
+
+removeFrom : Item -> Model -> Model
+removeFrom item model =
     let
         equals =
             Item.equals
 
-        items' =
-            List.filter (\x -> (not (equals item x))) items
+        removeFromShop =
+            \shop ->
+                List.filter (\x -> (not (equals item x))) shop
     in
-        { model | items = items' }
+        case model.currentShop of
+            WeaponSmith ->
+                { model | weaponSmith = removeFromShop model.weaponSmith }
+
+            GeneralStore ->
+                { model | generalStore = removeFromShop model.generalStore }
+
+            PotionStore ->
+                { model | potionStore = removeFromShop model.potionStore }
+
+            JunkShop ->
+                { model | junkShop = removeFromShop model.junkShop }
 
 
-replenish : IdGenerator -> Seed -> ( IdGenerator, List Item )
-replenish idGenerator seed =
+replenish : List ItemFactory -> IdGenerator -> Seed -> ( IdGenerator, List Item )
+replenish itemFactories idGenerator seed =
     let
         defaultProduct : Maybe (ID -> Item) -> (ID -> Item)
         defaultProduct =
@@ -104,7 +144,7 @@ replenish idGenerator seed =
                 Maybe.withDefault (Item.new (Item.Weapon BrokenSword)) maybe
 
         itemGenerator =
-            sample productList |> (Random.map defaultProduct)
+            sample itemFactories |> (Random.map defaultProduct)
 
         itemsGenerator =
             \n -> Random.list n itemGenerator
@@ -128,10 +168,27 @@ update msg generator (SM model) =
     case msg of
         PopulateShop seed ->
             let
-                ( generator', products ) =
-                    replenish generator seed
+                ( generatorWeaponSmith, weaponSmithProducts ) =
+                    replenish weaponSmith generator seed
+
+                ( generatorGeneralStore, generalStoreProducts ) =
+                    replenish generalStore generatorWeaponSmith seed
+
+                ( generatorPotionStore, potionStoreProducts ) =
+                    replenish potionStore generatorGeneralStore seed
+
+                ( generatorJunkShop, junkShopProducts ) =
+                    replenish junkShop generatorPotionStore seed
             in
-                ( SM { model | items = products }, generator' )
+                ( SM
+                    { model
+                        | weaponSmith = weaponSmithProducts
+                        , generalStore = generalStoreProducts
+                        , potionStore = potionStoreProducts
+                        , junkShop = junkShopProducts
+                    }
+                , generatorJunkShop
+                )
 
         _ ->
             let
@@ -143,7 +200,18 @@ update msg generator (SM model) =
 
 list : Shop -> List Item
 list (SM model) =
-    model.items
+    case model.currentShop of
+        WeaponSmith ->
+            model.weaponSmith
+
+        GeneralStore ->
+            model.generalStore
+
+        PotionStore ->
+            model.potionStore
+
+        JunkShop ->
+            model.junkShop
 
 
 type alias ProductName =
@@ -154,10 +222,9 @@ type alias ItemFactory =
     ID -> Item
 
 
-productList : List ItemFactory
-productList =
-    [ Item.new (Item.Weapon BrokenSword)
-    , Item.new (Item.Weapon Club)
+weaponSmith : List ItemFactory
+weaponSmith =
+    [ Item.new (Item.Weapon Club)
     , Item.new (Item.Weapon Dagger)
     , Item.new (Item.Weapon Hammer)
     , Item.new (Item.Weapon HandAxe)
@@ -174,4 +241,101 @@ productList =
     , Item.new (Item.Weapon MorningStar)
     , Item.new (Item.Weapon BastardSword)
     , Item.new (Item.Weapon TwoHandedSword)
+    ]
+
+
+generalStore : List ItemFactory
+generalStore =
+    List.concat [ armour, gauntlets, bracers, shield, helmet, pack, belt ]
+
+
+potionStore : List ItemFactory
+potionStore =
+    []
+
+
+junkShop : List ItemFactory
+junkShop =
+    []
+
+
+armour : List ItemFactory
+armour =
+    [ Item.new (Item.Armour RustyArmour)
+    , Item.new (Item.Armour LeatherArmour)
+    , Item.new (Item.Armour StuddedLeatherArmour)
+    , Item.new (Item.Armour RingMail)
+    , Item.new (Item.Armour ScaleMail)
+    , Item.new (Item.Armour ChainMail)
+    , Item.new (Item.Armour SplintMail)
+    , Item.new (Item.Armour PlateMail)
+    , Item.new (Item.Armour PlateArmour)
+    , Item.new (Item.Armour MeteoricSteelPlate)
+    , Item.new (Item.Armour ElvenChainMail)
+    ]
+
+
+belt : List ItemFactory
+belt =
+    [ Item.new (Item.Belt TwoSlotBelt)
+    , Item.new (Item.Belt ThreeSlotBelt)
+    , Item.new (Item.Belt FourSlotBelt)
+    , Item.new (Item.Belt UtilityBelt)
+    , Item.new (Item.Belt WandQuiverBelt)
+    ]
+
+
+bracers : List ItemFactory
+bracers =
+    [ Item.new (Item.Bracers NormalBracers) ]
+
+
+gauntlets : List ItemFactory
+gauntlets =
+    [ Item.new (Item.Gauntlets NormalGauntlets) ]
+
+
+helmet : List ItemFactory
+helmet =
+    [ Item.new (Item.Helmet BrokenHelmet)
+    , Item.new (Item.Helmet LeatherHelmet)
+    , Item.new (Item.Helmet IronHelmet)
+    , Item.new (Item.Helmet SteelHelmet)
+    , Item.new (Item.Helmet MeteoricSteelHelmet)
+    , Item.new (Item.Helmet HelmetOfDetectMonsters)
+    ]
+
+
+pack : List ItemFactory
+pack =
+    [ Item.new (Item.Pack SmallBag)
+    , Item.new (Item.Pack MediumBag)
+    , Item.new (Item.Pack LargeBag)
+    , Item.new (Item.Pack SmallPack)
+    , Item.new (Item.Pack MediumPack)
+    , Item.new (Item.Pack LargePack)
+    , Item.new (Item.Pack SmallChest)
+    , Item.new (Item.Pack MediumChest)
+    , Item.new (Item.Pack LargeChest)
+    , Item.new (Item.Pack EnchantedSmallPackOfHolding)
+    , Item.new (Item.Pack EnchantedMediumPackOfHolding)
+    , Item.new (Item.Pack EnchantedLargePackOfHolding)
+    ]
+
+
+shield : List ItemFactory
+shield =
+    [ Item.new (Item.Shield BrokenShield)
+    , Item.new (Item.Shield SmallWoodenShield)
+    , Item.new (Item.Shield MediumWoodenShield)
+    , Item.new (Item.Shield LargeWoodenShield)
+    , Item.new (Item.Shield SmallIronShield)
+    , Item.new (Item.Shield MediumIronShield)
+    , Item.new (Item.Shield LargeIronShield)
+    , Item.new (Item.Shield SmallSteelShield)
+    , Item.new (Item.Shield MediumSteelShield)
+    , Item.new (Item.Shield LargeSteelShield)
+    , Item.new (Item.Shield SmallMeteoricSteelShield)
+    , Item.new (Item.Shield MediumMeteoricSteelShield)
+    , Item.new (Item.Shield LargeMeteoricSteelShield)
     ]
