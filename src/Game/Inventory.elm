@@ -401,19 +401,19 @@ toInventoryMsg dragDropMsg =
 viewPack : Maybe (Pack Item) -> Model -> Html (DragDropMsg Drag Drop)
 viewPack maybePack ({ dnd } as model) =
     let
-        highlightStyle =
-            style [ ( "background", "lightblue" ) ]
+        packStyle =
+            style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
 
         droppableHtml =
             \pack ->
-                (div [ highlightStyle ] [ viewContainer (ItemPack pack) model ])
+                (div [ packStyle ] [ viewContainer (ItemPack pack) model ])
     in
         case maybePack of
             Just pack ->
                 DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
 
             _ ->
-                div [] [ text "Pack is empty" ]
+                div [] [ text "You have no pack! Equip a pack to use this space." ]
 
 
 viewShop : Model -> Html (DragDropMsg Drag Drop)
