@@ -18,6 +18,7 @@ import GameData.Building as Building exposing (..)
 --Hero
 
 import Hero exposing (..)
+import Monster.Monster as Monster exposing (..)
 
 
 -- Common

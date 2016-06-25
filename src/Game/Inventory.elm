@@ -402,7 +402,7 @@ viewPack : Maybe (Pack Item) -> Model -> Html (DragDropMsg Drag Drop)
 viewPack maybePack ({ dnd } as model) =
     let
         packStyle =
-            style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
+            style [ ( "background", "lightblue" ), ( "min-height", "100pdsdx" ) ]
 
         droppableHtml =
             \pack ->
