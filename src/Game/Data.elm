@@ -9,6 +9,7 @@ import Shop.Shop as Shop exposing (..)
 import Utils.DragDrop exposing (..)
 import Utils.IdGenerator exposing (..)
 import Shop.Shop as Shop exposing (..)
+import Monster.Monster exposing (..)
 
 
 type alias Model =
@@ -20,6 +21,7 @@ type alias Model =
     , equipment : Equipment
     , shop : Shop.Shop
     , idGen : IdGenerator
+    , monsters : List Monster
     }
 
 
