@@ -19,6 +19,7 @@ import GameData.Building as Building exposing (..)
 
 import Hero exposing (..)
 import Monster.Monster as Monster exposing (..)
+import Monster.Monsters as Monsters exposing (..)
 
 
 -- Common
@@ -58,6 +59,7 @@ initGame =
           , equipment = equipment
           , shop = newShop
           , idGen = idGenerator'
+          , monsters = Monsters.init
           }
         , cmd
         )

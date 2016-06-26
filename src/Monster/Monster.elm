@@ -6,294 +6,487 @@ type Monster
 
 
 type alias Model =
-    { name : String
-    , level : Int
+    { level : Int
     , css : String
+    , name : String
     }
 
 
 type MonsterType
-    = MaleHero
-    | FemaleHero
-    | Kobold
-    | GiantRat
-    | LargeSnake
-    | GiantAnt
-    | WildDog
-    | Skeleton
-    | GiantTrapdoorSpider
-    | GiantBat
-    | CarrionCreeper
-    | GiantScorpion
-    | GreenSlime
-    | Viper
-    | Ogre
-    | WalkingCorpse
-    | HugeLizard
+    = GiantRat
     | Goblin
+    | GiantBat
     | Hobgoblin
-    | Spectre
-    | Thief
-    | Wolf
-    | DireWolf
-    | BrownBear
-    | CaveBear
-    | GelatinousGlob
-    | Troll
-    | Manticore
-    | BronzeGolem
-    | IronGolem
-    | DiamondGolem
-    | WoodenGolem
+    | Kobold
+    | LargeSnake
+    | Skeleton
+    | WildDog
+    | Viper
+    | GoblinFighter
+    | GiantRedAnt
+    | WalkingCorpse
     | Bandit
-    | Warrior
-    | Wizard
-    | Necromancer
-    | Wight
-    | Wraith
-    | Ghost
-    | Shadow
-    | Vampire
-    | IceDevil
+    | GiantTrapdoorSpider
+    | HugeLizard
     | RatMan
+    | Slime
+    | GiantScorpion
+    | GrayWolf
+    | GelantinousGlob
+    | SmirkingSneakThief
+    | CarrionCreeper
+    | HugeOgre
+    | Shadow
+    | AnimatedWoodenStatue
+    | BrownBear
+    | YoungGreenDragon
+    | YoungWhiteDragon
+    | Manticore
+    | EerieGhost
+    | GruesomeTroll
+    | YoungBlueDragon
+    | YoungRedDragon
+    | AnimatedBronzeStatue
+    | EvilWarrior
     | WolfMan
+    | CaveBear
+    | WhiteWolf
+    | Berserker
+    | AnimatedIronStatue
+    | TunnelWight
+    | YoungAdultBlueDragon
+    | YoungAdultGreenDragon
+    | YoungAdultWhiteDragon
+    | PaleWraith
+    | BarrowWight
     | BearMan
-    | BullMan
-    | SpikedDevil
-    | HornedDevil
-    | AbyssFiend
-    | WindElemental
     | DustElemental
-    | FireElemental
-    | WaterElemental
-    | MagmaElemental
-    | IceElemental
-    | EarthElemental
     | HillGiant
-    | TwoHeadGiant
-    | FrostGiant
+    | YoungAdultRedDragon
+    | Wizard
+    | BullMan
+    | CastleWight
+    | DarkWraith
+    | IceElemental
+    | Spectre
+    | AnimatedMarbleStatue
+    | AdultBlueDragon
+    | AdultGreenDragon
+    | AdultWhiteDragon
+    | AirElemental
+    | MagmaElemental
     | StoneGiant
+    | TwoHeadedGiant
+    | AdultRedDragon
+    | FireElemental
+    | FrostGiant
+    | SpikedDevil
+    | WaterElemental
+    | EarthElemental
+    | Necromancer
+    | Vampire
+    | AbyssWraith
+    | Utgardhalok
     | FireGiant
-    | Surtur
-    | FireGiantKing
-    | FrostGiantKing
-    | HillGiantKing
-    | StoneGiantKing
-    | RedDragon
-    | BlueDragon
-    | WhiteDragon
-    | GreenDragon
+    | OldBlueDragon
+    | OldGreenDragon
+    | OldWhiteDragon
+    | HornedDevil
+    | OldRedDragon
+    | Rungnir
+    | IceDevil
+    | Thrym
+    | VeryOldGreenDragon
+    | VeryOldWhiteDragon
+    | VeryOldBlueDragon
+    | AbyssFiend
+    | Thiassa
+    | VeryOldRedDragon
+    | AncientGreenDragon
+    | AncientWhiteDragon
+    | AncientBlueDragon
+    | AncientRedDragon
+    | Sultur
 
 
 new : MonsterType -> Monster
 new monsterType =
     case monsterType of
-        MaleHero ->
-            MM (Model "Male Hero" 0 "maleHero")
-
-        FemaleHero ->
-            MM (Model "Female Hero" 0 "femaleHero")
-
-        Kobold ->
-            MM (Model "Kobold" 2 "kobold")
-
         GiantRat ->
-            MM (Model "Giant Rat" 1 "giantRat")
+            MM (Model 1 "giantRat" "Giant Rat")
 
-        LargeSnake ->
-            MM (Model "Large Snake" 3 "largeSnake")
-
-        GiantAnt ->
-            MM (Model "Giant Ant" 7 "giantAnt")
-
-        WildDog ->
-            MM (Model "Wild Dog" 3 "wildDog")
-
-        Skeleton ->
-            MM (Model "Skeleton" 3 "skeleton")
-
-        GiantTrapdoorSpider ->
-            MM (Model "Giant Trapdoor Spider" 10 "giantTrapdoorSpider")
-
-        GiantBat ->
-            MM (Model "Giant Bat" 2 "giantBat")
-
-        CarrionCreeper ->
-            MM (Model "Carrion Creeper" 16 "carrionCreeper")
-
-        GiantScorpion ->
-            MM (Model "Giant Scorpion" 11 "giantScorpion")
-
-        GreenSlime ->
-            MM (Model "Slime" 10 "greenSlime")
-
-        Viper ->
-            MM (Model "Viper" 5 "viper")
-
-        Ogre ->
-            MM (Model "Huge Ogre" 16 "ogre")
-
-        WalkingCorpse ->
-            MM (Model "Walking Corpse" 7 "walkingCorpse")
-
-        HugeLizard ->
-            MM (Model "Huge Lizard" 10 "hugeLizard")
-
+        -- Special: " "
         Goblin ->
-            MM (Model "Goblin" 1 "goblin")
+            MM (Model 1 "goblin" "Goblin")
 
+        -- Special: " "
+        GiantBat ->
+            MM (Model 2 "giantBat" "Giant Bat")
+
+        -- Special: " "
         Hobgoblin ->
-            MM (Model "Hobgoblin" 2 "hobgoblin")
+            MM (Model 2 "hobgoblin" "Hobgoblin")
 
-        Spectre ->
-            MM (Model "Spectre" 50 "spectre")
+        -- Special: " "
+        Kobold ->
+            MM (Model 2 "kobold" "Kobold")
 
-        Thief ->
-            MM (Model "Smirking Sneak Thief" 15 "thief")
+        -- Special: " "
+        LargeSnake ->
+            MM (Model 3 "largeSnake" "Large Snake")
 
-        Wolf ->
-            MM (Model "White Wolf" 28 "wolf")
+        -- Special: " "
+        Skeleton ->
+            MM (Model 3 "skeleton" "Skeleton")
 
-        DireWolf ->
-            MM (Model "Gray Wolf" 11 "direWolf")
+        -- Special: " "
+        WildDog ->
+            MM (Model 3 "wildDog" "Wild Dog")
 
-        BrownBear ->
-            MM (Model "Brown Bear" 17 "brownBear")
+        -- Special: " "
+        Viper ->
+            MM (Model 5 "viper" "Viper")
 
-        CaveBear ->
-            MM (Model "Cave Bear" 27 "caveBear")
+        -- Special: "Poison"
+        GoblinFighter ->
+            MM (Model 6 "goblinFighter" "Goblin Fighter")
 
-        GelatinousGlob ->
-            MM (Model "Gelatinous Glob" 14 "gelatinousGlob")
+        -- Special: " "
+        GiantRedAnt ->
+            MM (Model 7 "giantRedAnt" "Giant Red Ant")
 
-        Troll ->
-            MM (Model "Gruesome Troll" 20 "troll")
+        -- Special: " "
+        WalkingCorpse ->
+            MM (Model 7 "walkingCorpse" "Walking Corpse")
 
-        Manticore ->
-            MM (Model "Manticore" 19 "manticore")
-
-        BronzeGolem ->
-            MM (Model "Animated Bronze Statue" 25 "bronzeGolem")
-
-        IronGolem ->
-            MM (Model "Animated Iron Statue" 35 "ironGolem")
-
-        DiamondGolem ->
-            MM (Model "Animated Marble Statue" 52 "diamondGolem")
-
-        WoodenGolem ->
-            MM (Model "Animated Wooden Statue" 17 "woodenGolem")
-
+        -- Special: " "
         Bandit ->
-            MM (Model "Bandit" "bandit")
+            MM (Model 10 "bandit" "Bandit")
 
-        Warrior ->
-            MM (Model "Warrior" "warrior")
+        -- Special: "Arrow"
+        GiantTrapdoorSpider ->
+            MM (Model 10 "giantTrapdoorSpider" "Giant Trapdoor Spider")
 
-        Wizard ->
-            MM (Model "Wizard" "wizard")
+        -- Special: " "
+        HugeLizard ->
+            MM (Model 10 "hugeLizard" "Huge Lizard")
 
-        Necromancer ->
-            MM (Model "Necromancer" "necromancer")
-
-        Wight ->
-            MM (Model "Wight" "wight")
-
-        Wraith ->
-            MM (Model "Wraith" "wraith")
-
-        Ghost ->
-            MM (Model "Ghost" "ghost")
-
-        Shadow ->
-            MM (Model "Shadow" "shadow")
-
-        Vampire ->
-            MM (Model "Vampire" "vampire")
-
-        IceDevil ->
-            MM (Model "Ice Devil" "iceDevil")
-
+        -- Special: " "
         RatMan ->
-            MM (Model "Rat Man" "ratMan")
+            MM (Model 10 "rat" "Rat-Man")
 
+        -- Special: " "
+        Slime ->
+            MM (Model 10 "slime" "Slime")
+
+        -- Special: "Immune to Weapons"
+        GiantScorpion ->
+            MM (Model 11 "giantScorpion" "Giant Scorpion")
+
+        -- Special: "Poison"
+        GrayWolf ->
+            MM (Model 11 "grayWolf" "Gray Wolf")
+
+        -- Special: " "
+        GelantinousGlob ->
+            MM (Model 14 "gelantinousGlob" "Gelantinous Glob")
+
+        -- Special: "Immune to Cold, Lightning"
+        SmirkingSneakThief ->
+            MM (Model 15 "smirkingSneakThief" "Smirking Sneak Thief")
+
+        -- Special: "Steals from Belt and Purse, Teleports"
+        CarrionCreeper ->
+            MM (Model 16 "carrionCreeper" "Carrion Creeper")
+
+        -- Special: " "
+        HugeOgre ->
+            MM (Model 16 "hugeOgre" "Huge Ogre")
+
+        -- Special: " "
+        Shadow ->
+            MM (Model 16 "shadow" "Shadow")
+
+        -- Special: " "
+        AnimatedWoodenStatue ->
+            MM (Model 17 "animatedWoodenStatue" "Animated Wooden Statue")
+
+        -- Special: " "
+        BrownBear ->
+            MM (Model 17 "brownBear" "Brown Bear")
+
+        -- Special: " "
+        YoungGreenDragon ->
+            MM (Model 18 "youngGreenDragon" "Young Green Dragon")
+
+        -- Special: "Immune to Poison, Breathes Poison Gas"
+        YoungWhiteDragon ->
+            MM (Model 18 "youngWhiteDragon" "Young White Dragon")
+
+        -- Special: "Immune to Cold, Breathes Ice"
+        Manticore ->
+            MM (Model 19 "manticore" "Manticore")
+
+        -- Special: "Needles"
+        EerieGhost ->
+            MM (Model 20 "eerieGhost" "Eerie Ghost")
+
+        -- Special: " "
+        GruesomeTroll ->
+            MM (Model 20 "gruesomeTroll" "Gruesome Troll")
+
+        -- Special: " "
+        YoungBlueDragon ->
+            MM (Model 20 "youngBlueDragon" "Young Blue Dragon")
+
+        -- Special: "Immune to Lightning, Breathes Lightning"
+        YoungRedDragon ->
+            MM (Model 20 "youngRedDragon" "Young Red Dragon")
+
+        -- Special: "Immune to Fire, Breathes Fire"
+        AnimatedBronzeStatue ->
+            MM (Model 25 "animatedBronzeStatue" "Animated Bronze Statue")
+
+        -- Special: " "
+        EvilWarrior ->
+            MM (Model 25 "evilWarrior" "Evil Warrior")
+
+        -- Special: "Arrow"
         WolfMan ->
-            MM (Model "Wolf Man" "wolfMan")
+            MM (Model 25 "wolf" "Wolf-Man")
 
+        -- Special: " "
+        CaveBear ->
+            MM (Model 27 "caveBear" "Cave Bear")
+
+        -- Special: " "
+        WhiteWolf ->
+            MM (Model 28 "whiteWolf" "White Wolf")
+
+        -- Special: " "
+        Berserker ->
+            MM (Model 30 "berserker" "Berserker")
+
+        -- Special: " "
+        AnimatedIronStatue ->
+            MM (Model 35 "animatedIronStatue" "Animated Iron Statue")
+
+        -- Special: " "
+        TunnelWight ->
+            MM (Model 35 "tunnelWight" "Tunnel Wight")
+
+        -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
+        YoungAdultBlueDragon ->
+            MM (Model 35 "youngAdultBlueDragon" "Young Adult Blue Dragon")
+
+        -- Special: "Immune to Lightning, Breathes Lightning"
+        YoungAdultGreenDragon ->
+            MM (Model 35 "youngAdultGreenDragon" "Young Adult Green Dragon")
+
+        -- Special: "Immune to Poison, Breathes Poison Gas"
+        YoungAdultWhiteDragon ->
+            MM (Model 35 "youngAdultWhiteDragon" "Young Adult White Dragon")
+
+        -- Special: "Immune to Cold, Breathes Ice"
+        PaleWraith ->
+            MM (Model 37 "paleWraith" "Pale Wraith")
+
+        -- Special: "Drains Intelligence and Mana Permanently"
+        BarrowWight ->
+            MM (Model 40 "barrowWight" "Barrow Wight")
+
+        -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
         BearMan ->
-            MM (Model "Bear Man" "bearMan")
+            MM (Model 40 "bear" "Bear-Man")
 
-        BullMan ->
-            MM (Model "Bull Man" "bullMan")
-
-        SpikedDevil ->
-            MM (Model "Spiked Devil" "spikedDevil")
-
-        HornedDevil ->
-            MM (Model "Horned Devil" "hornedDevil")
-
-        AbyssFiend ->
-            MM (Model "Abyss Fiend" "abyssFiend")
-
-        WindElemental ->
-            MM (Model "Wind Elemental" "windElemental")
-
+        -- Special: " "
         DustElemental ->
-            MM (Model "Dust Elemental" "dustElemental")
+            MM (Model 40 "dustElemental" "Dust Elemental")
 
-        FireElemental ->
-            MM (Model "Fire Elemental" "fireElemental")
-
-        WaterElemental ->
-            MM (Model "Water Elemental" "waterElemental")
-
-        MagmaElemental ->
-            MM (Model "Magma Elemental" "magmaElemental")
-
-        IceElemental ->
-            MM (Model "Ice Elemental" "iceElemental")
-
-        EarthElemental ->
-            MM (Model "Earth Elemental" "earthElemental")
-
+        -- Special: " "
         HillGiant ->
-            MM (Model "Hill Giant" "hillGiant")
+            MM (Model 40 "hillGiant" "Hill Giant")
 
-        TwoHeadGiant ->
-            MM (Model "Two Head Giant" "twoHeadGiant")
+        -- Special: "Throws Stones"
+        YoungAdultRedDragon ->
+            MM (Model 40 "youngAdultRedDragon" "Young Adult Red Dragon")
 
-        FrostGiant ->
-            MM (Model "Frost Giant" "frostGiant")
+        -- Special: "Immune to Fire, Breathes Fire"
+        Wizard ->
+            MM (Model 45 "wizard" "Wizard")
 
+        -- Special: "Casts Bolt Spells, Slow, Summon Monster, Phase Door, Teleport"
+        BullMan ->
+            MM (Model 50 "bull" "Bull-Man")
+
+        -- Special: " "
+        CastleWight ->
+            MM (Model 50 "castleWight" "Castle Wight")
+
+        -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
+        DarkWraith ->
+            MM (Model 50 "darkWraith" "Dark Wraith")
+
+        -- Special: "Drains Intelligence and Mana Permanently"
+        IceElemental ->
+            MM (Model 50 "iceElemental" "Ice Elemental")
+
+        -- Special: " "
+        Spectre ->
+            MM (Model 50 "spectre" "Spectre")
+
+        -- Special: " "
+        AnimatedMarbleStatue ->
+            MM (Model 52 "animatedMarbleStatue" "Animated Marble Statue")
+
+        -- Special: " "
+        AdultBlueDragon ->
+            MM (Model 55 "adultBlueDragon" "Adult Blue Dragon")
+
+        -- Special: "Immune to Lightning, Breathes Lightning"
+        AdultGreenDragon ->
+            MM (Model 55 "adultGreenDragon" "Adult Green Dragon")
+
+        -- Special: "Immune to Poison, Breathes Poison Gas"
+        AdultWhiteDragon ->
+            MM (Model 55 "adultWhiteDragon" "Adult White Dragon")
+
+        -- Special: "Immune to Cold, Breathes Ice"
+        AirElemental ->
+            MM (Model 55 "airElemental" "Air Elemental")
+
+        -- Special: " "
+        MagmaElemental ->
+            MM (Model 55 "magmaElemental" "Magma Elemental")
+
+        -- Special: " "
         StoneGiant ->
-            MM (Model "Stone Giant" "stoneGiant")
+            MM (Model 55 "stoneGiant" "Stone Giant")
 
+        -- Special: "Throws Stones"
+        TwoHeadedGiant ->
+            MM (Model 55 "twoHeadedGiant" "Two Headed Giant")
+
+        -- Special: " "
+        AdultRedDragon ->
+            MM (Model 60 "adultRedDragon" "Adult Red Dragon")
+
+        -- Special: "Immune to Fire, Breathes Fire"
+        FireElemental ->
+            MM (Model 60 "fireElemental" "Fire Elemental")
+
+        -- Special: " "
+        FrostGiant ->
+            MM (Model 60 "frostGiant" "Frost Giant")
+
+        -- Special: "Throws Iceballs"
+        SpikedDevil ->
+            MM (Model 60 "spikedDevil" "Spiked Devil")
+
+        -- Special: "Summons Spiked Devil"
+        WaterElemental ->
+            MM (Model 60 "waterElemental" "Water Elemental")
+
+        -- Special: " "
+        EarthElemental ->
+            MM (Model 65 "earthElemental" "Earth Elemental")
+
+        -- Special: " "
+        Necromancer ->
+            MM (Model 65 "necromancer" "Necromancer")
+
+        -- Special: "Casts Bolt Spells, Slow, Summon Monster, Phase Door, Teleport"
+        Vampire ->
+            MM (Model 65 "vampire" "Vampire")
+
+        -- Special: "Drains HP Permanently"
+        AbyssWraith ->
+            MM (Model 70 "abyssWraith" "Abyss Wraith")
+
+        -- Special: "Drains Intelligence and Mana Permanently"
+        Utgardhalok ->
+            MM (Model 70 "utgardhalok" "Utgardhalok")
+
+        -- Special: "Throws Boulders"
         FireGiant ->
-            MM (Model "Fire Giant" "fireGiant")
+            MM (Model 75 "fireGiant" "Fire Giant")
 
-        Surtur ->
-            MM (Model "Surtur" "surtur")
+        -- Special: "Throws Stones"
+        OldBlueDragon ->
+            MM (Model 75 "oldBlueDragon" "Old Blue Dragon")
 
-        FireGiantKing ->
-            MM (Model "Fire Giant King" "fireGiantKing")
+        -- Special: "Immune to Lightning, Breathes Lightning"
+        OldGreenDragon ->
+            MM (Model 75 "oldGreenDragon" "Old Green Dragon")
 
-        FrostGiantKing ->
-            MM (Model "Frost Giant King" "frostGiantKing")
+        -- Special: "Immune to Poison, Breathes Poison Gas"
+        OldWhiteDragon ->
+            MM (Model 75 "oldWhiteDragon" "Old White Dragon")
 
-        HillGiantKing ->
-            MM (Model "Hill Giant King" "hillGiantKing")
+        -- Special: "Immune to Cold, Breathes Ice"
+        HornedDevil ->
+            MM (Model 80 "hornedDevil" "Horned Devil")
 
-        StoneGiantKing ->
-            MM (Model "Stone Giant King" "stoneGiantKing")
+        -- Special: "Summons Horned Devil"
+        OldRedDragon ->
+            MM (Model 80 "oldRedDragon" "Old Red Dragon")
 
-        RedDragon ->
-            MM (Model "Red Dragon" "redDragon")
+        -- Special: "Immune to Fire, Breathes Fire"
+        Rungnir ->
+            MM (Model 80 "rungnir" "Rungnir")
 
-        BlueDragon ->
-            MM (Model "Blue Dragon" "blueDragon")
+        -- Special: "Throws stones"
+        IceDevil ->
+            MM (Model 85 "iceDevil" "Ice Devil")
 
-        WhiteDragon ->
-            MM (Model "White Dragon" "whiteDragon")
+        -- Special: "Summons Ice Devil"
+        Thrym ->
+            MM (Model 90 "thrym" "Thrym")
 
-        GreenDragon ->
-            MM (Model "Green Dragon" "greenDragon")
+        -- Special: "Throws Iceballs"
+        VeryOldGreenDragon ->
+            MM (Model 90 "veryOldGreenDragon" "Very Old Green Dragon")
+
+        -- Special: "Immune to Poison, Breathes Poison Gas"
+        VeryOldWhiteDragon ->
+            MM (Model 90 "veryOldWhiteDragon" "Very Old White Dragon")
+
+        -- Special: "Immune to Cold, Breathes Ice"
+        VeryOldBlueDragon ->
+            MM (Model 95 "veryOldBlueDragon" "Very Old Blue Dragon")
+
+        -- Special: "Immune to Lightning, Breathes Lightning"
+        AbyssFiend ->
+            MM (Model 100 "abyssFiend" "Abyss Fiend")
+
+        -- Special: "Summons Spiked Devil or Abyss Fiend"
+        Thiassa ->
+            MM (Model 100 "thiassa" "Thiassa")
+
+        -- Special: "Throws Stones"
+        VeryOldRedDragon ->
+            MM (Model 100 "veryOldRedDragon" "Very Old Red Dragon")
+
+        -- Special: "Immune to Fire, Breathes Fire"
+        AncientGreenDragon ->
+            MM (Model 105 "ancientGreenDragon" "Ancient Green Dragon")
+
+        -- Special: "Immune to Poison, Breathes Poison Gas"
+        AncientWhiteDragon ->
+            MM (Model 105 "ancientWhiteDragon" "AncientWhite Dragon")
+
+        -- Special: "Immune to Cold, Breathes Ice"
+        AncientBlueDragon ->
+            MM (Model 110 "ancientBlueDragon" "Ancient Blue Dragon")
+
+        -- Special: "Immune to Lightning, Breathes Lightning"
+        AncientRedDragon ->
+            MM (Model 120 "ancientRedDragon" "Ancient Red Dragon")
+
+        -- Special: "Immune to Fire, Breathes Fire"
+        Sultur ->
+            MM (Model 344 "sultur" "Sultur")
+
+
+
+-- Special: "Casts Fire, Lighting, and Wind Spells"
