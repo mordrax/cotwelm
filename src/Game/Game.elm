@@ -6,7 +6,7 @@ import Game.Data exposing (..)
 import Game.Maps exposing (..)
 import Game.Collision exposing (..)
 import Game.Inventory as Inventory exposing (..)
-import Equipment exposing (..)
+import Equipment as Equipment exposing (..)
 import Shop.Shop as Shop exposing (..)
 
 
@@ -17,7 +17,7 @@ import GameData.Building as Building exposing (..)
 
 --Hero
 
-import Hero exposing (..)
+import Hero as Hero exposing (..)
 import Monster.Monster as Monster exposing (..)
 import Monster.Monsters as Monsters exposing (..)
 
@@ -95,7 +95,10 @@ view : Game.Data.Model -> Html Game.Data.Msg
 view model =
     case model.currentScreen of
         MapScreen ->
-            viewMap model
+            div []
+                [ viewMap model
+                , viewMonsters model
+                ]
 
         BuildingScreen building ->
             case building.buildingType of
@@ -107,6 +110,15 @@ view model =
 
         InventoryScreen ->
             Html.App.map InvMsg (Inventory.view model)
+
+
+viewMonsters : Game.Data.Model -> Html Game.Data.Msg
+viewMonsters ({ monsters } as model) =
+    let
+        monsterHtml =
+            \monster -> Monster.view monster
+    in
+        div [] (List.map monsterHtml monsters)
 
 
 viewMap : Game.Data.Model -> Html Game.Data.Msg
