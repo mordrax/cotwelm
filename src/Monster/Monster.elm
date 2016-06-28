@@ -1,12 +1,14 @@
 module Monster.Monster
     exposing
         ( Monster
-        , MonsterType
+        , MonsterType(..)
         , new
         , view
+        , pos
+        , move
         )
 
-import Utils.Vector exposing (..)
+import Utils.Vector as Vector exposing (..)
 import Utils.Lib exposing (vectorToHtmlStyle)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -24,9 +26,19 @@ type alias Model =
     }
 
 
+pos : Monster -> Vector
+pos (MM model) =
+    model.pos
+
+
 view : Monster -> Html a
 view (MM monster) =
     div [ vectorToHtmlStyle monster.pos, class ("tile monster " ++ monster.css) ] []
+
+
+move : Monster -> Vector -> Monster
+move (MM model) dir =
+    MM { model | pos = Vector.add model.pos dir }
 
 
 type MonsterType
