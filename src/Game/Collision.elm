@@ -130,21 +130,21 @@ isBuildingAtPosition pos building =
 
 
 tryMoveMonster : Monster -> ( Game.Data.Model, List Monster ) -> ( Game.Data.Model, List Monster )
-tryMoveMonster monster ( { hero } as model, monsters ) =
+tryMoveMonster monster ( { hero, map } as model, monsters ) =
     let
-        monsterPos =
-            Monster.pos monster
-
-        heroPos =
-            Hero.pos hero
-
         { x, y } =
-            Vector.sub heroPos monsterPos
+            Vector.sub (Hero.pos hero) (Monster.pos monster)
 
         ( normX, normY ) =
             ( x // abs x, y // abs y )
 
-        monster' =
+        movedMonster =
             Monster.move monster (Vector.new normX normY)
+
+        isBuildingObstruction =
+            List.any (isBuildingAtPosition (Monster.pos movedMonster)) (getBuildings map.currentArea map)
     in
-        ( model, monster' :: monsters )
+        if isBuildingObstruction == True then
+            ( model, monster :: monsters )
+        else
+            ( model, movedMonster :: monsters )
