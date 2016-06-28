@@ -11,10 +11,11 @@ import Game.Maps exposing (..)
 import GameData.Tile exposing (..)
 import GameData.Building as Building exposing (..)
 import Hero exposing (..)
+import Monster.Monster as Monster exposing (..)
 import Shop.Shop as Shop exposing (..)
 
 
-tryMoveHero : Direction -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Msg )
+tryMoveHero : Direction -> Game.Data.Model -> Game.Data.Model
 tryMoveHero dir model =
     let
         movedHero =
@@ -26,15 +27,15 @@ tryMoveHero dir model =
         case obstructions of
             -- entering a building
             ( _, Just building ) ->
-                ( enterBuilding building model, Cmd.none )
+                enterBuilding building model
 
             -- path blocked
             ( True, _ ) ->
-                ( model, Cmd.none )
+                model
 
             -- path free, moved
             ( False, _ ) ->
-                ( { model | hero = movedHero }, Cmd.none )
+                { model | hero = movedHero }
 
 
 enterBuilding : Building.Model -> Game.Data.Model -> Game.Data.Model
@@ -126,3 +127,24 @@ isBuildingAtPosition pos building =
             Vector.sub (Vector.add building.pos building.size) (Vector.new 1 1)
     in
         boxIntersect pos ( building.pos, bottomLeft )
+
+
+tryMoveMonster : Monster -> ( Game.Data.Model, List Monster ) -> ( Game.Data.Model, List Monster )
+tryMoveMonster monster ( { hero } as model, monsters ) =
+    let
+        monsterPos =
+            Monster.pos monster
+
+        heroPos =
+            Hero.pos hero
+
+        { x, y } =
+            Vector.sub heroPos monsterPos
+
+        ( normX, normY ) =
+            ( x // abs x, y // abs y )
+
+        monster' =
+            Monster.move monster (Vector.new normX normY)
+    in
+        ( model, monster' :: monsters )

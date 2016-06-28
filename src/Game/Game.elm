@@ -69,7 +69,14 @@ update : Game.Data.Msg -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Ms
 update msg model =
     case msg of
         KeyDir dir ->
-            tryMoveHero dir model
+            let
+                modelMovedHero =
+                    Game.Collision.tryMoveHero dir model
+
+                ( _, movedMonsters ) =
+                    List.foldl Game.Collision.tryMoveMonster ( modelMovedHero, [] ) model.monsters
+            in
+                ( { modelMovedHero | monsters = movedMonsters }, Cmd.none )
 
         Map ->
             ( { model | currentScreen = MapScreen }, Cmd.none )
