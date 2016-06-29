@@ -22,19 +22,26 @@ tryMoveHero dir model =
             Hero.update (Hero.Move <| dirToVector dir) model.hero
 
         obstructions =
-            getObstructions (Hero.pos movedHero) model.map
+            getObstructions (Hero.pos movedHero) model
     in
         case obstructions of
+            ( _, _, Just monster ) ->
+                let
+                    _ =
+                        Debug.log "mosnter obstruction: " monster
+                in
+                    model
+
             -- entering a building
-            ( _, Just building ) ->
+            ( _, Just building, _ ) ->
                 enterBuilding building model
 
             -- path blocked
-            ( True, _ ) ->
+            ( True, _, _ ) ->
                 model
 
             -- path free, moved
-            ( False, _ ) ->
+            ( False, _, _ ) ->
                 { model | hero = movedHero }
 
 
@@ -54,11 +61,24 @@ enterBuilding building model =
 {-| Given a position and a map, work out what is on the square
 Returns (isTileObstructed, a building entry)
 -}
-getObstructions : Vector -> Game.Maps.Model -> ( Bool, Maybe Building.Model )
-getObstructions pos mapModel =
+getObstructions : Vector -> Game.Data.Model -> ( Bool, Maybe Building.Model, Maybe Monster )
+getObstructions pos ({ hero, map, monsters } as model) =
     let
         ( maybeTile, maybeBuilding ) =
-            (thingsAtPosition pos mapModel)
+            (thingsAtPosition pos map)
+
+        equalToHeroPosition =
+            \monster ->
+                let
+                    _ =
+                        Debug.log "Monster at: " monster
+                in
+                    Vector.equal pos (Monster.pos monster)
+
+        maybeMonster =
+            monsters
+                |> List.filter equalToHeroPosition
+                |> List.head
 
         tileObstruction =
             case maybeTile of
@@ -67,16 +87,8 @@ getObstructions pos mapModel =
 
                 Nothing ->
                     False
-
-        buildingObstruction =
-            case maybeBuilding of
-                Just building ->
-                    True
-
-                _ ->
-                    False
     in
-        ( buildingObstruction || tileObstruction, maybeBuilding )
+        ( tileObstruction, maybeBuilding, maybeMonster )
 
 
 {-| Return the tile and possibly the building that is at a given point. Uses currentArea and maps from model to determine which area to look at
@@ -143,8 +155,14 @@ tryMoveMonster monster ( { hero, map } as model, monsters ) =
 
         isBuildingObstruction =
             List.any (isBuildingAtPosition (Monster.pos movedMonster)) (getBuildings map.currentArea map)
+
+        isMonsterObstruction =
+            List.any (Vector.equal (Monster.pos movedMonster)) (List.map Monster.pos monsters)
+
+        isHeroObstruction =
+            Vector.equal (Monster.pos movedMonster) (Hero.pos hero)
     in
-        if isBuildingObstruction == True then
+        if isBuildingObstruction || isMonsterObstruction || isHeroObstruction then
             ( model, monster :: monsters )
         else
             ( model, movedMonster :: monsters )
