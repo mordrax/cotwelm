@@ -143,7 +143,7 @@ init idGenerator =
         ( equipmentWithTHS, _ ) =
             putInPack ths equipment'
     in
-        ( idGenerator', equipmentWithTHS )
+        ( idGenerator'', equipmentWithTHS )
 
 
 fold : (a -> b -> Result x b) -> Result x b -> List a -> Result x b

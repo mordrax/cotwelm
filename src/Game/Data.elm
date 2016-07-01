@@ -25,6 +25,21 @@ type alias Model =
     }
 
 
+
+--type alias MonsterEntity =
+--    { base : Monster
+--    , pos : Vector
+--    }
+--type alias HeroEntity =
+--    { base : Hero
+--    , pos : Vector
+--    }
+--type alias TileEntity =
+--    { base : Tile
+--    , pos : Vector
+--    }
+
+
 type Drag
     = DragSlot Item EquipmentSlot
     | DragPack Item (Item.Pack Item)

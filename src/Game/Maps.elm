@@ -14,7 +14,7 @@ Mines lvl 1 - 8
 
 import GameData.ASCIIMaps exposing (..)
 import GameData.Building as Building exposing (..)
-import GameData.Tile exposing (..)
+import Tile exposing (..)
 import GameData.Types exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Utils.Lib exposing (..)
@@ -40,7 +40,7 @@ initMaps =
     let
         getTiles =
             \area ->
-                mapToTiles (getASCIIMap area)
+                Tile.mapToTiles (getASCIIMap area)
 
         tilesToTuples =
             \area -> List.map toKVPair (getTiles area)
@@ -189,11 +189,6 @@ mapToHtml area model =
         div [] (tilesHtml ++ buildingsHtml)
 
 
-tileToHtml : Tile -> Html a
-tileToHtml tile =
-    div [ class ("tile " ++ toString tile.tile), vectorToHtmlStyle tile.pos ] []
-
-
 buildingToHtml : Building.Model -> Html a
 buildingToHtml building =
     let
@@ -201,51 +196,3 @@ buildingToHtml building =
             vectorToHtmlStyle building.pos
     in
         div [ class ("tile " ++ (toString building.tile)), posStyle ] []
-
-
-
------------------------------------------------------------------------------------
--- Turn a list of strings which represents ascii encoded tiles into actual Tiles --
------------------------------------------------------------------------------------
-
-
-{-| Given a ASCII list of strings representing tiles, output a list of tiles
--}
-mapToTiles : List String -> List GameData.Tile.Tile
-mapToTiles asciiMap =
-    let
-        tiles =
-            List.indexedMap mapOneRowToTiles asciiMap
-    in
-        List.concat tiles
-
-
-{-| Given a row of ascii, turn it into a row of Html
--}
-mapOneRowToTiles : Int -> String -> List Tile
-mapOneRowToTiles y asciiRow =
-    let
-        -- turn a row of string into a list of chars
-        asciiChars =
-            String.toList asciiRow
-    in
-        toTiles y asciiChars
-
-
-toTiles : Int -> List Char -> List Tile
-toTiles y asciiTiles =
-    List.indexedMap (toTile y) asciiTiles
-
-
-{-| Create a Tile from some x,y coordinates and a tile type
--}
-toTile : Int -> Int -> Char -> Tile
-toTile y x asciiTile =
-    let
-        pos =
-            { x = x, y = y }
-
-        ( tileType, solid ) =
-            asciiTileData asciiTile
-    in
-        { pos = pos, tile = tileType, solid = solid, building = Nothing }
