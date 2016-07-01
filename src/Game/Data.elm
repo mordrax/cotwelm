@@ -8,7 +8,6 @@ import Equipment exposing (..)
 import Shop.Shop as Shop exposing (..)
 import Utils.DragDrop exposing (..)
 import Utils.IdGenerator exposing (..)
-import Shop.Shop as Shop exposing (..)
 import Monster.Monster exposing (..)
 
 
@@ -26,10 +25,6 @@ type alias Model =
 
 
 
---type alias MonsterEntity =
---    { base : Monster
---    , pos : Vector
---    }
 --type alias HeroEntity =
 --    { base : Hero
 --    , pos : Vector
@@ -55,7 +50,7 @@ type Drop
 type Screen
     = MapScreen
     | InventoryScreen
-    | BuildingScreen Building.Model
+    | BuildingScreen Building
 
 
 type Direction

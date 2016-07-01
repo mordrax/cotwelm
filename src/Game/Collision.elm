@@ -10,19 +10,18 @@ import Game.Keyboard exposing (..)
 import Game.Maps exposing (..)
 import Tile exposing (..)
 import GameData.Building as Building exposing (..)
-import Hero exposing (..)
 import Monster.Monster as Monster exposing (..)
 import Shop.Shop as Shop exposing (..)
 
 
 tryMoveHero : Direction -> Game.Data.Model -> Game.Data.Model
-tryMoveHero dir model =
+tryMoveHero dir ({ hero } as model) =
     let
         movedHero =
-            Hero.update (Hero.Move <| dirToVector dir) model.hero
+            { hero | position = Vector.add hero.position (dirToVector dir) }
 
         obstructions =
-            getObstructions (Hero.pos movedHero) model
+            getObstructions movedHero.position model
     in
         case obstructions of
             ( _, _, Just monster ) ->
@@ -45,14 +44,20 @@ tryMoveHero dir model =
                 { model | hero = movedHero }
 
 
-enterBuilding : Building.Model -> Game.Data.Model -> Game.Data.Model
-enterBuilding building model =
-    case building.buildingType of
+enterBuilding : Building -> Game.Data.Model -> Game.Data.Model
+enterBuilding building ({ hero, map } as model) =
+    case Building.buildingType building of
         LinkType link ->
-            { model | map = Game.Maps.updateArea link.area model.map, hero = Hero.update (Hero.Teleport link.pos) model.hero }
+            { model
+                | map = Game.Maps.updateArea link.area map
+                , hero = { hero | position = link.pos }
+            }
 
         ShopType shopType ->
-            { model | currentScreen = BuildingScreen building, shop = Shop.setCurrentShopType shopType model.shop }
+            { model
+                | currentScreen = BuildingScreen building
+                , shop = Shop.setCurrentShopType shopType model.shop
+            }
 
         Ordinary ->
             { model | currentScreen = BuildingScreen building }
@@ -61,7 +66,7 @@ enterBuilding building model =
 {-| Given a position and a map, work out what is on the square
 Returns (isTileObstructed, a building entry)
 -}
-getObstructions : Vector -> Game.Data.Model -> ( Bool, Maybe Building.Model, Maybe Monster )
+getObstructions : Vector -> Game.Data.Model -> ( Bool, Maybe Building, Maybe Monster )
 getObstructions pos ({ hero, map, monsters } as model) =
     let
         ( maybeTile, maybeBuilding ) =
@@ -73,7 +78,7 @@ getObstructions pos ({ hero, map, monsters } as model) =
                     _ =
                         Debug.log "Monster at: " monster
                 in
-                    Vector.equal pos (Monster.pos monster)
+                    Vector.equal pos monster.position
 
         maybeMonster =
             monsters
@@ -83,7 +88,7 @@ getObstructions pos ({ hero, map, monsters } as model) =
         tileObstruction =
             case maybeTile of
                 Just tile ->
-                    tile.solid
+                    Tile.isSolid tile
 
                 Nothing ->
                     False
@@ -93,7 +98,7 @@ getObstructions pos ({ hero, map, monsters } as model) =
 
 {-| Return the tile and possibly the building that is at a given point. Uses currentArea and maps from model to determine which area to look at
 -}
-thingsAtPosition : Vector -> Game.Maps.Model -> ( Maybe Tile, Maybe Building.Model )
+thingsAtPosition : Vector -> Game.Maps.Model -> ( Maybe Tile, Maybe Building )
 thingsAtPosition pos model =
     let
         area =
@@ -116,7 +121,7 @@ thingsAtPosition pos model =
 
 {-| Given a point and a list of buildings, return the building that the point is within or nothing
 -}
-buildingAtPosition : Vector -> List Building.Model -> Maybe Building.Model
+buildingAtPosition : Vector -> List Building -> Maybe Building
 buildingAtPosition pos buildings =
     let
         buildingsAtTile =
@@ -130,37 +135,26 @@ buildingAtPosition pos buildings =
                 Nothing
 
 
-{-| Given a point and a building, will return true if the point is within the building
--}
-isBuildingAtPosition : Vector -> Building.Model -> Bool
-isBuildingAtPosition pos building =
-    let
-        bottomLeft =
-            Vector.sub (Vector.add building.pos building.size) (Vector.new 1 1)
-    in
-        boxIntersect pos ( building.pos, bottomLeft )
-
-
 tryMoveMonster : Monster -> ( Game.Data.Model, List Monster ) -> ( Game.Data.Model, List Monster )
 tryMoveMonster monster ( { hero, map } as model, movedMonsters ) =
     let
         { x, y } =
-            Vector.sub (Hero.pos hero) (Monster.pos monster)
+            Vector.sub hero.position monster.position
 
-        ( normX, normY ) =
-            ( x // abs x, y // abs y )
+        moveVector =
+            Vector.new (x // abs x) (y // abs y)
 
         movedMonster =
-            Monster.move monster (Vector.new normX normY)
+            { monster | position = Vector.add monster.position moveVector }
 
         isBuildingObstruction =
-            List.any (isBuildingAtPosition (Monster.pos movedMonster)) (getBuildings map.currentArea map)
+            List.any (isBuildingAtPosition movedMonster.position) (getBuildings map.currentArea map)
 
         isMonsterObstruction =
-            List.any (Vector.equal (Monster.pos movedMonster)) (List.map Monster.pos movedMonsters)
+            List.any (Vector.equal movedMonster.position) (List.map .position movedMonsters)
 
         isHeroObstruction =
-            Vector.equal (Monster.pos movedMonster) (Hero.pos hero)
+            Vector.equal movedMonster.position hero.position
     in
         if isBuildingObstruction || isMonsterObstruction || isHeroObstruction then
             ( model, monster :: movedMonsters )
