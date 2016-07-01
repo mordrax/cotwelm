@@ -8,7 +8,7 @@ import Utils.Vector as Vector exposing (..)
 import Game.Data exposing (..)
 import Game.Keyboard exposing (..)
 import Game.Maps exposing (..)
-import GameData.Tile exposing (..)
+import Tile exposing (..)
 import GameData.Building as Building exposing (..)
 import Hero exposing (..)
 import Monster.Monster as Monster exposing (..)
@@ -142,7 +142,7 @@ isBuildingAtPosition pos building =
 
 
 tryMoveMonster : Monster -> ( Game.Data.Model, List Monster ) -> ( Game.Data.Model, List Monster )
-tryMoveMonster monster ( { hero, map } as model, monsters ) =
+tryMoveMonster monster ( { hero, map } as model, movedMonsters ) =
     let
         { x, y } =
             Vector.sub (Hero.pos hero) (Monster.pos monster)
@@ -157,12 +157,12 @@ tryMoveMonster monster ( { hero, map } as model, monsters ) =
             List.any (isBuildingAtPosition (Monster.pos movedMonster)) (getBuildings map.currentArea map)
 
         isMonsterObstruction =
-            List.any (Vector.equal (Monster.pos movedMonster)) (List.map Monster.pos monsters)
+            List.any (Vector.equal (Monster.pos movedMonster)) (List.map Monster.pos movedMonsters)
 
         isHeroObstruction =
             Vector.equal (Monster.pos movedMonster) (Hero.pos hero)
     in
         if isBuildingObstruction || isMonsterObstruction || isHeroObstruction then
-            ( model, monster :: monsters )
+            ( model, monster :: movedMonsters )
         else
-            ( model, movedMonster :: monsters )
+            ( model, movedMonster :: movedMonsters )
