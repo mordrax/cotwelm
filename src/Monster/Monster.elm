@@ -4,8 +4,6 @@ module Monster.Monster
         , MonsterType(..)
         , new
         , view
-        , pos
-        , move
         )
 
 import Utils.Vector as Vector exposing (..)
@@ -14,31 +12,30 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-type Monster
-    = MM Model
+type BaseMonster
+    = Base Model
+
+
+type alias Monster =
+    { base : BaseMonster
+    , position : Vector
+    }
 
 
 type alias Model =
     { level : Int
     , css : String
     , name : String
-    , pos : Vector
     }
 
 
-pos : Monster -> Vector
-pos (MM model) =
-    model.pos
-
-
 view : Monster -> Html a
-view (MM monster) =
-    div [ vectorToHtmlStyle monster.pos, class ("tile monster " ++ monster.css) ] []
-
-
-move : Monster -> Vector -> Monster
-move (MM model) dir =
-    MM { model | pos = Vector.add model.pos dir }
+view { base, position } =
+    let
+        (Base model) =
+            base
+    in
+        div [ vectorToHtmlStyle position, class ("tile monster " ++ model.css) ] []
 
 
 type MonsterType
@@ -142,379 +139,379 @@ new : MonsterType -> Vector -> Monster
 new monsterType pos =
     case monsterType of
         GiantRat ->
-            MM (Model 1 "giantRat" "Giant Rat" pos)
+            Monster (Base <| Model 1 "giantRat" "Giant Rat") pos
 
         -- Special: " "
         Goblin ->
-            MM (Model 1 "goblin" "Goblin" pos)
+            Monster (Base <| Model 1 "goblin" "Goblin") pos
 
         -- Special: " "
         GiantBat ->
-            MM (Model 2 "giantBat" "Giant Bat" pos)
+            Monster (Base <| Model 2 "giantBat" "Giant Bat") pos
 
         -- Special: " "
         Hobgoblin ->
-            MM (Model 2 "hobgoblin" "Hobgoblin" pos)
+            Monster (Base <| Model 2 "hobgoblin" "Hobgoblin") pos
 
         -- Special: " "
         Kobold ->
-            MM (Model 2 "kobold" "Kobold" pos)
+            Monster (Base <| Model 2 "kobold" "Kobold") pos
 
         -- Special: " "
         LargeSnake ->
-            MM (Model 3 "largeSnake" "Large Snake" pos)
+            Monster (Base <| Model 3 "largeSnake" "Large Snake") pos
 
         -- Special: " "
         Skeleton ->
-            MM (Model 3 "skeleton" "Skeleton" pos)
+            Monster (Base <| Model 3 "skeleton" "Skeleton") pos
 
         -- Special: " "
         WildDog ->
-            MM (Model 3 "wildDog" "Wild Dog" pos)
+            Monster (Base <| Model 3 "wildDog" "Wild Dog") pos
 
         -- Special: " "
         Viper ->
-            MM (Model 5 "viper" "Viper" pos)
+            Monster (Base <| Model 5 "viper" "Viper") pos
 
         -- Special: "Poison"
         GoblinFighter ->
-            MM (Model 6 "goblinFighter" "Goblin Fighter" pos)
+            Monster (Base <| Model 6 "goblinFighter" "Goblin Fighter") pos
 
         -- Special: " "
         GiantRedAnt ->
-            MM (Model 7 "giantRedAnt" "Giant Red Ant" pos)
+            Monster (Base <| Model 7 "giantRedAnt" "Giant Red Ant") pos
 
         -- Special: " "
         WalkingCorpse ->
-            MM (Model 7 "walkingCorpse" "Walking Corpse" pos)
+            Monster (Base <| Model 7 "walkingCorpse" "Walking Corpse") pos
 
         -- Special: " "
         Bandit ->
-            MM (Model 10 "bandit" "Bandit" pos)
+            Monster (Base <| Model 10 "bandit" "Bandit") pos
 
         -- Special: "Arrow"
         GiantTrapdoorSpider ->
-            MM (Model 10 "giantTrapdoorSpider" "Giant Trapdoor Spider" pos)
+            Monster (Base <| Model 10 "giantTrapdoorSpider" "Giant Trapdoor Spider") pos
 
         -- Special: " "
         HugeLizard ->
-            MM (Model 10 "hugeLizard" "Huge Lizard" pos)
+            Monster (Base <| Model 10 "hugeLizard" "Huge Lizard") pos
 
         -- Special: " "
         RatMan ->
-            MM (Model 10 "rat" "Rat-Man" pos)
+            Monster (Base <| Model 10 "rat" "Rat-Man") pos
 
         -- Special: " "
         Slime ->
-            MM (Model 10 "slime" "Slime" pos)
+            Monster (Base <| Model 10 "slime" "Slime") pos
 
-        -- Special: "Immune to Weapons"
+        -- Special: "IBaseune to Weapons"
         GiantScorpion ->
-            MM (Model 11 "giantScorpion" "Giant Scorpion" pos)
+            Monster (Base <| Model 11 "giantScorpion" "Giant Scorpion") pos
 
         -- Special: "Poison"
         GrayWolf ->
-            MM (Model 11 "grayWolf" "Gray Wolf" pos)
+            Monster (Base <| Model 11 "grayWolf" "Gray Wolf") pos
 
         -- Special: " "
         GelantinousGlob ->
-            MM (Model 14 "gelantinousGlob" "Gelantinous Glob" pos)
+            Monster (Base <| Model 14 "gelantinousGlob" "Gelantinous Glob") pos
 
-        -- Special: "Immune to Cold, Lightning"
+        -- Special: "IBaseune to Cold, Lightning"
         SmirkingSneakThief ->
-            MM (Model 15 "smirkingSneakThief" "Smirking Sneak Thief" pos)
+            Monster (Base <| Model 15 "smirkingSneakThief" "Smirking Sneak Thief") pos
 
         -- Special: "Steals from Belt and Purse, Teleports"
         CarrionCreeper ->
-            MM (Model 16 "carrionCreeper" "Carrion Creeper" pos)
+            Monster (Base <| Model 16 "carrionCreeper" "Carrion Creeper") pos
 
         -- Special: " "
         HugeOgre ->
-            MM (Model 16 "hugeOgre" "Huge Ogre" pos)
+            Monster (Base <| Model 16 "hugeOgre" "Huge Ogre") pos
 
         -- Special: " "
         Shadow ->
-            MM (Model 16 "shadow" "Shadow" pos)
+            Monster (Base <| Model 16 "shadow" "Shadow") pos
 
         -- Special: " "
         AnimatedWoodenStatue ->
-            MM (Model 17 "animatedWoodenStatue" "Animated Wooden Statue" pos)
+            Monster (Base <| Model 17 "animatedWoodenStatue" "Animated Wooden Statue") pos
 
         -- Special: " "
         BrownBear ->
-            MM (Model 17 "brownBear" "Brown Bear" pos)
+            Monster (Base <| Model 17 "brownBear" "Brown Bear") pos
 
         -- Special: " "
         YoungGreenDragon ->
-            MM (Model 18 "youngGreenDragon" "Young Green Dragon" pos)
+            Monster (Base <| Model 18 "youngGreenDragon" "Young Green Dragon") pos
 
-        -- Special: "Immune to Poison, Breathes Poison Gas"
+        -- Special: "IBaseune to Poison, Breathes Poison Gas"
         YoungWhiteDragon ->
-            MM (Model 18 "youngWhiteDragon" "Young White Dragon" pos)
+            Monster (Base <| Model 18 "youngWhiteDragon" "Young White Dragon") pos
 
-        -- Special: "Immune to Cold, Breathes Ice"
+        -- Special: "IBaseune to Cold, Breathes Ice"
         Manticore ->
-            MM (Model 19 "manticore" "Manticore" pos)
+            Monster (Base <| Model 19 "manticore" "Manticore") pos
 
         -- Special: "Needles"
         EerieGhost ->
-            MM (Model 20 "eerieGhost" "Eerie Ghost" pos)
+            Monster (Base <| Model 20 "eerieGhost" "Eerie Ghost") pos
 
         -- Special: " "
         GruesomeTroll ->
-            MM (Model 20 "gruesomeTroll" "Gruesome Troll" pos)
+            Monster (Base <| Model 20 "gruesomeTroll" "Gruesome Troll") pos
 
         -- Special: " "
         YoungBlueDragon ->
-            MM (Model 20 "youngBlueDragon" "Young Blue Dragon" pos)
+            Monster (Base <| Model 20 "youngBlueDragon" "Young Blue Dragon") pos
 
-        -- Special: "Immune to Lightning, Breathes Lightning"
+        -- Special: "IBaseune to Lightning, Breathes Lightning"
         YoungRedDragon ->
-            MM (Model 20 "youngRedDragon" "Young Red Dragon" pos)
+            Monster (Base <| Model 20 "youngRedDragon" "Young Red Dragon") pos
 
-        -- Special: "Immune to Fire, Breathes Fire"
+        -- Special: "IBaseune to Fire, Breathes Fire"
         AnimatedBronzeStatue ->
-            MM (Model 25 "animatedBronzeStatue" "Animated Bronze Statue" pos)
+            Monster (Base <| Model 25 "animatedBronzeStatue" "Animated Bronze Statue") pos
 
         -- Special: " "
         EvilWarrior ->
-            MM (Model 25 "evilWarrior" "Evil Warrior" pos)
+            Monster (Base <| Model 25 "evilWarrior" "Evil Warrior") pos
 
         -- Special: "Arrow"
         WolfMan ->
-            MM (Model 25 "wolf" "Wolf-Man" pos)
+            Monster (Base <| Model 25 "wolf" "Wolf-Man") pos
 
         -- Special: " "
         CaveBear ->
-            MM (Model 27 "caveBear" "Cave Bear" pos)
+            Monster (Base <| Model 27 "caveBear" "Cave Bear") pos
 
         -- Special: " "
         WhiteWolf ->
-            MM (Model 28 "whiteWolf" "White Wolf" pos)
+            Monster (Base <| Model 28 "whiteWolf" "White Wolf") pos
 
         -- Special: " "
         Berserker ->
-            MM (Model 30 "berserker" "Berserker" pos)
+            Monster (Base <| Model 30 "berserker" "Berserker") pos
 
         -- Special: " "
         AnimatedIronStatue ->
-            MM (Model 35 "animatedIronStatue" "Animated Iron Statue" pos)
+            Monster (Base <| Model 35 "animatedIronStatue" "Animated Iron Statue") pos
 
         -- Special: " "
         TunnelWight ->
-            MM (Model 35 "tunnelWight" "Tunnel Wight" pos)
+            Monster (Base <| Model 35 "tunnelWight" "Tunnel Wight") pos
 
         -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
         YoungAdultBlueDragon ->
-            MM (Model 35 "youngAdultBlueDragon" "Young Adult Blue Dragon" pos)
+            Monster (Base <| Model 35 "youngAdultBlueDragon" "Young Adult Blue Dragon") pos
 
-        -- Special: "Immune to Lightning, Breathes Lightning"
+        -- Special: "IBaseune to Lightning, Breathes Lightning"
         YoungAdultGreenDragon ->
-            MM (Model 35 "youngAdultGreenDragon" "Young Adult Green Dragon" pos)
+            Monster (Base <| Model 35 "youngAdultGreenDragon" "Young Adult Green Dragon") pos
 
-        -- Special: "Immune to Poison, Breathes Poison Gas"
+        -- Special: "IBaseune to Poison, Breathes Poison Gas"
         YoungAdultWhiteDragon ->
-            MM (Model 35 "youngAdultWhiteDragon" "Young Adult White Dragon" pos)
+            Monster (Base <| Model 35 "youngAdultWhiteDragon" "Young Adult White Dragon") pos
 
-        -- Special: "Immune to Cold, Breathes Ice"
+        -- Special: "IBaseune to Cold, Breathes Ice"
         PaleWraith ->
-            MM (Model 37 "paleWraith" "Pale Wraith" pos)
+            Monster (Base <| Model 37 "paleWraith" "Pale Wraith") pos
 
         -- Special: "Drains Intelligence and Mana Permanently"
         BarrowWight ->
-            MM (Model 40 "barrowWight" "Barrow Wight" pos)
+            Monster (Base <| Model 40 "barrowWight" "Barrow Wight") pos
 
         -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
         BearMan ->
-            MM (Model 40 "bear" "Bear-Man" pos)
+            Monster (Base <| Model 40 "bear" "Bear-Man") pos
 
         -- Special: " "
         DustElemental ->
-            MM (Model 40 "dustElemental" "Dust Elemental" pos)
+            Monster (Base <| Model 40 "dustElemental" "Dust Elemental") pos
 
         -- Special: " "
         HillGiant ->
-            MM (Model 40 "hillGiant" "Hill Giant" pos)
+            Monster (Base <| Model 40 "hillGiant" "Hill Giant") pos
 
         -- Special: "Throws Stones"
         YoungAdultRedDragon ->
-            MM (Model 40 "youngAdultRedDragon" "Young Adult Red Dragon" pos)
+            Monster (Base <| Model 40 "youngAdultRedDragon" "Young Adult Red Dragon") pos
 
-        -- Special: "Immune to Fire, Breathes Fire"
+        -- Special: "IBaseune to Fire, Breathes Fire"
         Wizard ->
-            MM (Model 45 "wizard" "Wizard" pos)
+            Monster (Base <| Model 45 "wizard" "Wizard") pos
 
-        -- Special: "Casts Bolt Spells, Slow, Summon Monster, Phase Door, Teleport"
+        -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
         BullMan ->
-            MM (Model 50 "bull" "Bull-Man" pos)
+            Monster (Base <| Model 50 "bull" "Bull-Man") pos
 
         -- Special: " "
         CastleWight ->
-            MM (Model 50 "castleWight" "Castle Wight" pos)
+            Monster (Base <| Model 50 "castleWight" "Castle Wight") pos
 
         -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
         DarkWraith ->
-            MM (Model 50 "darkWraith" "Dark Wraith" pos)
+            Monster (Base <| Model 50 "darkWraith" "Dark Wraith") pos
 
         -- Special: "Drains Intelligence and Mana Permanently"
         IceElemental ->
-            MM (Model 50 "iceElemental" "Ice Elemental" pos)
+            Monster (Base <| Model 50 "iceElemental" "Ice Elemental") pos
 
         -- Special: " "
         Spectre ->
-            MM (Model 50 "spectre" "Spectre" pos)
+            Monster (Base <| Model 50 "spectre" "Spectre") pos
 
         -- Special: " "
         AnimatedMarbleStatue ->
-            MM (Model 52 "animatedMarbleStatue" "Animated Marble Statue" pos)
+            Monster (Base <| Model 52 "animatedMarbleStatue" "Animated Marble Statue") pos
 
         -- Special: " "
         AdultBlueDragon ->
-            MM (Model 55 "adultBlueDragon" "Adult Blue Dragon" pos)
+            Monster (Base <| Model 55 "adultBlueDragon" "Adult Blue Dragon") pos
 
-        -- Special: "Immune to Lightning, Breathes Lightning"
+        -- Special: "IBaseune to Lightning, Breathes Lightning"
         AdultGreenDragon ->
-            MM (Model 55 "adultGreenDragon" "Adult Green Dragon" pos)
+            Monster (Base <| Model 55 "adultGreenDragon" "Adult Green Dragon") pos
 
-        -- Special: "Immune to Poison, Breathes Poison Gas"
+        -- Special: "IBaseune to Poison, Breathes Poison Gas"
         AdultWhiteDragon ->
-            MM (Model 55 "adultWhiteDragon" "Adult White Dragon" pos)
+            Monster (Base <| Model 55 "adultWhiteDragon" "Adult White Dragon") pos
 
-        -- Special: "Immune to Cold, Breathes Ice"
+        -- Special: "IBaseune to Cold, Breathes Ice"
         AirElemental ->
-            MM (Model 55 "airElemental" "Air Elemental" pos)
+            Monster (Base <| Model 55 "airElemental" "Air Elemental") pos
 
         -- Special: " "
         MagmaElemental ->
-            MM (Model 55 "magmaElemental" "Magma Elemental" pos)
+            Monster (Base <| Model 55 "magmaElemental" "Magma Elemental") pos
 
         -- Special: " "
         StoneGiant ->
-            MM (Model 55 "stoneGiant" "Stone Giant" pos)
+            Monster (Base <| Model 55 "stoneGiant" "Stone Giant") pos
 
         -- Special: "Throws Stones"
         TwoHeadedGiant ->
-            MM (Model 55 "twoHeadedGiant" "Two Headed Giant" pos)
+            Monster (Base <| Model 55 "twoHeadedGiant" "Two Headed Giant") pos
 
         -- Special: " "
         AdultRedDragon ->
-            MM (Model 60 "adultRedDragon" "Adult Red Dragon" pos)
+            Monster (Base <| Model 60 "adultRedDragon" "Adult Red Dragon") pos
 
-        -- Special: "Immune to Fire, Breathes Fire"
+        -- Special: "IBaseune to Fire, Breathes Fire"
         FireElemental ->
-            MM (Model 60 "fireElemental" "Fire Elemental" pos)
+            Monster (Base <| Model 60 "fireElemental" "Fire Elemental") pos
 
         -- Special: " "
         FrostGiant ->
-            MM (Model 60 "frostGiant" "Frost Giant" pos)
+            Monster (Base <| Model 60 "frostGiant" "Frost Giant") pos
 
         -- Special: "Throws Iceballs"
         SpikedDevil ->
-            MM (Model 60 "spikedDevil" "Spiked Devil" pos)
+            Monster (Base <| Model 60 "spikedDevil" "Spiked Devil") pos
 
-        -- Special: "Summons Spiked Devil"
+        -- Special: "SuBaseons Spiked Devil"
         WaterElemental ->
-            MM (Model 60 "waterElemental" "Water Elemental" pos)
+            Monster (Base <| Model 60 "waterElemental" "Water Elemental") pos
 
         -- Special: " "
         EarthElemental ->
-            MM (Model 65 "earthElemental" "Earth Elemental" pos)
+            Monster (Base <| Model 65 "earthElemental" "Earth Elemental") pos
 
         -- Special: " "
         Necromancer ->
-            MM (Model 65 "necromancer" "Necromancer" pos)
+            Monster (Base <| Model 65 "necromancer" "Necromancer") pos
 
-        -- Special: "Casts Bolt Spells, Slow, Summon Monster, Phase Door, Teleport"
+        -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
         Vampire ->
-            MM (Model 65 "vampire" "Vampire" pos)
+            Monster (Base <| Model 65 "vampire" "Vampire") pos
 
         -- Special: "Drains HP Permanently"
         AbyssWraith ->
-            MM (Model 70 "abyssWraith" "Abyss Wraith" pos)
+            Monster (Base <| Model 70 "abyssWraith" "Abyss Wraith") pos
 
         -- Special: "Drains Intelligence and Mana Permanently"
         Utgardhalok ->
-            MM (Model 70 "utgardhalok" "Utgardhalok" pos)
+            Monster (Base <| Model 70 "utgardhalok" "Utgardhalok") pos
 
         -- Special: "Throws Boulders"
         FireGiant ->
-            MM (Model 75 "fireGiant" "Fire Giant" pos)
+            Monster (Base <| Model 75 "fireGiant" "Fire Giant") pos
 
         -- Special: "Throws Stones"
         OldBlueDragon ->
-            MM (Model 75 "oldBlueDragon" "Old Blue Dragon" pos)
+            Monster (Base <| Model 75 "oldBlueDragon" "Old Blue Dragon") pos
 
-        -- Special: "Immune to Lightning, Breathes Lightning"
+        -- Special: "IBaseune to Lightning, Breathes Lightning"
         OldGreenDragon ->
-            MM (Model 75 "oldGreenDragon" "Old Green Dragon" pos)
+            Monster (Base <| Model 75 "oldGreenDragon" "Old Green Dragon") pos
 
-        -- Special: "Immune to Poison, Breathes Poison Gas"
+        -- Special: "IBaseune to Poison, Breathes Poison Gas"
         OldWhiteDragon ->
-            MM (Model 75 "oldWhiteDragon" "Old White Dragon" pos)
+            Monster (Base <| Model 75 "oldWhiteDragon" "Old White Dragon") pos
 
-        -- Special: "Immune to Cold, Breathes Ice"
+        -- Special: "IBaseune to Cold, Breathes Ice"
         HornedDevil ->
-            MM (Model 80 "hornedDevil" "Horned Devil" pos)
+            Monster (Base <| Model 80 "hornedDevil" "Horned Devil") pos
 
-        -- Special: "Summons Horned Devil"
+        -- Special: "SuBaseons Horned Devil"
         OldRedDragon ->
-            MM (Model 80 "oldRedDragon" "Old Red Dragon" pos)
+            Monster (Base <| Model 80 "oldRedDragon" "Old Red Dragon") pos
 
-        -- Special: "Immune to Fire, Breathes Fire"
+        -- Special: "IBaseune to Fire, Breathes Fire"
         Rungnir ->
-            MM (Model 80 "rungnir" "Rungnir" pos)
+            Monster (Base <| Model 80 "rungnir" "Rungnir") pos
 
         -- Special: "Throws stones"
         IceDevil ->
-            MM (Model 85 "iceDevil" "Ice Devil" pos)
+            Monster (Base <| Model 85 "iceDevil" "Ice Devil") pos
 
-        -- Special: "Summons Ice Devil"
+        -- Special: "SuBaseons Ice Devil"
         Thrym ->
-            MM (Model 90 "thrym" "Thrym" pos)
+            Monster (Base <| Model 90 "thrym" "Thrym") pos
 
         -- Special: "Throws Iceballs"
         VeryOldGreenDragon ->
-            MM (Model 90 "veryOldGreenDragon" "Very Old Green Dragon" pos)
+            Monster (Base <| Model 90 "veryOldGreenDragon" "Very Old Green Dragon") pos
 
-        -- Special: "Immune to Poison, Breathes Poison Gas"
+        -- Special: "IBaseune to Poison, Breathes Poison Gas"
         VeryOldWhiteDragon ->
-            MM (Model 90 "veryOldWhiteDragon" "Very Old White Dragon" pos)
+            Monster (Base <| Model 90 "veryOldWhiteDragon" "Very Old White Dragon") pos
 
-        -- Special: "Immune to Cold, Breathes Ice"
+        -- Special: "IBaseune to Cold, Breathes Ice"
         VeryOldBlueDragon ->
-            MM (Model 95 "veryOldBlueDragon" "Very Old Blue Dragon" pos)
+            Monster (Base <| Model 95 "veryOldBlueDragon" "Very Old Blue Dragon") pos
 
-        -- Special: "Immune to Lightning, Breathes Lightning"
+        -- Special: "IBaseune to Lightning, Breathes Lightning"
         AbyssFiend ->
-            MM (Model 100 "abyssFiend" "Abyss Fiend" pos)
+            Monster (Base <| Model 100 "abyssFiend" "Abyss Fiend") pos
 
-        -- Special: "Summons Spiked Devil or Abyss Fiend"
+        -- Special: "SuBaseons Spiked Devil or Abyss Fiend"
         Thiassa ->
-            MM (Model 100 "thiassa" "Thiassa" pos)
+            Monster (Base <| Model 100 "thiassa" "Thiassa") pos
 
         -- Special: "Throws Stones"
         VeryOldRedDragon ->
-            MM (Model 100 "veryOldRedDragon" "Very Old Red Dragon" pos)
+            Monster (Base <| Model 100 "veryOldRedDragon" "Very Old Red Dragon") pos
 
-        -- Special: "Immune to Fire, Breathes Fire"
+        -- Special: "IBaseune to Fire, Breathes Fire"
         AncientGreenDragon ->
-            MM (Model 105 "ancientGreenDragon" "Ancient Green Dragon" pos)
+            Monster (Base <| Model 105 "ancientGreenDragon" "Ancient Green Dragon") pos
 
-        -- Special: "Immune to Poison, Breathes Poison Gas"
+        -- Special: "IBaseune to Poison, Breathes Poison Gas"
         AncientWhiteDragon ->
-            MM (Model 105 "ancientWhiteDragon" "AncientWhite Dragon" pos)
+            Monster (Base <| Model 105 "ancientWhiteDragon" "AncientWhite Dragon") pos
 
-        -- Special: "Immune to Cold, Breathes Ice"
+        -- Special: "IBaseune to Cold, Breathes Ice"
         AncientBlueDragon ->
-            MM (Model 110 "ancientBlueDragon" "Ancient Blue Dragon" pos)
+            Monster (Base <| Model 110 "ancientBlueDragon" "Ancient Blue Dragon") pos
 
-        -- Special: "Immune to Lightning, Breathes Lightning"
+        -- Special: "IBaseune to Lightning, Breathes Lightning"
         AncientRedDragon ->
-            MM (Model 120 "ancientRedDragon" "Ancient Red Dragon" pos)
+            Monster (Base <| Model 120 "ancientRedDragon" "Ancient Red Dragon") pos
 
-        -- Special: "Immune to Fire, Breathes Fire"
+        -- Special: "IBaseune to Fire, Breathes Fire"
         Sultur ->
-            MM (Model 344 "sultur" "Sultur" pos)
+            Monster (Base <| Model 344 "sultur" "Sultur") pos
 
 
 

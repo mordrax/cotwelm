@@ -23,7 +23,8 @@
         "output": {
             "path": "dist/js/cotw.js",
             "components": {
-                "ext": "js"
+                "ext": "js",
+                "dir": "dist/js"
             }
         },
         "main": "src/main.elm"

@@ -108,7 +108,7 @@ view model =
                 ]
 
         BuildingScreen building ->
-            case building.buildingType of
+            case Building.buildingType building of
                 ShopType shopType ->
                     Html.App.map InvMsg (Inventory.view model)
 
@@ -141,11 +141,11 @@ viewMap model =
             ]
 
 
-viewBuilding : Building.Model -> Html Game.Data.Msg
+viewBuilding : Building -> Html Game.Data.Msg
 viewBuilding building =
-    div [] [ h1 [] [ text building.name ] ]
+    div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
 
 
 viewHero : Hero -> Html Game.Data.Msg
 viewHero hero =
-    div [ class "tile maleHero", vectorToHtmlStyle <| Hero.pos hero ] []
+    div [ class "tile maleHero", vectorToHtmlStyle <| hero.position ] []

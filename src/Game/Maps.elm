@@ -27,7 +27,7 @@ import Dict exposing (..)
 type alias Model =
     { currentArea : Area
     , maps : Dict String Map
-    , buildings : Dict String (List Building.Model)
+    , buildings : Dict String (List Building)
     }
 
 
@@ -46,7 +46,7 @@ initMaps =
             \area -> List.map toKVPair (getTiles area)
 
         toKVPair =
-            \tile -> ( toString tile.pos, tile )
+            \tile -> ( toString tile.position, tile )
     in
         { currentArea = Village
         , maps =
@@ -90,7 +90,7 @@ getMap area model =
                 Dict.empty
 
 
-getBuildings : Area -> Model -> List Building.Model
+getBuildings : Area -> Model -> List Building
 getBuildings area model =
     let
         maybeBuildings =
@@ -126,7 +126,7 @@ getASCIIMap area =
 --------------------------
 
 
-villageBuildings : List Building.Model
+villageBuildings : List Building
 villageBuildings =
     let
         farmGate =
@@ -143,7 +143,7 @@ villageBuildings =
         ]
 
 
-farmBuildings : List Building.Model
+farmBuildings : List Building
 farmBuildings =
     let
         villageGate =
@@ -158,7 +158,7 @@ farmBuildings =
         ]
 
 
-dungeonLevelOneBuildings : List Building.Model
+dungeonLevelOneBuildings : List Building
 dungeonLevelOneBuildings =
     let
         mineEntrance =
@@ -184,15 +184,6 @@ mapToHtml area model =
             List.map tileToHtml listOfTiles
 
         buildingsHtml =
-            List.map buildingToHtml (getBuildings area model)
+            List.map Building.view (getBuildings area model)
     in
         div [] (tilesHtml ++ buildingsHtml)
-
-
-buildingToHtml : Building.Model -> Html a
-buildingToHtml building =
-    let
-        posStyle =
-            vectorToHtmlStyle building.pos
-    in
-        div [ class ("tile " ++ (toString building.tile)), posStyle ] []

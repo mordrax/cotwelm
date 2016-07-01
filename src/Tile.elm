@@ -1,4 +1,11 @@
-module Tile exposing (..)
+module Tile
+    exposing
+        ( Tile
+        , TileType
+        , isSolid
+        , mapToTiles
+        , tileToHtml
+        )
 
 import Utils.Vector exposing (..)
 import GameData.Building as Building exposing (..)
@@ -10,21 +17,32 @@ import Utils.Vector as Vector exposing (..)
 import Utils.Lib as Lib exposing (..)
 import List exposing (..)
 import String exposing (..)
+import Hero exposing (..)
+import Monster.Monster as Monster exposing (..)
 
 
-type alias Tile =
+type alias Model =
     { tile : TileType
     , solid : Bool
-    , pos : Vector
-    , building :
-        Maybe Building.Model
-        --, items : Container Item
+    , items : List Item
+    , occupant : Occupant
     }
 
 
-type alias TileEntity =
-    { base : Tile
-    , pos : Vector
+type Occupant
+    = B Building
+    | H Hero
+    | M Monster
+    | Empty
+
+
+type BaseTile
+    = Base Model
+
+
+type alias Tile =
+    { base : BaseTile
+    , position : Vector
     }
 
 
@@ -54,6 +72,15 @@ type TileType
 -----------------------------------------------------------------------------------
 -- Turn a list of strings which represents ascii encoded tiles into actual Tiles --
 -----------------------------------------------------------------------------------
+
+
+isSolid : Tile -> Bool
+isSolid { base } =
+    let
+        (Base { solid }) =
+            base
+    in
+        solid
 
 
 {-| Given a ASCII list of strings representing tiles, output a list of tiles
@@ -95,12 +122,16 @@ toTile y x asciiTile =
         ( tileType, solid ) =
             asciiTileData asciiTile
     in
-        Tile tileType solid pos Nothing
+        Tile (Base <| Model tileType solid [] Empty) pos
 
 
 tileToHtml : Tile -> Html a
-tileToHtml tile =
-    div [ class ("tile " ++ toString tile.tile), Lib.vectorToHtmlStyle tile.pos ] []
+tileToHtml { base, position } =
+    let
+        (Base model) =
+            base
+    in
+        div [ class ("tile " ++ toString model.tile), Lib.vectorToHtmlStyle position ] []
 
 
 asciiTileData : Char -> ( TileType, Bool )
