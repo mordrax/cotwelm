@@ -8,7 +8,16 @@ module GameData.Building
         , view
         , buildingType
         , isBuildingAtPosition
+        , newLink
         )
+
+{-| A building is one of those yellow huts on the map. This module represents one of those huts.
+
+A building can be a shop, a special interactable building or a non-descript 'private house'.
+
+Buildings are aware of their size and how to draw themselves on the map using css image.
+
+-}
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -58,6 +67,11 @@ type BuildingTile
     | BurntStrawHouse_WF
     | HutTemple_NF
     | MineEntrance
+
+
+newLink : Area -> Vector -> BuildingType
+newLink area pos =
+    (LinkType <| Link area pos)
 
 
 view : Building -> Html a

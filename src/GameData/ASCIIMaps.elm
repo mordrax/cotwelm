@@ -5,9 +5,6 @@ module GameData.ASCIIMaps exposing (..)
 - Buildings, their location and purpose (inventory) for each area
 -}
 
-import GameData.Building as Building exposing (..)
-import Utils.Vector exposing (..)
-
 
 villageMap : List String
 villageMap =
