@@ -9,7 +9,6 @@ module Tile
 
 import Utils.Vector exposing (..)
 import GameData.Building as Building exposing (..)
-import Container exposing (..)
 import Item.Item as Item exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)

@@ -17,10 +17,7 @@ import GameData.Building as Building exposing (..)
 import Tile exposing (..)
 import GameData.Types exposing (..)
 import Utils.Vector as Vector exposing (..)
-import Utils.Lib exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import String exposing (..)
 import Dict exposing (..)
 
 
@@ -130,9 +127,9 @@ villageBuildings : List Building
 villageBuildings =
     let
         farmGate =
-            { area = Farm, pos = (Vector.new 11 31) }
+            Building.newLink Farm (Vector.new 11 31)
     in
-        [ Building.new Gate_NS (Vector.new 10 0) "Village Gate" (LinkType farmGate)
+        [ Building.new Gate_NS (Vector.new 10 0) "Village Gate" farmGate
         , Building.new StrawHouse_EF (Vector.new 3 6) "Junk Shop" Ordinary
         , Building.new StrawHouse_WF (Vector.new 16 5) "Private House" Ordinary
         , Building.new Hut_EF (Vector.new 7 13) "Potion Store" (ShopType PotionStore)
@@ -147,14 +144,14 @@ farmBuildings : List Building
 farmBuildings =
     let
         villageGate =
-            { area = Village, pos = Vector.new 11 1 }
+            Building.newLink Village (Vector.new 11 1)
 
         mineExit =
-            { area = DungeonLevelOne, pos = Vector.new 22 39 }
+            Building.newLink DungeonLevelOne (Vector.new 22 39)
     in
-        [ Building.new Gate_NS (Vector.new 10 32) "Farm Gate" (LinkType villageGate)
+        [ Building.new Gate_NS (Vector.new 10 32) "Farm Gate" villageGate
         , Building.new StrawHouse_WF (Vector.new 43 23) "Adopted Parents House" Ordinary
-        , Building.new MineEntrance (Vector.new 24 1) "Mine Entrance" (LinkType mineExit)
+        , Building.new MineEntrance (Vector.new 24 1) "Mine Entrance" mineExit
         ]
 
 
@@ -162,9 +159,9 @@ dungeonLevelOneBuildings : List Building
 dungeonLevelOneBuildings =
     let
         mineEntrance =
-            { area = Farm, pos = Vector.new 24 2 }
+            Building.newLink Farm (Vector.new 24 2)
     in
-        [ Building.new MineEntrance (Vector.new 22 40) "Mine Exit" (LinkType mineEntrance)
+        [ Building.new MineEntrance (Vector.new 22 40) "Mine Exit" mineEntrance
         ]
 
 
