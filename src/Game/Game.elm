@@ -73,8 +73,8 @@ update msg model =
                 modelMovedHero =
                     Game.Collision.tryMoveHero dir model
 
-                ( _, movedMonsters ) =
-                    List.foldl Game.Collision.tryMoveMonster ( modelMovedHero, [] ) model.monsters
+                movedMonsters =
+                    Game.Collision.moveMonsters ( model.monsters, [] ) ( modelMovedHero, [] )
             in
                 ( { modelMovedHero | monsters = movedMonsters }, Cmd.none )
 

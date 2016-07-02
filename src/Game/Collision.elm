@@ -12,6 +12,7 @@ import Tile exposing (..)
 import GameData.Building as Building exposing (..)
 import Monster.Monster as Monster exposing (..)
 import Shop.Shop as Shop exposing (..)
+import Hero exposing (..)
 
 
 tryMoveHero : Direction -> Game.Data.Model -> Game.Data.Model
@@ -125,7 +126,7 @@ buildingAtPosition : Vector -> List Building -> Maybe Building
 buildingAtPosition pos buildings =
     let
         buildingsAtTile =
-            List.filter (isBuildingAtPosition pos) buildings
+            List.filter (Building.isBuildingAtPosition pos) buildings
     in
         case buildingsAtTile of
             b :: rest ->
@@ -135,28 +136,86 @@ buildingAtPosition pos buildings =
                 Nothing
 
 
-tryMoveMonster : Monster -> ( Game.Data.Model, List Monster ) -> ( Game.Data.Model, List Monster )
-tryMoveMonster monster ( { hero, map } as model, movedMonsters ) =
+
+---------------------
+-- Moving monsters --
+---------------------
+
+
+moveMonsters : ( List Monster, List Monster ) -> ( Game.Data.Model, List Monster ) -> List Monster
+moveMonsters ( monsters, finalQueueMonsters ) ( { hero, map } as model, movedMonsters ) =
+    case ( monsters, finalQueueMonsters ) of
+        ( [], [] ) ->
+            movedMonsters
+
+        ( [], monster :: finalMonsters ) ->
+            let
+                monster' =
+                    moveMonster monster ( model, movedMonsters )
+            in
+                moveMonsters ( [], finalMonsters ) ( model, monster' :: movedMonsters )
+
+        ( monster :: queuedMonsters, _ ) ->
+            let
+                movedMonster =
+                    pathMonster monster hero
+
+                reQueued =
+                    moveMonsters ( queuedMonsters, monster :: finalQueueMonsters ) ( model, movedMonsters )
+
+                monster' =
+                    moveMonster monster ( model, movedMonsters )
+            in
+                if isMonsterObstruction movedMonster queuedMonsters then
+                    let
+                        _ =
+                            Debug.log "Requeuing: " monster
+                    in
+                        reQueued
+                else
+                    moveMonsters ( queuedMonsters, finalQueueMonsters ) ( model, monster' :: movedMonsters )
+
+
+moveMonster : Monster -> ( Game.Data.Model, List Monster ) -> Monster
+moveMonster monster ( { hero, map } as model, movedMonsters ) =
+    let
+        movedMonster =
+            pathMonster monster hero
+
+        isHeroObstruction =
+            Vector.equal movedMonster.position hero.position
+    in
+        if isBuildingObstruction monster model then
+            monster
+        else if isMonsterObstruction monster movedMonsters then
+            monster
+        else if isHeroObstruction then
+            let
+                _ =
+                    Debug.log "TODO: Hit Hero!" 1
+            in
+                monster
+        else
+            movedMonster
+
+
+isMonsterObstruction : Monster -> List Monster -> Bool
+isMonsterObstruction monster monsters =
+    List.any (Vector.equal monster.position) (List.map .position monsters)
+
+
+pathMonster : Monster -> Hero -> Monster
+pathMonster monster hero =
     let
         { x, y } =
             Vector.sub hero.position monster.position
 
         moveVector =
             Vector.new (x // abs x) (y // abs y)
-
-        movedMonster =
-            { monster | position = Vector.add monster.position moveVector }
-
-        isBuildingObstruction =
-            List.any (isBuildingAtPosition movedMonster.position) (getBuildings map.currentArea map)
-
-        isMonsterObstruction =
-            List.any (Vector.equal movedMonster.position) (List.map .position movedMonsters)
-
-        isHeroObstruction =
-            Vector.equal movedMonster.position hero.position
     in
-        if isBuildingObstruction || isMonsterObstruction || isHeroObstruction then
-            ( model, monster :: movedMonsters )
-        else
-            ( model, movedMonster :: movedMonsters )
+        { monster | position = Vector.add monster.position moveVector }
+
+
+isBuildingObstruction : Monster -> Game.Data.Model -> Bool
+isBuildingObstruction monster ({ map } as model) =
+    List.any (isBuildingAtPosition monster.position) (getBuildings map.currentArea map)

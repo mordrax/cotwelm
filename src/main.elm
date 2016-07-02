@@ -42,6 +42,7 @@ import String exposing (..)
 main : Program Never
 main =
     Navigation.program urlParser
+        --TimeTravel.program urlParser
         { init = initModel
         , update = update
         , view = view
