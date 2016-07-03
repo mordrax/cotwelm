@@ -142,66 +142,40 @@ buildingAtPosition pos buildings =
 ---------------------
 
 
-moveMonsters : ( List Monster, List Monster ) -> ( Game.Data.Model, List Monster ) -> List Monster
-moveMonsters ( monsters, finalQueueMonsters ) ( { hero, map } as model, movedMonsters ) =
-    case ( monsters, finalQueueMonsters ) of
-        ( [], [] ) ->
-            movedMonsters
+moveMonsters : List Monster -> ( Game.Data.Model, List Monster ) -> Game.Data.Model
+moveMonsters monsters ( { hero, map } as model, movedMonsters ) =
+    case monsters of
+        [] ->
+            { model | monsters = movedMonsters }
 
-        ( [], monster :: finalMonsters ) ->
-            let
-                monster' =
-                    moveMonster monster ( model, movedMonsters )
-            in
-                moveMonsters ( [], finalMonsters ) ( model, monster' :: movedMonsters )
-
-        ( monster :: queuedMonsters, _ ) ->
+        monster :: restOfMonsters ->
             let
                 movedMonster =
                     pathMonster monster hero
 
-                reQueued =
-                    moveMonsters ( queuedMonsters, monster :: finalQueueMonsters ) ( model, movedMonsters )
+                isHeroObstruction =
+                    Vector.equal movedMonster.position hero.position
 
-                monster' =
-                    moveMonster monster ( model, movedMonsters )
+                noChange =
+                    moveMonsters restOfMonsters ( model, monster :: movedMonsters )
+
+                monsterMoved =
+                    moveMonsters restOfMonsters ( model, movedMonster :: movedMonsters )
             in
-                if isMonsterObstruction movedMonster queuedMonsters then
+                if
+                    isMonsterObstruction movedMonster restOfMonsters
+                        || isMonsterObstruction movedMonster movedMonsters
+                        || isBuildingObstruction movedMonster model
+                then
+                    noChange
+                else if isHeroObstruction then
                     let
                         _ =
-                            Debug.log "Requeuing: " monster
+                            Debug.log "TODO: Hit Hero!" 1
                     in
-                        reQueued
+                        noChange
                 else
-                    moveMonsters ( queuedMonsters, finalQueueMonsters ) ( model, monster' :: movedMonsters )
-
-
-moveMonster : Monster -> ( Game.Data.Model, List Monster ) -> Monster
-moveMonster monster ( { hero, map } as model, movedMonsters ) =
-    let
-        movedMonster =
-            pathMonster monster hero
-
-        isHeroObstruction =
-            Vector.equal movedMonster.position hero.position
-    in
-        if isBuildingObstruction monster model then
-            monster
-        else if isMonsterObstruction monster movedMonsters then
-            monster
-        else if isHeroObstruction then
-            let
-                _ =
-                    Debug.log "TODO: Hit Hero!" 1
-            in
-                monster
-        else
-            movedMonster
-
-
-isMonsterObstruction : Monster -> List Monster -> Bool
-isMonsterObstruction monster monsters =
-    List.any (Vector.equal monster.position) (List.map .position monsters)
+                    monsterMoved
 
 
 pathMonster : Monster -> Hero -> Monster
@@ -214,6 +188,11 @@ pathMonster monster hero =
             Vector.new (x // abs x) (y // abs y)
     in
         { monster | position = Vector.add monster.position moveVector }
+
+
+isMonsterObstruction : Monster -> List Monster -> Bool
+isMonsterObstruction monster monsters =
+    List.any (Vector.equal monster.position) (List.map .position monsters)
 
 
 isBuildingObstruction : Monster -> Game.Data.Model -> Bool

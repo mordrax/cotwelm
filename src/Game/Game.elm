@@ -73,10 +73,10 @@ update msg model =
                 modelMovedHero =
                     Game.Collision.tryMoveHero dir model
 
-                movedMonsters =
-                    Game.Collision.moveMonsters ( model.monsters, [] ) ( modelMovedHero, [] )
+                movedMovedMonsters =
+                    Game.Collision.moveMonsters model.monsters ( modelMovedHero, [] )
             in
-                ( { modelMovedHero | monsters = movedMonsters }, Cmd.none )
+                ( movedMovedMonsters, Cmd.none )
 
         Map ->
             ( { model | currentScreen = MapScreen }, Cmd.none )
