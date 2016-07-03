@@ -26,13 +26,3 @@ init : Hero
 init =
     Hero (BaseHero <| Model "Bob the Brave")
         (Vector.new 11 17)
-
-
-
---update : Msg -> Hero -> Hero
---update msg (Base model) =
---    case msg of
---        Move dir ->
---            Base { model | pos = Vector.add dir model.pos }
---        Teleport pos ->
---            Base { model | pos = pos }

@@ -7,7 +7,7 @@ import Dict exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Game.Data exposing (..)
 import Game.Keyboard exposing (..)
-import Game.Maps exposing (..)
+import Game.Maps as Maps exposing (..)
 import Tile exposing (..)
 import GameData.Building as Building exposing (..)
 import Monster.Monster as Monster exposing (..)
@@ -22,26 +22,26 @@ tryMoveHero dir ({ hero } as model) =
             { hero | position = Vector.add hero.position (dirToVector dir) }
 
         obstructions =
-            getObstructions movedHero.position model
+            queryPosition movedHero.position model
     in
         case obstructions of
-            ( _, _, Just monster ) ->
+            ( _, _, Just monster, _ ) ->
                 let
                     _ =
-                        Debug.log "mosnter obstruction: " monster
+                        Debug.log "Hit monster: " monster
                 in
                     model
 
             -- entering a building
-            ( _, Just building, _ ) ->
+            ( _, Just building, _, _ ) ->
                 enterBuilding building model
 
             -- path blocked
-            ( True, _, _ ) ->
+            ( True, _, _, _ ) ->
                 model
 
             -- path free, moved
-            ( False, _, _ ) ->
+            ( False, _, _, _ ) ->
                 { model | hero = movedHero }
 
 
@@ -50,7 +50,7 @@ enterBuilding building ({ hero, map } as model) =
     case Building.buildingType building of
         LinkType link ->
             { model
-                | map = Game.Maps.updateArea link.area map
+                | map = Maps.updateArea link.area map
                 , hero = { hero | position = link.pos }
             }
 
@@ -64,27 +64,24 @@ enterBuilding building ({ hero, map } as model) =
             { model | currentScreen = BuildingScreen building }
 
 
-{-| Given a position and a map, work out what is on the square
-Returns (isTileObstructed, a building entry)
+{-| Given a position and a map, work out everything on the square
 -}
-getObstructions : Vector -> Game.Data.Model -> ( Bool, Maybe Building, Maybe Monster )
-getObstructions pos ({ hero, map, monsters } as model) =
+queryPosition : Vector -> Game.Data.Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
+queryPosition pos ({ hero, map, monsters } as model) =
     let
-        ( maybeTile, maybeBuilding ) =
-            (thingsAtPosition pos map)
+        maybeTile =
+            Dict.get (toString pos) (getMap map.currentArea map)
 
-        equalToHeroPosition =
-            \monster ->
-                let
-                    _ =
-                        Debug.log "Monster at: " monster
-                in
-                    Vector.equal pos monster.position
+        maybeBuilding =
+            buildingAtPosition pos (getBuildings map.currentArea map)
 
         maybeMonster =
             monsters
-                |> List.filter equalToHeroPosition
+                |> List.filter (\x -> pos `Vector.equal` x.position)
                 |> List.head
+
+        isHero =
+            hero.position `Vector.equal` pos
 
         tileObstruction =
             case maybeTile of
@@ -94,30 +91,7 @@ getObstructions pos ({ hero, map, monsters } as model) =
                 Nothing ->
                     False
     in
-        ( tileObstruction, maybeBuilding, maybeMonster )
-
-
-{-| Return the tile and possibly the building that is at a given point. Uses currentArea and maps from model to determine which area to look at
--}
-thingsAtPosition : Vector -> Game.Maps.Model -> ( Maybe Tile, Maybe Building )
-thingsAtPosition pos model =
-    let
-        area =
-            model.currentArea
-
-        buildings =
-            getBuildings area model
-
-        map =
-            getMap area model
-
-        tile =
-            Dict.get (toString pos) map
-
-        building =
-            buildingAtPosition pos buildings
-    in
-        ( tile, building )
+        ( tileObstruction, maybeBuilding, maybeMonster, isHero )
 
 
 {-| Given a point and a list of buildings, return the building that the point is within or nothing
@@ -142,40 +116,51 @@ buildingAtPosition pos buildings =
 ---------------------
 
 
-moveMonsters : List Monster -> ( Game.Data.Model, List Monster ) -> Game.Data.Model
-moveMonsters monsters ( { hero, map } as model, movedMonsters ) =
+moveMonsters : List Monster -> List Monster -> Game.Data.Model -> Game.Data.Model
+moveMonsters monsters movedMonsters ({ hero, map } as model) =
+    --let
+    --_ =
+    --    Debug.log "Monsters" monsters
+    --in
     case monsters of
         [] ->
             { model | monsters = movedMonsters }
 
         monster :: restOfMonsters ->
             let
+                --_ =
+                --    Debug.log "Moving..." monster
                 movedMonster =
                     pathMonster monster hero
 
-                isHeroObstruction =
-                    Vector.equal movedMonster.position hero.position
+                obstructions =
+                    queryPosition movedMonster.position model
 
-                noChange =
-                    moveMonsters restOfMonsters ( model, monster :: movedMonsters )
-
-                monsterMoved =
-                    moveMonsters restOfMonsters ( model, movedMonster :: movedMonsters )
+                isObstructedByMovedMonsters =
+                    isMonsterObstruction movedMonster movedMonsters
             in
-                if
-                    isMonsterObstruction movedMonster restOfMonsters
-                        || isMonsterObstruction movedMonster movedMonsters
-                        || isBuildingObstruction movedMonster model
-                then
-                    noChange
-                else if isHeroObstruction then
-                    let
-                        _ =
-                            Debug.log "TODO: Hit Hero!" 1
-                    in
-                        noChange
-                else
-                    monsterMoved
+                case obstructions of
+                    ( _, _, _, True ) ->
+                        let
+                            _ =
+                                Debug.log "TODO: Hit Hero!" monster
+                        in
+                            moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( True, _, _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( _, Just _, _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( _, _, Just _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    _ ->
+                        if isObstructedByMovedMonsters then
+                            moveMonsters restOfMonsters (monster :: movedMonsters) model
+                        else
+                            moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
 
 
 pathMonster : Monster -> Hero -> Monster

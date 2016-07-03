@@ -74,7 +74,7 @@ update msg model =
                     Game.Collision.tryMoveHero dir model
 
                 movedMovedMonsters =
-                    Game.Collision.moveMonsters model.monsters ( modelMovedHero, [] )
+                    Game.Collision.moveMonsters model.monsters [] modelMovedHero
             in
                 ( movedMovedMonsters, Cmd.none )
 
