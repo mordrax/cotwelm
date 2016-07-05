@@ -5,11 +5,13 @@ module Hero
         )
 
 import Utils.Vector as Vector exposing (..)
+import Stats exposing (..)
 
 
 type alias Hero =
     { base : BaseHero
     , position : Vector
+    , stats : Stats
     }
 
 
@@ -19,10 +21,12 @@ type alias Model =
 
 
 type BaseHero
-    = BaseHero Model
+    = A Model
 
 
 init : Hero
 init =
-    Hero (BaseHero <| Model "Bob the Brave")
-        (Vector.new 11 17)
+    { base = (A <| Model "Bob the Brave")
+    , position = Vector.new 11 17
+    , stats = Stats.new 20 10
+    }

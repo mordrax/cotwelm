@@ -103,24 +103,29 @@ buildingType (BM model) =
 -}
 new : BuildingTile -> Vector -> String -> BuildingType -> Building
 new buildingTile pos name buildingType =
-    case buildingTile of
-        Gate_NS ->
-            BM <| Model Gate_NS (Vector.new 1 0) pos name (Vector.new 3 1) buildingType
+    let
+        newBuilding =
+            \entry size ->
+                BM <| Model buildingTile entry pos name size buildingType
+    in
+        case buildingTile of
+            Gate_NS ->
+                newBuilding (Vector.new 1 0) (Vector.new 3 1)
 
-        Hut_EF ->
-            BM <| Model Hut_EF (Vector.new 2 1) pos name (Vector.new 3 3) buildingType
+            Hut_EF ->
+                newBuilding (Vector.new 2 1) (Vector.new 3 3)
 
-        StrawHouse_EF ->
-            BM <| Model StrawHouse_EF (Vector.new 2 1) pos name (Vector.new 3 3) buildingType
+            StrawHouse_EF ->
+                newBuilding (Vector.new 2 1) (Vector.new 3 3)
 
-        StrawHouse_WF ->
-            BM <| Model StrawHouse_WF (Vector.new 0 1) pos name (Vector.new 3 3) buildingType
+            StrawHouse_WF ->
+                newBuilding (Vector.new 0 1) (Vector.new 3 3)
 
-        BurntStrawHouse_WF ->
-            BM <| Model BurntStrawHouse_WF (Vector.new 0 1) pos name (Vector.new 3 3) buildingType
+            BurntStrawHouse_WF ->
+                newBuilding (Vector.new 0 1) (Vector.new 3 3)
 
-        HutTemple_NF ->
-            BM <| Model HutTemple_NF (Vector.new 2 0) pos name (Vector.new 5 6) buildingType
+            HutTemple_NF ->
+                newBuilding (Vector.new 2 0) (Vector.new 5 6)
 
-        MineEntrance ->
-            BM <| Model MineEntrance (Vector.new 0 0) pos name (Vector.new 1 1) buildingType
+            MineEntrance ->
+                newBuilding (Vector.new 0 0) (Vector.new 1 1)
