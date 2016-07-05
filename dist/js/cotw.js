@@ -2524,1260 +2524,6 @@ var _elm_lang$core$Platform_Sub$none = _elm_lang$core$Platform_Sub$batch(
 var _elm_lang$core$Platform_Sub$map = _elm_lang$core$Native_Platform.map;
 var _elm_lang$core$Platform_Sub$Sub = {ctor: 'Sub'};
 
-//import Native.List //
-
-var _elm_lang$core$Native_Array = function() {
-
-// A RRB-Tree has two distinct data types.
-// Leaf -> "height"  is always 0
-//         "table"   is an array of elements
-// Node -> "height"  is always greater than 0
-//         "table"   is an array of child nodes
-//         "lengths" is an array of accumulated lengths of the child nodes
-
-// M is the maximal table size. 32 seems fast. E is the allowed increase
-// of search steps when concatting to find an index. Lower values will
-// decrease balancing, but will increase search steps.
-var M = 32;
-var E = 2;
-
-// An empty array.
-var empty = {
-	ctor: '_Array',
-	height: 0,
-	table: []
-};
-
-
-function get(i, array)
-{
-	if (i < 0 || i >= length(array))
-	{
-		throw new Error(
-			'Index ' + i + ' is out of range. Check the length of ' +
-			'your array first or use getMaybe or getWithDefault.');
-	}
-	return unsafeGet(i, array);
-}
-
-
-function unsafeGet(i, array)
-{
-	for (var x = array.height; x > 0; x--)
-	{
-		var slot = i >> (x * 5);
-		while (array.lengths[slot] <= i)
-		{
-			slot++;
-		}
-		if (slot > 0)
-		{
-			i -= array.lengths[slot - 1];
-		}
-		array = array.table[slot];
-	}
-	return array.table[i];
-}
-
-
-// Sets the value at the index i. Only the nodes leading to i will get
-// copied and updated.
-function set(i, item, array)
-{
-	if (i < 0 || length(array) <= i)
-	{
-		return array;
-	}
-	return unsafeSet(i, item, array);
-}
-
-
-function unsafeSet(i, item, array)
-{
-	array = nodeCopy(array);
-
-	if (array.height === 0)
-	{
-		array.table[i] = item;
-	}
-	else
-	{
-		var slot = getSlot(i, array);
-		if (slot > 0)
-		{
-			i -= array.lengths[slot - 1];
-		}
-		array.table[slot] = unsafeSet(i, item, array.table[slot]);
-	}
-	return array;
-}
-
-
-function initialize(len, f)
-{
-	if (len <= 0)
-	{
-		return empty;
-	}
-	var h = Math.floor( Math.log(len) / Math.log(M) );
-	return initialize_(f, h, 0, len);
-}
-
-function initialize_(f, h, from, to)
-{
-	if (h === 0)
-	{
-		var table = new Array((to - from) % (M + 1));
-		for (var i = 0; i < table.length; i++)
-		{
-		  table[i] = f(from + i);
-		}
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: table
-		};
-	}
-
-	var step = Math.pow(M, h);
-	var table = new Array(Math.ceil((to - from) / step));
-	var lengths = new Array(table.length);
-	for (var i = 0; i < table.length; i++)
-	{
-		table[i] = initialize_(f, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
-		lengths[i] = length(table[i]) + (i > 0 ? lengths[i-1] : 0);
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: table,
-		lengths: lengths
-	};
-}
-
-function fromList(list)
-{
-	if (list.ctor === '[]')
-	{
-		return empty;
-	}
-
-	// Allocate M sized blocks (table) and write list elements to it.
-	var table = new Array(M);
-	var nodes = [];
-	var i = 0;
-
-	while (list.ctor !== '[]')
-	{
-		table[i] = list._0;
-		list = list._1;
-		i++;
-
-		// table is full, so we can push a leaf containing it into the
-		// next node.
-		if (i === M)
-		{
-			var leaf = {
-				ctor: '_Array',
-				height: 0,
-				table: table
-			};
-			fromListPush(leaf, nodes);
-			table = new Array(M);
-			i = 0;
-		}
-	}
-
-	// Maybe there is something left on the table.
-	if (i > 0)
-	{
-		var leaf = {
-			ctor: '_Array',
-			height: 0,
-			table: table.splice(0, i)
-		};
-		fromListPush(leaf, nodes);
-	}
-
-	// Go through all of the nodes and eventually push them into higher nodes.
-	for (var h = 0; h < nodes.length - 1; h++)
-	{
-		if (nodes[h].table.length > 0)
-		{
-			fromListPush(nodes[h], nodes);
-		}
-	}
-
-	var head = nodes[nodes.length - 1];
-	if (head.height > 0 && head.table.length === 1)
-	{
-		return head.table[0];
-	}
-	else
-	{
-		return head;
-	}
-}
-
-// Push a node into a higher node as a child.
-function fromListPush(toPush, nodes)
-{
-	var h = toPush.height;
-
-	// Maybe the node on this height does not exist.
-	if (nodes.length === h)
-	{
-		var node = {
-			ctor: '_Array',
-			height: h + 1,
-			table: [],
-			lengths: []
-		};
-		nodes.push(node);
-	}
-
-	nodes[h].table.push(toPush);
-	var len = length(toPush);
-	if (nodes[h].lengths.length > 0)
-	{
-		len += nodes[h].lengths[nodes[h].lengths.length - 1];
-	}
-	nodes[h].lengths.push(len);
-
-	if (nodes[h].table.length === M)
-	{
-		fromListPush(nodes[h], nodes);
-		nodes[h] = {
-			ctor: '_Array',
-			height: h + 1,
-			table: [],
-			lengths: []
-		};
-	}
-}
-
-// Pushes an item via push_ to the bottom right of a tree.
-function push(item, a)
-{
-	var pushed = push_(item, a);
-	if (pushed !== null)
-	{
-		return pushed;
-	}
-
-	var newTree = create(item, a.height);
-	return siblise(a, newTree);
-}
-
-// Recursively tries to push an item to the bottom-right most
-// tree possible. If there is no space left for the item,
-// null will be returned.
-function push_(item, a)
-{
-	// Handle resursion stop at leaf level.
-	if (a.height === 0)
-	{
-		if (a.table.length < M)
-		{
-			var newA = {
-				ctor: '_Array',
-				height: 0,
-				table: a.table.slice()
-			};
-			newA.table.push(item);
-			return newA;
-		}
-		else
-		{
-		  return null;
-		}
-	}
-
-	// Recursively push
-	var pushed = push_(item, botRight(a));
-
-	// There was space in the bottom right tree, so the slot will
-	// be updated.
-	if (pushed !== null)
-	{
-		var newA = nodeCopy(a);
-		newA.table[newA.table.length - 1] = pushed;
-		newA.lengths[newA.lengths.length - 1]++;
-		return newA;
-	}
-
-	// When there was no space left, check if there is space left
-	// for a new slot with a tree which contains only the item
-	// at the bottom.
-	if (a.table.length < M)
-	{
-		var newSlot = create(item, a.height - 1);
-		var newA = nodeCopy(a);
-		newA.table.push(newSlot);
-		newA.lengths.push(newA.lengths[newA.lengths.length - 1] + length(newSlot));
-		return newA;
-	}
-	else
-	{
-		return null;
-	}
-}
-
-// Converts an array into a list of elements.
-function toList(a)
-{
-	return toList_(_elm_lang$core$Native_List.Nil, a);
-}
-
-function toList_(list, a)
-{
-	for (var i = a.table.length - 1; i >= 0; i--)
-	{
-		list =
-			a.height === 0
-				? _elm_lang$core$Native_List.Cons(a.table[i], list)
-				: toList_(list, a.table[i]);
-	}
-	return list;
-}
-
-// Maps a function over the elements of an array.
-function map(f, a)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: new Array(a.table.length)
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths;
-	}
-	for (var i = 0; i < a.table.length; i++)
-	{
-		newA.table[i] =
-			a.height === 0
-				? f(a.table[i])
-				: map(f, a.table[i]);
-	}
-	return newA;
-}
-
-// Maps a function over the elements with their index as first argument.
-function indexedMap(f, a)
-{
-	return indexedMap_(f, a, 0);
-}
-
-function indexedMap_(f, a, from)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: new Array(a.table.length)
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths;
-	}
-	for (var i = 0; i < a.table.length; i++)
-	{
-		newA.table[i] =
-			a.height === 0
-				? A2(f, from + i, a.table[i])
-				: indexedMap_(f, a.table[i], i == 0 ? from : from + a.lengths[i - 1]);
-	}
-	return newA;
-}
-
-function foldl(f, b, a)
-{
-	if (a.height === 0)
-	{
-		for (var i = 0; i < a.table.length; i++)
-		{
-			b = A2(f, a.table[i], b);
-		}
-	}
-	else
-	{
-		for (var i = 0; i < a.table.length; i++)
-		{
-			b = foldl(f, b, a.table[i]);
-		}
-	}
-	return b;
-}
-
-function foldr(f, b, a)
-{
-	if (a.height === 0)
-	{
-		for (var i = a.table.length; i--; )
-		{
-			b = A2(f, a.table[i], b);
-		}
-	}
-	else
-	{
-		for (var i = a.table.length; i--; )
-		{
-			b = foldr(f, b, a.table[i]);
-		}
-	}
-	return b;
-}
-
-// TODO: currently, it slices the right, then the left. This can be
-// optimized.
-function slice(from, to, a)
-{
-	if (from < 0)
-	{
-		from += length(a);
-	}
-	if (to < 0)
-	{
-		to += length(a);
-	}
-	return sliceLeft(from, sliceRight(to, a));
-}
-
-function sliceRight(to, a)
-{
-	if (to === length(a))
-	{
-		return a;
-	}
-
-	// Handle leaf level.
-	if (a.height === 0)
-	{
-		var newA = { ctor:'_Array', height:0 };
-		newA.table = a.table.slice(0, to);
-		return newA;
-	}
-
-	// Slice the right recursively.
-	var right = getSlot(to, a);
-	var sliced = sliceRight(to - (right > 0 ? a.lengths[right - 1] : 0), a.table[right]);
-
-	// Maybe the a node is not even needed, as sliced contains the whole slice.
-	if (right === 0)
-	{
-		return sliced;
-	}
-
-	// Create new node.
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice(0, right),
-		lengths: a.lengths.slice(0, right)
-	};
-	if (sliced.table.length > 0)
-	{
-		newA.table[right] = sliced;
-		newA.lengths[right] = length(sliced) + (right > 0 ? newA.lengths[right - 1] : 0);
-	}
-	return newA;
-}
-
-function sliceLeft(from, a)
-{
-	if (from === 0)
-	{
-		return a;
-	}
-
-	// Handle leaf level.
-	if (a.height === 0)
-	{
-		var newA = { ctor:'_Array', height:0 };
-		newA.table = a.table.slice(from, a.table.length + 1);
-		return newA;
-	}
-
-	// Slice the left recursively.
-	var left = getSlot(from, a);
-	var sliced = sliceLeft(from - (left > 0 ? a.lengths[left - 1] : 0), a.table[left]);
-
-	// Maybe the a node is not even needed, as sliced contains the whole slice.
-	if (left === a.table.length - 1)
-	{
-		return sliced;
-	}
-
-	// Create new node.
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice(left, a.table.length + 1),
-		lengths: new Array(a.table.length - left)
-	};
-	newA.table[0] = sliced;
-	var len = 0;
-	for (var i = 0; i < newA.table.length; i++)
-	{
-		len += length(newA.table[i]);
-		newA.lengths[i] = len;
-	}
-
-	return newA;
-}
-
-// Appends two trees.
-function append(a,b)
-{
-	if (a.table.length === 0)
-	{
-		return b;
-	}
-	if (b.table.length === 0)
-	{
-		return a;
-	}
-
-	var c = append_(a, b);
-
-	// Check if both nodes can be crunshed together.
-	if (c[0].table.length + c[1].table.length <= M)
-	{
-		if (c[0].table.length === 0)
-		{
-			return c[1];
-		}
-		if (c[1].table.length === 0)
-		{
-			return c[0];
-		}
-
-		// Adjust .table and .lengths
-		c[0].table = c[0].table.concat(c[1].table);
-		if (c[0].height > 0)
-		{
-			var len = length(c[0]);
-			for (var i = 0; i < c[1].lengths.length; i++)
-			{
-				c[1].lengths[i] += len;
-			}
-			c[0].lengths = c[0].lengths.concat(c[1].lengths);
-		}
-
-		return c[0];
-	}
-
-	if (c[0].height > 0)
-	{
-		var toRemove = calcToRemove(a, b);
-		if (toRemove > E)
-		{
-			c = shuffle(c[0], c[1], toRemove);
-		}
-	}
-
-	return siblise(c[0], c[1]);
-}
-
-// Returns an array of two nodes; right and left. One node _may_ be empty.
-function append_(a, b)
-{
-	if (a.height === 0 && b.height === 0)
-	{
-		return [a, b];
-	}
-
-	if (a.height !== 1 || b.height !== 1)
-	{
-		if (a.height === b.height)
-		{
-			a = nodeCopy(a);
-			b = nodeCopy(b);
-			var appended = append_(botRight(a), botLeft(b));
-
-			insertRight(a, appended[1]);
-			insertLeft(b, appended[0]);
-		}
-		else if (a.height > b.height)
-		{
-			a = nodeCopy(a);
-			var appended = append_(botRight(a), b);
-
-			insertRight(a, appended[0]);
-			b = parentise(appended[1], appended[1].height + 1);
-		}
-		else
-		{
-			b = nodeCopy(b);
-			var appended = append_(a, botLeft(b));
-
-			var left = appended[0].table.length === 0 ? 0 : 1;
-			var right = left === 0 ? 1 : 0;
-			insertLeft(b, appended[left]);
-			a = parentise(appended[right], appended[right].height + 1);
-		}
-	}
-
-	// Check if balancing is needed and return based on that.
-	if (a.table.length === 0 || b.table.length === 0)
-	{
-		return [a, b];
-	}
-
-	var toRemove = calcToRemove(a, b);
-	if (toRemove <= E)
-	{
-		return [a, b];
-	}
-	return shuffle(a, b, toRemove);
-}
-
-// Helperfunctions for append_. Replaces a child node at the side of the parent.
-function insertRight(parent, node)
-{
-	var index = parent.table.length - 1;
-	parent.table[index] = node;
-	parent.lengths[index] = length(node);
-	parent.lengths[index] += index > 0 ? parent.lengths[index - 1] : 0;
-}
-
-function insertLeft(parent, node)
-{
-	if (node.table.length > 0)
-	{
-		parent.table[0] = node;
-		parent.lengths[0] = length(node);
-
-		var len = length(parent.table[0]);
-		for (var i = 1; i < parent.lengths.length; i++)
-		{
-			len += length(parent.table[i]);
-			parent.lengths[i] = len;
-		}
-	}
-	else
-	{
-		parent.table.shift();
-		for (var i = 1; i < parent.lengths.length; i++)
-		{
-			parent.lengths[i] = parent.lengths[i] - parent.lengths[0];
-		}
-		parent.lengths.shift();
-	}
-}
-
-// Returns the extra search steps for E. Refer to the paper.
-function calcToRemove(a, b)
-{
-	var subLengths = 0;
-	for (var i = 0; i < a.table.length; i++)
-	{
-		subLengths += a.table[i].table.length;
-	}
-	for (var i = 0; i < b.table.length; i++)
-	{
-		subLengths += b.table[i].table.length;
-	}
-
-	var toRemove = a.table.length + b.table.length;
-	return toRemove - (Math.floor((subLengths - 1) / M) + 1);
-}
-
-// get2, set2 and saveSlot are helpers for accessing elements over two arrays.
-function get2(a, b, index)
-{
-	return index < a.length
-		? a[index]
-		: b[index - a.length];
-}
-
-function set2(a, b, index, value)
-{
-	if (index < a.length)
-	{
-		a[index] = value;
-	}
-	else
-	{
-		b[index - a.length] = value;
-	}
-}
-
-function saveSlot(a, b, index, slot)
-{
-	set2(a.table, b.table, index, slot);
-
-	var l = (index === 0 || index === a.lengths.length)
-		? 0
-		: get2(a.lengths, a.lengths, index - 1);
-
-	set2(a.lengths, b.lengths, index, l + length(slot));
-}
-
-// Creates a node or leaf with a given length at their arrays for perfomance.
-// Is only used by shuffle.
-function createNode(h, length)
-{
-	if (length < 0)
-	{
-		length = 0;
-	}
-	var a = {
-		ctor: '_Array',
-		height: h,
-		table: new Array(length)
-	};
-	if (h > 0)
-	{
-		a.lengths = new Array(length);
-	}
-	return a;
-}
-
-// Returns an array of two balanced nodes.
-function shuffle(a, b, toRemove)
-{
-	var newA = createNode(a.height, Math.min(M, a.table.length + b.table.length - toRemove));
-	var newB = createNode(a.height, newA.table.length - (a.table.length + b.table.length - toRemove));
-
-	// Skip the slots with size M. More precise: copy the slot references
-	// to the new node
-	var read = 0;
-	while (get2(a.table, b.table, read).table.length % M === 0)
-	{
-		set2(newA.table, newB.table, read, get2(a.table, b.table, read));
-		set2(newA.lengths, newB.lengths, read, get2(a.lengths, b.lengths, read));
-		read++;
-	}
-
-	// Pulling items from left to right, caching in a slot before writing
-	// it into the new nodes.
-	var write = read;
-	var slot = new createNode(a.height - 1, 0);
-	var from = 0;
-
-	// If the current slot is still containing data, then there will be at
-	// least one more write, so we do not break this loop yet.
-	while (read - write - (slot.table.length > 0 ? 1 : 0) < toRemove)
-	{
-		// Find out the max possible items for copying.
-		var source = get2(a.table, b.table, read);
-		var to = Math.min(M - slot.table.length, source.table.length);
-
-		// Copy and adjust size table.
-		slot.table = slot.table.concat(source.table.slice(from, to));
-		if (slot.height > 0)
-		{
-			var len = slot.lengths.length;
-			for (var i = len; i < len + to - from; i++)
-			{
-				slot.lengths[i] = length(slot.table[i]);
-				slot.lengths[i] += (i > 0 ? slot.lengths[i - 1] : 0);
-			}
-		}
-
-		from += to;
-
-		// Only proceed to next slots[i] if the current one was
-		// fully copied.
-		if (source.table.length <= to)
-		{
-			read++; from = 0;
-		}
-
-		// Only create a new slot if the current one is filled up.
-		if (slot.table.length === M)
-		{
-			saveSlot(newA, newB, write, slot);
-			slot = createNode(a.height - 1, 0);
-			write++;
-		}
-	}
-
-	// Cleanup after the loop. Copy the last slot into the new nodes.
-	if (slot.table.length > 0)
-	{
-		saveSlot(newA, newB, write, slot);
-		write++;
-	}
-
-	// Shift the untouched slots to the left
-	while (read < a.table.length + b.table.length )
-	{
-		saveSlot(newA, newB, write, get2(a.table, b.table, read));
-		read++;
-		write++;
-	}
-
-	return [newA, newB];
-}
-
-// Navigation functions
-function botRight(a)
-{
-	return a.table[a.table.length - 1];
-}
-function botLeft(a)
-{
-	return a.table[0];
-}
-
-// Copies a node for updating. Note that you should not use this if
-// only updating only one of "table" or "lengths" for performance reasons.
-function nodeCopy(a)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice()
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths.slice();
-	}
-	return newA;
-}
-
-// Returns how many items are in the tree.
-function length(array)
-{
-	if (array.height === 0)
-	{
-		return array.table.length;
-	}
-	else
-	{
-		return array.lengths[array.lengths.length - 1];
-	}
-}
-
-// Calculates in which slot of "table" the item probably is, then
-// find the exact slot via forward searching in  "lengths". Returns the index.
-function getSlot(i, a)
-{
-	var slot = i >> (5 * a.height);
-	while (a.lengths[slot] <= i)
-	{
-		slot++;
-	}
-	return slot;
-}
-
-// Recursively creates a tree with a given height containing
-// only the given item.
-function create(item, h)
-{
-	if (h === 0)
-	{
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: [item]
-		};
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: [create(item, h - 1)],
-		lengths: [1]
-	};
-}
-
-// Recursively creates a tree that contains the given tree.
-function parentise(tree, h)
-{
-	if (h === tree.height)
-	{
-		return tree;
-	}
-
-	return {
-		ctor: '_Array',
-		height: h,
-		table: [parentise(tree, h - 1)],
-		lengths: [length(tree)]
-	};
-}
-
-// Emphasizes blood brotherhood beneath two trees.
-function siblise(a, b)
-{
-	return {
-		ctor: '_Array',
-		height: a.height + 1,
-		table: [a, b],
-		lengths: [length(a), length(a) + length(b)]
-	};
-}
-
-function toJSArray(a)
-{
-	var jsArray = new Array(length(a));
-	toJSArray_(jsArray, 0, a);
-	return jsArray;
-}
-
-function toJSArray_(jsArray, i, a)
-{
-	for (var t = 0; t < a.table.length; t++)
-	{
-		if (a.height === 0)
-		{
-			jsArray[i + t] = a.table[t];
-		}
-		else
-		{
-			var inc = t === 0 ? 0 : a.lengths[t - 1];
-			toJSArray_(jsArray, i + inc, a.table[t]);
-		}
-	}
-}
-
-function fromJSArray(jsArray)
-{
-	if (jsArray.length === 0)
-	{
-		return empty;
-	}
-	var h = Math.floor(Math.log(jsArray.length) / Math.log(M));
-	return fromJSArray_(jsArray, h, 0, jsArray.length);
-}
-
-function fromJSArray_(jsArray, h, from, to)
-{
-	if (h === 0)
-	{
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: jsArray.slice(from, to)
-		};
-	}
-
-	var step = Math.pow(M, h);
-	var table = new Array(Math.ceil((to - from) / step));
-	var lengths = new Array(table.length);
-	for (var i = 0; i < table.length; i++)
-	{
-		table[i] = fromJSArray_(jsArray, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
-		lengths[i] = length(table[i]) + (i > 0 ? lengths[i - 1] : 0);
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: table,
-		lengths: lengths
-	};
-}
-
-return {
-	empty: empty,
-	fromList: fromList,
-	toList: toList,
-	initialize: F2(initialize),
-	append: F2(append),
-	push: F2(push),
-	slice: F3(slice),
-	get: F2(get),
-	set: F3(set),
-	map: F2(map),
-	indexedMap: F2(indexedMap),
-	foldl: F3(foldl),
-	foldr: F3(foldr),
-	length: length,
-
-	toJSArray: toJSArray,
-	fromJSArray: fromJSArray
-};
-
-}();
-var _elm_lang$core$Array$append = _elm_lang$core$Native_Array.append;
-var _elm_lang$core$Array$length = _elm_lang$core$Native_Array.length;
-var _elm_lang$core$Array$isEmpty = function (array) {
-	return _elm_lang$core$Native_Utils.eq(
-		_elm_lang$core$Array$length(array),
-		0);
-};
-var _elm_lang$core$Array$slice = _elm_lang$core$Native_Array.slice;
-var _elm_lang$core$Array$set = _elm_lang$core$Native_Array.set;
-var _elm_lang$core$Array$get = F2(
-	function (i, array) {
-		return ((_elm_lang$core$Native_Utils.cmp(0, i) < 1) && (_elm_lang$core$Native_Utils.cmp(
-			i,
-			_elm_lang$core$Native_Array.length(array)) < 0)) ? _elm_lang$core$Maybe$Just(
-			A2(_elm_lang$core$Native_Array.get, i, array)) : _elm_lang$core$Maybe$Nothing;
-	});
-var _elm_lang$core$Array$push = _elm_lang$core$Native_Array.push;
-var _elm_lang$core$Array$empty = _elm_lang$core$Native_Array.empty;
-var _elm_lang$core$Array$filter = F2(
-	function (isOkay, arr) {
-		var update = F2(
-			function (x, xs) {
-				return isOkay(x) ? A2(_elm_lang$core$Native_Array.push, x, xs) : xs;
-			});
-		return A3(_elm_lang$core$Native_Array.foldl, update, _elm_lang$core$Native_Array.empty, arr);
-	});
-var _elm_lang$core$Array$foldr = _elm_lang$core$Native_Array.foldr;
-var _elm_lang$core$Array$foldl = _elm_lang$core$Native_Array.foldl;
-var _elm_lang$core$Array$indexedMap = _elm_lang$core$Native_Array.indexedMap;
-var _elm_lang$core$Array$map = _elm_lang$core$Native_Array.map;
-var _elm_lang$core$Array$toIndexedList = function (array) {
-	return A3(
-		_elm_lang$core$List$map2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		_elm_lang$core$Native_List.range(
-			0,
-			_elm_lang$core$Native_Array.length(array) - 1),
-		_elm_lang$core$Native_Array.toList(array));
-};
-var _elm_lang$core$Array$toList = _elm_lang$core$Native_Array.toList;
-var _elm_lang$core$Array$fromList = _elm_lang$core$Native_Array.fromList;
-var _elm_lang$core$Array$initialize = _elm_lang$core$Native_Array.initialize;
-var _elm_lang$core$Array$repeat = F2(
-	function (n, e) {
-		return A2(
-			_elm_lang$core$Array$initialize,
-			n,
-			_elm_lang$core$Basics$always(e));
-	});
-var _elm_lang$core$Array$Array = {ctor: 'Array'};
-
-var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
-var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
-var _elm_lang$core$Task$spawnCmd = F2(
-	function (router, _p0) {
-		var _p1 = _p0;
-		return _elm_lang$core$Native_Scheduler.spawn(
-			A2(
-				_elm_lang$core$Task$andThen,
-				_p1._0,
-				_elm_lang$core$Platform$sendToApp(router)));
-	});
-var _elm_lang$core$Task$fail = _elm_lang$core$Native_Scheduler.fail;
-var _elm_lang$core$Task$mapError = F2(
-	function (f, task) {
-		return A2(
-			_elm_lang$core$Task$onError,
-			task,
-			function (err) {
-				return _elm_lang$core$Task$fail(
-					f(err));
-			});
-	});
-var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
-var _elm_lang$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return _elm_lang$core$Task$succeed(
-					func(a));
-			});
-	});
-var _elm_lang$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskB,
-					function (b) {
-						return _elm_lang$core$Task$succeed(
-							A2(func, a, b));
-					});
-			});
-	});
-var _elm_lang$core$Task$map3 = F4(
-	function (func, taskA, taskB, taskC) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							taskC,
-							function (c) {
-								return _elm_lang$core$Task$succeed(
-									A3(func, a, b, c));
-							});
-					});
-			});
-	});
-var _elm_lang$core$Task$map4 = F5(
-	function (func, taskA, taskB, taskC, taskD) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							taskC,
-							function (c) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									taskD,
-									function (d) {
-										return _elm_lang$core$Task$succeed(
-											A4(func, a, b, c, d));
-									});
-							});
-					});
-			});
-	});
-var _elm_lang$core$Task$map5 = F6(
-	function (func, taskA, taskB, taskC, taskD, taskE) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							taskC,
-							function (c) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									taskD,
-									function (d) {
-										return A2(
-											_elm_lang$core$Task$andThen,
-											taskE,
-											function (e) {
-												return _elm_lang$core$Task$succeed(
-													A5(func, a, b, c, d, e));
-											});
-									});
-							});
-					});
-			});
-	});
-var _elm_lang$core$Task$andMap = F2(
-	function (taskFunc, taskValue) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskFunc,
-			function (func) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskValue,
-					function (value) {
-						return _elm_lang$core$Task$succeed(
-							func(value));
-					});
-			});
-	});
-var _elm_lang$core$Task$sequence = function (tasks) {
-	var _p2 = tasks;
-	if (_p2.ctor === '[]') {
-		return _elm_lang$core$Task$succeed(
-			_elm_lang$core$Native_List.fromArray(
-				[]));
-	} else {
-		return A3(
-			_elm_lang$core$Task$map2,
-			F2(
-				function (x, y) {
-					return A2(_elm_lang$core$List_ops['::'], x, y);
-				}),
-			_p2._0,
-			_elm_lang$core$Task$sequence(_p2._1));
-	}
-};
-var _elm_lang$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			_elm_lang$core$Task$map,
-			function (_p3) {
-				return {ctor: '_Tuple0'};
-			},
-			_elm_lang$core$Task$sequence(
-				A2(
-					_elm_lang$core$List$map,
-					_elm_lang$core$Task$spawnCmd(router),
-					commands)));
-	});
-var _elm_lang$core$Task$toMaybe = function (task) {
-	return A2(
-		_elm_lang$core$Task$onError,
-		A2(_elm_lang$core$Task$map, _elm_lang$core$Maybe$Just, task),
-		function (_p4) {
-			return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
-		});
-};
-var _elm_lang$core$Task$fromMaybe = F2(
-	function ($default, maybe) {
-		var _p5 = maybe;
-		if (_p5.ctor === 'Just') {
-			return _elm_lang$core$Task$succeed(_p5._0);
-		} else {
-			return _elm_lang$core$Task$fail($default);
-		}
-	});
-var _elm_lang$core$Task$toResult = function (task) {
-	return A2(
-		_elm_lang$core$Task$onError,
-		A2(_elm_lang$core$Task$map, _elm_lang$core$Result$Ok, task),
-		function (msg) {
-			return _elm_lang$core$Task$succeed(
-				_elm_lang$core$Result$Err(msg));
-		});
-};
-var _elm_lang$core$Task$fromResult = function (result) {
-	var _p6 = result;
-	if (_p6.ctor === 'Ok') {
-		return _elm_lang$core$Task$succeed(_p6._0);
-	} else {
-		return _elm_lang$core$Task$fail(_p6._0);
-	}
-};
-var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
-	{ctor: '_Tuple0'});
-var _elm_lang$core$Task$onSelfMsg = F3(
-	function (_p9, _p8, _p7) {
-		return _elm_lang$core$Task$succeed(
-			{ctor: '_Tuple0'});
-	});
-var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
-var _elm_lang$core$Task$T = function (a) {
-	return {ctor: 'T', _0: a};
-};
-var _elm_lang$core$Task$perform = F3(
-	function (onFail, onSuccess, task) {
-		return _elm_lang$core$Task$command(
-			_elm_lang$core$Task$T(
-				A2(
-					_elm_lang$core$Task$onError,
-					A2(_elm_lang$core$Task$map, onSuccess, task),
-					function (x) {
-						return _elm_lang$core$Task$succeed(
-							onFail(x));
-					})));
-	});
-var _elm_lang$core$Task$cmdMap = F2(
-	function (tagger, _p10) {
-		var _p11 = _p10;
-		return _elm_lang$core$Task$T(
-			A2(_elm_lang$core$Task$map, tagger, _p11._0));
-	});
-_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
-
 //import Maybe, Native.List, Native.Utils, Result //
 
 var _elm_lang$core$Native_String = function() {
@@ -5083,6 +3829,3572 @@ var _elm_lang$core$Dict$diff = F2(
 			t2);
 	});
 
+//import Native.List //
+
+var _elm_lang$core$Native_Array = function() {
+
+// A RRB-Tree has two distinct data types.
+// Leaf -> "height"  is always 0
+//         "table"   is an array of elements
+// Node -> "height"  is always greater than 0
+//         "table"   is an array of child nodes
+//         "lengths" is an array of accumulated lengths of the child nodes
+
+// M is the maximal table size. 32 seems fast. E is the allowed increase
+// of search steps when concatting to find an index. Lower values will
+// decrease balancing, but will increase search steps.
+var M = 32;
+var E = 2;
+
+// An empty array.
+var empty = {
+	ctor: '_Array',
+	height: 0,
+	table: []
+};
+
+
+function get(i, array)
+{
+	if (i < 0 || i >= length(array))
+	{
+		throw new Error(
+			'Index ' + i + ' is out of range. Check the length of ' +
+			'your array first or use getMaybe or getWithDefault.');
+	}
+	return unsafeGet(i, array);
+}
+
+
+function unsafeGet(i, array)
+{
+	for (var x = array.height; x > 0; x--)
+	{
+		var slot = i >> (x * 5);
+		while (array.lengths[slot] <= i)
+		{
+			slot++;
+		}
+		if (slot > 0)
+		{
+			i -= array.lengths[slot - 1];
+		}
+		array = array.table[slot];
+	}
+	return array.table[i];
+}
+
+
+// Sets the value at the index i. Only the nodes leading to i will get
+// copied and updated.
+function set(i, item, array)
+{
+	if (i < 0 || length(array) <= i)
+	{
+		return array;
+	}
+	return unsafeSet(i, item, array);
+}
+
+
+function unsafeSet(i, item, array)
+{
+	array = nodeCopy(array);
+
+	if (array.height === 0)
+	{
+		array.table[i] = item;
+	}
+	else
+	{
+		var slot = getSlot(i, array);
+		if (slot > 0)
+		{
+			i -= array.lengths[slot - 1];
+		}
+		array.table[slot] = unsafeSet(i, item, array.table[slot]);
+	}
+	return array;
+}
+
+
+function initialize(len, f)
+{
+	if (len <= 0)
+	{
+		return empty;
+	}
+	var h = Math.floor( Math.log(len) / Math.log(M) );
+	return initialize_(f, h, 0, len);
+}
+
+function initialize_(f, h, from, to)
+{
+	if (h === 0)
+	{
+		var table = new Array((to - from) % (M + 1));
+		for (var i = 0; i < table.length; i++)
+		{
+		  table[i] = f(from + i);
+		}
+		return {
+			ctor: '_Array',
+			height: 0,
+			table: table
+		};
+	}
+
+	var step = Math.pow(M, h);
+	var table = new Array(Math.ceil((to - from) / step));
+	var lengths = new Array(table.length);
+	for (var i = 0; i < table.length; i++)
+	{
+		table[i] = initialize_(f, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
+		lengths[i] = length(table[i]) + (i > 0 ? lengths[i-1] : 0);
+	}
+	return {
+		ctor: '_Array',
+		height: h,
+		table: table,
+		lengths: lengths
+	};
+}
+
+function fromList(list)
+{
+	if (list.ctor === '[]')
+	{
+		return empty;
+	}
+
+	// Allocate M sized blocks (table) and write list elements to it.
+	var table = new Array(M);
+	var nodes = [];
+	var i = 0;
+
+	while (list.ctor !== '[]')
+	{
+		table[i] = list._0;
+		list = list._1;
+		i++;
+
+		// table is full, so we can push a leaf containing it into the
+		// next node.
+		if (i === M)
+		{
+			var leaf = {
+				ctor: '_Array',
+				height: 0,
+				table: table
+			};
+			fromListPush(leaf, nodes);
+			table = new Array(M);
+			i = 0;
+		}
+	}
+
+	// Maybe there is something left on the table.
+	if (i > 0)
+	{
+		var leaf = {
+			ctor: '_Array',
+			height: 0,
+			table: table.splice(0, i)
+		};
+		fromListPush(leaf, nodes);
+	}
+
+	// Go through all of the nodes and eventually push them into higher nodes.
+	for (var h = 0; h < nodes.length - 1; h++)
+	{
+		if (nodes[h].table.length > 0)
+		{
+			fromListPush(nodes[h], nodes);
+		}
+	}
+
+	var head = nodes[nodes.length - 1];
+	if (head.height > 0 && head.table.length === 1)
+	{
+		return head.table[0];
+	}
+	else
+	{
+		return head;
+	}
+}
+
+// Push a node into a higher node as a child.
+function fromListPush(toPush, nodes)
+{
+	var h = toPush.height;
+
+	// Maybe the node on this height does not exist.
+	if (nodes.length === h)
+	{
+		var node = {
+			ctor: '_Array',
+			height: h + 1,
+			table: [],
+			lengths: []
+		};
+		nodes.push(node);
+	}
+
+	nodes[h].table.push(toPush);
+	var len = length(toPush);
+	if (nodes[h].lengths.length > 0)
+	{
+		len += nodes[h].lengths[nodes[h].lengths.length - 1];
+	}
+	nodes[h].lengths.push(len);
+
+	if (nodes[h].table.length === M)
+	{
+		fromListPush(nodes[h], nodes);
+		nodes[h] = {
+			ctor: '_Array',
+			height: h + 1,
+			table: [],
+			lengths: []
+		};
+	}
+}
+
+// Pushes an item via push_ to the bottom right of a tree.
+function push(item, a)
+{
+	var pushed = push_(item, a);
+	if (pushed !== null)
+	{
+		return pushed;
+	}
+
+	var newTree = create(item, a.height);
+	return siblise(a, newTree);
+}
+
+// Recursively tries to push an item to the bottom-right most
+// tree possible. If there is no space left for the item,
+// null will be returned.
+function push_(item, a)
+{
+	// Handle resursion stop at leaf level.
+	if (a.height === 0)
+	{
+		if (a.table.length < M)
+		{
+			var newA = {
+				ctor: '_Array',
+				height: 0,
+				table: a.table.slice()
+			};
+			newA.table.push(item);
+			return newA;
+		}
+		else
+		{
+		  return null;
+		}
+	}
+
+	// Recursively push
+	var pushed = push_(item, botRight(a));
+
+	// There was space in the bottom right tree, so the slot will
+	// be updated.
+	if (pushed !== null)
+	{
+		var newA = nodeCopy(a);
+		newA.table[newA.table.length - 1] = pushed;
+		newA.lengths[newA.lengths.length - 1]++;
+		return newA;
+	}
+
+	// When there was no space left, check if there is space left
+	// for a new slot with a tree which contains only the item
+	// at the bottom.
+	if (a.table.length < M)
+	{
+		var newSlot = create(item, a.height - 1);
+		var newA = nodeCopy(a);
+		newA.table.push(newSlot);
+		newA.lengths.push(newA.lengths[newA.lengths.length - 1] + length(newSlot));
+		return newA;
+	}
+	else
+	{
+		return null;
+	}
+}
+
+// Converts an array into a list of elements.
+function toList(a)
+{
+	return toList_(_elm_lang$core$Native_List.Nil, a);
+}
+
+function toList_(list, a)
+{
+	for (var i = a.table.length - 1; i >= 0; i--)
+	{
+		list =
+			a.height === 0
+				? _elm_lang$core$Native_List.Cons(a.table[i], list)
+				: toList_(list, a.table[i]);
+	}
+	return list;
+}
+
+// Maps a function over the elements of an array.
+function map(f, a)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: new Array(a.table.length)
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths;
+	}
+	for (var i = 0; i < a.table.length; i++)
+	{
+		newA.table[i] =
+			a.height === 0
+				? f(a.table[i])
+				: map(f, a.table[i]);
+	}
+	return newA;
+}
+
+// Maps a function over the elements with their index as first argument.
+function indexedMap(f, a)
+{
+	return indexedMap_(f, a, 0);
+}
+
+function indexedMap_(f, a, from)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: new Array(a.table.length)
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths;
+	}
+	for (var i = 0; i < a.table.length; i++)
+	{
+		newA.table[i] =
+			a.height === 0
+				? A2(f, from + i, a.table[i])
+				: indexedMap_(f, a.table[i], i == 0 ? from : from + a.lengths[i - 1]);
+	}
+	return newA;
+}
+
+function foldl(f, b, a)
+{
+	if (a.height === 0)
+	{
+		for (var i = 0; i < a.table.length; i++)
+		{
+			b = A2(f, a.table[i], b);
+		}
+	}
+	else
+	{
+		for (var i = 0; i < a.table.length; i++)
+		{
+			b = foldl(f, b, a.table[i]);
+		}
+	}
+	return b;
+}
+
+function foldr(f, b, a)
+{
+	if (a.height === 0)
+	{
+		for (var i = a.table.length; i--; )
+		{
+			b = A2(f, a.table[i], b);
+		}
+	}
+	else
+	{
+		for (var i = a.table.length; i--; )
+		{
+			b = foldr(f, b, a.table[i]);
+		}
+	}
+	return b;
+}
+
+// TODO: currently, it slices the right, then the left. This can be
+// optimized.
+function slice(from, to, a)
+{
+	if (from < 0)
+	{
+		from += length(a);
+	}
+	if (to < 0)
+	{
+		to += length(a);
+	}
+	return sliceLeft(from, sliceRight(to, a));
+}
+
+function sliceRight(to, a)
+{
+	if (to === length(a))
+	{
+		return a;
+	}
+
+	// Handle leaf level.
+	if (a.height === 0)
+	{
+		var newA = { ctor:'_Array', height:0 };
+		newA.table = a.table.slice(0, to);
+		return newA;
+	}
+
+	// Slice the right recursively.
+	var right = getSlot(to, a);
+	var sliced = sliceRight(to - (right > 0 ? a.lengths[right - 1] : 0), a.table[right]);
+
+	// Maybe the a node is not even needed, as sliced contains the whole slice.
+	if (right === 0)
+	{
+		return sliced;
+	}
+
+	// Create new node.
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice(0, right),
+		lengths: a.lengths.slice(0, right)
+	};
+	if (sliced.table.length > 0)
+	{
+		newA.table[right] = sliced;
+		newA.lengths[right] = length(sliced) + (right > 0 ? newA.lengths[right - 1] : 0);
+	}
+	return newA;
+}
+
+function sliceLeft(from, a)
+{
+	if (from === 0)
+	{
+		return a;
+	}
+
+	// Handle leaf level.
+	if (a.height === 0)
+	{
+		var newA = { ctor:'_Array', height:0 };
+		newA.table = a.table.slice(from, a.table.length + 1);
+		return newA;
+	}
+
+	// Slice the left recursively.
+	var left = getSlot(from, a);
+	var sliced = sliceLeft(from - (left > 0 ? a.lengths[left - 1] : 0), a.table[left]);
+
+	// Maybe the a node is not even needed, as sliced contains the whole slice.
+	if (left === a.table.length - 1)
+	{
+		return sliced;
+	}
+
+	// Create new node.
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice(left, a.table.length + 1),
+		lengths: new Array(a.table.length - left)
+	};
+	newA.table[0] = sliced;
+	var len = 0;
+	for (var i = 0; i < newA.table.length; i++)
+	{
+		len += length(newA.table[i]);
+		newA.lengths[i] = len;
+	}
+
+	return newA;
+}
+
+// Appends two trees.
+function append(a,b)
+{
+	if (a.table.length === 0)
+	{
+		return b;
+	}
+	if (b.table.length === 0)
+	{
+		return a;
+	}
+
+	var c = append_(a, b);
+
+	// Check if both nodes can be crunshed together.
+	if (c[0].table.length + c[1].table.length <= M)
+	{
+		if (c[0].table.length === 0)
+		{
+			return c[1];
+		}
+		if (c[1].table.length === 0)
+		{
+			return c[0];
+		}
+
+		// Adjust .table and .lengths
+		c[0].table = c[0].table.concat(c[1].table);
+		if (c[0].height > 0)
+		{
+			var len = length(c[0]);
+			for (var i = 0; i < c[1].lengths.length; i++)
+			{
+				c[1].lengths[i] += len;
+			}
+			c[0].lengths = c[0].lengths.concat(c[1].lengths);
+		}
+
+		return c[0];
+	}
+
+	if (c[0].height > 0)
+	{
+		var toRemove = calcToRemove(a, b);
+		if (toRemove > E)
+		{
+			c = shuffle(c[0], c[1], toRemove);
+		}
+	}
+
+	return siblise(c[0], c[1]);
+}
+
+// Returns an array of two nodes; right and left. One node _may_ be empty.
+function append_(a, b)
+{
+	if (a.height === 0 && b.height === 0)
+	{
+		return [a, b];
+	}
+
+	if (a.height !== 1 || b.height !== 1)
+	{
+		if (a.height === b.height)
+		{
+			a = nodeCopy(a);
+			b = nodeCopy(b);
+			var appended = append_(botRight(a), botLeft(b));
+
+			insertRight(a, appended[1]);
+			insertLeft(b, appended[0]);
+		}
+		else if (a.height > b.height)
+		{
+			a = nodeCopy(a);
+			var appended = append_(botRight(a), b);
+
+			insertRight(a, appended[0]);
+			b = parentise(appended[1], appended[1].height + 1);
+		}
+		else
+		{
+			b = nodeCopy(b);
+			var appended = append_(a, botLeft(b));
+
+			var left = appended[0].table.length === 0 ? 0 : 1;
+			var right = left === 0 ? 1 : 0;
+			insertLeft(b, appended[left]);
+			a = parentise(appended[right], appended[right].height + 1);
+		}
+	}
+
+	// Check if balancing is needed and return based on that.
+	if (a.table.length === 0 || b.table.length === 0)
+	{
+		return [a, b];
+	}
+
+	var toRemove = calcToRemove(a, b);
+	if (toRemove <= E)
+	{
+		return [a, b];
+	}
+	return shuffle(a, b, toRemove);
+}
+
+// Helperfunctions for append_. Replaces a child node at the side of the parent.
+function insertRight(parent, node)
+{
+	var index = parent.table.length - 1;
+	parent.table[index] = node;
+	parent.lengths[index] = length(node);
+	parent.lengths[index] += index > 0 ? parent.lengths[index - 1] : 0;
+}
+
+function insertLeft(parent, node)
+{
+	if (node.table.length > 0)
+	{
+		parent.table[0] = node;
+		parent.lengths[0] = length(node);
+
+		var len = length(parent.table[0]);
+		for (var i = 1; i < parent.lengths.length; i++)
+		{
+			len += length(parent.table[i]);
+			parent.lengths[i] = len;
+		}
+	}
+	else
+	{
+		parent.table.shift();
+		for (var i = 1; i < parent.lengths.length; i++)
+		{
+			parent.lengths[i] = parent.lengths[i] - parent.lengths[0];
+		}
+		parent.lengths.shift();
+	}
+}
+
+// Returns the extra search steps for E. Refer to the paper.
+function calcToRemove(a, b)
+{
+	var subLengths = 0;
+	for (var i = 0; i < a.table.length; i++)
+	{
+		subLengths += a.table[i].table.length;
+	}
+	for (var i = 0; i < b.table.length; i++)
+	{
+		subLengths += b.table[i].table.length;
+	}
+
+	var toRemove = a.table.length + b.table.length;
+	return toRemove - (Math.floor((subLengths - 1) / M) + 1);
+}
+
+// get2, set2 and saveSlot are helpers for accessing elements over two arrays.
+function get2(a, b, index)
+{
+	return index < a.length
+		? a[index]
+		: b[index - a.length];
+}
+
+function set2(a, b, index, value)
+{
+	if (index < a.length)
+	{
+		a[index] = value;
+	}
+	else
+	{
+		b[index - a.length] = value;
+	}
+}
+
+function saveSlot(a, b, index, slot)
+{
+	set2(a.table, b.table, index, slot);
+
+	var l = (index === 0 || index === a.lengths.length)
+		? 0
+		: get2(a.lengths, a.lengths, index - 1);
+
+	set2(a.lengths, b.lengths, index, l + length(slot));
+}
+
+// Creates a node or leaf with a given length at their arrays for perfomance.
+// Is only used by shuffle.
+function createNode(h, length)
+{
+	if (length < 0)
+	{
+		length = 0;
+	}
+	var a = {
+		ctor: '_Array',
+		height: h,
+		table: new Array(length)
+	};
+	if (h > 0)
+	{
+		a.lengths = new Array(length);
+	}
+	return a;
+}
+
+// Returns an array of two balanced nodes.
+function shuffle(a, b, toRemove)
+{
+	var newA = createNode(a.height, Math.min(M, a.table.length + b.table.length - toRemove));
+	var newB = createNode(a.height, newA.table.length - (a.table.length + b.table.length - toRemove));
+
+	// Skip the slots with size M. More precise: copy the slot references
+	// to the new node
+	var read = 0;
+	while (get2(a.table, b.table, read).table.length % M === 0)
+	{
+		set2(newA.table, newB.table, read, get2(a.table, b.table, read));
+		set2(newA.lengths, newB.lengths, read, get2(a.lengths, b.lengths, read));
+		read++;
+	}
+
+	// Pulling items from left to right, caching in a slot before writing
+	// it into the new nodes.
+	var write = read;
+	var slot = new createNode(a.height - 1, 0);
+	var from = 0;
+
+	// If the current slot is still containing data, then there will be at
+	// least one more write, so we do not break this loop yet.
+	while (read - write - (slot.table.length > 0 ? 1 : 0) < toRemove)
+	{
+		// Find out the max possible items for copying.
+		var source = get2(a.table, b.table, read);
+		var to = Math.min(M - slot.table.length, source.table.length);
+
+		// Copy and adjust size table.
+		slot.table = slot.table.concat(source.table.slice(from, to));
+		if (slot.height > 0)
+		{
+			var len = slot.lengths.length;
+			for (var i = len; i < len + to - from; i++)
+			{
+				slot.lengths[i] = length(slot.table[i]);
+				slot.lengths[i] += (i > 0 ? slot.lengths[i - 1] : 0);
+			}
+		}
+
+		from += to;
+
+		// Only proceed to next slots[i] if the current one was
+		// fully copied.
+		if (source.table.length <= to)
+		{
+			read++; from = 0;
+		}
+
+		// Only create a new slot if the current one is filled up.
+		if (slot.table.length === M)
+		{
+			saveSlot(newA, newB, write, slot);
+			slot = createNode(a.height - 1, 0);
+			write++;
+		}
+	}
+
+	// Cleanup after the loop. Copy the last slot into the new nodes.
+	if (slot.table.length > 0)
+	{
+		saveSlot(newA, newB, write, slot);
+		write++;
+	}
+
+	// Shift the untouched slots to the left
+	while (read < a.table.length + b.table.length )
+	{
+		saveSlot(newA, newB, write, get2(a.table, b.table, read));
+		read++;
+		write++;
+	}
+
+	return [newA, newB];
+}
+
+// Navigation functions
+function botRight(a)
+{
+	return a.table[a.table.length - 1];
+}
+function botLeft(a)
+{
+	return a.table[0];
+}
+
+// Copies a node for updating. Note that you should not use this if
+// only updating only one of "table" or "lengths" for performance reasons.
+function nodeCopy(a)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice()
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths.slice();
+	}
+	return newA;
+}
+
+// Returns how many items are in the tree.
+function length(array)
+{
+	if (array.height === 0)
+	{
+		return array.table.length;
+	}
+	else
+	{
+		return array.lengths[array.lengths.length - 1];
+	}
+}
+
+// Calculates in which slot of "table" the item probably is, then
+// find the exact slot via forward searching in  "lengths". Returns the index.
+function getSlot(i, a)
+{
+	var slot = i >> (5 * a.height);
+	while (a.lengths[slot] <= i)
+	{
+		slot++;
+	}
+	return slot;
+}
+
+// Recursively creates a tree with a given height containing
+// only the given item.
+function create(item, h)
+{
+	if (h === 0)
+	{
+		return {
+			ctor: '_Array',
+			height: 0,
+			table: [item]
+		};
+	}
+	return {
+		ctor: '_Array',
+		height: h,
+		table: [create(item, h - 1)],
+		lengths: [1]
+	};
+}
+
+// Recursively creates a tree that contains the given tree.
+function parentise(tree, h)
+{
+	if (h === tree.height)
+	{
+		return tree;
+	}
+
+	return {
+		ctor: '_Array',
+		height: h,
+		table: [parentise(tree, h - 1)],
+		lengths: [length(tree)]
+	};
+}
+
+// Emphasizes blood brotherhood beneath two trees.
+function siblise(a, b)
+{
+	return {
+		ctor: '_Array',
+		height: a.height + 1,
+		table: [a, b],
+		lengths: [length(a), length(a) + length(b)]
+	};
+}
+
+function toJSArray(a)
+{
+	var jsArray = new Array(length(a));
+	toJSArray_(jsArray, 0, a);
+	return jsArray;
+}
+
+function toJSArray_(jsArray, i, a)
+{
+	for (var t = 0; t < a.table.length; t++)
+	{
+		if (a.height === 0)
+		{
+			jsArray[i + t] = a.table[t];
+		}
+		else
+		{
+			var inc = t === 0 ? 0 : a.lengths[t - 1];
+			toJSArray_(jsArray, i + inc, a.table[t]);
+		}
+	}
+}
+
+function fromJSArray(jsArray)
+{
+	if (jsArray.length === 0)
+	{
+		return empty;
+	}
+	var h = Math.floor(Math.log(jsArray.length) / Math.log(M));
+	return fromJSArray_(jsArray, h, 0, jsArray.length);
+}
+
+function fromJSArray_(jsArray, h, from, to)
+{
+	if (h === 0)
+	{
+		return {
+			ctor: '_Array',
+			height: 0,
+			table: jsArray.slice(from, to)
+		};
+	}
+
+	var step = Math.pow(M, h);
+	var table = new Array(Math.ceil((to - from) / step));
+	var lengths = new Array(table.length);
+	for (var i = 0; i < table.length; i++)
+	{
+		table[i] = fromJSArray_(jsArray, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
+		lengths[i] = length(table[i]) + (i > 0 ? lengths[i - 1] : 0);
+	}
+	return {
+		ctor: '_Array',
+		height: h,
+		table: table,
+		lengths: lengths
+	};
+}
+
+return {
+	empty: empty,
+	fromList: fromList,
+	toList: toList,
+	initialize: F2(initialize),
+	append: F2(append),
+	push: F2(push),
+	slice: F3(slice),
+	get: F2(get),
+	set: F3(set),
+	map: F2(map),
+	indexedMap: F2(indexedMap),
+	foldl: F3(foldl),
+	foldr: F3(foldr),
+	length: length,
+
+	toJSArray: toJSArray,
+	fromJSArray: fromJSArray
+};
+
+}();
+var _elm_lang$core$Array$append = _elm_lang$core$Native_Array.append;
+var _elm_lang$core$Array$length = _elm_lang$core$Native_Array.length;
+var _elm_lang$core$Array$isEmpty = function (array) {
+	return _elm_lang$core$Native_Utils.eq(
+		_elm_lang$core$Array$length(array),
+		0);
+};
+var _elm_lang$core$Array$slice = _elm_lang$core$Native_Array.slice;
+var _elm_lang$core$Array$set = _elm_lang$core$Native_Array.set;
+var _elm_lang$core$Array$get = F2(
+	function (i, array) {
+		return ((_elm_lang$core$Native_Utils.cmp(0, i) < 1) && (_elm_lang$core$Native_Utils.cmp(
+			i,
+			_elm_lang$core$Native_Array.length(array)) < 0)) ? _elm_lang$core$Maybe$Just(
+			A2(_elm_lang$core$Native_Array.get, i, array)) : _elm_lang$core$Maybe$Nothing;
+	});
+var _elm_lang$core$Array$push = _elm_lang$core$Native_Array.push;
+var _elm_lang$core$Array$empty = _elm_lang$core$Native_Array.empty;
+var _elm_lang$core$Array$filter = F2(
+	function (isOkay, arr) {
+		var update = F2(
+			function (x, xs) {
+				return isOkay(x) ? A2(_elm_lang$core$Native_Array.push, x, xs) : xs;
+			});
+		return A3(_elm_lang$core$Native_Array.foldl, update, _elm_lang$core$Native_Array.empty, arr);
+	});
+var _elm_lang$core$Array$foldr = _elm_lang$core$Native_Array.foldr;
+var _elm_lang$core$Array$foldl = _elm_lang$core$Native_Array.foldl;
+var _elm_lang$core$Array$indexedMap = _elm_lang$core$Native_Array.indexedMap;
+var _elm_lang$core$Array$map = _elm_lang$core$Native_Array.map;
+var _elm_lang$core$Array$toIndexedList = function (array) {
+	return A3(
+		_elm_lang$core$List$map2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		_elm_lang$core$Native_List.range(
+			0,
+			_elm_lang$core$Native_Array.length(array) - 1),
+		_elm_lang$core$Native_Array.toList(array));
+};
+var _elm_lang$core$Array$toList = _elm_lang$core$Native_Array.toList;
+var _elm_lang$core$Array$fromList = _elm_lang$core$Native_Array.fromList;
+var _elm_lang$core$Array$initialize = _elm_lang$core$Native_Array.initialize;
+var _elm_lang$core$Array$repeat = F2(
+	function (n, e) {
+		return A2(
+			_elm_lang$core$Array$initialize,
+			n,
+			_elm_lang$core$Basics$always(e));
+	});
+var _elm_lang$core$Array$Array = {ctor: 'Array'};
+
+//import Maybe, Native.Array, Native.List, Native.Utils, Result //
+
+var _elm_lang$core$Native_Json = function() {
+
+
+// CORE DECODERS
+
+function succeed(msg)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'succeed',
+		msg: msg
+	};
+}
+
+function fail(msg)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'fail',
+		msg: msg
+	};
+}
+
+function decodePrimitive(tag)
+{
+	return {
+		ctor: '<decoder>',
+		tag: tag
+	};
+}
+
+function decodeContainer(tag, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: tag,
+		decoder: decoder
+	};
+}
+
+function decodeNull(value)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'null',
+		value: value
+	};
+}
+
+function decodeField(field, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'field',
+		field: field,
+		decoder: decoder
+	};
+}
+
+function decodeKeyValuePairs(decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'key-value',
+		decoder: decoder
+	};
+}
+
+function decodeObject(f, decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'map-many',
+		func: f,
+		decoders: decoders
+	};
+}
+
+function decodeTuple(f, decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'tuple',
+		func: f,
+		decoders: decoders
+	};
+}
+
+function andThen(decoder, callback)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'andThen',
+		decoder: decoder,
+		callback: callback
+	};
+}
+
+function customAndThen(decoder, callback)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'customAndThen',
+		decoder: decoder,
+		callback: callback
+	};
+}
+
+function oneOf(decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'oneOf',
+		decoders: decoders
+	};
+}
+
+
+// DECODING OBJECTS
+
+function decodeObject1(f, d1)
+{
+	return decodeObject(f, [d1]);
+}
+
+function decodeObject2(f, d1, d2)
+{
+	return decodeObject(f, [d1, d2]);
+}
+
+function decodeObject3(f, d1, d2, d3)
+{
+	return decodeObject(f, [d1, d2, d3]);
+}
+
+function decodeObject4(f, d1, d2, d3, d4)
+{
+	return decodeObject(f, [d1, d2, d3, d4]);
+}
+
+function decodeObject5(f, d1, d2, d3, d4, d5)
+{
+	return decodeObject(f, [d1, d2, d3, d4, d5]);
+}
+
+function decodeObject6(f, d1, d2, d3, d4, d5, d6)
+{
+	return decodeObject(f, [d1, d2, d3, d4, d5, d6]);
+}
+
+function decodeObject7(f, d1, d2, d3, d4, d5, d6, d7)
+{
+	return decodeObject(f, [d1, d2, d3, d4, d5, d6, d7]);
+}
+
+function decodeObject8(f, d1, d2, d3, d4, d5, d6, d7, d8)
+{
+	return decodeObject(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
+}
+
+
+// DECODING TUPLES
+
+function decodeTuple1(f, d1)
+{
+	return decodeTuple(f, [d1]);
+}
+
+function decodeTuple2(f, d1, d2)
+{
+	return decodeTuple(f, [d1, d2]);
+}
+
+function decodeTuple3(f, d1, d2, d3)
+{
+	return decodeTuple(f, [d1, d2, d3]);
+}
+
+function decodeTuple4(f, d1, d2, d3, d4)
+{
+	return decodeTuple(f, [d1, d2, d3, d4]);
+}
+
+function decodeTuple5(f, d1, d2, d3, d4, d5)
+{
+	return decodeTuple(f, [d1, d2, d3, d4, d5]);
+}
+
+function decodeTuple6(f, d1, d2, d3, d4, d5, d6)
+{
+	return decodeTuple(f, [d1, d2, d3, d4, d5, d6]);
+}
+
+function decodeTuple7(f, d1, d2, d3, d4, d5, d6, d7)
+{
+	return decodeTuple(f, [d1, d2, d3, d4, d5, d6, d7]);
+}
+
+function decodeTuple8(f, d1, d2, d3, d4, d5, d6, d7, d8)
+{
+	return decodeTuple(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
+}
+
+
+// DECODE HELPERS
+
+function ok(value)
+{
+	return { tag: 'ok', value: value };
+}
+
+function badPrimitive(type, value)
+{
+	return { tag: 'primitive', type: type, value: value };
+}
+
+function badIndex(index, nestedProblems)
+{
+	return { tag: 'index', index: index, rest: nestedProblems };
+}
+
+function badField(field, nestedProblems)
+{
+	return { tag: 'field', field: field, rest: nestedProblems };
+}
+
+function badOneOf(problems)
+{
+	return { tag: 'oneOf', problems: problems };
+}
+
+function bad(msg)
+{
+	return { tag: 'fail', msg: msg };
+}
+
+function badToString(problem)
+{
+	var context = '_';
+	while (problem)
+	{
+		switch (problem.tag)
+		{
+			case 'primitive':
+				return 'Expecting ' + problem.type
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ' but instead got: ' + jsToString(problem.value);
+
+			case 'index':
+				context += '[' + problem.index + ']';
+				problem = problem.rest;
+				break;
+
+			case 'field':
+				context += '.' + problem.field;
+				problem = problem.rest;
+				break;
+
+			case 'oneOf':
+				var problems = problem.problems;
+				for (var i = 0; i < problems.length; i++)
+				{
+					problems[i] = badToString(problems[i]);
+				}
+				return 'I ran into the following problems'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ':\n\n' + problems.join('\n');
+
+			case 'fail':
+				return 'I ran into a `fail` decoder'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ': ' + problem.msg;
+		}
+	}
+}
+
+function jsToString(value)
+{
+	return value === undefined
+		? 'undefined'
+		: JSON.stringify(value);
+}
+
+
+// DECODE
+
+function runOnString(decoder, string)
+{
+	var json;
+	try
+	{
+		json = JSON.parse(string);
+	}
+	catch (e)
+	{
+		return _elm_lang$core$Result$Err('Given an invalid JSON: ' + e.message);
+	}
+	return run(decoder, json);
+}
+
+function run(decoder, value)
+{
+	var result = runHelp(decoder, value);
+	return (result.tag === 'ok')
+		? _elm_lang$core$Result$Ok(result.value)
+		: _elm_lang$core$Result$Err(badToString(result));
+}
+
+function runHelp(decoder, value)
+{
+	switch (decoder.tag)
+	{
+		case 'bool':
+			return (typeof value === 'boolean')
+				? ok(value)
+				: badPrimitive('a Bool', value);
+
+		case 'int':
+			if (typeof value !== 'number') {
+				return badPrimitive('an Int', value);
+			}
+
+			if (-2147483647 < value && value < 2147483647 && (value | 0) === value) {
+				return ok(value);
+			}
+
+			if (isFinite(value) && !(value % 1)) {
+				return ok(value);
+			}
+
+			return badPrimitive('an Int', value);
+
+		case 'float':
+			return (typeof value === 'number')
+				? ok(value)
+				: badPrimitive('a Float', value);
+
+		case 'string':
+			return (typeof value === 'string')
+				? ok(value)
+				: (value instanceof String)
+					? ok(value + '')
+					: badPrimitive('a String', value);
+
+		case 'null':
+			return (value === null)
+				? ok(decoder.value)
+				: badPrimitive('null', value);
+
+		case 'value':
+			return ok(value);
+
+		case 'list':
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('a List', value);
+			}
+
+			var list = _elm_lang$core$Native_List.Nil;
+			for (var i = value.length; i--; )
+			{
+				var result = runHelp(decoder.decoder, value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result)
+				}
+				list = _elm_lang$core$Native_List.Cons(result.value, list);
+			}
+			return ok(list);
+
+		case 'array':
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('an Array', value);
+			}
+
+			var len = value.length;
+			var array = new Array(len);
+			for (var i = len; i--; )
+			{
+				var result = runHelp(decoder.decoder, value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result);
+				}
+				array[i] = result.value;
+			}
+			return ok(_elm_lang$core$Native_Array.fromJSArray(array));
+
+		case 'maybe':
+			var result = runHelp(decoder.decoder, value);
+			return (result.tag === 'ok')
+				? ok(_elm_lang$core$Maybe$Just(result.value))
+				: ok(_elm_lang$core$Maybe$Nothing);
+
+		case 'field':
+			var field = decoder.field;
+			if (typeof value !== 'object' || value === null || !(field in value))
+			{
+				return badPrimitive('an object with a field named `' + field + '`', value);
+			}
+
+			var result = runHelp(decoder.decoder, value[field]);
+			return (result.tag === 'ok')
+				? result
+				: badField(field, result);
+
+		case 'key-value':
+			if (typeof value !== 'object' || value === null || value instanceof Array)
+			{
+				return badPrimitive('an object', value);
+			}
+
+			var keyValuePairs = _elm_lang$core$Native_List.Nil;
+			for (var key in value)
+			{
+				var result = runHelp(decoder.decoder, value[key]);
+				if (result.tag !== 'ok')
+				{
+					return badField(key, result);
+				}
+				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
+				keyValuePairs = _elm_lang$core$Native_List.Cons(pair, keyValuePairs);
+			}
+			return ok(keyValuePairs);
+
+		case 'map-many':
+			var answer = decoder.func;
+			var decoders = decoder.decoders;
+			for (var i = 0; i < decoders.length; i++)
+			{
+				var result = runHelp(decoders[i], value);
+				if (result.tag !== 'ok')
+				{
+					return result;
+				}
+				answer = answer(result.value);
+			}
+			return ok(answer);
+
+		case 'tuple':
+			var decoders = decoder.decoders;
+			var len = decoders.length;
+
+			if ( !(value instanceof Array) || value.length !== len )
+			{
+				return badPrimitive('a Tuple with ' + len + ' entries', value);
+			}
+
+			var answer = decoder.func;
+			for (var i = 0; i < len; i++)
+			{
+				var result = runHelp(decoders[i], value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result);
+				}
+				answer = answer(result.value);
+			}
+			return ok(answer);
+
+		case 'customAndThen':
+			var result = runHelp(decoder.decoder, value);
+			if (result.tag !== 'ok')
+			{
+				return result;
+			}
+			var realResult = decoder.callback(result.value);
+			if (realResult.ctor === 'Err')
+			{
+				return badPrimitive('something custom', value);
+			}
+			return ok(realResult._0);
+
+		case 'andThen':
+			var result = runHelp(decoder.decoder, value);
+			return (result.tag !== 'ok')
+				? result
+				: runHelp(decoder.callback(result.value), value);
+
+		case 'oneOf':
+			var errors = [];
+			var temp = decoder.decoders;
+			while (temp.ctor !== '[]')
+			{
+				var result = runHelp(temp._0, value);
+
+				if (result.tag === 'ok')
+				{
+					return result;
+				}
+
+				errors.push(result);
+
+				temp = temp._1;
+			}
+			return badOneOf(errors);
+
+		case 'fail':
+			return bad(decoder.msg);
+
+		case 'succeed':
+			return ok(decoder.msg);
+	}
+}
+
+
+// EQUALITY
+
+function equality(a, b)
+{
+	if (a === b)
+	{
+		return true;
+	}
+
+	if (a.tag !== b.tag)
+	{
+		return false;
+	}
+
+	switch (a.tag)
+	{
+		case 'succeed':
+		case 'fail':
+			return a.msg === b.msg;
+
+		case 'bool':
+		case 'int':
+		case 'float':
+		case 'string':
+		case 'value':
+			return true;
+
+		case 'null':
+			return a.value === b.value;
+
+		case 'list':
+		case 'array':
+		case 'maybe':
+		case 'key-value':
+			return equality(a.decoder, b.decoder);
+
+		case 'field':
+			return a.field === b.field && equality(a.decoder, b.decoder);
+
+		case 'map-many':
+		case 'tuple':
+			if (a.func !== b.func)
+			{
+				return false;
+			}
+			return listEquality(a.decoders, b.decoders);
+
+		case 'andThen':
+		case 'customAndThen':
+			return a.callback === b.callback && equality(a.decoder, b.decoder);
+
+		case 'oneOf':
+			return listEquality(a.decoders, b.decoders);
+	}
+}
+
+function listEquality(aDecoders, bDecoders)
+{
+	var len = aDecoders.length;
+	if (len !== bDecoders.length)
+	{
+		return false;
+	}
+	for (var i = 0; i < len; i++)
+	{
+		if (!equality(aDecoders[i], bDecoders[i]))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// ENCODE
+
+function encode(indentLevel, value)
+{
+	return JSON.stringify(value, null, indentLevel);
+}
+
+function identity(value)
+{
+	return value;
+}
+
+function encodeObject(keyValuePairs)
+{
+	var obj = {};
+	while (keyValuePairs.ctor !== '[]')
+	{
+		var pair = keyValuePairs._0;
+		obj[pair._0] = pair._1;
+		keyValuePairs = keyValuePairs._1;
+	}
+	return obj;
+}
+
+return {
+	encode: F2(encode),
+	runOnString: F2(runOnString),
+	run: F2(run),
+
+	decodeNull: decodeNull,
+	decodePrimitive: decodePrimitive,
+	decodeContainer: F2(decodeContainer),
+
+	decodeField: F2(decodeField),
+
+	decodeObject1: F2(decodeObject1),
+	decodeObject2: F3(decodeObject2),
+	decodeObject3: F4(decodeObject3),
+	decodeObject4: F5(decodeObject4),
+	decodeObject5: F6(decodeObject5),
+	decodeObject6: F7(decodeObject6),
+	decodeObject7: F8(decodeObject7),
+	decodeObject8: F9(decodeObject8),
+	decodeKeyValuePairs: decodeKeyValuePairs,
+
+	decodeTuple1: F2(decodeTuple1),
+	decodeTuple2: F3(decodeTuple2),
+	decodeTuple3: F4(decodeTuple3),
+	decodeTuple4: F5(decodeTuple4),
+	decodeTuple5: F6(decodeTuple5),
+	decodeTuple6: F7(decodeTuple6),
+	decodeTuple7: F8(decodeTuple7),
+	decodeTuple8: F9(decodeTuple8),
+
+	andThen: F2(andThen),
+	customAndThen: F2(customAndThen),
+	fail: fail,
+	succeed: succeed,
+	oneOf: oneOf,
+
+	identity: identity,
+	encodeNull: null,
+	encodeArray: _elm_lang$core$Native_Array.toJSArray,
+	encodeList: _elm_lang$core$Native_List.toArray,
+	encodeObject: encodeObject,
+
+	equality: equality
+};
+
+}();
+
+var _elm_lang$core$Json_Encode$list = _elm_lang$core$Native_Json.encodeList;
+var _elm_lang$core$Json_Encode$array = _elm_lang$core$Native_Json.encodeArray;
+var _elm_lang$core$Json_Encode$object = _elm_lang$core$Native_Json.encodeObject;
+var _elm_lang$core$Json_Encode$null = _elm_lang$core$Native_Json.encodeNull;
+var _elm_lang$core$Json_Encode$bool = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$float = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$int = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$string = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$encode = _elm_lang$core$Native_Json.encode;
+var _elm_lang$core$Json_Encode$Value = {ctor: 'Value'};
+
+var _elm_lang$core$Json_Decode$tuple8 = _elm_lang$core$Native_Json.decodeTuple8;
+var _elm_lang$core$Json_Decode$tuple7 = _elm_lang$core$Native_Json.decodeTuple7;
+var _elm_lang$core$Json_Decode$tuple6 = _elm_lang$core$Native_Json.decodeTuple6;
+var _elm_lang$core$Json_Decode$tuple5 = _elm_lang$core$Native_Json.decodeTuple5;
+var _elm_lang$core$Json_Decode$tuple4 = _elm_lang$core$Native_Json.decodeTuple4;
+var _elm_lang$core$Json_Decode$tuple3 = _elm_lang$core$Native_Json.decodeTuple3;
+var _elm_lang$core$Json_Decode$tuple2 = _elm_lang$core$Native_Json.decodeTuple2;
+var _elm_lang$core$Json_Decode$tuple1 = _elm_lang$core$Native_Json.decodeTuple1;
+var _elm_lang$core$Json_Decode$succeed = _elm_lang$core$Native_Json.succeed;
+var _elm_lang$core$Json_Decode$fail = _elm_lang$core$Native_Json.fail;
+var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
+var _elm_lang$core$Json_Decode$customDecoder = _elm_lang$core$Native_Json.customAndThen;
+var _elm_lang$core$Json_Decode$decodeValue = _elm_lang$core$Native_Json.run;
+var _elm_lang$core$Json_Decode$value = _elm_lang$core$Native_Json.decodePrimitive('value');
+var _elm_lang$core$Json_Decode$maybe = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'maybe', decoder);
+};
+var _elm_lang$core$Json_Decode$null = _elm_lang$core$Native_Json.decodeNull;
+var _elm_lang$core$Json_Decode$array = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'array', decoder);
+};
+var _elm_lang$core$Json_Decode$list = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'list', decoder);
+};
+var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive('bool');
+var _elm_lang$core$Json_Decode$int = _elm_lang$core$Native_Json.decodePrimitive('int');
+var _elm_lang$core$Json_Decode$float = _elm_lang$core$Native_Json.decodePrimitive('float');
+var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
+var _elm_lang$core$Json_Decode$oneOf = _elm_lang$core$Native_Json.oneOf;
+var _elm_lang$core$Json_Decode$keyValuePairs = _elm_lang$core$Native_Json.decodeKeyValuePairs;
+var _elm_lang$core$Json_Decode$object8 = _elm_lang$core$Native_Json.decodeObject8;
+var _elm_lang$core$Json_Decode$object7 = _elm_lang$core$Native_Json.decodeObject7;
+var _elm_lang$core$Json_Decode$object6 = _elm_lang$core$Native_Json.decodeObject6;
+var _elm_lang$core$Json_Decode$object5 = _elm_lang$core$Native_Json.decodeObject5;
+var _elm_lang$core$Json_Decode$object4 = _elm_lang$core$Native_Json.decodeObject4;
+var _elm_lang$core$Json_Decode$object3 = _elm_lang$core$Native_Json.decodeObject3;
+var _elm_lang$core$Json_Decode$object2 = _elm_lang$core$Native_Json.decodeObject2;
+var _elm_lang$core$Json_Decode$object1 = _elm_lang$core$Native_Json.decodeObject1;
+var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
+_elm_lang$core$Json_Decode_ops[':='] = _elm_lang$core$Native_Json.decodeField;
+var _elm_lang$core$Json_Decode$at = F2(
+	function (fields, decoder) {
+		return A3(
+			_elm_lang$core$List$foldr,
+			F2(
+				function (x, y) {
+					return A2(_elm_lang$core$Json_Decode_ops[':='], x, y);
+				}),
+			decoder,
+			fields);
+	});
+var _elm_lang$core$Json_Decode$decodeString = _elm_lang$core$Native_Json.runOnString;
+var _elm_lang$core$Json_Decode$map = _elm_lang$core$Native_Json.decodeObject1;
+var _elm_lang$core$Json_Decode$dict = function (decoder) {
+	return A2(
+		_elm_lang$core$Json_Decode$map,
+		_elm_lang$core$Dict$fromList,
+		_elm_lang$core$Json_Decode$keyValuePairs(decoder));
+};
+var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
+
+//import Native.Json //
+
+var _elm_lang$virtual_dom$Native_VirtualDom = function() {
+
+var STYLE_KEY = 'STYLE';
+var EVENT_KEY = 'EVENT';
+var ATTR_KEY = 'ATTR';
+var ATTR_NS_KEY = 'ATTR_NS';
+
+
+
+////////////  VIRTUAL DOM NODES  ////////////
+
+
+function text(string)
+{
+	return {
+		type: 'text',
+		text: string
+	};
+}
+
+
+function node(tag)
+{
+	return F2(function(factList, kidList) {
+		return nodeHelp(tag, factList, kidList);
+	});
+}
+
+
+function nodeHelp(tag, factList, kidList)
+{
+	var organized = organizeFacts(factList);
+	var namespace = organized.namespace;
+	var facts = organized.facts;
+
+	var children = [];
+	var descendantsCount = 0;
+	while (kidList.ctor !== '[]')
+	{
+		var kid = kidList._0;
+		descendantsCount += (kid.descendantsCount || 0);
+		children.push(kid);
+		kidList = kidList._1;
+	}
+	descendantsCount += children.length;
+
+	return {
+		type: 'node',
+		tag: tag,
+		facts: facts,
+		children: children,
+		namespace: namespace,
+		descendantsCount: descendantsCount
+	};
+}
+
+
+function keyedNode(tag, factList, kidList)
+{
+	var organized = organizeFacts(factList);
+	var namespace = organized.namespace;
+	var facts = organized.facts;
+
+	var children = [];
+	var descendantsCount = 0;
+	while (kidList.ctor !== '[]')
+	{
+		var kid = kidList._0;
+		descendantsCount += (kid._1.descendantsCount || 0);
+		children.push(kid);
+		kidList = kidList._1;
+	}
+	descendantsCount += children.length;
+
+	return {
+		type: 'keyed-node',
+		tag: tag,
+		facts: facts,
+		children: children,
+		namespace: namespace,
+		descendantsCount: descendantsCount
+	};
+}
+
+
+function custom(factList, model, impl)
+{
+	var facts = organizeFacts(factList).facts;
+
+	return {
+		type: 'custom',
+		facts: facts,
+		model: model,
+		impl: impl
+	};
+}
+
+
+function map(tagger, node)
+{
+	return {
+		type: 'tagger',
+		tagger: tagger,
+		node: node,
+		descendantsCount: 1 + (node.descendantsCount || 0)
+	};
+}
+
+
+function thunk(func, args, thunk)
+{
+	return {
+		type: 'thunk',
+		func: func,
+		args: args,
+		thunk: thunk,
+		node: undefined
+	};
+}
+
+function lazy(fn, a)
+{
+	return thunk(fn, [a], function() {
+		return fn(a);
+	});
+}
+
+function lazy2(fn, a, b)
+{
+	return thunk(fn, [a,b], function() {
+		return A2(fn, a, b);
+	});
+}
+
+function lazy3(fn, a, b, c)
+{
+	return thunk(fn, [a,b,c], function() {
+		return A3(fn, a, b, c);
+	});
+}
+
+
+
+// FACTS
+
+
+function organizeFacts(factList)
+{
+	var namespace, facts = {};
+
+	while (factList.ctor !== '[]')
+	{
+		var entry = factList._0;
+		var key = entry.key;
+
+		if (key === ATTR_KEY || key === ATTR_NS_KEY || key === EVENT_KEY)
+		{
+			var subFacts = facts[key] || {};
+			subFacts[entry.realKey] = entry.value;
+			facts[key] = subFacts;
+		}
+		else if (key === STYLE_KEY)
+		{
+			var styles = facts[key] || {};
+			var styleList = entry.value;
+			while (styleList.ctor !== '[]')
+			{
+				var style = styleList._0;
+				styles[style._0] = style._1;
+				styleList = styleList._1;
+			}
+			facts[key] = styles;
+		}
+		else if (key === 'namespace')
+		{
+			namespace = entry.value;
+		}
+		else
+		{
+			facts[key] = entry.value;
+		}
+		factList = factList._1;
+	}
+
+	return {
+		facts: facts,
+		namespace: namespace
+	};
+}
+
+
+
+////////////  PROPERTIES AND ATTRIBUTES  ////////////
+
+
+function style(value)
+{
+	return {
+		key: STYLE_KEY,
+		value: value
+	};
+}
+
+
+function property(key, value)
+{
+	return {
+		key: key,
+		value: value
+	};
+}
+
+
+function attribute(key, value)
+{
+	return {
+		key: ATTR_KEY,
+		realKey: key,
+		value: value
+	};
+}
+
+
+function attributeNS(namespace, key, value)
+{
+	return {
+		key: ATTR_NS_KEY,
+		realKey: key,
+		value: {
+			value: value,
+			namespace: namespace
+		}
+	};
+}
+
+
+function on(name, options, decoder)
+{
+	return {
+		key: EVENT_KEY,
+		realKey: name,
+		value: {
+			options: options,
+			decoder: decoder
+		}
+	};
+}
+
+
+function equalEvents(a, b)
+{
+	if (!a.options === b.options)
+	{
+		if (a.stopPropagation !== b.stopPropagation || a.preventDefault !== b.preventDefault)
+		{
+			return false;
+		}
+	}
+	return _elm_lang$core$Native_Json.equality(a.decoder, b.decoder);
+}
+
+
+
+////////////  RENDERER  ////////////
+
+
+function renderer(parent, tagger, initialVirtualNode)
+{
+	var eventNode = { tagger: tagger, parent: undefined };
+
+	var domNode = render(initialVirtualNode, eventNode);
+	parent.appendChild(domNode);
+
+	var state = 'NO_REQUEST';
+	var currentVirtualNode = initialVirtualNode;
+	var nextVirtualNode = initialVirtualNode;
+
+	function registerVirtualNode(vNode)
+	{
+		if (state === 'NO_REQUEST')
+		{
+			rAF(updateIfNeeded);
+		}
+		state = 'PENDING_REQUEST';
+		nextVirtualNode = vNode;
+	}
+
+	function updateIfNeeded()
+	{
+		switch (state)
+		{
+			case 'NO_REQUEST':
+				throw new Error(
+					'Unexpected draw callback.\n' +
+					'Please report this to <https://github.com/elm-lang/core/issues>.'
+				);
+
+			case 'PENDING_REQUEST':
+				rAF(updateIfNeeded);
+				state = 'EXTRA_REQUEST';
+
+				var patches = diff(currentVirtualNode, nextVirtualNode);
+				domNode = applyPatches(domNode, currentVirtualNode, patches, eventNode);
+				currentVirtualNode = nextVirtualNode;
+
+				return;
+
+			case 'EXTRA_REQUEST':
+				state = 'NO_REQUEST';
+				return;
+		}
+	}
+
+	return { update: registerVirtualNode };
+}
+
+
+var rAF =
+	typeof requestAnimationFrame !== 'undefined'
+		? requestAnimationFrame
+		: function(cb) { setTimeout(cb, 1000 / 60); };
+
+
+
+////////////  RENDER  ////////////
+
+
+function render(vNode, eventNode)
+{
+	switch (vNode.type)
+	{
+		case 'thunk':
+			if (!vNode.node)
+			{
+				vNode.node = vNode.thunk();
+			}
+			return render(vNode.node, eventNode);
+
+		case 'tagger':
+			var subNode = vNode.node;
+			var tagger = vNode.tagger;
+
+			while (subNode.type === 'tagger')
+			{
+				typeof tagger !== 'object'
+					? tagger = [tagger, subNode.tagger]
+					: tagger.push(subNode.tagger);
+
+				subNode = subNode.node;
+			}
+
+			var subEventRoot = {
+				tagger: tagger,
+				parent: eventNode
+			};
+
+			var domNode = render(subNode, subEventRoot);
+			domNode.elm_event_node_ref = subEventRoot;
+			return domNode;
+
+		case 'text':
+			return document.createTextNode(vNode.text);
+
+		case 'node':
+			var domNode = vNode.namespace
+				? document.createElementNS(vNode.namespace, vNode.tag)
+				: document.createElement(vNode.tag);
+
+			applyFacts(domNode, eventNode, vNode.facts);
+
+			var children = vNode.children;
+
+			for (var i = 0; i < children.length; i++)
+			{
+				domNode.appendChild(render(children[i], eventNode));
+			}
+
+			return domNode;
+
+		case 'keyed-node':
+			var domNode = vNode.namespace
+				? document.createElementNS(vNode.namespace, vNode.tag)
+				: document.createElement(vNode.tag);
+
+			applyFacts(domNode, eventNode, vNode.facts);
+
+			var children = vNode.children;
+
+			for (var i = 0; i < children.length; i++)
+			{
+				domNode.appendChild(render(children[i]._1, eventNode));
+			}
+
+			return domNode;
+
+		case 'custom':
+			var domNode = vNode.impl.render(vNode.model);
+			applyFacts(domNode, eventNode, vNode.facts);
+			return domNode;
+	}
+}
+
+
+
+////////////  APPLY FACTS  ////////////
+
+
+function applyFacts(domNode, eventNode, facts)
+{
+	for (var key in facts)
+	{
+		var value = facts[key];
+
+		switch (key)
+		{
+			case STYLE_KEY:
+				applyStyles(domNode, value);
+				break;
+
+			case EVENT_KEY:
+				applyEvents(domNode, eventNode, value);
+				break;
+
+			case ATTR_KEY:
+				applyAttrs(domNode, value);
+				break;
+
+			case ATTR_NS_KEY:
+				applyAttrsNS(domNode, value);
+				break;
+
+			case 'value':
+				if (domNode[key] !== value)
+				{
+					domNode[key] = value;
+				}
+				break;
+
+			default:
+				domNode[key] = value;
+				break;
+		}
+	}
+}
+
+function applyStyles(domNode, styles)
+{
+	var domNodeStyle = domNode.style;
+
+	for (var key in styles)
+	{
+		domNodeStyle[key] = styles[key];
+	}
+}
+
+function applyEvents(domNode, eventNode, events)
+{
+	var allHandlers = domNode.elm_handlers || {};
+
+	for (var key in events)
+	{
+		var handler = allHandlers[key];
+		var value = events[key];
+
+		if (typeof value === 'undefined')
+		{
+			domNode.removeEventListener(key, handler);
+			allHandlers[key] = undefined;
+		}
+		else if (typeof handler === 'undefined')
+		{
+			var handler = makeEventHandler(eventNode, value);
+			domNode.addEventListener(key, handler);
+			allHandlers[key] = handler;
+		}
+		else
+		{
+			handler.info = value;
+		}
+	}
+
+	domNode.elm_handlers = allHandlers;
+}
+
+function makeEventHandler(eventNode, info)
+{
+	function eventHandler(event)
+	{
+		var info = eventHandler.info;
+
+		var value = A2(_elm_lang$core$Native_Json.run, info.decoder, event);
+
+		if (value.ctor === 'Ok')
+		{
+			var options = info.options;
+			if (options.stopPropagation)
+			{
+				event.stopPropagation();
+			}
+			if (options.preventDefault)
+			{
+				event.preventDefault();
+			}
+
+			var message = value._0;
+
+			var currentEventNode = eventNode;
+			while (currentEventNode)
+			{
+				var tagger = currentEventNode.tagger;
+				if (typeof tagger === 'function')
+				{
+					message = tagger(message);
+				}
+				else
+				{
+					for (var i = tagger.length; i--; )
+					{
+						message = tagger[i](message);
+					}
+				}
+				currentEventNode = currentEventNode.parent;
+			}
+		}
+	};
+
+	eventHandler.info = info;
+
+	return eventHandler;
+}
+
+function applyAttrs(domNode, attrs)
+{
+	for (var key in attrs)
+	{
+		var value = attrs[key];
+		if (typeof value === 'undefined')
+		{
+			domNode.removeAttribute(key);
+		}
+		else
+		{
+			domNode.setAttribute(key, value);
+		}
+	}
+}
+
+function applyAttrsNS(domNode, nsAttrs)
+{
+	for (var key in nsAttrs)
+	{
+		var pair = nsAttrs[key];
+		var namespace = pair.namespace;
+		var value = pair.value;
+
+		if (typeof value === 'undefined')
+		{
+			domNode.removeAttributeNS(namespace, key);
+		}
+		else
+		{
+			domNode.setAttributeNS(namespace, key, value);
+		}
+	}
+}
+
+
+
+////////////  DIFF  ////////////
+
+
+function diff(a, b)
+{
+	var patches = [];
+	diffHelp(a, b, patches, 0);
+	return patches;
+}
+
+
+function makePatch(type, index, data)
+{
+	return {
+		index: index,
+		type: type,
+		data: data,
+		domNode: undefined,
+		eventNode: undefined
+	};
+}
+
+
+function diffHelp(a, b, patches, index)
+{
+	if (a === b)
+	{
+		return;
+	}
+
+	var aType = a.type;
+	var bType = b.type;
+
+	// Bail if you run into different types of nodes. Implies that the
+	// structure has changed significantly and it's not worth a diff.
+	if (aType !== bType)
+	{
+		patches.push(makePatch('p-redraw', index, b));
+		return;
+	}
+
+	// Now we know that both nodes are the same type.
+	switch (bType)
+	{
+		case 'thunk':
+			var aArgs = a.args;
+			var bArgs = b.args;
+			var i = aArgs.length;
+			var same = a.func === b.func && i === bArgs.length;
+			while (same && i--)
+			{
+				same = aArgs[i] === bArgs[i];
+			}
+			if (same)
+			{
+				b.node = a.node;
+				return;
+			}
+			b.node = b.thunk();
+			var subPatches = [];
+			diffHelp(a.node, b.node, subPatches, 0);
+			if (subPatches.length > 0)
+			{
+				patches.push(makePatch('p-thunk', index, subPatches));
+			}
+			return;
+
+		case 'tagger':
+			// gather nested taggers
+			var aTaggers = a.tagger;
+			var bTaggers = b.tagger;
+			var nesting = false;
+
+			var aSubNode = a.node;
+			while (aSubNode.type === 'tagger')
+			{
+				nesting = true;
+
+				typeof aTaggers !== 'object'
+					? aTaggers = [aTaggers, aSubNode.tagger]
+					: aTaggers.push(aSubNode.tagger);
+
+				aSubNode = aSubNode.node;
+			}
+
+			var bSubNode = b.node;
+			while (bSubNode.type === 'tagger')
+			{
+				nesting = true;
+
+				typeof bTaggers !== 'object'
+					? bTaggers = [bTaggers, bSubNode.tagger]
+					: bTaggers.push(bSubNode.tagger);
+
+				bSubNode = bSubNode.node;
+			}
+
+			// Just bail if different numbers of taggers. This implies the
+			// structure of the virtual DOM has changed.
+			if (nesting && aTaggers.length !== bTaggers.length)
+			{
+				patches.push(makePatch('p-redraw', index, b));
+				return;
+			}
+
+			// check if taggers are "the same"
+			if (nesting ? !pairwiseRefEqual(aTaggers, bTaggers) : aTaggers !== bTaggers)
+			{
+				patches.push(makePatch('p-tagger', index, bTaggers));
+			}
+
+			// diff everything below the taggers
+			diffHelp(aSubNode, bSubNode, patches, index + 1);
+			return;
+
+		case 'text':
+			if (a.text !== b.text)
+			{
+				patches.push(makePatch('p-text', index, b.text));
+				return;
+			}
+
+			return;
+
+		case 'node':
+			// Bail if obvious indicators have changed. Implies more serious
+			// structural changes such that it's not worth it to diff.
+			if (a.tag !== b.tag || a.namespace !== b.namespace)
+			{
+				patches.push(makePatch('p-redraw', index, b));
+				return;
+			}
+
+			var factsDiff = diffFacts(a.facts, b.facts);
+
+			if (typeof factsDiff !== 'undefined')
+			{
+				patches.push(makePatch('p-facts', index, factsDiff));
+			}
+
+			diffChildren(a, b, patches, index);
+			return;
+
+		case 'keyed-node':
+			// Bail if obvious indicators have changed. Implies more serious
+			// structural changes such that it's not worth it to diff.
+			if (a.tag !== b.tag || a.namespace !== b.namespace)
+			{
+				patches.push(makePatch('p-redraw', index, b));
+				return;
+			}
+
+			var factsDiff = diffFacts(a.facts, b.facts);
+
+			if (typeof factsDiff !== 'undefined')
+			{
+				patches.push(makePatch('p-facts', index, factsDiff));
+			}
+
+			diffKeyedChildren(a, b, patches, index);
+			return;
+
+		case 'custom':
+			if (a.impl !== b.impl)
+			{
+				patches.push(makePatch('p-redraw', index, b));
+				return;
+			}
+
+			var factsDiff = diffFacts(a.facts, b.facts);
+			if (typeof factsDiff !== 'undefined')
+			{
+				patches.push(makePatch('p-facts', index, factsDiff));
+			}
+
+			var patch = b.impl.diff(a,b);
+			if (patch)
+			{
+				patches.push(makePatch('p-custom', index, patch));
+				return;
+			}
+
+			return;
+	}
+}
+
+
+// assumes the incoming arrays are the same length
+function pairwiseRefEqual(as, bs)
+{
+	for (var i = 0; i < as.length; i++)
+	{
+		if (as[i] !== bs[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+// TODO Instead of creating a new diff object, it's possible to just test if
+// there *is* a diff. During the actual patch, do the diff again and make the
+// modifications directly. This way, there's no new allocations. Worth it?
+function diffFacts(a, b, category)
+{
+	var diff;
+
+	// look for changes and removals
+	for (var aKey in a)
+	{
+		if (aKey === STYLE_KEY || aKey === EVENT_KEY || aKey === ATTR_KEY || aKey === ATTR_NS_KEY)
+		{
+			var subDiff = diffFacts(a[aKey], b[aKey] || {}, aKey);
+			if (subDiff)
+			{
+				diff = diff || {};
+				diff[aKey] = subDiff;
+			}
+			continue;
+		}
+
+		// remove if not in the new facts
+		if (!(aKey in b))
+		{
+			diff = diff || {};
+			diff[aKey] =
+				(typeof category === 'undefined')
+					? (typeof a[aKey] === 'string' ? '' : null)
+					:
+				(category === STYLE_KEY)
+					? ''
+					:
+				(category === EVENT_KEY || category === ATTR_KEY)
+					? undefined
+					:
+				{ namespace: a[aKey].namespace, value: undefined };
+
+			continue;
+		}
+
+		var aValue = a[aKey];
+		var bValue = b[aKey];
+
+		// reference equal, so don't worry about it
+		if (aValue === bValue && aKey !== 'value'
+			|| category === EVENT_KEY && equalEvents(aValue, bValue))
+		{
+			continue;
+		}
+
+		diff = diff || {};
+		diff[aKey] = bValue;
+	}
+
+	// add new stuff
+	for (var bKey in b)
+	{
+		if (!(bKey in a))
+		{
+			diff = diff || {};
+			diff[bKey] = b[bKey];
+		}
+	}
+
+	return diff;
+}
+
+
+function diffChildren(aParent, bParent, patches, rootIndex)
+{
+	var aChildren = aParent.children;
+	var bChildren = bParent.children;
+
+	var aLen = aChildren.length;
+	var bLen = bChildren.length;
+
+	// FIGURE OUT IF THERE ARE INSERTS OR REMOVALS
+
+	if (aLen > bLen)
+	{
+		patches.push(makePatch('p-remove-last', rootIndex, aLen - bLen));
+	}
+	else if (aLen < bLen)
+	{
+		patches.push(makePatch('p-append', rootIndex, bChildren.slice(aLen)));
+	}
+
+	// PAIRWISE DIFF EVERYTHING ELSE
+
+	var index = rootIndex;
+	var minLen = aLen < bLen ? aLen : bLen;
+	for (var i = 0; i < minLen; i++)
+	{
+		index++;
+		var aChild = aChildren[i];
+		diffHelp(aChild, bChildren[i], patches, index);
+		index += aChild.descendantsCount || 0;
+	}
+}
+
+
+
+////////////  KEYED DIFF  ////////////
+
+
+function diffKeyedChildren(aParent, bParent, patches, rootIndex)
+{
+	var localPatches = [];
+
+	var changes = {}; // Dict String Entry
+	var inserts = []; // Array { index : Int, entry : Entry }
+	// type Entry = { tag : String, vnode : VNode, index : Int, data : _ }
+
+	var aChildren = aParent.children;
+	var bChildren = bParent.children;
+	var aLen = aChildren.length;
+	var bLen = bChildren.length;
+	var aIndex = 0;
+	var bIndex = 0;
+
+	var index = rootIndex;
+
+	while (aIndex < aLen && bIndex < bLen)
+	{
+		var a = aChildren[aIndex];
+		var b = bChildren[bIndex];
+
+		var aKey = a._0;
+		var bKey = b._0;
+		var aNode = a._1;
+		var bNode = b._1;
+
+		// check if keys match
+
+		if (aKey === bKey)
+		{
+			index++;
+			diffHelp(aNode, bNode, localPatches, index);
+			index += aNode.descendantsCount || 0;
+
+			aIndex++;
+			bIndex++;
+			continue;
+		}
+
+		// look ahead 1 to detect insertions and removals.
+
+		var aLookAhead = aIndex + 1 < aLen;
+		var bLookAhead = bIndex + 1 < bLen;
+
+		if (aLookAhead)
+		{
+			var aNext = aChildren[aIndex + 1];
+			var aNextKey = aNext._0;
+			var aNextNode = aNext._1;
+			var oldMatch = bKey === aNextKey;
+		}
+
+		if (bLookAhead)
+		{
+			var bNext = bChildren[bIndex + 1];
+			var bNextKey = bNext._0;
+			var bNextNode = bNext._1;
+			var newMatch = aKey === bNextKey;
+		}
+
+
+		// swap a and b
+		if (aLookAhead && bLookAhead && newMatch && oldMatch)
+		{
+			index++;
+			diffHelp(aNode, bNextNode, localPatches, index);
+			insertNode(changes, localPatches, aKey, bNode, bIndex, inserts);
+			index += aNode.descendantsCount || 0;
+
+			index++;
+			removeNode(changes, localPatches, aKey, aNextNode, index);
+			index += aNextNode.descendantsCount || 0;
+
+			aIndex += 2;
+			bIndex += 2;
+			continue;
+		}
+
+		// insert b
+		if (bLookAhead && newMatch)
+		{
+			index++;
+			insertNode(changes, localPatches, bKey, bNode, bIndex, inserts);
+			diffHelp(aNode, bNextNode, localPatches, index);
+			index += aNode.descendantsCount || 0;
+
+			aIndex += 1;
+			bIndex += 2;
+			continue;
+		}
+
+		// remove a
+		if (aLookAhead && oldMatch)
+		{
+			index++;
+			removeNode(changes, localPatches, aKey, aNode, index);
+			index += aNode.descendantsCount || 0;
+
+			index++;
+			diffHelp(aNextNode, bNode, localPatches, index);
+			index += aNextNode.descendantsCount || 0;
+
+			aIndex += 2;
+			bIndex += 1;
+			continue;
+		}
+
+		// remove a, insert b
+		if (aLookAhead && bLookAhead && aNextKey === bNextKey)
+		{
+			index++;
+			removeNode(changes, localPatches, aKey, aNode, index);
+			insertNode(changes, localPatches, bKey, bNode, bIndex, inserts);
+			index += aNode.descendantsCount || 0;
+
+			index++;
+			diffHelp(aNextNode, bNextNode, localPatches, index);
+			index += aNextNode.descendantsCount || 0;
+
+			aIndex += 2;
+			bIndex += 2;
+			continue;
+		}
+
+		break;
+	}
+
+	// eat up any remaining nodes with removeNode and insertNode
+
+	while (aIndex < aLen)
+	{
+		index++;
+		var a = aChildren[aIndex];
+		var aNode = a._1;
+		removeNode(changes, localPatches, a._0, aNode, index);
+		index += aNode.descendantsCount || 0;
+		aIndex++;
+	}
+
+	var endInserts;
+	while (bIndex < bLen)
+	{
+		endInserts = endInserts || [];
+		var b = bChildren[bIndex];
+		insertNode(changes, localPatches, b._0, b._1, undefined, endInserts);
+		bIndex++;
+	}
+
+	if (localPatches.length > 0 || inserts.length > 0 || typeof endInserts !== 'undefined')
+	{
+		patches.push(makePatch('p-reorder', rootIndex, {
+			patches: localPatches,
+			inserts: inserts,
+			endInserts: endInserts
+		}));
+	}
+}
+
+
+
+////////////  CHANGES FROM KEYED DIFF  ////////////
+
+
+var POSTFIX = '_elmW6BL';
+
+
+function insertNode(changes, localPatches, key, vnode, bIndex, inserts)
+{
+	var entry = changes[key];
+
+	// never seen this key before
+	if (typeof entry === 'undefined')
+	{
+		entry = {
+			tag: 'insert',
+			vnode: vnode,
+			index: bIndex,
+			data: undefined
+		};
+
+		inserts.push({ index: bIndex, entry: entry });
+		changes[key] = entry;
+
+		return;
+	}
+
+	// this key was removed earlier, a match!
+	if (entry.tag === 'remove')
+	{
+		inserts.push({ index: bIndex, entry: entry });
+
+		entry.tag = 'move';
+		var subPatches = [];
+		diffHelp(entry.vnode, vnode, subPatches, entry.index);
+		entry.index = bIndex;
+		entry.data.data = {
+			patches: subPatches,
+			entry: entry
+		};
+
+		return;
+	}
+
+	// this key has already been inserted or moved, a duplicate!
+	insertNode(changes, localPatches, key + POSTFIX, vnode, bIndex, inserts);
+}
+
+
+function removeNode(changes, localPatches, key, vnode, index)
+{
+	var entry = changes[key];
+
+	// never seen this key before
+	if (typeof entry === 'undefined')
+	{
+		var patch = makePatch('p-remove', index, undefined);
+		localPatches.push(patch);
+
+		changes[key] = {
+			tag: 'remove',
+			vnode: vnode,
+			index: index,
+			data: patch
+		};
+
+		return;
+	}
+
+	// this key was inserted earlier, a match!
+	if (entry.tag === 'insert')
+	{
+		entry.tag = 'move';
+		var subPatches = [];
+		diffHelp(vnode, entry.vnode, subPatches, index);
+
+		var patch = makePatch('p-remove', index, {
+			patches: subPatches,
+			entry: entry
+		});
+		localPatches.push(patch);
+
+		return;
+	}
+
+	// this key has already been removed or moved, a duplicate!
+	removeNode(changes, localPatches, key + POSTFIX, vnode, index);
+}
+
+
+
+////////////  ADD DOM NODES  ////////////
+//
+// Each DOM node has an "index" assigned in order of traversal. It is important
+// to minimize our crawl over the actual DOM, so these indexes (along with the
+// descendantsCount of virtual nodes) let us skip touching entire subtrees of
+// the DOM if we know there are no patches there.
+
+
+function addDomNodes(domNode, vNode, patches, eventNode)
+{
+	addDomNodesHelp(domNode, vNode, patches, 0, 0, vNode.descendantsCount, eventNode);
+}
+
+
+// assumes `patches` is non-empty and indexes increase monotonically.
+function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
+{
+	var patch = patches[i];
+	var index = patch.index;
+
+	while (index === low)
+	{
+		var patchType = patch.type;
+
+		if (patchType === 'p-thunk')
+		{
+			addDomNodes(domNode, vNode.node, patch.data, eventNode);
+		}
+		else if (patchType === 'p-reorder')
+		{
+			patch.domNode = domNode;
+			patch.eventNode = eventNode;
+
+			var subPatches = patch.data.patches;
+			if (subPatches.length > 0)
+			{
+				addDomNodesHelp(domNode, vNode, subPatches, 0, low, high, eventNode);
+			}
+		}
+		else if (patchType === 'p-remove')
+		{
+			patch.domNode = domNode;
+			patch.eventNode = eventNode;
+
+			var data = patch.data;
+			if (typeof data !== 'undefined')
+			{
+				data.entry.data = domNode;
+				var subPatches = data.patches;
+				if (subPatches.length > 0)
+				{
+					addDomNodesHelp(domNode, vNode, subPatches, 0, low, high, eventNode);
+				}
+			}
+		}
+		else
+		{
+			patch.domNode = domNode;
+			patch.eventNode = eventNode;
+		}
+
+		i++;
+
+		if (!(patch = patches[i]) || (index = patch.index) > high)
+		{
+			return i;
+		}
+	}
+
+	switch (vNode.type)
+	{
+		case 'tagger':
+			var subNode = vNode.node;
+
+			while (subNode.type === "tagger")
+			{
+				subNode = subNode.node;
+			}
+
+			return addDomNodesHelp(domNode, subNode, patches, i, low + 1, high, domNode.elm_event_node_ref);
+
+		case 'node':
+			var vChildren = vNode.children;
+			var childNodes = domNode.childNodes;
+			for (var j = 0; j < vChildren.length; j++)
+			{
+				low++;
+				var vChild = vChildren[j];
+				var nextLow = low + (vChild.descendantsCount || 0);
+				if (low <= index && index <= nextLow)
+				{
+					i = addDomNodesHelp(childNodes[j], vChild, patches, i, low, nextLow, eventNode);
+					if (!(patch = patches[i]) || (index = patch.index) > high)
+					{
+						return i;
+					}
+				}
+				low = nextLow;
+			}
+			return i;
+
+		case 'keyed-node':
+			var vChildren = vNode.children;
+			var childNodes = domNode.childNodes;
+			for (var j = 0; j < vChildren.length; j++)
+			{
+				low++;
+				var vChild = vChildren[j]._1;
+				var nextLow = low + (vChild.descendantsCount || 0);
+				if (low <= index && index <= nextLow)
+				{
+					i = addDomNodesHelp(childNodes[j], vChild, patches, i, low, nextLow, eventNode);
+					if (!(patch = patches[i]) || (index = patch.index) > high)
+					{
+						return i;
+					}
+				}
+				low = nextLow;
+			}
+			return i;
+
+		case 'text':
+		case 'thunk':
+			throw new Error('should never traverse `text` or `thunk` nodes like this');
+	}
+}
+
+
+
+////////////  APPLY PATCHES  ////////////
+
+
+function applyPatches(rootDomNode, oldVirtualNode, patches, eventNode)
+{
+	if (patches.length === 0)
+	{
+		return rootDomNode;
+	}
+
+	addDomNodes(rootDomNode, oldVirtualNode, patches, eventNode);
+	return applyPatchesHelp(rootDomNode, patches);
+}
+
+function applyPatchesHelp(rootDomNode, patches)
+{
+	for (var i = 0; i < patches.length; i++)
+	{
+		var patch = patches[i];
+		var localDomNode = patch.domNode
+		var newNode = applyPatch(localDomNode, patch);
+		if (localDomNode === rootDomNode)
+		{
+			rootDomNode = newNode;
+		}
+	}
+	return rootDomNode;
+}
+
+function applyPatch(domNode, patch)
+{
+	switch (patch.type)
+	{
+		case 'p-redraw':
+			return redraw(domNode, patch.data, patch.eventNode);
+
+		case 'p-facts':
+			applyFacts(domNode, patch.eventNode, patch.data);
+			return domNode;
+
+		case 'p-text':
+			domNode.replaceData(0, domNode.length, patch.data);
+			return domNode;
+
+		case 'p-thunk':
+			return applyPatchesHelp(domNode, patch.data);
+
+		case 'p-tagger':
+			domNode.elm_event_node_ref.tagger = patch.data;
+			return domNode;
+
+		case 'p-remove-last':
+			var i = patch.data;
+			while (i--)
+			{
+				domNode.removeChild(domNode.lastChild);
+			}
+			return domNode;
+
+		case 'p-append':
+			var newNodes = patch.data;
+			for (var i = 0; i < newNodes.length; i++)
+			{
+				domNode.appendChild(render(newNodes[i], patch.eventNode));
+			}
+			return domNode;
+
+		case 'p-remove':
+			var data = patch.data;
+			if (typeof data === 'undefined')
+			{
+				domNode.parentNode.removeChild(domNode);
+				return domNode;
+			}
+			var entry = data.entry;
+			if (typeof entry.index !== 'undefined')
+			{
+				domNode.parentNode.removeChild(domNode);
+			}
+			entry.data = applyPatchesHelp(domNode, data.patches);
+			return domNode;
+
+		case 'p-reorder':
+			var data = patch.data;
+
+			// end inserts
+			var endInserts = data.endInserts;
+			var end;
+			if (typeof endInserts !== 'undefined')
+			{
+				if (endInserts.length === 1)
+				{
+					var insert = endInserts[0];
+					var entry = insert.entry;
+					var end = entry.tag === 'move'
+						? entry.data
+						: render(entry.vnode, patch.eventNode);
+				}
+				else
+				{
+					end = document.createDocumentFragment();
+					for (var i = 0; i < endInserts.length; i++)
+					{
+						var insert = endInserts[i];
+						var entry = insert.entry;
+						var node = entry.tag === 'move'
+							? entry.data
+							: render(entry.vnode, patch.eventNode);
+						end.appendChild(node);
+					}
+				}
+			}
+
+			// removals
+			domNode = applyPatchesHelp(domNode, data.patches);
+
+			// inserts
+			var inserts = data.inserts;
+			for (var i = 0; i < inserts.length; i++)
+			{
+				var insert = inserts[i];
+				var entry = insert.entry;
+				var node = entry.tag === 'move'
+					? entry.data
+					: render(entry.vnode, patch.eventNode);
+				domNode.insertBefore(node, domNode.childNodes[insert.index]);
+			}
+
+			if (typeof end !== 'undefined')
+			{
+				domNode.appendChild(end);
+			}
+
+			return domNode;
+
+		case 'p-custom':
+			var impl = patch.data;
+			return impl.applyPatch(domNode, impl.data);
+
+		default:
+			throw new Error('Ran into an unknown patch!');
+	}
+}
+
+
+function redraw(domNode, vNode, eventNode)
+{
+	var parentNode = domNode.parentNode;
+	var newNode = render(vNode, eventNode);
+
+	if (typeof newNode.elm_event_node_ref === 'undefined')
+	{
+		newNode.elm_event_node_ref = domNode.elm_event_node_ref;
+	}
+
+	if (parentNode && newNode !== domNode)
+	{
+		parentNode.replaceChild(newNode, domNode);
+	}
+	return newNode;
+}
+
+
+
+////////////  PROGRAMS  ////////////
+
+
+function programWithFlags(details)
+{
+	return {
+		init: details.init,
+		update: details.update,
+		subscriptions: details.subscriptions,
+		view: details.view,
+		renderer: renderer
+	};
+}
+
+
+return {
+	node: node,
+	text: text,
+
+	custom: custom,
+
+	map: F2(map),
+
+	on: F3(on),
+	style: style,
+	property: F2(property),
+	attribute: F2(attribute),
+	attributeNS: F3(attributeNS),
+
+	lazy: F2(lazy),
+	lazy2: F3(lazy2),
+	lazy3: F4(lazy3),
+	keyedNode: F3(keyedNode),
+
+	programWithFlags: programWithFlags
+};
+
+}();
+var _elm_lang$virtual_dom$VirtualDom$programWithFlags = _elm_lang$virtual_dom$Native_VirtualDom.programWithFlags;
+var _elm_lang$virtual_dom$VirtualDom$keyedNode = _elm_lang$virtual_dom$Native_VirtualDom.keyedNode;
+var _elm_lang$virtual_dom$VirtualDom$lazy3 = _elm_lang$virtual_dom$Native_VirtualDom.lazy3;
+var _elm_lang$virtual_dom$VirtualDom$lazy2 = _elm_lang$virtual_dom$Native_VirtualDom.lazy2;
+var _elm_lang$virtual_dom$VirtualDom$lazy = _elm_lang$virtual_dom$Native_VirtualDom.lazy;
+var _elm_lang$virtual_dom$VirtualDom$defaultOptions = {stopPropagation: false, preventDefault: false};
+var _elm_lang$virtual_dom$VirtualDom$onWithOptions = _elm_lang$virtual_dom$Native_VirtualDom.on;
+var _elm_lang$virtual_dom$VirtualDom$on = F2(
+	function (eventName, decoder) {
+		return A3(_elm_lang$virtual_dom$VirtualDom$onWithOptions, eventName, _elm_lang$virtual_dom$VirtualDom$defaultOptions, decoder);
+	});
+var _elm_lang$virtual_dom$VirtualDom$style = _elm_lang$virtual_dom$Native_VirtualDom.style;
+var _elm_lang$virtual_dom$VirtualDom$attributeNS = _elm_lang$virtual_dom$Native_VirtualDom.attributeNS;
+var _elm_lang$virtual_dom$VirtualDom$attribute = _elm_lang$virtual_dom$Native_VirtualDom.attribute;
+var _elm_lang$virtual_dom$VirtualDom$property = _elm_lang$virtual_dom$Native_VirtualDom.property;
+var _elm_lang$virtual_dom$VirtualDom$map = _elm_lang$virtual_dom$Native_VirtualDom.map;
+var _elm_lang$virtual_dom$VirtualDom$text = _elm_lang$virtual_dom$Native_VirtualDom.text;
+var _elm_lang$virtual_dom$VirtualDom$node = _elm_lang$virtual_dom$Native_VirtualDom.node;
+var _elm_lang$virtual_dom$VirtualDom$Options = F2(
+	function (a, b) {
+		return {stopPropagation: a, preventDefault: b};
+	});
+var _elm_lang$virtual_dom$VirtualDom$Node = {ctor: 'Node'};
+var _elm_lang$virtual_dom$VirtualDom$Property = {ctor: 'Property'};
+
+var _elm_lang$html$Html$text = _elm_lang$virtual_dom$VirtualDom$text;
+var _elm_lang$html$Html$node = _elm_lang$virtual_dom$VirtualDom$node;
+var _elm_lang$html$Html$body = _elm_lang$html$Html$node('body');
+var _elm_lang$html$Html$section = _elm_lang$html$Html$node('section');
+var _elm_lang$html$Html$nav = _elm_lang$html$Html$node('nav');
+var _elm_lang$html$Html$article = _elm_lang$html$Html$node('article');
+var _elm_lang$html$Html$aside = _elm_lang$html$Html$node('aside');
+var _elm_lang$html$Html$h1 = _elm_lang$html$Html$node('h1');
+var _elm_lang$html$Html$h2 = _elm_lang$html$Html$node('h2');
+var _elm_lang$html$Html$h3 = _elm_lang$html$Html$node('h3');
+var _elm_lang$html$Html$h4 = _elm_lang$html$Html$node('h4');
+var _elm_lang$html$Html$h5 = _elm_lang$html$Html$node('h5');
+var _elm_lang$html$Html$h6 = _elm_lang$html$Html$node('h6');
+var _elm_lang$html$Html$header = _elm_lang$html$Html$node('header');
+var _elm_lang$html$Html$footer = _elm_lang$html$Html$node('footer');
+var _elm_lang$html$Html$address = _elm_lang$html$Html$node('address');
+var _elm_lang$html$Html$main$ = _elm_lang$html$Html$node('main');
+var _elm_lang$html$Html$p = _elm_lang$html$Html$node('p');
+var _elm_lang$html$Html$hr = _elm_lang$html$Html$node('hr');
+var _elm_lang$html$Html$pre = _elm_lang$html$Html$node('pre');
+var _elm_lang$html$Html$blockquote = _elm_lang$html$Html$node('blockquote');
+var _elm_lang$html$Html$ol = _elm_lang$html$Html$node('ol');
+var _elm_lang$html$Html$ul = _elm_lang$html$Html$node('ul');
+var _elm_lang$html$Html$li = _elm_lang$html$Html$node('li');
+var _elm_lang$html$Html$dl = _elm_lang$html$Html$node('dl');
+var _elm_lang$html$Html$dt = _elm_lang$html$Html$node('dt');
+var _elm_lang$html$Html$dd = _elm_lang$html$Html$node('dd');
+var _elm_lang$html$Html$figure = _elm_lang$html$Html$node('figure');
+var _elm_lang$html$Html$figcaption = _elm_lang$html$Html$node('figcaption');
+var _elm_lang$html$Html$div = _elm_lang$html$Html$node('div');
+var _elm_lang$html$Html$a = _elm_lang$html$Html$node('a');
+var _elm_lang$html$Html$em = _elm_lang$html$Html$node('em');
+var _elm_lang$html$Html$strong = _elm_lang$html$Html$node('strong');
+var _elm_lang$html$Html$small = _elm_lang$html$Html$node('small');
+var _elm_lang$html$Html$s = _elm_lang$html$Html$node('s');
+var _elm_lang$html$Html$cite = _elm_lang$html$Html$node('cite');
+var _elm_lang$html$Html$q = _elm_lang$html$Html$node('q');
+var _elm_lang$html$Html$dfn = _elm_lang$html$Html$node('dfn');
+var _elm_lang$html$Html$abbr = _elm_lang$html$Html$node('abbr');
+var _elm_lang$html$Html$time = _elm_lang$html$Html$node('time');
+var _elm_lang$html$Html$code = _elm_lang$html$Html$node('code');
+var _elm_lang$html$Html$var = _elm_lang$html$Html$node('var');
+var _elm_lang$html$Html$samp = _elm_lang$html$Html$node('samp');
+var _elm_lang$html$Html$kbd = _elm_lang$html$Html$node('kbd');
+var _elm_lang$html$Html$sub = _elm_lang$html$Html$node('sub');
+var _elm_lang$html$Html$sup = _elm_lang$html$Html$node('sup');
+var _elm_lang$html$Html$i = _elm_lang$html$Html$node('i');
+var _elm_lang$html$Html$b = _elm_lang$html$Html$node('b');
+var _elm_lang$html$Html$u = _elm_lang$html$Html$node('u');
+var _elm_lang$html$Html$mark = _elm_lang$html$Html$node('mark');
+var _elm_lang$html$Html$ruby = _elm_lang$html$Html$node('ruby');
+var _elm_lang$html$Html$rt = _elm_lang$html$Html$node('rt');
+var _elm_lang$html$Html$rp = _elm_lang$html$Html$node('rp');
+var _elm_lang$html$Html$bdi = _elm_lang$html$Html$node('bdi');
+var _elm_lang$html$Html$bdo = _elm_lang$html$Html$node('bdo');
+var _elm_lang$html$Html$span = _elm_lang$html$Html$node('span');
+var _elm_lang$html$Html$br = _elm_lang$html$Html$node('br');
+var _elm_lang$html$Html$wbr = _elm_lang$html$Html$node('wbr');
+var _elm_lang$html$Html$ins = _elm_lang$html$Html$node('ins');
+var _elm_lang$html$Html$del = _elm_lang$html$Html$node('del');
+var _elm_lang$html$Html$img = _elm_lang$html$Html$node('img');
+var _elm_lang$html$Html$iframe = _elm_lang$html$Html$node('iframe');
+var _elm_lang$html$Html$embed = _elm_lang$html$Html$node('embed');
+var _elm_lang$html$Html$object = _elm_lang$html$Html$node('object');
+var _elm_lang$html$Html$param = _elm_lang$html$Html$node('param');
+var _elm_lang$html$Html$video = _elm_lang$html$Html$node('video');
+var _elm_lang$html$Html$audio = _elm_lang$html$Html$node('audio');
+var _elm_lang$html$Html$source = _elm_lang$html$Html$node('source');
+var _elm_lang$html$Html$track = _elm_lang$html$Html$node('track');
+var _elm_lang$html$Html$canvas = _elm_lang$html$Html$node('canvas');
+var _elm_lang$html$Html$svg = _elm_lang$html$Html$node('svg');
+var _elm_lang$html$Html$math = _elm_lang$html$Html$node('math');
+var _elm_lang$html$Html$table = _elm_lang$html$Html$node('table');
+var _elm_lang$html$Html$caption = _elm_lang$html$Html$node('caption');
+var _elm_lang$html$Html$colgroup = _elm_lang$html$Html$node('colgroup');
+var _elm_lang$html$Html$col = _elm_lang$html$Html$node('col');
+var _elm_lang$html$Html$tbody = _elm_lang$html$Html$node('tbody');
+var _elm_lang$html$Html$thead = _elm_lang$html$Html$node('thead');
+var _elm_lang$html$Html$tfoot = _elm_lang$html$Html$node('tfoot');
+var _elm_lang$html$Html$tr = _elm_lang$html$Html$node('tr');
+var _elm_lang$html$Html$td = _elm_lang$html$Html$node('td');
+var _elm_lang$html$Html$th = _elm_lang$html$Html$node('th');
+var _elm_lang$html$Html$form = _elm_lang$html$Html$node('form');
+var _elm_lang$html$Html$fieldset = _elm_lang$html$Html$node('fieldset');
+var _elm_lang$html$Html$legend = _elm_lang$html$Html$node('legend');
+var _elm_lang$html$Html$label = _elm_lang$html$Html$node('label');
+var _elm_lang$html$Html$input = _elm_lang$html$Html$node('input');
+var _elm_lang$html$Html$button = _elm_lang$html$Html$node('button');
+var _elm_lang$html$Html$select = _elm_lang$html$Html$node('select');
+var _elm_lang$html$Html$datalist = _elm_lang$html$Html$node('datalist');
+var _elm_lang$html$Html$optgroup = _elm_lang$html$Html$node('optgroup');
+var _elm_lang$html$Html$option = _elm_lang$html$Html$node('option');
+var _elm_lang$html$Html$textarea = _elm_lang$html$Html$node('textarea');
+var _elm_lang$html$Html$keygen = _elm_lang$html$Html$node('keygen');
+var _elm_lang$html$Html$output = _elm_lang$html$Html$node('output');
+var _elm_lang$html$Html$progress = _elm_lang$html$Html$node('progress');
+var _elm_lang$html$Html$meter = _elm_lang$html$Html$node('meter');
+var _elm_lang$html$Html$details = _elm_lang$html$Html$node('details');
+var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
+var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
+var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
+
+var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
+var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
+var _elm_lang$core$Task$spawnCmd = F2(
+	function (router, _p0) {
+		var _p1 = _p0;
+		return _elm_lang$core$Native_Scheduler.spawn(
+			A2(
+				_elm_lang$core$Task$andThen,
+				_p1._0,
+				_elm_lang$core$Platform$sendToApp(router)));
+	});
+var _elm_lang$core$Task$fail = _elm_lang$core$Native_Scheduler.fail;
+var _elm_lang$core$Task$mapError = F2(
+	function (f, task) {
+		return A2(
+			_elm_lang$core$Task$onError,
+			task,
+			function (err) {
+				return _elm_lang$core$Task$fail(
+					f(err));
+			});
+	});
+var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
+var _elm_lang$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return _elm_lang$core$Task$succeed(
+					func(a));
+			});
+	});
+var _elm_lang$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskB,
+					function (b) {
+						return _elm_lang$core$Task$succeed(
+							A2(func, a, b));
+					});
+			});
+	});
+var _elm_lang$core$Task$map3 = F4(
+	function (func, taskA, taskB, taskC) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							taskC,
+							function (c) {
+								return _elm_lang$core$Task$succeed(
+									A3(func, a, b, c));
+							});
+					});
+			});
+	});
+var _elm_lang$core$Task$map4 = F5(
+	function (func, taskA, taskB, taskC, taskD) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							taskC,
+							function (c) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									taskD,
+									function (d) {
+										return _elm_lang$core$Task$succeed(
+											A4(func, a, b, c, d));
+									});
+							});
+					});
+			});
+	});
+var _elm_lang$core$Task$map5 = F6(
+	function (func, taskA, taskB, taskC, taskD, taskE) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							taskC,
+							function (c) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									taskD,
+									function (d) {
+										return A2(
+											_elm_lang$core$Task$andThen,
+											taskE,
+											function (e) {
+												return _elm_lang$core$Task$succeed(
+													A5(func, a, b, c, d, e));
+											});
+									});
+							});
+					});
+			});
+	});
+var _elm_lang$core$Task$andMap = F2(
+	function (taskFunc, taskValue) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskFunc,
+			function (func) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskValue,
+					function (value) {
+						return _elm_lang$core$Task$succeed(
+							func(value));
+					});
+			});
+	});
+var _elm_lang$core$Task$sequence = function (tasks) {
+	var _p2 = tasks;
+	if (_p2.ctor === '[]') {
+		return _elm_lang$core$Task$succeed(
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	} else {
+		return A3(
+			_elm_lang$core$Task$map2,
+			F2(
+				function (x, y) {
+					return A2(_elm_lang$core$List_ops['::'], x, y);
+				}),
+			_p2._0,
+			_elm_lang$core$Task$sequence(_p2._1));
+	}
+};
+var _elm_lang$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			_elm_lang$core$Task$map,
+			function (_p3) {
+				return {ctor: '_Tuple0'};
+			},
+			_elm_lang$core$Task$sequence(
+				A2(
+					_elm_lang$core$List$map,
+					_elm_lang$core$Task$spawnCmd(router),
+					commands)));
+	});
+var _elm_lang$core$Task$toMaybe = function (task) {
+	return A2(
+		_elm_lang$core$Task$onError,
+		A2(_elm_lang$core$Task$map, _elm_lang$core$Maybe$Just, task),
+		function (_p4) {
+			return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+		});
+};
+var _elm_lang$core$Task$fromMaybe = F2(
+	function ($default, maybe) {
+		var _p5 = maybe;
+		if (_p5.ctor === 'Just') {
+			return _elm_lang$core$Task$succeed(_p5._0);
+		} else {
+			return _elm_lang$core$Task$fail($default);
+		}
+	});
+var _elm_lang$core$Task$toResult = function (task) {
+	return A2(
+		_elm_lang$core$Task$onError,
+		A2(_elm_lang$core$Task$map, _elm_lang$core$Result$Ok, task),
+		function (msg) {
+			return _elm_lang$core$Task$succeed(
+				_elm_lang$core$Result$Err(msg));
+		});
+};
+var _elm_lang$core$Task$fromResult = function (result) {
+	var _p6 = result;
+	if (_p6.ctor === 'Ok') {
+		return _elm_lang$core$Task$succeed(_p6._0);
+	} else {
+		return _elm_lang$core$Task$fail(_p6._0);
+	}
+};
+var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
+	{ctor: '_Tuple0'});
+var _elm_lang$core$Task$onSelfMsg = F3(
+	function (_p9, _p8, _p7) {
+		return _elm_lang$core$Task$succeed(
+			{ctor: '_Tuple0'});
+	});
+var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
+var _elm_lang$core$Task$T = function (a) {
+	return {ctor: 'T', _0: a};
+};
+var _elm_lang$core$Task$perform = F3(
+	function (onFail, onSuccess, task) {
+		return _elm_lang$core$Task$command(
+			_elm_lang$core$Task$T(
+				A2(
+					_elm_lang$core$Task$onError,
+					A2(_elm_lang$core$Task$map, onSuccess, task),
+					function (x) {
+						return _elm_lang$core$Task$succeed(
+							onFail(x));
+					})));
+	});
+var _elm_lang$core$Task$cmdMap = F2(
+	function (tagger, _p10) {
+		var _p11 = _p10;
+		return _elm_lang$core$Task$T(
+			A2(_elm_lang$core$Task$map, tagger, _p11._0));
+	});
+_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
+
 //import Native.Scheduler //
 
 var _elm_lang$core$Native_Time = function() {
@@ -5981,732 +8293,6 @@ var _elm_community$random_extra$Random_Extra$maybe = F2(
 			});
 	});
 
-//import Maybe, Native.Array, Native.List, Native.Utils, Result //
-
-var _elm_lang$core$Native_Json = function() {
-
-
-// CORE DECODERS
-
-function succeed(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'succeed',
-		msg: msg
-	};
-}
-
-function fail(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'fail',
-		msg: msg
-	};
-}
-
-function decodePrimitive(tag)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag
-	};
-}
-
-function decodeContainer(tag, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag,
-		decoder: decoder
-	};
-}
-
-function decodeNull(value)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'null',
-		value: value
-	};
-}
-
-function decodeField(field, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'field',
-		field: field,
-		decoder: decoder
-	};
-}
-
-function decodeKeyValuePairs(decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'key-value',
-		decoder: decoder
-	};
-}
-
-function decodeObject(f, decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'map-many',
-		func: f,
-		decoders: decoders
-	};
-}
-
-function decodeTuple(f, decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'tuple',
-		func: f,
-		decoders: decoders
-	};
-}
-
-function andThen(decoder, callback)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'andThen',
-		decoder: decoder,
-		callback: callback
-	};
-}
-
-function customAndThen(decoder, callback)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'customAndThen',
-		decoder: decoder,
-		callback: callback
-	};
-}
-
-function oneOf(decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'oneOf',
-		decoders: decoders
-	};
-}
-
-
-// DECODING OBJECTS
-
-function decodeObject1(f, d1)
-{
-	return decodeObject(f, [d1]);
-}
-
-function decodeObject2(f, d1, d2)
-{
-	return decodeObject(f, [d1, d2]);
-}
-
-function decodeObject3(f, d1, d2, d3)
-{
-	return decodeObject(f, [d1, d2, d3]);
-}
-
-function decodeObject4(f, d1, d2, d3, d4)
-{
-	return decodeObject(f, [d1, d2, d3, d4]);
-}
-
-function decodeObject5(f, d1, d2, d3, d4, d5)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5]);
-}
-
-function decodeObject6(f, d1, d2, d3, d4, d5, d6)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5, d6]);
-}
-
-function decodeObject7(f, d1, d2, d3, d4, d5, d6, d7)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5, d6, d7]);
-}
-
-function decodeObject8(f, d1, d2, d3, d4, d5, d6, d7, d8)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
-}
-
-
-// DECODING TUPLES
-
-function decodeTuple1(f, d1)
-{
-	return decodeTuple(f, [d1]);
-}
-
-function decodeTuple2(f, d1, d2)
-{
-	return decodeTuple(f, [d1, d2]);
-}
-
-function decodeTuple3(f, d1, d2, d3)
-{
-	return decodeTuple(f, [d1, d2, d3]);
-}
-
-function decodeTuple4(f, d1, d2, d3, d4)
-{
-	return decodeTuple(f, [d1, d2, d3, d4]);
-}
-
-function decodeTuple5(f, d1, d2, d3, d4, d5)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5]);
-}
-
-function decodeTuple6(f, d1, d2, d3, d4, d5, d6)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5, d6]);
-}
-
-function decodeTuple7(f, d1, d2, d3, d4, d5, d6, d7)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5, d6, d7]);
-}
-
-function decodeTuple8(f, d1, d2, d3, d4, d5, d6, d7, d8)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
-}
-
-
-// DECODE HELPERS
-
-function ok(value)
-{
-	return { tag: 'ok', value: value };
-}
-
-function badPrimitive(type, value)
-{
-	return { tag: 'primitive', type: type, value: value };
-}
-
-function badIndex(index, nestedProblems)
-{
-	return { tag: 'index', index: index, rest: nestedProblems };
-}
-
-function badField(field, nestedProblems)
-{
-	return { tag: 'field', field: field, rest: nestedProblems };
-}
-
-function badOneOf(problems)
-{
-	return { tag: 'oneOf', problems: problems };
-}
-
-function bad(msg)
-{
-	return { tag: 'fail', msg: msg };
-}
-
-function badToString(problem)
-{
-	var context = '_';
-	while (problem)
-	{
-		switch (problem.tag)
-		{
-			case 'primitive':
-				return 'Expecting ' + problem.type
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ' but instead got: ' + jsToString(problem.value);
-
-			case 'index':
-				context += '[' + problem.index + ']';
-				problem = problem.rest;
-				break;
-
-			case 'field':
-				context += '.' + problem.field;
-				problem = problem.rest;
-				break;
-
-			case 'oneOf':
-				var problems = problem.problems;
-				for (var i = 0; i < problems.length; i++)
-				{
-					problems[i] = badToString(problems[i]);
-				}
-				return 'I ran into the following problems'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ':\n\n' + problems.join('\n');
-
-			case 'fail':
-				return 'I ran into a `fail` decoder'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ': ' + problem.msg;
-		}
-	}
-}
-
-function jsToString(value)
-{
-	return value === undefined
-		? 'undefined'
-		: JSON.stringify(value);
-}
-
-
-// DECODE
-
-function runOnString(decoder, string)
-{
-	var json;
-	try
-	{
-		json = JSON.parse(string);
-	}
-	catch (e)
-	{
-		return _elm_lang$core$Result$Err('Given an invalid JSON: ' + e.message);
-	}
-	return run(decoder, json);
-}
-
-function run(decoder, value)
-{
-	var result = runHelp(decoder, value);
-	return (result.tag === 'ok')
-		? _elm_lang$core$Result$Ok(result.value)
-		: _elm_lang$core$Result$Err(badToString(result));
-}
-
-function runHelp(decoder, value)
-{
-	switch (decoder.tag)
-	{
-		case 'bool':
-			return (typeof value === 'boolean')
-				? ok(value)
-				: badPrimitive('a Bool', value);
-
-		case 'int':
-			if (typeof value !== 'number') {
-				return badPrimitive('an Int', value);
-			}
-
-			if (-2147483647 < value && value < 2147483647 && (value | 0) === value) {
-				return ok(value);
-			}
-
-			if (isFinite(value) && !(value % 1)) {
-				return ok(value);
-			}
-
-			return badPrimitive('an Int', value);
-
-		case 'float':
-			return (typeof value === 'number')
-				? ok(value)
-				: badPrimitive('a Float', value);
-
-		case 'string':
-			return (typeof value === 'string')
-				? ok(value)
-				: (value instanceof String)
-					? ok(value + '')
-					: badPrimitive('a String', value);
-
-		case 'null':
-			return (value === null)
-				? ok(decoder.value)
-				: badPrimitive('null', value);
-
-		case 'value':
-			return ok(value);
-
-		case 'list':
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('a List', value);
-			}
-
-			var list = _elm_lang$core$Native_List.Nil;
-			for (var i = value.length; i--; )
-			{
-				var result = runHelp(decoder.decoder, value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result)
-				}
-				list = _elm_lang$core$Native_List.Cons(result.value, list);
-			}
-			return ok(list);
-
-		case 'array':
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('an Array', value);
-			}
-
-			var len = value.length;
-			var array = new Array(len);
-			for (var i = len; i--; )
-			{
-				var result = runHelp(decoder.decoder, value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result);
-				}
-				array[i] = result.value;
-			}
-			return ok(_elm_lang$core$Native_Array.fromJSArray(array));
-
-		case 'maybe':
-			var result = runHelp(decoder.decoder, value);
-			return (result.tag === 'ok')
-				? ok(_elm_lang$core$Maybe$Just(result.value))
-				: ok(_elm_lang$core$Maybe$Nothing);
-
-		case 'field':
-			var field = decoder.field;
-			if (typeof value !== 'object' || value === null || !(field in value))
-			{
-				return badPrimitive('an object with a field named `' + field + '`', value);
-			}
-
-			var result = runHelp(decoder.decoder, value[field]);
-			return (result.tag === 'ok')
-				? result
-				: badField(field, result);
-
-		case 'key-value':
-			if (typeof value !== 'object' || value === null || value instanceof Array)
-			{
-				return badPrimitive('an object', value);
-			}
-
-			var keyValuePairs = _elm_lang$core$Native_List.Nil;
-			for (var key in value)
-			{
-				var result = runHelp(decoder.decoder, value[key]);
-				if (result.tag !== 'ok')
-				{
-					return badField(key, result);
-				}
-				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
-				keyValuePairs = _elm_lang$core$Native_List.Cons(pair, keyValuePairs);
-			}
-			return ok(keyValuePairs);
-
-		case 'map-many':
-			var answer = decoder.func;
-			var decoders = decoder.decoders;
-			for (var i = 0; i < decoders.length; i++)
-			{
-				var result = runHelp(decoders[i], value);
-				if (result.tag !== 'ok')
-				{
-					return result;
-				}
-				answer = answer(result.value);
-			}
-			return ok(answer);
-
-		case 'tuple':
-			var decoders = decoder.decoders;
-			var len = decoders.length;
-
-			if ( !(value instanceof Array) || value.length !== len )
-			{
-				return badPrimitive('a Tuple with ' + len + ' entries', value);
-			}
-
-			var answer = decoder.func;
-			for (var i = 0; i < len; i++)
-			{
-				var result = runHelp(decoders[i], value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result);
-				}
-				answer = answer(result.value);
-			}
-			return ok(answer);
-
-		case 'customAndThen':
-			var result = runHelp(decoder.decoder, value);
-			if (result.tag !== 'ok')
-			{
-				return result;
-			}
-			var realResult = decoder.callback(result.value);
-			if (realResult.ctor === 'Err')
-			{
-				return badPrimitive('something custom', value);
-			}
-			return ok(realResult._0);
-
-		case 'andThen':
-			var result = runHelp(decoder.decoder, value);
-			return (result.tag !== 'ok')
-				? result
-				: runHelp(decoder.callback(result.value), value);
-
-		case 'oneOf':
-			var errors = [];
-			var temp = decoder.decoders;
-			while (temp.ctor !== '[]')
-			{
-				var result = runHelp(temp._0, value);
-
-				if (result.tag === 'ok')
-				{
-					return result;
-				}
-
-				errors.push(result);
-
-				temp = temp._1;
-			}
-			return badOneOf(errors);
-
-		case 'fail':
-			return bad(decoder.msg);
-
-		case 'succeed':
-			return ok(decoder.msg);
-	}
-}
-
-
-// EQUALITY
-
-function equality(a, b)
-{
-	if (a === b)
-	{
-		return true;
-	}
-
-	if (a.tag !== b.tag)
-	{
-		return false;
-	}
-
-	switch (a.tag)
-	{
-		case 'succeed':
-		case 'fail':
-			return a.msg === b.msg;
-
-		case 'bool':
-		case 'int':
-		case 'float':
-		case 'string':
-		case 'value':
-			return true;
-
-		case 'null':
-			return a.value === b.value;
-
-		case 'list':
-		case 'array':
-		case 'maybe':
-		case 'key-value':
-			return equality(a.decoder, b.decoder);
-
-		case 'field':
-			return a.field === b.field && equality(a.decoder, b.decoder);
-
-		case 'map-many':
-		case 'tuple':
-			if (a.func !== b.func)
-			{
-				return false;
-			}
-			return listEquality(a.decoders, b.decoders);
-
-		case 'andThen':
-		case 'customAndThen':
-			return a.callback === b.callback && equality(a.decoder, b.decoder);
-
-		case 'oneOf':
-			return listEquality(a.decoders, b.decoders);
-	}
-}
-
-function listEquality(aDecoders, bDecoders)
-{
-	var len = aDecoders.length;
-	if (len !== bDecoders.length)
-	{
-		return false;
-	}
-	for (var i = 0; i < len; i++)
-	{
-		if (!equality(aDecoders[i], bDecoders[i]))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-
-// ENCODE
-
-function encode(indentLevel, value)
-{
-	return JSON.stringify(value, null, indentLevel);
-}
-
-function identity(value)
-{
-	return value;
-}
-
-function encodeObject(keyValuePairs)
-{
-	var obj = {};
-	while (keyValuePairs.ctor !== '[]')
-	{
-		var pair = keyValuePairs._0;
-		obj[pair._0] = pair._1;
-		keyValuePairs = keyValuePairs._1;
-	}
-	return obj;
-}
-
-return {
-	encode: F2(encode),
-	runOnString: F2(runOnString),
-	run: F2(run),
-
-	decodeNull: decodeNull,
-	decodePrimitive: decodePrimitive,
-	decodeContainer: F2(decodeContainer),
-
-	decodeField: F2(decodeField),
-
-	decodeObject1: F2(decodeObject1),
-	decodeObject2: F3(decodeObject2),
-	decodeObject3: F4(decodeObject3),
-	decodeObject4: F5(decodeObject4),
-	decodeObject5: F6(decodeObject5),
-	decodeObject6: F7(decodeObject6),
-	decodeObject7: F8(decodeObject7),
-	decodeObject8: F9(decodeObject8),
-	decodeKeyValuePairs: decodeKeyValuePairs,
-
-	decodeTuple1: F2(decodeTuple1),
-	decodeTuple2: F3(decodeTuple2),
-	decodeTuple3: F4(decodeTuple3),
-	decodeTuple4: F5(decodeTuple4),
-	decodeTuple5: F6(decodeTuple5),
-	decodeTuple6: F7(decodeTuple6),
-	decodeTuple7: F8(decodeTuple7),
-	decodeTuple8: F9(decodeTuple8),
-
-	andThen: F2(andThen),
-	customAndThen: F2(customAndThen),
-	fail: fail,
-	succeed: succeed,
-	oneOf: oneOf,
-
-	identity: identity,
-	encodeNull: null,
-	encodeArray: _elm_lang$core$Native_Array.toJSArray,
-	encodeList: _elm_lang$core$Native_List.toArray,
-	encodeObject: encodeObject,
-
-	equality: equality
-};
-
-}();
-
-var _elm_lang$core$Json_Encode$list = _elm_lang$core$Native_Json.encodeList;
-var _elm_lang$core$Json_Encode$array = _elm_lang$core$Native_Json.encodeArray;
-var _elm_lang$core$Json_Encode$object = _elm_lang$core$Native_Json.encodeObject;
-var _elm_lang$core$Json_Encode$null = _elm_lang$core$Native_Json.encodeNull;
-var _elm_lang$core$Json_Encode$bool = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$float = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$int = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$string = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$encode = _elm_lang$core$Native_Json.encode;
-var _elm_lang$core$Json_Encode$Value = {ctor: 'Value'};
-
-var _elm_lang$core$Json_Decode$tuple8 = _elm_lang$core$Native_Json.decodeTuple8;
-var _elm_lang$core$Json_Decode$tuple7 = _elm_lang$core$Native_Json.decodeTuple7;
-var _elm_lang$core$Json_Decode$tuple6 = _elm_lang$core$Native_Json.decodeTuple6;
-var _elm_lang$core$Json_Decode$tuple5 = _elm_lang$core$Native_Json.decodeTuple5;
-var _elm_lang$core$Json_Decode$tuple4 = _elm_lang$core$Native_Json.decodeTuple4;
-var _elm_lang$core$Json_Decode$tuple3 = _elm_lang$core$Native_Json.decodeTuple3;
-var _elm_lang$core$Json_Decode$tuple2 = _elm_lang$core$Native_Json.decodeTuple2;
-var _elm_lang$core$Json_Decode$tuple1 = _elm_lang$core$Native_Json.decodeTuple1;
-var _elm_lang$core$Json_Decode$succeed = _elm_lang$core$Native_Json.succeed;
-var _elm_lang$core$Json_Decode$fail = _elm_lang$core$Native_Json.fail;
-var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
-var _elm_lang$core$Json_Decode$customDecoder = _elm_lang$core$Native_Json.customAndThen;
-var _elm_lang$core$Json_Decode$decodeValue = _elm_lang$core$Native_Json.run;
-var _elm_lang$core$Json_Decode$value = _elm_lang$core$Native_Json.decodePrimitive('value');
-var _elm_lang$core$Json_Decode$maybe = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'maybe', decoder);
-};
-var _elm_lang$core$Json_Decode$null = _elm_lang$core$Native_Json.decodeNull;
-var _elm_lang$core$Json_Decode$array = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'array', decoder);
-};
-var _elm_lang$core$Json_Decode$list = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'list', decoder);
-};
-var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive('bool');
-var _elm_lang$core$Json_Decode$int = _elm_lang$core$Native_Json.decodePrimitive('int');
-var _elm_lang$core$Json_Decode$float = _elm_lang$core$Native_Json.decodePrimitive('float');
-var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
-var _elm_lang$core$Json_Decode$oneOf = _elm_lang$core$Native_Json.oneOf;
-var _elm_lang$core$Json_Decode$keyValuePairs = _elm_lang$core$Native_Json.decodeKeyValuePairs;
-var _elm_lang$core$Json_Decode$object8 = _elm_lang$core$Native_Json.decodeObject8;
-var _elm_lang$core$Json_Decode$object7 = _elm_lang$core$Native_Json.decodeObject7;
-var _elm_lang$core$Json_Decode$object6 = _elm_lang$core$Native_Json.decodeObject6;
-var _elm_lang$core$Json_Decode$object5 = _elm_lang$core$Native_Json.decodeObject5;
-var _elm_lang$core$Json_Decode$object4 = _elm_lang$core$Native_Json.decodeObject4;
-var _elm_lang$core$Json_Decode$object3 = _elm_lang$core$Native_Json.decodeObject3;
-var _elm_lang$core$Json_Decode$object2 = _elm_lang$core$Native_Json.decodeObject2;
-var _elm_lang$core$Json_Decode$object1 = _elm_lang$core$Native_Json.decodeObject1;
-var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
-_elm_lang$core$Json_Decode_ops[':='] = _elm_lang$core$Native_Json.decodeField;
-var _elm_lang$core$Json_Decode$at = F2(
-	function (fields, decoder) {
-		return A3(
-			_elm_lang$core$List$foldr,
-			F2(
-				function (x, y) {
-					return A2(_elm_lang$core$Json_Decode_ops[':='], x, y);
-				}),
-			decoder,
-			fields);
-	});
-var _elm_lang$core$Json_Decode$decodeString = _elm_lang$core$Native_Json.runOnString;
-var _elm_lang$core$Json_Decode$map = _elm_lang$core$Native_Json.decodeObject1;
-var _elm_lang$core$Json_Decode$dict = function (decoder) {
-	return A2(
-		_elm_lang$core$Json_Decode$map,
-		_elm_lang$core$Dict$fromList,
-		_elm_lang$core$Json_Decode$keyValuePairs(decoder));
-};
-var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
-
 var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
 var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
 var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
@@ -6747,1158 +8333,6 @@ return {
 
 var _elm_lang$dom$Dom_LowLevel$onWindow = _elm_lang$dom$Native_Dom.onWindow;
 var _elm_lang$dom$Dom_LowLevel$onDocument = _elm_lang$dom$Native_Dom.onDocument;
-
-//import Native.Json //
-
-var _elm_lang$virtual_dom$Native_VirtualDom = function() {
-
-var STYLE_KEY = 'STYLE';
-var EVENT_KEY = 'EVENT';
-var ATTR_KEY = 'ATTR';
-var ATTR_NS_KEY = 'ATTR_NS';
-
-
-
-////////////  VIRTUAL DOM NODES  ////////////
-
-
-function text(string)
-{
-	return {
-		type: 'text',
-		text: string
-	};
-}
-
-
-function node(tag)
-{
-	return F2(function(factList, kidList) {
-		return nodeHelp(tag, factList, kidList);
-	});
-}
-
-
-function nodeHelp(tag, factList, kidList)
-{
-	var organized = organizeFacts(factList);
-	var namespace = organized.namespace;
-	var facts = organized.facts;
-
-	var children = [];
-	var descendantsCount = 0;
-	while (kidList.ctor !== '[]')
-	{
-		var kid = kidList._0;
-		descendantsCount += (kid.descendantsCount || 0);
-		children.push(kid);
-		kidList = kidList._1;
-	}
-	descendantsCount += children.length;
-
-	return {
-		type: 'node',
-		tag: tag,
-		facts: facts,
-		children: children,
-		namespace: namespace,
-		descendantsCount: descendantsCount
-	};
-}
-
-
-function custom(factList, model, impl)
-{
-	var facts = organizeFacts(factList).facts;
-
-	return {
-		type: 'custom',
-		facts: facts,
-		model: model,
-		impl: impl
-	};
-}
-
-
-function map(tagger, node)
-{
-	return {
-		type: 'tagger',
-		tagger: tagger,
-		node: node,
-		descendantsCount: 1 + (node.descendantsCount || 0)
-	};
-}
-
-
-function thunk(func, args, thunk)
-{
-	return {
-		type: 'thunk',
-		func: func,
-		args: args,
-		thunk: thunk,
-		node: null
-	};
-}
-
-function lazy(fn, a)
-{
-	return thunk(fn, [a], function() {
-		return fn(a);
-	});
-}
-
-function lazy2(fn, a, b)
-{
-	return thunk(fn, [a,b], function() {
-		return A2(fn, a, b);
-	});
-}
-
-function lazy3(fn, a, b, c)
-{
-	return thunk(fn, [a,b,c], function() {
-		return A3(fn, a, b, c);
-	});
-}
-
-
-
-// FACTS
-
-
-function organizeFacts(factList)
-{
-	var namespace, facts = {};
-
-	while (factList.ctor !== '[]')
-	{
-		var entry = factList._0;
-		var key = entry.key;
-
-		if (key === ATTR_KEY || key === ATTR_NS_KEY || key === EVENT_KEY)
-		{
-			var subFacts = facts[key] || {};
-			subFacts[entry.realKey] = entry.value;
-			facts[key] = subFacts;
-		}
-		else if (key === STYLE_KEY)
-		{
-			var styles = facts[key] || {};
-			var styleList = entry.value;
-			while (styleList.ctor !== '[]')
-			{
-				var style = styleList._0;
-				styles[style._0] = style._1;
-				styleList = styleList._1;
-			}
-			facts[key] = styles;
-		}
-		else if (key === 'namespace')
-		{
-			namespace = entry.value;
-		}
-		else
-		{
-			facts[key] = entry.value;
-		}
-		factList = factList._1;
-	}
-
-	return {
-		facts: facts,
-		namespace: namespace
-	};
-}
-
-
-
-////////////  PROPERTIES AND ATTRIBUTES  ////////////
-
-
-function style(value)
-{
-	return {
-		key: STYLE_KEY,
-		value: value
-	};
-}
-
-
-function property(key, value)
-{
-	return {
-		key: key,
-		value: value
-	};
-}
-
-
-function attribute(key, value)
-{
-	return {
-		key: ATTR_KEY,
-		realKey: key,
-		value: value
-	};
-}
-
-
-function attributeNS(namespace, key, value)
-{
-	return {
-		key: ATTR_NS_KEY,
-		realKey: key,
-		value: {
-			value: value,
-			namespace: namespace
-		}
-	};
-}
-
-
-function on(name, options, decoder)
-{
-	return {
-		key: EVENT_KEY,
-		realKey: name,
-		value: {
-			options: options,
-			decoder: decoder
-		}
-	};
-}
-
-
-function equalEvents(a, b)
-{
-	if (!a.options === b.options)
-	{
-		if (a.stopPropagation !== b.stopPropagation || a.preventDefault !== b.preventDefault)
-		{
-			return false;
-		}
-	}
-	return _elm_lang$core$Native_Json.equality(a.decoder, b.decoder);
-}
-
-
-
-////////////  RENDERER  ////////////
-
-
-function renderer(parent, tagger, initialVirtualNode)
-{
-	var eventNode = { tagger: tagger, parent: null };
-
-	var domNode = render(initialVirtualNode, eventNode);
-	parent.appendChild(domNode);
-
-	var state = 'NO_REQUEST';
-	var currentVirtualNode = initialVirtualNode;
-	var nextVirtualNode = initialVirtualNode;
-
-	function registerVirtualNode(vNode)
-	{
-		if (state === 'NO_REQUEST')
-		{
-			rAF(updateIfNeeded);
-		}
-		state = 'PENDING_REQUEST';
-		nextVirtualNode = vNode;
-	}
-
-	function updateIfNeeded()
-	{
-		switch (state)
-		{
-			case 'NO_REQUEST':
-				throw new Error(
-					'Unexpected draw callback.\n' +
-					'Please report this to <https://github.com/elm-lang/core/issues>.'
-				);
-
-			case 'PENDING_REQUEST':
-				rAF(updateIfNeeded);
-				state = 'EXTRA_REQUEST';
-
-				var patches = diff(currentVirtualNode, nextVirtualNode);
-				domNode = applyPatches(domNode, currentVirtualNode, patches, eventNode);
-				currentVirtualNode = nextVirtualNode;
-
-				return;
-
-			case 'EXTRA_REQUEST':
-				state = 'NO_REQUEST';
-				return;
-		}
-	}
-
-	return { update: registerVirtualNode };
-}
-
-
-var rAF =
-	typeof requestAnimationFrame !== 'undefined'
-		? requestAnimationFrame
-		: function(cb) { setTimeout(cb, 1000 / 60); };
-
-
-
-////////////  RENDER  ////////////
-
-
-function render(vNode, eventNode)
-{
-	switch (vNode.type)
-	{
-		case 'thunk':
-			if (!vNode.node)
-			{
-				vNode.node = vNode.thunk();
-			}
-			return render(vNode.node, eventNode);
-
-		case 'tagger':
-			var subNode = vNode.node;
-			var tagger = vNode.tagger;
-		
-			while (subNode.type === 'tagger')
-			{
-				typeof tagger !== 'object'
-					? tagger = [tagger, subNode.tagger]
-					: tagger.push(subNode.tagger);
-
-				subNode = subNode.node;
-			}
-            
-			var subEventRoot = {
-				tagger: tagger,
-				parent: eventNode
-			};
-			
-			var domNode = render(subNode, subEventRoot);
-			domNode.elm_event_node_ref = subEventRoot;
-			return domNode;
-
-		case 'text':
-			return document.createTextNode(vNode.text);
-
-		case 'node':
-			var domNode = vNode.namespace
-				? document.createElementNS(vNode.namespace, vNode.tag)
-				: document.createElement(vNode.tag);
-
-			applyFacts(domNode, eventNode, vNode.facts);
-
-			var children = vNode.children;
-
-			for (var i = 0; i < children.length; i++)
-			{
-				domNode.appendChild(render(children[i], eventNode));
-			}
-
-			return domNode;
-
-		case 'custom':
-			var domNode = vNode.impl.render(vNode.model);
-			applyFacts(domNode, eventNode, vNode.facts);
-			return domNode;
-	}
-}
-
-
-
-////////////  APPLY FACTS  ////////////
-
-
-function applyFacts(domNode, eventNode, facts)
-{
-	for (var key in facts)
-	{
-		var value = facts[key];
-
-		switch (key)
-		{
-			case STYLE_KEY:
-				applyStyles(domNode, value);
-				break;
-
-			case EVENT_KEY:
-				applyEvents(domNode, eventNode, value);
-				break;
-
-			case ATTR_KEY:
-				applyAttrs(domNode, value);
-				break;
-
-			case ATTR_NS_KEY:
-				applyAttrsNS(domNode, value);
-				break;
-
-			case 'value':
-				if (domNode[key] !== value)
-				{
-					domNode[key] = value;
-				}
-				break;
-
-			default:
-				domNode[key] = value;
-				break;
-		}
-	}
-}
-
-function applyStyles(domNode, styles)
-{
-	var domNodeStyle = domNode.style;
-
-	for (var key in styles)
-	{
-		domNodeStyle[key] = styles[key];
-	}
-}
-
-function applyEvents(domNode, eventNode, events)
-{
-	var allHandlers = domNode.elm_handlers || {};
-
-	for (var key in events)
-	{
-		var handler = allHandlers[key];
-		var value = events[key];
-
-		if (typeof value === 'undefined')
-		{
-			domNode.removeEventListener(key, handler);
-			allHandlers[key] = undefined;
-		}
-		else if (typeof handler === 'undefined')
-		{
-			var handler = makeEventHandler(eventNode, value);
-			domNode.addEventListener(key, handler);
-			allHandlers[key] = handler;
-		}
-		else
-		{
-			handler.info = value;
-		}
-	}
-
-	domNode.elm_handlers = allHandlers;
-}
-
-function makeEventHandler(eventNode, info)
-{
-	function eventHandler(event)
-	{
-		var info = eventHandler.info;
-
-		var value = A2(_elm_lang$core$Native_Json.run, info.decoder, event);
-
-		if (value.ctor === 'Ok')
-		{
-			var options = info.options;
-			if (options.stopPropagation)
-			{
-				event.stopPropagation();
-			}
-			if (options.preventDefault)
-			{
-				event.preventDefault();
-			}
-
-			var message = value._0;
-
-			var currentEventNode = eventNode;
-			while (currentEventNode)
-			{
-				var tagger = currentEventNode.tagger;
-				if (typeof tagger === 'function')
-				{
-					message = tagger(message);
-				}
-				else
-				{
-					for (var i = tagger.length; i--; )
-					{
-						message = tagger[i](message);
-					}
-				}
-				currentEventNode = currentEventNode.parent;
-			}
-		}
-	};
-
-	eventHandler.info = info;
-
-	return eventHandler;
-}
-
-function applyAttrs(domNode, attrs)
-{
-	for (var key in attrs)
-	{
-		var value = attrs[key];
-		if (typeof value === 'undefined')
-		{
-			domNode.removeAttribute(key);
-		}
-		else
-		{
-			domNode.setAttribute(key, value);
-		}
-	}
-}
-
-function applyAttrsNS(domNode, nsAttrs)
-{
-	for (var key in nsAttrs)
-	{
-		var pair = nsAttrs[key];
-		var namespace = pair.namespace;
-		var value = pair.value;
-
-		if (typeof value === 'undefined')
-		{
-			domNode.removeAttributeNS(namespace, key);
-		}
-		else
-		{
-			domNode.setAttributeNS(namespace, key, value);
-		}
-	}
-}
-
-
-
-////////////  DIFF  ////////////
-
-
-function diff(a, b)
-{
-	var patches = [];
-	diffHelp(a, b, patches, 0);
-	return patches;
-}
-
-
-function makePatch(type, index, data)
-{
-	return {
-		index: index,
-		type: type,
-		data: data,
-		domNode: null,
-		eventNode: null
-	};
-}
-
-
-function diffHelp(a, b, patches, index)
-{
-	if (a === b)
-	{
-		return;
-	}
-
-	var aType = a.type;
-	var bType = b.type;
-
-	// Bail if you run into different types of nodes. Implies that the
-	// structure has changed significantly and it's not worth a diff.
-	if (aType !== bType)
-	{
-		patches.push(makePatch('p-redraw', index, b));
-		return;
-	}
-
-	// Now we know that both nodes are the same type.
-	switch (bType)
-	{
-		case 'thunk':
-			var aArgs = a.args;
-			var bArgs = b.args;
-			var i = aArgs.length;
-			var same = a.func === b.func && i === bArgs.length;
-			while (same && i--)
-			{
-				same = aArgs[i] === bArgs[i];
-			}
-			if (same)
-			{
-				b.node = a.node;
-				return;
-			}
-			b.node = b.thunk();
-			var subPatches = [];
-			diffHelp(a.node, b.node, subPatches, 0);
-			if (subPatches.length > 0)
-			{
-				patches.push(makePatch('p-thunk', index, subPatches));
-			}
-			return;
-
-		case 'tagger':
-			// gather nested taggers
-			var aTaggers = a.tagger;
-			var bTaggers = b.tagger;
-			var nesting = false;
-
-			var aSubNode = a.node;
-			while (aSubNode.type === 'tagger')
-			{
-				nesting = true;
-
-				typeof aTaggers !== 'object'
-					? aTaggers = [aTaggers, aSubNode.tagger]
-					: aTaggers.push(aSubNode.tagger);
-
-				aSubNode = aSubNode.node;
-			}
-
-			var bSubNode = b.node;
-			while (bSubNode.type === 'tagger')
-			{
-				nesting = true;
-
-				typeof bTaggers !== 'object'
-					? bTaggers = [bTaggers, bSubNode.tagger]
-					: bTaggers.push(bSubNode.tagger);
-
-				bSubNode = bSubNode.node;
-			}
-
-			// Just bail if different numbers of taggers. This implies the
-			// structure of the virtual DOM has changed.
-			if (nesting && aTaggers.length !== bTaggers.length)
-			{
-				patches.push(makePatch('p-redraw', index, b));
-				return;
-			}
-
-			// check if taggers are "the same"
-			if (nesting ? !pairwiseRefEqual(aTaggers, bTaggers) : aTaggers !== bTaggers)
-			{
-				patches.push(makePatch('p-tagger', index, bTaggers));
-			}
-
-			// diff everything below the taggers
-			diffHelp(aSubNode, bSubNode, patches, index + 1);
-			return;
-
-		case 'text':
-			if (a.text !== b.text)
-			{
-				patches.push(makePatch('p-text', index, b.text));
-				return;
-			}
-
-			return;
-
-		case 'node':
-			// Bail if obvious indicators have changed. Implies more serious
-			// structural changes such that it's not worth it to diff.
-			if (a.tag !== b.tag || a.namespace !== b.namespace)
-			{
-				patches.push(makePatch('p-redraw', index, b));
-				return;
-			}
-
-			var factsDiff = diffFacts(a.facts, b.facts);
-
-			if (typeof factsDiff !== 'undefined')
-			{
-				patches.push(makePatch('p-facts', index, factsDiff));
-			}
-
-			diffChildren(a, b, patches, index);
-			return;
-
-		case 'custom':
-			if (a.impl !== b.impl)
-			{
-				patches.push(makePatch('p-redraw', index, b));
-				return;
-			}
-
-			var factsDiff = diffFacts(a.facts, b.facts);
-			if (typeof factsDiff !== 'undefined')
-			{
-				patches.push(makePatch('p-facts', index, factsDiff));
-			}
-
-			var patch = b.impl.diff(a,b);
-			if (patch)
-			{
-				patches.push(makePatch('p-custom', index, patch));
-				return;
-			}
-
-			return;
-	}
-}
-
-
-// assumes the incoming arrays are the same length
-function pairwiseRefEqual(as, bs)
-{
-	for (var i = 0; i < as.length; i++)
-	{
-		if (as[i] !== bs[i])
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-
-// TODO Instead of creating a new diff object, it's possible to just test if
-// there *is* a diff. During the actual patch, do the diff again and make the
-// modifications directly. This way, there's no new allocations. Worth it?
-function diffFacts(a, b, category)
-{
-	var diff;
-
-	// look for changes and removals
-	for (var aKey in a)
-	{
-		if (aKey === STYLE_KEY || aKey === EVENT_KEY || aKey === ATTR_KEY || aKey === ATTR_NS_KEY)
-		{
-			var subDiff = diffFacts(a[aKey], b[aKey] || {}, aKey);
-			if (subDiff)
-			{
-				diff = diff || {};
-				diff[aKey] = subDiff;
-			}
-			continue;
-		}
-
-		// remove if not in the new facts
-		if (!(aKey in b))
-		{
-			diff = diff || {};
-			diff[aKey] =
-				(typeof category === 'undefined')
-					? (typeof a[aKey] === 'string' ? '' : null)
-					:
-				(category === STYLE_KEY)
-					? ''
-					:
-				(category === EVENT_KEY || category === ATTR_KEY)
-					? undefined
-					:
-				{ namespace: a[aKey].namespace, value: undefined };
-
-			continue;
-		}
-
-		var aValue = a[aKey];
-		var bValue = b[aKey];
-
-		// reference equal, so don't worry about it
-		if (aValue === bValue && aKey !== 'value'
-			|| category === EVENT_KEY && equalEvents(aValue, bValue))
-		{
-			continue;
-		}
-
-		diff = diff || {};
-		diff[aKey] = bValue;
-	}
-
-	// add new stuff
-	for (var bKey in b)
-	{
-		if (!(bKey in a))
-		{
-			diff = diff || {};
-			diff[bKey] = b[bKey];
-		}
-	}
-
-	return diff;
-}
-
-
-function diffChildren(aParent, bParent, patches, rootIndex)
-{
-	var aChildren = aParent.children;
-	var bChildren = bParent.children;
-
-	var aLen = aChildren.length;
-	var bLen = bChildren.length;
-
-	// FIGURE OUT IF THERE ARE INSERTS OR REMOVALS
-
-	if (aLen > bLen)
-	{
-		patches.push(makePatch('p-remove', rootIndex, aLen - bLen));
-	}
-	else if (aLen < bLen)
-	{
-		patches.push(makePatch('p-insert', rootIndex, bChildren.slice(aLen)));
-	}
-
-	// PAIRWISE DIFF EVERYTHING ELSE
-
-	var index = rootIndex;
-	var minLen = aLen < bLen ? aLen : bLen;
-	for (var i = 0; i < minLen; i++)
-	{
-		index++;
-		var aChild = aChildren[i];
-		diffHelp(aChild, bChildren[i], patches, index);
-		index += aChild.descendantsCount || 0;
-	}
-}
-
-
-
-////////////  ADD DOM NODES  ////////////
-//
-// Each DOM node has an "index" assigned in order of traversal. It is important
-// to minimize our crawl over the actual DOM, so these indexes (along with the
-// descendantsCount of virtual nodes) let us skip touching entire subtrees of
-// the DOM if we know there are no patches there.
-
-
-function addDomNodes(domNode, vNode, patches, eventNode)
-{
-	addDomNodesHelp(domNode, vNode, patches, 0, 0, vNode.descendantsCount, eventNode);
-}
-
-
-// assumes `patches` is non-empty and indexes increase monotonically.
-function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
-{
-	var patch = patches[i];
-	var index = patch.index;
-
-	while (index === low)
-	{
-		var patchType = patch.type;
-
-		if (patchType === 'p-thunk')
-		{
-			addDomNodes(domNode, vNode.node, patch.data, eventNode);
-		}
-		else
-		{
-			patch.domNode = domNode;
-			patch.eventNode = eventNode;
-		}
-
-		i++;
-
-		if (!(patch = patches[i]) || (index = patch.index) > high)
-		{
-			return i;
-		}
-	}
-
-	switch (vNode.type)
-	{
-		case 'tagger':
-			var subNode = vNode.node;
-            
-			while (subNode.type === "tagger")
-			{
-				subNode = subNode.node;
-			}
-            
-			return addDomNodesHelp(domNode, subNode, patches, i, low + 1, high, domNode.elm_event_node_ref);
-
-		case 'node':
-			var vChildren = vNode.children;
-			var childNodes = domNode.childNodes;
-			for (var j = 0; j < vChildren.length; j++)
-			{
-				low++;
-				var vChild = vChildren[j];
-				var nextLow = low + (vChild.descendantsCount || 0);
-				if (low <= index && index <= nextLow)
-				{
-					i = addDomNodesHelp(childNodes[j], vChild, patches, i, low, nextLow, eventNode);
-					if (!(patch = patches[i]) || (index = patch.index) > high)
-					{
-						return i;
-					}
-				}
-				low = nextLow;
-			}
-			return i;
-
-		case 'text':
-		case 'thunk':
-			throw new Error('should never traverse `text` or `thunk` nodes like this');
-	}
-}
-
-
-
-////////////  APPLY PATCHES  ////////////
-
-
-function applyPatches(rootDomNode, oldVirtualNode, patches, eventNode)
-{
-	if (patches.length === 0)
-	{
-		return rootDomNode;
-	}
-
-	addDomNodes(rootDomNode, oldVirtualNode, patches, eventNode);
-	return applyPatchesHelp(rootDomNode, patches);
-}
-
-function applyPatchesHelp(rootDomNode, patches)
-{
-	for (var i = 0; i < patches.length; i++)
-	{
-		var patch = patches[i];
-		var localDomNode = patch.domNode
-		var newNode = applyPatch(localDomNode, patch);
-		if (localDomNode === rootDomNode)
-		{
-			rootDomNode = newNode;
-		}
-	}
-	return rootDomNode;
-}
-
-function applyPatch(domNode, patch)
-{
-	switch (patch.type)
-	{
-		case 'p-redraw':
-			return redraw(domNode, patch.data, patch.eventNode);
-
-		case 'p-facts':
-			applyFacts(domNode, patch.eventNode, patch.data);
-			return domNode;
-
-		case 'p-text':
-			domNode.replaceData(0, domNode.length, patch.data);
-			return domNode;
-
-		case 'p-thunk':
-			return applyPatchesHelp(domNode, patch.data);
-
-		case 'p-tagger':
-			domNode.elm_event_node_ref.tagger = patch.data;
-			return domNode;
-
-		case 'p-remove':
-			var i = patch.data;
-			while (i--)
-			{
-				domNode.removeChild(domNode.lastChild);
-			}
-			return domNode;
-
-		case 'p-insert':
-			var newNodes = patch.data;
-			for (var i = 0; i < newNodes.length; i++)
-			{
-				domNode.appendChild(render(newNodes[i], patch.eventNode));
-			}
-			return domNode;
-
-		case 'p-custom':
-			var impl = patch.data;
-			return impl.applyPatch(domNode, impl.data);
-
-		default:
-			throw new Error('Ran into an unknown patch!');
-	}
-}
-
-
-function redraw(domNode, vNode, eventNode)
-{
-	var parentNode = domNode.parentNode;
-	var newNode = render(vNode, eventNode);
-
-	if (typeof newNode.elm_event_node_ref === 'undefined')
-	{
-		newNode.elm_event_node_ref = domNode.elm_event_node_ref;
-	}
-
-	if (parentNode && newNode !== domNode)
-	{
-		parentNode.replaceChild(newNode, domNode);
-	}
-	return newNode;
-}
-
-
-
-////////////  PROGRAMS  ////////////
-
-
-function programWithFlags(details)
-{
-	return {
-		init: details.init,
-		update: details.update,
-		subscriptions: details.subscriptions,
-		view: details.view,
-		renderer: renderer
-	};
-}
-
-
-return {
-	node: node,
-	text: text,
-
-	custom: custom,
-
-	map: F2(map),
-
-	on: F3(on),
-	style: style,
-	property: F2(property),
-	attribute: F2(attribute),
-	attributeNS: F3(attributeNS),
-
-	lazy: F2(lazy),
-	lazy2: F3(lazy2),
-	lazy3: F4(lazy3),
-
-	programWithFlags: programWithFlags
-};
-
-}();
-var _elm_lang$virtual_dom$VirtualDom$programWithFlags = _elm_lang$virtual_dom$Native_VirtualDom.programWithFlags;
-var _elm_lang$virtual_dom$VirtualDom$lazy3 = _elm_lang$virtual_dom$Native_VirtualDom.lazy3;
-var _elm_lang$virtual_dom$VirtualDom$lazy2 = _elm_lang$virtual_dom$Native_VirtualDom.lazy2;
-var _elm_lang$virtual_dom$VirtualDom$lazy = _elm_lang$virtual_dom$Native_VirtualDom.lazy;
-var _elm_lang$virtual_dom$VirtualDom$defaultOptions = {stopPropagation: false, preventDefault: false};
-var _elm_lang$virtual_dom$VirtualDom$onWithOptions = _elm_lang$virtual_dom$Native_VirtualDom.on;
-var _elm_lang$virtual_dom$VirtualDom$on = F2(
-	function (eventName, decoder) {
-		return A3(_elm_lang$virtual_dom$VirtualDom$onWithOptions, eventName, _elm_lang$virtual_dom$VirtualDom$defaultOptions, decoder);
-	});
-var _elm_lang$virtual_dom$VirtualDom$style = _elm_lang$virtual_dom$Native_VirtualDom.style;
-var _elm_lang$virtual_dom$VirtualDom$attributeNS = _elm_lang$virtual_dom$Native_VirtualDom.attributeNS;
-var _elm_lang$virtual_dom$VirtualDom$attribute = _elm_lang$virtual_dom$Native_VirtualDom.attribute;
-var _elm_lang$virtual_dom$VirtualDom$property = _elm_lang$virtual_dom$Native_VirtualDom.property;
-var _elm_lang$virtual_dom$VirtualDom$map = _elm_lang$virtual_dom$Native_VirtualDom.map;
-var _elm_lang$virtual_dom$VirtualDom$text = _elm_lang$virtual_dom$Native_VirtualDom.text;
-var _elm_lang$virtual_dom$VirtualDom$node = _elm_lang$virtual_dom$Native_VirtualDom.node;
-var _elm_lang$virtual_dom$VirtualDom$Options = F2(
-	function (a, b) {
-		return {stopPropagation: a, preventDefault: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom$Node = {ctor: 'Node'};
-var _elm_lang$virtual_dom$VirtualDom$Property = {ctor: 'Property'};
-
-var _elm_lang$html$Html$text = _elm_lang$virtual_dom$VirtualDom$text;
-var _elm_lang$html$Html$node = _elm_lang$virtual_dom$VirtualDom$node;
-var _elm_lang$html$Html$body = _elm_lang$html$Html$node('body');
-var _elm_lang$html$Html$section = _elm_lang$html$Html$node('section');
-var _elm_lang$html$Html$nav = _elm_lang$html$Html$node('nav');
-var _elm_lang$html$Html$article = _elm_lang$html$Html$node('article');
-var _elm_lang$html$Html$aside = _elm_lang$html$Html$node('aside');
-var _elm_lang$html$Html$h1 = _elm_lang$html$Html$node('h1');
-var _elm_lang$html$Html$h2 = _elm_lang$html$Html$node('h2');
-var _elm_lang$html$Html$h3 = _elm_lang$html$Html$node('h3');
-var _elm_lang$html$Html$h4 = _elm_lang$html$Html$node('h4');
-var _elm_lang$html$Html$h5 = _elm_lang$html$Html$node('h5');
-var _elm_lang$html$Html$h6 = _elm_lang$html$Html$node('h6');
-var _elm_lang$html$Html$header = _elm_lang$html$Html$node('header');
-var _elm_lang$html$Html$footer = _elm_lang$html$Html$node('footer');
-var _elm_lang$html$Html$address = _elm_lang$html$Html$node('address');
-var _elm_lang$html$Html$main$ = _elm_lang$html$Html$node('main');
-var _elm_lang$html$Html$p = _elm_lang$html$Html$node('p');
-var _elm_lang$html$Html$hr = _elm_lang$html$Html$node('hr');
-var _elm_lang$html$Html$pre = _elm_lang$html$Html$node('pre');
-var _elm_lang$html$Html$blockquote = _elm_lang$html$Html$node('blockquote');
-var _elm_lang$html$Html$ol = _elm_lang$html$Html$node('ol');
-var _elm_lang$html$Html$ul = _elm_lang$html$Html$node('ul');
-var _elm_lang$html$Html$li = _elm_lang$html$Html$node('li');
-var _elm_lang$html$Html$dl = _elm_lang$html$Html$node('dl');
-var _elm_lang$html$Html$dt = _elm_lang$html$Html$node('dt');
-var _elm_lang$html$Html$dd = _elm_lang$html$Html$node('dd');
-var _elm_lang$html$Html$figure = _elm_lang$html$Html$node('figure');
-var _elm_lang$html$Html$figcaption = _elm_lang$html$Html$node('figcaption');
-var _elm_lang$html$Html$div = _elm_lang$html$Html$node('div');
-var _elm_lang$html$Html$a = _elm_lang$html$Html$node('a');
-var _elm_lang$html$Html$em = _elm_lang$html$Html$node('em');
-var _elm_lang$html$Html$strong = _elm_lang$html$Html$node('strong');
-var _elm_lang$html$Html$small = _elm_lang$html$Html$node('small');
-var _elm_lang$html$Html$s = _elm_lang$html$Html$node('s');
-var _elm_lang$html$Html$cite = _elm_lang$html$Html$node('cite');
-var _elm_lang$html$Html$q = _elm_lang$html$Html$node('q');
-var _elm_lang$html$Html$dfn = _elm_lang$html$Html$node('dfn');
-var _elm_lang$html$Html$abbr = _elm_lang$html$Html$node('abbr');
-var _elm_lang$html$Html$time = _elm_lang$html$Html$node('time');
-var _elm_lang$html$Html$code = _elm_lang$html$Html$node('code');
-var _elm_lang$html$Html$var = _elm_lang$html$Html$node('var');
-var _elm_lang$html$Html$samp = _elm_lang$html$Html$node('samp');
-var _elm_lang$html$Html$kbd = _elm_lang$html$Html$node('kbd');
-var _elm_lang$html$Html$sub = _elm_lang$html$Html$node('sub');
-var _elm_lang$html$Html$sup = _elm_lang$html$Html$node('sup');
-var _elm_lang$html$Html$i = _elm_lang$html$Html$node('i');
-var _elm_lang$html$Html$b = _elm_lang$html$Html$node('b');
-var _elm_lang$html$Html$u = _elm_lang$html$Html$node('u');
-var _elm_lang$html$Html$mark = _elm_lang$html$Html$node('mark');
-var _elm_lang$html$Html$ruby = _elm_lang$html$Html$node('ruby');
-var _elm_lang$html$Html$rt = _elm_lang$html$Html$node('rt');
-var _elm_lang$html$Html$rp = _elm_lang$html$Html$node('rp');
-var _elm_lang$html$Html$bdi = _elm_lang$html$Html$node('bdi');
-var _elm_lang$html$Html$bdo = _elm_lang$html$Html$node('bdo');
-var _elm_lang$html$Html$span = _elm_lang$html$Html$node('span');
-var _elm_lang$html$Html$br = _elm_lang$html$Html$node('br');
-var _elm_lang$html$Html$wbr = _elm_lang$html$Html$node('wbr');
-var _elm_lang$html$Html$ins = _elm_lang$html$Html$node('ins');
-var _elm_lang$html$Html$del = _elm_lang$html$Html$node('del');
-var _elm_lang$html$Html$img = _elm_lang$html$Html$node('img');
-var _elm_lang$html$Html$iframe = _elm_lang$html$Html$node('iframe');
-var _elm_lang$html$Html$embed = _elm_lang$html$Html$node('embed');
-var _elm_lang$html$Html$object = _elm_lang$html$Html$node('object');
-var _elm_lang$html$Html$param = _elm_lang$html$Html$node('param');
-var _elm_lang$html$Html$video = _elm_lang$html$Html$node('video');
-var _elm_lang$html$Html$audio = _elm_lang$html$Html$node('audio');
-var _elm_lang$html$Html$source = _elm_lang$html$Html$node('source');
-var _elm_lang$html$Html$track = _elm_lang$html$Html$node('track');
-var _elm_lang$html$Html$canvas = _elm_lang$html$Html$node('canvas');
-var _elm_lang$html$Html$svg = _elm_lang$html$Html$node('svg');
-var _elm_lang$html$Html$math = _elm_lang$html$Html$node('math');
-var _elm_lang$html$Html$table = _elm_lang$html$Html$node('table');
-var _elm_lang$html$Html$caption = _elm_lang$html$Html$node('caption');
-var _elm_lang$html$Html$colgroup = _elm_lang$html$Html$node('colgroup');
-var _elm_lang$html$Html$col = _elm_lang$html$Html$node('col');
-var _elm_lang$html$Html$tbody = _elm_lang$html$Html$node('tbody');
-var _elm_lang$html$Html$thead = _elm_lang$html$Html$node('thead');
-var _elm_lang$html$Html$tfoot = _elm_lang$html$Html$node('tfoot');
-var _elm_lang$html$Html$tr = _elm_lang$html$Html$node('tr');
-var _elm_lang$html$Html$td = _elm_lang$html$Html$node('td');
-var _elm_lang$html$Html$th = _elm_lang$html$Html$node('th');
-var _elm_lang$html$Html$form = _elm_lang$html$Html$node('form');
-var _elm_lang$html$Html$fieldset = _elm_lang$html$Html$node('fieldset');
-var _elm_lang$html$Html$legend = _elm_lang$html$Html$node('legend');
-var _elm_lang$html$Html$label = _elm_lang$html$Html$node('label');
-var _elm_lang$html$Html$input = _elm_lang$html$Html$node('input');
-var _elm_lang$html$Html$button = _elm_lang$html$Html$node('button');
-var _elm_lang$html$Html$select = _elm_lang$html$Html$node('select');
-var _elm_lang$html$Html$datalist = _elm_lang$html$Html$node('datalist');
-var _elm_lang$html$Html$optgroup = _elm_lang$html$Html$node('optgroup');
-var _elm_lang$html$Html$option = _elm_lang$html$Html$node('option');
-var _elm_lang$html$Html$textarea = _elm_lang$html$Html$node('textarea');
-var _elm_lang$html$Html$keygen = _elm_lang$html$Html$node('keygen');
-var _elm_lang$html$Html$output = _elm_lang$html$Html$node('output');
-var _elm_lang$html$Html$progress = _elm_lang$html$Html$node('progress');
-var _elm_lang$html$Html$meter = _elm_lang$html$Html$node('meter');
-var _elm_lang$html$Html$details = _elm_lang$html$Html$node('details');
-var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
-var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
-var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
 
 var _elm_lang$html$Html_App$programWithFlags = _elm_lang$virtual_dom$VirtualDom$programWithFlags;
 var _elm_lang$html$Html_App$program = function (app) {
@@ -7942,6 +8376,36 @@ var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$
 var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$attribute, 'contextmenu', value);
 };
+var _elm_lang$html$Html_Attributes$draggable = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', value);
+};
+var _elm_lang$html$Html_Attributes$list = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'list', value);
+};
+var _elm_lang$html$Html_Attributes$maxlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'maxlength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$datetime = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
+};
+var _elm_lang$html$Html_Attributes$pubdate = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'pubdate', value);
+};
+var _elm_lang$html$Html_Attributes$colspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'colspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rowspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rowspan',
+		_elm_lang$core$Basics$toString(n));
+};
 var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
 var _elm_lang$html$Html_Attributes$stringProperty = F2(
 	function (name, string) {
@@ -7967,9 +8431,6 @@ var _elm_lang$html$Html_Attributes$accesskey = function ($char) {
 };
 var _elm_lang$html$Html_Attributes$dir = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dir', value);
-};
-var _elm_lang$html$Html_Attributes$draggable = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'draggable', value);
 };
 var _elm_lang$html$Html_Attributes$dropzone = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dropzone', value);
@@ -8070,19 +8531,10 @@ var _elm_lang$html$Html_Attributes$enctype = function (value) {
 var _elm_lang$html$Html_Attributes$formaction = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'formAction', value);
 };
-var _elm_lang$html$Html_Attributes$list = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'list', value);
-};
 var _elm_lang$html$Html_Attributes$minlength = function (n) {
 	return A2(
 		_elm_lang$html$Html_Attributes$stringProperty,
 		'minLength',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$maxlength = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'maxLength',
 		_elm_lang$core$Basics$toString(n));
 };
 var _elm_lang$html$Html_Attributes$method = function (value) {
@@ -8172,32 +8624,14 @@ var _elm_lang$html$Html_Attributes$ping = function (value) {
 var _elm_lang$html$Html_Attributes$rel = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'rel', value);
 };
-var _elm_lang$html$Html_Attributes$datetime = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'datetime', value);
-};
-var _elm_lang$html$Html_Attributes$pubdate = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'pubdate', value);
-};
 var _elm_lang$html$Html_Attributes$start = function (n) {
 	return A2(
 		_elm_lang$html$Html_Attributes$stringProperty,
 		'start',
 		_elm_lang$core$Basics$toString(n));
 };
-var _elm_lang$html$Html_Attributes$colspan = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'colSpan',
-		_elm_lang$core$Basics$toString(n));
-};
 var _elm_lang$html$Html_Attributes$headers = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'headers', value);
-};
-var _elm_lang$html$Html_Attributes$rowspan = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'rowSpan',
-		_elm_lang$core$Basics$toString(n));
 };
 var _elm_lang$html$Html_Attributes$scope = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'scope', value);
@@ -10183,223 +10617,58 @@ var _mordrax$cotwelm$Utils_Vector$Vector = F2(
 		return {x: a, y: b};
 	});
 
-var _mordrax$cotwelm$Hero$pos = function (_p0) {
-	var _p1 = _p0;
-	return _p1._0.pos;
-};
-var _mordrax$cotwelm$Hero$Model = F2(
-	function (a, b) {
-		return {name: a, pos: b};
-	});
-var _mordrax$cotwelm$Hero$Hero = function (a) {
-	return {ctor: 'Hero', _0: a};
-};
-var _mordrax$cotwelm$Hero$init = _mordrax$cotwelm$Hero$Hero(
-	{
-		name: 'Bob the Brave',
-		pos: {x: 11, y: 17}
-	});
-var _mordrax$cotwelm$Hero$update = F2(
-	function (msg, _p2) {
-		var _p3 = _p2;
-		var _p5 = _p3._0;
-		var _p4 = msg;
-		if (_p4.ctor === 'Move') {
-			return _mordrax$cotwelm$Hero$Hero(
-				_elm_lang$core$Native_Utils.update(
-					_p5,
-					{
-						pos: A2(_mordrax$cotwelm$Utils_Vector$add, _p4._0, _p5.pos)
-					}));
-		} else {
-			return _mordrax$cotwelm$Hero$Hero(
-				_elm_lang$core$Native_Utils.update(
-					_p5,
-					{pos: _p4._0}));
-		}
-	});
-var _mordrax$cotwelm$Hero$Teleport = function (a) {
-	return {ctor: 'Teleport', _0: a};
-};
-var _mordrax$cotwelm$Hero$Move = function (a) {
-	return {ctor: 'Move', _0: a};
-};
-
-var _mordrax$cotwelm$GameData_Types$DungeonLevel = function (a) {
-	return {ctor: 'DungeonLevel', _0: a};
-};
-var _mordrax$cotwelm$GameData_Types$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
-var _mordrax$cotwelm$GameData_Types$Farm = {ctor: 'Farm'};
-var _mordrax$cotwelm$GameData_Types$Village = {ctor: 'Village'};
-
-var _mordrax$cotwelm$GameData_Building$Model = F6(
-	function (a, b, c, d, e, f) {
-		return {tile: a, entry: b, pos: c, name: d, size: e, buildingType: f};
-	});
-var _mordrax$cotwelm$GameData_Building$Link = F2(
-	function (a, b) {
-		return {area: a, pos: b};
-	});
-var _mordrax$cotwelm$GameData_Building$JunkShop = {ctor: 'JunkShop'};
-var _mordrax$cotwelm$GameData_Building$PotionStore = {ctor: 'PotionStore'};
-var _mordrax$cotwelm$GameData_Building$GeneralStore = {ctor: 'GeneralStore'};
-var _mordrax$cotwelm$GameData_Building$WeaponSmith = {ctor: 'WeaponSmith'};
-var _mordrax$cotwelm$GameData_Building$Ordinary = {ctor: 'Ordinary'};
-var _mordrax$cotwelm$GameData_Building$ShopType = function (a) {
-	return {ctor: 'ShopType', _0: a};
-};
-var _mordrax$cotwelm$GameData_Building$LinkType = function (a) {
-	return {ctor: 'LinkType', _0: a};
-};
-var _mordrax$cotwelm$GameData_Building$MineEntrance = {ctor: 'MineEntrance'};
-var _mordrax$cotwelm$GameData_Building$HutTemple_NF = {ctor: 'HutTemple_NF'};
-var _mordrax$cotwelm$GameData_Building$BurntStrawHouse_WF = {ctor: 'BurntStrawHouse_WF'};
-var _mordrax$cotwelm$GameData_Building$StrawHouse_WF = {ctor: 'StrawHouse_WF'};
-var _mordrax$cotwelm$GameData_Building$StrawHouse_EF = {ctor: 'StrawHouse_EF'};
-var _mordrax$cotwelm$GameData_Building$Hut_EF = {ctor: 'Hut_EF'};
-var _mordrax$cotwelm$GameData_Building$Gate_NS = {ctor: 'Gate_NS'};
-var _mordrax$cotwelm$GameData_Building$new = F4(
-	function (buildingTile, pos, name, buildingType) {
-		var _p0 = buildingTile;
-		switch (_p0.ctor) {
-			case 'Gate_NS':
-				return A6(
-					_mordrax$cotwelm$GameData_Building$Model,
-					_mordrax$cotwelm$GameData_Building$Gate_NS,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 1, 0),
-					pos,
-					name,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 1),
-					buildingType);
-			case 'Hut_EF':
-				return A6(
-					_mordrax$cotwelm$GameData_Building$Model,
-					_mordrax$cotwelm$GameData_Building$Hut_EF,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 2, 1),
-					pos,
-					name,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3),
-					buildingType);
-			case 'StrawHouse_EF':
-				return A6(
-					_mordrax$cotwelm$GameData_Building$Model,
-					_mordrax$cotwelm$GameData_Building$StrawHouse_EF,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 2, 1),
-					pos,
-					name,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3),
-					buildingType);
-			case 'StrawHouse_WF':
-				return A6(
-					_mordrax$cotwelm$GameData_Building$Model,
-					_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 0, 1),
-					pos,
-					name,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3),
-					buildingType);
-			case 'BurntStrawHouse_WF':
-				return A6(
-					_mordrax$cotwelm$GameData_Building$Model,
-					_mordrax$cotwelm$GameData_Building$BurntStrawHouse_WF,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 0, 1),
-					pos,
-					name,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3),
-					buildingType);
-			case 'HutTemple_NF':
-				return A6(
-					_mordrax$cotwelm$GameData_Building$Model,
-					_mordrax$cotwelm$GameData_Building$HutTemple_NF,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 2, 0),
-					pos,
-					name,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 5, 6),
-					buildingType);
-			default:
-				return A6(
-					_mordrax$cotwelm$GameData_Building$Model,
-					_mordrax$cotwelm$GameData_Building$MineEntrance,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 0, 0),
-					pos,
-					name,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 1, 1),
-					buildingType);
-		}
-	});
-
-var _mordrax$cotwelm$GameData_ASCIIMaps$dungeonLevelOneMap = _elm_lang$core$Native_List.fromArray(
-	['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^dooo^^ood^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^doooooddooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^doddoooooooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^dod^^oooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^od^^^oooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^o^^^^dooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^o^^^^^dod^dod^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^dood^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^ooood^^^^^o^^^^^^^^^^doood^^^', '^^^^^^^^^^^^oooooo^^^^o^^^^^^^^^^ooooo^^^', '^^^^^^^^^^^^dooooo^^^^o^^^^^^^^^^ooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^^^^^^dooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^^dooooooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^dod^^^doooo^^^', '^^^^^^^^^^^^^od^^^^^^^od^^dod^^^^^^^oo^^^', '^^^^^^^^^^^^^dod^^^^^^doddod^^^^^^^ood^^^', '^^^^^^^^^^^^^^dod^^^^^^dood^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^do^^^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^od^^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^dod^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^dod^^^do^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^dod^^od^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^doddo^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^dood^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^']);
-var _mordrax$cotwelm$GameData_ASCIIMaps$farmMap = _elm_lang$core$Native_List.fromArray(
-	['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^#^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^.,,,^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^,,.,,,,,^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^,,,,,,,.,,,,,,^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^,,,,,,,,.,,,,,,,,,^^^^^^^^^^^^^^^', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', '.................................................', '.................................................', ',,,,,,,,,,,,,,,,,,,,,,,..;,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,###,,=', ',,,,,,,,,,,,,,,,;..........................###,,=', ',,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,###,,=', ',,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,=======', ',,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,.,,,,,=======,,,,,,,,,,,,,,,,,,=======', '========,,###,,,,=======,,,,,,,,,,,,,,,,,,,,,,,,,']);
-var _mordrax$cotwelm$GameData_ASCIIMaps$villageMap = _elm_lang$core$Native_List.fromArray(
-	['========,,###,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '===,,,,,;...,,,!###=====', '===###!;.;,.,,;.###=====', '===###..;,,.,;.;###=====', '===###,,,,,...;,,,,,,===', '===,,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,!###,,,,===', '====,,,##.....###,,,,===', '====,,,##!,.,,###,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,###!...!###,======', '====,,###..e..###,======', '====,,###,...,###,======', '====,,,,,,,.,,,,,,======', '====,,,,,,,.!,,,,,======', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '========================']);
-
-var _mordrax$cotwelm$GameData_Tile$Tile = F4(
+var _mordrax$cotwelm$Stats$Model = F4(
 	function (a, b, c, d) {
-		return {solid: a, tile: b, pos: c, building: d};
+		return {maxHP: a, currentHP: b, maxSP: c, currentSP: d};
 	});
-var _mordrax$cotwelm$GameData_Tile$TreasurePile = {ctor: 'TreasurePile'};
-var _mordrax$cotwelm$GameData_Tile$Well = {ctor: 'Well'};
-var _mordrax$cotwelm$GameData_Tile$Crop = {ctor: 'Crop'};
-var _mordrax$cotwelm$GameData_Tile$White90Cave10 = {ctor: 'White90Cave10'};
-var _mordrax$cotwelm$GameData_Tile$White50Cave50 = {ctor: 'White50Cave50'};
-var _mordrax$cotwelm$GameData_Tile$Grass10Cave90 = {ctor: 'Grass10Cave90'};
-var _mordrax$cotwelm$GameData_Tile$Grass50Cave50 = {ctor: 'Grass50Cave50'};
-var _mordrax$cotwelm$GameData_Tile$WallLitDgn = {ctor: 'WallLitDgn'};
-var _mordrax$cotwelm$GameData_Tile$WaterPath = {ctor: 'WaterPath'};
-var _mordrax$cotwelm$GameData_Tile$WaterGrass = {ctor: 'WaterGrass'};
-var _mordrax$cotwelm$GameData_Tile$WallDarkDgn = {ctor: 'WallDarkDgn'};
-var _mordrax$cotwelm$GameData_Tile$PathGrass = {ctor: 'PathGrass'};
-var _mordrax$cotwelm$GameData_Tile$PathRock = {ctor: 'PathRock'};
-var _mordrax$cotwelm$GameData_Tile$LitDgn = {ctor: 'LitDgn'};
-var _mordrax$cotwelm$GameData_Tile$Path = {ctor: 'Path'};
-var _mordrax$cotwelm$GameData_Tile$Water = {ctor: 'Water'};
-var _mordrax$cotwelm$GameData_Tile$DarkDgn = {ctor: 'DarkDgn'};
-var _mordrax$cotwelm$GameData_Tile$Grass = {ctor: 'Grass'};
-var _mordrax$cotwelm$GameData_Tile$Rock = {ctor: 'Rock'};
-var _mordrax$cotwelm$GameData_Tile$asciiTileData = function ($char) {
-	var _p0 = $char;
-	switch (_p0.valueOf()) {
-		case '^':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Rock, _1: true};
-		case ',':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Grass, _1: false};
-		case 'o':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$DarkDgn, _1: false};
-		case '~':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Water, _1: false};
-		case '.':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Path, _1: false};
-		case 'O':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$LitDgn, _1: false};
-		case '_':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$PathRock, _1: false};
-		case ';':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$PathGrass, _1: false};
-		case 'd':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$WallDarkDgn, _1: false};
-		case 'w':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$WaterGrass, _1: false};
-		case 'W':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$WaterPath, _1: false};
-		case 'D':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$WallLitDgn, _1: false};
-		case 'g':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Grass50Cave50, _1: false};
-		case 'G':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Grass10Cave90, _1: true};
-		case 'c':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$White50Cave50, _1: true};
-		case 'C':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$White90Cave10, _1: false};
-		case '=':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Crop, _1: true};
-		case 'e':
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Well, _1: true};
-		default:
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$GameData_Tile$Grass, _1: false};
-	}
+var _mordrax$cotwelm$Stats$A = function (a) {
+	return {ctor: 'A', _0: a};
+};
+var _mordrax$cotwelm$Stats$new = F2(
+	function (hp, sp) {
+		return _mordrax$cotwelm$Stats$A(
+			A4(_mordrax$cotwelm$Stats$Model, hp, hp, sp, sp));
+	});
+var _mordrax$cotwelm$Stats$Dead = {ctor: 'Dead'};
+var _mordrax$cotwelm$Stats$Ok = {ctor: 'Ok'};
+var _mordrax$cotwelm$Stats$takeHit = F2(
+	function (damage, _p0) {
+		var _p1 = _p0;
+		var _p3 = _p1._0;
+		var hp$ = _p3.currentHP - damage;
+		var msg = (_elm_lang$core$Native_Utils.cmp(hp$, 0) > 0) ? _mordrax$cotwelm$Stats$Ok : _mordrax$cotwelm$Stats$Dead;
+		var _p2 = A2(
+			_elm_lang$core$Debug$log,
+			'hp:',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(hp$),
+				_elm_lang$core$Basics$toString(msg)));
+		return {
+			ctor: '_Tuple2',
+			_0: _mordrax$cotwelm$Stats$A(
+				_elm_lang$core$Native_Utils.update(
+					_p3,
+					{currentHP: hp$})),
+			_1: msg
+		};
+	});
+
+var _mordrax$cotwelm$Hero$Hero = F3(
+	function (a, b, c) {
+		return {base: a, position: b, stats: c};
+	});
+var _mordrax$cotwelm$Hero$Model = function (a) {
+	return {name: a};
+};
+var _mordrax$cotwelm$Hero$A = function (a) {
+	return {ctor: 'A', _0: a};
+};
+var _mordrax$cotwelm$Hero$init = {
+	base: _mordrax$cotwelm$Hero$A(
+		_mordrax$cotwelm$Hero$Model('Bob the Brave')),
+	position: A2(_mordrax$cotwelm$Utils_Vector$new, 11, 17),
+	stats: A2(_mordrax$cotwelm$Stats$new, 20, 10)
 };
 
 var _mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle = function (v) {
@@ -10425,32 +10694,34 @@ var _mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle = function (v) {
 			]));
 };
 
-var _mordrax$cotwelm$Game_Maps$toTile = F3(
-	function (y, x, asciiTile) {
-		var _p0 = _mordrax$cotwelm$GameData_Tile$asciiTileData(asciiTile);
-		var tileType = _p0._0;
-		var solid = _p0._1;
-		var pos = {x: x, y: y};
-		return {pos: pos, tile: tileType, solid: solid, building: _elm_lang$core$Maybe$Nothing};
-	});
-var _mordrax$cotwelm$Game_Maps$toTiles = F2(
-	function (y, asciiTiles) {
-		return A2(
-			_elm_lang$core$List$indexedMap,
-			_mordrax$cotwelm$Game_Maps$toTile(y),
-			asciiTiles);
-	});
-var _mordrax$cotwelm$Game_Maps$mapOneRowToTiles = F2(
-	function (y, asciiRow) {
-		var asciiChars = _elm_lang$core$String$toList(asciiRow);
-		return A2(_mordrax$cotwelm$Game_Maps$toTiles, y, asciiChars);
-	});
-var _mordrax$cotwelm$Game_Maps$mapToTiles = function (asciiMap) {
-	var tiles = A2(_elm_lang$core$List$indexedMap, _mordrax$cotwelm$Game_Maps$mapOneRowToTiles, asciiMap);
-	return _elm_lang$core$List$concat(tiles);
+var _mordrax$cotwelm$GameData_Types$DungeonLevel = function (a) {
+	return {ctor: 'DungeonLevel', _0: a};
 };
-var _mordrax$cotwelm$Game_Maps$buildingToHtml = function (building) {
-	var posStyle = _mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(building.pos);
+var _mordrax$cotwelm$GameData_Types$DungeonLevelOne = {ctor: 'DungeonLevelOne'};
+var _mordrax$cotwelm$GameData_Types$Farm = {ctor: 'Farm'};
+var _mordrax$cotwelm$GameData_Types$Village = {ctor: 'Village'};
+
+var _mordrax$cotwelm$GameData_Building$buildingType = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0.buildingType;
+};
+var _mordrax$cotwelm$GameData_Building$isBuildingAtPosition = F2(
+	function (pos, _p2) {
+		var _p3 = _p2;
+		var _p4 = _p3._0;
+		var bottomLeft = A2(
+			_mordrax$cotwelm$Utils_Vector$sub,
+			A2(_mordrax$cotwelm$Utils_Vector$add, _p4.pos, _p4.size),
+			A2(_mordrax$cotwelm$Utils_Vector$new, 1, 1));
+		return A2(
+			_mordrax$cotwelm$Utils_Vector$boxIntersect,
+			pos,
+			{ctor: '_Tuple2', _0: _p4.pos, _1: bottomLeft});
+	});
+var _mordrax$cotwelm$GameData_Building$view = function (_p5) {
+	var _p6 = _p5;
+	var _p7 = _p6._0;
+	var posStyle = _mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(_p7.pos);
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -10459,265 +10730,99 @@ var _mordrax$cotwelm$Game_Maps$buildingToHtml = function (building) {
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					'tile ',
-					_elm_lang$core$Basics$toString(building.tile))),
+					_elm_lang$core$Basics$toString(_p7.tile))),
 				posStyle
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[]));
 };
-var _mordrax$cotwelm$Game_Maps$tileToHtml = function (tile) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class(
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					'tile ',
-					_elm_lang$core$Basics$toString(tile.tile))),
-				_mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(tile.pos)
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[]));
+var _mordrax$cotwelm$GameData_Building$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {tile: a, entry: b, pos: c, name: d, size: e, buildingType: f};
+	});
+var _mordrax$cotwelm$GameData_Building$Link = F2(
+	function (a, b) {
+		return {area: a, pos: b};
+	});
+var _mordrax$cotwelm$GameData_Building$BM = function (a) {
+	return {ctor: 'BM', _0: a};
 };
-var _mordrax$cotwelm$Game_Maps$dungeonLevelOneBuildings = function () {
-	var mineEntrance = {
-		area: _mordrax$cotwelm$GameData_Types$Farm,
-		pos: A2(_mordrax$cotwelm$Utils_Vector$new, 24, 2)
-	};
-	return _elm_lang$core$Native_List.fromArray(
-		[
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$MineEntrance,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 22, 40),
-			'Mine Exit',
-			_mordrax$cotwelm$GameData_Building$LinkType(mineEntrance))
-		]);
-}();
-var _mordrax$cotwelm$Game_Maps$farmBuildings = function () {
-	var mineExit = {
-		area: _mordrax$cotwelm$GameData_Types$DungeonLevelOne,
-		pos: A2(_mordrax$cotwelm$Utils_Vector$new, 22, 39)
-	};
-	var villageGate = {
-		area: _mordrax$cotwelm$GameData_Types$Village,
-		pos: A2(_mordrax$cotwelm$Utils_Vector$new, 11, 1)
-	};
-	return _elm_lang$core$Native_List.fromArray(
-		[
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$Gate_NS,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 10, 32),
-			'Farm Gate',
-			_mordrax$cotwelm$GameData_Building$LinkType(villageGate)),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 43, 23),
-			'Adopted Parents House',
-			_mordrax$cotwelm$GameData_Building$Ordinary),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$MineEntrance,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 24, 1),
-			'Mine Entrance',
-			_mordrax$cotwelm$GameData_Building$LinkType(mineExit))
-		]);
-}();
-var _mordrax$cotwelm$Game_Maps$villageBuildings = function () {
-	var farmGate = {
-		area: _mordrax$cotwelm$GameData_Types$Farm,
-		pos: A2(_mordrax$cotwelm$Utils_Vector$new, 11, 31)
-	};
-	return _elm_lang$core$Native_List.fromArray(
-		[
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$Gate_NS,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 10, 0),
-			'Village Gate',
-			_mordrax$cotwelm$GameData_Building$LinkType(farmGate)),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$StrawHouse_EF,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 3, 6),
-			'Junk Shop',
-			_mordrax$cotwelm$GameData_Building$Ordinary),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 16, 5),
-			'Private House',
-			_mordrax$cotwelm$GameData_Building$Ordinary),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$Hut_EF,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 7, 13),
-			'Potion Store',
-			_mordrax$cotwelm$GameData_Building$ShopType(_mordrax$cotwelm$GameData_Building$PotionStore)),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 14, 12),
-			'Private House 2',
-			_mordrax$cotwelm$GameData_Building$Ordinary),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$StrawHouse_EF,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 6, 17),
-			'Weapon Shop',
-			_mordrax$cotwelm$GameData_Building$ShopType(_mordrax$cotwelm$GameData_Building$WeaponSmith)),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 14, 17),
-			'General Store',
-			_mordrax$cotwelm$GameData_Building$ShopType(_mordrax$cotwelm$GameData_Building$GeneralStore)),
-			A4(
-			_mordrax$cotwelm$GameData_Building$new,
-			_mordrax$cotwelm$GameData_Building$HutTemple_NF,
-			A2(_mordrax$cotwelm$Utils_Vector$new, 9, 22),
-			'Odin\'s Temple',
-			_mordrax$cotwelm$GameData_Building$Ordinary)
-		]);
-}();
-var _mordrax$cotwelm$Game_Maps$getASCIIMap = function (area) {
-	var _p1 = area;
-	switch (_p1.ctor) {
-		case 'Village':
-			return _mordrax$cotwelm$GameData_ASCIIMaps$villageMap;
-		case 'Farm':
-			return _mordrax$cotwelm$GameData_ASCIIMaps$farmMap;
-		case 'DungeonLevelOne':
-			return _mordrax$cotwelm$GameData_ASCIIMaps$dungeonLevelOneMap;
-		default:
-			return _elm_lang$core$Native_List.fromArray(
-				[]);
-	}
-};
-var _mordrax$cotwelm$Game_Maps$getBuildings = F2(
-	function (area, model) {
-		var maybeBuildings = A2(
-			_elm_lang$core$Dict$get,
-			_elm_lang$core$Basics$toString(area),
-			model.buildings);
-		var _p2 = maybeBuildings;
-		if (_p2.ctor === 'Just') {
-			return _p2._0;
-		} else {
-			return _elm_lang$core$Native_List.fromArray(
-				[]);
+var _mordrax$cotwelm$GameData_Building$new = F4(
+	function (buildingTile, pos, name, buildingType) {
+		var newBuilding = F2(
+			function (entry, size) {
+				return _mordrax$cotwelm$GameData_Building$BM(
+					A6(_mordrax$cotwelm$GameData_Building$Model, buildingTile, entry, pos, name, size, buildingType));
+			});
+		var _p8 = buildingTile;
+		switch (_p8.ctor) {
+			case 'Gate_NS':
+				return A2(
+					newBuilding,
+					A2(_mordrax$cotwelm$Utils_Vector$new, 1, 0),
+					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 1));
+			case 'Hut_EF':
+				return A2(
+					newBuilding,
+					A2(_mordrax$cotwelm$Utils_Vector$new, 2, 1),
+					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3));
+			case 'StrawHouse_EF':
+				return A2(
+					newBuilding,
+					A2(_mordrax$cotwelm$Utils_Vector$new, 2, 1),
+					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3));
+			case 'StrawHouse_WF':
+				return A2(
+					newBuilding,
+					A2(_mordrax$cotwelm$Utils_Vector$new, 0, 1),
+					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3));
+			case 'BurntStrawHouse_WF':
+				return A2(
+					newBuilding,
+					A2(_mordrax$cotwelm$Utils_Vector$new, 0, 1),
+					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3));
+			case 'HutTemple_NF':
+				return A2(
+					newBuilding,
+					A2(_mordrax$cotwelm$Utils_Vector$new, 2, 0),
+					A2(_mordrax$cotwelm$Utils_Vector$new, 5, 6));
+			default:
+				return A2(
+					newBuilding,
+					A2(_mordrax$cotwelm$Utils_Vector$new, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Vector$new, 1, 1));
 		}
 	});
-var _mordrax$cotwelm$Game_Maps$getMap = F2(
-	function (area, model) {
-		var maybeMap = A2(
-			_elm_lang$core$Dict$get,
-			_elm_lang$core$Basics$toString(area),
-			model.maps);
-		var _p3 = maybeMap;
-		if (_p3.ctor === 'Just') {
-			return _p3._0;
-		} else {
-			return _elm_lang$core$Dict$empty;
-		}
-	});
-var _mordrax$cotwelm$Game_Maps$mapToHtml = F2(
-	function (area, model) {
-		var buildingsHtml = A2(
-			_elm_lang$core$List$map,
-			_mordrax$cotwelm$Game_Maps$buildingToHtml,
-			A2(_mordrax$cotwelm$Game_Maps$getBuildings, area, model));
-		var listOfTiles = A2(
-			_elm_lang$core$List$map,
-			_elm_lang$core$Basics$snd,
-			_elm_lang$core$Dict$toList(
-				A2(_mordrax$cotwelm$Game_Maps$getMap, area, model)));
-		var tilesHtml = A2(_elm_lang$core$List$map, _mordrax$cotwelm$Game_Maps$tileToHtml, listOfTiles);
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[]),
-			A2(_elm_lang$core$Basics_ops['++'], tilesHtml, buildingsHtml));
-	});
-var _mordrax$cotwelm$Game_Maps$view = function (model) {
-	return A2(_mordrax$cotwelm$Game_Maps$mapToHtml, model.currentArea, model);
+var _mordrax$cotwelm$GameData_Building$JunkShop = {ctor: 'JunkShop'};
+var _mordrax$cotwelm$GameData_Building$PotionStore = {ctor: 'PotionStore'};
+var _mordrax$cotwelm$GameData_Building$GeneralStore = {ctor: 'GeneralStore'};
+var _mordrax$cotwelm$GameData_Building$WeaponSmith = {ctor: 'WeaponSmith'};
+var _mordrax$cotwelm$GameData_Building$Ordinary = {ctor: 'Ordinary'};
+var _mordrax$cotwelm$GameData_Building$ShopType = function (a) {
+	return {ctor: 'ShopType', _0: a};
 };
-var _mordrax$cotwelm$Game_Maps$updateArea = F2(
-	function (area, model) {
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{currentArea: area});
+var _mordrax$cotwelm$GameData_Building$LinkType = function (a) {
+	return {ctor: 'LinkType', _0: a};
+};
+var _mordrax$cotwelm$GameData_Building$newLink = F2(
+	function (area, pos) {
+		return _mordrax$cotwelm$GameData_Building$LinkType(
+			A2(_mordrax$cotwelm$GameData_Building$Link, area, pos));
 	});
-var _mordrax$cotwelm$Game_Maps$initMaps = function () {
-	var toKVPair = function (tile) {
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Basics$toString(tile.pos),
-			_1: tile
-		};
-	};
-	var getTiles = function (area) {
-		return _mordrax$cotwelm$Game_Maps$mapToTiles(
-			_mordrax$cotwelm$Game_Maps$getASCIIMap(area));
-	};
-	var tilesToTuples = function (area) {
-		return A2(
-			_elm_lang$core$List$map,
-			toKVPair,
-			getTiles(area));
-	};
-	return {
-		currentArea: _mordrax$cotwelm$GameData_Types$Village,
-		maps: _elm_lang$core$Dict$fromList(
-			_elm_lang$core$Native_List.fromArray(
-				[
-					{
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$Village),
-					_1: _elm_lang$core$Dict$fromList(
-						tilesToTuples(_mordrax$cotwelm$GameData_Types$Village))
-				},
-					{
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$Farm),
-					_1: _elm_lang$core$Dict$fromList(
-						tilesToTuples(_mordrax$cotwelm$GameData_Types$Farm))
-				},
-					{
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$DungeonLevelOne),
-					_1: _elm_lang$core$Dict$fromList(
-						tilesToTuples(_mordrax$cotwelm$GameData_Types$DungeonLevelOne))
-				}
-				])),
-		buildings: _elm_lang$core$Dict$fromList(
-			_elm_lang$core$Native_List.fromArray(
-				[
-					{
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$Village),
-					_1: _mordrax$cotwelm$Game_Maps$villageBuildings
-				},
-					{
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$Farm),
-					_1: _mordrax$cotwelm$Game_Maps$farmBuildings
-				},
-					{
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$DungeonLevelOne),
-					_1: _mordrax$cotwelm$Game_Maps$dungeonLevelOneBuildings
-				}
-				]))
-	};
-}();
-var _mordrax$cotwelm$Game_Maps$Model = F3(
-	function (a, b, c) {
-		return {currentArea: a, maps: b, buildings: c};
-	});
+var _mordrax$cotwelm$GameData_Building$MineEntrance = {ctor: 'MineEntrance'};
+var _mordrax$cotwelm$GameData_Building$HutTemple_NF = {ctor: 'HutTemple_NF'};
+var _mordrax$cotwelm$GameData_Building$BurntStrawHouse_WF = {ctor: 'BurntStrawHouse_WF'};
+var _mordrax$cotwelm$GameData_Building$StrawHouse_WF = {ctor: 'StrawHouse_WF'};
+var _mordrax$cotwelm$GameData_Building$StrawHouse_EF = {ctor: 'StrawHouse_EF'};
+var _mordrax$cotwelm$GameData_Building$Hut_EF = {ctor: 'Hut_EF'};
+var _mordrax$cotwelm$GameData_Building$Gate_NS = {ctor: 'Gate_NS'};
+
+var _mordrax$cotwelm$GameData_ASCIIMaps$dungeonLevelOneMap = _elm_lang$core$Native_List.fromArray(
+	['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^dooo^^ood^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^doooooddooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^doddoooooooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^dod^^oooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^od^^^oooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^o^^^^dooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^o^^^^^dod^dod^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^dood^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^ooood^^^^^o^^^^^^^^^^doood^^^', '^^^^^^^^^^^^oooooo^^^^o^^^^^^^^^^ooooo^^^', '^^^^^^^^^^^^dooooo^^^^o^^^^^^^^^^ooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^^^^^^dooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^^dooooooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^dod^^^doooo^^^', '^^^^^^^^^^^^^od^^^^^^^od^^dod^^^^^^^oo^^^', '^^^^^^^^^^^^^dod^^^^^^doddod^^^^^^^ood^^^', '^^^^^^^^^^^^^^dod^^^^^^dood^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^do^^^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^od^^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^dod^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^dod^^^do^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^dod^^od^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^doddo^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^dood^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^']);
+var _mordrax$cotwelm$GameData_ASCIIMaps$farmMap = _elm_lang$core$Native_List.fromArray(
+	['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^#^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^.,,,^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^,,.,,,,,^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^,,,,,,,.,,,,,,^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^,,,,,,,,.,,,,,,,,,^^^^^^^^^^^^^^^', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,,,.,,,,,,,,,,,,,,,,,,,,,,,,', '.................................................', '.................................................', ',,,,,,,,,,,,,,,,,,,,,,,..;,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,###,,=', ',,,,,,,,,,,,,,,,;..........................###,,=', ',,,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,###,,=', ',,,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,=', ',,,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,=======', ',,,,,,,,,,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,;.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,.;,,,,,,,,,,,,,,,,,,,,,,,,,,,,,=======', '========,,,.,,,,,=======,,,,,,,,,,,,,,,,,,=======', '========,,###,,,,=======,,,,,,,,,,,,,,,,,,,,,,,,,']);
+var _mordrax$cotwelm$GameData_ASCIIMaps$villageMap = _elm_lang$core$Native_List.fromArray(
+	['========,,###,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '===,,,,,;...,,,!###=====', '===###!;.;,.,,;.###=====', '===###..;,,.,;.;###=====', '===###,,,,,...;,,,,,,===', '===,,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,!###,,,,===', '====,,,##.....###,,,,===', '====,,,##!,.,,###,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,###!...!###,======', '====,,###..e..###,======', '====,,###,...,###,======', '====,,,,,,,.,,,,,,======', '====,,,,,,,.!,,,,,======', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '========================']);
 
 var _mordrax$cotwelm$Utils_IdGenerator$equals = F2(
 	function (_p1, _p0) {
@@ -12946,6 +13051,726 @@ var _mordrax$cotwelm$Item_Item$BootsModelTag = F2(
 		return {ctor: 'BootsModelTag', _0: a, _1: b};
 	});
 
+var _mordrax$cotwelm$Monster_Monster$view = function (_p0) {
+	var _p1 = _p0;
+	var _p2 = _p1.base;
+	var model = _p2._0;
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(_p1.position),
+				_elm_lang$html$Html_Attributes$class(
+				A2(_elm_lang$core$Basics_ops['++'], 'tile monster ', model.css))
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+};
+var _mordrax$cotwelm$Monster_Monster$damageRange = function (_p3) {
+	var _p4 = _p3;
+	var _p5 = _p4.base;
+	var model = _p5._0;
+	return {ctor: '_Tuple2', _0: model.level, _1: model.level * 4};
+};
+var _mordrax$cotwelm$Monster_Monster$Monster = F3(
+	function (a, b, c) {
+		return {base: a, position: b, stats: c};
+	});
+var _mordrax$cotwelm$Monster_Monster$Model = F3(
+	function (a, b, c) {
+		return {level: a, css: b, name: c};
+	});
+var _mordrax$cotwelm$Monster_Monster$A = function (a) {
+	return {ctor: 'A', _0: a};
+};
+var _mordrax$cotwelm$Monster_Monster$new = F2(
+	function (monsterType, pos) {
+		var newSpellcaster = F5(
+			function ($class, css, name, hp, sp) {
+				return A3(
+					_mordrax$cotwelm$Monster_Monster$Monster,
+					_mordrax$cotwelm$Monster_Monster$A(
+						A3(_mordrax$cotwelm$Monster_Monster$Model, $class, css, name)),
+					pos,
+					A2(_mordrax$cotwelm$Stats$new, hp, sp));
+			});
+		var newMonster = F4(
+			function ($class, css, name, hp) {
+				return A3(
+					_mordrax$cotwelm$Monster_Monster$Monster,
+					_mordrax$cotwelm$Monster_Monster$A(
+						A3(_mordrax$cotwelm$Monster_Monster$Model, $class, css, name)),
+					pos,
+					A2(_mordrax$cotwelm$Stats$new, hp, 0));
+			});
+		var _p6 = monsterType;
+		switch (_p6.ctor) {
+			case 'GiantRat':
+				return A4(newMonster, 1, 'giantRat', 'Giant Rat', 2);
+			case 'Goblin':
+				return A4(newMonster, 1, 'goblin', 'Goblin', 1);
+			case 'GiantBat':
+				return A4(newMonster, 2, 'giantBat', 'Giant Bat', 1);
+			case 'Hobgoblin':
+				return A4(newMonster, 2, 'hobgoblin', 'Hobgoblin', 1);
+			case 'Kobold':
+				return A4(newMonster, 2, 'kobold', 'Kobold', 1);
+			case 'LargeSnake':
+				return A4(newMonster, 3, 'largeSnake', 'Large Snake', 1);
+			case 'Skeleton':
+				return A4(newMonster, 3, 'skeleton', 'Skeleton', 1);
+			case 'WildDog':
+				return A4(newMonster, 3, 'wildDog', 'Wild Dog', 1);
+			case 'Viper':
+				return A4(newMonster, 5, 'viper', 'Viper', 1);
+			case 'GoblinFighter':
+				return A4(newMonster, 6, 'goblinFighter', 'Goblin Fighter', 1);
+			case 'GiantRedAnt':
+				return A4(newMonster, 7, 'giantRedAnt', 'Giant Red Ant', 1);
+			case 'WalkingCorpse':
+				return A4(newMonster, 7, 'walkingCorpse', 'Walking Corpse', 1);
+			case 'Bandit':
+				return A4(newMonster, 10, 'bandit', 'Bandit', 1);
+			case 'GiantTrapdoorSpider':
+				return A4(newMonster, 10, 'giantTrapdoorSpider', 'Giant Trapdoor Spider', 1);
+			case 'HugeLizard':
+				return A4(newMonster, 10, 'hugeLizard', 'Huge Lizard', 1);
+			case 'RatMan':
+				return A4(newMonster, 10, 'rat', 'Rat-Man', 1);
+			case 'Slime':
+				return A4(newMonster, 10, 'slime', 'Slime', 1);
+			case 'GiantScorpion':
+				return A4(newMonster, 11, 'giantScorpion', 'Giant Scorpion', 1);
+			case 'GrayWolf':
+				return A4(newMonster, 11, 'grayWolf', 'Gray Wolf', 1);
+			case 'GelantinousGlob':
+				return A4(newMonster, 14, 'gelantinousGlob', 'Gelantinous Glob', 1);
+			case 'SmirkingSneakThief':
+				return A4(newMonster, 15, 'smirkingSneakThief', 'Smirking Sneak Thief', 1);
+			case 'CarrionCreeper':
+				return A4(newMonster, 16, 'carrionCreeper', 'Carrion Creeper', 1);
+			case 'HugeOgre':
+				return A4(newMonster, 16, 'hugeOgre', 'Huge Ogre', 1);
+			case 'Shadow':
+				return A4(newMonster, 16, 'shadow', 'Shadow', 1);
+			case 'AnimatedWoodenStatue':
+				return A4(newMonster, 17, 'animatedWoodenStatue', 'Animated Wooden Statue', 1);
+			case 'BrownBear':
+				return A4(newMonster, 17, 'brownBear', 'Brown Bear', 1);
+			case 'YoungGreenDragon':
+				return A4(newMonster, 18, 'youngGreenDragon', 'Young Green Dragon', 1);
+			case 'YoungWhiteDragon':
+				return A4(newMonster, 18, 'youngWhiteDragon', 'Young White Dragon', 1);
+			case 'Manticore':
+				return A4(newMonster, 19, 'manticore', 'Manticore', 1);
+			case 'EerieGhost':
+				return A4(newMonster, 20, 'eerieGhost', 'Eerie Ghost', 1);
+			case 'GruesomeTroll':
+				return A4(newMonster, 20, 'gruesomeTroll', 'Gruesome Troll', 1);
+			case 'YoungBlueDragon':
+				return A4(newMonster, 20, 'youngBlueDragon', 'Young Blue Dragon', 1);
+			case 'YoungRedDragon':
+				return A4(newMonster, 20, 'youngRedDragon', 'Young Red Dragon', 1);
+			case 'AnimatedBronzeStatue':
+				return A4(newMonster, 25, 'animatedBronzeStatue', 'Animated Bronze Statue', 1);
+			case 'EvilWarrior':
+				return A4(newMonster, 25, 'evilWarrior', 'Evil Warrior', 1);
+			case 'WolfMan':
+				return A4(newMonster, 25, 'wolf', 'Wolf-Man', 1);
+			case 'CaveBear':
+				return A4(newMonster, 27, 'caveBear', 'Cave Bear', 1);
+			case 'WhiteWolf':
+				return A4(newMonster, 28, 'whiteWolf', 'White Wolf', 1);
+			case 'Berserker':
+				return A4(newMonster, 30, 'berserker', 'Berserker', 1);
+			case 'AnimatedIronStatue':
+				return A4(newMonster, 35, 'animatedIronStatue', 'Animated Iron Statue', 1);
+			case 'TunnelWight':
+				return A4(newMonster, 35, 'tunnelWight', 'Tunnel Wight', 1);
+			case 'YoungAdultBlueDragon':
+				return A4(newMonster, 35, 'youngAdultBlueDragon', 'Young Adult Blue Dragon', 1);
+			case 'YoungAdultGreenDragon':
+				return A4(newMonster, 35, 'youngAdultGreenDragon', 'Young Adult Green Dragon', 1);
+			case 'YoungAdultWhiteDragon':
+				return A4(newMonster, 35, 'youngAdultWhiteDragon', 'Young Adult White Dragon', 1);
+			case 'PaleWraith':
+				return A4(newMonster, 37, 'paleWraith', 'Pale Wraith', 1);
+			case 'BarrowWight':
+				return A4(newMonster, 40, 'barrowWight', 'Barrow Wight', 1);
+			case 'BearMan':
+				return A4(newMonster, 40, 'bear', 'Bear-Man', 1);
+			case 'DustElemental':
+				return A4(newMonster, 40, 'dustElemental', 'Dust Elemental', 1);
+			case 'HillGiant':
+				return A4(newMonster, 40, 'hillGiant', 'Hill Giant', 1);
+			case 'YoungAdultRedDragon':
+				return A4(newMonster, 40, 'youngAdultRedDragon', 'Young Adult Red Dragon', 1);
+			case 'Wizard':
+				return A4(newMonster, 45, 'wizard', 'Wizard', 1);
+			case 'BullMan':
+				return A4(newMonster, 50, 'bull', 'Bull-Man', 1);
+			case 'CastleWight':
+				return A4(newMonster, 50, 'castleWight', 'Castle Wight', 1);
+			case 'DarkWraith':
+				return A4(newMonster, 50, 'darkWraith', 'Dark Wraith', 1);
+			case 'IceElemental':
+				return A4(newMonster, 50, 'iceElemental', 'Ice Elemental', 1);
+			case 'Spectre':
+				return A4(newMonster, 50, 'spectre', 'Spectre', 1);
+			case 'AnimatedMarbleStatue':
+				return A4(newMonster, 52, 'animatedMarbleStatue', 'Animated Marble Statue', 1);
+			case 'AdultBlueDragon':
+				return A4(newMonster, 55, 'adultBlueDragon', 'Adult Blue Dragon', 1);
+			case 'AdultGreenDragon':
+				return A4(newMonster, 55, 'adultGreenDragon', 'Adult Green Dragon', 1);
+			case 'AdultWhiteDragon':
+				return A4(newMonster, 55, 'adultWhiteDragon', 'Adult White Dragon', 1);
+			case 'AirElemental':
+				return A4(newMonster, 55, 'airElemental', 'Air Elemental', 1);
+			case 'MagmaElemental':
+				return A4(newMonster, 55, 'magmaElemental', 'Magma Elemental', 1);
+			case 'StoneGiant':
+				return A4(newMonster, 55, 'stoneGiant', 'Stone Giant', 1);
+			case 'TwoHeadedGiant':
+				return A4(newMonster, 55, 'twoHeadedGiant', 'Two Headed Giant', 1);
+			case 'AdultRedDragon':
+				return A4(newMonster, 60, 'adultRedDragon', 'Adult Red Dragon', 1);
+			case 'FireElemental':
+				return A4(newMonster, 60, 'fireElemental', 'Fire Elemental', 1);
+			case 'FrostGiant':
+				return A4(newMonster, 60, 'frostGiant', 'Frost Giant', 1);
+			case 'SpikedDevil':
+				return A4(newMonster, 60, 'spikedDevil', 'Spiked Devil', 1);
+			case 'WaterElemental':
+				return A4(newMonster, 60, 'waterElemental', 'Water Elemental', 1);
+			case 'EarthElemental':
+				return A4(newMonster, 65, 'earthElemental', 'Earth Elemental', 1);
+			case 'Necromancer':
+				return A4(newMonster, 65, 'necromancer', 'Necromancer', 1);
+			case 'Vampire':
+				return A4(newMonster, 65, 'vampire', 'Vampire', 1);
+			case 'AbyssWraith':
+				return A4(newMonster, 70, 'abyssWraith', 'Abyss Wraith', 1);
+			case 'Utgardhalok':
+				return A4(newMonster, 70, 'utgardhalok', 'Utgardhalok', 1);
+			case 'FireGiant':
+				return A4(newMonster, 75, 'fireGiant', 'Fire Giant', 1);
+			case 'OldBlueDragon':
+				return A4(newMonster, 75, 'oldBlueDragon', 'Old Blue Dragon', 1);
+			case 'OldGreenDragon':
+				return A4(newMonster, 75, 'oldGreenDragon', 'Old Green Dragon', 1);
+			case 'OldWhiteDragon':
+				return A4(newMonster, 75, 'oldWhiteDragon', 'Old White Dragon', 1);
+			case 'HornedDevil':
+				return A4(newMonster, 80, 'hornedDevil', 'Horned Devil', 1);
+			case 'OldRedDragon':
+				return A4(newMonster, 80, 'oldRedDragon', 'Old Red Dragon', 1);
+			case 'Rungnir':
+				return A4(newMonster, 80, 'rungnir', 'Rungnir', 1);
+			case 'IceDevil':
+				return A4(newMonster, 85, 'iceDevil', 'Ice Devil', 1);
+			case 'Thrym':
+				return A4(newMonster, 90, 'thrym', 'Thrym', 1);
+			case 'VeryOldGreenDragon':
+				return A4(newMonster, 90, 'veryOldGreenDragon', 'Very Old Green Dragon', 1);
+			case 'VeryOldWhiteDragon':
+				return A4(newMonster, 90, 'veryOldWhiteDragon', 'Very Old White Dragon', 1);
+			case 'VeryOldBlueDragon':
+				return A4(newMonster, 95, 'veryOldBlueDragon', 'Very Old Blue Dragon', 1);
+			case 'AbyssFiend':
+				return A4(newMonster, 100, 'abyssFiend', 'Abyss Fiend', 1);
+			case 'Thiassa':
+				return A4(newMonster, 100, 'thiassa', 'Thiassa', 1);
+			case 'VeryOldRedDragon':
+				return A4(newMonster, 100, 'veryOldRedDragon', 'Very Old Red Dragon', 1);
+			case 'AncientGreenDragon':
+				return A4(newMonster, 105, 'ancientGreenDragon', 'Ancient Green Dragon', 1);
+			case 'AncientWhiteDragon':
+				return A4(newMonster, 105, 'ancientWhiteDragon', 'Ancient White Dragon', 1);
+			case 'AncientBlueDragon':
+				return A4(newMonster, 110, 'ancientBlueDragon', 'Ancient Blue Dragon', 1);
+			case 'AncientRedDragon':
+				return A4(newMonster, 120, 'ancientRedDragon', 'Ancient Red Dragon', 1);
+			default:
+				return A4(newMonster, 344, 'sultur', 'Sultur', 1);
+		}
+	});
+var _mordrax$cotwelm$Monster_Monster$Sultur = {ctor: 'Sultur'};
+var _mordrax$cotwelm$Monster_Monster$AncientRedDragon = {ctor: 'AncientRedDragon'};
+var _mordrax$cotwelm$Monster_Monster$AncientBlueDragon = {ctor: 'AncientBlueDragon'};
+var _mordrax$cotwelm$Monster_Monster$AncientWhiteDragon = {ctor: 'AncientWhiteDragon'};
+var _mordrax$cotwelm$Monster_Monster$AncientGreenDragon = {ctor: 'AncientGreenDragon'};
+var _mordrax$cotwelm$Monster_Monster$VeryOldRedDragon = {ctor: 'VeryOldRedDragon'};
+var _mordrax$cotwelm$Monster_Monster$Thiassa = {ctor: 'Thiassa'};
+var _mordrax$cotwelm$Monster_Monster$AbyssFiend = {ctor: 'AbyssFiend'};
+var _mordrax$cotwelm$Monster_Monster$VeryOldBlueDragon = {ctor: 'VeryOldBlueDragon'};
+var _mordrax$cotwelm$Monster_Monster$VeryOldWhiteDragon = {ctor: 'VeryOldWhiteDragon'};
+var _mordrax$cotwelm$Monster_Monster$VeryOldGreenDragon = {ctor: 'VeryOldGreenDragon'};
+var _mordrax$cotwelm$Monster_Monster$Thrym = {ctor: 'Thrym'};
+var _mordrax$cotwelm$Monster_Monster$IceDevil = {ctor: 'IceDevil'};
+var _mordrax$cotwelm$Monster_Monster$Rungnir = {ctor: 'Rungnir'};
+var _mordrax$cotwelm$Monster_Monster$OldRedDragon = {ctor: 'OldRedDragon'};
+var _mordrax$cotwelm$Monster_Monster$HornedDevil = {ctor: 'HornedDevil'};
+var _mordrax$cotwelm$Monster_Monster$OldWhiteDragon = {ctor: 'OldWhiteDragon'};
+var _mordrax$cotwelm$Monster_Monster$OldGreenDragon = {ctor: 'OldGreenDragon'};
+var _mordrax$cotwelm$Monster_Monster$OldBlueDragon = {ctor: 'OldBlueDragon'};
+var _mordrax$cotwelm$Monster_Monster$FireGiant = {ctor: 'FireGiant'};
+var _mordrax$cotwelm$Monster_Monster$Utgardhalok = {ctor: 'Utgardhalok'};
+var _mordrax$cotwelm$Monster_Monster$AbyssWraith = {ctor: 'AbyssWraith'};
+var _mordrax$cotwelm$Monster_Monster$Vampire = {ctor: 'Vampire'};
+var _mordrax$cotwelm$Monster_Monster$Necromancer = {ctor: 'Necromancer'};
+var _mordrax$cotwelm$Monster_Monster$EarthElemental = {ctor: 'EarthElemental'};
+var _mordrax$cotwelm$Monster_Monster$WaterElemental = {ctor: 'WaterElemental'};
+var _mordrax$cotwelm$Monster_Monster$SpikedDevil = {ctor: 'SpikedDevil'};
+var _mordrax$cotwelm$Monster_Monster$FrostGiant = {ctor: 'FrostGiant'};
+var _mordrax$cotwelm$Monster_Monster$FireElemental = {ctor: 'FireElemental'};
+var _mordrax$cotwelm$Monster_Monster$AdultRedDragon = {ctor: 'AdultRedDragon'};
+var _mordrax$cotwelm$Monster_Monster$TwoHeadedGiant = {ctor: 'TwoHeadedGiant'};
+var _mordrax$cotwelm$Monster_Monster$StoneGiant = {ctor: 'StoneGiant'};
+var _mordrax$cotwelm$Monster_Monster$MagmaElemental = {ctor: 'MagmaElemental'};
+var _mordrax$cotwelm$Monster_Monster$AirElemental = {ctor: 'AirElemental'};
+var _mordrax$cotwelm$Monster_Monster$AdultWhiteDragon = {ctor: 'AdultWhiteDragon'};
+var _mordrax$cotwelm$Monster_Monster$AdultGreenDragon = {ctor: 'AdultGreenDragon'};
+var _mordrax$cotwelm$Monster_Monster$AdultBlueDragon = {ctor: 'AdultBlueDragon'};
+var _mordrax$cotwelm$Monster_Monster$AnimatedMarbleStatue = {ctor: 'AnimatedMarbleStatue'};
+var _mordrax$cotwelm$Monster_Monster$Spectre = {ctor: 'Spectre'};
+var _mordrax$cotwelm$Monster_Monster$IceElemental = {ctor: 'IceElemental'};
+var _mordrax$cotwelm$Monster_Monster$DarkWraith = {ctor: 'DarkWraith'};
+var _mordrax$cotwelm$Monster_Monster$CastleWight = {ctor: 'CastleWight'};
+var _mordrax$cotwelm$Monster_Monster$BullMan = {ctor: 'BullMan'};
+var _mordrax$cotwelm$Monster_Monster$Wizard = {ctor: 'Wizard'};
+var _mordrax$cotwelm$Monster_Monster$YoungAdultRedDragon = {ctor: 'YoungAdultRedDragon'};
+var _mordrax$cotwelm$Monster_Monster$HillGiant = {ctor: 'HillGiant'};
+var _mordrax$cotwelm$Monster_Monster$DustElemental = {ctor: 'DustElemental'};
+var _mordrax$cotwelm$Monster_Monster$BearMan = {ctor: 'BearMan'};
+var _mordrax$cotwelm$Monster_Monster$BarrowWight = {ctor: 'BarrowWight'};
+var _mordrax$cotwelm$Monster_Monster$PaleWraith = {ctor: 'PaleWraith'};
+var _mordrax$cotwelm$Monster_Monster$YoungAdultWhiteDragon = {ctor: 'YoungAdultWhiteDragon'};
+var _mordrax$cotwelm$Monster_Monster$YoungAdultGreenDragon = {ctor: 'YoungAdultGreenDragon'};
+var _mordrax$cotwelm$Monster_Monster$YoungAdultBlueDragon = {ctor: 'YoungAdultBlueDragon'};
+var _mordrax$cotwelm$Monster_Monster$TunnelWight = {ctor: 'TunnelWight'};
+var _mordrax$cotwelm$Monster_Monster$AnimatedIronStatue = {ctor: 'AnimatedIronStatue'};
+var _mordrax$cotwelm$Monster_Monster$Berserker = {ctor: 'Berserker'};
+var _mordrax$cotwelm$Monster_Monster$WhiteWolf = {ctor: 'WhiteWolf'};
+var _mordrax$cotwelm$Monster_Monster$CaveBear = {ctor: 'CaveBear'};
+var _mordrax$cotwelm$Monster_Monster$WolfMan = {ctor: 'WolfMan'};
+var _mordrax$cotwelm$Monster_Monster$EvilWarrior = {ctor: 'EvilWarrior'};
+var _mordrax$cotwelm$Monster_Monster$AnimatedBronzeStatue = {ctor: 'AnimatedBronzeStatue'};
+var _mordrax$cotwelm$Monster_Monster$YoungRedDragon = {ctor: 'YoungRedDragon'};
+var _mordrax$cotwelm$Monster_Monster$YoungBlueDragon = {ctor: 'YoungBlueDragon'};
+var _mordrax$cotwelm$Monster_Monster$GruesomeTroll = {ctor: 'GruesomeTroll'};
+var _mordrax$cotwelm$Monster_Monster$EerieGhost = {ctor: 'EerieGhost'};
+var _mordrax$cotwelm$Monster_Monster$Manticore = {ctor: 'Manticore'};
+var _mordrax$cotwelm$Monster_Monster$YoungWhiteDragon = {ctor: 'YoungWhiteDragon'};
+var _mordrax$cotwelm$Monster_Monster$YoungGreenDragon = {ctor: 'YoungGreenDragon'};
+var _mordrax$cotwelm$Monster_Monster$BrownBear = {ctor: 'BrownBear'};
+var _mordrax$cotwelm$Monster_Monster$AnimatedWoodenStatue = {ctor: 'AnimatedWoodenStatue'};
+var _mordrax$cotwelm$Monster_Monster$Shadow = {ctor: 'Shadow'};
+var _mordrax$cotwelm$Monster_Monster$HugeOgre = {ctor: 'HugeOgre'};
+var _mordrax$cotwelm$Monster_Monster$CarrionCreeper = {ctor: 'CarrionCreeper'};
+var _mordrax$cotwelm$Monster_Monster$SmirkingSneakThief = {ctor: 'SmirkingSneakThief'};
+var _mordrax$cotwelm$Monster_Monster$GelantinousGlob = {ctor: 'GelantinousGlob'};
+var _mordrax$cotwelm$Monster_Monster$GrayWolf = {ctor: 'GrayWolf'};
+var _mordrax$cotwelm$Monster_Monster$GiantScorpion = {ctor: 'GiantScorpion'};
+var _mordrax$cotwelm$Monster_Monster$Slime = {ctor: 'Slime'};
+var _mordrax$cotwelm$Monster_Monster$RatMan = {ctor: 'RatMan'};
+var _mordrax$cotwelm$Monster_Monster$HugeLizard = {ctor: 'HugeLizard'};
+var _mordrax$cotwelm$Monster_Monster$GiantTrapdoorSpider = {ctor: 'GiantTrapdoorSpider'};
+var _mordrax$cotwelm$Monster_Monster$Bandit = {ctor: 'Bandit'};
+var _mordrax$cotwelm$Monster_Monster$WalkingCorpse = {ctor: 'WalkingCorpse'};
+var _mordrax$cotwelm$Monster_Monster$GiantRedAnt = {ctor: 'GiantRedAnt'};
+var _mordrax$cotwelm$Monster_Monster$GoblinFighter = {ctor: 'GoblinFighter'};
+var _mordrax$cotwelm$Monster_Monster$Viper = {ctor: 'Viper'};
+var _mordrax$cotwelm$Monster_Monster$WildDog = {ctor: 'WildDog'};
+var _mordrax$cotwelm$Monster_Monster$Skeleton = {ctor: 'Skeleton'};
+var _mordrax$cotwelm$Monster_Monster$LargeSnake = {ctor: 'LargeSnake'};
+var _mordrax$cotwelm$Monster_Monster$Kobold = {ctor: 'Kobold'};
+var _mordrax$cotwelm$Monster_Monster$Hobgoblin = {ctor: 'Hobgoblin'};
+var _mordrax$cotwelm$Monster_Monster$GiantBat = {ctor: 'GiantBat'};
+var _mordrax$cotwelm$Monster_Monster$Goblin = {ctor: 'Goblin'};
+var _mordrax$cotwelm$Monster_Monster$GiantRat = {ctor: 'GiantRat'};
+
+var _mordrax$cotwelm$Tile$tileToHtml = function (_p0) {
+	var _p1 = _p0;
+	var _p2 = _p1.base;
+	var model = _p2._0;
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'tile ',
+					_elm_lang$core$Basics$toString(model.tile))),
+				_mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(_p1.position)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+};
+var _mordrax$cotwelm$Tile$isSolid = function (_p3) {
+	var _p4 = _p3;
+	var _p5 = _p4.base;
+	var solid = _p5._0.solid;
+	return solid;
+};
+var _mordrax$cotwelm$Tile$Model = F4(
+	function (a, b, c, d) {
+		return {tile: a, solid: b, items: c, occupant: d};
+	});
+var _mordrax$cotwelm$Tile$Tile = F2(
+	function (a, b) {
+		return {base: a, position: b};
+	});
+var _mordrax$cotwelm$Tile$Empty = {ctor: 'Empty'};
+var _mordrax$cotwelm$Tile$M = function (a) {
+	return {ctor: 'M', _0: a};
+};
+var _mordrax$cotwelm$Tile$H = function (a) {
+	return {ctor: 'H', _0: a};
+};
+var _mordrax$cotwelm$Tile$B = function (a) {
+	return {ctor: 'B', _0: a};
+};
+var _mordrax$cotwelm$Tile$Base = function (a) {
+	return {ctor: 'Base', _0: a};
+};
+var _mordrax$cotwelm$Tile$TreasurePile = {ctor: 'TreasurePile'};
+var _mordrax$cotwelm$Tile$Well = {ctor: 'Well'};
+var _mordrax$cotwelm$Tile$Crop = {ctor: 'Crop'};
+var _mordrax$cotwelm$Tile$White90Cave10 = {ctor: 'White90Cave10'};
+var _mordrax$cotwelm$Tile$White50Cave50 = {ctor: 'White50Cave50'};
+var _mordrax$cotwelm$Tile$Grass10Cave90 = {ctor: 'Grass10Cave90'};
+var _mordrax$cotwelm$Tile$Grass50Cave50 = {ctor: 'Grass50Cave50'};
+var _mordrax$cotwelm$Tile$WallLitDgn = {ctor: 'WallLitDgn'};
+var _mordrax$cotwelm$Tile$WaterPath = {ctor: 'WaterPath'};
+var _mordrax$cotwelm$Tile$WaterGrass = {ctor: 'WaterGrass'};
+var _mordrax$cotwelm$Tile$WallDarkDgn = {ctor: 'WallDarkDgn'};
+var _mordrax$cotwelm$Tile$PathGrass = {ctor: 'PathGrass'};
+var _mordrax$cotwelm$Tile$PathRock = {ctor: 'PathRock'};
+var _mordrax$cotwelm$Tile$LitDgn = {ctor: 'LitDgn'};
+var _mordrax$cotwelm$Tile$Path = {ctor: 'Path'};
+var _mordrax$cotwelm$Tile$Water = {ctor: 'Water'};
+var _mordrax$cotwelm$Tile$DarkDgn = {ctor: 'DarkDgn'};
+var _mordrax$cotwelm$Tile$Grass = {ctor: 'Grass'};
+var _mordrax$cotwelm$Tile$Rock = {ctor: 'Rock'};
+var _mordrax$cotwelm$Tile$asciiTileData = function ($char) {
+	var _p6 = $char;
+	switch (_p6.valueOf()) {
+		case '^':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Rock, _1: true};
+		case ',':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Grass, _1: false};
+		case 'o':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$DarkDgn, _1: false};
+		case '~':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Water, _1: false};
+		case '.':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Path, _1: false};
+		case 'O':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$LitDgn, _1: false};
+		case '_':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$PathRock, _1: false};
+		case ';':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$PathGrass, _1: false};
+		case 'd':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$WallDarkDgn, _1: false};
+		case 'w':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$WaterGrass, _1: false};
+		case 'W':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$WaterPath, _1: false};
+		case 'D':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$WallLitDgn, _1: false};
+		case 'g':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Grass50Cave50, _1: false};
+		case 'G':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Grass10Cave90, _1: true};
+		case 'c':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$White50Cave50, _1: true};
+		case 'C':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$White90Cave10, _1: false};
+		case '=':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Crop, _1: true};
+		case 'e':
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Well, _1: true};
+		default:
+			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Grass, _1: false};
+	}
+};
+var _mordrax$cotwelm$Tile$toTile = F3(
+	function (y, x, asciiTile) {
+		var _p7 = _mordrax$cotwelm$Tile$asciiTileData(asciiTile);
+		var tileType = _p7._0;
+		var solid = _p7._1;
+		var pos = {x: x, y: y};
+		return A2(
+			_mordrax$cotwelm$Tile$Tile,
+			_mordrax$cotwelm$Tile$Base(
+				A4(
+					_mordrax$cotwelm$Tile$Model,
+					tileType,
+					solid,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_mordrax$cotwelm$Tile$Empty)),
+			pos);
+	});
+var _mordrax$cotwelm$Tile$toTiles = F2(
+	function (y, asciiTiles) {
+		return A2(
+			_elm_lang$core$List$indexedMap,
+			_mordrax$cotwelm$Tile$toTile(y),
+			asciiTiles);
+	});
+var _mordrax$cotwelm$Tile$mapOneRowToTiles = F2(
+	function (y, asciiRow) {
+		var asciiChars = _elm_lang$core$String$toList(asciiRow);
+		return A2(_mordrax$cotwelm$Tile$toTiles, y, asciiChars);
+	});
+var _mordrax$cotwelm$Tile$mapToTiles = function (asciiMap) {
+	var tiles = A2(_elm_lang$core$List$indexedMap, _mordrax$cotwelm$Tile$mapOneRowToTiles, asciiMap);
+	return _elm_lang$core$List$concat(tiles);
+};
+
+var _mordrax$cotwelm$Game_Maps$dungeonLevelOneBuildings = function () {
+	var mineEntrance = A2(
+		_mordrax$cotwelm$GameData_Building$newLink,
+		_mordrax$cotwelm$GameData_Types$Farm,
+		A2(_mordrax$cotwelm$Utils_Vector$new, 24, 2));
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$MineEntrance,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 22, 40),
+			'Mine Exit',
+			mineEntrance)
+		]);
+}();
+var _mordrax$cotwelm$Game_Maps$farmBuildings = function () {
+	var mineExit = A2(
+		_mordrax$cotwelm$GameData_Building$newLink,
+		_mordrax$cotwelm$GameData_Types$DungeonLevelOne,
+		A2(_mordrax$cotwelm$Utils_Vector$new, 22, 39));
+	var villageGate = A2(
+		_mordrax$cotwelm$GameData_Building$newLink,
+		_mordrax$cotwelm$GameData_Types$Village,
+		A2(_mordrax$cotwelm$Utils_Vector$new, 11, 1));
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$Gate_NS,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 10, 32),
+			'Farm Gate',
+			villageGate),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 43, 23),
+			'Adopted Parents House',
+			_mordrax$cotwelm$GameData_Building$Ordinary),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$MineEntrance,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 24, 1),
+			'Mine Entrance',
+			mineExit)
+		]);
+}();
+var _mordrax$cotwelm$Game_Maps$villageBuildings = function () {
+	var farmGate = A2(
+		_mordrax$cotwelm$GameData_Building$newLink,
+		_mordrax$cotwelm$GameData_Types$Farm,
+		A2(_mordrax$cotwelm$Utils_Vector$new, 11, 31));
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$Gate_NS,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 10, 0),
+			'Village Gate',
+			farmGate),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$StrawHouse_EF,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 3, 6),
+			'Junk Shop',
+			_mordrax$cotwelm$GameData_Building$Ordinary),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 16, 5),
+			'Private House',
+			_mordrax$cotwelm$GameData_Building$Ordinary),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$Hut_EF,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 7, 13),
+			'Potion Store',
+			_mordrax$cotwelm$GameData_Building$ShopType(_mordrax$cotwelm$GameData_Building$PotionStore)),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 14, 12),
+			'Private House 2',
+			_mordrax$cotwelm$GameData_Building$Ordinary),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$StrawHouse_EF,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 6, 17),
+			'Weapon Shop',
+			_mordrax$cotwelm$GameData_Building$ShopType(_mordrax$cotwelm$GameData_Building$WeaponSmith)),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$StrawHouse_WF,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 14, 17),
+			'General Store',
+			_mordrax$cotwelm$GameData_Building$ShopType(_mordrax$cotwelm$GameData_Building$GeneralStore)),
+			A4(
+			_mordrax$cotwelm$GameData_Building$new,
+			_mordrax$cotwelm$GameData_Building$HutTemple_NF,
+			A2(_mordrax$cotwelm$Utils_Vector$new, 9, 22),
+			'Odin\'s Temple',
+			_mordrax$cotwelm$GameData_Building$Ordinary)
+		]);
+}();
+var _mordrax$cotwelm$Game_Maps$getASCIIMap = function (area) {
+	var _p0 = area;
+	switch (_p0.ctor) {
+		case 'Village':
+			return _mordrax$cotwelm$GameData_ASCIIMaps$villageMap;
+		case 'Farm':
+			return _mordrax$cotwelm$GameData_ASCIIMaps$farmMap;
+		case 'DungeonLevelOne':
+			return _mordrax$cotwelm$GameData_ASCIIMaps$dungeonLevelOneMap;
+		default:
+			return _elm_lang$core$Native_List.fromArray(
+				[]);
+	}
+};
+var _mordrax$cotwelm$Game_Maps$getBuildings = F2(
+	function (area, model) {
+		var maybeBuildings = A2(
+			_elm_lang$core$Dict$get,
+			_elm_lang$core$Basics$toString(area),
+			model.buildings);
+		var _p1 = maybeBuildings;
+		if (_p1.ctor === 'Just') {
+			return _p1._0;
+		} else {
+			return _elm_lang$core$Native_List.fromArray(
+				[]);
+		}
+	});
+var _mordrax$cotwelm$Game_Maps$getMap = F2(
+	function (area, model) {
+		var maybeMap = A2(
+			_elm_lang$core$Dict$get,
+			_elm_lang$core$Basics$toString(area),
+			model.maps);
+		var _p2 = maybeMap;
+		if (_p2.ctor === 'Just') {
+			return _p2._0;
+		} else {
+			return _elm_lang$core$Dict$empty;
+		}
+	});
+var _mordrax$cotwelm$Game_Maps$mapToHtml = F2(
+	function (area, model) {
+		var buildingsHtml = A2(
+			_elm_lang$core$List$map,
+			_mordrax$cotwelm$GameData_Building$view,
+			A2(_mordrax$cotwelm$Game_Maps$getBuildings, area, model));
+		var listOfTiles = A2(
+			_elm_lang$core$List$map,
+			_elm_lang$core$Basics$snd,
+			_elm_lang$core$Dict$toList(
+				A2(_mordrax$cotwelm$Game_Maps$getMap, area, model)));
+		var tilesHtml = A2(_elm_lang$core$List$map, _mordrax$cotwelm$Tile$tileToHtml, listOfTiles);
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			A2(_elm_lang$core$Basics_ops['++'], tilesHtml, buildingsHtml));
+	});
+var _mordrax$cotwelm$Game_Maps$view = function (model) {
+	return A2(_mordrax$cotwelm$Game_Maps$mapToHtml, model.currentArea, model);
+};
+var _mordrax$cotwelm$Game_Maps$updateArea = F2(
+	function (area, model) {
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{currentArea: area});
+	});
+var _mordrax$cotwelm$Game_Maps$initMaps = function () {
+	var toKVPair = function (tile) {
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$toString(tile.position),
+			_1: tile
+		};
+	};
+	var getTiles = function (area) {
+		return _mordrax$cotwelm$Tile$mapToTiles(
+			_mordrax$cotwelm$Game_Maps$getASCIIMap(area));
+	};
+	var tilesToTuples = function (area) {
+		return A2(
+			_elm_lang$core$List$map,
+			toKVPair,
+			getTiles(area));
+	};
+	return {
+		currentArea: _mordrax$cotwelm$GameData_Types$Village,
+		maps: _elm_lang$core$Dict$fromList(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$Village),
+					_1: _elm_lang$core$Dict$fromList(
+						tilesToTuples(_mordrax$cotwelm$GameData_Types$Village))
+				},
+					{
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$Farm),
+					_1: _elm_lang$core$Dict$fromList(
+						tilesToTuples(_mordrax$cotwelm$GameData_Types$Farm))
+				},
+					{
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$DungeonLevelOne),
+					_1: _elm_lang$core$Dict$fromList(
+						tilesToTuples(_mordrax$cotwelm$GameData_Types$DungeonLevelOne))
+				}
+				])),
+		buildings: _elm_lang$core$Dict$fromList(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$Village),
+					_1: _mordrax$cotwelm$Game_Maps$villageBuildings
+				},
+					{
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$Farm),
+					_1: _mordrax$cotwelm$Game_Maps$farmBuildings
+				},
+					{
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$DungeonLevelOne),
+					_1: _mordrax$cotwelm$Game_Maps$dungeonLevelOneBuildings
+				}
+				]))
+	};
+}();
+var _mordrax$cotwelm$Game_Maps$Model = F3(
+	function (a, b, c) {
+		return {currentArea: a, maps: b, buildings: c};
+	});
+
 var _mordrax$cotwelm$Equipment$setSlot = F2(
 	function (_p0, model) {
 		var _p1 = _p0;
@@ -13588,7 +14413,7 @@ var _mordrax$cotwelm$Equipment$init = function (idGenerator) {
 	}();
 	var _p52 = A2(_mordrax$cotwelm$Equipment$putInPack, ths, equipment$);
 	var equipmentWithTHS = _p52._0;
-	return {ctor: '_Tuple2', _0: idGenerator$, _1: equipmentWithTHS};
+	return {ctor: '_Tuple2', _0: idGenerator$$, _1: equipmentWithTHS};
 };
 
 var _mordrax$cotwelm$Shop_Shop$shield = _elm_lang$core$Native_List.fromArray(
@@ -14241,9 +15066,9 @@ var _mordrax$cotwelm$Utils_DragDrop$draggable = F3(
 				[draggableHtml]));
 	});
 
-var _mordrax$cotwelm$Game_Data$Model = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {name: a, hero: b, map: c, currentScreen: d, dnd: e, equipment: f, shop: g, idGen: h};
+var _mordrax$cotwelm$Game_Data$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {name: a, hero: b, map: c, currentScreen: d, dnd: e, equipment: f, shop: g, idGen: h, monsters: i};
 	});
 var _mordrax$cotwelm$Game_Data$DragShop = F2(
 	function (a, b) {
@@ -14310,13 +15135,6 @@ var _mordrax$cotwelm$CotwData$SplashPage = {ctor: 'SplashPage'};
 var _mordrax$cotwelm$Game_Keyboard$keycodeToMsg = F2(
 	function (map, code) {
 		var maybeMsg = A2(_elm_lang$core$Dict$get, code, map);
-		var a = A2(
-			_elm_lang$core$Debug$log,
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				'keycode: ',
-				_elm_lang$core$Basics$toString(code)),
-			1);
 		var _p0 = maybeMsg;
 		if (_p0.ctor === 'Just') {
 			return _p0._0;
@@ -14395,134 +15213,258 @@ var _mordrax$cotwelm$Game_Keyboard$subscriptions = _elm_lang$core$Native_List.fr
 		_mordrax$cotwelm$Game_Keyboard$keycodeToMsg(_mordrax$cotwelm$Game_Keyboard$playerKeymap))
 	]);
 
-var _mordrax$cotwelm$Game_Collision$isBuildingAtPosition = F2(
-	function (pos, building) {
-		var bottomLeft = A2(
-			_mordrax$cotwelm$Utils_Vector$sub,
-			A2(_mordrax$cotwelm$Utils_Vector$add, building.pos, building.size),
-			A2(_mordrax$cotwelm$Utils_Vector$new, 1, 1));
+var _mordrax$cotwelm$Game_Collision$isMonsterObstruction = F2(
+	function (monster, monsters) {
 		return A2(
-			_mordrax$cotwelm$Utils_Vector$boxIntersect,
-			pos,
-			{ctor: '_Tuple2', _0: building.pos, _1: bottomLeft});
+			_elm_lang$core$List$any,
+			_mordrax$cotwelm$Utils_Vector$equal(monster.position),
+			A2(
+				_elm_lang$core$List$map,
+				function (_) {
+					return _.position;
+				},
+				monsters));
+	});
+var _mordrax$cotwelm$Game_Collision$pathMonster = F2(
+	function (monster, hero) {
+		var _p0 = A2(_mordrax$cotwelm$Utils_Vector$sub, hero.position, monster.position);
+		var x = _p0.x;
+		var y = _p0.y;
+		var moveVector = A2(
+			_mordrax$cotwelm$Utils_Vector$new,
+			(x / _elm_lang$core$Basics$abs(x)) | 0,
+			(y / _elm_lang$core$Basics$abs(y)) | 0);
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{
+				position: A2(_mordrax$cotwelm$Utils_Vector$add, monster.position, moveVector)
+			});
+	});
+var _mordrax$cotwelm$Game_Collision$defend = F2(
+	function (monster, _p1) {
+		var _p2 = _p1;
+		var _p5 = _p2.hero;
+		var _p3 = _mordrax$cotwelm$Monster_Monster$damageRange(monster);
+		var min = _p3._0;
+		var max = _p3._1;
+		var _p4 = A2(_mordrax$cotwelm$Stats$takeHit, max, _p5.stats);
+		var stats$ = _p4._0;
+		var msg = _p4._1;
+		var hero$ = _elm_lang$core$Native_Utils.update(
+			_p5,
+			{stats: stats$});
+		return _elm_lang$core$Native_Utils.update(
+			_p2,
+			{hero: hero$});
 	});
 var _mordrax$cotwelm$Game_Collision$buildingAtPosition = F2(
 	function (pos, buildings) {
 		var buildingsAtTile = A2(
 			_elm_lang$core$List$filter,
-			_mordrax$cotwelm$Game_Collision$isBuildingAtPosition(pos),
+			_mordrax$cotwelm$GameData_Building$isBuildingAtPosition(pos),
 			buildings);
-		var _p0 = buildingsAtTile;
-		if (_p0.ctor === '::') {
-			return _elm_lang$core$Maybe$Just(_p0._0);
+		var _p6 = buildingsAtTile;
+		if (_p6.ctor === '::') {
+			return _elm_lang$core$Maybe$Just(_p6._0);
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
 	});
-var _mordrax$cotwelm$Game_Collision$thingsAtPosition = F2(
-	function (pos, model) {
-		var area = model.currentArea;
-		var buildings = A2(_mordrax$cotwelm$Game_Maps$getBuildings, area, model);
-		var building = A2(_mordrax$cotwelm$Game_Collision$buildingAtPosition, pos, buildings);
-		var map = A2(_mordrax$cotwelm$Game_Maps$getMap, area, model);
-		var tile = A2(
+var _mordrax$cotwelm$Game_Collision$queryPosition = F2(
+	function (pos, _p7) {
+		var _p8 = _p7;
+		var _p10 = _p8.map;
+		var isHero = A2(_mordrax$cotwelm$Utils_Vector$equal, _p8.hero.position, pos);
+		var maybeMonster = _elm_lang$core$List$head(
+			A2(
+				_elm_lang$core$List$filter,
+				function (x) {
+					return A2(_mordrax$cotwelm$Utils_Vector$equal, pos, x.position);
+				},
+				_p8.monsters));
+		var maybeBuilding = A2(
+			_mordrax$cotwelm$Game_Collision$buildingAtPosition,
+			pos,
+			A2(_mordrax$cotwelm$Game_Maps$getBuildings, _p10.currentArea, _p10));
+		var maybeTile = A2(
 			_elm_lang$core$Dict$get,
 			_elm_lang$core$Basics$toString(pos),
-			map);
-		return {ctor: '_Tuple2', _0: tile, _1: building};
-	});
-var _mordrax$cotwelm$Game_Collision$getObstructions = F2(
-	function (pos, mapModel) {
-		var _p1 = A2(_mordrax$cotwelm$Game_Collision$thingsAtPosition, pos, mapModel);
-		var maybeTile = _p1._0;
-		var maybeBuilding = _p1._1;
+			A2(_mordrax$cotwelm$Game_Maps$getMap, _p10.currentArea, _p10));
 		var tileObstruction = function () {
-			var _p2 = maybeTile;
-			if (_p2.ctor === 'Just') {
-				return _p2._0.solid;
+			var _p9 = maybeTile;
+			if (_p9.ctor === 'Just') {
+				return _mordrax$cotwelm$Tile$isSolid(_p9._0);
 			} else {
 				return false;
 			}
 		}();
-		var buildingObstruction = function () {
-			var _p3 = maybeBuilding;
-			if (_p3.ctor === 'Just') {
-				return true;
+		return {ctor: '_Tuple4', _0: tileObstruction, _1: maybeBuilding, _2: maybeMonster, _3: isHero};
+	});
+var _mordrax$cotwelm$Game_Collision$moveMonsters = F3(
+	function (monsters, movedMonsters, _p11) {
+		moveMonsters:
+		while (true) {
+			var _p12 = _p11;
+			var _p17 = _p12;
+			var _p13 = monsters;
+			if (_p13.ctor === '[]') {
+				return _elm_lang$core$Native_Utils.update(
+					_p17,
+					{monsters: movedMonsters});
 			} else {
-				return false;
+				var _p16 = _p13._1;
+				var _p15 = _p13._0;
+				var movedMonster = A2(_mordrax$cotwelm$Game_Collision$pathMonster, _p15, _p12.hero);
+				var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedMonster.position, _p17);
+				var isObstructedByMovedMonsters = A2(_mordrax$cotwelm$Game_Collision$isMonsterObstruction, movedMonster, movedMonsters);
+				var _p14 = obstructions;
+				_v6_4:
+				do {
+					if (_p14.ctor === '_Tuple4') {
+						if (_p14._3 === true) {
+							var model$ = A2(_mordrax$cotwelm$Game_Collision$defend, _p15, _p17);
+							var _v7 = _p16,
+								_v8 = A2(_elm_lang$core$List_ops['::'], _p15, movedMonsters),
+								_v9 = model$;
+							monsters = _v7;
+							movedMonsters = _v8;
+							_p11 = _v9;
+							continue moveMonsters;
+						} else {
+							if (_p14._0 === true) {
+								var _v10 = _p16,
+									_v11 = A2(_elm_lang$core$List_ops['::'], _p15, movedMonsters),
+									_v12 = _p17;
+								monsters = _v10;
+								movedMonsters = _v11;
+								_p11 = _v12;
+								continue moveMonsters;
+							} else {
+								if (_p14._1.ctor === 'Just') {
+									var _v13 = _p16,
+										_v14 = A2(_elm_lang$core$List_ops['::'], _p15, movedMonsters),
+										_v15 = _p17;
+									monsters = _v13;
+									movedMonsters = _v14;
+									_p11 = _v15;
+									continue moveMonsters;
+								} else {
+									if (_p14._2.ctor === 'Just') {
+										var _v16 = _p16,
+											_v17 = A2(_elm_lang$core$List_ops['::'], _p15, movedMonsters),
+											_v18 = _p17;
+										monsters = _v16;
+										movedMonsters = _v17;
+										_p11 = _v18;
+										continue moveMonsters;
+									} else {
+										break _v6_4;
+									}
+								}
+							}
+						}
+					} else {
+						break _v6_4;
+					}
+				} while(false);
+				if (isObstructedByMovedMonsters) {
+					var _v19 = _p16,
+						_v20 = A2(_elm_lang$core$List_ops['::'], _p15, movedMonsters),
+						_v21 = _p17;
+					monsters = _v19;
+					movedMonsters = _v20;
+					_p11 = _v21;
+					continue moveMonsters;
+				} else {
+					var _v22 = _p16,
+						_v23 = A2(_elm_lang$core$List_ops['::'], movedMonster, movedMonsters),
+						_v24 = _p17;
+					monsters = _v22;
+					movedMonsters = _v23;
+					_p11 = _v24;
+					continue moveMonsters;
+				}
 			}
-		}();
-		return {ctor: '_Tuple2', _0: buildingObstruction || tileObstruction, _1: maybeBuilding};
+		}
 	});
 var _mordrax$cotwelm$Game_Collision$enterBuilding = F2(
-	function (building, model) {
-		var _p4 = building.buildingType;
-		switch (_p4.ctor) {
+	function (building, _p18) {
+		var _p19 = _p18;
+		var _p22 = _p19;
+		var _p20 = _mordrax$cotwelm$GameData_Building$buildingType(building);
+		switch (_p20.ctor) {
 			case 'LinkType':
-				var _p5 = _p4._0;
+				var _p21 = _p20._0;
 				return _elm_lang$core$Native_Utils.update(
-					model,
+					_p22,
 					{
-						map: A2(_mordrax$cotwelm$Game_Maps$updateArea, _p5.area, model.map),
-						hero: A2(
-							_mordrax$cotwelm$Hero$update,
-							_mordrax$cotwelm$Hero$Teleport(_p5.pos),
-							model.hero)
+						map: A2(_mordrax$cotwelm$Game_Maps$updateArea, _p21.area, _p19.map),
+						hero: _elm_lang$core$Native_Utils.update(
+							_p19.hero,
+							{position: _p21.pos})
 					});
 			case 'ShopType':
 				return _elm_lang$core$Native_Utils.update(
-					model,
+					_p22,
 					{
 						currentScreen: _mordrax$cotwelm$Game_Data$BuildingScreen(building),
-						shop: A2(_mordrax$cotwelm$Shop_Shop$setCurrentShopType, _p4._0, model.shop)
+						shop: A2(_mordrax$cotwelm$Shop_Shop$setCurrentShopType, _p20._0, _p22.shop)
 					});
 			default:
 				return _elm_lang$core$Native_Utils.update(
-					model,
+					_p22,
 					{
 						currentScreen: _mordrax$cotwelm$Game_Data$BuildingScreen(building)
 					});
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$tryMoveHero = F2(
-	function (dir, model) {
-		var movedHero = A2(
-			_mordrax$cotwelm$Hero$update,
-			_mordrax$cotwelm$Hero$Move(
-				_mordrax$cotwelm$Game_Keyboard$dirToVector(dir)),
-			model.hero);
-		var obstructions = A2(
-			_mordrax$cotwelm$Game_Collision$getObstructions,
-			_mordrax$cotwelm$Hero$pos(movedHero),
-			model.map);
-		var _p6 = obstructions;
-		_v4_0:
+	function (dir, _p23) {
+		var _p24 = _p23;
+		var _p28 = _p24;
+		var _p27 = _p24.hero;
+		var movedHero = _elm_lang$core$Native_Utils.update(
+			_p27,
+			{
+				position: A2(
+					_mordrax$cotwelm$Utils_Vector$add,
+					_p27.position,
+					_mordrax$cotwelm$Game_Keyboard$dirToVector(dir))
+			});
+		var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedHero.position, _p28);
+		var _p25 = obstructions;
+		_v28_1:
 		do {
-			if (_p6._0 === true) {
-				if (_p6._1.ctor === 'Just') {
-					break _v4_0;
+			_v28_0:
+			do {
+				if (_p25._0 === true) {
+					if (_p25._2.ctor === 'Just') {
+						break _v28_0;
+					} else {
+						if (_p25._1.ctor === 'Just') {
+							break _v28_1;
+						} else {
+							return _p28;
+						}
+					}
 				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+					if (_p25._2.ctor === 'Just') {
+						break _v28_0;
+					} else {
+						if (_p25._1.ctor === 'Just') {
+							break _v28_1;
+						} else {
+							return _elm_lang$core$Native_Utils.update(
+								_p28,
+								{hero: movedHero});
+						}
+					}
 				}
-			} else {
-				if (_p6._1.ctor === 'Just') {
-					break _v4_0;
-				} else {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{hero: movedHero}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				}
-			}
+			} while(false);
+			var _p26 = A2(_elm_lang$core$Debug$log, 'Hit monster: ', _p25._2._0);
+			return _p28;
 		} while(false);
-		return {
-			ctor: '_Tuple2',
-			_0: A2(_mordrax$cotwelm$Game_Collision$enterBuilding, _p6._1._0, model),
-			_1: _elm_lang$core$Platform_Cmd$none
-		};
+		return A2(_mordrax$cotwelm$Game_Collision$enterBuilding, _p25._1._0, _p28);
 	});
 
 var _mordrax$cotwelm$Game_Inventory$viewPurse = function (_p0) {
@@ -14758,16 +15700,17 @@ var _mordrax$cotwelm$Game_Inventory$viewShop = function (_p7) {
 var _mordrax$cotwelm$Game_Inventory$viewPack = F2(
 	function (maybePack, _p11) {
 		var _p12 = _p11;
-		var highlightStyle = _elm_lang$html$Html_Attributes$style(
+		var packStyle = _elm_lang$html$Html_Attributes$style(
 			_elm_lang$core$Native_List.fromArray(
 				[
-					{ctor: '_Tuple2', _0: 'background', _1: 'lightblue'}
+					{ctor: '_Tuple2', _0: 'background', _1: 'lightblue'},
+					{ctor: '_Tuple2', _0: 'min-height', _1: '100px'}
 				]));
 		var droppableHtml = function (pack) {
 			return A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
-					[highlightStyle]),
+					[packStyle]),
 				_elm_lang$core$Native_List.fromArray(
 					[
 						A2(
@@ -14791,7 +15734,7 @@ var _mordrax$cotwelm$Game_Inventory$viewPack = F2(
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('Pack is empty')
+						_elm_lang$html$Html$text('You have no pack! Equip a pack to use this space.')
 					]));
 		}
 	});
@@ -15210,14 +16153,33 @@ var _mordrax$cotwelm$Game_Inventory$update = F2(
 		}
 	});
 
+var _mordrax$cotwelm$Monster_Monsters$init = _elm_lang$core$Native_List.fromArray(
+	[
+		A2(
+		_mordrax$cotwelm$Monster_Monster$new,
+		_mordrax$cotwelm$Monster_Monster$GiantRat,
+		A2(_mordrax$cotwelm$Utils_Vector$new, 10, 1)),
+		A2(
+		_mordrax$cotwelm$Monster_Monster$new,
+		_mordrax$cotwelm$Monster_Monster$Kobold,
+		A2(_mordrax$cotwelm$Utils_Vector$new, 4, 10)),
+		A2(
+		_mordrax$cotwelm$Monster_Monster$new,
+		_mordrax$cotwelm$Monster_Monster$Hobgoblin,
+		A2(_mordrax$cotwelm$Utils_Vector$new, 5, 11)),
+		A2(
+		_mordrax$cotwelm$Monster_Monster$new,
+		_mordrax$cotwelm$Monster_Monster$LargeSnake,
+		A2(_mordrax$cotwelm$Utils_Vector$new, 11, 1))
+	]);
+
 var _mordrax$cotwelm$Game_Game$viewHero = function (hero) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$html$Html_Attributes$class('tile maleHero'),
-				_mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(
-				_mordrax$cotwelm$Hero$pos(hero))
+				_mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(hero.position)
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[]));
@@ -15235,7 +16197,7 @@ var _mordrax$cotwelm$Game_Game$viewBuilding = function (building) {
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text(building.name)
+						_elm_lang$html$Html$text('TODO: Get the internal view of the building')
 					]))
 			]));
 };
@@ -15260,21 +16222,40 @@ var _mordrax$cotwelm$Game_Game$viewMap = function (model) {
 				_mordrax$cotwelm$Game_Game$viewHero(model.hero)
 			]));
 };
+var _mordrax$cotwelm$Game_Game$viewMonsters = function (_p0) {
+	var _p1 = _p0;
+	var monsterHtml = function (monster) {
+		return _mordrax$cotwelm$Monster_Monster$view(monster);
+	};
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		A2(_elm_lang$core$List$map, monsterHtml, _p1.monsters));
+};
 var _mordrax$cotwelm$Game_Game$view = function (model) {
-	var _p0 = model.currentScreen;
-	switch (_p0.ctor) {
+	var _p2 = model.currentScreen;
+	switch (_p2.ctor) {
 		case 'MapScreen':
-			return _mordrax$cotwelm$Game_Game$viewMap(model);
+			return A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_mordrax$cotwelm$Game_Game$viewMap(model),
+						_mordrax$cotwelm$Game_Game$viewMonsters(model)
+					]));
 		case 'BuildingScreen':
-			var _p2 = _p0._0;
-			var _p1 = _p2.buildingType;
-			if (_p1.ctor === 'ShopType') {
+			var _p4 = _p2._0;
+			var _p3 = _mordrax$cotwelm$GameData_Building$buildingType(_p4);
+			if (_p3.ctor === 'ShopType') {
 				return A2(
 					_elm_lang$html$Html_App$map,
 					_mordrax$cotwelm$Game_Data$InvMsg,
 					_mordrax$cotwelm$Game_Inventory$view(model));
 			} else {
-				return _mordrax$cotwelm$Game_Game$viewBuilding(_p2);
+				return _mordrax$cotwelm$Game_Game$viewBuilding(_p4);
 			}
 		default:
 			return A2(
@@ -15285,10 +16266,17 @@ var _mordrax$cotwelm$Game_Game$view = function (model) {
 };
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
-		var _p3 = msg;
-		switch (_p3.ctor) {
+		var _p5 = msg;
+		switch (_p5.ctor) {
 			case 'KeyDir':
-				return A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p3._0, model);
+				var modelMovedHero = A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p5._0, model);
+				var movedMovedMonsters = A3(
+					_mordrax$cotwelm$Game_Collision$moveMonsters,
+					model.monsters,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					modelMovedHero);
+				return {ctor: '_Tuple2', _0: movedMovedMonsters, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'Map':
 				return {
 					ctor: '_Tuple2',
@@ -15308,13 +16296,13 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 			case 'InvMsg':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_mordrax$cotwelm$Game_Inventory$update, _p3._0, model),
+					_0: A2(_mordrax$cotwelm$Game_Inventory$update, _p5._0, model),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'ShopMsg':
-				var _p4 = A3(_mordrax$cotwelm$Shop_Shop$update, _p3._0, model.idGen, model.shop);
-				var shop$ = _p4._0;
-				var idGen$ = _p4._1;
+				var _p6 = A3(_mordrax$cotwelm$Shop_Shop$update, _p5._0, model.idGen, model.shop);
+				var shop$ = _p6._0;
+				var idGen$ = _p6._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -15327,9 +16315,9 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 		}
 	});
 var _mordrax$cotwelm$Game_Game$initGame = function () {
-	var _p5 = _mordrax$cotwelm$Shop_Shop$new;
-	var newShop = _p5._0;
-	var shopCmd = _p5._1;
+	var _p7 = _mordrax$cotwelm$Shop_Shop$new;
+	var newShop = _p7._0;
+	var shopCmd = _p7._1;
 	var cmd = A2(
 		_elm_lang$core$Platform_Cmd$map,
 		function (x) {
@@ -15337,12 +16325,12 @@ var _mordrax$cotwelm$Game_Game$initGame = function () {
 		},
 		shopCmd);
 	var idGenerator = _mordrax$cotwelm$Utils_IdGenerator$new;
-	var _p6 = _mordrax$cotwelm$Equipment$init(idGenerator);
-	var idGenerator$ = _p6._0;
-	var equipment = _p6._1;
+	var _p8 = _mordrax$cotwelm$Equipment$init(idGenerator);
+	var idGenerator$ = _p8._0;
+	var equipment = _p8._1;
 	return {
 		ctor: '_Tuple2',
-		_0: {name: 'A new game', hero: _mordrax$cotwelm$Hero$init, map: _mordrax$cotwelm$Game_Maps$initMaps, currentScreen: _mordrax$cotwelm$Game_Data$MapScreen, dnd: _mordrax$cotwelm$Utils_DragDrop$new, equipment: equipment, shop: newShop, idGen: idGenerator$},
+		_0: {name: 'A new game', hero: _mordrax$cotwelm$Hero$init, map: _mordrax$cotwelm$Game_Maps$initMaps, currentScreen: _mordrax$cotwelm$Game_Data$MapScreen, dnd: _mordrax$cotwelm$Utils_DragDrop$new, equipment: equipment, shop: newShop, idGen: idGenerator$, monsters: _mordrax$cotwelm$Monster_Monsters$init},
 		_1: cmd
 	};
 }();
