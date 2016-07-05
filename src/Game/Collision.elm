@@ -13,6 +13,7 @@ import GameData.Building as Building exposing (..)
 import Monster.Monster as Monster exposing (..)
 import Shop.Shop as Shop exposing (..)
 import Hero exposing (..)
+import Stats exposing (..)
 
 
 tryMoveHero : Direction -> Game.Data.Model -> Game.Data.Model
@@ -110,6 +111,21 @@ buildingAtPosition pos buildings =
                 Nothing
 
 
+defend : Monster -> Game.Data.Model -> Game.Data.Model
+defend monster ({ hero } as model) =
+    let
+        ( min, max ) =
+            Monster.damageRange monster
+
+        ( stats', msg ) =
+            Stats.takeHit max hero.stats
+
+        hero' =
+            { hero | stats = stats' }
+    in
+        { model | hero = hero' }
+
+
 
 ---------------------
 -- Moving monsters --
@@ -118,18 +134,12 @@ buildingAtPosition pos buildings =
 
 moveMonsters : List Monster -> List Monster -> Game.Data.Model -> Game.Data.Model
 moveMonsters monsters movedMonsters ({ hero, map } as model) =
-    --let
-    --_ =
-    --    Debug.log "Monsters" monsters
-    --in
     case monsters of
         [] ->
             { model | monsters = movedMonsters }
 
         monster :: restOfMonsters ->
             let
-                --_ =
-                --    Debug.log "Moving..." monster
                 movedMonster =
                     pathMonster monster hero
 
@@ -140,12 +150,13 @@ moveMonsters monsters movedMonsters ({ hero, map } as model) =
                     isMonsterObstruction movedMonster movedMonsters
             in
                 case obstructions of
+                    -- hit hero
                     ( _, _, _, True ) ->
                         let
-                            _ =
-                                Debug.log "TODO: Hit Hero!" monster
+                            model' =
+                                defend monster model
                         in
-                            moveMonsters restOfMonsters (monster :: movedMonsters) model
+                            moveMonsters restOfMonsters (monster :: movedMonsters) model'
 
                     ( True, _, _, _ ) ->
                         moveMonsters restOfMonsters (monster :: movedMonsters) model
@@ -178,8 +189,3 @@ pathMonster monster hero =
 isMonsterObstruction : Monster -> List Monster -> Bool
 isMonsterObstruction monster monsters =
     List.any (Vector.equal monster.position) (List.map .position monsters)
-
-
-isBuildingObstruction : Monster -> Game.Data.Model -> Bool
-isBuildingObstruction monster ({ map } as model) =
-    List.any (isBuildingAtPosition monster.position) (getBuildings map.currentArea map)
