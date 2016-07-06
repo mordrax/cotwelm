@@ -34,6 +34,9 @@ import Html exposing (..)
 import Html.App exposing (map)
 import Navigation
 import String exposing (..)
+import Task exposing (perform)
+import Random exposing (initialSeed)
+import Time exposing (inSeconds, now)
 
 
 --import TimeTravel.Navigation as TimeTravel
@@ -70,7 +73,10 @@ subscriptions model =
             List.map convertToMainMsg (List.map convertToGameMsg inventorySubs)
     in
         Sub.batch
-            <| List.append keyboardSubs inventorySubsGameMsg
+            (keyboardSubs
+                |> List.append inventorySubsGameMsg
+             --|> (::) (Sub.map getSeed)
+            )
 
 
 initModel : String -> ( Model, Cmd CotwData.Msg )
@@ -91,7 +97,7 @@ initModel url =
         ( modelWithUrl, urlCmds ) =
             urlUpdate url model
     in
-        ( modelWithUrl, Cmd.batch [ urlCmds, gameMainCmds ] )
+        ( modelWithUrl, Cmd.batch [ urlCmds, gameMainCmds, getSeed ] )
 
 
 type alias Model =
@@ -123,18 +129,33 @@ update msg model =
             in
                 ( { model | game = game' }, Cmd.none )
 
+        RNS seed ->
+            let
+                _ =
+                    Debug.log "Seed: " seed
+            in
+                ( model, Cmd.none )
+
 
 view : Model -> Html CotwData.Msg
 view model =
     case model.currentPage of
         CharCreationPage ->
-            div [] [ Html.App.map CharCreationMsg (CharCreation.view model.character) ]
+            div []
+                [ Html.App.map CharCreationMsg
+                    (CharCreation.view model.character)
+                ]
 
         SplashPage ->
-            div [] [ Html.App.map SplashMsg SplashView.view ]
+            div []
+                [ Html.App.map SplashMsg SplashView.view
+                ]
 
         GamePage ->
-            div [] [ Html.App.map CotwData.GameMsg (Game.Game.view model.game) ]
+            div []
+                [ Html.App.map CotwData.GameMsg
+                    (Game.Game.view model.game)
+                ]
 
         _ ->
             h1 [] [ text "Page not implemented!" ]
@@ -164,3 +185,30 @@ fromUrl url =
 urlParser : Navigation.Parser String
 urlParser =
     Navigation.makeParser (fromUrl << .hash)
+
+
+
+-- Random number seed
+
+
+getSeed : Cmd CotwData.Msg
+getSeed =
+    let
+        generateSeed =
+            \timeNow ->
+                timeNow
+                    |> Time.inSeconds
+                    |> round
+                    |> Random.initialSeed
+
+        fail =
+            \x ->
+                let
+                    _ =
+                        Debug.log "FATAL: Unable to get a random seed." x
+                in
+                    CotwData.RNS (Random.initialSeed 92374093709223)
+    in
+        Task.perform (\x -> fail x)
+            (\timeNow -> CotwData.RNS (generateSeed timeNow))
+            Time.now
