@@ -34,10 +34,11 @@ import Utils.IdGenerator as IdGenerator exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.App exposing (map)
+import Random exposing (..)
 
 
-initGame : ( Game.Data.Model, Cmd Game.Data.Msg )
-initGame =
+initGame : Random.Seed -> ( Game.Data.Model, Cmd Game.Data.Msg )
+initGame seed =
     let
         idGenerator =
             IdGenerator.new
@@ -60,6 +61,7 @@ initGame =
           , shop = newShop
           , idGen = idGenerator'
           , monsters = Monsters.init
+          , seed = seed
           }
         , cmd
         )
