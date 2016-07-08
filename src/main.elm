@@ -13,14 +13,9 @@ import CharCreation.Data exposing (..)
 
 -- Main game screen
 
-import Game.Game exposing (..)
+import Game.Game as Game exposing (..)
 import Game.Data exposing (..)
 import Game.Inventory as Inventory exposing (..)
-
-
--- Cotw specific data
-
-import CotwData exposing (Msg(..), Page(..))
 
 
 -- Keyboard/Controller subscriptions
@@ -39,6 +34,22 @@ import Random exposing (initialSeed)
 import Time exposing (inSeconds, now)
 
 
+type Msg
+    = SplashMsg SplashView.Msg
+    | CharCreationMsg CharCreation.Data.Msg
+    | GameMsg (Game.Data.Msg)
+    | RNS Random.Seed
+
+
+type Page
+    = SplashPage
+    | CharCreationPage
+    | GamePage
+    | ShopPage
+    | NotImplementedPage
+
+
+
 --import TimeTravel.Navigation as TimeTravel
 
 
@@ -54,7 +65,7 @@ main =
         }
 
 
-subscriptions : Model -> Sub CotwData.Msg
+subscriptions : Model -> Sub Msg
 subscriptions model =
     let
         convertToMainMsg =
@@ -79,25 +90,22 @@ subscriptions model =
             )
 
 
-initModel : String -> ( Model, Cmd CotwData.Msg )
+initModel : String -> ( Model, Cmd Msg )
 initModel url =
     let
-        ( initGameState, gameCmds ) =
-            Game.Game.initGame
-
-        gameMainCmds =
-            Cmd.map (\x -> GameMsg x) gameCmds
+        ( gameState, _ ) =
+            Game.initGame (Random.initialSeed 0)
 
         model =
             { currentPage = GamePage
             , character = CharCreation.initChar
-            , game = initGameState
+            , game = gameState
             }
 
         ( modelWithUrl, urlCmds ) =
             urlUpdate url model
     in
-        ( modelWithUrl, Cmd.batch [ urlCmds, gameMainCmds, getSeed ] )
+        ( modelWithUrl, Cmd.batch [ urlCmds, getSeed ] )
 
 
 type alias Model =
@@ -107,7 +115,7 @@ type alias Model =
     }
 
 
-update : CotwData.Msg -> Model -> ( Model, Cmd CotwData.Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SplashMsg NewGame ->
@@ -125,19 +133,22 @@ update msg model =
         GameMsg msg ->
             let
                 ( game', cmd ) =
-                    Game.Game.update msg model.game
+                    Game.update msg model.game
             in
                 ( { model | game = game' }, Cmd.none )
 
         RNS seed ->
             let
-                _ =
-                    Debug.log "Seed: " seed
+                ( game, gameCmds ) =
+                    Game.initGame seed
+
+                mainCmds =
+                    Cmd.map (\x -> GameMsg x) gameCmds
             in
-                ( model, Cmd.none )
+                ( { model | game = game }, mainCmds )
 
 
-view : Model -> Html CotwData.Msg
+view : Model -> Html Msg
 view model =
     case model.currentPage of
         CharCreationPage ->
@@ -153,15 +164,15 @@ view model =
 
         GamePage ->
             div []
-                [ Html.App.map CotwData.GameMsg
-                    (Game.Game.view model.game)
+                [ Html.App.map GameMsg
+                    (Game.view model.game)
                 ]
 
         _ ->
             h1 [] [ text "Page not implemented!" ]
 
 
-urlUpdate : String -> Model -> ( Model, Cmd CotwData.Msg )
+urlUpdate : String -> Model -> ( Model, Cmd Msg )
 urlUpdate url model =
     if url == "charCreation" then
         ( { model | currentPage = CharCreationPage }, Cmd.none )
@@ -191,7 +202,7 @@ urlParser =
 -- Random number seed
 
 
-getSeed : Cmd CotwData.Msg
+getSeed : Cmd Msg
 getSeed =
     let
         generateSeed =
@@ -207,8 +218,8 @@ getSeed =
                     _ =
                         Debug.log "FATAL: Unable to get a random seed." x
                 in
-                    CotwData.RNS (Random.initialSeed 92374093709223)
+                    RNS (Random.initialSeed 92374093709223)
     in
         Task.perform (\x -> fail x)
-            (\timeNow -> CotwData.RNS (generateSeed timeNow))
+            (\timeNow -> RNS (generateSeed timeNow))
             Time.now
