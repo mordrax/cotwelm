@@ -1,4 +1,14 @@
-module Game.Maps exposing (..)
+module Game.Maps
+    exposing
+        ( Maps
+        , Map
+        , init
+        , updateArea
+        , view
+        , getMap
+        , getASCIIMap
+        , getBuildings
+        )
 
 {-| Handles rendering of all the static/dynamic game areas
 
@@ -21,6 +31,10 @@ import Html exposing (..)
 import Dict exposing (..)
 
 
+type Maps
+    = A Model
+
+
 type alias Model =
     { currentArea : Area
     , maps : Dict String Map
@@ -32,8 +46,8 @@ type alias Map =
     Dict String Tile
 
 
-initMaps : Model
-initMaps =
+init : Maps
+init =
     let
         getTiles =
             \area ->
@@ -45,39 +59,40 @@ initMaps =
         toKVPair =
             \tile -> ( toString tile.position, tile )
     in
-        { currentArea = Village
-        , maps =
-            Dict.fromList
-                [ ( toString Village, Dict.fromList (tilesToTuples Village) )
-                , ( toString Farm, Dict.fromList (tilesToTuples Farm) )
-                , ( toString DungeonLevelOne, Dict.fromList (tilesToTuples DungeonLevelOne) )
-                ]
-        , buildings =
-            Dict.fromList
-                [ ( toString Village, villageBuildings )
-                , ( toString Farm, farmBuildings )
-                , ( toString DungeonLevelOne, dungeonLevelOneBuildings )
-                ]
-        }
+        A
+            { currentArea = Village
+            , maps =
+                Dict.fromList
+                    [ ( toString Village, Dict.fromList (tilesToTuples Village) )
+                    , ( toString Farm, Dict.fromList (tilesToTuples Farm) )
+                    , ( toString DungeonLevelOne, Dict.fromList (tilesToTuples DungeonLevelOne) )
+                    ]
+            , buildings =
+                Dict.fromList
+                    [ ( toString Village, villageBuildings )
+                    , ( toString Farm, farmBuildings )
+                    , ( toString DungeonLevelOne, dungeonLevelOneBuildings )
+                    ]
+            }
 
 
-updateArea : GameData.Types.Area -> Model -> Model
-updateArea area model =
-    { model | currentArea = area }
+updateArea : GameData.Types.Area -> Maps -> Maps
+updateArea area (A model) =
+    A { model | currentArea = area }
 
 
-view : Model -> Html a
-view model =
-    mapToHtml model.currentArea model
+view : Maps -> Html a
+view (A model) =
+    mapToHtml model.currentArea (A model)
 
 
 {-| Given an area, will return a map of that area or an empty dictionary if invalid area
 -}
-getMap : Area -> Model -> Map
-getMap area model =
+getMap : Maps -> Map
+getMap (A model) =
     let
         maybeMap =
-            Dict.get (toString area) model.maps
+            Dict.get (toString model.currentArea) model.maps
     in
         case maybeMap of
             Just map ->
@@ -87,11 +102,11 @@ getMap area model =
                 Dict.empty
 
 
-getBuildings : Area -> Model -> List Building
-getBuildings area model =
+getBuildings : Maps -> List Building
+getBuildings (A model) =
     let
         maybeBuildings =
-            Dict.get (toString area) model.buildings
+            Dict.get (toString model.currentArea) model.buildings
     in
         case maybeBuildings of
             Just buildings ->
@@ -171,16 +186,16 @@ dungeonLevelOneBuildings =
 ------------------------------------------
 
 
-mapToHtml : Area -> Model -> Html a
-mapToHtml area model =
+mapToHtml : Area -> Maps -> Html a
+mapToHtml area (A model) =
     let
         listOfTiles =
-            Dict.toList (getMap area model) |> List.map snd
+            Dict.toList (getMap (A model)) |> List.map snd
 
         tilesHtml =
             List.map tileToHtml listOfTiles
 
         buildingsHtml =
-            List.map Building.view (getBuildings area model)
+            List.map Building.view (getBuildings (A model))
     in
         div [] (tilesHtml ++ buildingsHtml)

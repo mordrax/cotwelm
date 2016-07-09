@@ -15,7 +15,6 @@ import CharCreation.Data exposing (..)
 
 import Game.Game as Game exposing (..)
 import Game.Data exposing (..)
-import Game.Inventory as Inventory exposing (..)
 
 
 -- Keyboard/Controller subscriptions
@@ -38,7 +37,7 @@ type Msg
     = SplashMsg SplashView.Msg
     | CharCreationMsg CharCreation.Data.Msg
     | GameMsg (Game.Data.Msg)
-    | RNS Random.Seed
+    | InitSeed Random.Seed
 
 
 type Page
@@ -68,38 +67,34 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        convertToMainMsg =
+        toMsg =
             \x -> Sub.map GameMsg x
 
-        convertToGameMsg =
-            \x -> Sub.map InvMsg x
-
         keyboardSubs =
-            List.map convertToMainMsg Game.Keyboard.subscriptions
+            List.map toMsg Game.Keyboard.subscriptions
 
-        inventorySubs =
-            Inventory.subscriptions model.game
-
-        inventorySubsGameMsg =
-            List.map convertToMainMsg (List.map convertToGameMsg inventorySubs)
+        gameSubs =
+            \game ->
+                List.map toMsg (Game.subscriptions game)
     in
-        Sub.batch
-            (keyboardSubs
-                |> List.append inventorySubsGameMsg
-             --|> (::) (Sub.map getSeed)
-            )
+        case model.game of
+            Nothing ->
+                Sub.batch keyboardSubs
+
+            Just game ->
+                Sub.batch
+                    (keyboardSubs
+                        |> List.append (gameSubs game)
+                    )
 
 
 initModel : String -> ( Model, Cmd Msg )
 initModel url =
     let
-        ( gameState, _ ) =
-            Game.initGame (Random.initialSeed 0)
-
         model =
             { currentPage = GamePage
             , character = CharCreation.initChar
-            , game = gameState
+            , game = Nothing
             }
 
         ( modelWithUrl, urlCmds ) =
@@ -111,7 +106,7 @@ initModel url =
 type alias Model =
     { currentPage : Page
     , character : CharCreation.Data.Model
-    , game : Game.Data.Model
+    , game : Maybe Game.Data.Model
     }
 
 
@@ -131,13 +126,18 @@ update msg model =
             ( { model | character = CharCreation.update msg model.character }, Cmd.none )
 
         GameMsg msg ->
-            let
-                ( game', cmd ) =
-                    Game.update msg model.game
-            in
-                ( { model | game = game' }, Cmd.none )
+            case model.game of
+                Nothing ->
+                    ( model, Cmd.none )
 
-        RNS seed ->
+                Just game ->
+                    let
+                        ( game', cmd ) =
+                            Game.update msg game
+                    in
+                        ( { model | game = Just game' }, Cmd.none )
+
+        InitSeed seed ->
             let
                 ( game, gameCmds ) =
                     Game.initGame seed
@@ -145,7 +145,7 @@ update msg model =
                 mainCmds =
                     Cmd.map (\x -> GameMsg x) gameCmds
             in
-                ( { model | game = game }, mainCmds )
+                ( { model | game = Just game }, mainCmds )
 
 
 view : Model -> Html Msg
@@ -163,10 +163,15 @@ view model =
                 ]
 
         GamePage ->
-            div []
-                [ Html.App.map GameMsg
-                    (Game.view model.game)
-                ]
+            case model.game of
+                Nothing ->
+                    h1 [] [ text "There is no game state. A possible reason is that you have not created a character." ]
+
+                Just game ->
+                    div []
+                        [ Html.App.map GameMsg
+                            (Game.view game)
+                        ]
 
         _ ->
             h1 [] [ text "Page not implemented!" ]
@@ -218,8 +223,8 @@ getSeed =
                     _ =
                         Debug.log "FATAL: Unable to get a random seed." x
                 in
-                    RNS (Random.initialSeed 92374093709223)
+                    InitSeed (Random.initialSeed 92374093709223)
     in
         Task.perform (\x -> fail x)
-            (\timeNow -> RNS (generateSeed timeNow))
+            (\timeNow -> InitSeed (generateSeed timeNow))
             Time.now

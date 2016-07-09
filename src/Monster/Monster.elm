@@ -151,8 +151,10 @@ new : MonsterType -> Vector -> Monster
 new monsterType pos =
     let
         newMonster =
+            -- class: overall how dangerous monster is
+            -- css: css class for drawing
             \class css name hp ->
-                Monster (A <| Model class css name) pos (Stats.new hp 0)
+                newSpellcaster class css name hp 0
 
         newSpellcaster =
             \class css name hp sp ->

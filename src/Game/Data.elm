@@ -2,7 +2,7 @@ module Game.Data exposing (..)
 
 import Hero exposing (..)
 import GameData.Building as Building exposing (..)
-import Game.Maps exposing (..)
+import Game.Maps as Maps exposing (..)
 import Item.Item as Item exposing (..)
 import Equipment exposing (..)
 import Shop.Shop as Shop exposing (..)
@@ -15,7 +15,7 @@ import Random exposing (..)
 type alias Model =
     { name : String
     , hero : Hero
-    , map : Game.Maps.Model
+    , map : Maps.Maps
     , currentScreen : Screen
     , dnd : DragDrop Drag Drop
     , equipment : Equipment
