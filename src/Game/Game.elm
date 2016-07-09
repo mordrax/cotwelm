@@ -3,7 +3,7 @@ module Game.Game exposing (..)
 -- Game
 
 import Game.Data exposing (..)
-import Game.Maps exposing (..)
+import Game.Maps as Maps exposing (..)
 import Game.Collision exposing (..)
 import Game.Inventory as Inventory exposing (..)
 import Equipment as Equipment exposing (..)
@@ -54,7 +54,7 @@ initGame seed =
     in
         ( { name = "A new game"
           , hero = Hero.init
-          , map = Game.Maps.initMaps
+          , map = Maps.init
           , currentScreen = MapScreen
           , dnd = DragDrop.new
           , equipment = equipment
@@ -138,7 +138,7 @@ viewMap model =
     in
         div []
             [ title
-            , Game.Maps.view model.map
+            , Maps.view model.map
             , viewHero model.hero
             ]
 
@@ -151,3 +151,15 @@ viewBuilding building =
 viewHero : Hero -> Html Game.Data.Msg
 viewHero hero =
     div [ class "tile maleHero", vectorToHtmlStyle <| hero.position ] []
+
+
+subscriptions : Game.Data.Model -> List (Sub Game.Data.Msg)
+subscriptions model =
+    let
+        toMsg =
+            \x -> Sub.map InvMsg x
+
+        inventorySubs =
+            Inventory.subscriptions model
+    in
+        List.map toMsg inventorySubs
