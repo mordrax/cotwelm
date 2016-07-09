@@ -4,6 +4,8 @@ module Stats
         , Msg(..)
         , new
         , takeHit
+        , combatStats
+        , isDead
         )
 
 
@@ -21,12 +23,20 @@ type alias Model =
     , currentHP : Int
     , maxSP : Int
     , currentSP : Int
+    , damageRange : ( Int, Int )
+    , ac : Int
+    , hitChance : Int
     }
 
 
 new : Int -> Int -> Stats
 new hp sp =
-    A (Model hp hp sp sp)
+    A (Model hp hp sp sp ( 1, 6 ) 0 50)
+
+
+isDead : Stats -> Bool
+isDead (A model) =
+    model.currentHP < 0
 
 
 takeHit : Int -> Stats -> ( Stats, Msg )
@@ -40,8 +50,10 @@ takeHit damage (A model) =
                 Ok
             else
                 Dead
-
-        _ =
-            Debug.log "hp:" ((toString hp') ++ (toString msg))
     in
         ( A { model | currentHP = hp' }, msg )
+
+
+combatStats : Stats -> ( ( Int, Int ), Int, Int )
+combatStats (A model) =
+    ( model.damageRange, model.ac, model.hitChance )

@@ -46,6 +46,9 @@ initGame seed =
         ( idGenerator', equipment ) =
             Equipment.init idGenerator
 
+        ( monsters, idGenerator'' ) =
+            Monsters.init idGenerator'
+
         ( newShop, shopCmd ) =
             Shop.new
 
@@ -59,8 +62,8 @@ initGame seed =
           , dnd = DragDrop.new
           , equipment = equipment
           , shop = newShop
-          , idGen = idGenerator'
-          , monsters = Monsters.init
+          , idGen = idGenerator''
+          , monsters = monsters
           , seed = seed
           }
         , cmd
@@ -72,11 +75,11 @@ update msg model =
     case msg of
         KeyDir dir ->
             let
-                modelMovedHero =
+                model' =
                     Game.Collision.tryMoveHero dir model
 
                 movedMovedMonsters =
-                    Game.Collision.moveMonsters model.monsters [] modelMovedHero
+                    Game.Collision.moveMonsters model'.monsters [] model'
             in
                 ( movedMovedMonsters, Cmd.none )
 
