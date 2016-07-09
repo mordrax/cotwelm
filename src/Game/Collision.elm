@@ -14,9 +14,10 @@ import Monster.Monster as Monster exposing (..)
 import Shop.Shop as Shop exposing (..)
 import Hero exposing (..)
 import Stats exposing (..)
+import Dice exposing (..)
 
 
-tryMoveHero : Direction -> Game.Data.Model -> Game.Data.Model
+tryMoveHero : Direction -> Model -> Model
 tryMoveHero dir ({ hero } as model) =
     let
         movedHero =
@@ -46,7 +47,7 @@ tryMoveHero dir ({ hero } as model) =
                 { model | hero = movedHero }
 
 
-enterBuilding : Building -> Game.Data.Model -> Game.Data.Model
+enterBuilding : Building -> Model -> Model
 enterBuilding building ({ hero, map } as model) =
     case Building.buildingType building of
         LinkType link ->
@@ -67,7 +68,7 @@ enterBuilding building ({ hero, map } as model) =
 
 {-| Given a position and a map, work out everything on the square
 -}
-queryPosition : Vector -> Game.Data.Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
+queryPosition : Vector -> Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
 queryPosition pos ({ hero, map, monsters } as model) =
     let
         maybeTile =
@@ -111,19 +112,25 @@ buildingAtPosition pos buildings =
                 Nothing
 
 
-defend : Monster -> Game.Data.Model -> Game.Data.Model
-defend monster ({ hero } as model) =
+defend : Monster -> Model -> Model
+defend monster ({ hero, seed } as model) =
     let
         ( min, max ) =
             Monster.damageRange monster
 
+        ( damage, seed' ) =
+            Dice.d max seed
+
+        _ =
+            Debug.log "Defend: Hit for:- " damage
+
         ( stats', msg ) =
-            Stats.takeHit max hero.stats
+            Stats.takeHit damage hero.stats
 
         hero' =
             { hero | stats = stats' }
     in
-        { model | hero = hero' }
+        { model | hero = hero', seed = seed' }
 
 
 
@@ -132,7 +139,7 @@ defend monster ({ hero } as model) =
 ---------------------
 
 
-moveMonsters : List Monster -> List Monster -> Game.Data.Model -> Game.Data.Model
+moveMonsters : List Monster -> List Monster -> Model -> Model
 moveMonsters monsters movedMonsters ({ hero, map } as model) =
     case monsters of
         [] ->
