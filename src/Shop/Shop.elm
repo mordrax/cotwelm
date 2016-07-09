@@ -150,7 +150,7 @@ replenish itemFactories idGenerator seed =
             \n -> Random.list n itemGenerator
 
         ( foldableProducts, _ ) =
-            step (itemsGenerator 10) seed
+            Random.step (itemsGenerator 10) seed
 
         ( products, idGenerator' ) =
             List.foldl IdGenerator.assignId ( [], idGenerator ) foldableProducts

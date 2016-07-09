@@ -12,6 +12,7 @@ import Utils.Lib exposing (vectorToHtmlStyle)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Stats exposing (..)
+import Utils.IdGenerator exposing (ID)
 
 
 type BaseMonster
@@ -22,6 +23,7 @@ type alias Monster =
     { base : BaseMonster
     , position : Vector
     , stats : Stats
+    , id : ID
     }
 
 
@@ -147,8 +149,8 @@ type MonsterType
     | Sultur
 
 
-new : MonsterType -> Vector -> Monster
-new monsterType pos =
+new : MonsterType -> Vector -> ID -> Monster
+new monsterType pos id =
     let
         newMonster =
             -- class: overall how dangerous monster is
@@ -158,7 +160,7 @@ new monsterType pos =
 
         newSpellcaster =
             \class css name hp sp ->
-                Monster (A <| Model class css name) pos (Stats.new hp sp)
+                Monster (A <| Model class css name) pos (Stats.new hp sp) id
     in
         case monsterType of
             GiantRat ->

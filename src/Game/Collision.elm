@@ -13,8 +13,9 @@ import GameData.Building as Building exposing (..)
 import Monster.Monster as Monster exposing (..)
 import Shop.Shop as Shop exposing (..)
 import Hero exposing (..)
+import Combat exposing (..)
+import Utils.IdGenerator as IdGenerator exposing (..)
 import Stats exposing (..)
-import Dice exposing (..)
 
 
 tryMoveHero : Direction -> Model -> Model
@@ -28,11 +29,7 @@ tryMoveHero dir ({ hero } as model) =
     in
         case obstructions of
             ( _, _, Just monster, _ ) ->
-                let
-                    _ =
-                        Debug.log "Hit monster: " monster
-                in
-                    model
+                attack monster model
 
             -- entering a building
             ( _, Just building, _, _ ) ->
@@ -112,23 +109,38 @@ buildingAtPosition pos buildings =
                 Nothing
 
 
+attack : Monster -> Model -> Model
+attack monster ({ hero, seed, monsters } as model) =
+    let
+        ( monsterStats, seed' ) =
+            Combat.attack hero.stats monster.stats seed
+
+        monster' =
+            { monster | stats = monsterStats }
+
+        monstersWithoutMonster =
+            List.filter (\x -> not (IdGenerator.equals monster.id x.id)) monsters
+
+        _ =
+            Debug.log "Monster: " monster
+
+        monsters' =
+            if Stats.isDead monster'.stats then
+                monstersWithoutMonster
+            else
+                monster' :: monstersWithoutMonster
+    in
+        { model | monsters = monsters' }
+
+
 defend : Monster -> Model -> Model
 defend monster ({ hero, seed } as model) =
     let
-        ( min, max ) =
-            Monster.damageRange monster
-
-        ( damage, seed' ) =
-            Dice.d max seed
-
-        _ =
-            Debug.log "Defend: Hit for:- " damage
-
-        ( stats', msg ) =
-            Stats.takeHit damage hero.stats
+        ( heroStats', seed' ) =
+            Combat.attack monster.stats hero.stats seed
 
         hero' =
-            { hero | stats = stats' }
+            { hero | stats = heroStats' }
     in
         { model | hero = hero', seed = seed' }
 
