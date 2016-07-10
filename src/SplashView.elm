@@ -23,7 +23,7 @@ view =
             [ ( "backgroundColor", "black" ) ]
     in
         div
-            [ class "ui middle aligned center aligned grid fullscreen"
+            [ class "ui grid"
             , style bgStyle
             ]
             [ div [ class "ui one column" ]

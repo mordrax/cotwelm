@@ -17,11 +17,6 @@ import Game.Game as Game exposing (..)
 import Game.Data exposing (..)
 
 
--- Keyboard/Controller subscriptions
-
-import Game.Keyboard exposing (..)
-
-
 -- Core/Elm imports
 
 import Html exposing (..)
@@ -31,13 +26,16 @@ import String exposing (..)
 import Task exposing (perform)
 import Random exposing (initialSeed)
 import Time exposing (inSeconds, now)
+import TimeTravel.Navigation as TimeTravel
+import Window exposing (..)
 
 
 type Msg
     = SplashMsg SplashView.Msg
     | CharCreationMsg CharCreation.Data.Msg
-    | GameMsg (Game.Data.Msg)
+    | GameMsg (Game.Msg)
     | InitSeed Random.Seed
+    | WindowSize Window.Size
 
 
 type Page
@@ -48,14 +46,10 @@ type Page
     | NotImplementedPage
 
 
-
---import TimeTravel.Navigation as TimeTravel
-
-
 main : Program Never
 main =
-    Navigation.program urlParser
-        --TimeTravel.program urlParser
+    --Navigation.program urlParser
+    TimeTravel.program urlParser
         { init = initModel
         , update = update
         , view = view
@@ -70,22 +64,19 @@ subscriptions model =
         toMsg =
             \x -> Sub.map GameMsg x
 
-        keyboardSubs =
-            List.map toMsg Game.Keyboard.subscriptions
-
         gameSubs =
             \game ->
                 List.map toMsg (Game.subscriptions game)
+
+        windowSubs =
+            Window.resizes (\x -> WindowSize x)
     in
         case model.game of
             Nothing ->
-                Sub.batch keyboardSubs
+                Sub.none
 
             Just game ->
-                Sub.batch
-                    (keyboardSubs
-                        |> List.append (gameSubs game)
-                    )
+                Sub.batch (windowSubs :: (gameSubs game))
 
 
 initModel : String -> ( Model, Cmd Msg )
@@ -146,6 +137,13 @@ update msg model =
                     Cmd.map (\x -> GameMsg x) gameCmds
             in
                 ( { model | game = Just game }, mainCmds )
+
+        WindowSize size ->
+            let
+                _ =
+                    Debug.log "window size: " size
+            in
+                ( model, Cmd.none )
 
 
 view : Model -> Html Msg

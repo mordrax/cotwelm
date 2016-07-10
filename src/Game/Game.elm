@@ -8,6 +8,7 @@ import Game.Collision exposing (..)
 import Game.Inventory as Inventory exposing (..)
 import Equipment as Equipment exposing (..)
 import Shop.Shop as Shop exposing (..)
+import Game.Keyboard as Keyboard exposing (..)
 
 
 -- Data
@@ -37,7 +38,13 @@ import Html.App exposing (map)
 import Random exposing (..)
 
 
-initGame : Random.Seed -> ( Game.Data.Model, Cmd Game.Data.Msg )
+type Msg
+    = Keyboard (Keyboard.Msg)
+    | InvMsg (InventoryMsg Drag Drop)
+    | ShopMsg Shop.Msg
+
+
+initGame : Random.Seed -> ( Model, Cmd Msg )
 initGame seed =
     let
         idGenerator =
@@ -70,10 +77,10 @@ initGame seed =
         )
 
 
-update : Game.Data.Msg -> Game.Data.Model -> ( Game.Data.Model, Cmd Game.Data.Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        KeyDir dir ->
+        Keyboard (KeyDir dir) ->
             let
                 model' =
                     Game.Collision.tryMoveHero dir model
@@ -83,10 +90,10 @@ update msg model =
             in
                 ( movedMovedMonsters, Cmd.none )
 
-        Map ->
+        Keyboard Map ->
             ( { model | currentScreen = MapScreen }, Cmd.none )
 
-        Inventory ->
+        Keyboard Inventory ->
             ( { model | currentScreen = InventoryScreen }, Cmd.none )
 
         InvMsg msg ->
@@ -99,17 +106,19 @@ update msg model =
             in
                 ( { model | shop = shop', idGen = idGen' }, Cmd.none )
 
-        NoOp ->
+        Keyboard (Keyboard.NoOp) ->
             ( model, Cmd.none )
 
 
-view : Game.Data.Model -> Html Game.Data.Msg
+view : Model -> Html Msg
 view model =
     case model.currentScreen of
         MapScreen ->
-            div []
-                [ viewMap model
-                , viewMonsters model
+            div [ class "ui grid container" ]
+                [ div [ class "ui row" ] [ text "menu" ]
+                , div [ class "ui row" ] [ text "buttons menu" ]
+                , div [ class "ui row" ] [ viewMap model ]
+                , div [ class "ui row" ] [ viewHUD model ]
                 ]
 
         BuildingScreen building ->
@@ -124,7 +133,7 @@ view model =
             Html.App.map InvMsg (Inventory.view model)
 
 
-viewMonsters : Game.Data.Model -> Html Game.Data.Msg
+viewMonsters : Model -> Html Msg
 viewMonsters ({ monsters } as model) =
     let
         monsterHtml =
@@ -133,7 +142,7 @@ viewMonsters ({ monsters } as model) =
         div [] (List.map monsterHtml monsters)
 
 
-viewMap : Game.Data.Model -> Html Game.Data.Msg
+viewMap : Model -> Html Msg
 viewMap model =
     let
         title =
@@ -143,26 +152,38 @@ viewMap model =
             [ title
             , Maps.view model.map
             , viewHero model.hero
+            , viewMonsters model
             ]
 
 
-viewBuilding : Building -> Html Game.Data.Msg
+viewHUD : Model -> Html Msg
+viewHUD model =
+    div [] [ text "messages" ]
+
+
+viewBuilding : Building -> Html Msg
 viewBuilding building =
     div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
 
 
-viewHero : Hero -> Html Game.Data.Msg
+viewHero : Hero -> Html Msg
 viewHero hero =
     div [ class "tile maleHero", vectorToHtmlStyle <| hero.position ] []
 
 
-subscriptions : Game.Data.Model -> List (Sub Game.Data.Msg)
+subscriptions : Model -> List (Sub Msg)
 subscriptions model =
     let
-        toMsg =
+        toInvMsg =
             \x -> Sub.map InvMsg x
 
+        toKeyboardMsg =
+            \x -> Sub.map Keyboard x
+
         inventorySubs =
-            Inventory.subscriptions model
+            List.map toInvMsg (Inventory.subscriptions model)
+
+        keyboardSubs =
+            List.map toKeyboardMsg (Keyboard.subscriptions)
     in
-        List.map toMsg inventorySubs
+        List.append inventorySubs keyboardSubs

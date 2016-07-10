@@ -1,14 +1,33 @@
-module Game.Keyboard exposing (..)
+module Game.Keyboard
+    exposing
+        ( Msg(..)
+        , Direction
+        , subscriptions
+        , dirToVector
+        )
 
 import Keyboard exposing (..)
 import Dict exposing (..)
-import Game.Data exposing (..)
 import Utils.Vector as Vector exposing (..)
 
 
 subscriptions : List (Sub Msg)
 subscriptions =
     [ ups (keycodeToMsg playerKeymapUps), presses (keycodeToMsg playerKeymap) ]
+
+
+type Msg
+    = KeyDir Direction
+    | Map
+    | Inventory
+    | NoOp
+
+
+type Direction
+    = Up
+    | Down
+    | Left
+    | Right
 
 
 type alias KeyMap =
