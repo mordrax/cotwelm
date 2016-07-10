@@ -121,9 +121,6 @@ attack monster ({ hero, seed, monsters } as model) =
         monstersWithoutMonster =
             List.filter (\x -> not (IdGenerator.equals monster.id x.id)) monsters
 
-        _ =
-            Debug.log "Monster: " monster
-
         monsters' =
             if Stats.isDead monster'.stats then
                 monstersWithoutMonster

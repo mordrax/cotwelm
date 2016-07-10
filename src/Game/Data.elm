@@ -44,22 +44,6 @@ type Screen
     | BuildingScreen Building
 
 
-type Direction
-    = Up
-    | Down
-    | Left
-    | Right
-
-
 type InventoryMsg source target
     = InventoryMsg
     | DnDMsg (DragDropMsg source target)
-
-
-type Msg
-    = KeyDir Direction
-    | Map
-    | Inventory
-    | InvMsg (InventoryMsg Drag Drop)
-    | ShopMsg Shop.Msg
-    | NoOp

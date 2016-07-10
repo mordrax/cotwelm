@@ -160,7 +160,9 @@ replenish itemFactories idGenerator seed =
 
 getSeed : Cmd Msg
 getSeed =
-    perform (\x -> Ok) (\a -> (PopulateShop (Time.inSeconds a |> round |> Random.initialSeed))) Time.now
+    perform (\x -> Ok)
+        (\a -> (PopulateShop (Time.inSeconds a |> round |> Random.initialSeed)))
+        Time.now
 
 
 update : Msg -> IdGenerator -> Shop -> ( Shop, IdGenerator )
