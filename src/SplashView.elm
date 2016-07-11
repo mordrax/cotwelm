@@ -23,7 +23,7 @@ view =
             [ ( "backgroundColor", "black" ) ]
     in
         div
-            [ class "ui grid"
+            [ class "ui center aligned middle aligned grid"
             , style bgStyle
             ]
             [ div [ class "ui one column" ]

@@ -35,7 +35,6 @@ type Msg
     | CharCreationMsg CharCreation.Data.Msg
     | GameMsg (Game.Msg)
     | InitSeed Random.Seed
-    | WindowSize Window.Size
 
 
 type Page
@@ -67,16 +66,13 @@ subscriptions model =
         gameSubs =
             \game ->
                 List.map toMsg (Game.subscriptions game)
-
-        windowSubs =
-            Window.resizes (\x -> WindowSize x)
     in
         case model.game of
             Nothing ->
                 Sub.none
 
             Just game ->
-                Sub.batch (windowSubs :: (gameSubs game))
+                Sub.batch (gameSubs game)
 
 
 initModel : String -> ( Model, Cmd Msg )
@@ -137,13 +133,6 @@ update msg model =
                     Cmd.map (\x -> GameMsg x) gameCmds
             in
                 ( { model | game = Just game }, mainCmds )
-
-        WindowSize size ->
-            let
-                _ =
-                    Debug.log "window size: " size
-            in
-                ( model, Cmd.none )
 
 
 view : Model -> Html Msg

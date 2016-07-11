@@ -10,6 +10,7 @@ import Utils.DragDrop exposing (..)
 import Utils.IdGenerator exposing (..)
 import Monster.Monster exposing (..)
 import Random exposing (..)
+import Window exposing (Size)
 
 
 type alias Model =
@@ -23,6 +24,7 @@ type alias Model =
     , idGen : IdGenerator
     , monsters : List Monster
     , seed : Random.Seed
+    , windowSize : Window.Size
     }
 
 

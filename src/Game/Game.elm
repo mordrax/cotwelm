@@ -28,6 +28,7 @@ import Monster.Monsters as Monsters exposing (..)
 import Utils.DragDrop as DragDrop exposing (new)
 import Utils.Lib exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
+import Utils.Vector as Vector exposing (..)
 
 
 -- Core
@@ -36,12 +37,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.App exposing (map)
 import Random exposing (..)
+import Window exposing (..)
 
 
 type Msg
     = Keyboard (Keyboard.Msg)
     | InvMsg (InventoryMsg Drag Drop)
     | ShopMsg Shop.Msg
+    | WindowSize Window.Size
 
 
 initGame : Random.Seed -> ( Model, Cmd Msg )
@@ -72,6 +75,7 @@ initGame seed =
           , idGen = idGenerator''
           , monsters = monsters
           , seed = seed
+          , windowSize = { width = 640, height = 640 }
           }
         , cmd
         )
@@ -109,6 +113,9 @@ update msg model =
         Keyboard (Keyboard.NoOp) ->
             ( model, Cmd.none )
 
+        WindowSize size ->
+            ( { model | windowSize = size }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -143,16 +150,42 @@ viewMonsters ({ monsters } as model) =
 
 
 viewMap : Model -> Html Msg
-viewMap model =
+viewMap ({ windowSize } as model) =
     let
+        _ =
+            Debug.log "size: " windowSize
+
         title =
             h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
+
+        { x, y } =
+            Vector.scale 32 model.hero.position
+
+        ( xOff, yOff ) =
+            ( windowSize.width // 32 * 16, windowSize.height // 32 * 16 )
+
+        px =
+            \x -> (toString x) ++ "px"
     in
-        div []
-            [ title
-            , Maps.view model.map
-            , viewHero model.hero
-            , viewMonsters model
+        div
+            [ style
+                [ ( "position", "relative" )
+                , ( "overflow", "hidden" )
+                , ( "width", px windowSize.width )
+                , ( "height", px windowSize.height )
+                ]
+            ]
+            [ div
+                [ style
+                    [ ( "position", "relative" )
+                    , ( "top", "-" ++ (toString (y - yOff)) ++ "px" )
+                    , ( "left", "-" ++ (toString (x - xOff)) ++ "px" )
+                    ]
+                ]
+                [ Maps.view model.map
+                , viewHero model.hero
+                , viewMonsters model
+                ]
             ]
 
 
@@ -185,5 +218,8 @@ subscriptions model =
 
         keyboardSubs =
             List.map toKeyboardMsg (Keyboard.subscriptions)
+
+        windowSubs =
+            Window.resizes (\x -> WindowSize x)
     in
-        List.append inventorySubs keyboardSubs
+        windowSubs :: inventorySubs ++ keyboardSubs
