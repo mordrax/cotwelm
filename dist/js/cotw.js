@@ -2524,6 +2524,120 @@ var _elm_lang$core$Platform_Sub$none = _elm_lang$core$Platform_Sub$batch(
 var _elm_lang$core$Platform_Sub$map = _elm_lang$core$Native_Platform.map;
 var _elm_lang$core$Platform_Sub$Sub = {ctor: 'Sub'};
 
+var _elm_lang$lazy$Native_Lazy = function() {
+
+function memoize(thunk)
+{
+    var value;
+    var isForced = false;
+    return function(tuple0) {
+        if (!isForced) {
+            value = thunk(tuple0);
+            isForced = true;
+        }
+        return value;
+    };
+}
+
+return {
+    memoize: memoize
+};
+
+}();
+
+var _elm_lang$lazy$Lazy$force = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0(
+		{ctor: '_Tuple0'});
+};
+var _elm_lang$lazy$Lazy$Lazy = function (a) {
+	return {ctor: 'Lazy', _0: a};
+};
+var _elm_lang$lazy$Lazy$lazy = function (thunk) {
+	return _elm_lang$lazy$Lazy$Lazy(
+		_elm_lang$lazy$Native_Lazy.memoize(thunk));
+};
+var _elm_lang$lazy$Lazy$map = F2(
+	function (f, a) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p2) {
+				var _p3 = _p2;
+				return f(
+					_elm_lang$lazy$Lazy$force(a));
+			});
+	});
+var _elm_lang$lazy$Lazy$map2 = F3(
+	function (f, a, b) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p4) {
+				var _p5 = _p4;
+				return A2(
+					f,
+					_elm_lang$lazy$Lazy$force(a),
+					_elm_lang$lazy$Lazy$force(b));
+			});
+	});
+var _elm_lang$lazy$Lazy$map3 = F4(
+	function (f, a, b, c) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p6) {
+				var _p7 = _p6;
+				return A3(
+					f,
+					_elm_lang$lazy$Lazy$force(a),
+					_elm_lang$lazy$Lazy$force(b),
+					_elm_lang$lazy$Lazy$force(c));
+			});
+	});
+var _elm_lang$lazy$Lazy$map4 = F5(
+	function (f, a, b, c, d) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p8) {
+				var _p9 = _p8;
+				return A4(
+					f,
+					_elm_lang$lazy$Lazy$force(a),
+					_elm_lang$lazy$Lazy$force(b),
+					_elm_lang$lazy$Lazy$force(c),
+					_elm_lang$lazy$Lazy$force(d));
+			});
+	});
+var _elm_lang$lazy$Lazy$map5 = F6(
+	function (f, a, b, c, d, e) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p10) {
+				var _p11 = _p10;
+				return A5(
+					f,
+					_elm_lang$lazy$Lazy$force(a),
+					_elm_lang$lazy$Lazy$force(b),
+					_elm_lang$lazy$Lazy$force(c),
+					_elm_lang$lazy$Lazy$force(d),
+					_elm_lang$lazy$Lazy$force(e));
+			});
+	});
+var _elm_lang$lazy$Lazy$apply = F2(
+	function (f, x) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p12) {
+				var _p13 = _p12;
+				return A2(
+					_elm_lang$lazy$Lazy$force,
+					f,
+					_elm_lang$lazy$Lazy$force(x));
+			});
+	});
+var _elm_lang$lazy$Lazy$andThen = F2(
+	function (a, callback) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p14) {
+				var _p15 = _p14;
+				return _elm_lang$lazy$Lazy$force(
+					callback(
+						_elm_lang$lazy$Lazy$force(a)));
+			});
+	});
+
 //import Maybe, Native.List, Native.Utils, Result //
 
 var _elm_lang$core$Native_String = function() {
@@ -2951,6 +3065,997 @@ var _elm_lang$core$String$fromChar = function ($char) {
 	return A2(_elm_lang$core$String$cons, $char, '');
 };
 var _elm_lang$core$String$isEmpty = _elm_lang$core$Native_String.isEmpty;
+
+//import Maybe, Native.List //
+
+var _elm_lang$core$Native_Regex = function() {
+
+function escape(str)
+{
+	return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+function caseInsensitive(re)
+{
+	return new RegExp(re.source, 'gi');
+}
+function regex(raw)
+{
+	return new RegExp(raw, 'g');
+}
+
+function contains(re, string)
+{
+	return string.match(re) !== null;
+}
+
+function find(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex === re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		out.push({
+			match: result[0],
+			submatches: _elm_lang$core$Native_List.fromArray(subs),
+			index: result.index,
+			number: number
+		});
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+function replace(n, re, replacer, string)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		return replacer({
+			match: match,
+			submatches: _elm_lang$core$Native_List.fromArray(submatches),
+			index: arguments[i - 1],
+			number: count
+		});
+	}
+	return string.replace(re, jsReplacer);
+}
+
+function split(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	if (n === Infinity)
+	{
+		return _elm_lang$core$Native_List.fromArray(str.split(re));
+	}
+	var string = str;
+	var result;
+	var out = [];
+	var start = re.lastIndex;
+	while (n--)
+	{
+		if (!(result = re.exec(string))) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+return {
+	regex: regex,
+	caseInsensitive: caseInsensitive,
+	escape: escape,
+
+	contains: F2(contains),
+	find: F3(find),
+	replace: F4(replace),
+	split: F3(split)
+};
+
+}();
+
+var _elm_lang$core$Regex$split = _elm_lang$core$Native_Regex.split;
+var _elm_lang$core$Regex$replace = _elm_lang$core$Native_Regex.replace;
+var _elm_lang$core$Regex$find = _elm_lang$core$Native_Regex.find;
+var _elm_lang$core$Regex$contains = _elm_lang$core$Native_Regex.contains;
+var _elm_lang$core$Regex$caseInsensitive = _elm_lang$core$Native_Regex.caseInsensitive;
+var _elm_lang$core$Regex$regex = _elm_lang$core$Native_Regex.regex;
+var _elm_lang$core$Regex$escape = _elm_lang$core$Native_Regex.escape;
+var _elm_lang$core$Regex$Match = F4(
+	function (a, b, c, d) {
+		return {match: a, submatches: b, index: c, number: d};
+	});
+var _elm_lang$core$Regex$Regex = {ctor: 'Regex'};
+var _elm_lang$core$Regex$AtMost = function (a) {
+	return {ctor: 'AtMost', _0: a};
+};
+var _elm_lang$core$Regex$All = {ctor: 'All'};
+
+var _Bogdanp$elm_combine$Combine$app = function (p) {
+	var _p0 = p;
+	if (_p0.ctor === 'Parser') {
+		return _p0._0;
+	} else {
+		return _elm_lang$lazy$Lazy$force(_p0._0);
+	}
+};
+var _Bogdanp$elm_combine$Combine$parse = F2(
+	function (p, input) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$app,
+			p,
+			{input: input, position: 0});
+	});
+var _Bogdanp$elm_combine$Combine$Context = F2(
+	function (a, b) {
+		return {input: a, position: b};
+	});
+var _Bogdanp$elm_combine$Combine$RecursiveParser = function (a) {
+	return {ctor: 'RecursiveParser', _0: a};
+};
+var _Bogdanp$elm_combine$Combine$rec = function (t) {
+	return _Bogdanp$elm_combine$Combine$RecursiveParser(
+		_elm_lang$lazy$Lazy$lazy(
+			function (_p1) {
+				var _p2 = _p1;
+				return _Bogdanp$elm_combine$Combine$app(
+					t(
+						{ctor: '_Tuple0'}));
+			}));
+};
+var _Bogdanp$elm_combine$Combine$Parser = function (a) {
+	return {ctor: 'Parser', _0: a};
+};
+var _Bogdanp$elm_combine$Combine$primitive = _Bogdanp$elm_combine$Combine$Parser;
+var _Bogdanp$elm_combine$Combine$bimap = F3(
+	function (fok, ferr, p) {
+		return _Bogdanp$elm_combine$Combine$Parser(
+			function (cx) {
+				var _p3 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+				if (_p3._0.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Result$Ok(
+							fok(_p3._0._0)),
+						_1: _p3._1
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Result$Err(
+							ferr(_p3._0._0)),
+						_1: _p3._1
+					};
+				}
+			});
+	});
+var _Bogdanp$elm_combine$Combine$map = F2(
+	function (f, p) {
+		return A3(_Bogdanp$elm_combine$Combine$bimap, f, _elm_lang$core$Basics$identity, p);
+	});
+var _Bogdanp$elm_combine$Combine$mapError = _Bogdanp$elm_combine$Combine$bimap(_elm_lang$core$Basics$identity);
+var _Bogdanp$elm_combine$Combine$andThen = F2(
+	function (p, f) {
+		return _Bogdanp$elm_combine$Combine$Parser(
+			function (cx) {
+				var _p4 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+				if (_p4._0.ctor === 'Ok') {
+					return A2(
+						_Bogdanp$elm_combine$Combine$app,
+						f(_p4._0._0),
+						_p4._1);
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Result$Err(_p4._0._0),
+						_1: _p4._1
+					};
+				}
+			});
+	});
+var _Bogdanp$elm_combine$Combine$sequence = function (ps) {
+	var accumulate = F3(
+		function (acc, ps, cx) {
+			accumulate:
+			while (true) {
+				var _p5 = ps;
+				if (_p5.ctor === '[]') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Result$Ok(
+							_elm_lang$core$List$reverse(acc)),
+						_1: cx
+					};
+				} else {
+					var _p6 = A2(_Bogdanp$elm_combine$Combine$app, _p5._0, cx);
+					if (_p6._0.ctor === 'Ok') {
+						var _v6 = A2(_elm_lang$core$List_ops['::'], _p6._0._0, acc),
+							_v7 = _p5._1,
+							_v8 = _p6._1;
+						acc = _v6;
+						ps = _v7;
+						cx = _v8;
+						continue accumulate;
+					} else {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Result$Err(_p6._0._0),
+							_1: _p6._1
+						};
+					}
+				}
+			}
+		});
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			return A3(
+				accumulate,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				ps,
+				cx);
+		});
+};
+var _Bogdanp$elm_combine$Combine$fail = function (ms) {
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Result$Err(ms),
+				_1: cx
+			};
+		});
+};
+var _Bogdanp$elm_combine$Combine$succeed = function (r) {
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Result$Ok(r),
+				_1: cx
+			};
+		});
+};
+var _Bogdanp$elm_combine$Combine$andMap = F2(
+	function (lp, rp) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andThen,
+			lp,
+			function (f) {
+				return A2(
+					_Bogdanp$elm_combine$Combine$andThen,
+					rp,
+					function (x) {
+						return _Bogdanp$elm_combine$Combine$succeed(
+							f(x));
+					});
+			});
+	});
+var _Bogdanp$elm_combine$Combine$between = F3(
+	function (lp, rp, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$andMap,
+				A2(
+					_Bogdanp$elm_combine$Combine$map,
+					_elm_lang$core$Basics$flip(
+						function (_p7) {
+							return _elm_lang$core$Basics$always(
+								_elm_lang$core$Basics$always(_p7));
+						}),
+					lp),
+				p),
+			rp);
+	});
+var _Bogdanp$elm_combine$Combine$skip = function (p) {
+	return A2(
+		_Bogdanp$elm_combine$Combine$andThen,
+		p,
+		_elm_lang$core$Basics$always(
+			_Bogdanp$elm_combine$Combine$succeed(
+				{ctor: '_Tuple0'})));
+};
+var _Bogdanp$elm_combine$Combine$count = F2(
+	function (n, p) {
+		var accumulate = F2(
+			function (x, acc) {
+				return (_elm_lang$core$Native_Utils.cmp(x, 0) < 1) ? _Bogdanp$elm_combine$Combine$succeed(
+					_elm_lang$core$List$reverse(acc)) : A2(
+					_Bogdanp$elm_combine$Combine$andThen,
+					p,
+					function (res) {
+						return A2(
+							accumulate,
+							x - 1,
+							A2(_elm_lang$core$List_ops['::'], res, acc));
+					});
+			});
+		return A2(
+			accumulate,
+			n,
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	});
+var _Bogdanp$elm_combine$Combine$string = function (s) {
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			if (A2(_elm_lang$core$String$startsWith, s, cx.input)) {
+				var len = _elm_lang$core$String$length(s);
+				var rem = A2(_elm_lang$core$String$dropLeft, len, cx.input);
+				var pos = cx.position + len;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(s),
+					_1: _elm_lang$core$Native_Utils.update(
+						cx,
+						{input: rem, position: pos})
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Err(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$core$Basics_ops['++'],
+								'expected ',
+								_elm_lang$core$Basics$toString(s))
+							])),
+					_1: cx
+				};
+			}
+		});
+};
+var _Bogdanp$elm_combine$Combine$parens = A2(
+	_Bogdanp$elm_combine$Combine$between,
+	_Bogdanp$elm_combine$Combine$string('('),
+	_Bogdanp$elm_combine$Combine$string(')'));
+var _Bogdanp$elm_combine$Combine$braces = A2(
+	_Bogdanp$elm_combine$Combine$between,
+	_Bogdanp$elm_combine$Combine$string('{'),
+	_Bogdanp$elm_combine$Combine$string('}'));
+var _Bogdanp$elm_combine$Combine$brackets = A2(
+	_Bogdanp$elm_combine$Combine$between,
+	_Bogdanp$elm_combine$Combine$string('['),
+	_Bogdanp$elm_combine$Combine$string(']'));
+var _Bogdanp$elm_combine$Combine$regex = function (pattern) {
+	var pattern$ = A2(_elm_lang$core$String$startsWith, '^', pattern) ? pattern : A2(_elm_lang$core$Basics_ops['++'], '^', pattern);
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			var _p8 = A3(
+				_elm_lang$core$Regex$find,
+				_elm_lang$core$Regex$AtMost(1),
+				_elm_lang$core$Regex$regex(pattern$),
+				cx.input);
+			if ((_p8.ctor === '::') && (_p8._1.ctor === '[]')) {
+				var _p9 = _p8._0;
+				var len = _elm_lang$core$String$length(_p9.match);
+				var rem = A2(_elm_lang$core$String$dropLeft, len, cx.input);
+				var pos = cx.position + len;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(_p9.match),
+					_1: _elm_lang$core$Native_Utils.update(
+						cx,
+						{input: rem, position: pos})
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Err(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$core$Basics_ops['++'],
+								'expected input matching Regexp /',
+								A2(_elm_lang$core$Basics_ops['++'], pattern$, '/'))
+							])),
+					_1: cx
+				};
+			}
+		});
+};
+var _Bogdanp$elm_combine$Combine$while = function (pred) {
+	var accumulate = F2(
+		function (acc, cx) {
+			accumulate:
+			while (true) {
+				var _p10 = _elm_lang$core$String$uncons(cx.input);
+				if (_p10.ctor === 'Just') {
+					var _p11 = _p10._0._0;
+					if (pred(_p11)) {
+						var pos = cx.position + 1;
+						var c = A2(_elm_lang$core$String$cons, _p11, '');
+						var _v11 = A2(_elm_lang$core$Basics_ops['++'], acc, c),
+							_v12 = _elm_lang$core$Native_Utils.update(
+							cx,
+							{input: _p10._0._1, position: pos});
+						acc = _v11;
+						cx = _v12;
+						continue accumulate;
+					} else {
+						return {ctor: '_Tuple2', _0: acc, _1: cx};
+					}
+				} else {
+					return {ctor: '_Tuple2', _0: acc, _1: cx};
+				}
+			}
+		});
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			var _p12 = A2(accumulate, '', cx);
+			var res = _p12._0;
+			var cx$ = _p12._1;
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Result$Ok(res),
+				_1: cx$
+			};
+		});
+};
+var _Bogdanp$elm_combine$Combine$end = _Bogdanp$elm_combine$Combine$Parser(
+	function (cx) {
+		return _elm_lang$core$Native_Utils.eq(cx.input, '') ? {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Result$Ok(
+				{ctor: '_Tuple0'}),
+			_1: cx
+		} : {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Result$Err(
+				_elm_lang$core$Native_List.fromArray(
+					['expected end of input'])),
+			_1: cx
+		};
+	});
+var _Bogdanp$elm_combine$Combine$or = F2(
+	function (lp, rp) {
+		return _Bogdanp$elm_combine$Combine$Parser(
+			function (cx) {
+				var res = A2(_Bogdanp$elm_combine$Combine$app, lp, cx);
+				var _p13 = res;
+				if (_p13._0.ctor === 'Ok') {
+					return res;
+				} else {
+					var res$ = A2(_Bogdanp$elm_combine$Combine$app, rp, cx);
+					var _p14 = res$;
+					if (_p14._0.ctor === 'Ok') {
+						return res$;
+					} else {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Result$Err(
+								A2(_elm_lang$core$Basics_ops['++'], _p13._0._0, _p14._0._0)),
+							_1: cx
+						};
+					}
+				}
+			});
+	});
+var _Bogdanp$elm_combine$Combine$choice = function (xs) {
+	return A3(
+		_elm_lang$core$List$foldr,
+		_Bogdanp$elm_combine$Combine$or,
+		_Bogdanp$elm_combine$Combine$fail(
+			_elm_lang$core$Native_List.fromArray(
+				[])),
+		xs);
+};
+var _Bogdanp$elm_combine$Combine$optional = F2(
+	function (res, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$or,
+			p,
+			_Bogdanp$elm_combine$Combine$succeed(res));
+	});
+var _Bogdanp$elm_combine$Combine$chainl = F2(
+	function (p, op) {
+		var accumulate = function (x) {
+			return A2(
+				_Bogdanp$elm_combine$Combine$or,
+				A2(
+					_Bogdanp$elm_combine$Combine$andThen,
+					op,
+					function (f) {
+						return A2(
+							_Bogdanp$elm_combine$Combine$andThen,
+							p,
+							function (y) {
+								return accumulate(
+									A2(f, x, y));
+							});
+					}),
+				_Bogdanp$elm_combine$Combine$succeed(x));
+		};
+		return A2(_Bogdanp$elm_combine$Combine$andThen, p, accumulate);
+	});
+var _Bogdanp$elm_combine$Combine$chainr = F2(
+	function (p, op) {
+		var accumulate = function (x) {
+			return A2(
+				_Bogdanp$elm_combine$Combine$or,
+				A2(
+					_Bogdanp$elm_combine$Combine$andThen,
+					op,
+					function (f) {
+						return A2(
+							_Bogdanp$elm_combine$Combine$andThen,
+							A2(_Bogdanp$elm_combine$Combine$andThen, p, accumulate),
+							function (y) {
+								return _Bogdanp$elm_combine$Combine$succeed(
+									A2(f, x, y));
+							});
+					}),
+				_Bogdanp$elm_combine$Combine$succeed(x));
+		};
+		return A2(_Bogdanp$elm_combine$Combine$andThen, p, accumulate);
+	});
+var _Bogdanp$elm_combine$Combine$maybe = function (p) {
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			var _p15 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+			if ((_p15.ctor === '_Tuple2') && (_p15._0.ctor === 'Ok')) {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(
+						_elm_lang$core$Maybe$Just(_p15._0._0)),
+					_1: _p15._1
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(_elm_lang$core$Maybe$Nothing),
+					_1: cx
+				};
+			}
+		});
+};
+var _Bogdanp$elm_combine$Combine$many = function (p) {
+	var accumulate = F2(
+		function (acc, cx) {
+			accumulate:
+			while (true) {
+				var _p16 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+				if ((_p16.ctor === '_Tuple2') && (_p16._0.ctor === 'Ok')) {
+					var _p17 = _p16._1;
+					if (_elm_lang$core$Native_Utils.eq(cx, _p17)) {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$List$reverse(acc),
+							_1: cx
+						};
+					} else {
+						var _v17 = A2(_elm_lang$core$List_ops['::'], _p16._0._0, acc),
+							_v18 = _p17;
+						acc = _v17;
+						cx = _v18;
+						continue accumulate;
+					}
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$List$reverse(acc),
+						_1: cx
+					};
+				}
+			}
+		});
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			var _p18 = A2(
+				accumulate,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				cx);
+			var res = _p18._0;
+			var cx$ = _p18._1;
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Result$Ok(res),
+				_1: cx$
+			};
+		});
+};
+var _Bogdanp$elm_combine$Combine$many1 = function (p) {
+	return A2(
+		_Bogdanp$elm_combine$Combine$andMap,
+		A2(
+			_Bogdanp$elm_combine$Combine$map,
+			F2(
+				function (x, y) {
+					return A2(_elm_lang$core$List_ops['::'], x, y);
+				}),
+			p),
+		_Bogdanp$elm_combine$Combine$many(p));
+};
+var _Bogdanp$elm_combine$Combine$skipMany1 = function (p) {
+	return A2(
+		_Bogdanp$elm_combine$Combine$andThen,
+		_Bogdanp$elm_combine$Combine$many1(
+			_Bogdanp$elm_combine$Combine$skip(p)),
+		_elm_lang$core$Basics$always(
+			_Bogdanp$elm_combine$Combine$succeed(
+				{ctor: '_Tuple0'})));
+};
+var _Bogdanp$elm_combine$Combine$sepBy1 = F2(
+	function (sep, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$map,
+				F2(
+					function (x, y) {
+						return A2(_elm_lang$core$List_ops['::'], x, y);
+					}),
+				p),
+			_Bogdanp$elm_combine$Combine$many(
+				A2(
+					_Bogdanp$elm_combine$Combine$andMap,
+					A2(
+						_Bogdanp$elm_combine$Combine$map,
+						_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always),
+						sep),
+					p)));
+	});
+var _Bogdanp$elm_combine$Combine$sepBy = F2(
+	function (sep, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$or,
+			A2(_Bogdanp$elm_combine$Combine$sepBy1, sep, p),
+			_Bogdanp$elm_combine$Combine$succeed(
+				_elm_lang$core$Native_List.fromArray(
+					[])));
+	});
+var _Bogdanp$elm_combine$Combine$sepEndBy1 = F2(
+	function (sep, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$map,
+				_elm_lang$core$Basics$always,
+				A2(_Bogdanp$elm_combine$Combine$sepBy1, sep, p)),
+			_Bogdanp$elm_combine$Combine$maybe(sep));
+	});
+var _Bogdanp$elm_combine$Combine$sepEndBy = F2(
+	function (sep, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$or,
+			A2(_Bogdanp$elm_combine$Combine$sepEndBy1, sep, p),
+			_Bogdanp$elm_combine$Combine$succeed(
+				_elm_lang$core$Native_List.fromArray(
+					[])));
+	});
+var _Bogdanp$elm_combine$Combine$skipMany = function (p) {
+	return A2(
+		_Bogdanp$elm_combine$Combine$andThen,
+		_Bogdanp$elm_combine$Combine$many(
+			_Bogdanp$elm_combine$Combine$skip(p)),
+		_elm_lang$core$Basics$always(
+			_Bogdanp$elm_combine$Combine$succeed(
+				{ctor: '_Tuple0'})));
+};
+var _Bogdanp$elm_combine$Combine$manyTill = F2(
+	function (p, end) {
+		var accumulate = F2(
+			function (acc, cx) {
+				accumulate:
+				while (true) {
+					var _p19 = A2(_Bogdanp$elm_combine$Combine$app, end, cx);
+					if (_p19._0.ctor === 'Ok') {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Result$Ok(
+								_elm_lang$core$List$reverse(acc)),
+							_1: _p19._1
+						};
+					} else {
+						var _p20 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+						if ((_p20.ctor === '_Tuple2') && (_p20._0.ctor === 'Ok')) {
+							var _v21 = A2(_elm_lang$core$List_ops['::'], _p20._0._0, acc),
+								_v22 = _p20._1;
+							acc = _v21;
+							cx = _v22;
+							continue accumulate;
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Result$Err(_p19._0._0),
+								_1: _p19._1
+							};
+						}
+					}
+				}
+			});
+		return _Bogdanp$elm_combine$Combine$Parser(
+			accumulate(
+				_elm_lang$core$Native_List.fromArray(
+					[])));
+	});
+
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<|>'] = _Bogdanp$elm_combine$Combine$or;
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['*>'] = F2(
+	function (lp, rp) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$map,
+				_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always),
+				lp),
+			rp);
+	});
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<*'] = F2(
+	function (lp, rp) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(_Bogdanp$elm_combine$Combine$map, _elm_lang$core$Basics$always, lp),
+			rp);
+	});
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<?>'] = F2(
+	function (p, m) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$mapError,
+			function (_p0) {
+				return _elm_lang$core$Native_List.fromArray(
+					[m]);
+			},
+			p);
+	});
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<$'] = function (res) {
+	return _Bogdanp$elm_combine$Combine$map(
+		function (_p1) {
+			return res;
+		});
+};
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<*>'] = _Bogdanp$elm_combine$Combine$andMap;
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<$>'] = _Bogdanp$elm_combine$Combine$map;
+
+var _Bogdanp$elm_combine$Combine_Char$crlf = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	A2(
+		_Bogdanp$elm_combine$Combine_Infix_ops['<$'],
+		_elm_lang$core$Native_Utils.chr('\n'),
+		_Bogdanp$elm_combine$Combine$regex('\r\n')),
+	'expected crlf');
+var _Bogdanp$elm_combine$Combine_Char$satisfy = function (pred) {
+	return _Bogdanp$elm_combine$Combine$primitive(
+		function (cx) {
+			var message = 'could not satisfy predicate';
+			var _p0 = _elm_lang$core$String$uncons(cx.input);
+			if (_p0.ctor === 'Just') {
+				var _p1 = _p0._0._0;
+				return pred(_p1) ? {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(_p1),
+					_1: _elm_lang$core$Native_Utils.update(
+						cx,
+						{input: _p0._0._1, position: cx.position + 1})
+				} : {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Err(
+						_elm_lang$core$Native_List.fromArray(
+							[message])),
+					_1: cx
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Err(
+						_elm_lang$core$Native_List.fromArray(
+							[message])),
+					_1: cx
+				};
+			}
+		});
+};
+var _Bogdanp$elm_combine$Combine_Char$char = function (c) {
+	return A2(
+		_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+		_Bogdanp$elm_combine$Combine_Char$satisfy(
+			F2(
+				function (x, y) {
+					return _elm_lang$core$Native_Utils.eq(x, y);
+				})(c)),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'expected ',
+			_elm_lang$core$Basics$toString(c)));
+};
+var _Bogdanp$elm_combine$Combine_Char$anyChar = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		_elm_lang$core$Basics$always(true)),
+	'expected any character');
+var _Bogdanp$elm_combine$Combine_Char$oneOf = function (cs) {
+	return A2(
+		_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+		_Bogdanp$elm_combine$Combine_Char$satisfy(
+			A2(_elm_lang$core$Basics$flip, _elm_lang$core$List$member, cs)),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'expected one of ',
+			_elm_lang$core$Basics$toString(cs)));
+};
+var _Bogdanp$elm_combine$Combine_Char$noneOf = function (cs) {
+	return A2(
+		_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+		_Bogdanp$elm_combine$Combine_Char$satisfy(
+			function (_p2) {
+				return _elm_lang$core$Basics$not(
+					A3(_elm_lang$core$Basics$flip, _elm_lang$core$List$member, cs, _p2));
+			}),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'expected none of ',
+			_elm_lang$core$Basics$toString(cs)));
+};
+var _Bogdanp$elm_combine$Combine_Char$space = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		F2(
+			function (x, y) {
+				return _elm_lang$core$Native_Utils.eq(x, y);
+			})(
+			_elm_lang$core$Native_Utils.chr(' '))),
+	'expected space');
+var _Bogdanp$elm_combine$Combine_Char$tab = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		F2(
+			function (x, y) {
+				return _elm_lang$core$Native_Utils.eq(x, y);
+			})(
+			_elm_lang$core$Native_Utils.chr('\t'))),
+	'expected tab');
+var _Bogdanp$elm_combine$Combine_Char$newline = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		F2(
+			function (x, y) {
+				return _elm_lang$core$Native_Utils.eq(x, y);
+			})(
+			_elm_lang$core$Native_Utils.chr('\n'))),
+	'expected newline');
+var _Bogdanp$elm_combine$Combine_Char$eol = A2(_Bogdanp$elm_combine$Combine_Infix_ops['<|>'], _Bogdanp$elm_combine$Combine_Char$newline, _Bogdanp$elm_combine$Combine_Char$crlf);
+var _Bogdanp$elm_combine$Combine_Char$lower = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isLower),
+	'expected a lowercase character');
+var _Bogdanp$elm_combine$Combine_Char$upper = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isUpper),
+	'expected an uppercase character');
+var _Bogdanp$elm_combine$Combine_Char$digit = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isDigit),
+	'expected a digit');
+var _Bogdanp$elm_combine$Combine_Char$octDigit = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isOctDigit),
+	'expected an octal digit');
+var _Bogdanp$elm_combine$Combine_Char$hexDigit = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isHexDigit),
+	'expected a hexadecimal digit');
+
+var _Bogdanp$elm_combine$Combine_Num$digit = function () {
+	var toDigit = function (c) {
+		return _elm_lang$core$Char$toCode(c) - _elm_lang$core$Char$toCode(
+			_elm_lang$core$Native_Utils.chr('0'));
+	};
+	return A2(
+		_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+		A2(_Bogdanp$elm_combine$Combine_Infix_ops['<$>'], toDigit, _Bogdanp$elm_combine$Combine_Char$digit),
+		'expected a digit');
+}();
+var _Bogdanp$elm_combine$Combine_Num$sign = A2(
+	_Bogdanp$elm_combine$Combine$optional,
+	1,
+	_Bogdanp$elm_combine$Combine$choice(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_Bogdanp$elm_combine$Combine_Infix_ops['<$'],
+				1,
+				_Bogdanp$elm_combine$Combine$string('+')),
+				A2(
+				_Bogdanp$elm_combine$Combine_Infix_ops['<$'],
+				-1,
+				_Bogdanp$elm_combine$Combine$string('-'))
+			])));
+var _Bogdanp$elm_combine$Combine_Num$unwrap = F2(
+	function (f, s) {
+		var _p0 = f(s);
+		if (_p0.ctor === 'Ok') {
+			return _p0._0;
+		} else {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'Combine.Num',
+				{
+					start: {line: 19, column: 3},
+					end: {line: 24, column: 73}
+				},
+				_p0)(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'impossible state in Combine.Num.unwrap: ',
+					_elm_lang$core$Basics$toString(_p0._0)));
+		}
+	});
+var _Bogdanp$elm_combine$Combine_Num$toInt = _Bogdanp$elm_combine$Combine_Num$unwrap(_elm_lang$core$String$toInt);
+var _Bogdanp$elm_combine$Combine_Num$int = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	A2(
+		_Bogdanp$elm_combine$Combine$andMap,
+		A2(
+			_Bogdanp$elm_combine$Combine$map,
+			F2(
+				function (x, y) {
+					return x * y;
+				}),
+			_Bogdanp$elm_combine$Combine_Num$sign),
+		A2(
+			_Bogdanp$elm_combine$Combine_Infix_ops['<$>'],
+			_Bogdanp$elm_combine$Combine_Num$toInt,
+			_Bogdanp$elm_combine$Combine$regex('(0|[1-9][0-9]*)'))),
+	'expected an integer');
+var _Bogdanp$elm_combine$Combine_Num$toFloat = _Bogdanp$elm_combine$Combine_Num$unwrap(_elm_lang$core$String$toFloat);
+var _Bogdanp$elm_combine$Combine_Num$float = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	A2(
+		_Bogdanp$elm_combine$Combine$andMap,
+		A2(
+			_Bogdanp$elm_combine$Combine$map,
+			function (_p2) {
+				return F2(
+					function (x, y) {
+						return x * y;
+					})(
+					_elm_lang$core$Basics$toFloat(_p2));
+			},
+			_Bogdanp$elm_combine$Combine_Num$sign),
+		A2(
+			_Bogdanp$elm_combine$Combine_Infix_ops['<$>'],
+			_Bogdanp$elm_combine$Combine_Num$toFloat,
+			_Bogdanp$elm_combine$Combine$regex('(0|[1-9][0-9]*)(\\.[0-9]+)'))),
+	'expected a float');
 
 var _elm_lang$core$Dict$foldr = F3(
 	function (f, acc, t) {
@@ -3828,6 +4933,383 @@ var _elm_lang$core$Dict$diff = F2(
 			t1,
 			t2);
 	});
+
+var _avh4$elm_diff$Diff$tokenizeLines = function (s) {
+	var tokens = A2(_elm_lang$core$String$split, '\n', s);
+	var n = _elm_lang$core$List$length(tokens);
+	return _elm_lang$core$Native_Utils.eq(s, '') ? _elm_lang$core$Native_List.fromArray(
+		[]) : A2(
+		_elm_lang$core$List$indexedMap,
+		F2(
+			function (i, s) {
+				return (_elm_lang$core$Native_Utils.cmp(i, n - 1) < 0) ? A2(_elm_lang$core$Basics_ops['++'], s, '\n') : s;
+			}),
+		tokens);
+};
+var _avh4$elm_diff$Diff$val = F3(
+	function (row, col, s) {
+		return A2(
+			_elm_lang$core$Dict$get,
+			{ctor: '_Tuple2', _0: row, _1: col},
+			s);
+	});
+var _avh4$elm_diff$Diff$orCrash = function (m) {
+	var _p0 = m;
+	if (_p0.ctor === 'Just') {
+		return _p0._0;
+	} else {
+		return _elm_lang$core$Native_Utils.crashCase(
+			'Diff',
+			{
+				start: {line: 114, column: 5},
+				end: {line: 119, column: 37}
+			},
+			_p0)('No options');
+	}
+};
+var _avh4$elm_diff$Diff$bestScore = F2(
+	function (ma, mb) {
+		var _p2 = {ctor: '_Tuple2', _0: ma, _1: mb};
+		if (_p2._1.ctor === 'Nothing') {
+			return _p2._0;
+		} else {
+			if (_p2._0.ctor === 'Nothing') {
+				return _p2._1;
+			} else {
+				var _p4 = _p2._1._0._0;
+				var _p3 = _p2._0._0._0;
+				return (_elm_lang$core$Native_Utils.cmp(_p4, _p3) > 0) ? _elm_lang$core$Maybe$Just(
+					{ctor: '_Tuple2', _0: _p4, _1: _p2._1._0._1}) : _elm_lang$core$Maybe$Just(
+					{ctor: '_Tuple2', _0: _p3, _1: _p2._0._0._1});
+			}
+		}
+	});
+var _avh4$elm_diff$Diff$score = F3(
+	function (add, c, _p5) {
+		var _p6 = _p5;
+		return {
+			ctor: '_Tuple2',
+			_0: _p6._0 + add,
+			_1: A2(_elm_lang$core$List_ops['::'], c, _p6._1)
+		};
+	});
+var _avh4$elm_diff$Diff$scores = F4(
+	function (tl, t, l, _p7) {
+		var _p8 = _p7;
+		return A2(
+			_elm_lang$core$Maybe$map,
+			A2(_avh4$elm_diff$Diff$score, _p8._1, _p8._2),
+			function () {
+				var _p9 = _p8._0;
+				switch (_p9.ctor) {
+					case 'UseA':
+						return t;
+					case 'UseB':
+						return l;
+					default:
+						return tl;
+				}
+			}());
+	});
+var _avh4$elm_diff$Diff$Removed = function (a) {
+	return {ctor: 'Removed', _0: a};
+};
+var _avh4$elm_diff$Diff$Added = function (a) {
+	return {ctor: 'Added', _0: a};
+};
+var _avh4$elm_diff$Diff$Changed = F2(
+	function (a, b) {
+		return {ctor: 'Changed', _0: a, _1: b};
+	});
+var _avh4$elm_diff$Diff$NoChange = function (a) {
+	return {ctor: 'NoChange', _0: a};
+};
+var _avh4$elm_diff$Diff$mergeAll = F2(
+	function (next, list) {
+		var _p10 = {ctor: '_Tuple2', _0: next, _1: list};
+		_v5_8:
+		do {
+			if ((_p10.ctor === '_Tuple2') && (_p10._1.ctor === '::')) {
+				switch (_p10._0.ctor) {
+					case 'Added':
+						switch (_p10._1._0.ctor) {
+							case 'Added':
+								return A2(
+									_elm_lang$core$List_ops['::'],
+									_avh4$elm_diff$Diff$Added(
+										A2(_elm_lang$core$Basics_ops['++'], _p10._0._0, _p10._1._0._0)),
+									_p10._1._1);
+							case 'Removed':
+								return A2(
+									_elm_lang$core$List_ops['::'],
+									A2(_avh4$elm_diff$Diff$Changed, _p10._1._0._0, _p10._0._0),
+									_p10._1._1);
+							case 'Changed':
+								return A2(
+									_elm_lang$core$List_ops['::'],
+									A2(
+										_avh4$elm_diff$Diff$Changed,
+										_p10._1._0._0,
+										A2(_elm_lang$core$Basics_ops['++'], _p10._0._0, _p10._1._0._1)),
+									_p10._1._1);
+							default:
+								break _v5_8;
+						}
+					case 'Removed':
+						switch (_p10._1._0.ctor) {
+							case 'Removed':
+								return A2(
+									_elm_lang$core$List_ops['::'],
+									_avh4$elm_diff$Diff$Removed(
+										A2(_elm_lang$core$Basics_ops['++'], _p10._0._0, _p10._1._0._0)),
+									_p10._1._1);
+							case 'Added':
+								return A2(
+									_elm_lang$core$List_ops['::'],
+									A2(_avh4$elm_diff$Diff$Changed, _p10._0._0, _p10._1._0._0),
+									_p10._1._1);
+							case 'Changed':
+								return A2(
+									_elm_lang$core$List_ops['::'],
+									A2(
+										_avh4$elm_diff$Diff$Changed,
+										A2(_elm_lang$core$Basics_ops['++'], _p10._0._0, _p10._1._0._0),
+										_p10._1._0._1),
+									_p10._1._1);
+							default:
+								break _v5_8;
+						}
+					case 'NoChange':
+						if (_p10._1._0.ctor === 'NoChange') {
+							return A2(
+								_elm_lang$core$List_ops['::'],
+								_avh4$elm_diff$Diff$NoChange(
+									A2(_elm_lang$core$Basics_ops['++'], _p10._0._0, _p10._1._0._0)),
+								_p10._1._1);
+						} else {
+							break _v5_8;
+						}
+					default:
+						if (_p10._1._0.ctor === 'Changed') {
+							return A2(
+								_elm_lang$core$List_ops['::'],
+								A2(
+									_avh4$elm_diff$Diff$Changed,
+									A2(_elm_lang$core$Basics_ops['++'], _p10._0._0, _p10._1._0._0),
+									A2(_elm_lang$core$Basics_ops['++'], _p10._0._1, _p10._1._0._1)),
+								_p10._1._1);
+						} else {
+							break _v5_8;
+						}
+				}
+			} else {
+				break _v5_8;
+			}
+		} while(false);
+		return A2(_elm_lang$core$List_ops['::'], next, list);
+	});
+var _avh4$elm_diff$Diff$UseB = {ctor: 'UseB'};
+var _avh4$elm_diff$Diff$UseA = {ctor: 'UseA'};
+var _avh4$elm_diff$Diff$UseBoth = {ctor: 'UseBoth'};
+var _avh4$elm_diff$Diff$choices = F2(
+	function (a, b) {
+		return _elm_lang$core$Native_Utils.eq(a, b) ? _elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple3',
+				_0: _avh4$elm_diff$Diff$UseA,
+				_1: 0,
+				_2: _avh4$elm_diff$Diff$Removed(a)
+			},
+				{
+				ctor: '_Tuple3',
+				_0: _avh4$elm_diff$Diff$UseB,
+				_1: 0,
+				_2: _avh4$elm_diff$Diff$Added(b)
+			},
+				{
+				ctor: '_Tuple3',
+				_0: _avh4$elm_diff$Diff$UseBoth,
+				_1: 1,
+				_2: _avh4$elm_diff$Diff$NoChange(a)
+			}
+			]) : _elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple3',
+				_0: _avh4$elm_diff$Diff$UseA,
+				_1: 0,
+				_2: _avh4$elm_diff$Diff$Removed(a)
+			},
+				{
+				ctor: '_Tuple3',
+				_0: _avh4$elm_diff$Diff$UseB,
+				_1: 0,
+				_2: _avh4$elm_diff$Diff$Added(b)
+			},
+				{
+				ctor: '_Tuple3',
+				_0: _avh4$elm_diff$Diff$UseBoth,
+				_1: 0,
+				_2: A2(_avh4$elm_diff$Diff$Changed, a, b)
+			}
+			]);
+	});
+var _avh4$elm_diff$Diff$best = F5(
+	function (tl, t, l, a, b) {
+		return _avh4$elm_diff$Diff$orCrash(
+			A3(
+				_elm_lang$core$List$foldl,
+				_avh4$elm_diff$Diff$bestScore,
+				_elm_lang$core$Maybe$Nothing,
+				A2(
+					_elm_lang$core$List$map,
+					A3(_avh4$elm_diff$Diff$scores, tl, t, l),
+					A2(_avh4$elm_diff$Diff$choices, a, b))));
+	});
+var _avh4$elm_diff$Diff$calcCell = F3(
+	function (_p12, _p11, s) {
+		var _p13 = _p12;
+		var _p16 = _p13._0;
+		var _p14 = _p11;
+		var _p15 = _p14._0;
+		return A3(
+			_elm_lang$core$Dict$insert,
+			{ctor: '_Tuple2', _0: _p16, _1: _p15},
+			A5(
+				_avh4$elm_diff$Diff$best,
+				A3(_avh4$elm_diff$Diff$val, _p16 - 1, _p15 - 1, s),
+				A3(_avh4$elm_diff$Diff$val, _p16 - 1, _p15, s),
+				A3(_avh4$elm_diff$Diff$val, _p16, _p15 - 1, s),
+				_p13._1,
+				_p14._1),
+			s);
+	});
+var _avh4$elm_diff$Diff$calcRow = F3(
+	function (bs, _p17, d) {
+		var _p18 = _p17;
+		return A3(
+			_elm_lang$core$List$foldl,
+			_avh4$elm_diff$Diff$calcCell(
+				{ctor: '_Tuple2', _0: _p18._0, _1: _p18._1}),
+			d,
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				bs));
+	});
+var _avh4$elm_diff$Diff$initialGrid = F2(
+	function (az, bs) {
+		return function (d) {
+			return A3(
+				_elm_lang$core$List$foldl,
+				function (a) {
+					return A2(
+						_avh4$elm_diff$Diff$calcCell,
+						a,
+						{ctor: '_Tuple2', _0: -1, _1: ''});
+				},
+				d,
+				A2(
+					_elm_lang$core$List$indexedMap,
+					F2(
+						function (v0, v1) {
+							return {ctor: '_Tuple2', _0: v0, _1: v1};
+						}),
+					az));
+		}(
+			A3(
+				_avh4$elm_diff$Diff$calcRow,
+				bs,
+				{ctor: '_Tuple2', _0: -1, _1: ''},
+				A2(
+					_elm_lang$core$Dict$singleton,
+					{ctor: '_Tuple2', _0: -1, _1: -1},
+					{
+						ctor: '_Tuple2',
+						_0: 0,
+						_1: _elm_lang$core$Native_List.fromArray(
+							[])
+					})));
+	});
+var _avh4$elm_diff$Diff$calcGrid = F2(
+	function (az, bs) {
+		return A3(
+			_elm_lang$core$List$foldl,
+			_avh4$elm_diff$Diff$calcRow(bs),
+			A2(_avh4$elm_diff$Diff$initialGrid, az, bs),
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				az));
+	});
+var _avh4$elm_diff$Diff$diff = F3(
+	function (tokenize, a, b) {
+		var bs = tokenize(b);
+		var az = tokenize(a);
+		return _elm_lang$core$Native_Utils.eq(
+			az,
+			_elm_lang$core$Native_List.fromArray(
+				[])) ? A3(
+			_elm_lang$core$List$foldr,
+			_avh4$elm_diff$Diff$mergeAll,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			A2(_elm_lang$core$List$map, _avh4$elm_diff$Diff$Added, bs)) : (_elm_lang$core$Native_Utils.eq(
+			bs,
+			_elm_lang$core$Native_List.fromArray(
+				[])) ? A3(
+			_elm_lang$core$List$foldr,
+			_avh4$elm_diff$Diff$mergeAll,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			A2(_elm_lang$core$List$map, _avh4$elm_diff$Diff$Removed, az)) : A3(
+			_elm_lang$core$List$foldl,
+			_avh4$elm_diff$Diff$mergeAll,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			A2(
+				_elm_lang$core$Maybe$withDefault,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				A2(
+					_elm_lang$core$Maybe$map,
+					function (_p19) {
+						var _p20 = _p19;
+						return _p20._1;
+					},
+					A2(
+						_elm_lang$core$Dict$get,
+						{
+							ctor: '_Tuple2',
+							_0: -1 + _elm_lang$core$List$length(az),
+							_1: -1 + _elm_lang$core$List$length(bs)
+						},
+						A2(_avh4$elm_diff$Diff$calcGrid, az, bs))))));
+	});
+var _avh4$elm_diff$Diff$diffChars = _avh4$elm_diff$Diff$diff(
+	_elm_lang$core$String$split(''));
+var _avh4$elm_diff$Diff$diffLines = _avh4$elm_diff$Diff$diff(_avh4$elm_diff$Diff$tokenizeLines);
+
+var _elm_community$basics_extra$Basics_Extra_ops = _elm_community$basics_extra$Basics_Extra_ops || {};
+_elm_community$basics_extra$Basics_Extra_ops['=>'] = F2(
+	function (v0, v1) {
+		return {ctor: '_Tuple2', _0: v0, _1: v1};
+	});
+var _elm_community$basics_extra$Basics_Extra$never = function (n) {
+	never:
+	while (true) {
+		var _v0 = n;
+		n = _v0;
+		continue never;
+	}
+};
 
 //import Native.List //
 
@@ -7162,6 +8644,1746 @@ var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
 var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
 var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
 
+var _elm_lang$svg$Svg$text = _elm_lang$virtual_dom$VirtualDom$text;
+var _elm_lang$svg$Svg$svgNamespace = A2(
+	_elm_lang$virtual_dom$VirtualDom$property,
+	'namespace',
+	_elm_lang$core$Json_Encode$string('http://www.w3.org/2000/svg'));
+var _elm_lang$svg$Svg$node = F3(
+	function (name, attributes, children) {
+		return A3(
+			_elm_lang$virtual_dom$VirtualDom$node,
+			name,
+			A2(_elm_lang$core$List_ops['::'], _elm_lang$svg$Svg$svgNamespace, attributes),
+			children);
+	});
+var _elm_lang$svg$Svg$svg = _elm_lang$svg$Svg$node('svg');
+var _elm_lang$svg$Svg$foreignObject = _elm_lang$svg$Svg$node('foreignObject');
+var _elm_lang$svg$Svg$animate = _elm_lang$svg$Svg$node('animate');
+var _elm_lang$svg$Svg$animateColor = _elm_lang$svg$Svg$node('animateColor');
+var _elm_lang$svg$Svg$animateMotion = _elm_lang$svg$Svg$node('animateMotion');
+var _elm_lang$svg$Svg$animateTransform = _elm_lang$svg$Svg$node('animateTransform');
+var _elm_lang$svg$Svg$mpath = _elm_lang$svg$Svg$node('mpath');
+var _elm_lang$svg$Svg$set = _elm_lang$svg$Svg$node('set');
+var _elm_lang$svg$Svg$a = _elm_lang$svg$Svg$node('a');
+var _elm_lang$svg$Svg$defs = _elm_lang$svg$Svg$node('defs');
+var _elm_lang$svg$Svg$g = _elm_lang$svg$Svg$node('g');
+var _elm_lang$svg$Svg$marker = _elm_lang$svg$Svg$node('marker');
+var _elm_lang$svg$Svg$mask = _elm_lang$svg$Svg$node('mask');
+var _elm_lang$svg$Svg$missingGlyph = _elm_lang$svg$Svg$node('missingGlyph');
+var _elm_lang$svg$Svg$pattern = _elm_lang$svg$Svg$node('pattern');
+var _elm_lang$svg$Svg$switch = _elm_lang$svg$Svg$node('switch');
+var _elm_lang$svg$Svg$symbol = _elm_lang$svg$Svg$node('symbol');
+var _elm_lang$svg$Svg$desc = _elm_lang$svg$Svg$node('desc');
+var _elm_lang$svg$Svg$metadata = _elm_lang$svg$Svg$node('metadata');
+var _elm_lang$svg$Svg$title = _elm_lang$svg$Svg$node('title');
+var _elm_lang$svg$Svg$feBlend = _elm_lang$svg$Svg$node('feBlend');
+var _elm_lang$svg$Svg$feColorMatrix = _elm_lang$svg$Svg$node('feColorMatrix');
+var _elm_lang$svg$Svg$feComponentTransfer = _elm_lang$svg$Svg$node('feComponentTransfer');
+var _elm_lang$svg$Svg$feComposite = _elm_lang$svg$Svg$node('feComposite');
+var _elm_lang$svg$Svg$feConvolveMatrix = _elm_lang$svg$Svg$node('feConvolveMatrix');
+var _elm_lang$svg$Svg$feDiffuseLighting = _elm_lang$svg$Svg$node('feDiffuseLighting');
+var _elm_lang$svg$Svg$feDisplacementMap = _elm_lang$svg$Svg$node('feDisplacementMap');
+var _elm_lang$svg$Svg$feFlood = _elm_lang$svg$Svg$node('feFlood');
+var _elm_lang$svg$Svg$feFuncA = _elm_lang$svg$Svg$node('feFuncA');
+var _elm_lang$svg$Svg$feFuncB = _elm_lang$svg$Svg$node('feFuncB');
+var _elm_lang$svg$Svg$feFuncG = _elm_lang$svg$Svg$node('feFuncG');
+var _elm_lang$svg$Svg$feFuncR = _elm_lang$svg$Svg$node('feFuncR');
+var _elm_lang$svg$Svg$feGaussianBlur = _elm_lang$svg$Svg$node('feGaussianBlur');
+var _elm_lang$svg$Svg$feImage = _elm_lang$svg$Svg$node('feImage');
+var _elm_lang$svg$Svg$feMerge = _elm_lang$svg$Svg$node('feMerge');
+var _elm_lang$svg$Svg$feMergeNode = _elm_lang$svg$Svg$node('feMergeNode');
+var _elm_lang$svg$Svg$feMorphology = _elm_lang$svg$Svg$node('feMorphology');
+var _elm_lang$svg$Svg$feOffset = _elm_lang$svg$Svg$node('feOffset');
+var _elm_lang$svg$Svg$feSpecularLighting = _elm_lang$svg$Svg$node('feSpecularLighting');
+var _elm_lang$svg$Svg$feTile = _elm_lang$svg$Svg$node('feTile');
+var _elm_lang$svg$Svg$feTurbulence = _elm_lang$svg$Svg$node('feTurbulence');
+var _elm_lang$svg$Svg$font = _elm_lang$svg$Svg$node('font');
+var _elm_lang$svg$Svg$fontFace = _elm_lang$svg$Svg$node('fontFace');
+var _elm_lang$svg$Svg$fontFaceFormat = _elm_lang$svg$Svg$node('fontFaceFormat');
+var _elm_lang$svg$Svg$fontFaceName = _elm_lang$svg$Svg$node('fontFaceName');
+var _elm_lang$svg$Svg$fontFaceSrc = _elm_lang$svg$Svg$node('fontFaceSrc');
+var _elm_lang$svg$Svg$fontFaceUri = _elm_lang$svg$Svg$node('fontFaceUri');
+var _elm_lang$svg$Svg$hkern = _elm_lang$svg$Svg$node('hkern');
+var _elm_lang$svg$Svg$vkern = _elm_lang$svg$Svg$node('vkern');
+var _elm_lang$svg$Svg$linearGradient = _elm_lang$svg$Svg$node('linearGradient');
+var _elm_lang$svg$Svg$radialGradient = _elm_lang$svg$Svg$node('radialGradient');
+var _elm_lang$svg$Svg$stop = _elm_lang$svg$Svg$node('stop');
+var _elm_lang$svg$Svg$circle = _elm_lang$svg$Svg$node('circle');
+var _elm_lang$svg$Svg$ellipse = _elm_lang$svg$Svg$node('ellipse');
+var _elm_lang$svg$Svg$image = _elm_lang$svg$Svg$node('image');
+var _elm_lang$svg$Svg$line = _elm_lang$svg$Svg$node('line');
+var _elm_lang$svg$Svg$path = _elm_lang$svg$Svg$node('path');
+var _elm_lang$svg$Svg$polygon = _elm_lang$svg$Svg$node('polygon');
+var _elm_lang$svg$Svg$polyline = _elm_lang$svg$Svg$node('polyline');
+var _elm_lang$svg$Svg$rect = _elm_lang$svg$Svg$node('rect');
+var _elm_lang$svg$Svg$use = _elm_lang$svg$Svg$node('use');
+var _elm_lang$svg$Svg$feDistantLight = _elm_lang$svg$Svg$node('feDistantLight');
+var _elm_lang$svg$Svg$fePointLight = _elm_lang$svg$Svg$node('fePointLight');
+var _elm_lang$svg$Svg$feSpotLight = _elm_lang$svg$Svg$node('feSpotLight');
+var _elm_lang$svg$Svg$altGlyph = _elm_lang$svg$Svg$node('altGlyph');
+var _elm_lang$svg$Svg$altGlyphDef = _elm_lang$svg$Svg$node('altGlyphDef');
+var _elm_lang$svg$Svg$altGlyphItem = _elm_lang$svg$Svg$node('altGlyphItem');
+var _elm_lang$svg$Svg$glyph = _elm_lang$svg$Svg$node('glyph');
+var _elm_lang$svg$Svg$glyphRef = _elm_lang$svg$Svg$node('glyphRef');
+var _elm_lang$svg$Svg$textPath = _elm_lang$svg$Svg$node('textPath');
+var _elm_lang$svg$Svg$text$ = _elm_lang$svg$Svg$node('text');
+var _elm_lang$svg$Svg$tref = _elm_lang$svg$Svg$node('tref');
+var _elm_lang$svg$Svg$tspan = _elm_lang$svg$Svg$node('tspan');
+var _elm_lang$svg$Svg$clipPath = _elm_lang$svg$Svg$node('clipPath');
+var _elm_lang$svg$Svg$colorProfile = _elm_lang$svg$Svg$node('colorProfile');
+var _elm_lang$svg$Svg$cursor = _elm_lang$svg$Svg$node('cursor');
+var _elm_lang$svg$Svg$filter = _elm_lang$svg$Svg$node('filter');
+var _elm_lang$svg$Svg$script = _elm_lang$svg$Svg$node('script');
+var _elm_lang$svg$Svg$style = _elm_lang$svg$Svg$node('style');
+var _elm_lang$svg$Svg$view = _elm_lang$svg$Svg$node('view');
+
+var _elm_lang$svg$Svg_Attributes$writingMode = _elm_lang$virtual_dom$VirtualDom$attribute('writing-mode');
+var _elm_lang$svg$Svg_Attributes$wordSpacing = _elm_lang$virtual_dom$VirtualDom$attribute('word-spacing');
+var _elm_lang$svg$Svg_Attributes$visibility = _elm_lang$virtual_dom$VirtualDom$attribute('visibility');
+var _elm_lang$svg$Svg_Attributes$unicodeBidi = _elm_lang$virtual_dom$VirtualDom$attribute('unicode-bidi');
+var _elm_lang$svg$Svg_Attributes$textRendering = _elm_lang$virtual_dom$VirtualDom$attribute('text-rendering');
+var _elm_lang$svg$Svg_Attributes$textDecoration = _elm_lang$virtual_dom$VirtualDom$attribute('text-decoration');
+var _elm_lang$svg$Svg_Attributes$textAnchor = _elm_lang$virtual_dom$VirtualDom$attribute('text-anchor');
+var _elm_lang$svg$Svg_Attributes$stroke = _elm_lang$virtual_dom$VirtualDom$attribute('stroke');
+var _elm_lang$svg$Svg_Attributes$strokeWidth = _elm_lang$virtual_dom$VirtualDom$attribute('stroke-width');
+var _elm_lang$svg$Svg_Attributes$strokeOpacity = _elm_lang$virtual_dom$VirtualDom$attribute('stroke-opacity');
+var _elm_lang$svg$Svg_Attributes$strokeMiterlimit = _elm_lang$virtual_dom$VirtualDom$attribute('stroke-miterlimit');
+var _elm_lang$svg$Svg_Attributes$strokeLinejoin = _elm_lang$virtual_dom$VirtualDom$attribute('stroke-linejoin');
+var _elm_lang$svg$Svg_Attributes$strokeLinecap = _elm_lang$virtual_dom$VirtualDom$attribute('stroke-linecap');
+var _elm_lang$svg$Svg_Attributes$strokeDashoffset = _elm_lang$virtual_dom$VirtualDom$attribute('stroke-dashoffset');
+var _elm_lang$svg$Svg_Attributes$strokeDasharray = _elm_lang$virtual_dom$VirtualDom$attribute('stroke-dasharray');
+var _elm_lang$svg$Svg_Attributes$stopOpacity = _elm_lang$virtual_dom$VirtualDom$attribute('stop-opacity');
+var _elm_lang$svg$Svg_Attributes$stopColor = _elm_lang$virtual_dom$VirtualDom$attribute('stop-color');
+var _elm_lang$svg$Svg_Attributes$shapeRendering = _elm_lang$virtual_dom$VirtualDom$attribute('shape-rendering');
+var _elm_lang$svg$Svg_Attributes$pointerEvents = _elm_lang$virtual_dom$VirtualDom$attribute('pointer-events');
+var _elm_lang$svg$Svg_Attributes$overflow = _elm_lang$virtual_dom$VirtualDom$attribute('overflow');
+var _elm_lang$svg$Svg_Attributes$opacity = _elm_lang$virtual_dom$VirtualDom$attribute('opacity');
+var _elm_lang$svg$Svg_Attributes$mask = _elm_lang$virtual_dom$VirtualDom$attribute('mask');
+var _elm_lang$svg$Svg_Attributes$markerStart = _elm_lang$virtual_dom$VirtualDom$attribute('marker-start');
+var _elm_lang$svg$Svg_Attributes$markerMid = _elm_lang$virtual_dom$VirtualDom$attribute('marker-mid');
+var _elm_lang$svg$Svg_Attributes$markerEnd = _elm_lang$virtual_dom$VirtualDom$attribute('marker-end');
+var _elm_lang$svg$Svg_Attributes$lightingColor = _elm_lang$virtual_dom$VirtualDom$attribute('lighting-color');
+var _elm_lang$svg$Svg_Attributes$letterSpacing = _elm_lang$virtual_dom$VirtualDom$attribute('letter-spacing');
+var _elm_lang$svg$Svg_Attributes$kerning = _elm_lang$virtual_dom$VirtualDom$attribute('kerning');
+var _elm_lang$svg$Svg_Attributes$imageRendering = _elm_lang$virtual_dom$VirtualDom$attribute('image-rendering');
+var _elm_lang$svg$Svg_Attributes$glyphOrientationVertical = _elm_lang$virtual_dom$VirtualDom$attribute('glyph-orientation-vertical');
+var _elm_lang$svg$Svg_Attributes$glyphOrientationHorizontal = _elm_lang$virtual_dom$VirtualDom$attribute('glyph-orientation-horizontal');
+var _elm_lang$svg$Svg_Attributes$fontWeight = _elm_lang$virtual_dom$VirtualDom$attribute('font-weight');
+var _elm_lang$svg$Svg_Attributes$fontVariant = _elm_lang$virtual_dom$VirtualDom$attribute('font-variant');
+var _elm_lang$svg$Svg_Attributes$fontStyle = _elm_lang$virtual_dom$VirtualDom$attribute('font-style');
+var _elm_lang$svg$Svg_Attributes$fontStretch = _elm_lang$virtual_dom$VirtualDom$attribute('font-stretch');
+var _elm_lang$svg$Svg_Attributes$fontSize = _elm_lang$virtual_dom$VirtualDom$attribute('font-size');
+var _elm_lang$svg$Svg_Attributes$fontSizeAdjust = _elm_lang$virtual_dom$VirtualDom$attribute('font-size-adjust');
+var _elm_lang$svg$Svg_Attributes$fontFamily = _elm_lang$virtual_dom$VirtualDom$attribute('font-family');
+var _elm_lang$svg$Svg_Attributes$floodOpacity = _elm_lang$virtual_dom$VirtualDom$attribute('flood-opacity');
+var _elm_lang$svg$Svg_Attributes$floodColor = _elm_lang$virtual_dom$VirtualDom$attribute('flood-color');
+var _elm_lang$svg$Svg_Attributes$filter = _elm_lang$virtual_dom$VirtualDom$attribute('filter');
+var _elm_lang$svg$Svg_Attributes$fill = _elm_lang$virtual_dom$VirtualDom$attribute('fill');
+var _elm_lang$svg$Svg_Attributes$fillRule = _elm_lang$virtual_dom$VirtualDom$attribute('fill-rule');
+var _elm_lang$svg$Svg_Attributes$fillOpacity = _elm_lang$virtual_dom$VirtualDom$attribute('fill-opacity');
+var _elm_lang$svg$Svg_Attributes$enableBackground = _elm_lang$virtual_dom$VirtualDom$attribute('enable-background');
+var _elm_lang$svg$Svg_Attributes$dominantBaseline = _elm_lang$virtual_dom$VirtualDom$attribute('dominant-baseline');
+var _elm_lang$svg$Svg_Attributes$display = _elm_lang$virtual_dom$VirtualDom$attribute('display');
+var _elm_lang$svg$Svg_Attributes$direction = _elm_lang$virtual_dom$VirtualDom$attribute('direction');
+var _elm_lang$svg$Svg_Attributes$cursor = _elm_lang$virtual_dom$VirtualDom$attribute('cursor');
+var _elm_lang$svg$Svg_Attributes$color = _elm_lang$virtual_dom$VirtualDom$attribute('color');
+var _elm_lang$svg$Svg_Attributes$colorRendering = _elm_lang$virtual_dom$VirtualDom$attribute('color-rendering');
+var _elm_lang$svg$Svg_Attributes$colorProfile = _elm_lang$virtual_dom$VirtualDom$attribute('color-profile');
+var _elm_lang$svg$Svg_Attributes$colorInterpolation = _elm_lang$virtual_dom$VirtualDom$attribute('color-interpolation');
+var _elm_lang$svg$Svg_Attributes$colorInterpolationFilters = _elm_lang$virtual_dom$VirtualDom$attribute('color-interpolation-filters');
+var _elm_lang$svg$Svg_Attributes$clip = _elm_lang$virtual_dom$VirtualDom$attribute('clip');
+var _elm_lang$svg$Svg_Attributes$clipRule = _elm_lang$virtual_dom$VirtualDom$attribute('clip-rule');
+var _elm_lang$svg$Svg_Attributes$clipPath = _elm_lang$virtual_dom$VirtualDom$attribute('clip-path');
+var _elm_lang$svg$Svg_Attributes$baselineShift = _elm_lang$virtual_dom$VirtualDom$attribute('baseline-shift');
+var _elm_lang$svg$Svg_Attributes$alignmentBaseline = _elm_lang$virtual_dom$VirtualDom$attribute('alignment-baseline');
+var _elm_lang$svg$Svg_Attributes$zoomAndPan = _elm_lang$virtual_dom$VirtualDom$attribute('zoomAndPan');
+var _elm_lang$svg$Svg_Attributes$z = _elm_lang$virtual_dom$VirtualDom$attribute('z');
+var _elm_lang$svg$Svg_Attributes$yChannelSelector = _elm_lang$virtual_dom$VirtualDom$attribute('yChannelSelector');
+var _elm_lang$svg$Svg_Attributes$y2 = _elm_lang$virtual_dom$VirtualDom$attribute('y2');
+var _elm_lang$svg$Svg_Attributes$y1 = _elm_lang$virtual_dom$VirtualDom$attribute('y1');
+var _elm_lang$svg$Svg_Attributes$y = _elm_lang$virtual_dom$VirtualDom$attribute('y');
+var _elm_lang$svg$Svg_Attributes$xmlSpace = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/XML/1998/namespace', 'xml:space');
+var _elm_lang$svg$Svg_Attributes$xmlLang = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/XML/1998/namespace', 'xml:lang');
+var _elm_lang$svg$Svg_Attributes$xmlBase = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/XML/1998/namespace', 'xml:base');
+var _elm_lang$svg$Svg_Attributes$xlinkType = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/1999/xlink', 'xlink:type');
+var _elm_lang$svg$Svg_Attributes$xlinkTitle = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/1999/xlink', 'xlink:title');
+var _elm_lang$svg$Svg_Attributes$xlinkShow = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/1999/xlink', 'xlink:show');
+var _elm_lang$svg$Svg_Attributes$xlinkRole = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/1999/xlink', 'xlink:role');
+var _elm_lang$svg$Svg_Attributes$xlinkHref = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/1999/xlink', 'xlink:href');
+var _elm_lang$svg$Svg_Attributes$xlinkArcrole = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/1999/xlink', 'xlink:arcrole');
+var _elm_lang$svg$Svg_Attributes$xlinkActuate = A2(_elm_lang$virtual_dom$VirtualDom$attributeNS, 'http://www.w3.org/1999/xlink', 'xlink:actuate');
+var _elm_lang$svg$Svg_Attributes$xChannelSelector = _elm_lang$virtual_dom$VirtualDom$attribute('xChannelSelector');
+var _elm_lang$svg$Svg_Attributes$x2 = _elm_lang$virtual_dom$VirtualDom$attribute('x2');
+var _elm_lang$svg$Svg_Attributes$x1 = _elm_lang$virtual_dom$VirtualDom$attribute('x1');
+var _elm_lang$svg$Svg_Attributes$xHeight = _elm_lang$virtual_dom$VirtualDom$attribute('x-height');
+var _elm_lang$svg$Svg_Attributes$x = _elm_lang$virtual_dom$VirtualDom$attribute('x');
+var _elm_lang$svg$Svg_Attributes$widths = _elm_lang$virtual_dom$VirtualDom$attribute('widths');
+var _elm_lang$svg$Svg_Attributes$width = _elm_lang$virtual_dom$VirtualDom$attribute('width');
+var _elm_lang$svg$Svg_Attributes$viewTarget = _elm_lang$virtual_dom$VirtualDom$attribute('viewTarget');
+var _elm_lang$svg$Svg_Attributes$viewBox = _elm_lang$virtual_dom$VirtualDom$attribute('viewBox');
+var _elm_lang$svg$Svg_Attributes$vertOriginY = _elm_lang$virtual_dom$VirtualDom$attribute('vert-origin-y');
+var _elm_lang$svg$Svg_Attributes$vertOriginX = _elm_lang$virtual_dom$VirtualDom$attribute('vert-origin-x');
+var _elm_lang$svg$Svg_Attributes$vertAdvY = _elm_lang$virtual_dom$VirtualDom$attribute('vert-adv-y');
+var _elm_lang$svg$Svg_Attributes$version = _elm_lang$virtual_dom$VirtualDom$attribute('version');
+var _elm_lang$svg$Svg_Attributes$values = _elm_lang$virtual_dom$VirtualDom$attribute('values');
+var _elm_lang$svg$Svg_Attributes$vMathematical = _elm_lang$virtual_dom$VirtualDom$attribute('v-mathematical');
+var _elm_lang$svg$Svg_Attributes$vIdeographic = _elm_lang$virtual_dom$VirtualDom$attribute('v-ideographic');
+var _elm_lang$svg$Svg_Attributes$vHanging = _elm_lang$virtual_dom$VirtualDom$attribute('v-hanging');
+var _elm_lang$svg$Svg_Attributes$vAlphabetic = _elm_lang$virtual_dom$VirtualDom$attribute('v-alphabetic');
+var _elm_lang$svg$Svg_Attributes$unitsPerEm = _elm_lang$virtual_dom$VirtualDom$attribute('units-per-em');
+var _elm_lang$svg$Svg_Attributes$unicodeRange = _elm_lang$virtual_dom$VirtualDom$attribute('unicode-range');
+var _elm_lang$svg$Svg_Attributes$unicode = _elm_lang$virtual_dom$VirtualDom$attribute('unicode');
+var _elm_lang$svg$Svg_Attributes$underlineThickness = _elm_lang$virtual_dom$VirtualDom$attribute('underline-thickness');
+var _elm_lang$svg$Svg_Attributes$underlinePosition = _elm_lang$virtual_dom$VirtualDom$attribute('underline-position');
+var _elm_lang$svg$Svg_Attributes$u2 = _elm_lang$virtual_dom$VirtualDom$attribute('u2');
+var _elm_lang$svg$Svg_Attributes$u1 = _elm_lang$virtual_dom$VirtualDom$attribute('u1');
+var _elm_lang$svg$Svg_Attributes$type$ = _elm_lang$virtual_dom$VirtualDom$attribute('type');
+var _elm_lang$svg$Svg_Attributes$transform = _elm_lang$virtual_dom$VirtualDom$attribute('transform');
+var _elm_lang$svg$Svg_Attributes$to = _elm_lang$virtual_dom$VirtualDom$attribute('to');
+var _elm_lang$svg$Svg_Attributes$title = _elm_lang$virtual_dom$VirtualDom$attribute('title');
+var _elm_lang$svg$Svg_Attributes$textLength = _elm_lang$virtual_dom$VirtualDom$attribute('textLength');
+var _elm_lang$svg$Svg_Attributes$targetY = _elm_lang$virtual_dom$VirtualDom$attribute('targetY');
+var _elm_lang$svg$Svg_Attributes$targetX = _elm_lang$virtual_dom$VirtualDom$attribute('targetX');
+var _elm_lang$svg$Svg_Attributes$target = _elm_lang$virtual_dom$VirtualDom$attribute('target');
+var _elm_lang$svg$Svg_Attributes$tableValues = _elm_lang$virtual_dom$VirtualDom$attribute('tableValues');
+var _elm_lang$svg$Svg_Attributes$systemLanguage = _elm_lang$virtual_dom$VirtualDom$attribute('systemLanguage');
+var _elm_lang$svg$Svg_Attributes$surfaceScale = _elm_lang$virtual_dom$VirtualDom$attribute('surfaceScale');
+var _elm_lang$svg$Svg_Attributes$style = _elm_lang$virtual_dom$VirtualDom$attribute('style');
+var _elm_lang$svg$Svg_Attributes$string = _elm_lang$virtual_dom$VirtualDom$attribute('string');
+var _elm_lang$svg$Svg_Attributes$strikethroughThickness = _elm_lang$virtual_dom$VirtualDom$attribute('strikethrough-thickness');
+var _elm_lang$svg$Svg_Attributes$strikethroughPosition = _elm_lang$virtual_dom$VirtualDom$attribute('strikethrough-position');
+var _elm_lang$svg$Svg_Attributes$stitchTiles = _elm_lang$virtual_dom$VirtualDom$attribute('stitchTiles');
+var _elm_lang$svg$Svg_Attributes$stemv = _elm_lang$virtual_dom$VirtualDom$attribute('stemv');
+var _elm_lang$svg$Svg_Attributes$stemh = _elm_lang$virtual_dom$VirtualDom$attribute('stemh');
+var _elm_lang$svg$Svg_Attributes$stdDeviation = _elm_lang$virtual_dom$VirtualDom$attribute('stdDeviation');
+var _elm_lang$svg$Svg_Attributes$startOffset = _elm_lang$virtual_dom$VirtualDom$attribute('startOffset');
+var _elm_lang$svg$Svg_Attributes$spreadMethod = _elm_lang$virtual_dom$VirtualDom$attribute('spreadMethod');
+var _elm_lang$svg$Svg_Attributes$speed = _elm_lang$virtual_dom$VirtualDom$attribute('speed');
+var _elm_lang$svg$Svg_Attributes$specularExponent = _elm_lang$virtual_dom$VirtualDom$attribute('specularExponent');
+var _elm_lang$svg$Svg_Attributes$specularConstant = _elm_lang$virtual_dom$VirtualDom$attribute('specularConstant');
+var _elm_lang$svg$Svg_Attributes$spacing = _elm_lang$virtual_dom$VirtualDom$attribute('spacing');
+var _elm_lang$svg$Svg_Attributes$slope = _elm_lang$virtual_dom$VirtualDom$attribute('slope');
+var _elm_lang$svg$Svg_Attributes$seed = _elm_lang$virtual_dom$VirtualDom$attribute('seed');
+var _elm_lang$svg$Svg_Attributes$scale = _elm_lang$virtual_dom$VirtualDom$attribute('scale');
+var _elm_lang$svg$Svg_Attributes$ry = _elm_lang$virtual_dom$VirtualDom$attribute('ry');
+var _elm_lang$svg$Svg_Attributes$rx = _elm_lang$virtual_dom$VirtualDom$attribute('rx');
+var _elm_lang$svg$Svg_Attributes$rotate = _elm_lang$virtual_dom$VirtualDom$attribute('rotate');
+var _elm_lang$svg$Svg_Attributes$result = _elm_lang$virtual_dom$VirtualDom$attribute('result');
+var _elm_lang$svg$Svg_Attributes$restart = _elm_lang$virtual_dom$VirtualDom$attribute('restart');
+var _elm_lang$svg$Svg_Attributes$requiredFeatures = _elm_lang$virtual_dom$VirtualDom$attribute('requiredFeatures');
+var _elm_lang$svg$Svg_Attributes$requiredExtensions = _elm_lang$virtual_dom$VirtualDom$attribute('requiredExtensions');
+var _elm_lang$svg$Svg_Attributes$repeatDur = _elm_lang$virtual_dom$VirtualDom$attribute('repeatDur');
+var _elm_lang$svg$Svg_Attributes$repeatCount = _elm_lang$virtual_dom$VirtualDom$attribute('repeatCount');
+var _elm_lang$svg$Svg_Attributes$renderingIntent = _elm_lang$virtual_dom$VirtualDom$attribute('rendering-intent');
+var _elm_lang$svg$Svg_Attributes$refY = _elm_lang$virtual_dom$VirtualDom$attribute('refY');
+var _elm_lang$svg$Svg_Attributes$refX = _elm_lang$virtual_dom$VirtualDom$attribute('refX');
+var _elm_lang$svg$Svg_Attributes$radius = _elm_lang$virtual_dom$VirtualDom$attribute('radius');
+var _elm_lang$svg$Svg_Attributes$r = _elm_lang$virtual_dom$VirtualDom$attribute('r');
+var _elm_lang$svg$Svg_Attributes$primitiveUnits = _elm_lang$virtual_dom$VirtualDom$attribute('primitiveUnits');
+var _elm_lang$svg$Svg_Attributes$preserveAspectRatio = _elm_lang$virtual_dom$VirtualDom$attribute('preserveAspectRatio');
+var _elm_lang$svg$Svg_Attributes$preserveAlpha = _elm_lang$virtual_dom$VirtualDom$attribute('preserveAlpha');
+var _elm_lang$svg$Svg_Attributes$pointsAtZ = _elm_lang$virtual_dom$VirtualDom$attribute('pointsAtZ');
+var _elm_lang$svg$Svg_Attributes$pointsAtY = _elm_lang$virtual_dom$VirtualDom$attribute('pointsAtY');
+var _elm_lang$svg$Svg_Attributes$pointsAtX = _elm_lang$virtual_dom$VirtualDom$attribute('pointsAtX');
+var _elm_lang$svg$Svg_Attributes$points = _elm_lang$virtual_dom$VirtualDom$attribute('points');
+var _elm_lang$svg$Svg_Attributes$pointOrder = _elm_lang$virtual_dom$VirtualDom$attribute('point-order');
+var _elm_lang$svg$Svg_Attributes$patternUnits = _elm_lang$virtual_dom$VirtualDom$attribute('patternUnits');
+var _elm_lang$svg$Svg_Attributes$patternTransform = _elm_lang$virtual_dom$VirtualDom$attribute('patternTransform');
+var _elm_lang$svg$Svg_Attributes$patternContentUnits = _elm_lang$virtual_dom$VirtualDom$attribute('patternContentUnits');
+var _elm_lang$svg$Svg_Attributes$pathLength = _elm_lang$virtual_dom$VirtualDom$attribute('pathLength');
+var _elm_lang$svg$Svg_Attributes$path = _elm_lang$virtual_dom$VirtualDom$attribute('path');
+var _elm_lang$svg$Svg_Attributes$panose1 = _elm_lang$virtual_dom$VirtualDom$attribute('panose-1');
+var _elm_lang$svg$Svg_Attributes$overlineThickness = _elm_lang$virtual_dom$VirtualDom$attribute('overline-thickness');
+var _elm_lang$svg$Svg_Attributes$overlinePosition = _elm_lang$virtual_dom$VirtualDom$attribute('overline-position');
+var _elm_lang$svg$Svg_Attributes$origin = _elm_lang$virtual_dom$VirtualDom$attribute('origin');
+var _elm_lang$svg$Svg_Attributes$orientation = _elm_lang$virtual_dom$VirtualDom$attribute('orientation');
+var _elm_lang$svg$Svg_Attributes$orient = _elm_lang$virtual_dom$VirtualDom$attribute('orient');
+var _elm_lang$svg$Svg_Attributes$order = _elm_lang$virtual_dom$VirtualDom$attribute('order');
+var _elm_lang$svg$Svg_Attributes$operator = _elm_lang$virtual_dom$VirtualDom$attribute('operator');
+var _elm_lang$svg$Svg_Attributes$offset = _elm_lang$virtual_dom$VirtualDom$attribute('offset');
+var _elm_lang$svg$Svg_Attributes$numOctaves = _elm_lang$virtual_dom$VirtualDom$attribute('numOctaves');
+var _elm_lang$svg$Svg_Attributes$name = _elm_lang$virtual_dom$VirtualDom$attribute('name');
+var _elm_lang$svg$Svg_Attributes$mode = _elm_lang$virtual_dom$VirtualDom$attribute('mode');
+var _elm_lang$svg$Svg_Attributes$min = _elm_lang$virtual_dom$VirtualDom$attribute('min');
+var _elm_lang$svg$Svg_Attributes$method = _elm_lang$virtual_dom$VirtualDom$attribute('method');
+var _elm_lang$svg$Svg_Attributes$media = _elm_lang$virtual_dom$VirtualDom$attribute('media');
+var _elm_lang$svg$Svg_Attributes$max = _elm_lang$virtual_dom$VirtualDom$attribute('max');
+var _elm_lang$svg$Svg_Attributes$mathematical = _elm_lang$virtual_dom$VirtualDom$attribute('mathematical');
+var _elm_lang$svg$Svg_Attributes$maskUnits = _elm_lang$virtual_dom$VirtualDom$attribute('maskUnits');
+var _elm_lang$svg$Svg_Attributes$maskContentUnits = _elm_lang$virtual_dom$VirtualDom$attribute('maskContentUnits');
+var _elm_lang$svg$Svg_Attributes$markerWidth = _elm_lang$virtual_dom$VirtualDom$attribute('markerWidth');
+var _elm_lang$svg$Svg_Attributes$markerUnits = _elm_lang$virtual_dom$VirtualDom$attribute('markerUnits');
+var _elm_lang$svg$Svg_Attributes$markerHeight = _elm_lang$virtual_dom$VirtualDom$attribute('markerHeight');
+var _elm_lang$svg$Svg_Attributes$local = _elm_lang$virtual_dom$VirtualDom$attribute('local');
+var _elm_lang$svg$Svg_Attributes$limitingConeAngle = _elm_lang$virtual_dom$VirtualDom$attribute('limitingConeAngle');
+var _elm_lang$svg$Svg_Attributes$lengthAdjust = _elm_lang$virtual_dom$VirtualDom$attribute('lengthAdjust');
+var _elm_lang$svg$Svg_Attributes$lang = _elm_lang$virtual_dom$VirtualDom$attribute('lang');
+var _elm_lang$svg$Svg_Attributes$keyTimes = _elm_lang$virtual_dom$VirtualDom$attribute('keyTimes');
+var _elm_lang$svg$Svg_Attributes$keySplines = _elm_lang$virtual_dom$VirtualDom$attribute('keySplines');
+var _elm_lang$svg$Svg_Attributes$keyPoints = _elm_lang$virtual_dom$VirtualDom$attribute('keyPoints');
+var _elm_lang$svg$Svg_Attributes$kernelUnitLength = _elm_lang$virtual_dom$VirtualDom$attribute('kernelUnitLength');
+var _elm_lang$svg$Svg_Attributes$kernelMatrix = _elm_lang$virtual_dom$VirtualDom$attribute('kernelMatrix');
+var _elm_lang$svg$Svg_Attributes$k4 = _elm_lang$virtual_dom$VirtualDom$attribute('k4');
+var _elm_lang$svg$Svg_Attributes$k3 = _elm_lang$virtual_dom$VirtualDom$attribute('k3');
+var _elm_lang$svg$Svg_Attributes$k2 = _elm_lang$virtual_dom$VirtualDom$attribute('k2');
+var _elm_lang$svg$Svg_Attributes$k1 = _elm_lang$virtual_dom$VirtualDom$attribute('k1');
+var _elm_lang$svg$Svg_Attributes$k = _elm_lang$virtual_dom$VirtualDom$attribute('k');
+var _elm_lang$svg$Svg_Attributes$intercept = _elm_lang$virtual_dom$VirtualDom$attribute('intercept');
+var _elm_lang$svg$Svg_Attributes$in2 = _elm_lang$virtual_dom$VirtualDom$attribute('in2');
+var _elm_lang$svg$Svg_Attributes$in$ = _elm_lang$virtual_dom$VirtualDom$attribute('in');
+var _elm_lang$svg$Svg_Attributes$ideographic = _elm_lang$virtual_dom$VirtualDom$attribute('ideographic');
+var _elm_lang$svg$Svg_Attributes$id = _elm_lang$virtual_dom$VirtualDom$attribute('id');
+var _elm_lang$svg$Svg_Attributes$horizOriginY = _elm_lang$virtual_dom$VirtualDom$attribute('horiz-origin-y');
+var _elm_lang$svg$Svg_Attributes$horizOriginX = _elm_lang$virtual_dom$VirtualDom$attribute('horiz-origin-x');
+var _elm_lang$svg$Svg_Attributes$horizAdvX = _elm_lang$virtual_dom$VirtualDom$attribute('horiz-adv-x');
+var _elm_lang$svg$Svg_Attributes$height = _elm_lang$virtual_dom$VirtualDom$attribute('height');
+var _elm_lang$svg$Svg_Attributes$hanging = _elm_lang$virtual_dom$VirtualDom$attribute('hanging');
+var _elm_lang$svg$Svg_Attributes$gradientUnits = _elm_lang$virtual_dom$VirtualDom$attribute('gradientUnits');
+var _elm_lang$svg$Svg_Attributes$gradientTransform = _elm_lang$virtual_dom$VirtualDom$attribute('gradientTransform');
+var _elm_lang$svg$Svg_Attributes$glyphRef = _elm_lang$virtual_dom$VirtualDom$attribute('glyphRef');
+var _elm_lang$svg$Svg_Attributes$glyphName = _elm_lang$virtual_dom$VirtualDom$attribute('glyph-name');
+var _elm_lang$svg$Svg_Attributes$g2 = _elm_lang$virtual_dom$VirtualDom$attribute('g2');
+var _elm_lang$svg$Svg_Attributes$g1 = _elm_lang$virtual_dom$VirtualDom$attribute('g1');
+var _elm_lang$svg$Svg_Attributes$fy = _elm_lang$virtual_dom$VirtualDom$attribute('fy');
+var _elm_lang$svg$Svg_Attributes$fx = _elm_lang$virtual_dom$VirtualDom$attribute('fx');
+var _elm_lang$svg$Svg_Attributes$from = _elm_lang$virtual_dom$VirtualDom$attribute('from');
+var _elm_lang$svg$Svg_Attributes$format = _elm_lang$virtual_dom$VirtualDom$attribute('format');
+var _elm_lang$svg$Svg_Attributes$filterUnits = _elm_lang$virtual_dom$VirtualDom$attribute('filterUnits');
+var _elm_lang$svg$Svg_Attributes$filterRes = _elm_lang$virtual_dom$VirtualDom$attribute('filterRes');
+var _elm_lang$svg$Svg_Attributes$externalResourcesRequired = _elm_lang$virtual_dom$VirtualDom$attribute('externalResourcesRequired');
+var _elm_lang$svg$Svg_Attributes$exponent = _elm_lang$virtual_dom$VirtualDom$attribute('exponent');
+var _elm_lang$svg$Svg_Attributes$end = _elm_lang$virtual_dom$VirtualDom$attribute('end');
+var _elm_lang$svg$Svg_Attributes$elevation = _elm_lang$virtual_dom$VirtualDom$attribute('elevation');
+var _elm_lang$svg$Svg_Attributes$edgeMode = _elm_lang$virtual_dom$VirtualDom$attribute('edgeMode');
+var _elm_lang$svg$Svg_Attributes$dy = _elm_lang$virtual_dom$VirtualDom$attribute('dy');
+var _elm_lang$svg$Svg_Attributes$dx = _elm_lang$virtual_dom$VirtualDom$attribute('dx');
+var _elm_lang$svg$Svg_Attributes$dur = _elm_lang$virtual_dom$VirtualDom$attribute('dur');
+var _elm_lang$svg$Svg_Attributes$divisor = _elm_lang$virtual_dom$VirtualDom$attribute('divisor');
+var _elm_lang$svg$Svg_Attributes$diffuseConstant = _elm_lang$virtual_dom$VirtualDom$attribute('diffuseConstant');
+var _elm_lang$svg$Svg_Attributes$descent = _elm_lang$virtual_dom$VirtualDom$attribute('descent');
+var _elm_lang$svg$Svg_Attributes$decelerate = _elm_lang$virtual_dom$VirtualDom$attribute('decelerate');
+var _elm_lang$svg$Svg_Attributes$d = _elm_lang$virtual_dom$VirtualDom$attribute('d');
+var _elm_lang$svg$Svg_Attributes$cy = _elm_lang$virtual_dom$VirtualDom$attribute('cy');
+var _elm_lang$svg$Svg_Attributes$cx = _elm_lang$virtual_dom$VirtualDom$attribute('cx');
+var _elm_lang$svg$Svg_Attributes$contentStyleType = _elm_lang$virtual_dom$VirtualDom$attribute('contentStyleType');
+var _elm_lang$svg$Svg_Attributes$contentScriptType = _elm_lang$virtual_dom$VirtualDom$attribute('contentScriptType');
+var _elm_lang$svg$Svg_Attributes$clipPathUnits = _elm_lang$virtual_dom$VirtualDom$attribute('clipPathUnits');
+var _elm_lang$svg$Svg_Attributes$class = _elm_lang$virtual_dom$VirtualDom$attribute('class');
+var _elm_lang$svg$Svg_Attributes$capHeight = _elm_lang$virtual_dom$VirtualDom$attribute('cap-height');
+var _elm_lang$svg$Svg_Attributes$calcMode = _elm_lang$virtual_dom$VirtualDom$attribute('calcMode');
+var _elm_lang$svg$Svg_Attributes$by = _elm_lang$virtual_dom$VirtualDom$attribute('by');
+var _elm_lang$svg$Svg_Attributes$bias = _elm_lang$virtual_dom$VirtualDom$attribute('bias');
+var _elm_lang$svg$Svg_Attributes$begin = _elm_lang$virtual_dom$VirtualDom$attribute('begin');
+var _elm_lang$svg$Svg_Attributes$bbox = _elm_lang$virtual_dom$VirtualDom$attribute('bbox');
+var _elm_lang$svg$Svg_Attributes$baseProfile = _elm_lang$virtual_dom$VirtualDom$attribute('baseProfile');
+var _elm_lang$svg$Svg_Attributes$baseFrequency = _elm_lang$virtual_dom$VirtualDom$attribute('baseFrequency');
+var _elm_lang$svg$Svg_Attributes$azimuth = _elm_lang$virtual_dom$VirtualDom$attribute('azimuth');
+var _elm_lang$svg$Svg_Attributes$autoReverse = _elm_lang$virtual_dom$VirtualDom$attribute('autoReverse');
+var _elm_lang$svg$Svg_Attributes$attributeType = _elm_lang$virtual_dom$VirtualDom$attribute('attributeType');
+var _elm_lang$svg$Svg_Attributes$attributeName = _elm_lang$virtual_dom$VirtualDom$attribute('attributeName');
+var _elm_lang$svg$Svg_Attributes$ascent = _elm_lang$virtual_dom$VirtualDom$attribute('ascent');
+var _elm_lang$svg$Svg_Attributes$arabicForm = _elm_lang$virtual_dom$VirtualDom$attribute('arabic-form');
+var _elm_lang$svg$Svg_Attributes$amplitude = _elm_lang$virtual_dom$VirtualDom$attribute('amplitude');
+var _elm_lang$svg$Svg_Attributes$allowReorder = _elm_lang$virtual_dom$VirtualDom$attribute('allowReorder');
+var _elm_lang$svg$Svg_Attributes$alphabetic = _elm_lang$virtual_dom$VirtualDom$attribute('alphabetic');
+var _elm_lang$svg$Svg_Attributes$additive = _elm_lang$virtual_dom$VirtualDom$attribute('additive');
+var _elm_lang$svg$Svg_Attributes$accumulate = _elm_lang$virtual_dom$VirtualDom$attribute('accumulate');
+var _elm_lang$svg$Svg_Attributes$accelerate = _elm_lang$virtual_dom$VirtualDom$attribute('accelerate');
+var _elm_lang$svg$Svg_Attributes$accentHeight = _elm_lang$virtual_dom$VirtualDom$attribute('accent-height');
+
+var _elm_lang$core$Color$fmod = F2(
+	function (f, n) {
+		var integer = _elm_lang$core$Basics$floor(f);
+		return (_elm_lang$core$Basics$toFloat(
+			A2(_elm_lang$core$Basics_ops['%'], integer, n)) + f) - _elm_lang$core$Basics$toFloat(integer);
+	});
+var _elm_lang$core$Color$rgbToHsl = F3(
+	function (red, green, blue) {
+		var b = _elm_lang$core$Basics$toFloat(blue) / 255;
+		var g = _elm_lang$core$Basics$toFloat(green) / 255;
+		var r = _elm_lang$core$Basics$toFloat(red) / 255;
+		var cMax = A2(
+			_elm_lang$core$Basics$max,
+			A2(_elm_lang$core$Basics$max, r, g),
+			b);
+		var cMin = A2(
+			_elm_lang$core$Basics$min,
+			A2(_elm_lang$core$Basics$min, r, g),
+			b);
+		var c = cMax - cMin;
+		var lightness = (cMax + cMin) / 2;
+		var saturation = _elm_lang$core$Native_Utils.eq(lightness, 0) ? 0 : (c / (1 - _elm_lang$core$Basics$abs((2 * lightness) - 1)));
+		var hue = _elm_lang$core$Basics$degrees(60) * (_elm_lang$core$Native_Utils.eq(cMax, r) ? A2(_elm_lang$core$Color$fmod, (g - b) / c, 6) : (_elm_lang$core$Native_Utils.eq(cMax, g) ? (((b - r) / c) + 2) : (((r - g) / c) + 4)));
+		return {ctor: '_Tuple3', _0: hue, _1: saturation, _2: lightness};
+	});
+var _elm_lang$core$Color$hslToRgb = F3(
+	function (hue, saturation, lightness) {
+		var hue$ = hue / _elm_lang$core$Basics$degrees(60);
+		var chroma = (1 - _elm_lang$core$Basics$abs((2 * lightness) - 1)) * saturation;
+		var x = chroma * (1 - _elm_lang$core$Basics$abs(
+			A2(_elm_lang$core$Color$fmod, hue$, 2) - 1));
+		var _p0 = (_elm_lang$core$Native_Utils.cmp(hue$, 0) < 0) ? {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(hue$, 1) < 0) ? {ctor: '_Tuple3', _0: chroma, _1: x, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(hue$, 2) < 0) ? {ctor: '_Tuple3', _0: x, _1: chroma, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(hue$, 3) < 0) ? {ctor: '_Tuple3', _0: 0, _1: chroma, _2: x} : ((_elm_lang$core$Native_Utils.cmp(hue$, 4) < 0) ? {ctor: '_Tuple3', _0: 0, _1: x, _2: chroma} : ((_elm_lang$core$Native_Utils.cmp(hue$, 5) < 0) ? {ctor: '_Tuple3', _0: x, _1: 0, _2: chroma} : ((_elm_lang$core$Native_Utils.cmp(hue$, 6) < 0) ? {ctor: '_Tuple3', _0: chroma, _1: 0, _2: x} : {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0}))))));
+		var r = _p0._0;
+		var g = _p0._1;
+		var b = _p0._2;
+		var m = lightness - (chroma / 2);
+		return {ctor: '_Tuple3', _0: r + m, _1: g + m, _2: b + m};
+	});
+var _elm_lang$core$Color$toRgb = function (color) {
+	var _p1 = color;
+	if (_p1.ctor === 'RGBA') {
+		return {red: _p1._0, green: _p1._1, blue: _p1._2, alpha: _p1._3};
+	} else {
+		var _p2 = A3(_elm_lang$core$Color$hslToRgb, _p1._0, _p1._1, _p1._2);
+		var r = _p2._0;
+		var g = _p2._1;
+		var b = _p2._2;
+		return {
+			red: _elm_lang$core$Basics$round(255 * r),
+			green: _elm_lang$core$Basics$round(255 * g),
+			blue: _elm_lang$core$Basics$round(255 * b),
+			alpha: _p1._3
+		};
+	}
+};
+var _elm_lang$core$Color$toHsl = function (color) {
+	var _p3 = color;
+	if (_p3.ctor === 'HSLA') {
+		return {hue: _p3._0, saturation: _p3._1, lightness: _p3._2, alpha: _p3._3};
+	} else {
+		var _p4 = A3(_elm_lang$core$Color$rgbToHsl, _p3._0, _p3._1, _p3._2);
+		var h = _p4._0;
+		var s = _p4._1;
+		var l = _p4._2;
+		return {hue: h, saturation: s, lightness: l, alpha: _p3._3};
+	}
+};
+var _elm_lang$core$Color$HSLA = F4(
+	function (a, b, c, d) {
+		return {ctor: 'HSLA', _0: a, _1: b, _2: c, _3: d};
+	});
+var _elm_lang$core$Color$hsla = F4(
+	function (hue, saturation, lightness, alpha) {
+		return A4(
+			_elm_lang$core$Color$HSLA,
+			hue - _elm_lang$core$Basics$turns(
+				_elm_lang$core$Basics$toFloat(
+					_elm_lang$core$Basics$floor(hue / (2 * _elm_lang$core$Basics$pi)))),
+			saturation,
+			lightness,
+			alpha);
+	});
+var _elm_lang$core$Color$hsl = F3(
+	function (hue, saturation, lightness) {
+		return A4(_elm_lang$core$Color$hsla, hue, saturation, lightness, 1);
+	});
+var _elm_lang$core$Color$complement = function (color) {
+	var _p5 = color;
+	if (_p5.ctor === 'HSLA') {
+		return A4(
+			_elm_lang$core$Color$hsla,
+			_p5._0 + _elm_lang$core$Basics$degrees(180),
+			_p5._1,
+			_p5._2,
+			_p5._3);
+	} else {
+		var _p6 = A3(_elm_lang$core$Color$rgbToHsl, _p5._0, _p5._1, _p5._2);
+		var h = _p6._0;
+		var s = _p6._1;
+		var l = _p6._2;
+		return A4(
+			_elm_lang$core$Color$hsla,
+			h + _elm_lang$core$Basics$degrees(180),
+			s,
+			l,
+			_p5._3);
+	}
+};
+var _elm_lang$core$Color$grayscale = function (p) {
+	return A4(_elm_lang$core$Color$HSLA, 0, 0, 1 - p, 1);
+};
+var _elm_lang$core$Color$greyscale = function (p) {
+	return A4(_elm_lang$core$Color$HSLA, 0, 0, 1 - p, 1);
+};
+var _elm_lang$core$Color$RGBA = F4(
+	function (a, b, c, d) {
+		return {ctor: 'RGBA', _0: a, _1: b, _2: c, _3: d};
+	});
+var _elm_lang$core$Color$rgba = _elm_lang$core$Color$RGBA;
+var _elm_lang$core$Color$rgb = F3(
+	function (r, g, b) {
+		return A4(_elm_lang$core$Color$RGBA, r, g, b, 1);
+	});
+var _elm_lang$core$Color$lightRed = A4(_elm_lang$core$Color$RGBA, 239, 41, 41, 1);
+var _elm_lang$core$Color$red = A4(_elm_lang$core$Color$RGBA, 204, 0, 0, 1);
+var _elm_lang$core$Color$darkRed = A4(_elm_lang$core$Color$RGBA, 164, 0, 0, 1);
+var _elm_lang$core$Color$lightOrange = A4(_elm_lang$core$Color$RGBA, 252, 175, 62, 1);
+var _elm_lang$core$Color$orange = A4(_elm_lang$core$Color$RGBA, 245, 121, 0, 1);
+var _elm_lang$core$Color$darkOrange = A4(_elm_lang$core$Color$RGBA, 206, 92, 0, 1);
+var _elm_lang$core$Color$lightYellow = A4(_elm_lang$core$Color$RGBA, 255, 233, 79, 1);
+var _elm_lang$core$Color$yellow = A4(_elm_lang$core$Color$RGBA, 237, 212, 0, 1);
+var _elm_lang$core$Color$darkYellow = A4(_elm_lang$core$Color$RGBA, 196, 160, 0, 1);
+var _elm_lang$core$Color$lightGreen = A4(_elm_lang$core$Color$RGBA, 138, 226, 52, 1);
+var _elm_lang$core$Color$green = A4(_elm_lang$core$Color$RGBA, 115, 210, 22, 1);
+var _elm_lang$core$Color$darkGreen = A4(_elm_lang$core$Color$RGBA, 78, 154, 6, 1);
+var _elm_lang$core$Color$lightBlue = A4(_elm_lang$core$Color$RGBA, 114, 159, 207, 1);
+var _elm_lang$core$Color$blue = A4(_elm_lang$core$Color$RGBA, 52, 101, 164, 1);
+var _elm_lang$core$Color$darkBlue = A4(_elm_lang$core$Color$RGBA, 32, 74, 135, 1);
+var _elm_lang$core$Color$lightPurple = A4(_elm_lang$core$Color$RGBA, 173, 127, 168, 1);
+var _elm_lang$core$Color$purple = A4(_elm_lang$core$Color$RGBA, 117, 80, 123, 1);
+var _elm_lang$core$Color$darkPurple = A4(_elm_lang$core$Color$RGBA, 92, 53, 102, 1);
+var _elm_lang$core$Color$lightBrown = A4(_elm_lang$core$Color$RGBA, 233, 185, 110, 1);
+var _elm_lang$core$Color$brown = A4(_elm_lang$core$Color$RGBA, 193, 125, 17, 1);
+var _elm_lang$core$Color$darkBrown = A4(_elm_lang$core$Color$RGBA, 143, 89, 2, 1);
+var _elm_lang$core$Color$black = A4(_elm_lang$core$Color$RGBA, 0, 0, 0, 1);
+var _elm_lang$core$Color$white = A4(_elm_lang$core$Color$RGBA, 255, 255, 255, 1);
+var _elm_lang$core$Color$lightGrey = A4(_elm_lang$core$Color$RGBA, 238, 238, 236, 1);
+var _elm_lang$core$Color$grey = A4(_elm_lang$core$Color$RGBA, 211, 215, 207, 1);
+var _elm_lang$core$Color$darkGrey = A4(_elm_lang$core$Color$RGBA, 186, 189, 182, 1);
+var _elm_lang$core$Color$lightGray = A4(_elm_lang$core$Color$RGBA, 238, 238, 236, 1);
+var _elm_lang$core$Color$gray = A4(_elm_lang$core$Color$RGBA, 211, 215, 207, 1);
+var _elm_lang$core$Color$darkGray = A4(_elm_lang$core$Color$RGBA, 186, 189, 182, 1);
+var _elm_lang$core$Color$lightCharcoal = A4(_elm_lang$core$Color$RGBA, 136, 138, 133, 1);
+var _elm_lang$core$Color$charcoal = A4(_elm_lang$core$Color$RGBA, 85, 87, 83, 1);
+var _elm_lang$core$Color$darkCharcoal = A4(_elm_lang$core$Color$RGBA, 46, 52, 54, 1);
+var _elm_lang$core$Color$Radial = F5(
+	function (a, b, c, d, e) {
+		return {ctor: 'Radial', _0: a, _1: b, _2: c, _3: d, _4: e};
+	});
+var _elm_lang$core$Color$radial = _elm_lang$core$Color$Radial;
+var _elm_lang$core$Color$Linear = F3(
+	function (a, b, c) {
+		return {ctor: 'Linear', _0: a, _1: b, _2: c};
+	});
+var _elm_lang$core$Color$linear = _elm_lang$core$Color$Linear;
+
+var _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString = function (color) {
+	var _p0 = _elm_lang$core$Color$toRgb(color);
+	var red = _p0.red;
+	var green = _p0.green;
+	var blue = _p0.blue;
+	var alpha = _p0.alpha;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'rgba(',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Basics$toString(red),
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				',',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(green),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						',',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(blue),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								',',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_elm_lang$core$Basics$toString(alpha),
+									')'))))))));
+};
+var _elm_community$elm_material_icons$Material_Icons_Internal$icon = F3(
+	function (path, color, size) {
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d(path),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+
+var _elm_community$elm_material_icons$Material_Icons_Action$zoom_out = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z');
+var _elm_community$elm_material_icons$Material_Icons_Action$zoom_in = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$youtube_searched_for = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17.01 14h-.8l-.27-.27c.98-1.14 1.57-2.61 1.57-4.23 0-3.59-2.91-6.5-6.5-6.5s-6.5 3-6.5 6.5H2l3.84 4 4.16-4H6.51C6.51 7 8.53 5 11.01 5s4.5 2.01 4.5 4.5c0 2.48-2.02 4.5-4.5 4.5-.65 0-1.26-.14-1.82-.38L7.71 15.1c.97.57 2.09.9 3.3.9 1.61 0 3.08-.59 4.22-1.57l.27.27v.79l5.01 4.99L22 19l-4.99-5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$work = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$visibility_off = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z');
+var _elm_community$elm_material_icons$Material_Icons_Action$visibility = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_week = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 5H3c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h3c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zm14 0h-3c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h3c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zm-7 0h-3c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h3c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_stream = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 18h17v-6H4v6zM4 5v6h17V5H4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_quilt = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 18h5v-6h-5v6zm-6 0h5V5H4v13zm12 0h5v-6h-5v6zM10 5v6h11V5H10z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_module = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_list = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_headline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 15h16v-2H4v2zm0 4h16v-2H4v2zm0-8h16V9H4v2zm0-6v2h16V5H4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_day = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M2 21h19v-3H2v3zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 3v3h19V3H2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_column = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 18h5V5h-5v13zm-6 0h5V5H4v13zM16 5v13h5V5h-5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_carousel = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 19h10V4H7v15zm-5-2h4V6H2v11zM18 6v11h4V6h-4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_array = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 18h3V5H4v13zM18 5v13h3V5h-3zM8 18h9V5H8v13z');
+var _elm_community$elm_material_icons$Material_Icons_Action$view_agenda = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 13H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zm0-10H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$verified_user = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z');
+var _elm_community$elm_material_icons$Material_Icons_Action$turned_in_not = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z');
+var _elm_community$elm_material_icons$Material_Icons_Action$turned_in = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$trending_up = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$trending_flat = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M22 12l-4-4v3H3v2h15v3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$trending_down = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$translate = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z');
+var _elm_community$elm_material_icons$Material_Icons_Action$track_changes = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19.07 4.93l-1.41 1.41C19.1 7.79 20 9.79 20 12c0 4.42-3.58 8-8 8s-8-3.58-8-8c0-4.08 3.05-7.44 7-7.93v2.02C8.16 6.57 6 9.03 6 12c0 3.31 2.69 6 6 6s6-2.69 6-6c0-1.66-.67-3.16-1.76-4.24l-1.41 1.41C15.55 9.9 16 10.9 16 12c0 2.21-1.79 4-4 4s-4-1.79-4-4c0-1.86 1.28-3.41 3-3.86v2.14c-.6.35-1 .98-1 1.72 0 1.1.9 2 2 2s2-.9 2-2c0-.74-.4-1.38-1-1.72V2h-1C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10c0-2.76-1.12-5.26-2.93-7.07z');
+var _elm_community$elm_material_icons$Material_Icons_Action$toll = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zM3 12c0-2.61 1.67-4.83 4-5.65V4.26C3.55 5.15 1 8.27 1 12s2.55 6.85 6 7.74v-2.09c-2.33-.82-4-3.04-4-5.65z');
+var _elm_community$elm_material_icons$Material_Icons_Action$today = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z');
+var _elm_community$elm_material_icons$Material_Icons_Action$toc = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 9h14V7H3v2zm0 4h14v-2H3v2zm0 4h14v-2H3v2zm16 0h2v-2h-2v2zm0-10v2h2V7h-2zm0 6h2v-2h-2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$thumps_up_down = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 6c0-.55-.45-1-1-1H5.82l.66-3.18.02-.23c0-.31-.13-.59-.33-.8L5.38 0 .44 4.94C.17 5.21 0 5.59 0 6v6.5c0 .83.67 1.5 1.5 1.5h6.75c.62 0 1.15-.38 1.38-.91l2.26-5.29c.07-.17.11-.36.11-.55V6zm10.5 4h-6.75c-.62 0-1.15.38-1.38.91l-2.26 5.29c-.07.17-.11.36-.11.55V18c0 .55.45 1 1 1h5.18l-.66 3.18-.02.24c0 .31.13.59.33.8l.79.78 4.94-4.94c.27-.27.44-.65.44-1.06v-6.5c0-.83-.67-1.5-1.5-1.5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$thumb_up = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z');
+var _elm_community$elm_material_icons$Material_Icons_Action$thumb_down = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$theaters = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$tab_unselected = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M1 9h2V7H1v2zm0 4h2v-2H1v2zm0-8h2V3c-1.1 0-2 .9-2 2zm8 16h2v-2H9v2zm-8-4h2v-2H1v2zm2 4v-2H1c0 1.1.9 2 2 2zM21 3h-8v6h10V5c0-1.1-.9-2-2-2zm0 14h2v-2h-2v2zM9 5h2V3H9v2zM5 21h2v-2H5v2zM5 5h2V3H5v2zm16 16c1.1 0 2-.9 2-2h-2v2zm0-8h2v-2h-2v2zm-8 8h2v-2h-2v2zm4 0h2v-2h-2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$tab = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h10v4h8v10z');
+var _elm_community$elm_material_icons$Material_Icons_Action$system_update_alt = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 16.5l4-4h-3v-9h-2v9H8l4 4zm9-13h-6v1.99h6v14.03H3V5.49h6V3.5H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2v-14c0-1.1-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$swap_vertical_circle = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM6.5 9L10 5.5 13.5 9H11v4H9V9H6.5zm11 6L14 18.5 10.5 15H13v-4h2v4h2.5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$swap_vert = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$swap_horiz = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z');
+var _elm_community$elm_material_icons$Material_Icons_Action$supervisor_account = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16.5 12c1.38 0 2.49-1.12 2.49-2.5S17.88 7 16.5 7C15.12 7 14 8.12 14 9.5s1.12 2.5 2.5 2.5zM9 11c1.66 0 2.99-1.34 2.99-3S10.66 5 9 5C7.34 5 6 6.34 6 8s1.34 3 3 3zm7.5 3c-1.83 0-5.5.92-5.5 2.75V19h11v-2.25c0-1.83-3.67-2.75-5.5-2.75zM9 13c-2.33 0-7 1.17-7 3.5V19h7v-2.25c0-.85.33-2.34 2.37-3.47C10.5 13.1 9.66 13 9 13z');
+var _elm_community$elm_material_icons$Material_Icons_Action$subject = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$store = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$stars = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z');
+var _elm_community$elm_material_icons$Material_Icons_Action$star_rate = F2(
+	function (color, size) {
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 18 18')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M9 11.3l3.71 2.7-1.42-4.36L15 7h-4.55L9 2.5 7.55 7H3l3.71 2.64L5.29 14z'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Action$spellcheck = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12.45 16h2.09L9.43 3H7.57L2.46 16h2.09l1.12-3h5.64l1.14 3zm-6.02-5L8.5 5.48 10.57 11H6.43zm15.16.59l-8.09 8.09L9.83 16l-1.41 1.41 5.09 5.09L23 13l-1.41-1.41z');
+var _elm_community$elm_material_icons$Material_Icons_Action$speaker_notes = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 14H6v-2h2v2zm0-3H6V9h2v2zm0-3H6V6h2v2zm7 6h-5v-2h5v2zm3-3h-8V9h8v2zm0-3h-8V6h8v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$shopping_cart = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$shopping_basket = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17.21 9l-4.38-6.56c-.19-.28-.51-.42-.83-.42-.32 0-.64.14-.83.43L6.79 9H2c-.55 0-1 .45-1 1 0 .09.01.18.04.27l2.54 9.27c.23.84 1 1.46 1.92 1.46h13c.92 0 1.69-.62 1.93-1.46l2.54-9.27L23 10c0-.55-.45-1-1-1h-4.79zM9 9l3-4.4L15 9H9zm3 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$shop_two = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 9H1v11c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2H3V9zm15-4V3c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H5v11c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V5h-5zm-6-2h4v2h-4V3zm0 12V8l5.5 3-5.5 4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$shop = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16 6V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H2v13c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6h-6zm-6-2h4v2h-4V4zM9 18V9l7.5 4L9 18z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_voice = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 24h2v-2H7v2zm5-11c1.66 0 2.99-1.34 2.99-3L15 4c0-1.66-1.34-3-3-3S9 2.34 9 4v6c0 1.66 1.34 3 3 3zm-1 11h2v-2h-2v2zm4 0h2v-2h-2v2zm4-14h-1.7c0 3-2.54 5.1-5.3 5.1S6.7 13 6.7 10H5c0 3.41 2.72 6.23 6 6.72V20h2v-3.28c3.28-.49 6-3.31 6-6.72z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_remote = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15 9H9c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V10c0-.55-.45-1-1-1zm-3 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM7.05 6.05l1.41 1.41C9.37 6.56 10.62 6 12 6s2.63.56 3.54 1.46l1.41-1.41C15.68 4.78 13.93 4 12 4s-3.68.78-4.95 2.05zM12 0C8.96 0 6.21 1.23 4.22 3.22l1.41 1.41C7.26 3.01 9.51 2 12 2s4.74 1.01 6.36 2.64l1.41-1.41C17.79 1.23 15.04 0 12 0z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_power = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 24h2v-2H7v2zm4 0h2v-2h-2v2zm2-22h-2v10h2V2zm3.56 2.44l-1.45 1.45C16.84 6.94 18 8.83 18 11c0 3.31-2.69 6-6 6s-6-2.69-6-6c0-2.17 1.16-4.06 2.88-5.12L7.44 4.44C5.36 5.88 4 8.28 4 11c0 4.42 3.58 8 8 8s8-3.58 8-8c0-2.72-1.36-5.12-3.44-6.56zM15 24h2v-2h-2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_phone = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M13 9h-2v2h2V9zm4 0h-2v2h2V9zm3 6.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.58l2.2-2.21c.28-.27.36-.66.25-1.01C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM19 9v2h2V9h-2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_overscan = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12.01 5.5L10 8h4l-1.99-2.5zM18 10v4l2.5-1.99L18 10zM6 10l-2.5 2.01L6 14v-4zm8 6h-4l2.01 2.5L14 16zm7-13H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_input_svideo = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M8 11.5c0-.83-.67-1.5-1.5-1.5S5 10.67 5 11.5 5.67 13 6.5 13 8 12.33 8 11.5zm7-5c0-.83-.67-1.5-1.5-1.5h-3C9.67 5 9 5.67 9 6.5S9.67 8 10.5 8h3c.83 0 1.5-.67 1.5-1.5zM8.5 15c-.83 0-1.5.67-1.5 1.5S7.67 18 8.5 18s1.5-.67 1.5-1.5S9.33 15 8.5 15zM12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm0 20c-4.96 0-9-4.04-9-9s4.04-9 9-9 9 4.04 9 9-4.04 9-9 9zm5.5-11c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm-2 5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_input_hdmi = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 7V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v3H5v6l3 6v3h8v-3l3-6V7h-1zM8 4h8v3h-2V5h-1v2h-2V5h-1v2H8V4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_input_composite = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M5 2c0-.55-.45-1-1-1s-1 .45-1 1v4H1v6h6V6H5V2zm4 14c0 1.3.84 2.4 2 2.82V23h2v-4.18c1.16-.41 2-1.51 2-2.82v-2H9v2zm-8 0c0 1.3.84 2.4 2 2.82V23h2v-4.18C6.16 18.4 7 17.3 7 16v-2H1v2zM21 6V2c0-.55-.45-1-1-1s-1 .45-1 1v4h-2v6h6V6h-2zm-8-4c0-.55-.45-1-1-1s-1 .45-1 1v4H9v6h6V6h-2V2zm4 14c0 1.3.84 2.4 2 2.82V23h2v-4.18c1.16-.41 2-1.51 2-2.82v-2h-6v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_input_component = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M5 2c0-.55-.45-1-1-1s-1 .45-1 1v4H1v6h6V6H5V2zm4 14c0 1.3.84 2.4 2 2.82V23h2v-4.18c1.16-.41 2-1.51 2-2.82v-2H9v2zm-8 0c0 1.3.84 2.4 2 2.82V23h2v-4.18C6.16 18.4 7 17.3 7 16v-2H1v2zM21 6V2c0-.55-.45-1-1-1s-1 .45-1 1v4h-2v6h6V6h-2zm-8-4c0-.55-.45-1-1-1s-1 .45-1 1v4H9v6h6V6h-2V2zm4 14c0 1.3.84 2.4 2 2.82V23h2v-4.18c1.16-.41 2-1.51 2-2.82v-2h-6v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_input_antenna = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 5c-3.87 0-7 3.13-7 7h2c0-2.76 2.24-5 5-5s5 2.24 5 5h2c0-3.87-3.13-7-7-7zm1 9.29c.88-.39 1.5-1.26 1.5-2.29 0-1.38-1.12-2.5-2.5-2.5S9.5 10.62 9.5 12c0 1.02.62 1.9 1.5 2.29v3.3L7.59 21 9 22.41l3-3 3 3L16.41 21 13 17.59v-3.3zM12 1C5.93 1 1 5.93 1 12h2c0-4.97 4.03-9 9-9s9 4.03 9 9h2c0-6.07-4.93-11-11-11z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_ethernet = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7.77 6.76L6.23 5.48.82 12l5.41 6.52 1.54-1.28L3.42 12l4.35-5.24zM7 13h2v-2H7v2zm10-2h-2v2h2v-2zm-6 2h2v-2h-2v2zm6.77-7.52l-1.54 1.28L20.58 12l-4.35 5.24 1.54 1.28L23.18 12l-5.41-6.52z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_cell = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 24h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM16 .01L8 0C6.9 0 6 .9 6 2v16c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V2c0-1.1-.9-1.99-2-1.99zM16 16H8V4h8v12z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_brightness = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02zM8 16h2.5l1.5 1.5 1.5-1.5H16v-2.5l1.5-1.5-1.5-1.5V8h-2.5L12 6.5 10.5 8H8v2.5L6.5 12 8 13.5V16zm4-7c1.66 0 3 1.34 3 3s-1.34 3-3 3V9z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_bluetooth = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11 24h2v-2h-2v2zm-4 0h2v-2H7v2zm8 0h2v-2h-2v2zm2.71-18.29L12 0h-1v7.59L6.41 3 5 4.41 10.59 10 5 15.59 6.41 17 11 12.41V20h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 3.83l1.88 1.88L13 7.59V3.83zm1.88 10.46L13 16.17v-3.76l1.88 1.88z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_backup_restore = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings_application = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm7-7H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-1.75 9c0 .23-.02.46-.05.68l1.48 1.16c.13.11.17.3.08.45l-1.4 2.42c-.09.15-.27.21-.43.15l-1.74-.7c-.36.28-.76.51-1.18.69l-.26 1.85c-.03.17-.18.3-.35.3h-2.8c-.17 0-.32-.13-.35-.29l-.26-1.85c-.43-.18-.82-.41-1.18-.69l-1.74.7c-.16.06-.34 0-.43-.15l-1.4-2.42c-.09-.15-.05-.34.08-.45l1.48-1.16c-.03-.23-.05-.46-.05-.69 0-.23.02-.46.05-.68l-1.48-1.16c-.13-.11-.17-.3-.08-.45l1.4-2.42c.09-.15.27-.21.43-.15l1.74.7c.36-.28.76-.51 1.18-.69l.26-1.85c.03-.17.18-.3.35-.3h2.8c.17 0 .32.13.35.29l.26 1.85c.43.18.82.41 1.18.69l1.74-.7c.16-.06.34 0 .43.15l1.4 2.42c.09.15.05.34-.08.45l-1.48 1.16c.03.23.05.46.05.69z');
+var _elm_community$elm_material_icons$Material_Icons_Action$settings = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$search = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z');
+var _elm_community$elm_material_icons$Material_Icons_Action$schedule = F2(
+	function (color, size) {
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$fillOpacity('.9'),
+							_elm_lang$svg$Svg_Attributes$d('M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zM12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Action$room = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$restore = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z');
+var _elm_community$elm_material_icons$Material_Icons_Action$report_problem = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$reorder = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 15h18v-2H3v2zm0 4h18v-2H3v2zm0-8h18V9H3v2zm0-6v2h18V5H3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$redeem = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$receipt = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 17H6v-2h12v2zm0-4H6v-2h12v2zm0-4H6V7h12v2zM3 22l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2v20z');
+var _elm_community$elm_material_icons$Material_Icons_Action$question_answer = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$query_builder = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zM12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z');
+var _elm_community$elm_material_icons$Material_Icons_Action$print = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$power_settings_new = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z');
+var _elm_community$elm_material_icons$Material_Icons_Action$polymer = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 4h-4L7.11 16.63 4.5 12 9 4H5L.5 12 5 20h4l7.89-12.63L19.5 12 15 20h4l4.5-8z');
+var _elm_community$elm_material_icons$Material_Icons_Action$play_for_work = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11 5v5.59H7.5l4.5 4.5 4.5-4.5H13V5h-2zm-5 9c0 3.31 2.69 6 6 6s6-2.69 6-6h-2c0 2.21-1.79 4-4 4s-4-1.79-4-4H6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$picture_in_picture = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zm0 16.01H3V4.98h18v14.03z');
+var _elm_community$elm_material_icons$Material_Icons_Action$perm_scan_wifi = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm1 13h-2v-6h2v6zm-2-8V6h2v2h-2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$perm_phone_msg = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.58l2.2-2.21c.28-.27.36-.66.25-1.01C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM12 3v10l3-3h6V3h-9z');
+var _elm_community$elm_material_icons$Material_Icons_Action$perm_media = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M2 6H0v5h.01L0 20c0 1.1.9 2 2 2h18v-2H2V6zm20-2h-8l-2-2H6c-1.1 0-1.99.9-1.99 2L4 16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7 15l4.5-6 3.5 4.51 2.5-3.01L21 15H7z');
+var _elm_community$elm_material_icons$Material_Icons_Action$perm_identity = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$perm_device_information = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M13 7h-2v2h2V7zm0 4h-2v6h2v-6zm4-9.99L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z');
+var _elm_community$elm_material_icons$Material_Icons_Action$perm_data_setting = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18.99 11.5c.34 0 .67.03 1 .07L20 0 0 20h11.56c-.04-.33-.07-.66-.07-1 0-4.14 3.36-7.5 7.5-7.5zm3.71 7.99c.02-.16.04-.32.04-.49 0-.17-.01-.33-.04-.49l1.06-.83c.09-.08.12-.21.06-.32l-1-1.73c-.06-.11-.19-.15-.31-.11l-1.24.5c-.26-.2-.54-.37-.85-.49l-.19-1.32c-.01-.12-.12-.21-.24-.21h-2c-.12 0-.23.09-.25.21l-.19 1.32c-.3.13-.59.29-.85.49l-1.24-.5c-.11-.04-.24 0-.31.11l-1 1.73c-.06.11-.04.24.06.32l1.06.83c-.02.16-.03.32-.03.49 0 .17.01.33.03.49l-1.06.83c-.09.08-.12.21-.06.32l1 1.73c.06.11.19.15.31.11l1.24-.5c.26.2.54.37.85.49l.19 1.32c.02.12.12.21.25.21h2c.12 0 .23-.09.25-.21l.19-1.32c.3-.13.59-.29.84-.49l1.25.5c.11.04.24 0 .31-.11l1-1.73c.06-.11.03-.24-.06-.32l-1.07-.83zm-3.71 1.01c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$perm_contact_calendar = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$perm_camera_mic = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7v-2.09c-2.83-.48-5-2.94-5-5.91h2c0 2.21 1.79 4 4 4s4-1.79 4-4h2c0 2.97-2.17 5.43-5 5.91V21h7c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-6 8c0 1.1-.9 2-2 2s-2-.9-2-2V9c0-1.1.9-2 2-2s2 .9 2 2v4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$payment = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$pageview = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11.5 9C10.12 9 9 10.12 9 11.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5S12.88 9 11.5 9zM20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-3.21 14.21l-2.91-2.91c-.69.44-1.51.7-2.39.7C9.01 16 7 13.99 7 11.5S9.01 7 11.5 7 16 9.01 16 11.5c0 .88-.26 1.69-.7 2.39l2.91 2.9-1.42 1.42z');
+var _elm_community$elm_material_icons$Material_Icons_Action$open_with = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$open_in_new = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z');
+var _elm_community$elm_material_icons$Material_Icons_Action$open_in_browser = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h4v-2H5V8h14v10h-4v2h4c1.1 0 2-.9 2-2V6c0-1.1-.89-2-2-2zm-7 6l-4 4h3v6h2v-6h3l-4-4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$offline_pin = F2(
+	function (color, size) {
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm5 16H7v-2h10v2zm-6.7-4L7 10.7l1.4-1.4 1.9 1.9 5.3-5.3L17 7.3 10.3 14z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Action$note_add = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z');
+var _elm_community$elm_material_icons$Material_Icons_Action$markunread_mailbox = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 6H10v6H8V4h6V0H6v6H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$loyalty = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7zm11.77 8.27L13 19.54l-4.27-4.27C8.28 14.81 8 14.19 8 13.5c0-1.38 1.12-2.5 2.5-2.5.69 0 1.32.28 1.77.74l.73.72.73-.73c.45-.45 1.08-.73 1.77-.73 1.38 0 2.5 1.12 2.5 2.5 0 .69-.28 1.32-.73 1.77z');
+var _elm_community$elm_material_icons$Material_Icons_Action$lock_outline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6-5.1c1.71 0 3.1 1.39 3.1 3.1v2H9V6h-.1c0-1.71 1.39-3.1 3.1-3.1zM18 20H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$lock_open = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10z');
+var _elm_community$elm_material_icons$Material_Icons_Action$lock = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$list = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z');
+var _elm_community$elm_material_icons$Material_Icons_Action$launch = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z');
+var _elm_community$elm_material_icons$Material_Icons_Action$language = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z');
+var _elm_community$elm_material_icons$Material_Icons_Action$label_outline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z');
+var _elm_community$elm_material_icons$Material_Icons_Action$label = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z');
+var _elm_community$elm_material_icons$Material_Icons_Action$invert_colors = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17.66 7.93L12 2.27 6.34 7.93c-3.12 3.12-3.12 8.19 0 11.31C7.9 20.8 9.95 21.58 12 21.58c2.05 0 4.1-.78 5.66-2.34 3.12-3.12 3.12-8.19 0-11.31zM12 19.59c-1.6 0-3.11-.62-4.24-1.76C6.62 16.69 6 15.19 6 13.59s.62-3.11 1.76-4.24L12 5.1v14.49z');
+var _elm_community$elm_material_icons$Material_Icons_Action$input = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21 3.01H3c-1.1 0-2 .9-2 2V9h2V4.99h18v14.03H3V15H1v4.01c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98v-14c0-1.11-.9-2-2-2zM11 16l4-4-4-4v3H1v2h10v3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$info_outline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$info = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$https = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$http = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4.5 11h-2V9H1v6h1.5v-2.5h2V15H6V9H4.5v2zm2.5-.5h1.5V15H10v-4.5h1.5V9H7v1.5zm5.5 0H14V15h1.5v-4.5H17V9h-4.5v1.5zm9-1.5H18v6h1.5v-2h2c.8 0 1.5-.7 1.5-1.5v-1c0-.8-.7-1.5-1.5-1.5zm0 2.5h-2v-1h2v1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$hourglass_full = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$hourglass_empty = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$home = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z');
+var _elm_community$elm_material_icons$Material_Icons_Action$history = F2(
+	function (color, size) {
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$opacity('.9'),
+							_elm_lang$svg$Svg_Attributes$d('M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Action$highlight_off = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z');
+var _elm_community$elm_material_icons$Material_Icons_Action$help_outline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$help = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z');
+var _elm_community$elm_material_icons$Material_Icons_Action$group_work = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM8 17.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM9.5 8c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8zm6.5 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$grade = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z');
+var _elm_community$elm_material_icons$Material_Icons_Action$gif = F2(
+	function (color, size) {
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M24 24H0V0h24v24z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M11.5 9H13v6h-1.5zM9 9H6c-.6 0-1 .5-1 1v4c0 .5.4 1 1 1h3c.6 0 1-.5 1-1v-2H8.5v1.5h-2v-3H10V10c0-.5-.4-1-1-1zm10 1.5V9h-4.5v6H16v-2h2v-1.5h-2v-1z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Action$get_app = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$flip_to_front = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 13h2v-2H3v2zm0 4h2v-2H3v2zm2 4v-2H3c0 1.1.89 2 2 2zM3 9h2V7H3v2zm12 12h2v-2h-2v2zm4-18H9c-1.11 0-2 .9-2 2v10c0 1.1.89 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12H9V5h10v10zm-8 6h2v-2h-2v2zm-4 0h2v-2H7v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$flip_to_back = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9 7H7v2h2V7zm0 4H7v2h2v-2zm0-8c-1.11 0-2 .9-2 2h2V3zm4 12h-2v2h2v-2zm6-12v2h2c0-1.1-.9-2-2-2zm-6 0h-2v2h2V3zM9 17v-2H7c0 1.1.89 2 2 2zm10-4h2v-2h-2v2zm0-4h2V7h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zM5 7H3v12c0 1.1.89 2 2 2h12v-2H5V7zm10-2h2V3h-2v2zm0 12h2v-2h-2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$flight_takeoff = F2(
+	function (color, size) {
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 1.82 3.16.77 1.33 1.6-.43 5.31-1.42 4.35-1.16L21 11.49c.81-.23 1.28-1.05 1.07-1.85z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Action$flight_land = F2(
+	function (color, size) {
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('c'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('d'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#c'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M2.5 19h19v2h-19zm7.18-5.73l4.35 1.16 5.31 1.42c.8.21 1.62-.26 1.84-1.06.21-.8-.26-1.62-1.06-1.84l-5.31-1.42-2.76-9.02L10.12 2v8.28L5.15 8.95l-.93-2.32-1.45-.39v5.17l1.6.43 5.31 1.43z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#d)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Action$find_replace = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11 6c1.38 0 2.63.56 3.54 1.46L12 10h6V4l-2.05 2.05C14.68 4.78 12.93 4 11 4c-3.53 0-6.43 2.61-6.92 6H6.1c.46-2.28 2.48-4 4.9-4zm5.64 9.14c.66-.9 1.12-1.97 1.28-3.14H15.9c-.46 2.28-2.48 4-4.9 4-1.38 0-2.63-.56-3.54-1.46L10 12H4v6l2.05-2.05C7.32 17.22 9.07 18 11 18c1.55 0 2.98-.51 4.14-1.36L20 21.49 21.49 20l-4.85-4.86z');
+var _elm_community$elm_material_icons$Material_Icons_Action$find_in_page = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 19.59V8l-6-6H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c.45 0 .85-.15 1.19-.4l-4.43-4.43c-.8.52-1.74.83-2.76.83-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5c0 1.02-.31 1.96-.83 2.75L20 19.59zM9 13c0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3-3 1.34-3 3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$feedback = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$favorite_border = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z');
+var _elm_community$elm_material_icons$Material_Icons_Action$favorite = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
+var _elm_community$elm_material_icons$Material_Icons_Action$face = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z');
+var _elm_community$elm_material_icons$Material_Icons_Action$extension = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z');
+var _elm_community$elm_material_icons$Material_Icons_Action$explore = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 10.9c-.61 0-1.1.49-1.1 1.1s.49 1.1 1.1 1.1c.61 0 1.1-.49 1.1-1.1s-.49-1.1-1.1-1.1zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z');
+var _elm_community$elm_material_icons$Material_Icons_Action$exit_to_app = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$event_seat = F2(
+	function (color, size) {
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M4 18v3h3v-3h10v3h3v-6H4zm15-8h3v3h-3zM2 10h3v3H2zm15 3H7V5c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v8z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Action$event = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z');
+var _elm_community$elm_material_icons$Material_Icons_Action$eject = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M5 17h14v2H5zm7-12L5.33 15h13.34z');
+var _elm_community$elm_material_icons$Material_Icons_Action$done_all = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z');
+var _elm_community$elm_material_icons$Material_Icons_Action$done = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$dns = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM7 19c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zM7 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$description = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z');
+var _elm_community$elm_material_icons$Material_Icons_Action$delete = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$dashboard = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z');
+var _elm_community$elm_material_icons$Material_Icons_Action$credit_card = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$code = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$class = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$chrome_reader_mode = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M13 12h7v1.5h-7zm0-2.5h7V11h-7zm0 5h7V16h-7zM21 4H3c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 15h-9V6h9v13z');
+var _elm_community$elm_material_icons$Material_Icons_Action$check_circle = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z');
+var _elm_community$elm_material_icons$Material_Icons_Action$change_history = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 7.77L18.39 18H5.61L12 7.77M12 4L2 20h20L12 4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$card_travel = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 6h-3V4c0-1.11-.89-2-2-2H9c-1.11 0-2 .89-2 2v2H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zM9 4h6v2H9V4zm11 15H4v-2h16v2zm0-5H4V8h3v2h2V8h6v2h2V8h3v6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$card_membership = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 2H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h4v5l4-2 4 2v-5h4c1.11 0 2-.89 2-2V4c0-1.11-.89-2-2-2zm0 13H4v-2h16v2zm0-5H4V4h16v6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$card_giftcard = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$camera_enhance = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9 3L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.17L15 3H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zM12 17l1.25-2.75L16 13l-2.75-1.25L12 9l-1.25 2.75L8 13l2.75 1.25z');
+var _elm_community$elm_material_icons$Material_Icons_Action$cached = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z');
+var _elm_community$elm_material_icons$Material_Icons_Action$build = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$bug_report = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$bookmark_border = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z');
+var _elm_community$elm_material_icons$Material_Icons_Action$bookmark = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$book = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$backup = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z');
+var _elm_community$elm_material_icons$Material_Icons_Action$autorenew = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z');
+var _elm_community$elm_material_icons$Material_Icons_Action$assignment_turned_in = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z');
+var _elm_community$elm_material_icons$Material_Icons_Action$assignment_returned = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm0 15l-5-5h3V9h4v4h3l-5 5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$assignment_return = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm4 12h-4v3l-5-5 5-5v3h4v4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$assignment_late = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 15h-2v-2h2v2zm0-4h-2V8h2v6zm-1-9c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$assignment_ind = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1V19z');
+var _elm_community$elm_material_icons$Material_Icons_Action$assignment = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$assessment = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z');
+var _elm_community$elm_material_icons$Material_Icons_Action$aspect_ratio = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 12h-2v3h-3v2h5v-5zM7 9h3V7H5v5h2V9zm14-6H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02z');
+var _elm_community$elm_material_icons$Material_Icons_Action$announcement = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9h-2V5h2v6zm0 4h-2v-2h2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$android = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C13.85 1.23 12.95 1 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 3.26 6 5.01 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$alarm_on = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zm-1.46-5.47L8.41 12.4l-1.06 1.06 3.18 3.18 6-6-1.06-1.06-4.93 4.95z');
+var _elm_community$elm_material_icons$Material_Icons_Action$alarm_off = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 6c3.87 0 7 3.13 7 7 0 .84-.16 1.65-.43 2.4l1.52 1.52c.58-1.19.91-2.51.91-3.92 0-4.97-4.03-9-9-9-1.41 0-2.73.33-3.92.91L9.6 6.43C10.35 6.16 11.16 6 12 6zm10-.28l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM2.92 2.29L1.65 3.57 2.98 4.9l-1.11.93 1.42 1.42 1.11-.94.8.8C3.83 8.69 3 10.75 3 13c0 4.97 4.02 9 9 9 2.25 0 4.31-.83 5.89-2.2l2.2 2.2 1.27-1.27L3.89 3.27l-.97-.98zm13.55 16.1C15.26 19.39 13.7 20 12 20c-3.87 0-7-3.13-7-7 0-1.7.61-3.26 1.61-4.47l9.86 9.86zM8.02 3.28L6.6 1.86l-.86.71 1.42 1.42.86-.71z');
+var _elm_community$elm_material_icons$Material_Icons_Action$alarm_add = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zm1-11h-2v3H8v2h3v3h2v-3h3v-2h-3V9z');
+var _elm_community$elm_material_icons$Material_Icons_Action$alarm = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM12.5 8H11v6l4.75 2.85.75-1.23-4-2.37V8zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z');
+var _elm_community$elm_material_icons$Material_Icons_Action$add_shopping_cart = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11 9h2V6h3V4h-3V1h-2v3H8v2h3v3zm-4 9c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7.01L19.42 4h-.01l-1.1 2-2.76 5H8.53l-.13-.27L6.16 6l-.95-2-.94-2H1v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.13 0-.25-.11-.25-.25z');
+var _elm_community$elm_material_icons$Material_Icons_Action$account_circle = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z');
+var _elm_community$elm_material_icons$Material_Icons_Action$account_box = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 5v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2zm12 4c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3zm-9 8c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1H6v-1z');
+var _elm_community$elm_material_icons$Material_Icons_Action$account_balance_with_wallet = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$account_balance = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z');
+var _elm_community$elm_material_icons$Material_Icons_Action$accessibility = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z');
+var _elm_community$elm_material_icons$Material_Icons_Action$three_d_rotation = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7.52 21.48C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32zm.89-6.52c-.19 0-.37-.03-.52-.08-.16-.06-.29-.13-.4-.24-.11-.1-.2-.22-.26-.37-.06-.14-.09-.3-.09-.47h-1.3c0 .36.07.68.21.95.14.27.33.5.56.69.24.18.51.32.82.41.3.1.62.15.96.15.37 0 .72-.05 1.03-.15.32-.1.6-.25.83-.44s.42-.43.55-.72c.13-.29.2-.61.2-.97 0-.19-.02-.38-.07-.56-.05-.18-.12-.35-.23-.51-.1-.16-.24-.3-.4-.43-.17-.13-.37-.23-.61-.31.2-.09.37-.2.52-.33.15-.13.27-.27.37-.42.1-.15.17-.3.22-.46.05-.16.07-.32.07-.48 0-.36-.06-.68-.18-.96-.12-.28-.29-.51-.51-.69-.2-.19-.47-.33-.77-.43C9.1 8.05 8.76 8 8.39 8c-.36 0-.69.05-1 .16-.3.11-.57.26-.79.45-.21.19-.38.41-.51.67-.12.26-.18.54-.18.85h1.3c0-.17.03-.32.09-.45s.14-.25.25-.34c.11-.09.23-.17.38-.22.15-.05.3-.08.48-.08.4 0 .7.1.89.31.19.2.29.49.29.86 0 .18-.03.34-.08.49-.05.15-.14.27-.25.37-.11.1-.25.18-.41.24-.16.06-.36.09-.58.09H7.5v1.03h.77c.22 0 .42.02.6.07s.33.13.45.23c.12.11.22.24.29.4.07.16.1.35.1.57 0 .41-.12.72-.35.93-.23.23-.55.33-.95.33zm8.55-5.92c-.32-.33-.7-.59-1.14-.77-.43-.18-.92-.27-1.46-.27H12v8h2.3c.55 0 1.06-.09 1.51-.27.45-.18.84-.43 1.16-.76.32-.33.57-.73.74-1.19.17-.47.26-.99.26-1.57v-.4c0-.58-.09-1.1-.26-1.57-.18-.47-.43-.87-.75-1.2zm-.39 3.16c0 .42-.05.79-.14 1.13-.1.33-.24.62-.43.85-.19.23-.43.41-.71.53-.29.12-.62.18-.99.18h-.91V9.12h.97c.72 0 1.27.23 1.64.69.38.46.57 1.12.57 1.99v.4zM12 0l-.66.03 3.81 3.81 1.33-1.33c3.27 1.55 5.61 4.72 5.96 8.48h1.5C23.44 4.84 18.29 0 12 0z');
+
+var _elm_community$elm_material_icons$Material_Icons_Av$web = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z');
+var _elm_community$elm_material_icons$Material_Icons_Av$volume_up = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z');
+var _elm_community$elm_material_icons$Material_Icons_Av$volume_off = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z');
+var _elm_community$elm_material_icons$Material_Icons_Av$volume_mute = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 9v6h4l5 5V4l-5 5H7z');
+var _elm_community$elm_material_icons$Material_Icons_Av$volume_down = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z');
+var _elm_community$elm_material_icons$Material_Icons_Av$videocam_off = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$videocam = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z');
+var _elm_community$elm_material_icons$Material_Icons_Av$video_library = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z');
+var _elm_community$elm_material_icons$Material_Icons_Av$surround_sound = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.76 16.24l-1.41 1.41C4.78 16.1 4 14.05 4 12c0-2.05.78-4.1 2.34-5.66l1.41 1.41C6.59 8.93 6 10.46 6 12s.59 3.07 1.76 4.24zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm5.66 1.66l-1.41-1.41C17.41 15.07 18 13.54 18 12s-.59-3.07-1.76-4.24l1.41-1.41C19.22 7.9 20 9.95 20 12c0 2.05-.78 4.1-2.34 5.66zM12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$subtitles = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 12h4v2H4v-2zm10 6H4v-2h10v2zm6 0h-4v-2h4v2zm0-4H10v-2h10v2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$stop = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 6h12v12H6z');
+var _elm_community$elm_material_icons$Material_Icons_Av$sort_by_alpha = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M14.94 4.66h-4.72l2.36-2.36zm-4.69 14.71h4.66l-2.33 2.33zM6.1 6.27L1.6 17.73h1.84l.92-2.45h5.11l.92 2.45h1.84L7.74 6.27H6.1zm-1.13 7.37l1.94-5.18 1.94 5.18H4.97zm10.76 2.5h6.12v1.59h-8.53v-1.29l5.92-8.56h-5.88v-1.6h8.3v1.26l-5.93 8.6z');
+var _elm_community$elm_material_icons$Material_Icons_Av$snooze = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zm-3-9h3.63L9 15.2V17h6v-2h-3.63L15 10.8V9H9v2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$skip_previous = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 6h2v12H6zm3.5 6l8.5 6V6z');
+var _elm_community$elm_material_icons$Material_Icons_Av$skip_next = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$shuffle = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z');
+var _elm_community$elm_material_icons$Material_Icons_Av$replay_5 = F2(
+	function (color, size) {
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8zm-1.3 8.9l.2-2.2h2.4v.7h-1.7l-.1.9s.1 0 .1-.1.1 0 .1-.1.1 0 .2 0h.2c.2 0 .4 0 .5.1s.3.2.4.3.2.3.3.5.1.4.1.6c0 .2 0 .4-.1.5s-.1.3-.3.5-.3.2-.4.3-.4.1-.6.1c-.2 0-.4 0-.5-.1s-.3-.1-.5-.2-.2-.2-.3-.4-.1-.3-.1-.5h.8c0 .2.1.3.2.4s.2.1.4.1c.1 0 .2 0 .3-.1l.2-.2s.1-.2.1-.3v-.6l-.1-.2-.2-.2s-.2-.1-.3-.1h-.2s-.1 0-.2.1-.1 0-.1.1-.1.1-.1.1h-.7z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Av$replay_30 = F2(
+	function (color, size) {
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8zm-2.4 8.5h.4c.2 0 .4-.1.5-.2s.2-.2.2-.4v-.2s-.1-.1-.1-.2-.1-.1-.2-.1h-.5s-.1.1-.2.1-.1.1-.1.2v.2h-1c0-.2 0-.3.1-.5s.2-.3.3-.4.3-.2.4-.2.4-.1.5-.1c.2 0 .4 0 .6.1s.3.1.5.2.2.2.3.4.1.3.1.5v.3s-.1.2-.1.3-.1.2-.2.2-.2.1-.3.2c.2.1.4.2.5.4s.2.4.2.6c0 .2 0 .4-.1.5s-.2.3-.3.4-.3.2-.5.2-.4.1-.6.1c-.2 0-.4 0-.5-.1s-.3-.1-.5-.2-.2-.2-.3-.4-.1-.4-.1-.6h.8v.2s.1.1.1.2.1.1.2.1h.5s.1-.1.2-.1.1-.1.1-.2v-.5s-.1-.1-.1-.2-.1-.1-.2-.1h-.6v-.7zm5.7.7c0 .3 0 .6-.1.8l-.3.6s-.3.3-.5.3-.4.1-.6.1-.4 0-.6-.1-.3-.2-.5-.3-.2-.3-.3-.6-.1-.5-.1-.8v-.7c0-.3 0-.6.1-.8l.3-.6s.3-.3.5-.3.4-.1.6-.1.4 0 .6.1.3.2.5.3.2.3.3.6.1.5.1.8v.7zm-.8-.8v-.5c0-.1-.1-.2-.1-.3s-.1-.1-.2-.2-.2-.1-.3-.1-.2 0-.3.1l-.2.2s-.1.2-.1.3v2s.1.2.1.3.1.1.2.2.2.1.3.1.2 0 .3-.1l.2-.2s.1-.2.1-.3v-1.5z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Av$replay = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z');
+var _elm_community$elm_material_icons$Material_Icons_Av$replay_10 = F2(
+	function (color, size) {
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M12 5V1L7 6l5 5V7c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8zm-1.1 11H10v-3.3L9 13v-.7l1.8-.6h.1V16zm4.3-1.8c0 .3 0 .6-.1.8l-.3.6s-.3.3-.5.3-.4.1-.6.1-.4 0-.6-.1-.3-.2-.5-.3-.2-.3-.3-.6-.1-.5-.1-.8v-.7c0-.3 0-.6.1-.8l.3-.6s.3-.3.5-.3.4-.1.6-.1.4 0 .6.1c.2.1.3.2.5.3s.2.3.3.6.1.5.1.8v.7zm-.9-.8v-.5s-.1-.2-.1-.3-.1-.1-.2-.2-.2-.1-.3-.1-.2 0-.3.1l-.2.2s-.1.2-.1.3v2s.1.2.1.3.1.1.2.2.2.1.3.1.2 0 .3-.1l.2-.2s.1-.2.1-.3v-1.5z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Av$repeat_one = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4zm-4-2V9h-1l-2 1v1h1.5v4H13z');
+var _elm_community$elm_material_icons$Material_Icons_Av$repeat = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z');
+var _elm_community$elm_material_icons$Material_Icons_Av$recent_actors = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z');
+var _elm_community$elm_material_icons$Material_Icons_Av$radio = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3.24 6.15C2.51 6.43 2 7.17 2 8v12c0 1.1.89 2 2 2h16c1.11 0 2-.9 2-2V8c0-1.11-.89-2-2-2H8.3l8.26-3.34L15.88 1 3.24 6.15zM7 20c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-8h-2v-2h-2v2H4V8h16v4z');
+var _elm_community$elm_material_icons$Material_Icons_Av$queue_music = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z');
+var _elm_community$elm_material_icons$Material_Icons_Av$queue = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$playlist_add = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$play_circle_outline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z');
+var _elm_community$elm_material_icons$Material_Icons_Av$play_circle_filled = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z');
+var _elm_community$elm_material_icons$Material_Icons_Av$play_arrow = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M8 5v14l11-7z');
+var _elm_community$elm_material_icons$Material_Icons_Av$pause_circle_outline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9 16h2V8H9v8zm3-14C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-4h2V8h-2v8z');
+var _elm_community$elm_material_icons$Material_Icons_Av$pause_circle_filled = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z');
+var _elm_community$elm_material_icons$Material_Icons_Av$pause = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+var _elm_community$elm_material_icons$Material_Icons_Av$not_interested = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z');
+var _elm_community$elm_material_icons$Material_Icons_Av$new_releases = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z');
+var _elm_community$elm_material_icons$Material_Icons_Av$movie = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z');
+var _elm_community$elm_material_icons$Material_Icons_Av$mic_off = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z');
+var _elm_community$elm_material_icons$Material_Icons_Av$mic_none = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1.2-9.1c0-.66.54-1.2 1.2-1.2.66 0 1.2.54 1.2 1.2l-.01 6.2c0 .66-.53 1.2-1.19 1.2-.66 0-1.2-.54-1.2-1.2V4.9zm6.5 6.1c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z');
+var _elm_community$elm_material_icons$Material_Icons_Av$mic = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z');
+var _elm_community$elm_material_icons$Material_Icons_Av$loop = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z');
+var _elm_community$elm_material_icons$Material_Icons_Av$library_music = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 5h-3v5.5c0 1.38-1.12 2.5-2.5 2.5S10 13.88 10 12.5s1.12-2.5 2.5-2.5c.57 0 1.08.19 1.5.51V5h4v2zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z');
+var _elm_community$elm_material_icons$Material_Icons_Av$library_books = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$library_add = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$high_quality = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 11H9.5v-2h-2v2H6V9h1.5v2.5h2V9H11v6zm7-1c0 .55-.45 1-1 1h-.75v1.5h-1.5V15H14c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v4zm-3.5-.5h2v-3h-2v3z');
+var _elm_community$elm_material_icons$Material_Icons_Av$hearing = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17 20c-.29 0-.56-.06-.76-.15-.71-.37-1.21-.88-1.71-2.38-.51-1.56-1.47-2.29-2.39-3-.79-.61-1.61-1.24-2.32-2.53C9.29 10.98 9 9.93 9 9c0-2.8 2.2-5 5-5s5 2.2 5 5h2c0-3.93-3.07-7-7-7S7 5.07 7 9c0 1.26.38 2.65 1.07 3.9.91 1.65 1.98 2.48 2.85 3.15.81.62 1.39 1.07 1.71 2.05.6 1.82 1.37 2.84 2.73 3.55.51.23 1.07.35 1.64.35 2.21 0 4-1.79 4-4h-2c0 1.1-.9 2-2 2zM7.64 2.64L6.22 1.22C4.23 3.21 3 5.96 3 9s1.23 5.79 3.22 7.78l1.41-1.41C6.01 13.74 5 11.49 5 9s1.01-4.74 2.64-6.36zM11.5 9c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5-2.5 1.12-2.5 2.5z');
+var _elm_community$elm_material_icons$Material_Icons_Av$hd = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 12H9.5v-2h-2v2H6V9h1.5v2.5h2V9H11v6zm2-6h4c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-4V9zm1.5 4.5h2v-3h-2v3z');
+var _elm_community$elm_material_icons$Material_Icons_Av$games = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z');
+var _elm_community$elm_material_icons$Material_Icons_Av$forward_5 = F2(
+	function (color, size) {
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M24 24H0V0h24v24z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M4 13c0 4.4 3.6 8 8 8s8-3.6 8-8h-2c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6v4l5-5-5-5v4c-4.4 0-8 3.6-8 8zm6.7.9l.2-2.2h2.4v.7h-1.7l-.1.9s.1 0 .1-.1.1 0 .1-.1.1 0 .2 0h.2c.2 0 .4 0 .5.1s.3.2.4.3.2.3.3.5.1.4.1.6c0 .2 0 .4-.1.5s-.1.3-.3.5-.3.2-.5.3-.4.1-.6.1c-.2 0-.4 0-.5-.1s-.3-.1-.5-.2-.2-.2-.3-.4-.1-.3-.1-.5h.8c0 .2.1.3.2.4s.2.1.4.1c.1 0 .2 0 .3-.1l.2-.2s.1-.2.1-.3v-.6l-.1-.2-.2-.2s-.2-.1-.3-.1h-.2s-.1 0-.2.1-.1 0-.1.1-.1.1-.1.1h-.6z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Av$forward_30 = F2(
+	function (color, size) {
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M24 24H0V0h24v24z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M9.6 13.5h.4c.2 0 .4-.1.5-.2s.2-.2.2-.4v-.2s-.1-.1-.1-.2-.1-.1-.2-.1h-.5s-.1.1-.2.1-.1.1-.1.2v.2h-1c0-.2 0-.3.1-.5s.2-.3.3-.4.3-.2.4-.2.4-.1.5-.1c.2 0 .4 0 .6.1s.3.1.5.2.2.2.3.4.1.3.1.5v.3s-.1.2-.1.3-.1.2-.2.2-.2.1-.3.2c.2.1.4.2.5.4s.2.4.2.6c0 .2 0 .4-.1.5s-.2.3-.3.4-.3.2-.5.2-.4.1-.6.1c-.2 0-.4 0-.5-.1s-.3-.1-.5-.2-.2-.2-.3-.4-.1-.4-.1-.6h.8v.2s.1.1.1.2.1.1.2.1h.5s.1-.1.2-.1.1-.1.1-.2v-.5s-.1-.1-.1-.2-.1-.1-.2-.1h-.6v-.7zm5.7.7c0 .3 0 .6-.1.8l-.3.6s-.3.3-.5.3-.4.1-.6.1-.4 0-.6-.1-.3-.2-.5-.3-.2-.3-.3-.6-.1-.5-.1-.8v-.7c0-.3 0-.6.1-.8l.3-.6s.3-.3.5-.3.4-.1.6-.1.4 0 .6.1.3.2.5.3.2.3.3.6.1.5.1.8v.7zm-.9-.8v-.5s-.1-.2-.1-.3-.1-.1-.2-.2-.2-.1-.3-.1-.2 0-.3.1l-.2.2s-.1.2-.1.3v2s.1.2.1.3.1.1.2.2.2.1.3.1.2 0 .3-.1l.2-.2s.1-.2.1-.3v-1.5zM4 13c0 4.4 3.6 8 8 8s8-3.6 8-8h-2c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6v4l5-5-5-5v4c-4.4 0-8 3.6-8 8z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Av$forward_10 = F2(
+	function (color, size) {
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M24 24H0V0h24v24z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M4 13c0 4.4 3.6 8 8 8s8-3.6 8-8h-2c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6v4l5-5-5-5v4c-4.4 0-8 3.6-8 8zm6.8 3H10v-3.3L9 13v-.7l1.8-.6h.1V16zm4.3-1.8c0 .3 0 .6-.1.8l-.3.6s-.3.3-.5.3-.4.1-.6.1-.4 0-.6-.1-.3-.2-.5-.3-.2-.3-.3-.6-.1-.5-.1-.8v-.7c0-.3 0-.6.1-.8l.3-.6s.3-.3.5-.3.4-.1.6-.1.4 0 .6.1.3.2.5.3.2.3.3.6.1.5.1.8v.7zm-.8-.8v-.5s-.1-.2-.1-.3-.1-.1-.2-.2-.2-.1-.3-.1-.2 0-.3.1l-.2.2s-.1.2-.1.3v2s.1.2.1.3.1.1.2.2.2.1.3.1.2 0 .3-.1l.2-.2s.1-.2.1-.3v-1.5z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+var _elm_community$elm_material_icons$Material_Icons_Av$fast_rewind = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z');
+var _elm_community$elm_material_icons$Material_Icons_Av$fast_forward = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z');
+var _elm_community$elm_material_icons$Material_Icons_Av$explicit = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 6h-4v2h4v2h-4v2h4v2H9V7h6v2z');
+var _elm_community$elm_material_icons$Material_Icons_Av$equalizer = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 20h4V4h-4v16zm-6 0h4v-8H4v8zM16 9v11h4V9h-4z');
+var _elm_community$elm_material_icons$Material_Icons_Av$closed_caption = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z');
+var _elm_community$elm_material_icons$Material_Icons_Av$av_timer = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M11 17c0 .55.45 1 1 1s1-.45 1-1-.45-1-1-1-1 .45-1 1zm0-14v4h2V5.08c3.39.49 6 3.39 6 6.92 0 3.87-3.13 7-7 7s-7-3.13-7-7c0-1.68.59-3.22 1.58-4.42L12 13l1.41-1.41-6.8-6.8v.02C4.42 6.45 3 9.05 3 12c0 4.97 4.02 9 9 9 4.97 0 9-4.03 9-9s-4.03-9-9-9h-1zm7 9c0-.55-.45-1-1-1s-1 .45-1 1 .45 1 1 1 1-.45 1-1zM6 12c0 .55.45 1 1 1s1-.45 1-1-.45-1-1-1-1 .45-1 1z');
+var _elm_community$elm_material_icons$Material_Icons_Av$album = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z');
+var _elm_community$elm_material_icons$Material_Icons_Av$airplay = F2(
+	function (color, size) {
+		var stringSize = _elm_lang$core$Basics$toString(size);
+		var stringColor = _elm_community$elm_material_icons$Material_Icons_Internal$toRgbaString(color);
+		return A2(
+			_elm_lang$svg$Svg$svg,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$svg$Svg_Attributes$width(stringSize),
+					_elm_lang$svg$Svg_Attributes$height(stringSize),
+					_elm_lang$svg$Svg_Attributes$viewBox('0 0 24 24')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('a'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$defs,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$path,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$id('c'),
+									_elm_lang$svg$Svg_Attributes$d('M0 0h24v24H0V0z')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('b')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#a'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A3(
+					_elm_lang$virtual_dom$VirtualDom$node,
+					'clipPath',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$id('d'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#b)')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$svg$Svg$use,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$svg$Svg_Attributes$xlinkHref('#c'),
+									_elm_lang$svg$Svg_Attributes$overflow('visible')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$svg$Svg$path,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$d('M6 22h12l-6-6zM21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v-2H3V5h18v12h-4v2h4c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z'),
+							_elm_lang$svg$Svg_Attributes$clipPath('url(#d)'),
+							_elm_lang$svg$Svg_Attributes$fill(stringColor)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
+	});
+
+var _elm_community$elm_material_icons$Material_Icons_Content$undo = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z');
+var _elm_community$elm_material_icons$Material_Icons_Content$text_format = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M5 17v2h14v-2H5zm4.5-4.2h5l.9 2.2h2.1L12.75 4h-1.5L6.5 15h2.1l.9-2.2zM12 5.98L13.87 11h-3.74L12 5.98z');
+var _elm_community$elm_material_icons$Material_Icons_Content$sort = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$send = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M2.01 21L23 12 2.01 3 2 10l15 2-15 2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$select_all = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 5h2V3c-1.1 0-2 .9-2 2zm0 8h2v-2H3v2zm4 8h2v-2H7v2zM3 9h2V7H3v2zm10-6h-2v2h2V3zm6 0v2h2c0-1.1-.9-2-2-2zM5 21v-2H3c0 1.1.9 2 2 2zm-2-4h2v-2H3v2zM9 3H7v2h2V3zm2 18h2v-2h-2v2zm8-8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zm0-12h2V7h-2v2zm0 8h2v-2h-2v2zm-4 4h2v-2h-2v2zm0-16h2V3h-2v2zM7 17h10V7H7v10zm2-8h6v6H9V9z');
+var _elm_community$elm_material_icons$Material_Icons_Content$save = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z');
+var _elm_community$elm_material_icons$Material_Icons_Content$report = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15.73 3H8.27L3 8.27v7.46L8.27 21h7.46L21 15.73V8.27L15.73 3zM12 17.3c-.72 0-1.3-.58-1.3-1.3 0-.72.58-1.3 1.3-1.3.72 0 1.3.58 1.3 1.3 0 .72-.58 1.3-1.3 1.3zm1-4.3h-2V7h2v6z');
+var _elm_community$elm_material_icons$Material_Icons_Content$reply_all = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 8V5l-7 7 7 7v-3l-4-4 4-4zm6 1V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z');
+var _elm_community$elm_material_icons$Material_Icons_Content$reply = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z');
+var _elm_community$elm_material_icons$Material_Icons_Content$remove_circle_outline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z');
+var _elm_community$elm_material_icons$Material_Icons_Content$remove_circle = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$remove = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 13H5v-2h14v2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$redo = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z');
+var _elm_community$elm_material_icons$Material_Icons_Content$markunread = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$mail = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$link = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z');
+var _elm_community$elm_material_icons$Material_Icons_Content$inbox = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3H4.99c-1.1 0-1.98.9-1.98 2L3 19c0 1.1.89 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12h-4c0 1.66-1.34 3-3 3s-3-1.34-3-3H4.99V5H19v10zm-3-5h-2V7h-4v3H8l4 4 4-4z');
+var _elm_community$elm_material_icons$Material_Icons_Content$gesture = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4.59 6.89c.7-.71 1.4-1.35 1.71-1.22.5.2 0 1.03-.3 1.52-.25.42-2.86 3.89-2.86 6.31 0 1.28.48 2.34 1.34 2.98.75.56 1.74.73 2.64.46 1.07-.31 1.95-1.4 3.06-2.77 1.21-1.49 2.83-3.44 4.08-3.44 1.63 0 1.65 1.01 1.76 1.79-3.78.64-5.38 3.67-5.38 5.37 0 1.7 1.44 3.09 3.21 3.09 1.63 0 4.29-1.33 4.69-6.1H21v-2.5h-2.47c-.15-1.65-1.09-4.2-4.03-4.2-2.25 0-4.18 1.91-4.94 2.84-.58.73-2.06 2.48-2.29 2.72-.25.3-.68.84-1.11.84-.45 0-.72-.83-.36-1.92.35-1.09 1.4-2.86 1.85-3.52.78-1.14 1.3-1.92 1.3-3.28C8.95 3.69 7.31 3 6.44 3 5.12 3 3.97 4 3.72 4.25c-.36.36-.66.66-.88.93l1.75 1.71zm9.29 11.66c-.31 0-.74-.26-.74-.72 0-.6.73-2.2 2.87-2.76-.3 2.69-1.43 3.48-2.13 3.48z');
+var _elm_community$elm_material_icons$Material_Icons_Content$forward = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 8V4l8 8-8 8v-4H4V8z');
+var _elm_community$elm_material_icons$Material_Icons_Content$font_download = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9.93 13.5h4.14L12 7.98zM20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-4.05 16.5l-1.14-3H9.17l-1.12 3H5.96l5.11-13h1.86l5.11 13h-2.09z');
+var _elm_community$elm_material_icons$Material_Icons_Content$flag = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z');
+var _elm_community$elm_material_icons$Material_Icons_Content$filter_list = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$drafts = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M21.99 8c0-.72-.37-1.35-.94-1.7L12 1 2.95 6.3C2.38 6.65 2 7.28 2 8v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2l-.01-10zM12 13L3.74 7.84 12 3l8.26 4.84L12 13z');
+var _elm_community$elm_material_icons$Material_Icons_Content$create = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z');
+var _elm_community$elm_material_icons$Material_Icons_Content$content_paste = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z');
+var _elm_community$elm_material_icons$Material_Icons_Content$content_cut = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm0 12c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm6-7.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM19 3l-6 6 2 2 7-7V3z');
+var _elm_community$elm_material_icons$Material_Icons_Content$content_copy = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z');
+var _elm_community$elm_material_icons$Material_Icons_Content$clear = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z');
+var _elm_community$elm_material_icons$Material_Icons_Content$block = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z');
+var _elm_community$elm_material_icons$Material_Icons_Content$backspace = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z');
+var _elm_community$elm_material_icons$Material_Icons_Content$archive = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z');
+var _elm_community$elm_material_icons$Material_Icons_Content$add_circle_outline = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z');
+var _elm_community$elm_material_icons$Material_Icons_Content$add_circle = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$add_box = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z');
+var _elm_community$elm_material_icons$Material_Icons_Content$add = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z');
+
+var _elm_community$elm_material_icons$Material_Icons_Navigation$unfold_more = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$unfold_less = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7.41 18.59L8.83 20 12 16.83 15.17 20l1.41-1.41L12 14l-4.59 4.59zm9.18-13.18L15.17 4 12 7.17 8.83 4 7.41 5.41 12 10l4.59-4.59z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$refresh = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$more_vert = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$more_horiz = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$menu = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$fullscreen_exit = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$fullscreen = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$expand_more = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$expand_less = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$close = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$chevron_right = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$chevron_left = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$check = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$cancel = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$arrow_forward = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$arrow_drop_up = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 14l5-5 5 5z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$arrow_drop_down_circle = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 12l-4-4h8l-4 4z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$arrow_drop_down = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M7 10l5 5 5-5z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$arrow_back = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z');
+var _elm_community$elm_material_icons$Material_Icons_Navigation$apps = _elm_community$elm_material_icons$Material_Icons_Internal$icon('M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z');
+
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
 var _elm_lang$core$Task$spawnCmd = F2(
@@ -8293,6 +11515,137 @@ var _elm_community$random_extra$Random_Extra$maybe = F2(
 			});
 	});
 
+var _elm_lang$core$Set$foldr = F3(
+	function (f, b, _p0) {
+		var _p1 = _p0;
+		return A3(
+			_elm_lang$core$Dict$foldr,
+			F3(
+				function (k, _p2, b) {
+					return A2(f, k, b);
+				}),
+			b,
+			_p1._0);
+	});
+var _elm_lang$core$Set$foldl = F3(
+	function (f, b, _p3) {
+		var _p4 = _p3;
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, _p5, b) {
+					return A2(f, k, b);
+				}),
+			b,
+			_p4._0);
+	});
+var _elm_lang$core$Set$toList = function (_p6) {
+	var _p7 = _p6;
+	return _elm_lang$core$Dict$keys(_p7._0);
+};
+var _elm_lang$core$Set$size = function (_p8) {
+	var _p9 = _p8;
+	return _elm_lang$core$Dict$size(_p9._0);
+};
+var _elm_lang$core$Set$member = F2(
+	function (k, _p10) {
+		var _p11 = _p10;
+		return A2(_elm_lang$core$Dict$member, k, _p11._0);
+	});
+var _elm_lang$core$Set$isEmpty = function (_p12) {
+	var _p13 = _p12;
+	return _elm_lang$core$Dict$isEmpty(_p13._0);
+};
+var _elm_lang$core$Set$Set_elm_builtin = function (a) {
+	return {ctor: 'Set_elm_builtin', _0: a};
+};
+var _elm_lang$core$Set$empty = _elm_lang$core$Set$Set_elm_builtin(_elm_lang$core$Dict$empty);
+var _elm_lang$core$Set$singleton = function (k) {
+	return _elm_lang$core$Set$Set_elm_builtin(
+		A2(
+			_elm_lang$core$Dict$singleton,
+			k,
+			{ctor: '_Tuple0'}));
+};
+var _elm_lang$core$Set$insert = F2(
+	function (k, _p14) {
+		var _p15 = _p14;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A3(
+				_elm_lang$core$Dict$insert,
+				k,
+				{ctor: '_Tuple0'},
+				_p15._0));
+	});
+var _elm_lang$core$Set$fromList = function (xs) {
+	return A3(_elm_lang$core$List$foldl, _elm_lang$core$Set$insert, _elm_lang$core$Set$empty, xs);
+};
+var _elm_lang$core$Set$map = F2(
+	function (f, s) {
+		return _elm_lang$core$Set$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				f,
+				_elm_lang$core$Set$toList(s)));
+	});
+var _elm_lang$core$Set$remove = F2(
+	function (k, _p16) {
+		var _p17 = _p16;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$remove, k, _p17._0));
+	});
+var _elm_lang$core$Set$union = F2(
+	function (_p19, _p18) {
+		var _p20 = _p19;
+		var _p21 = _p18;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$union, _p20._0, _p21._0));
+	});
+var _elm_lang$core$Set$intersect = F2(
+	function (_p23, _p22) {
+		var _p24 = _p23;
+		var _p25 = _p22;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$intersect, _p24._0, _p25._0));
+	});
+var _elm_lang$core$Set$diff = F2(
+	function (_p27, _p26) {
+		var _p28 = _p27;
+		var _p29 = _p26;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$diff, _p28._0, _p29._0));
+	});
+var _elm_lang$core$Set$filter = F2(
+	function (p, _p30) {
+		var _p31 = _p30;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(
+				_elm_lang$core$Dict$filter,
+				F2(
+					function (k, _p32) {
+						return p(k);
+					}),
+				_p31._0));
+	});
+var _elm_lang$core$Set$partition = F2(
+	function (p, _p33) {
+		var _p34 = _p33;
+		var _p35 = A2(
+			_elm_lang$core$Dict$partition,
+			F2(
+				function (k, _p36) {
+					return p(k);
+				}),
+			_p34._0);
+		var p1 = _p35._0;
+		var p2 = _p35._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Set$Set_elm_builtin(p1),
+			_1: _elm_lang$core$Set$Set_elm_builtin(p2)
+		};
+	});
+
 var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
 var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
 var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
@@ -8824,6 +12177,10 @@ var _elm_lang$html$Html_Events$Options = F2(
 	function (a, b) {
 		return {stopPropagation: a, preventDefault: b};
 	});
+
+var _elm_lang$html$Html_Keyed$node = _elm_lang$virtual_dom$VirtualDom$keyedNode;
+var _elm_lang$html$Html_Keyed$ol = _elm_lang$html$Html_Keyed$node('ol');
+var _elm_lang$html$Html_Keyed$ul = _elm_lang$html$Html_Keyed$node('ul');
 
 var _elm_lang$keyboard$Keyboard$onSelfMsg = F3(
 	function (router, _p0, state) {
@@ -9523,6 +12880,3195 @@ var _elm_lang$navigation$Navigation$subMap = F2(
 			});
 	});
 _elm_lang$core$Native_Platform.effectManagers['Navigation'] = {pkg: 'elm-lang/navigation', init: _elm_lang$navigation$Navigation$init, onEffects: _elm_lang$navigation$Navigation$onEffects, onSelfMsg: _elm_lang$navigation$Navigation$onSelfMsg, tag: 'fx', cmdMap: _elm_lang$navigation$Navigation$cmdMap, subMap: _elm_lang$navigation$Navigation$subMap};
+
+var _elm_lang$window$Native_Window = function()
+{
+
+var size = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)	{
+	callback(_elm_lang$core$Native_Scheduler.succeed({
+		width: window.innerWidth,
+		height: window.innerHeight
+	}));
+});
+
+return {
+	size: size
+};
+
+}();
+var _elm_lang$window$Window_ops = _elm_lang$window$Window_ops || {};
+_elm_lang$window$Window_ops['&>'] = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			t1,
+			function (_p0) {
+				return t2;
+			});
+	});
+var _elm_lang$window$Window$onSelfMsg = F3(
+	function (router, dimensions, state) {
+		var _p1 = state;
+		if (_p1.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var send = function (_p2) {
+				var _p3 = _p2;
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					_p3._0(dimensions));
+			};
+			return A2(
+				_elm_lang$window$Window_ops['&>'],
+				_elm_lang$core$Task$sequence(
+					A2(_elm_lang$core$List$map, send, _p1._0.subs)),
+				_elm_lang$core$Task$succeed(state));
+		}
+	});
+var _elm_lang$window$Window$init = _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+var _elm_lang$window$Window$size = _elm_lang$window$Native_Window.size;
+var _elm_lang$window$Window$width = A2(
+	_elm_lang$core$Task$map,
+	function (_) {
+		return _.width;
+	},
+	_elm_lang$window$Window$size);
+var _elm_lang$window$Window$height = A2(
+	_elm_lang$core$Task$map,
+	function (_) {
+		return _.height;
+	},
+	_elm_lang$window$Window$size);
+var _elm_lang$window$Window$onEffects = F3(
+	function (router, newSubs, oldState) {
+		var _p4 = {ctor: '_Tuple2', _0: oldState, _1: newSubs};
+		if (_p4._0.ctor === 'Nothing') {
+			if (_p4._1.ctor === '[]') {
+				return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+			} else {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					_elm_lang$core$Process$spawn(
+						A3(
+							_elm_lang$dom$Dom_LowLevel$onWindow,
+							'resize',
+							_elm_lang$core$Json_Decode$succeed(
+								{ctor: '_Tuple0'}),
+							function (_p5) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									_elm_lang$window$Window$size,
+									_elm_lang$core$Platform$sendToSelf(router));
+							})),
+					function (pid) {
+						return _elm_lang$core$Task$succeed(
+							_elm_lang$core$Maybe$Just(
+								{subs: newSubs, pid: pid}));
+					});
+			}
+		} else {
+			if (_p4._1.ctor === '[]') {
+				return A2(
+					_elm_lang$window$Window_ops['&>'],
+					_elm_lang$core$Process$kill(_p4._0._0.pid),
+					_elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing));
+			} else {
+				return _elm_lang$core$Task$succeed(
+					_elm_lang$core$Maybe$Just(
+						{subs: newSubs, pid: _p4._0._0.pid}));
+			}
+		}
+	});
+var _elm_lang$window$Window$subscription = _elm_lang$core$Native_Platform.leaf('Window');
+var _elm_lang$window$Window$Size = F2(
+	function (a, b) {
+		return {width: a, height: b};
+	});
+var _elm_lang$window$Window$MySub = function (a) {
+	return {ctor: 'MySub', _0: a};
+};
+var _elm_lang$window$Window$resizes = function (tagger) {
+	return _elm_lang$window$Window$subscription(
+		_elm_lang$window$Window$MySub(tagger));
+};
+var _elm_lang$window$Window$subMap = F2(
+	function (func, _p6) {
+		var _p7 = _p6;
+		return _elm_lang$window$Window$MySub(
+			function (_p8) {
+				return func(
+					_p7._0(_p8));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Window'] = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
+
+var _jinjor$elm_inline_hover$InlineHover$isValidChars = function (list) {
+	isValidChars:
+	while (true) {
+		var _p0 = list;
+		if (_p0.ctor === '::') {
+			var _p1 = _p0._0;
+			if (_elm_lang$core$Char$isLower(_p1) || _elm_lang$core$Native_Utils.eq(
+				_p1,
+				_elm_lang$core$Native_Utils.chr('-'))) {
+				var _v1 = _p0._1;
+				list = _v1;
+				continue isValidChars;
+			} else {
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
+};
+var _jinjor$elm_inline_hover$InlineHover$isValidKey = function (s) {
+	return (!_elm_lang$core$Native_Utils.eq(s, '')) && (A2(
+		_elm_lang$core$List$any,
+		_elm_lang$core$Char$isLower,
+		_elm_lang$core$String$toList(s)) && A2(
+		_elm_lang$core$List$all,
+		function (c) {
+			return _elm_lang$core$Char$isLower(c) || _elm_lang$core$Native_Utils.eq(
+				c,
+				_elm_lang$core$Native_Utils.chr('-'));
+		},
+		_elm_lang$core$String$toList(s)));
+};
+var _jinjor$elm_inline_hover$InlineHover$toCamelCase = function (s) {
+	return _elm_lang$core$String$fromList(
+		_elm_lang$core$List$reverse(
+			_elm_lang$core$Basics$snd(
+				A3(
+					_elm_lang$core$List$foldl,
+					F2(
+						function (c, _p2) {
+							var _p3 = _p2;
+							var _p4 = _p3._1;
+							return _elm_lang$core$Native_Utils.eq(
+								c,
+								_elm_lang$core$Native_Utils.chr('-')) ? {ctor: '_Tuple2', _0: true, _1: _p4} : (_p3._0 ? {
+								ctor: '_Tuple2',
+								_0: false,
+								_1: A2(
+									_elm_lang$core$List_ops['::'],
+									_elm_lang$core$Char$toUpper(c),
+									_p4)
+							} : {
+								ctor: '_Tuple2',
+								_0: false,
+								_1: A2(_elm_lang$core$List_ops['::'], c, _p4)
+							});
+						}),
+					{
+						ctor: '_Tuple2',
+						_0: false,
+						_1: _elm_lang$core$Native_List.fromArray(
+							[])
+					},
+					_elm_lang$core$String$toList(s)))));
+};
+var _jinjor$elm_inline_hover$InlineHover$enterEach = function (_p5) {
+	var _p6 = _p5;
+	var _p8 = _p6._0;
+	var escapedValue = function (_p7) {
+		return A2(
+			_elm_lang$core$String$join,
+			'\"',
+			A2(_elm_lang$core$String$split, '\'', _p7));
+	}(_p6._1);
+	var keyCamel = _jinjor$elm_inline_hover$InlineHover$toCamelCase(_p8);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'this.setAttribute(\'data-hover-',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_p8,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'\', this.style.',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					keyCamel,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'||\'\');',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'this.style.',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								keyCamel,
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'=\'',
+									A2(_elm_lang$core$Basics_ops['++'], escapedValue, '\'')))))))));
+};
+var _jinjor$elm_inline_hover$InlineHover$leaveEach = function (_p9) {
+	var _p10 = _p9;
+	var _p11 = _p10._0;
+	var keyCamel = _jinjor$elm_inline_hover$InlineHover$toCamelCase(_p11);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'this.style.',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			keyCamel,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'=this.getAttribute(\'data-hover-',
+				A2(_elm_lang$core$Basics_ops['++'], _p11, '\')||\'\';'))));
+};
+var _jinjor$elm_inline_hover$InlineHover$hover = F4(
+	function (styles, tag, attrs, children) {
+		var validStyles = A2(
+			_elm_lang$core$List$filter,
+			function (_p12) {
+				var _p13 = _p12;
+				return _jinjor$elm_inline_hover$InlineHover$isValidKey(_p13._0);
+			},
+			styles);
+		var enter = A2(
+			_elm_lang$html$Html_Attributes$attribute,
+			'onmouseenter',
+			A2(
+				_elm_lang$core$String$join,
+				';',
+				A2(_elm_lang$core$List$map, _jinjor$elm_inline_hover$InlineHover$enterEach, validStyles)));
+		var leave = A2(
+			_elm_lang$html$Html_Attributes$attribute,
+			'onmouseleave',
+			A2(
+				_elm_lang$core$String$join,
+				';',
+				A2(_elm_lang$core$List$map, _jinjor$elm_inline_hover$InlineHover$leaveEach, validStyles)));
+		return A2(
+			tag,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Native_List.fromArray(
+					[enter, leave]),
+				attrs),
+			children);
+	});
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$head = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0;
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$takeHelp = F3(
+	function (result, n, list) {
+		takeHelp:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) {
+				return result;
+			} else {
+				var _p2 = list;
+				if (_p2.ctor === '[]') {
+					return result;
+				} else {
+					var _v2 = A2(_elm_lang$core$List_ops['::'], _p2._0, result),
+						_v3 = n - 1,
+						_v4 = _p2._1;
+					result = _v2;
+					n = _v3;
+					list = _v4;
+					continue takeHelp;
+				}
+			}
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findMapManyHelp = F4(
+	function (result, n, f, list) {
+		findMapManyHelp:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) {
+				return result;
+			} else {
+				var _p3 = list;
+				if (_p3.ctor === '[]') {
+					return result;
+				} else {
+					var _p5 = _p3._1;
+					var _p4 = f(_p3._0);
+					if (_p4.ctor === 'Just') {
+						var _v7 = A2(_elm_lang$core$List_ops['::'], _p4._0, result),
+							_v8 = n - 1,
+							_v9 = f,
+							_v10 = _p5;
+						result = _v7;
+						n = _v8;
+						f = _v9;
+						list = _v10;
+						continue findMapManyHelp;
+					} else {
+						var _v11 = result,
+							_v12 = n,
+							_v13 = f,
+							_v14 = _p5;
+						result = _v11;
+						n = _v12;
+						f = _v13;
+						list = _v14;
+						continue findMapManyHelp;
+					}
+				}
+			}
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findMapHelp = F2(
+	function (f, list) {
+		findMapHelp:
+		while (true) {
+			var _p6 = list;
+			if (_p6.ctor === '[]') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p7 = f(_p6._0);
+				if (_p7.ctor === 'Nothing') {
+					var _v17 = f,
+						_v18 = _p6._1;
+					f = _v17;
+					list = _v18;
+					continue findMapHelp;
+				} else {
+					return _p7;
+				}
+			}
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findHelp = F2(
+	function (f, list) {
+		findHelp:
+		while (true) {
+			var _p8 = list;
+			if (_p8.ctor === '[]') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p9 = _p8._0;
+				if (f(_p9)) {
+					return _elm_lang$core$Maybe$Just(_p9);
+				} else {
+					var _v20 = f,
+						_v21 = _p8._1;
+					f = _v20;
+					list = _v21;
+					continue findHelp;
+				}
+			}
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList = function (_p10) {
+	var _p11 = _p10;
+	return A2(_elm_lang$core$List_ops['::'], _p11._0, _p11._1);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$filter = F2(
+	function (match, nel) {
+		return A2(
+			_elm_lang$core$List$filter,
+			match,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList(nel));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$filterMap = F2(
+	function (match, nel) {
+		return A2(
+			_elm_lang$core$List$filterMap,
+			match,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList(nel));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$find = F2(
+	function (f, nel) {
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findHelp,
+			f,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList(nel));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findMap = F2(
+	function (f, nel) {
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findMapHelp,
+			f,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList(nel));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findMapMany = F3(
+	function (n, f, nel) {
+		return _elm_lang$core$List$reverse(
+			A4(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findMapManyHelp,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				n,
+				f,
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList(nel)));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$take = F2(
+	function (n, nel) {
+		return _elm_lang$core$List$reverse(
+			A3(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$takeHelp,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				n,
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList(nel)));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$Nel = F2(
+	function (a, b) {
+		return {ctor: 'Nel', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$map = F2(
+	function (f, _p12) {
+		var _p13 = _p12;
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$Nel,
+			f(_p13._0),
+			A2(_elm_lang$core$List$map, f, _p13._1));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$concat = F2(
+	function (list, _p14) {
+		var _p15 = _p14;
+		var _p18 = _p15._1;
+		var _p17 = _p15._0;
+		var _p16 = list;
+		if (_p16.ctor === '::') {
+			return A2(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$Nel,
+				_p16._0,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_p16._1,
+					A2(_elm_lang$core$List_ops['::'], _p17, _p18)));
+		} else {
+			return A2(_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$Nel, _p17, _p18);
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$cons = F2(
+	function ($new, _p19) {
+		var _p20 = _p19;
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$Nel,
+			$new,
+			A2(_elm_lang$core$List_ops['::'], _p20._0, _p20._1));
+	});
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Property = F2(
+	function (a, b) {
+		return {ctor: 'Property', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Union = F2(
+	function (a, b) {
+		return {ctor: 'Union', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Value = function (a) {
+	return {ctor: 'Value', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$TupleLiteral = function (a) {
+	return {ctor: 'TupleLiteral', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$ListLiteral = function (a) {
+	return {ctor: 'ListLiteral', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$StringLiteral = function (a) {
+	return {ctor: 'StringLiteral', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Record = function (a) {
+	return {ctor: 'Record', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$PropertyX = F3(
+	function (a, b, c) {
+		return {ctor: 'PropertyX', _0: a, _1: b, _2: c};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$UnionX = F3(
+	function (a, b, c) {
+		return {ctor: 'UnionX', _0: a, _1: b, _2: c};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$ValueX = F2(
+	function (a, b) {
+		return {ctor: 'ValueX', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$TupleLiteralX = F2(
+	function (a, b) {
+		return {ctor: 'TupleLiteralX', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$ListLiteralX = F2(
+	function (a, b) {
+		return {ctor: 'ListLiteralX', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$StringLiteralX = F2(
+	function (a, b) {
+		return {ctor: 'StringLiteralX', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$RecordX = F2(
+	function (a, b) {
+		return {ctor: 'RecordX', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachId = F2(
+	function (id, ast) {
+		var _p0 = ast;
+		switch (_p0.ctor) {
+			case 'Record':
+				return A2(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$RecordX,
+					id,
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachIdToList, id, _p0._0));
+			case 'StringLiteral':
+				return A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$StringLiteralX, id, _p0._0);
+			case 'ListLiteral':
+				return A2(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$ListLiteralX,
+					id,
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachIdToList, id, _p0._0));
+			case 'TupleLiteral':
+				return A2(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$TupleLiteralX,
+					id,
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachIdToList, id, _p0._0));
+			case 'Value':
+				return A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$ValueX, id, _p0._0);
+			case 'Union':
+				var _p1 = _p0._0;
+				var id$ = A2(
+					_elm_lang$core$Basics_ops['++'],
+					id,
+					A2(_elm_lang$core$Basics_ops['++'], '.', _p1));
+				return A3(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$UnionX,
+					id$,
+					_p1,
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachIdToList, id$, _p0._1));
+			default:
+				var _p2 = _p0._0;
+				var id$ = A2(
+					_elm_lang$core$Basics_ops['++'],
+					id,
+					A2(_elm_lang$core$Basics_ops['++'], '.', _p2));
+				return A3(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$PropertyX,
+					id$,
+					_p2,
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachId, id$, _p0._1));
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachIdToList = F2(
+	function (id, list) {
+		return A2(
+			_elm_lang$core$List$indexedMap,
+			F2(
+				function (index, p) {
+					return A2(
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachId,
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							id,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'.',
+								_elm_lang$core$Basics$toString(index))),
+						p);
+				}),
+			list);
+	});
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$equal = _Bogdanp$elm_combine$Combine$string('=');
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$comma = _Bogdanp$elm_combine$Combine$string(',');
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaces = _Bogdanp$elm_combine$Combine$regex('[ ]*');
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaced = function (p) {
+	return A3(_Bogdanp$elm_combine$Combine$between, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaces, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaces, p);
+};
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$propertyKey = _Bogdanp$elm_combine$Combine$regex('[^ ]+');
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$tag = _Bogdanp$elm_combine$Combine$regex('[A-Z][a-zA-Z0-9_.]*');
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$singleUnion = _Bogdanp$elm_combine$Combine$rec(
+	function (_p0) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$map,
+			function (tag) {
+				return A2(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Union,
+					tag,
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			},
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$tag);
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$null = A2(
+	_Bogdanp$elm_combine$Combine$map,
+	_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Value,
+	_Bogdanp$elm_combine$Combine$regex('[a-z]+'));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$internalStructure = A2(
+	_Bogdanp$elm_combine$Combine$map,
+	_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Value,
+	_Bogdanp$elm_combine$Combine$regex('<[^>]*>'));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$numberLiteral = A2(
+	_Bogdanp$elm_combine$Combine$map,
+	_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Value,
+	_Bogdanp$elm_combine$Combine$regex('(\\-)?[0-9][0-9.]*'));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$stringLiteral = A2(
+	_Bogdanp$elm_combine$Combine$map,
+	_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$StringLiteral,
+	A3(
+		_Bogdanp$elm_combine$Combine$between,
+		_Bogdanp$elm_combine$Combine$string('\"'),
+		_Bogdanp$elm_combine$Combine$string('\"'),
+		_Bogdanp$elm_combine$Combine$regex('(\\\\\"|[^\"])*')));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$expression = _Bogdanp$elm_combine$Combine$rec(
+	function (_p1) {
+		return A2(_Bogdanp$elm_combine$Combine$or, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$union, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion);
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion = _Bogdanp$elm_combine$Combine$rec(
+	function (_p2) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$or,
+			A2(
+				_Bogdanp$elm_combine$Combine$or,
+				A2(
+					_Bogdanp$elm_combine$Combine$or,
+					A2(
+						_Bogdanp$elm_combine$Combine$or,
+						A2(
+							_Bogdanp$elm_combine$Combine$or,
+							A2(_Bogdanp$elm_combine$Combine$or, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$record, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$listLiteral),
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$tupleLiteral),
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$internalStructure),
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$stringLiteral),
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$numberLiteral),
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$null);
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$listLiteral = _Bogdanp$elm_combine$Combine$rec(
+	function (_p3) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$map,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$ListLiteral,
+			_Bogdanp$elm_combine$Combine$brackets(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$items));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$items = _Bogdanp$elm_combine$Combine$rec(
+	function (_p4) {
+		return _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaced(
+			A2(
+				_Bogdanp$elm_combine$Combine$sepBy,
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$comma,
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaced(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$expression)));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$record = _Bogdanp$elm_combine$Combine$rec(
+	function (_p5) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$map,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Record,
+			_Bogdanp$elm_combine$Combine$braces(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$properties));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$properties = _Bogdanp$elm_combine$Combine$rec(
+	function (_p6) {
+		return _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaced(
+			A2(_Bogdanp$elm_combine$Combine$sepBy, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$comma, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$property));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$property = _Bogdanp$elm_combine$Combine$rec(
+	function (_p7) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$andMap,
+				A2(
+					_Bogdanp$elm_combine$Combine$andMap,
+					A2(
+						_Bogdanp$elm_combine$Combine$andMap,
+						A2(
+							_Bogdanp$elm_combine$Combine$andMap,
+							A2(
+								_Bogdanp$elm_combine$Combine$andMap,
+								A2(
+									_Bogdanp$elm_combine$Combine$map,
+									F7(
+										function (_p12, key, _p11, _p10, _p9, value, _p8) {
+											return A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Property, key, value);
+										}),
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaces),
+								_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$propertyKey),
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaces),
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$equal),
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaces),
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$expression),
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaces);
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$tupleLiteral = _Bogdanp$elm_combine$Combine$rec(
+	function (_p13) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$map,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$TupleLiteral,
+			_Bogdanp$elm_combine$Combine$parens(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$items));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$union = _Bogdanp$elm_combine$Combine$rec(
+	function (_p14) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$map,
+				F2(
+					function (tag, tail) {
+						return A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$Union, tag, tail);
+					}),
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$tag),
+			_Bogdanp$elm_combine$Combine$many(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$unionParam));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$unionParam = _Bogdanp$elm_combine$Combine$rec(
+	function (_p15) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$map,
+				F2(
+					function (_p16, exp) {
+						return exp;
+					}),
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaces),
+			A2(_Bogdanp$elm_combine$Combine$or, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$singleUnion, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$parse = function (s) {
+	return A2(
+		_elm_lang$core$Result$formatError,
+		_elm_lang$core$String$join(','),
+		_elm_lang$core$Basics$fst(
+			A2(
+				_Bogdanp$elm_combine$Combine$parse,
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Util$spaced(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$expression),
+				s)));
+};
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTabHover = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'background-color', _1: '#555'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailViewHead = _elm_lang$core$Native_List.fromArray(
+	[]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$diffOrModelDetailViewContainer = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'position', _1: 'relative'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$lineBase = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'padding-left', _1: '10px'},
+		{ctor: '_Tuple2', _0: 'white-space', _1: 'pre'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$omittedLine = _jinjor$elm_time_travel$TimeTravel_Internal_Styles$lineBase;
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$normalLine = _jinjor$elm_time_travel$TimeTravel_Internal_Styles$lineBase;
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$deletedLine = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(255, 100, 100, 0.15)'}
+		]),
+	_jinjor$elm_time_travel$TimeTravel_Internal_Styles$lineBase);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$addedLine = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(100, 255, 100, 0.15)'}
+		]),
+	_jinjor$elm_time_travel$TimeTravel_Internal_Styles$lineBase);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgTreeViewItemRowHover = function (selected) {
+	return selected ? _elm_lang$core$Native_List.fromArray(
+		[]) : _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'background-color', _1: '#555'}
+		]);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$subPain = function (fixedToLeft) {
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			{
+			ctor: '_Tuple2',
+			_0: 'box-shadow',
+			_1: fixedToLeft ? 'rgba(0, 0, 0, 0.15) 6px -3px 6px inset' : 'rgba(0, 0, 0, 0.15) -6px -3px 6px inset'
+		}
+		]);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgViewHover = function (selected) {
+	return selected ? _elm_lang$core$Native_List.fromArray(
+		[]) : _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'background-color', _1: '#555'}
+		]);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$itemBackground = function (selected) {
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			{
+			ctor: '_Tuple2',
+			_0: 'background-color',
+			_1: selected ? 'rgba(0, 0, 0, 0.5)' : ''
+		}
+		]);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailFlagmentToggle = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'white-space', _1: 'pre'},
+		{ctor: '_Tuple2', _0: 'display', _1: 'inline'},
+		{ctor: '_Tuple2', _0: 'background-color', _1: '#777'},
+		{ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailFlagmentToggleExpand = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+			{ctor: '_Tuple2', _0: 'left', _1: '-16px'},
+			{ctor: '_Tuple2', _0: 'margin-right', _1: '-14px'}
+		]),
+	_jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailFlagmentToggle);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailFlagment = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'white-space', _1: 'pre'},
+		{ctor: '_Tuple2', _0: 'display', _1: 'inline'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelViewContainer = _elm_lang$core$Native_List.fromArray(
+	[]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$debugViewTheme = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'background-color', _1: '#444'},
+		{ctor: '_Tuple2', _0: 'color', _1: '#eee'},
+		{ctor: '_Tuple2', _0: 'font-family', _1: 'calibri, helvetica, arial, sans-serif'},
+		{ctor: '_Tuple2', _0: 'font-size', _1: '14px'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailView = F2(
+	function (fixedToLeft, opened) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+					{ctor: '_Tuple2', _0: 'width', _1: '320px'},
+					{
+					ctor: '_Tuple2',
+					_0: fixedToLeft ? 'right' : 'left',
+					_1: '-320px'
+				},
+					{ctor: '_Tuple2', _0: 'box-sizing', _1: 'border-box'}
+				]),
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_jinjor$elm_time_travel$TimeTravel_Internal_Styles$subPain(fixedToLeft),
+				_jinjor$elm_time_travel$TimeTravel_Internal_Styles$debugViewTheme));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTab = function (active) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'border-radius', _1: '3px 3px 0 0'},
+				{ctor: '_Tuple2', _0: 'height', _1: '30px'},
+				{ctor: '_Tuple2', _0: 'top', _1: '-30px'},
+				{ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'},
+				{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+				{ctor: '_Tuple2', _0: 'text-align', _1: 'center'},
+				{ctor: '_Tuple2', _0: 'line-height', _1: '30px'}
+			]),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			active ? _elm_lang$core$Native_List.fromArray(
+				[]) : _elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'box-shadow', _1: 'rgba(0, 0, 0, 0.25) 0px -1px 5px inset'}
+				]),
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$debugViewTheme));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTabModel = F2(
+	function (fixedToLeft, active) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'width', _1: '130px'},
+					{
+					ctor: '_Tuple2',
+					_0: 'left',
+					_1: fixedToLeft ? '10px' : '0'
+				}
+				]),
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTab(active));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTabDiff = F2(
+	function (fixedToLeft, active) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'width', _1: '170px'},
+					{
+					ctor: '_Tuple2',
+					_0: 'left',
+					_1: fixedToLeft ? '150px' : '140px'
+				}
+				]),
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTab(active));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$panelBorder = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'border-bottom', _1: 'solid 1px #666'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel = function (visible) {
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			{
+			ctor: '_Tuple2',
+			_0: 'padding',
+			_1: visible ? '20px' : '0 20px'
+		},
+			{ctor: '_Tuple2', _0: 'overflow', _1: 'hidden'}
+		]);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$filterView = function (visible) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'background-color', _1: '#333'},
+				{ctor: '_Tuple2', _0: 'transition', _1: 'height ease 0.3s, padding ease 0.3s'},
+				{
+				ctor: '_Tuple2',
+				_0: 'height',
+				_1: visible ? '' : '0'
+			}
+			]),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panelBorder,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(visible)));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$headerView = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'display', _1: 'flex'},
+			{ctor: '_Tuple2', _0: 'justify-content', _1: 'flex-end'}
+		]),
+	_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(true));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$subHeaderView = A2(_elm_lang$core$Basics_ops['++'], _jinjor$elm_time_travel$TimeTravel_Internal_Styles$headerView, _jinjor$elm_time_travel$TimeTravel_Internal_Styles$panelBorder);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelView = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'height', _1: '150px'},
+			{ctor: '_Tuple2', _0: 'box-sizing', _1: 'border-box'}
+		]),
+	A2(
+		_elm_lang$core$Basics_ops['++'],
+		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panelBorder,
+		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(true)));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgListView = _jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(true);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgTreeView = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(true),
+	_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panelBorder);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailedMsgView = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'white-space', _1: 'pre'}
+		]),
+	A2(
+		_elm_lang$core$Basics_ops['++'],
+		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(true),
+		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panelBorder));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$diffView = _jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(true);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$pointer = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$iconButton = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'padding', _1: '10px 10px 6px 10px'},
+			{ctor: '_Tuple2', _0: 'border', _1: 'solid 1px #666'},
+			{ctor: '_Tuple2', _0: 'border-radius', _1: '3px'}
+		]),
+	_jinjor$elm_time_travel$TimeTravel_Internal_Styles$pointer);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$buttonView = function (left) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		left ? _elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'margin-right', _1: 'auto'}
+			]) : _elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'margin-left', _1: 'auto'}
+			]),
+		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$iconButton);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$toggleModelDetailIcon = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'right', _1: '20px'},
+			{ctor: '_Tuple2', _0: 'top', _1: '20px'},
+			{ctor: '_Tuple2', _0: 'position', _1: 'absolute'}
+		]),
+	A2(_elm_lang$core$Basics_ops['++'], _jinjor$elm_time_travel$TimeTravel_Internal_Styles$iconButton, _jinjor$elm_time_travel$TimeTravel_Internal_Styles$debugViewTheme));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgView = function (selected) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'white-space', _1: 'nowrap'},
+				{ctor: '_Tuple2', _0: 'text-overflow', _1: 'ellipsis'},
+				{ctor: '_Tuple2', _0: 'overflow', _1: 'hidden'}
+			]),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$itemBackground(selected),
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$pointer));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgTreeViewItemRow = function (selected) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'white-space', _1: 'pre'},
+				{ctor: '_Tuple2', _0: 'text-overflow', _1: 'ellipsis'},
+				{ctor: '_Tuple2', _0: 'overflow', _1: 'hidden'}
+			]),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$itemBackground(selected),
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$pointer));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$buttonHover = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'background-color', _1: '#555'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$button = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'padding', _1: '10px'},
+		{ctor: '_Tuple2', _0: 'border', _1: 'solid 1px #666'},
+		{ctor: '_Tuple2', _0: 'border-radius', _1: '3px'},
+		{ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'}
+	]);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$zIndex = {modelDetailView: '2147483646', debugView: '2147483646', resyncView: '2147483645'};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$debugView = function (fixedToLeft) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'position', _1: 'fixed'},
+				{ctor: '_Tuple2', _0: 'width', _1: '250px'},
+				{ctor: '_Tuple2', _0: 'top', _1: '0'},
+				{
+				ctor: '_Tuple2',
+				_0: fixedToLeft ? 'left' : 'right',
+				_1: '0'
+			},
+				{ctor: '_Tuple2', _0: 'bottom', _1: '0'},
+				{ctor: '_Tuple2', _0: 'z-index', _1: _jinjor$elm_time_travel$TimeTravel_Internal_Styles$zIndex.debugView}
+			]),
+		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$debugViewTheme);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$minimizedButton = function (fixedToLeft) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'position', _1: 'fixed'},
+				{ctor: '_Tuple2', _0: 'bottom', _1: '0'},
+				{
+				ctor: '_Tuple2',
+				_0: fixedToLeft ? 'left' : 'right',
+				_1: '0'
+			},
+				{ctor: '_Tuple2', _0: 'z-index', _1: _jinjor$elm_time_travel$TimeTravel_Internal_Styles$zIndex.debugView}
+			]),
+		A2(_elm_lang$core$Basics_ops['++'], _jinjor$elm_time_travel$TimeTravel_Internal_Styles$iconButton, _jinjor$elm_time_travel$TimeTravel_Internal_Styles$debugViewTheme));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailView = function (fixedToLeft) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'width', _1: '320px'},
+				{ctor: '_Tuple2', _0: 'z-index', _1: _jinjor$elm_time_travel$TimeTravel_Internal_Styles$zIndex.modelDetailView},
+				{ctor: '_Tuple2', _0: 'box-sizing', _1: 'border-box'}
+			]),
+		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(true));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$resyncView = function (sync) {
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'z-index', _1: _jinjor$elm_time_travel$TimeTravel_Internal_Styles$zIndex.resyncView},
+			{ctor: '_Tuple2', _0: 'position', _1: 'fixed'},
+			{ctor: '_Tuple2', _0: 'top', _1: '0'},
+			{ctor: '_Tuple2', _0: 'bottom', _1: '0'},
+			{ctor: '_Tuple2', _0: 'left', _1: '0'},
+			{ctor: '_Tuple2', _0: 'right', _1: '0'},
+			{ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(0, 0, 0, 0.15)'},
+			{
+			ctor: '_Tuple2',
+			_0: 'opacity',
+			_1: sync ? '0' : '1'
+		},
+			{
+			ctor: '_Tuple2',
+			_0: 'pointer-events',
+			_1: sync ? 'none' : ''
+		},
+			{ctor: '_Tuple2', _0: 'transition', _1: 'opacity ease 0.5s'}
+		]);
+};
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatHelp = F4(
+	function (formatPlain, formatListed, formatLong, model) {
+		var _p0 = model;
+		switch (_p0.ctor) {
+			case 'Plain':
+				return formatPlain(_p0._0);
+			case 'Listed':
+				return formatListed(_p0._0);
+			default:
+				return A3(formatLong, _p0._0, _p0._1, _p0._2);
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatPlainAsHtml = function (s) {
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			A2(
+			_elm_lang$html$Html$span,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailFlagment)
+					]),
+				A2(_elm_lang$core$String$startsWith, '\"', s) ? _elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$title(s)
+					]) : _elm_lang$core$Native_List.fromArray(
+					[])),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(s)
+				]))
+		]);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsHtml = F3(
+	function (transformMsg, expandedTree, model) {
+		return A4(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatHelp,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatPlainAsHtml,
+			function (list) {
+				return A2(
+					_elm_lang$core$List$concatMap,
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsHtml, transformMsg, expandedTree),
+					list);
+			},
+			F3(
+				function (id, alt, children) {
+					return A2(_elm_lang$core$Set$member, id, expandedTree) ? A2(
+						_elm_lang$core$List_ops['::'],
+						A2(
+							_elm_lang$html$Html$span,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailFlagmentToggleExpand),
+									_elm_lang$html$Html_Events$onClick(
+									transformMsg(id))
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text(' - ')
+								])),
+						A2(
+							_elm_lang$core$List$concatMap,
+							A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsHtml, transformMsg, expandedTree),
+							children)) : _elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$html$Html$span,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailFlagmentToggle),
+									_elm_lang$html$Html_Events$onClick(
+									transformMsg(id))
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text(alt)
+								]))
+						]);
+				}),
+			model);
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString = function (model) {
+	return A4(
+		_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatHelp,
+		_elm_lang$core$Basics$identity,
+		function (_p1) {
+			return A2(
+				_elm_lang$core$String$join,
+				'',
+				A2(_elm_lang$core$List$map, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString, _p1));
+		},
+		F3(
+			function (_p3, _p2, children) {
+				return A2(
+					_elm_lang$core$String$join,
+					'',
+					A2(_elm_lang$core$List$map, _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString, children));
+			}),
+		model);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$indent = function (context) {
+	return A2(_elm_lang$core$String$repeat, context.nest, '  ');
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Context = F3(
+	function (a, b, c) {
+		return {nest: a, parens: b, wordsLimit: c};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Long = F3(
+	function (a, b, c) {
+		return {ctor: 'Long', _0: a, _1: b, _2: c};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Listed = function (a) {
+	return {ctor: 'Listed', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain = function (a) {
+	return {ctor: 'Plain', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$joinX = F2(
+	function (s, list) {
+		var _p4 = list;
+		if (_p4.ctor === '[]') {
+			return _elm_lang$core$Native_List.fromArray(
+				[]);
+		} else {
+			if (_p4._1.ctor === '[]') {
+				return _elm_lang$core$Native_List.fromArray(
+					[_p4._0]);
+			} else {
+				return A2(
+					_elm_lang$core$List_ops['::'],
+					_p4._0,
+					A2(
+						_elm_lang$core$List_ops['::'],
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(s),
+						A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$joinX, s, _p4._1)));
+			}
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelFromListLike = F7(
+	function (canFold, id, indent, wordsLimit, start, end, list) {
+		var _p5 = list;
+		if (_p5.ctor === '[]') {
+			return _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+				A2(_elm_lang$core$Basics_ops['++'], start, end));
+		} else {
+			var singleLine = _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Listed(
+				A2(
+					_elm_lang$core$List_ops['::'],
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+						A2(_elm_lang$core$Basics_ops['++'], start, ' ')),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						A2(_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$joinX, ', ', list),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+								A2(_elm_lang$core$Basics_ops['++'], ' ', end))
+							]))));
+			var singleLineStr = _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString(singleLine);
+			var $long = (_elm_lang$core$Native_Utils.cmp(
+				_elm_lang$core$String$length(singleLineStr),
+				wordsLimit) > 0) || A2(_elm_lang$core$String$contains, '\n', singleLineStr);
+			return (((!_elm_lang$core$Native_Utils.eq(indent, '')) && canFold) && $long) ? A3(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Long,
+				id,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					start,
+					A2(_elm_lang$core$Basics_ops['++'], ' .. ', end)),
+				A2(
+					_elm_lang$core$List_ops['::'],
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+						A2(_elm_lang$core$Basics_ops['++'], start, ' ')),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						A2(
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$joinX,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'\n',
+								A2(_elm_lang$core$Basics_ops['++'], indent, ', ')),
+							list),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+									A2(_elm_lang$core$Basics_ops['++'], '\n', indent))
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(end)
+								]))))) : ($long ? _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Listed(
+				A2(
+					_elm_lang$core$List_ops['::'],
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+						A2(_elm_lang$core$Basics_ops['++'], start, ' ')),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						A2(
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$joinX,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'\n',
+								A2(_elm_lang$core$Basics_ops['++'], indent, ', ')),
+							list),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+									A2(_elm_lang$core$Basics_ops['++'], '\n', indent))
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(end)
+								]))))) : singleLine);
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelWithContext = F2(
+	function (c, ast) {
+		var _p6 = ast;
+		switch (_p6.ctor) {
+			case 'RecordX':
+				return A7(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelFromListLike,
+					true,
+					_p6._0,
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$indent(c),
+					c.wordsLimit,
+					'{',
+					'}',
+					A2(
+						_elm_lang$core$List$map,
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelWithContext(
+							_elm_lang$core$Native_Utils.update(
+								c,
+								{nest: c.nest + 1})),
+						_p6._1));
+			case 'PropertyX':
+				var _p7 = _p6._1;
+				var s = A2(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelWithContext,
+					_elm_lang$core$Native_Utils.update(
+						c,
+						{parens: false, nest: c.nest + 1}),
+					_p6._2);
+				var str = _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString(s);
+				return _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Listed(
+					A2(
+						_elm_lang$core$List_ops['::'],
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+							A2(_elm_lang$core$Basics_ops['++'], _p7, ' = ')),
+						(A2(_elm_lang$core$String$contains, '\n', str) || (_elm_lang$core$Native_Utils.cmp(
+							_elm_lang$core$String$length(
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_p7,
+									A2(_elm_lang$core$Basics_ops['++'], ' = ', str))),
+							c.wordsLimit) > 0)) ? _elm_lang$core$Native_List.fromArray(
+							[
+								_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'\n',
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$indent(
+										_elm_lang$core$Native_Utils.update(
+											c,
+											{nest: c.nest + 1})))),
+								s
+							]) : _elm_lang$core$Native_List.fromArray(
+							[s])));
+			case 'StringLiteralX':
+				return _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'\"',
+						A2(_elm_lang$core$Basics_ops['++'], _p6._1, '\"')));
+			case 'ValueX':
+				return _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(_p6._1);
+			case 'UnionX':
+				var _p9 = _p6._2;
+				var _p8 = _p6._1;
+				var tailX = A2(
+					_elm_lang$core$List$map,
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelWithContext(
+						_elm_lang$core$Native_Utils.update(
+							c,
+							{nest: c.nest + 1, parens: true})),
+					_p9);
+				var joinedTailStr = _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Listed(tailX));
+				var multiLine = A2(_elm_lang$core$String$contains, '\n', joinedTailStr) || (_elm_lang$core$Native_Utils.cmp(
+					_elm_lang$core$String$length(
+						A2(_elm_lang$core$Basics_ops['++'], _p8, joinedTailStr)),
+					c.wordsLimit) > 0);
+				var s = _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Listed(
+					multiLine ? A2(
+						_elm_lang$core$List_ops['::'],
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_p8,
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'\n',
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$indent(
+										_elm_lang$core$Native_Utils.update(
+											c,
+											{nest: c.nest + 1}))))),
+						A2(
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$joinX,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'\n',
+								_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$indent(
+									_elm_lang$core$Native_Utils.update(
+										c,
+										{nest: c.nest + 1}))),
+							tailX)) : A2(
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$joinX,
+						' ',
+						A2(
+							_elm_lang$core$List_ops['::'],
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(_p8),
+							tailX)));
+				return (_elm_lang$core$Basics$not(
+					_elm_lang$core$List$isEmpty(_p9)) && c.parens) ? _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Listed(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain('('),
+							s,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$Plain(
+							multiLine ? A2(
+								_elm_lang$core$Basics_ops['++'],
+								'\n',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$indent(c),
+									')')) : ')')
+						])) : s;
+			case 'ListLiteralX':
+				return A7(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelFromListLike,
+					true,
+					_p6._0,
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$indent(c),
+					c.wordsLimit,
+					'[',
+					']',
+					A2(
+						_elm_lang$core$List$map,
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelWithContext(
+							_elm_lang$core$Native_Utils.update(
+								c,
+								{parens: false, nest: c.nest + 1})),
+						_p6._1));
+			default:
+				return A7(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelFromListLike,
+					false,
+					_p6._0,
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$indent(c),
+					c.wordsLimit,
+					'(',
+					')',
+					A2(
+						_elm_lang$core$List$map,
+						_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelWithContext(
+							_elm_lang$core$Native_Utils.update(
+								c,
+								{parens: false, nest: c.nest + 1})),
+						_p6._1));
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModel = _jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModelWithContext(
+	{nest: 0, parens: false, wordsLimit: 40});
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$root = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0;
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$Node = F2(
+	function (a, b) {
+		return {ctor: 'Node', _0: a, _1: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$singleton = function (a) {
+	return A2(
+		_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$Node,
+		a,
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$addChild = F2(
+	function ($new, _p2) {
+		var _p3 = _p2;
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$Node,
+			_p3._0,
+			A2(
+				_elm_lang$core$List_ops['::'],
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$singleton($new),
+				_p3._1));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$addChildAt = F3(
+	function (f, $new, tree) {
+		var _p4 = tree;
+		var a = _p4._0;
+		var list = _p4._1;
+		var _p5 = f(a) ? A2(_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$addChild, $new, tree) : tree;
+		var a$ = _p5._0;
+		var list$ = _p5._1;
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$Node,
+			a$,
+			A2(
+				_elm_lang$core$List$map,
+				A2(_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$addChildAt, f, $new),
+				list$));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$sortEachBranchBy = F2(
+	function (f, _p6) {
+		var _p7 = _p6;
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$Node,
+			_p7._0,
+			A2(
+				_elm_lang$core$List$sortBy,
+				function (_p8) {
+					return f(
+						_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$root(_p8));
+				},
+				A2(
+					_elm_lang$core$List$map,
+					_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$sortEachBranchBy(f),
+					_p7._1)));
+	});
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$format = function (msgLike) {
+	var _p0 = msgLike;
+	switch (_p0.ctor) {
+		case 'Message':
+			return _elm_lang$core$Basics$toString(_p0._0);
+		case 'UrlData':
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'[Nav] ',
+				_elm_lang$core$Basics$toString(_p0._0));
+		default:
+			return '[Init]';
+	}
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$Init = {ctor: 'Init'};
+var _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$UrlData = function (a) {
+	return {ctor: 'UrlData', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$Message = function (a) {
+	return {ctor: 'Message', _0: a};
+};
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$encodeSetting = function (settings) {
+	return A2(
+		_elm_lang$core$Json_Encode$encode,
+		0,
+		_elm_lang$core$Json_Encode$object(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: 'fixedToLeft',
+					_1: _elm_lang$core$Json_Encode$bool(settings.fixedToLeft)
+				},
+					{
+					ctor: '_Tuple2',
+					_0: 'filter',
+					_1: _elm_lang$core$Json_Encode$list(
+						A2(
+							_elm_lang$core$List$map,
+							function (_p0) {
+								var _p1 = _p0;
+								return _elm_lang$core$Json_Encode$list(
+									_elm_lang$core$Native_List.fromArray(
+										[
+											_elm_lang$core$Json_Encode$string(_p1._0),
+											_elm_lang$core$Json_Encode$bool(_p1._1)
+										]));
+							},
+							settings.filter))
+				}
+				])));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$saveSetting = F2(
+	function (save, model) {
+		return A2(
+			_elm_lang$core$Platform_Cmd$map,
+			_elm_community$basics_extra$Basics_Extra$never,
+			save(
+				{
+					type_: 'save',
+					settings: _jinjor$elm_time_travel$TimeTravel_Internal_Model$encodeSetting(
+						{fixedToLeft: model.fixedToLeft, filter: model.filter})
+				}));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$msgRootOf = F2(
+	function (id, history) {
+		msgRootOf:
+		while (true) {
+			var _p2 = A2(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$find,
+				function (item) {
+					return _elm_lang$core$Native_Utils.eq(item.id, id);
+				},
+				history);
+			if (_p2.ctor === 'Just') {
+				var _p4 = _p2._0;
+				var _p3 = _p4.causedBy;
+				if (_p3.ctor === 'Just') {
+					var _v3 = _p3._0,
+						_v4 = history;
+					id = _v3;
+					history = _v4;
+					continue msgRootOf;
+				} else {
+					return _elm_lang$core$Maybe$Just(_p4);
+				}
+			} else {
+				return _elm_lang$core$Maybe$Nothing;
+			}
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedMsgTree = function (model) {
+	var _p5 = model.selectedMsg;
+	if (_p5.ctor === 'Just') {
+		var _p6 = A2(_jinjor$elm_time_travel$TimeTravel_Internal_Model$msgRootOf, _p5._0, model.history);
+		if (_p6.ctor === 'Just') {
+			var f = F2(
+				function (item, tree) {
+					return A3(
+						_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$addChildAt,
+						function (i) {
+							return _elm_lang$core$Native_Utils.eq(
+								item.causedBy,
+								_elm_lang$core$Maybe$Just(i.id));
+						},
+						item,
+						tree);
+				});
+			return _elm_lang$core$Maybe$Just(
+				A2(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$sortEachBranchBy,
+					function (item) {
+						return item.id;
+					},
+					A3(
+						_elm_lang$core$List$foldr,
+						f,
+						_jinjor$elm_time_travel$TimeTravel_Internal_Util_RTree$singleton(_p6._0),
+						_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList(model.history))));
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectFirstIfSync = function (model) {
+	return model.sync ? _elm_lang$core$Native_Utils.update(
+		model,
+		{
+			selectedMsg: _elm_lang$core$Maybe$Just(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$head(model.history).id)
+		}) : model;
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedAndOldAst = function (model) {
+	var _p7 = model.selectedMsg;
+	if (_p7.ctor === 'Just') {
+		var _p10 = _p7._0;
+		var newAndOld = A3(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findMapMany,
+			2,
+			function (item) {
+				return (_elm_lang$core$Native_Utils.eq(item.id, _p10) || _elm_lang$core$Native_Utils.eq(item.id, _p10 - 1)) ? _elm_lang$core$Maybe$Just(item.lazyModelAst) : _elm_lang$core$Maybe$Nothing;
+			},
+			model.history);
+		var _p8 = newAndOld;
+		_v8_2:
+		do {
+			if (((_p8.ctor === '::') && (_p8._0.ctor === 'Just')) && (_p8._0._0.ctor === 'Ok')) {
+				if (_p8._1.ctor === '::') {
+					if ((_p8._1._0.ctor === 'Just') && (_p8._1._0._0.ctor === 'Ok')) {
+						return _elm_lang$core$Maybe$Just(
+							{ctor: '_Tuple2', _0: _p8._1._0._0._0, _1: _p8._0._0._0});
+					} else {
+						break _v8_2;
+					}
+				} else {
+					var _p9 = _p8._0._0._0;
+					return _elm_lang$core$Maybe$Just(
+						{ctor: '_Tuple2', _0: _p9, _1: _p9});
+				}
+			} else {
+				break _v8_2;
+			}
+		} while(false);
+		return _elm_lang$core$Maybe$Nothing;
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedMsgAst = function (model) {
+	var _p11 = model.selectedMsg;
+	if (_p11.ctor === 'Just') {
+		var _p12 = A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$findMap,
+			function (item) {
+				return _elm_lang$core$Native_Utils.eq(item.id, _p11._0) ? _elm_lang$core$Maybe$Just(item.lazyMsgAst) : _elm_lang$core$Maybe$Nothing;
+			},
+			model.history);
+		if (((_p12.ctor === 'Just') && (_p12._0.ctor === 'Just')) && (_p12._0._0.ctor === 'Ok')) {
+			return _elm_lang$core$Maybe$Just(_p12._0._0._0);
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$makeChanges = F2(
+	function (oldAst, newAst) {
+		return _elm_lang$core$Native_Utils.eq(oldAst, newAst) ? _elm_lang$core$Native_List.fromArray(
+			[]) : A2(
+			_avh4$elm_diff$Diff$diffLines,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModel(oldAst)),
+			_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModel(newAst)));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyDiffHelp = F2(
+	function (model, item) {
+		var newDiff = function () {
+			var _p13 = item.lazyDiff;
+			if (_p13.ctor === 'Just') {
+				return _elm_lang$core$Maybe$Just(_p13._0);
+			} else {
+				var _p14 = _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedAndOldAst(model);
+				if (_p14.ctor === 'Just') {
+					return _elm_lang$core$Maybe$Just(
+						A2(_jinjor$elm_time_travel$TimeTravel_Internal_Model$makeChanges, _p14._0._0, _p14._0._1));
+				} else {
+					return _elm_lang$core$Maybe$Nothing;
+				}
+			}
+		}();
+		return _elm_lang$core$Native_Utils.update(
+			item,
+			{lazyDiff: newDiff});
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyAstHelp = function (item) {
+	return _elm_lang$core$Native_Utils.update(
+		item,
+		{
+			lazyMsgAst: function () {
+				if (_elm_lang$core$Native_Utils.eq(item.lazyMsgAst, _elm_lang$core$Maybe$Nothing)) {
+					var _p15 = item.msg;
+					switch (_p15.ctor) {
+						case 'Message':
+							return _elm_lang$core$Maybe$Just(
+								A2(
+									_elm_lang$core$Result$map,
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachId(''),
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$parse(
+										_elm_lang$core$Basics$toString(_p15._0))));
+						case 'UrlData':
+							return _elm_lang$core$Maybe$Just(
+								A2(
+									_elm_lang$core$Result$map,
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachId(''),
+									_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$parse(
+										_elm_lang$core$Basics$toString(_p15._0))));
+						default:
+							return _elm_lang$core$Maybe$Just(
+								_elm_lang$core$Result$Err(''));
+					}
+				} else {
+					return item.lazyMsgAst;
+				}
+			}(),
+			lazyModelAst: _elm_lang$core$Native_Utils.eq(item.lazyModelAst, _elm_lang$core$Maybe$Nothing) ? _elm_lang$core$Maybe$Just(
+				A2(
+					_elm_lang$core$Result$map,
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_AST$attachId(''),
+					_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Parser$parse(
+						_elm_lang$core$Basics$toString(item.model)))) : item.lazyModelAst
+		});
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$mapHistory = F2(
+	function (f, model) {
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				history: A2(_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$map, f, model.history)
+			});
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyAst = function (model) {
+	var _p16 = model.selectedMsg;
+	if (_p16.ctor === 'Just') {
+		var _p17 = _p16._0;
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Model$mapHistory,
+			function (item) {
+				return (_elm_lang$core$Native_Utils.eq(item.id, _p17) || _elm_lang$core$Native_Utils.eq(item.id, _p17 - 1)) ? _jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyAstHelp(item) : item;
+			},
+			model);
+	} else {
+		return model;
+	}
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyDiff = function (model) {
+	if (model.showModelDetail) {
+		return model;
+	} else {
+		var _p18 = model.selectedMsg;
+		if (_p18.ctor === 'Just') {
+			return A2(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Model$mapHistory,
+				function (item) {
+					return _elm_lang$core$Native_Utils.eq(item.id, _p18._0) ? A2(_jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyDiffHelp, model, item) : item;
+				},
+				model);
+		} else {
+			return model;
+		}
+	}
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$futureToHistory = function (model) {
+	return _elm_lang$core$Native_Utils.update(
+		model,
+		{
+			future: _elm_lang$core$Native_List.fromArray(
+				[]),
+			history: A2(_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$concat, model.future, model.history)
+		});
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$updateFilter = F2(
+	function (msgLike, filterOptions) {
+		var str = function () {
+			var _p19 = msgLike;
+			switch (_p19.ctor) {
+				case 'Message':
+					return _elm_lang$core$Basics$toString(_p19._0);
+				case 'UrlData':
+					return '[Nav] ';
+				default:
+					return '';
+			}
+		}();
+		var _p20 = _elm_lang$core$String$words(str);
+		if (_p20.ctor === '::') {
+			var _p23 = _p20._0;
+			var exists = A2(
+				_elm_lang$core$List$any,
+				function (_p21) {
+					var _p22 = _p21;
+					return _elm_lang$core$Native_Utils.eq(_p22._0, _p23);
+				},
+				filterOptions);
+			return exists ? filterOptions : A2(
+				_elm_lang$core$List_ops['::'],
+				{ctor: '_Tuple2', _0: _p23, _1: true},
+				filterOptions);
+		} else {
+			return filterOptions;
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedItem = function (model) {
+	var _p24 = {ctor: '_Tuple2', _0: model.sync, _1: model.selectedMsg};
+	if (_p24._0 === true) {
+		return _elm_lang$core$Maybe$Just(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$head(model.history));
+	} else {
+		if (_p24._1.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Just(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$head(model.history));
+		} else {
+			return A2(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$find,
+				function (item) {
+					return _elm_lang$core$Native_Utils.eq(item.id, _p24._1._0);
+				},
+				model.history);
+		}
+	}
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$newItem = F4(
+	function (id, msg, causedBy, model) {
+		return {id: id, msg: msg, causedBy: causedBy, model: model, lazyMsgAst: _elm_lang$core$Maybe$Nothing, lazyModelAst: _elm_lang$core$Maybe$Nothing, lazyDiff: _elm_lang$core$Maybe$Nothing};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$updateOnIncomingUserMsg = F4(
+	function (transformMsg, update, _p25, model) {
+		var _p26 = _p25;
+		var _p29 = _p26._1;
+		var megLike = _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$Message(_p29);
+		var _p27 = model.history;
+		var last = _p27._0;
+		var past = _p27._1;
+		var _p28 = A2(update, _p29, last.model);
+		var newRawUserModel = _p28._0;
+		var userCmd = _p28._1;
+		var nextItem = A4(_jinjor$elm_time_travel$TimeTravel_Internal_Model$newItem, model.msgId, megLike, _p26._0, newRawUserModel);
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_jinjor$elm_time_travel$TimeTravel_Internal_Model$selectFirstIfSync(
+				_elm_lang$core$Native_Utils.update(
+					model,
+					{
+						filter: A2(_jinjor$elm_time_travel$TimeTravel_Internal_Model$updateFilter, megLike, model.filter),
+						msgId: model.msgId + 1,
+						future: _elm_lang$core$Basics$not(model.sync) ? A2(_elm_lang$core$List_ops['::'], nextItem, model.future) : model.future,
+						history: model.sync ? A2(_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$cons, nextItem, model.history) : model.history
+					})),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$core$Platform_Cmd$map,
+					transformMsg,
+					A2(
+						_elm_lang$core$Platform_Cmd$map,
+						F2(
+							function (v0, v1) {
+								return {ctor: '_Tuple2', _0: v0, _1: v1};
+							})(model.msgId),
+						userCmd))
+				]));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$urlUpdateOnIncomingData = F4(
+	function (transformMsg, urlUpdate, data, model) {
+		var msgLike = _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$UrlData(data);
+		var _p30 = model.history;
+		var last = _p30._0;
+		var past = _p30._1;
+		var _p31 = A2(urlUpdate, data, last.model);
+		var newRawUserModel = _p31._0;
+		var userCmd = _p31._1;
+		var nextItem = A4(_jinjor$elm_time_travel$TimeTravel_Internal_Model$newItem, model.msgId, msgLike, _elm_lang$core$Maybe$Nothing, newRawUserModel);
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_jinjor$elm_time_travel$TimeTravel_Internal_Model$selectFirstIfSync(
+				_elm_lang$core$Native_Utils.update(
+					model,
+					{
+						filter: A2(_jinjor$elm_time_travel$TimeTravel_Internal_Model$updateFilter, msgLike, model.filter),
+						msgId: model.msgId + 1,
+						future: _elm_lang$core$Basics$not(model.sync) ? A2(_elm_lang$core$List_ops['::'], nextItem, model.future) : model.future,
+						history: model.sync ? A2(_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$cons, nextItem, model.history) : model.history
+					})),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$core$Platform_Cmd$map,
+					transformMsg,
+					A2(
+						_elm_lang$core$Platform_Cmd$map,
+						F2(
+							function (v0, v1) {
+								return {ctor: '_Tuple2', _0: v0, _1: v1};
+							})(model.msgId),
+						userCmd))
+				]));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$initItem = function (model) {
+	return A4(_jinjor$elm_time_travel$TimeTravel_Internal_Model$newItem, 0, _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$Init, _elm_lang$core$Maybe$Nothing, model);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$init = function (model) {
+	return {
+		future: _elm_lang$core$Native_List.fromArray(
+			[]),
+		history: A2(
+			_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$Nel,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Model$initItem(model),
+			_elm_lang$core$Native_List.fromArray(
+				[])),
+		filter: _elm_lang$core$Native_List.fromArray(
+			[]),
+		sync: true,
+		showModelDetail: true,
+		expand: false,
+		msgId: 1,
+		selectedMsg: _elm_lang$core$Maybe$Nothing,
+		showDiff: false,
+		fixedToLeft: false,
+		expandedTree: _elm_lang$core$Set$empty,
+		minimized: false
+	};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$HistoryItem = F7(
+	function (a, b, c, d, e, f, g) {
+		return {id: a, msg: b, causedBy: c, model: d, lazyMsgAst: e, lazyModelAst: f, lazyDiff: g};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return function (l) {
+												return {future: a, history: b, filter: c, sync: d, showModelDetail: e, expand: f, msgId: g, selectedMsg: h, showDiff: i, fixedToLeft: j, expandedTree: k, minimized: l};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$Settings = F2(
+	function (a, b) {
+		return {fixedToLeft: a, filter: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$settingsDecoder = A3(
+	_elm_lang$core$Json_Decode$object2,
+	_jinjor$elm_time_travel$TimeTravel_Internal_Model$Settings,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'fixedToLeft', _elm_lang$core$Json_Decode$bool),
+	A2(
+		_elm_lang$core$Json_Decode_ops[':='],
+		'filter',
+		_elm_lang$core$Json_Decode$list(
+			A3(
+				_elm_lang$core$Json_Decode$tuple2,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				_elm_lang$core$Json_Decode$string,
+				_elm_lang$core$Json_Decode$bool))));
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$decodeSettings = _elm_lang$core$Json_Decode$decodeString(_jinjor$elm_time_travel$TimeTravel_Internal_Model$settingsDecoder);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$OutgoingMsg = F2(
+	function (a, b) {
+		return {type_: a, settings: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$IncomingMsg = F2(
+	function (a, b) {
+		return {type_: a, settings: b};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleMinimize = {ctor: 'ToggleMinimize'};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleModelTree = function (a) {
+	return {ctor: 'ToggleModelTree', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleModelDetail = function (a) {
+	return {ctor: 'ToggleModelDetail', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$Receive = function (a) {
+	return {ctor: 'Receive', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleLayout = {ctor: 'ToggleLayout'};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$Resync = {ctor: 'Resync'};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$SelectMsg = function (a) {
+	return {ctor: 'SelectMsg', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleFilter = function (a) {
+	return {ctor: 'ToggleFilter', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleExpand = {ctor: 'ToggleExpand'};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleSync = {ctor: 'ToggleSync'};
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Update$updateAfterUserMsg = F2(
+	function (save, model) {
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			model,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Model$saveSetting, save, model)
+				]));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Update$toggleSet = F2(
+	function (a, set) {
+		return A2(
+			A2(_elm_lang$core$Set$member, a, set) ? _elm_lang$core$Set$remove : _elm_lang$core$Set$insert,
+			a,
+			set);
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_Update$update = F3(
+	function (save, message, model) {
+		var _p0 = message;
+		switch (_p0.ctor) {
+			case 'Receive':
+				var _p2 = _p0._0;
+				if (_elm_lang$core$Native_Utils.eq(_p2.type_, 'load')) {
+					var _p1 = _jinjor$elm_time_travel$TimeTravel_Internal_Model$decodeSettings(_p2.settings);
+					if (_p1.ctor === 'Ok') {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{fixedToLeft: _p1._0.fixedToLeft, filter: _p1._0.filter}),
+							_elm_lang$core$Native_List.fromArray(
+								[]));
+					} else {
+						return A2(
+							_elm_lang$core$Debug$log,
+							'err decoing',
+							A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								model,
+								_elm_lang$core$Native_List.fromArray(
+									[])));
+					}
+				} else {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						model,
+						_elm_lang$core$Native_List.fromArray(
+							[]));
+				}
+			case 'ToggleSync':
+				var nextSync = _elm_lang$core$Basics$not(model.sync);
+				var newModel = (nextSync ? _jinjor$elm_time_travel$TimeTravel_Internal_Model$futureToHistory : _elm_lang$core$Basics$identity)(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Model$selectFirstIfSync(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								selectedMsg: nextSync ? _elm_lang$core$Maybe$Nothing : model.selectedMsg,
+								sync: nextSync,
+								showModelDetail: false
+							})));
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					newModel,
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'ToggleExpand':
+				var newModel = _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						expand: _elm_lang$core$Basics$not(model.expand)
+					});
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					newModel,
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'ToggleFilter':
+				var newModel = _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						filter: A2(
+							_elm_lang$core$List$map,
+							function (_p3) {
+								var _p4 = _p3;
+								var _p6 = _p4._1;
+								var _p5 = _p4._0;
+								return _elm_lang$core$Native_Utils.eq(_p0._0, _p5) ? {
+									ctor: '_Tuple2',
+									_0: _p5,
+									_1: _elm_lang$core$Basics$not(_p6)
+								} : {ctor: '_Tuple2', _0: _p5, _1: _p6};
+							},
+							model.filter)
+					});
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					newModel,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(_jinjor$elm_time_travel$TimeTravel_Internal_Model$saveSetting, save, newModel)
+						]));
+			case 'SelectMsg':
+				var newModel = _jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyDiff(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyAst(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								selectedMsg: _elm_lang$core$Maybe$Just(_p0._0),
+								sync: false
+							})));
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					newModel,
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'Resync':
+				var newModel = _jinjor$elm_time_travel$TimeTravel_Internal_Model$futureToHistory(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Model$selectFirstIfSync(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{sync: true, showModelDetail: false})));
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					newModel,
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'ToggleLayout':
+				var newModel = _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						fixedToLeft: _elm_lang$core$Basics$not(model.fixedToLeft)
+					});
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					newModel,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(_jinjor$elm_time_travel$TimeTravel_Internal_Model$saveSetting, save, newModel)
+						]));
+			case 'ToggleModelDetail':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_jinjor$elm_time_travel$TimeTravel_Internal_Model$updateLazyDiff(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{showModelDetail: _p0._0})),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'ToggleModelTree':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							expandedTree: A2(_jinjor$elm_time_travel$TimeTravel_Internal_Update$toggleSet, _p0._0, model.expandedTree)
+						}),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			default:
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_jinjor$elm_time_travel$TimeTravel_Internal_Model$futureToHistory(
+						_jinjor$elm_time_travel$TimeTravel_Internal_Model$selectFirstIfSync(
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{
+									minimized: _elm_lang$core$Basics$not(model.minimized),
+									sync: true
+								}))),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+		}
+	});
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_Icons$minimize = function (minimized) {
+	return A2(
+		minimized ? _elm_community$elm_material_icons$Material_Icons_Content$add : _elm_community$elm_material_icons$Material_Icons_Content$remove,
+		_elm_lang$core$Color$white,
+		24);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Icons$toggleModelDetail = A2(_elm_community$elm_material_icons$Material_Icons_Content$content_copy, _elm_lang$core$Color$white, 24);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Icons$layout = A2(_elm_community$elm_material_icons$Material_Icons_Action$swap_horiz, _elm_lang$core$Color$white, 24);
+var _jinjor$elm_time_travel$TimeTravel_Internal_Icons$filterExpand = function (expanded) {
+	return A2(
+		expanded ? _elm_community$elm_material_icons$Material_Icons_Navigation$arrow_drop_up : _elm_community$elm_material_icons$Material_Icons_Navigation$arrow_drop_down,
+		_elm_lang$core$Color$white,
+		24);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Icons$filter = function (enabled) {
+	return A2(
+		_elm_community$elm_material_icons$Material_Icons_Content$filter_list,
+		enabled ? _elm_lang$core$Color$white : _elm_lang$core$Color$gray,
+		24);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_Icons$sync = function ($synchronized) {
+	return A2(
+		$synchronized ? _elm_community$elm_material_icons$Material_Icons_Av$pause : _elm_community$elm_material_icons$Material_Icons_Av$play_arrow,
+		_elm_lang$core$Color$white,
+		24);
+};
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_MsgTreeView$itemRow = F4(
+	function (onSelect, indent, selectedMsg, item) {
+		return A4(
+			_jinjor$elm_inline_hover$InlineHover$hover,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgTreeViewItemRowHover(
+				_elm_lang$core$Native_Utils.eq(selectedMsg, item.id)),
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgTreeViewItemRow(
+						_elm_lang$core$Native_Utils.eq(selectedMsg, item.id))),
+					_elm_lang$html$Html_Events$onClick(
+					onSelect(item.id))
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						A2(_elm_lang$core$String$repeat, indent, '    '),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(item.id),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								': ',
+								_jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$format(item.msg)))))
+				]));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_MsgTreeView$viewTree = F4(
+	function (onSelect, indent, selectedMsg, _p0) {
+		var _p1 = _p0;
+		return A2(
+			_elm_lang$core$List_ops['::'],
+			A4(_jinjor$elm_time_travel$TimeTravel_Internal_MsgTreeView$itemRow, onSelect, indent, selectedMsg, _p1._0),
+			A2(
+				_elm_lang$core$List$concatMap,
+				A3(_jinjor$elm_time_travel$TimeTravel_Internal_MsgTreeView$viewTree, onSelect, indent + 1, selectedMsg),
+				_p1._1));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_MsgTreeView$view = F3(
+	function (onSelect, selectedMsg, tree) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgTreeView)
+				]),
+			A4(_jinjor$elm_time_travel$TimeTravel_Internal_MsgTreeView$viewTree, onSelect, 0, selectedMsg, tree));
+	});
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$normalLine = function (s) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$normalLine)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text(s)
+			]));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$addedLine = function (s) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$addedLine)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text(s)
+			]));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$deletedLine = function (s) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$deletedLine)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text(s)
+			]));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$omittedLine = A2(
+	_elm_lang$html$Html$div,
+	_elm_lang$core$Native_List.fromArray(
+		[
+			_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$omittedLine)
+		]),
+	_elm_lang$core$Native_List.fromArray(
+		[
+			_elm_lang$html$Html$text('...')
+		]));
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$lines = function (s) {
+	return A2(
+		_elm_lang$core$List$filter,
+		F2(
+			function (x, y) {
+				return !_elm_lang$core$Native_Utils.eq(x, y);
+			})(''),
+		_elm_lang$core$String$lines(s));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Omit = {ctor: 'Omit'};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$tmpToResult = F4(
+	function (additionalLines, next, tmp, result) {
+		return _elm_lang$core$Native_Utils.eq(
+			result,
+			_elm_lang$core$Native_List.fromArray(
+				[])) ? {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_List.fromArray(
+				[]),
+			_1: A2(
+				_elm_lang$core$List_ops['::'],
+				next,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(_elm_lang$core$List$take, additionalLines, tmp),
+					(_elm_lang$core$Native_Utils.cmp(
+						_elm_lang$core$List$length(tmp),
+						additionalLines) > 0) ? _elm_lang$core$Native_List.fromArray(
+						[_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Omit]) : _elm_lang$core$Native_List.fromArray(
+						[])))
+		} : ((_elm_lang$core$Native_Utils.cmp(
+			_elm_lang$core$List$length(tmp),
+			additionalLines * 2) > 0) ? {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_List.fromArray(
+				[]),
+			_1: A2(
+				_elm_lang$core$List_ops['::'],
+				next,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(_elm_lang$core$List$take, additionalLines, tmp),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Native_List.fromArray(
+							[_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Omit]),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							A2(
+								_elm_lang$core$List$drop,
+								_elm_lang$core$List$length(tmp) - additionalLines,
+								tmp),
+							result))))
+		} : {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_List.fromArray(
+				[]),
+			_1: A2(
+				_elm_lang$core$List_ops['::'],
+				next,
+				A2(_elm_lang$core$Basics_ops['++'], tmp, result))
+		});
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Add = function (a) {
+	return {ctor: 'Add', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Delete = function (a) {
+	return {ctor: 'Delete', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Normal = function (a) {
+	return {ctor: 'Normal', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$reduceLines = function (list) {
+	var additionalLines = 2;
+	var _p0 = A3(
+		_elm_lang$core$List$foldr,
+		F2(
+			function (line, _p1) {
+				var _p2 = _p1;
+				var _p5 = _p2._0;
+				var _p4 = _p2._1;
+				var _p3 = line;
+				switch (_p3.ctor) {
+					case 'Normal':
+						return {
+							ctor: '_Tuple2',
+							_0: A2(
+								_elm_lang$core$List_ops['::'],
+								_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Normal(_p3._0),
+								_p5),
+							_1: _p4
+						};
+					case 'Delete':
+						return A4(
+							_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$tmpToResult,
+							additionalLines,
+							_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Delete(_p3._0),
+							_p5,
+							_p4);
+					case 'Add':
+						return A4(
+							_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$tmpToResult,
+							additionalLines,
+							_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Add(_p3._0),
+							_p5,
+							_p4);
+					default:
+						return {ctor: '_Tuple2', _0: _p5, _1: _p4};
+				}
+			}),
+		{
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_List.fromArray(
+				[]),
+			_1: _elm_lang$core$Native_List.fromArray(
+				[])
+		},
+		list);
+	var tmp = _p0._0;
+	var result = _p0._1;
+	return _elm_lang$core$Native_Utils.eq(
+		result,
+		_elm_lang$core$Native_List.fromArray(
+			[])) ? _elm_lang$core$Native_List.fromArray(
+		[]) : ((_elm_lang$core$Native_Utils.cmp(
+		_elm_lang$core$List$length(tmp),
+		additionalLines) > 0) ? A2(
+		_elm_lang$core$List_ops['::'],
+		_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Omit,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			A2(
+				_elm_lang$core$List$drop,
+				_elm_lang$core$List$length(tmp) - additionalLines,
+				tmp),
+			result)) : A2(_elm_lang$core$Basics_ops['++'], tmp, result));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$view = function (changes) {
+	var list = A2(
+		_elm_lang$core$List$concatMap,
+		function (change) {
+			var _p6 = change;
+			switch (_p6.ctor) {
+				case 'NoChange':
+					return A2(
+						_elm_lang$core$List$map,
+						_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Normal,
+						_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$lines(_p6._0));
+				case 'Changed':
+					return A2(
+						_elm_lang$core$Basics_ops['++'],
+						A2(
+							_elm_lang$core$List$map,
+							_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Delete,
+							_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$lines(_p6._0)),
+						A2(
+							_elm_lang$core$List$map,
+							_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Add,
+							_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$lines(_p6._1)));
+				case 'Added':
+					return A2(
+						_elm_lang$core$List$map,
+						_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Add,
+						_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$lines(_p6._0));
+				default:
+					return A2(
+						_elm_lang$core$List$map,
+						_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$Delete,
+						_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$lines(_p6._0));
+			}
+		},
+		changes);
+	var linesView = A2(
+		_elm_lang$core$List$map,
+		function (line) {
+			var _p7 = line;
+			switch (_p7.ctor) {
+				case 'Normal':
+					return _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$normalLine(_p7._0);
+				case 'Delete':
+					return _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$deletedLine(_p7._0);
+				case 'Add':
+					return _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$addedLine(_p7._0);
+				default:
+					return _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$omittedLine;
+			}
+		},
+		_jinjor$elm_time_travel$TimeTravel_Internal_DiffView$reduceLines(list));
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$diffView)
+			]),
+		linesView);
+};
+
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$detailTab = F3(
+	function (style$, msg, name) {
+		return A4(
+			_jinjor$elm_inline_hover$InlineHover$hover,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTabHover,
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(style$),
+					_elm_lang$html$Html_Events$onClick(msg)
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(name)
+				]));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$filterMapUntilLimitHelp = F4(
+	function (result, limit, f, list) {
+		filterMapUntilLimitHelp:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(limit, 0) < 1) {
+				return result;
+			} else {
+				var _p0 = list;
+				if (_p0.ctor === '[]') {
+					return result;
+				} else {
+					var _p2 = _p0._1;
+					var _p1 = f(_p0._0);
+					if (_p1.ctor === 'Just') {
+						var _v2 = A2(_elm_lang$core$List_ops['::'], _p1._0, result),
+							_v3 = limit - 1,
+							_v4 = f,
+							_v5 = _p2;
+						result = _v2;
+						limit = _v3;
+						f = _v4;
+						list = _v5;
+						continue filterMapUntilLimitHelp;
+					} else {
+						var _v6 = result,
+							_v7 = limit,
+							_v8 = f,
+							_v9 = _p2;
+						result = _v6;
+						limit = _v7;
+						f = _v8;
+						list = _v9;
+						continue filterMapUntilLimitHelp;
+					}
+				}
+			}
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$filterMapUntilLimit = F3(
+	function (limit, f, list) {
+		return _elm_lang$core$List$reverse(
+			A4(
+				_jinjor$elm_time_travel$TimeTravel_Internal_View$filterMapUntilLimitHelp,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				limit,
+				f,
+				list));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$msgView = F3(
+	function (filterOptions, selectedMsg, _p3) {
+		var _p4 = _p3;
+		var _p10 = _p4.msg;
+		var _p9 = _p4.id;
+		var str = _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$format(_p10);
+		var visible = _elm_lang$core$Native_Utils.eq(_p10, _jinjor$elm_time_travel$TimeTravel_Internal_MsgLike$Init) || function () {
+			var _p5 = _elm_lang$core$String$words(str);
+			if (_p5.ctor === '::') {
+				return A2(
+					_elm_lang$core$List$any,
+					function (_p6) {
+						var _p7 = _p6;
+						return _elm_lang$core$Native_Utils.eq(_p5._0, _p7._0) && _p7._1;
+					},
+					filterOptions);
+			} else {
+				return false;
+			}
+		}();
+		var selected = function () {
+			var _p8 = selectedMsg;
+			if (_p8.ctor === 'Just') {
+				return _elm_lang$core$Native_Utils.eq(_p8._0, _p9);
+			} else {
+				return false;
+			}
+		}();
+		return visible ? _elm_lang$core$Maybe$Just(
+			{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toString(_p9),
+				_1: A4(
+					_jinjor$elm_inline_hover$InlineHover$hover,
+					_jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgViewHover(selected),
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$style(
+							_jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgView(selected)),
+							_elm_lang$html$Html_Events$onClick(
+							_jinjor$elm_time_travel$TimeTravel_Internal_Model$SelectMsg(_p9))
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text(
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Basics$toString(_p9),
+								A2(_elm_lang$core$Basics_ops['++'], ': ', str)))
+						]))
+			}) : _elm_lang$core$Maybe$Nothing;
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$msgListView = F4(
+	function (filterOptions, selectedMsg, items, detailView) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					detailView,
+					A3(
+					_elm_lang$html$Html_Keyed$node,
+					'div',
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$msgListView)
+						]),
+					A3(
+						_jinjor$elm_time_travel$TimeTravel_Internal_View$filterMapUntilLimit,
+						60,
+						A2(_jinjor$elm_time_travel$TimeTravel_Internal_View$msgView, filterOptions, selectedMsg),
+						items))
+				]));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$modelDetailView = F4(
+	function (fixedToLeft, expandedTree, lazyModelAst, userModel) {
+		var _p11 = lazyModelAst;
+		if ((_p11.ctor === 'Just') && (_p11._0.ctor === 'Ok')) {
+			var html = A3(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsHtml,
+				_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleModelTree,
+				expandedTree,
+				_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModel(_p11._0._0));
+			return A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailView(fixedToLeft))
+					]),
+				html);
+		} else {
+			return A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelView)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						_elm_lang$core$Basics$toString(userModel))
+					]));
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$detailView = function (model) {
+	if (_elm_lang$core$Basics$not(model.sync)) {
+		var head = A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailViewHead)
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A3(
+					_jinjor$elm_time_travel$TimeTravel_Internal_View$detailTab,
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTabModel, model.fixedToLeft, model.showModelDetail),
+					_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleModelDetail(true),
+					'Model'),
+					A3(
+					_jinjor$elm_time_travel$TimeTravel_Internal_View$detailTab,
+					A2(
+						_jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailTabDiff,
+						model.fixedToLeft,
+						_elm_lang$core$Basics$not(model.showModelDetail)),
+					_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleModelDetail(false),
+					'Messages and Diff')
+				]));
+		var detailedMsgView = function () {
+			var _p12 = _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedMsgAst(model);
+			if (_p12.ctor === 'Just') {
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailedMsgView)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text(
+							_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$formatAsString(
+								_jinjor$elm_time_travel$TimeTravel_Internal_Parser_Formatter$makeModel(_p12._0)))
+						]));
+			} else {
+				return _elm_lang$html$Html$text('');
+			}
+		}();
+		var diffView = function () {
+			var _p13 = _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedItem(model);
+			if (_p13.ctor === 'Just') {
+				var _p14 = _p13._0.lazyDiff;
+				if (_p14.ctor === 'Just') {
+					return _jinjor$elm_time_travel$TimeTravel_Internal_DiffView$view(_p14._0);
+				} else {
+					return _elm_lang$html$Html$text('');
+				}
+			} else {
+				return _elm_lang$html$Html$text('');
+			}
+		}();
+		var msgTreeView = function () {
+			var _p15 = {
+				ctor: '_Tuple2',
+				_0: model.selectedMsg,
+				_1: _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedMsgTree(model)
+			};
+			if (((_p15.ctor === '_Tuple2') && (_p15._0.ctor === 'Just')) && (_p15._1.ctor === 'Just')) {
+				return A3(_jinjor$elm_time_travel$TimeTravel_Internal_MsgTreeView$view, _jinjor$elm_time_travel$TimeTravel_Internal_Model$SelectMsg, _p15._0._0, _p15._1._0);
+			} else {
+				return _elm_lang$html$Html$text('');
+			}
+		}();
+		var body = function () {
+			if (model.showModelDetail) {
+				var _p16 = _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedItem(model);
+				if (_p16.ctor === 'Just') {
+					var _p17 = _p16._0;
+					return A2(
+						_elm_lang$core$List_ops['::'],
+						A4(_jinjor$elm_time_travel$TimeTravel_Internal_View$modelDetailView, model.fixedToLeft, model.expandedTree, _p17.lazyModelAst, _p17.model),
+						_elm_lang$core$Native_List.fromArray(
+							[]));
+				} else {
+					return _elm_lang$core$Native_List.fromArray(
+						[]);
+				}
+			} else {
+				return _elm_lang$core$Native_List.fromArray(
+					[msgTreeView, detailedMsgView, diffView]);
+			}
+		}();
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailView, model.fixedToLeft, true))
+				]),
+			A2(_elm_lang$core$List_ops['::'], head, body));
+	} else {
+		return _elm_lang$html$Html$text('');
+	}
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$filterItemView = function (_p18) {
+	var _p19 = _p18;
+	var _p20 = _p19._0;
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$label,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$input,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$type$('checkbox'),
+								_elm_lang$html$Html_Attributes$checked(_p19._1),
+								_elm_lang$html$Html_Events$onClick(
+								_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleFilter(_p20))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[])),
+						_elm_lang$html$Html$text(_p20)
+					]))
+			]));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$filterView = F2(
+	function (visible, filterOptions) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Styles$filterView(visible))
+				]),
+			A2(_elm_lang$core$List$map, _jinjor$elm_time_travel$TimeTravel_Internal_View$filterItemView, filterOptions));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$buttonView = F3(
+	function (onClickMsg, buttonStyle, inner) {
+		return A4(
+			_jinjor$elm_inline_hover$InlineHover$hover,
+			_jinjor$elm_time_travel$TimeTravel_Internal_Styles$buttonHover,
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(buttonStyle),
+					_elm_lang$html$Html_Events$onClick(onClickMsg)
+				]),
+			inner);
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$headerView = F4(
+	function (fixedToLeft, sync, expand, filterOptions) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$style(_jinjor$elm_time_travel$TimeTravel_Internal_Styles$headerView)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A3(
+							_jinjor$elm_time_travel$TimeTravel_Internal_View$buttonView,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleLayout,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Styles$buttonView(true),
+							_elm_lang$core$Native_List.fromArray(
+								[_jinjor$elm_time_travel$TimeTravel_Internal_Icons$layout])),
+							A3(
+							_jinjor$elm_time_travel$TimeTravel_Internal_View$buttonView,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleMinimize,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Styles$buttonView(true),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_jinjor$elm_time_travel$TimeTravel_Internal_Icons$minimize(false)
+								])),
+							A3(
+							_jinjor$elm_time_travel$TimeTravel_Internal_View$buttonView,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleSync,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Styles$buttonView(false),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_jinjor$elm_time_travel$TimeTravel_Internal_Icons$sync(sync)
+								])),
+							A3(
+							_jinjor$elm_time_travel$TimeTravel_Internal_View$buttonView,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleExpand,
+							_jinjor$elm_time_travel$TimeTravel_Internal_Styles$buttonView(false),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_jinjor$elm_time_travel$TimeTravel_Internal_Icons$filterExpand(expand)
+								]))
+						])),
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_View$filterView, expand, filterOptions)
+				]));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$resyncView = function (sync) {
+	return sync ? _elm_lang$html$Html$text('') : A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Styles$resyncView(sync)),
+				_elm_lang$html$Html_Events$onMouseDown(_jinjor$elm_time_travel$TimeTravel_Internal_Model$Resync)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$minimizedDebugView = function (model) {
+	return A3(
+		_jinjor$elm_time_travel$TimeTravel_Internal_View$buttonView,
+		_jinjor$elm_time_travel$TimeTravel_Internal_Model$ToggleMinimize,
+		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$minimizedButton(model.fixedToLeft),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_jinjor$elm_time_travel$TimeTravel_Internal_Icons$minimize(true)
+			]));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$normalDebugView = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_jinjor$elm_time_travel$TimeTravel_Internal_View$resyncView(model.sync),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_jinjor$elm_time_travel$TimeTravel_Internal_Styles$debugView(model.fixedToLeft))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A4(_jinjor$elm_time_travel$TimeTravel_Internal_View$headerView, model.fixedToLeft, model.sync, model.expand, model.filter),
+						A4(
+						_jinjor$elm_time_travel$TimeTravel_Internal_View$msgListView,
+						model.filter,
+						model.selectedMsg,
+						_jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$toList(model.history),
+						_jinjor$elm_time_travel$TimeTravel_Internal_View$detailView(model))
+					]))
+			]));
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$debugView = function (model) {
+	return (model.minimized ? _jinjor$elm_time_travel$TimeTravel_Internal_View$minimizedDebugView : _jinjor$elm_time_travel$TimeTravel_Internal_View$normalDebugView)(model);
+};
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$userView = F2(
+	function (userView, model) {
+		var _p21 = _jinjor$elm_time_travel$TimeTravel_Internal_Model$selectedItem(model);
+		if (_p21.ctor === 'Just') {
+			return userView(_p21._0.model);
+		} else {
+			return _elm_lang$html$Html$text('Error: Unable to render');
+		}
+	});
+var _jinjor$elm_time_travel$TimeTravel_Internal_View$view = F4(
+	function (transformUserMsg, transformDebuggerMsg, userViewFunc, model) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html_App$map,
+					transformUserMsg,
+					A2(_jinjor$elm_time_travel$TimeTravel_Internal_View$userView, userViewFunc, model)),
+					A2(
+					_elm_lang$html$Html_App$map,
+					transformDebuggerMsg,
+					_jinjor$elm_time_travel$TimeTravel_Internal_View$debugView(model))
+				]));
+	});
+
+var _jinjor$elm_time_travel$TimeTravel_Navigation$OptionsWithFlags = F5(
+	function (a, b, c, d, e) {
+		return {init: a, update: b, urlUpdate: c, view: d, subscriptions: e};
+	});
+var _jinjor$elm_time_travel$TimeTravel_Navigation$UserMsg = function (a) {
+	return {ctor: 'UserMsg', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Navigation$DebuggerMsg = function (a) {
+	return {ctor: 'DebuggerMsg', _0: a};
+};
+var _jinjor$elm_time_travel$TimeTravel_Navigation$wrap = function (_p0) {
+	var _p1 = _p0;
+	var subscriptions$ = function (model) {
+		var item = _jinjor$elm_time_travel$TimeTravel_Internal_Util_Nel$head(model.history);
+		return A2(
+			_elm_lang$core$Platform_Sub$map,
+			function (c) {
+				return _jinjor$elm_time_travel$TimeTravel_Navigation$UserMsg(
+					{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: c});
+			},
+			_p1.subscriptions(item.model));
+	};
+	var view$ = function (model) {
+		return A4(
+			_jinjor$elm_time_travel$TimeTravel_Internal_View$view,
+			function (c) {
+				return _jinjor$elm_time_travel$TimeTravel_Navigation$UserMsg(
+					{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: c});
+			},
+			_jinjor$elm_time_travel$TimeTravel_Navigation$DebuggerMsg,
+			_p1.view,
+			model);
+	};
+	var urlUpdate$ = F2(
+		function (data, model) {
+			return A4(
+				_jinjor$elm_time_travel$TimeTravel_Internal_Model$urlUpdateOnIncomingData,
+				function (_p2) {
+					var _p3 = _p2;
+					return _jinjor$elm_time_travel$TimeTravel_Navigation$UserMsg(
+						{
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Maybe$Just(_p3._0),
+							_1: _p3._1
+						});
+				},
+				_p1.urlUpdate,
+				data,
+				model);
+		});
+	var init$ = F2(
+		function (flags, data) {
+			var _p4 = A2(_p1.init, flags, data);
+			var model = _p4._0;
+			var cmd = _p4._1;
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				_jinjor$elm_time_travel$TimeTravel_Internal_Model$init(model),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$core$Platform_Cmd$map,
+						function (msg) {
+							return _jinjor$elm_time_travel$TimeTravel_Navigation$UserMsg(
+								{
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Maybe$Just(0),
+									_1: msg
+								});
+						},
+						cmd)
+					]));
+		});
+	var outgoingMsg = _elm_lang$core$Basics$always(_elm_lang$core$Platform_Cmd$none);
+	var update$ = F2(
+		function (msg, model) {
+			var _p5 = msg;
+			if (_p5.ctor === 'UserMsg') {
+				return A4(
+					_jinjor$elm_time_travel$TimeTravel_Internal_Model$updateOnIncomingUserMsg,
+					function (_p6) {
+						var _p7 = _p6;
+						return _jinjor$elm_time_travel$TimeTravel_Navigation$UserMsg(
+							{
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Maybe$Just(_p7._0),
+								_1: _p7._1
+							});
+					},
+					_p1.update,
+					_p5._0,
+					model);
+			} else {
+				var _p8 = A3(_jinjor$elm_time_travel$TimeTravel_Internal_Update$update, outgoingMsg, _p5._0, model);
+				var m = _p8._0;
+				var c = _p8._1;
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					m,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(_elm_lang$core$Platform_Cmd$map, _jinjor$elm_time_travel$TimeTravel_Navigation$DebuggerMsg, c)
+						]));
+			}
+		});
+	return {init: init$, update: update$, view: view$, subscriptions: subscriptions$, urlUpdate: urlUpdate$};
+};
+var _jinjor$elm_time_travel$TimeTravel_Navigation$programWithFlags = F2(
+	function (parser, options) {
+		return A2(
+			_elm_lang$navigation$Navigation$programWithFlags,
+			parser,
+			_jinjor$elm_time_travel$TimeTravel_Navigation$wrap(options));
+	});
+var _jinjor$elm_time_travel$TimeTravel_Navigation$program = F2(
+	function (parser, _p9) {
+		var _p10 = _p9;
+		return A2(
+			_jinjor$elm_time_travel$TimeTravel_Navigation$programWithFlags,
+			parser,
+			{
+				init: F2(
+					function (flags, data) {
+						return _p10.init(data);
+					}),
+				view: _p10.view,
+				update: _p10.update,
+				subscriptions: _p10.subscriptions,
+				urlUpdate: _p10.urlUpdate
+			});
+	});
 
 var _mordrax$cotwelm$CharCreation_Data$AttributeModel = F5(
 	function (a, b, c, d, e) {
@@ -13432,6 +19978,11 @@ var _mordrax$cotwelm$Utils_Vector$boxIntersect = F2(
 		var isWithinX = (_elm_lang$core$Native_Utils.cmp(target.x, _p3.x) > -1) && (_elm_lang$core$Native_Utils.cmp(target.x, _p2.x) < 1);
 		return isWithinX && isWithinY;
 	});
+var _mordrax$cotwelm$Utils_Vector$scale = F2(
+	function (magnitude, _p4) {
+		var _p5 = _p4;
+		return {x: _p5.x * magnitude, y: _p5.y * magnitude};
+	});
 var _mordrax$cotwelm$Utils_Vector$sub = F2(
 	function (a, b) {
 		return {x: a.x - b.x, y: a.y - b.y};
@@ -13563,8 +20114,8 @@ var _mordrax$cotwelm$GameData_Building$new = F4(
 			case 'Hut_EF':
 				return A2(
 					newBuilding,
-					A2(_mordrax$cotwelm$Utils_Vector$new, 2, 1),
-					A2(_mordrax$cotwelm$Utils_Vector$new, 3, 3));
+					A2(_mordrax$cotwelm$Utils_Vector$new, 0, 1),
+					A2(_mordrax$cotwelm$Utils_Vector$new, 2, 2));
 			case 'StrawHouse_EF':
 				return A2(
 					newBuilding,
@@ -15016,7 +21567,9 @@ var _mordrax$cotwelm$Game_Data$Model = function (a) {
 							return function (h) {
 								return function (i) {
 									return function (j) {
-										return {name: a, hero: b, map: c, currentScreen: d, dnd: e, equipment: f, shop: g, idGen: h, monsters: i, seed: j};
+										return function (k) {
+											return {name: a, hero: b, map: c, currentScreen: d, dnd: e, equipment: f, shop: g, idGen: h, monsters: i, seed: j, windowSize: k};
+										};
 									};
 								};
 							};
@@ -15053,40 +21606,14 @@ var _mordrax$cotwelm$Game_Data$BuildingScreen = function (a) {
 };
 var _mordrax$cotwelm$Game_Data$InventoryScreen = {ctor: 'InventoryScreen'};
 var _mordrax$cotwelm$Game_Data$MapScreen = {ctor: 'MapScreen'};
-var _mordrax$cotwelm$Game_Data$Right = {ctor: 'Right'};
-var _mordrax$cotwelm$Game_Data$Left = {ctor: 'Left'};
-var _mordrax$cotwelm$Game_Data$Down = {ctor: 'Down'};
-var _mordrax$cotwelm$Game_Data$Up = {ctor: 'Up'};
 var _mordrax$cotwelm$Game_Data$DnDMsg = function (a) {
 	return {ctor: 'DnDMsg', _0: a};
 };
 var _mordrax$cotwelm$Game_Data$InventoryMsg = {ctor: 'InventoryMsg'};
-var _mordrax$cotwelm$Game_Data$NoOp = {ctor: 'NoOp'};
-var _mordrax$cotwelm$Game_Data$ShopMsg = function (a) {
-	return {ctor: 'ShopMsg', _0: a};
-};
-var _mordrax$cotwelm$Game_Data$InvMsg = function (a) {
-	return {ctor: 'InvMsg', _0: a};
-};
-var _mordrax$cotwelm$Game_Data$Inventory = {ctor: 'Inventory'};
-var _mordrax$cotwelm$Game_Data$Map = {ctor: 'Map'};
-var _mordrax$cotwelm$Game_Data$KeyDir = function (a) {
-	return {ctor: 'KeyDir', _0: a};
-};
 
-var _mordrax$cotwelm$Game_Keyboard$keycodeToMsg = F2(
-	function (map, code) {
-		var maybeMsg = A2(_elm_lang$core$Dict$get, code, map);
-		var _p0 = maybeMsg;
-		if (_p0.ctor === 'Just') {
-			return _p0._0;
-		} else {
-			return _mordrax$cotwelm$Game_Data$NoOp;
-		}
-	});
 var _mordrax$cotwelm$Game_Keyboard$dirToVector = function (dir) {
-	var _p1 = dir;
-	switch (_p1.ctor) {
+	var _p0 = dir;
+	switch (_p0.ctor) {
 		case 'Up':
 			return A2(_mordrax$cotwelm$Utils_Vector$new, 0, -1);
 		case 'Down':
@@ -15097,54 +21624,74 @@ var _mordrax$cotwelm$Game_Keyboard$dirToVector = function (dir) {
 			return A2(_mordrax$cotwelm$Utils_Vector$new, 1, 0);
 	}
 };
+var _mordrax$cotwelm$Game_Keyboard$NoOp = {ctor: 'NoOp'};
+var _mordrax$cotwelm$Game_Keyboard$keycodeToMsg = F2(
+	function (map, code) {
+		var maybeMsg = A2(_elm_lang$core$Dict$get, code, map);
+		var _p1 = maybeMsg;
+		if (_p1.ctor === 'Just') {
+			return _p1._0;
+		} else {
+			return _mordrax$cotwelm$Game_Keyboard$NoOp;
+		}
+	});
+var _mordrax$cotwelm$Game_Keyboard$Inventory = {ctor: 'Inventory'};
+var _mordrax$cotwelm$Game_Keyboard$Map = {ctor: 'Map'};
 var _mordrax$cotwelm$Game_Keyboard$playerKeymapUps = _elm_lang$core$Dict$fromList(
 	_elm_lang$core$Native_List.fromArray(
 		[
-			{ctor: '_Tuple2', _0: 27, _1: _mordrax$cotwelm$Game_Data$Map},
-			{ctor: '_Tuple2', _0: 73, _1: _mordrax$cotwelm$Game_Data$Inventory}
+			{ctor: '_Tuple2', _0: 27, _1: _mordrax$cotwelm$Game_Keyboard$Map},
+			{ctor: '_Tuple2', _0: 73, _1: _mordrax$cotwelm$Game_Keyboard$Inventory}
 		]));
+var _mordrax$cotwelm$Game_Keyboard$KeyDir = function (a) {
+	return {ctor: 'KeyDir', _0: a};
+};
+var _mordrax$cotwelm$Game_Keyboard$Right = {ctor: 'Right'};
+var _mordrax$cotwelm$Game_Keyboard$Left = {ctor: 'Left'};
+var _mordrax$cotwelm$Game_Keyboard$Down = {ctor: 'Down'};
+var _mordrax$cotwelm$Game_Keyboard$Up = {ctor: 'Up'};
 var _mordrax$cotwelm$Game_Keyboard$playerKeymap = _elm_lang$core$Dict$fromList(
 	_elm_lang$core$Native_List.fromArray(
 		[
 			{
 			ctor: '_Tuple2',
 			_0: 87,
-			_1: _mordrax$cotwelm$Game_Data$KeyDir(_mordrax$cotwelm$Game_Data$Up)
+			_1: _mordrax$cotwelm$Game_Keyboard$KeyDir(_mordrax$cotwelm$Game_Keyboard$Up)
 		},
 			{
 			ctor: '_Tuple2',
 			_0: 119,
-			_1: _mordrax$cotwelm$Game_Data$KeyDir(_mordrax$cotwelm$Game_Data$Up)
+			_1: _mordrax$cotwelm$Game_Keyboard$KeyDir(_mordrax$cotwelm$Game_Keyboard$Up)
 		},
 			{
 			ctor: '_Tuple2',
 			_0: 83,
-			_1: _mordrax$cotwelm$Game_Data$KeyDir(_mordrax$cotwelm$Game_Data$Down)
+			_1: _mordrax$cotwelm$Game_Keyboard$KeyDir(_mordrax$cotwelm$Game_Keyboard$Down)
 		},
 			{
 			ctor: '_Tuple2',
 			_0: 115,
-			_1: _mordrax$cotwelm$Game_Data$KeyDir(_mordrax$cotwelm$Game_Data$Down)
+			_1: _mordrax$cotwelm$Game_Keyboard$KeyDir(_mordrax$cotwelm$Game_Keyboard$Down)
 		},
 			{
 			ctor: '_Tuple2',
 			_0: 65,
-			_1: _mordrax$cotwelm$Game_Data$KeyDir(_mordrax$cotwelm$Game_Data$Left)
+			_1: _mordrax$cotwelm$Game_Keyboard$KeyDir(_mordrax$cotwelm$Game_Keyboard$Left)
 		},
 			{
 			ctor: '_Tuple2',
 			_0: 97,
-			_1: _mordrax$cotwelm$Game_Data$KeyDir(_mordrax$cotwelm$Game_Data$Left)
+			_1: _mordrax$cotwelm$Game_Keyboard$KeyDir(_mordrax$cotwelm$Game_Keyboard$Left)
 		},
 			{
 			ctor: '_Tuple2',
 			_0: 68,
-			_1: _mordrax$cotwelm$Game_Data$KeyDir(_mordrax$cotwelm$Game_Data$Right)
+			_1: _mordrax$cotwelm$Game_Keyboard$KeyDir(_mordrax$cotwelm$Game_Keyboard$Right)
 		},
 			{
 			ctor: '_Tuple2',
 			_0: 100,
-			_1: _mordrax$cotwelm$Game_Data$KeyDir(_mordrax$cotwelm$Game_Data$Right)
+			_1: _mordrax$cotwelm$Game_Keyboard$KeyDir(_mordrax$cotwelm$Game_Keyboard$Right)
 		}
 		]));
 var _mordrax$cotwelm$Game_Keyboard$subscriptions = _elm_lang$core$Native_List.fromArray(
@@ -15199,7 +21746,6 @@ var _mordrax$cotwelm$Game_Collision$defend = F2(
 var _mordrax$cotwelm$Game_Collision$attack = F2(
 	function (monster, _p5) {
 		var _p6 = _p5;
-		var _p7 = A2(_elm_lang$core$Debug$log, 'Monster: ', monster);
 		var monstersWithoutMonster = A2(
 			_elm_lang$core$List$filter,
 			function (x) {
@@ -15207,9 +21753,9 @@ var _mordrax$cotwelm$Game_Collision$attack = F2(
 					A2(_mordrax$cotwelm$Utils_IdGenerator$equals, monster.id, x.id));
 			},
 			_p6.monsters);
-		var _p8 = A3(_mordrax$cotwelm$Combat$attack, _p6.hero.stats, monster.stats, _p6.seed);
-		var monsterStats = _p8._0;
-		var seed$ = _p8._1;
+		var _p7 = A3(_mordrax$cotwelm$Combat$attack, _p6.hero.stats, monster.stats, _p6.seed);
+		var monsterStats = _p7._0;
+		var seed$ = _p7._1;
 		var monster$ = _elm_lang$core$Native_Utils.update(
 			monster,
 			{stats: monsterStats});
@@ -15224,37 +21770,37 @@ var _mordrax$cotwelm$Game_Collision$buildingAtPosition = F2(
 			_elm_lang$core$List$filter,
 			_mordrax$cotwelm$GameData_Building$isBuildingAtPosition(pos),
 			buildings);
-		var _p9 = buildingsAtTile;
-		if (_p9.ctor === '::') {
-			return _elm_lang$core$Maybe$Just(_p9._0);
+		var _p8 = buildingsAtTile;
+		if (_p8.ctor === '::') {
+			return _elm_lang$core$Maybe$Just(_p8._0);
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$queryPosition = F2(
-	function (pos, _p10) {
-		var _p11 = _p10;
-		var _p13 = _p11.map;
-		var isHero = A2(_mordrax$cotwelm$Utils_Vector$equal, _p11.hero.position, pos);
+	function (pos, _p9) {
+		var _p10 = _p9;
+		var _p12 = _p10.map;
+		var isHero = A2(_mordrax$cotwelm$Utils_Vector$equal, _p10.hero.position, pos);
 		var maybeMonster = _elm_lang$core$List$head(
 			A2(
 				_elm_lang$core$List$filter,
 				function (x) {
 					return A2(_mordrax$cotwelm$Utils_Vector$equal, pos, x.position);
 				},
-				_p11.monsters));
+				_p10.monsters));
 		var maybeBuilding = A2(
 			_mordrax$cotwelm$Game_Collision$buildingAtPosition,
 			pos,
-			_mordrax$cotwelm$Game_Maps$getBuildings(_p13));
+			_mordrax$cotwelm$Game_Maps$getBuildings(_p12));
 		var maybeTile = A2(
 			_elm_lang$core$Dict$get,
 			_elm_lang$core$Basics$toString(pos),
-			_mordrax$cotwelm$Game_Maps$getMap(_p13));
+			_mordrax$cotwelm$Game_Maps$getMap(_p12));
 		var tileObstruction = function () {
-			var _p12 = maybeTile;
-			if (_p12.ctor === 'Just') {
-				return _mordrax$cotwelm$Tile$isSolid(_p12._0);
+			var _p11 = maybeTile;
+			if (_p11.ctor === 'Just') {
+				return _mordrax$cotwelm$Tile$isSolid(_p11._0);
 			} else {
 				return false;
 			}
@@ -15262,61 +21808,61 @@ var _mordrax$cotwelm$Game_Collision$queryPosition = F2(
 		return {ctor: '_Tuple4', _0: tileObstruction, _1: maybeBuilding, _2: maybeMonster, _3: isHero};
 	});
 var _mordrax$cotwelm$Game_Collision$moveMonsters = F3(
-	function (monsters, movedMonsters, _p14) {
+	function (monsters, movedMonsters, _p13) {
 		moveMonsters:
 		while (true) {
-			var _p15 = _p14;
-			var _p20 = _p15;
-			var _p16 = monsters;
-			if (_p16.ctor === '[]') {
+			var _p14 = _p13;
+			var _p19 = _p14;
+			var _p15 = monsters;
+			if (_p15.ctor === '[]') {
 				return _elm_lang$core$Native_Utils.update(
-					_p20,
+					_p19,
 					{monsters: movedMonsters});
 			} else {
-				var _p19 = _p16._1;
-				var _p18 = _p16._0;
-				var movedMonster = A2(_mordrax$cotwelm$Game_Collision$pathMonster, _p18, _p15.hero);
-				var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedMonster.position, _p20);
+				var _p18 = _p15._1;
+				var _p17 = _p15._0;
+				var movedMonster = A2(_mordrax$cotwelm$Game_Collision$pathMonster, _p17, _p14.hero);
+				var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedMonster.position, _p19);
 				var isObstructedByMovedMonsters = A2(_mordrax$cotwelm$Game_Collision$isMonsterObstruction, movedMonster, movedMonsters);
-				var _p17 = obstructions;
+				var _p16 = obstructions;
 				_v7_4:
 				do {
-					if (_p17.ctor === '_Tuple4') {
-						if (_p17._3 === true) {
-							var model$ = A2(_mordrax$cotwelm$Game_Collision$defend, _p18, _p20);
-							var _v8 = _p19,
-								_v9 = A2(_elm_lang$core$List_ops['::'], _p18, movedMonsters),
+					if (_p16.ctor === '_Tuple4') {
+						if (_p16._3 === true) {
+							var model$ = A2(_mordrax$cotwelm$Game_Collision$defend, _p17, _p19);
+							var _v8 = _p18,
+								_v9 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
 								_v10 = model$;
 							monsters = _v8;
 							movedMonsters = _v9;
-							_p14 = _v10;
+							_p13 = _v10;
 							continue moveMonsters;
 						} else {
-							if (_p17._0 === true) {
-								var _v11 = _p19,
-									_v12 = A2(_elm_lang$core$List_ops['::'], _p18, movedMonsters),
-									_v13 = _p20;
+							if (_p16._0 === true) {
+								var _v11 = _p18,
+									_v12 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
+									_v13 = _p19;
 								monsters = _v11;
 								movedMonsters = _v12;
-								_p14 = _v13;
+								_p13 = _v13;
 								continue moveMonsters;
 							} else {
-								if (_p17._1.ctor === 'Just') {
-									var _v14 = _p19,
-										_v15 = A2(_elm_lang$core$List_ops['::'], _p18, movedMonsters),
-										_v16 = _p20;
+								if (_p16._1.ctor === 'Just') {
+									var _v14 = _p18,
+										_v15 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
+										_v16 = _p19;
 									monsters = _v14;
 									movedMonsters = _v15;
-									_p14 = _v16;
+									_p13 = _v16;
 									continue moveMonsters;
 								} else {
-									if (_p17._2.ctor === 'Just') {
-										var _v17 = _p19,
-											_v18 = A2(_elm_lang$core$List_ops['::'], _p18, movedMonsters),
-											_v19 = _p20;
+									if (_p16._2.ctor === 'Just') {
+										var _v17 = _p18,
+											_v18 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
+											_v19 = _p19;
 										monsters = _v17;
 										movedMonsters = _v18;
-										_p14 = _v19;
+										_p13 = _v19;
 										continue moveMonsters;
 									} else {
 										break _v7_4;
@@ -15329,102 +21875,102 @@ var _mordrax$cotwelm$Game_Collision$moveMonsters = F3(
 					}
 				} while(false);
 				if (isObstructedByMovedMonsters) {
-					var _v20 = _p19,
-						_v21 = A2(_elm_lang$core$List_ops['::'], _p18, movedMonsters),
-						_v22 = _p20;
+					var _v20 = _p18,
+						_v21 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
+						_v22 = _p19;
 					monsters = _v20;
 					movedMonsters = _v21;
-					_p14 = _v22;
+					_p13 = _v22;
 					continue moveMonsters;
 				} else {
-					var _v23 = _p19,
+					var _v23 = _p18,
 						_v24 = A2(_elm_lang$core$List_ops['::'], movedMonster, movedMonsters),
-						_v25 = _p20;
+						_v25 = _p19;
 					monsters = _v23;
 					movedMonsters = _v24;
-					_p14 = _v25;
+					_p13 = _v25;
 					continue moveMonsters;
 				}
 			}
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$enterBuilding = F2(
-	function (building, _p21) {
-		var _p22 = _p21;
-		var _p25 = _p22;
-		var _p23 = _mordrax$cotwelm$GameData_Building$buildingType(building);
-		switch (_p23.ctor) {
+	function (building, _p20) {
+		var _p21 = _p20;
+		var _p24 = _p21;
+		var _p22 = _mordrax$cotwelm$GameData_Building$buildingType(building);
+		switch (_p22.ctor) {
 			case 'LinkType':
-				var _p24 = _p23._0;
+				var _p23 = _p22._0;
 				return _elm_lang$core$Native_Utils.update(
-					_p25,
+					_p24,
 					{
-						map: A2(_mordrax$cotwelm$Game_Maps$updateArea, _p24.area, _p22.map),
+						map: A2(_mordrax$cotwelm$Game_Maps$updateArea, _p23.area, _p21.map),
 						hero: _elm_lang$core$Native_Utils.update(
-							_p22.hero,
-							{position: _p24.pos})
+							_p21.hero,
+							{position: _p23.pos})
 					});
 			case 'ShopType':
 				return _elm_lang$core$Native_Utils.update(
-					_p25,
+					_p24,
 					{
 						currentScreen: _mordrax$cotwelm$Game_Data$BuildingScreen(building),
-						shop: A2(_mordrax$cotwelm$Shop_Shop$setCurrentShopType, _p23._0, _p25.shop)
+						shop: A2(_mordrax$cotwelm$Shop_Shop$setCurrentShopType, _p22._0, _p24.shop)
 					});
 			default:
 				return _elm_lang$core$Native_Utils.update(
-					_p25,
+					_p24,
 					{
 						currentScreen: _mordrax$cotwelm$Game_Data$BuildingScreen(building)
 					});
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$tryMoveHero = F2(
-	function (dir, _p26) {
-		var _p27 = _p26;
-		var _p30 = _p27;
-		var _p29 = _p27.hero;
+	function (dir, _p25) {
+		var _p26 = _p25;
+		var _p29 = _p26;
+		var _p28 = _p26.hero;
 		var movedHero = _elm_lang$core$Native_Utils.update(
-			_p29,
+			_p28,
 			{
 				position: A2(
 					_mordrax$cotwelm$Utils_Vector$add,
-					_p29.position,
+					_p28.position,
 					_mordrax$cotwelm$Game_Keyboard$dirToVector(dir))
 			});
-		var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedHero.position, _p30);
-		var _p28 = obstructions;
+		var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedHero.position, _p29);
+		var _p27 = obstructions;
 		_v29_1:
 		do {
 			_v29_0:
 			do {
-				if (_p28._0 === true) {
-					if (_p28._2.ctor === 'Just') {
+				if (_p27._0 === true) {
+					if (_p27._2.ctor === 'Just') {
 						break _v29_0;
 					} else {
-						if (_p28._1.ctor === 'Just') {
+						if (_p27._1.ctor === 'Just') {
 							break _v29_1;
 						} else {
-							return _p30;
+							return _p29;
 						}
 					}
 				} else {
-					if (_p28._2.ctor === 'Just') {
+					if (_p27._2.ctor === 'Just') {
 						break _v29_0;
 					} else {
-						if (_p28._1.ctor === 'Just') {
+						if (_p27._1.ctor === 'Just') {
 							break _v29_1;
 						} else {
 							return _elm_lang$core$Native_Utils.update(
-								_p30,
+								_p29,
 								{hero: movedHero});
 						}
 					}
 				}
 			} while(false);
-			return A2(_mordrax$cotwelm$Game_Collision$attack, _p28._2._0, _p30);
+			return A2(_mordrax$cotwelm$Game_Collision$attack, _p27._2._0, _p29);
 		} while(false);
-		return A2(_mordrax$cotwelm$Game_Collision$enterBuilding, _p28._1._0, _p30);
+		return A2(_mordrax$cotwelm$Game_Collision$enterBuilding, _p27._1._0, _p29);
 	});
 
 var _mordrax$cotwelm$Game_Inventory$viewPurse = function (_p0) {
@@ -16145,13 +22691,6 @@ var _mordrax$cotwelm$Monster_Monsters$init = function (gen) {
 		monsterFactory);
 };
 
-var _mordrax$cotwelm$Game_Game$subscriptions = function (model) {
-	var inventorySubs = _mordrax$cotwelm$Game_Inventory$subscriptions(model);
-	var toMsg = function (x) {
-		return A2(_elm_lang$core$Platform_Sub$map, _mordrax$cotwelm$Game_Data$InvMsg, x);
-	};
-	return A2(_elm_lang$core$List$map, toMsg, inventorySubs);
-};
 var _mordrax$cotwelm$Game_Game$viewHero = function (hero) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -16180,25 +22719,14 @@ var _mordrax$cotwelm$Game_Game$viewBuilding = function (building) {
 					]))
 			]));
 };
-var _mordrax$cotwelm$Game_Game$viewMap = function (model) {
-	var title = A2(
-		_elm_lang$html$Html$h1,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html$text(
-				A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', model.name))
-			]));
+var _mordrax$cotwelm$Game_Game$viewHUD = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				title,
-				_mordrax$cotwelm$Game_Maps$view(model.map),
-				_mordrax$cotwelm$Game_Game$viewHero(model.hero)
+				_elm_lang$html$Html$text('messages')
 			]));
 };
 var _mordrax$cotwelm$Game_Game$viewMonsters = function (_p0) {
@@ -16212,76 +22740,109 @@ var _mordrax$cotwelm$Game_Game$viewMonsters = function (_p0) {
 			[]),
 		A2(_elm_lang$core$List$map, monsterHtml, _p1.monsters));
 };
-var _mordrax$cotwelm$Game_Game$view = function (model) {
-	var _p2 = model.currentScreen;
-	switch (_p2.ctor) {
-		case 'MapScreen':
-			return A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
+var _mordrax$cotwelm$Game_Game$viewMap = function (_p2) {
+	var _p3 = _p2;
+	var _p8 = _p3.windowSize;
+	var _p7 = _p3;
+	var px = function (x) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Basics$toString(x),
+			'px');
+	};
+	var _p4 = {ctor: '_Tuple2', _0: ((_p8.width / 32) | 0) * 16, _1: ((_p8.height / 32) | 0) * 16};
+	var xOff = _p4._0;
+	var yOff = _p4._1;
+	var _p5 = A2(_mordrax$cotwelm$Utils_Vector$scale, 32, _p7.hero.position);
+	var x = _p5.x;
+	var y = _p5.y;
+	var title = A2(
+		_elm_lang$html$Html$h1,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text(
+				A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', _p7.name))
+			]));
+	var _p6 = A2(_elm_lang$core$Debug$log, 'size: ', _p8);
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_mordrax$cotwelm$Game_Game$viewMap(model),
-						_mordrax$cotwelm$Game_Game$viewMonsters(model)
-					]));
-		case 'BuildingScreen':
-			var _p4 = _p2._0;
-			var _p3 = _mordrax$cotwelm$GameData_Building$buildingType(_p4);
-			if (_p3.ctor === 'ShopType') {
-				return A2(
-					_elm_lang$html$Html_App$map,
-					_mordrax$cotwelm$Game_Data$InvMsg,
-					_mordrax$cotwelm$Game_Inventory$view(model));
-			} else {
-				return _mordrax$cotwelm$Game_Game$viewBuilding(_p4);
-			}
-		default:
-			return A2(
-				_elm_lang$html$Html_App$map,
-				_mordrax$cotwelm$Game_Data$InvMsg,
-				_mordrax$cotwelm$Game_Inventory$view(model));
-	}
+						{ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+						{ctor: '_Tuple2', _0: 'overflow', _1: 'hidden'},
+						{
+						ctor: '_Tuple2',
+						_0: 'width',
+						_1: px(_p8.width)
+					},
+						{
+						ctor: '_Tuple2',
+						_0: 'height',
+						_1: px(_p8.height)
+					}
+					]))
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+								{
+								ctor: '_Tuple2',
+								_0: 'top',
+								_1: A2(
+									_elm_lang$core$Basics_ops['++'],
+									'-',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_elm_lang$core$Basics$toString(y - yOff),
+										'px'))
+							},
+								{
+								ctor: '_Tuple2',
+								_0: 'left',
+								_1: A2(
+									_elm_lang$core$Basics_ops['++'],
+									'-',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_elm_lang$core$Basics$toString(x - xOff),
+										'px'))
+							}
+							]))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_mordrax$cotwelm$Game_Maps$view(_p7.map),
+						_mordrax$cotwelm$Game_Game$viewHero(_p7.hero),
+						_mordrax$cotwelm$Game_Game$viewMonsters(_p7)
+					]))
+			]));
 };
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
-		var _p5 = msg;
-		switch (_p5.ctor) {
-			case 'KeyDir':
-				var model$ = A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p5._0, model);
-				var movedMovedMonsters = A3(
-					_mordrax$cotwelm$Game_Collision$moveMonsters,
-					model$.monsters,
-					_elm_lang$core$Native_List.fromArray(
-						[]),
-					model$);
-				return {ctor: '_Tuple2', _0: movedMovedMonsters, _1: _elm_lang$core$Platform_Cmd$none};
-			case 'Map':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{currentScreen: _mordrax$cotwelm$Game_Data$MapScreen}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'Inventory':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{currentScreen: _mordrax$cotwelm$Game_Data$InventoryScreen}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
+		var _p9 = msg;
+		switch (_p9.ctor) {
 			case 'InvMsg':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_mordrax$cotwelm$Game_Inventory$update, _p5._0, model),
+					_0: A2(_mordrax$cotwelm$Game_Inventory$update, _p9._0, model),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'ShopMsg':
-				var _p6 = A3(_mordrax$cotwelm$Shop_Shop$update, _p5._0, model.idGen, model.shop);
-				var shop$ = _p6._0;
-				var idGen$ = _p6._1;
+				var _p10 = A3(_mordrax$cotwelm$Shop_Shop$update, _p9._0, model.idGen, model.shop);
+				var shop$ = _p10._0;
+				var idGen$ = _p10._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -16289,32 +22850,184 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 						{shop: shop$, idGen: idGen$}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			case 'Keyboard':
+				switch (_p9._0.ctor) {
+					case 'KeyDir':
+						var model$ = A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p9._0._0, model);
+						var movedMovedMonsters = A3(
+							_mordrax$cotwelm$Game_Collision$moveMonsters,
+							model$.monsters,
+							_elm_lang$core$Native_List.fromArray(
+								[]),
+							model$);
+						return {ctor: '_Tuple2', _0: movedMovedMonsters, _1: _elm_lang$core$Platform_Cmd$none};
+					case 'Map':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{currentScreen: _mordrax$cotwelm$Game_Data$MapScreen}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'Inventory':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{currentScreen: _mordrax$cotwelm$Game_Data$InventoryScreen}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					default:
+						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
 			default:
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{windowSize: _p9._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 		}
 	});
+var _mordrax$cotwelm$Game_Game$WindowSize = function (a) {
+	return {ctor: 'WindowSize', _0: a};
+};
+var _mordrax$cotwelm$Game_Game$ShopMsg = function (a) {
+	return {ctor: 'ShopMsg', _0: a};
+};
 var _mordrax$cotwelm$Game_Game$initGame = function (seed) {
-	var _p7 = _mordrax$cotwelm$Shop_Shop$new;
-	var newShop = _p7._0;
-	var shopCmd = _p7._1;
+	var _p11 = _mordrax$cotwelm$Shop_Shop$new;
+	var newShop = _p11._0;
+	var shopCmd = _p11._1;
 	var cmd = A2(
 		_elm_lang$core$Platform_Cmd$map,
 		function (x) {
-			return _mordrax$cotwelm$Game_Data$ShopMsg(x);
+			return _mordrax$cotwelm$Game_Game$ShopMsg(x);
 		},
 		shopCmd);
 	var idGenerator = _mordrax$cotwelm$Utils_IdGenerator$new;
-	var _p8 = _mordrax$cotwelm$Equipment$init(idGenerator);
-	var idGenerator$ = _p8._0;
-	var equipment = _p8._1;
-	var _p9 = _mordrax$cotwelm$Monster_Monsters$init(idGenerator$);
-	var monsters = _p9._0;
-	var idGenerator$$ = _p9._1;
+	var _p12 = _mordrax$cotwelm$Equipment$init(idGenerator);
+	var idGenerator$ = _p12._0;
+	var equipment = _p12._1;
+	var _p13 = _mordrax$cotwelm$Monster_Monsters$init(idGenerator$);
+	var monsters = _p13._0;
+	var idGenerator$$ = _p13._1;
 	return {
 		ctor: '_Tuple2',
-		_0: {name: 'A new game', hero: _mordrax$cotwelm$Hero$init, map: _mordrax$cotwelm$Game_Maps$init, currentScreen: _mordrax$cotwelm$Game_Data$MapScreen, dnd: _mordrax$cotwelm$Utils_DragDrop$new, equipment: equipment, shop: newShop, idGen: idGenerator$$, monsters: monsters, seed: seed},
+		_0: {
+			name: 'A new game',
+			hero: _mordrax$cotwelm$Hero$init,
+			map: _mordrax$cotwelm$Game_Maps$init,
+			currentScreen: _mordrax$cotwelm$Game_Data$MapScreen,
+			dnd: _mordrax$cotwelm$Utils_DragDrop$new,
+			equipment: equipment,
+			shop: newShop,
+			idGen: idGenerator$$,
+			monsters: monsters,
+			seed: seed,
+			windowSize: {width: 640, height: 640}
+		},
 		_1: cmd
 	};
+};
+var _mordrax$cotwelm$Game_Game$InvMsg = function (a) {
+	return {ctor: 'InvMsg', _0: a};
+};
+var _mordrax$cotwelm$Game_Game$view = function (model) {
+	var _p14 = model.currentScreen;
+	switch (_p14.ctor) {
+		case 'MapScreen':
+			return A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('ui grid container')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui row')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('menu')
+							])),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui row')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('buttons menu')
+							])),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui row')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_mordrax$cotwelm$Game_Game$viewMap(model)
+							])),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui row')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_mordrax$cotwelm$Game_Game$viewHUD(model)
+							]))
+					]));
+		case 'BuildingScreen':
+			var _p16 = _p14._0;
+			var _p15 = _mordrax$cotwelm$GameData_Building$buildingType(_p16);
+			if (_p15.ctor === 'ShopType') {
+				return A2(
+					_elm_lang$html$Html_App$map,
+					_mordrax$cotwelm$Game_Game$InvMsg,
+					_mordrax$cotwelm$Game_Inventory$view(model));
+			} else {
+				return _mordrax$cotwelm$Game_Game$viewBuilding(_p16);
+			}
+		default:
+			return A2(
+				_elm_lang$html$Html_App$map,
+				_mordrax$cotwelm$Game_Game$InvMsg,
+				_mordrax$cotwelm$Game_Inventory$view(model));
+	}
+};
+var _mordrax$cotwelm$Game_Game$Keyboard = function (a) {
+	return {ctor: 'Keyboard', _0: a};
+};
+var _mordrax$cotwelm$Game_Game$subscriptions = function (model) {
+	var windowSubs = _elm_lang$window$Window$resizes(
+		function (x) {
+			return _mordrax$cotwelm$Game_Game$WindowSize(x);
+		});
+	var toKeyboardMsg = function (x) {
+		return A2(_elm_lang$core$Platform_Sub$map, _mordrax$cotwelm$Game_Game$Keyboard, x);
+	};
+	var keyboardSubs = A2(_elm_lang$core$List$map, toKeyboardMsg, _mordrax$cotwelm$Game_Keyboard$subscriptions);
+	var toInvMsg = function (x) {
+		return A2(_elm_lang$core$Platform_Sub$map, _mordrax$cotwelm$Game_Game$InvMsg, x);
+	};
+	var inventorySubs = A2(
+		_elm_lang$core$List$map,
+		toInvMsg,
+		_mordrax$cotwelm$Game_Inventory$subscriptions(model));
+	return A2(
+		_elm_lang$core$List_ops['::'],
+		windowSubs,
+		A2(_elm_lang$core$Basics_ops['++'], inventorySubs, keyboardSubs));
 };
 
 var _mordrax$cotwelm$SplashView$Overview = {ctor: 'Overview'};
@@ -16329,7 +23042,7 @@ var _mordrax$cotwelm$SplashView$view = function () {
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html_Attributes$class('ui middle aligned center aligned grid fullscreen'),
+				_elm_lang$html$Html_Attributes$class('ui center aligned middle aligned grid'),
 				_elm_lang$html$Html_Attributes$style(bgStyle)
 			]),
 		_elm_lang$core$Native_List.fromArray(
@@ -16477,7 +23190,6 @@ var _mordrax$cotwelm$Main$subscriptions = function (model) {
 	var toMsg = function (x) {
 		return A2(_elm_lang$core$Platform_Sub$map, _mordrax$cotwelm$Main$GameMsg, x);
 	};
-	var keyboardSubs = A2(_elm_lang$core$List$map, toMsg, _mordrax$cotwelm$Game_Keyboard$subscriptions);
 	var gameSubs = function (game) {
 		return A2(
 			_elm_lang$core$List$map,
@@ -16486,13 +23198,10 @@ var _mordrax$cotwelm$Main$subscriptions = function (model) {
 	};
 	var _p2 = model.game;
 	if (_p2.ctor === 'Nothing') {
-		return _elm_lang$core$Platform_Sub$batch(keyboardSubs);
+		return _elm_lang$core$Platform_Sub$none;
 	} else {
 		return _elm_lang$core$Platform_Sub$batch(
-			A2(
-				_elm_lang$core$List$append,
-				gameSubs(_p2._0),
-				keyboardSubs));
+			gameSubs(_p2._0));
 	}
 };
 var _mordrax$cotwelm$Main$CharCreationMsg = function (a) {
@@ -16685,7 +23394,7 @@ var _mordrax$cotwelm$Main$initModel = function (url) {
 };
 var _mordrax$cotwelm$Main$main = {
 	main: A2(
-		_elm_lang$navigation$Navigation$program,
+		_jinjor$elm_time_travel$TimeTravel_Navigation$program,
 		_mordrax$cotwelm$Main$urlParser,
 		{init: _mordrax$cotwelm$Main$initModel, update: _mordrax$cotwelm$Main$update, view: _mordrax$cotwelm$Main$view, urlUpdate: _mordrax$cotwelm$Main$urlUpdate, subscriptions: _mordrax$cotwelm$Main$subscriptions})
 };
