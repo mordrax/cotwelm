@@ -113,7 +113,7 @@ new buildingTile pos name buildingType =
                 newBuilding (Vector.new 1 0) (Vector.new 3 1)
 
             Hut_EF ->
-                newBuilding (Vector.new 2 1) (Vector.new 3 3)
+                newBuilding (Vector.new 0 1) (Vector.new 2 2)
 
             StrawHouse_EF ->
                 newBuilding (Vector.new 2 1) (Vector.new 3 3)
