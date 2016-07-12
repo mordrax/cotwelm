@@ -25,6 +25,7 @@ type alias Model =
     , monsters : List Monster
     , seed : Random.Seed
     , windowSize : Window.Size
+    , messages : List String
     }
 
 

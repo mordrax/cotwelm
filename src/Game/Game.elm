@@ -76,6 +76,7 @@ initGame seed =
           , monsters = monsters
           , seed = seed
           , windowSize = { width = 640, height = 640 }
+          , messages = [ "Welcome to castle of the winds!" ]
           }
         , cmd
         )
@@ -121,12 +122,7 @@ view : Model -> Html Msg
 view model =
     case model.currentScreen of
         MapScreen ->
-            div [ class "ui grid container" ]
-                [ div [ class "ui row" ] [ text "menu" ]
-                , div [ class "ui row" ] [ text "buttons menu" ]
-                , div [ class "ui row" ] [ viewMap model ]
-                , div [ class "ui row" ] [ viewHUD model ]
-                ]
+            viewMap model
 
         BuildingScreen building ->
             case Building.buildingType building of
@@ -152,9 +148,6 @@ viewMonsters ({ monsters } as model) =
 viewMap : Model -> Html Msg
 viewMap ({ windowSize } as model) =
     let
-        _ =
-            Debug.log "size: " windowSize
-
         title =
             h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
 
@@ -166,27 +159,95 @@ viewMap ({ windowSize } as model) =
 
         px =
             \x -> (toString x) ++ "px"
-    in
-        div
-            [ style
-                [ ( "position", "relative" )
-                , ( "overflow", "hidden" )
-                , ( "width", px windowSize.width )
-                , ( "height", px windowSize.height )
-                ]
-            ]
-            [ div
-                [ style
-                    [ ( "position", "relative" )
-                    , ( "top", "-" ++ (toString (y - yOff)) ++ "px" )
-                    , ( "left", "-" ++ (toString (x - xOff)) ++ "px" )
+
+        viewport =
+            \html ->
+                div
+                    [ style
+                        [ ( "position", "relative" )
+                        , ( "overflow", "hidden" )
+                        , ( "width", px windowSize.width )
+                        , ( "height", px (windowSize.height * 4 // 5) )
+                        ]
                     ]
-                ]
+                    [ div
+                        [ style
+                            [ ( "position", "relative" )
+                            , ( "top", "-" ++ (toString (y - yOff)) ++ "px" )
+                            , ( "left", "-" ++ (toString (x - xOff)) ++ "px" )
+                            ]
+                        ]
+                        html
+                    ]
+    in
+        div []
+            [ viewMenu
+            , viewQuickMenu
+            , viewport
                 [ Maps.view model.map
                 , viewHero model.hero
                 , viewMonsters model
                 ]
+            , viewStatus model
             ]
+
+
+viewStatus : Model -> Html Msg
+viewStatus model =
+    div [ class "ui grid" ]
+        [ div [ class "ui twelve wide column" ]
+            [ viewMessages model
+            ]
+        , div [ class "ui four wide column" ]
+            [ viewStats model
+            ]
+        ]
+
+
+viewMessages : Model -> Html Msg
+viewMessages model =
+    let
+        msg =
+            \txt -> div [] [ text txt ]
+    in
+        div [] (List.map msg model.messages)
+
+
+viewStats : Model -> Html Msg
+viewStats model =
+    div [] [ text "TODO: Stats here" ]
+
+
+viewMenu : Html Msg
+viewMenu =
+    div [ class "ui buttons" ]
+        (List.map simpleBtn
+            [ "File"
+            , "Character!"
+            , "Inventory!"
+            , "Map!"
+            , "Spells"
+            , "Activate"
+            , "Verbs"
+            , "Options"
+            , "Window"
+            , "Help"
+            ]
+        )
+
+
+viewQuickMenu : Html Msg
+viewQuickMenu =
+    div []
+        (List.map simpleBtn
+            [ "Get"
+            , "Free Hand"
+            , "Search"
+            , "Disarm"
+            , "Rest"
+            , "Save"
+            ]
+        )
 
 
 viewHUD : Model -> Html Msg
@@ -223,3 +284,14 @@ subscriptions model =
             Window.resizes (\x -> WindowSize x)
     in
         windowSubs :: inventorySubs ++ keyboardSubs
+
+
+
+--------
+-- UI --
+--------
+
+
+simpleBtn : String -> Html Msg
+simpleBtn txt =
+    div [ class "ui button" ] [ text txt ]

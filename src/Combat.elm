@@ -10,7 +10,7 @@ import Dice exposing (..)
 import Random exposing (..)
 
 
-attack : Stats -> Stats -> Seed -> ( Stats, Seed )
+attack : Stats -> Stats -> Seed -> ( Stats, Seed, Int )
 attack attacker defender seed =
     let
         ( ( min, max ), _, toHit ) =
@@ -28,4 +28,4 @@ attack attacker defender seed =
         ( stats', msg ) =
             Stats.takeHit damage defender
     in
-        ( stats', seed' )
+        ( stats', seed', damage )
