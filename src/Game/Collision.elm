@@ -112,11 +112,11 @@ buildingAtPosition pos buildings =
 attack : Monster -> Model -> Model
 attack monster ({ hero, seed, monsters } as model) =
     let
-        ( monsterStats, seed' ) =
+        ( stats', seed', damage ) =
             Combat.attack hero.stats monster.stats seed
 
         monster' =
-            { monster | stats = monsterStats }
+            { monster | stats = stats' }
 
         monstersWithoutMonster =
             List.filter (\x -> not (IdGenerator.equals monster.id x.id)) monsters
@@ -126,20 +126,31 @@ attack monster ({ hero, seed, monsters } as model) =
                 monstersWithoutMonster
             else
                 monster' :: monstersWithoutMonster
+
+        newMsg =
+            newHitMessage "You" (Monster.name monster) (toString damage)
     in
-        { model | monsters = monsters' }
+        { model | monsters = monsters', messages = newMsg :: model.messages }
 
 
 defend : Monster -> Model -> Model
 defend monster ({ hero, seed } as model) =
     let
-        ( heroStats', seed' ) =
+        ( heroStats', seed', damage ) =
             Combat.attack monster.stats hero.stats seed
 
         hero' =
             { hero | stats = heroStats' }
+
+        newMsg =
+            newHitMessage (Monster.name monster) "you" (toString damage)
     in
-        { model | hero = hero', seed = seed' }
+        { model | hero = hero', seed = seed', messages = newMsg :: model.messages }
+
+
+newHitMessage : String -> String -> String -> String
+newHitMessage attacker defender damage =
+    attacker ++ " hit the " ++ defender ++ " for " ++ damage ++ " damage!"
 
 
 

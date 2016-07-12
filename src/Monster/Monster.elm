@@ -5,6 +5,7 @@ module Monster.Monster
         , new
         , view
         , damageRange
+        , name
         )
 
 import Utils.Vector as Vector exposing (..)
@@ -32,6 +33,15 @@ type alias Model =
     , css : String
     , name : String
     }
+
+
+name : Monster -> String
+name { base } =
+    let
+        (A model) =
+            base
+    in
+        model.name
 
 
 damageRange : Monster -> ( Int, Int )
