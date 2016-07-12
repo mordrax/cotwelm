@@ -16946,7 +16946,7 @@ var _mordrax$cotwelm$Combat$attack = F3(
 		var _p2 = A2(_mordrax$cotwelm$Stats$takeHit, damage, defender);
 		var stats$ = _p2._0;
 		var msg = _p2._1;
-		return {ctor: '_Tuple2', _0: stats$, _1: seed$};
+		return {ctor: '_Tuple3', _0: stats$, _1: seed$, _2: damage};
 	});
 
 var _mordrax$cotwelm$Utils_Mass$info = function (_p0) {
@@ -20195,6 +20195,12 @@ var _mordrax$cotwelm$Monster_Monster$damageRange = function (_p3) {
 	var model = _p5._0;
 	return {ctor: '_Tuple2', _0: model.level, _1: model.level * 4};
 };
+var _mordrax$cotwelm$Monster_Monster$name = function (_p6) {
+	var _p7 = _p6;
+	var _p8 = _p7.base;
+	var model = _p8._0;
+	return model.name;
+};
 var _mordrax$cotwelm$Monster_Monster$Monster = F4(
 	function (a, b, c, d) {
 		return {base: a, position: b, stats: c, id: d};
@@ -20222,8 +20228,8 @@ var _mordrax$cotwelm$Monster_Monster$new = F3(
 			function ($class, css, name, hp) {
 				return A5(newSpellcaster, $class, css, name, hp, 0);
 			});
-		var _p6 = monsterType;
-		switch (_p6.ctor) {
+		var _p9 = monsterType;
+		switch (_p9.ctor) {
 			case 'GiantRat':
 				return A4(newMonster, 1, 'giantRat', 'Giant Rat', 2);
 			case 'Goblin':
@@ -21568,7 +21574,9 @@ var _mordrax$cotwelm$Game_Data$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {name: a, hero: b, map: c, currentScreen: d, dnd: e, equipment: f, shop: g, idGen: h, monsters: i, seed: j, windowSize: k};
+											return function (l) {
+												return {name: a, hero: b, map: c, currentScreen: d, dnd: e, equipment: f, shop: g, idGen: h, monsters: i, seed: j, windowSize: k, messages: l};
+											};
 										};
 									};
 								};
@@ -21729,40 +21737,77 @@ var _mordrax$cotwelm$Game_Collision$pathMonster = F2(
 				position: A2(_mordrax$cotwelm$Utils_Vector$add, monster.position, moveVector)
 			});
 	});
+var _mordrax$cotwelm$Game_Collision$newHitMessage = F3(
+	function (attacker, defender, damage) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			attacker,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				' hit the ',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					defender,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' for ',
+						A2(_elm_lang$core$Basics_ops['++'], damage, ' damage!')))));
+	});
 var _mordrax$cotwelm$Game_Collision$defend = F2(
 	function (monster, _p1) {
 		var _p2 = _p1;
+		var _p5 = _p2;
 		var _p4 = _p2.hero;
 		var _p3 = A3(_mordrax$cotwelm$Combat$attack, monster.stats, _p4.stats, _p2.seed);
 		var heroStats$ = _p3._0;
 		var seed$ = _p3._1;
+		var damage = _p3._2;
 		var hero$ = _elm_lang$core$Native_Utils.update(
 			_p4,
 			{stats: heroStats$});
+		var newMsg = A3(
+			_mordrax$cotwelm$Game_Collision$newHitMessage,
+			_mordrax$cotwelm$Monster_Monster$name(monster),
+			'you',
+			_elm_lang$core$Basics$toString(damage));
 		return _elm_lang$core$Native_Utils.update(
-			_p2,
-			{hero: hero$, seed: seed$});
+			_p5,
+			{
+				hero: hero$,
+				seed: seed$,
+				messages: A2(_elm_lang$core$List_ops['::'], newMsg, _p5.messages)
+			});
 	});
 var _mordrax$cotwelm$Game_Collision$attack = F2(
-	function (monster, _p5) {
-		var _p6 = _p5;
+	function (monster, _p6) {
+		var _p7 = _p6;
+		var _p9 = _p7;
 		var monstersWithoutMonster = A2(
 			_elm_lang$core$List$filter,
 			function (x) {
 				return _elm_lang$core$Basics$not(
 					A2(_mordrax$cotwelm$Utils_IdGenerator$equals, monster.id, x.id));
 			},
-			_p6.monsters);
-		var _p7 = A3(_mordrax$cotwelm$Combat$attack, _p6.hero.stats, monster.stats, _p6.seed);
-		var monsterStats = _p7._0;
-		var seed$ = _p7._1;
+			_p7.monsters);
+		var _p8 = A3(_mordrax$cotwelm$Combat$attack, _p7.hero.stats, monster.stats, _p7.seed);
+		var stats$ = _p8._0;
+		var seed$ = _p8._1;
+		var damage = _p8._2;
 		var monster$ = _elm_lang$core$Native_Utils.update(
 			monster,
-			{stats: monsterStats});
+			{stats: stats$});
 		var monsters$ = _mordrax$cotwelm$Stats$isDead(monster$.stats) ? monstersWithoutMonster : A2(_elm_lang$core$List_ops['::'], monster$, monstersWithoutMonster);
+		var newMsg = A3(
+			_mordrax$cotwelm$Game_Collision$newHitMessage,
+			'You',
+			_mordrax$cotwelm$Monster_Monster$name(monster),
+			_elm_lang$core$Basics$toString(damage));
 		return _elm_lang$core$Native_Utils.update(
-			_p6,
-			{monsters: monsters$});
+			_p9,
+			{
+				monsters: monsters$,
+				messages: A2(_elm_lang$core$List_ops['::'], newMsg, _p9.messages)
+			});
 	});
 var _mordrax$cotwelm$Game_Collision$buildingAtPosition = F2(
 	function (pos, buildings) {
@@ -21770,37 +21815,37 @@ var _mordrax$cotwelm$Game_Collision$buildingAtPosition = F2(
 			_elm_lang$core$List$filter,
 			_mordrax$cotwelm$GameData_Building$isBuildingAtPosition(pos),
 			buildings);
-		var _p8 = buildingsAtTile;
-		if (_p8.ctor === '::') {
-			return _elm_lang$core$Maybe$Just(_p8._0);
+		var _p10 = buildingsAtTile;
+		if (_p10.ctor === '::') {
+			return _elm_lang$core$Maybe$Just(_p10._0);
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$queryPosition = F2(
-	function (pos, _p9) {
-		var _p10 = _p9;
-		var _p12 = _p10.map;
-		var isHero = A2(_mordrax$cotwelm$Utils_Vector$equal, _p10.hero.position, pos);
+	function (pos, _p11) {
+		var _p12 = _p11;
+		var _p14 = _p12.map;
+		var isHero = A2(_mordrax$cotwelm$Utils_Vector$equal, _p12.hero.position, pos);
 		var maybeMonster = _elm_lang$core$List$head(
 			A2(
 				_elm_lang$core$List$filter,
 				function (x) {
 					return A2(_mordrax$cotwelm$Utils_Vector$equal, pos, x.position);
 				},
-				_p10.monsters));
+				_p12.monsters));
 		var maybeBuilding = A2(
 			_mordrax$cotwelm$Game_Collision$buildingAtPosition,
 			pos,
-			_mordrax$cotwelm$Game_Maps$getBuildings(_p12));
+			_mordrax$cotwelm$Game_Maps$getBuildings(_p14));
 		var maybeTile = A2(
 			_elm_lang$core$Dict$get,
 			_elm_lang$core$Basics$toString(pos),
-			_mordrax$cotwelm$Game_Maps$getMap(_p12));
+			_mordrax$cotwelm$Game_Maps$getMap(_p14));
 		var tileObstruction = function () {
-			var _p11 = maybeTile;
-			if (_p11.ctor === 'Just') {
-				return _mordrax$cotwelm$Tile$isSolid(_p11._0);
+			var _p13 = maybeTile;
+			if (_p13.ctor === 'Just') {
+				return _mordrax$cotwelm$Tile$isSolid(_p13._0);
 			} else {
 				return false;
 			}
@@ -21808,61 +21853,61 @@ var _mordrax$cotwelm$Game_Collision$queryPosition = F2(
 		return {ctor: '_Tuple4', _0: tileObstruction, _1: maybeBuilding, _2: maybeMonster, _3: isHero};
 	});
 var _mordrax$cotwelm$Game_Collision$moveMonsters = F3(
-	function (monsters, movedMonsters, _p13) {
+	function (monsters, movedMonsters, _p15) {
 		moveMonsters:
 		while (true) {
-			var _p14 = _p13;
-			var _p19 = _p14;
-			var _p15 = monsters;
-			if (_p15.ctor === '[]') {
+			var _p16 = _p15;
+			var _p21 = _p16;
+			var _p17 = monsters;
+			if (_p17.ctor === '[]') {
 				return _elm_lang$core$Native_Utils.update(
-					_p19,
+					_p21,
 					{monsters: movedMonsters});
 			} else {
-				var _p18 = _p15._1;
-				var _p17 = _p15._0;
-				var movedMonster = A2(_mordrax$cotwelm$Game_Collision$pathMonster, _p17, _p14.hero);
-				var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedMonster.position, _p19);
+				var _p20 = _p17._1;
+				var _p19 = _p17._0;
+				var movedMonster = A2(_mordrax$cotwelm$Game_Collision$pathMonster, _p19, _p16.hero);
+				var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedMonster.position, _p21);
 				var isObstructedByMovedMonsters = A2(_mordrax$cotwelm$Game_Collision$isMonsterObstruction, movedMonster, movedMonsters);
-				var _p16 = obstructions;
+				var _p18 = obstructions;
 				_v7_4:
 				do {
-					if (_p16.ctor === '_Tuple4') {
-						if (_p16._3 === true) {
-							var model$ = A2(_mordrax$cotwelm$Game_Collision$defend, _p17, _p19);
-							var _v8 = _p18,
-								_v9 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
+					if (_p18.ctor === '_Tuple4') {
+						if (_p18._3 === true) {
+							var model$ = A2(_mordrax$cotwelm$Game_Collision$defend, _p19, _p21);
+							var _v8 = _p20,
+								_v9 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
 								_v10 = model$;
 							monsters = _v8;
 							movedMonsters = _v9;
-							_p13 = _v10;
+							_p15 = _v10;
 							continue moveMonsters;
 						} else {
-							if (_p16._0 === true) {
-								var _v11 = _p18,
-									_v12 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
-									_v13 = _p19;
+							if (_p18._0 === true) {
+								var _v11 = _p20,
+									_v12 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
+									_v13 = _p21;
 								monsters = _v11;
 								movedMonsters = _v12;
-								_p13 = _v13;
+								_p15 = _v13;
 								continue moveMonsters;
 							} else {
-								if (_p16._1.ctor === 'Just') {
-									var _v14 = _p18,
-										_v15 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
-										_v16 = _p19;
+								if (_p18._1.ctor === 'Just') {
+									var _v14 = _p20,
+										_v15 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
+										_v16 = _p21;
 									monsters = _v14;
 									movedMonsters = _v15;
-									_p13 = _v16;
+									_p15 = _v16;
 									continue moveMonsters;
 								} else {
-									if (_p16._2.ctor === 'Just') {
-										var _v17 = _p18,
-											_v18 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
-											_v19 = _p19;
+									if (_p18._2.ctor === 'Just') {
+										var _v17 = _p20,
+											_v18 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
+											_v19 = _p21;
 										monsters = _v17;
 										movedMonsters = _v18;
-										_p13 = _v19;
+										_p15 = _v19;
 										continue moveMonsters;
 									} else {
 										break _v7_4;
@@ -21875,102 +21920,102 @@ var _mordrax$cotwelm$Game_Collision$moveMonsters = F3(
 					}
 				} while(false);
 				if (isObstructedByMovedMonsters) {
-					var _v20 = _p18,
-						_v21 = A2(_elm_lang$core$List_ops['::'], _p17, movedMonsters),
-						_v22 = _p19;
+					var _v20 = _p20,
+						_v21 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
+						_v22 = _p21;
 					monsters = _v20;
 					movedMonsters = _v21;
-					_p13 = _v22;
+					_p15 = _v22;
 					continue moveMonsters;
 				} else {
-					var _v23 = _p18,
+					var _v23 = _p20,
 						_v24 = A2(_elm_lang$core$List_ops['::'], movedMonster, movedMonsters),
-						_v25 = _p19;
+						_v25 = _p21;
 					monsters = _v23;
 					movedMonsters = _v24;
-					_p13 = _v25;
+					_p15 = _v25;
 					continue moveMonsters;
 				}
 			}
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$enterBuilding = F2(
-	function (building, _p20) {
-		var _p21 = _p20;
-		var _p24 = _p21;
-		var _p22 = _mordrax$cotwelm$GameData_Building$buildingType(building);
-		switch (_p22.ctor) {
+	function (building, _p22) {
+		var _p23 = _p22;
+		var _p26 = _p23;
+		var _p24 = _mordrax$cotwelm$GameData_Building$buildingType(building);
+		switch (_p24.ctor) {
 			case 'LinkType':
-				var _p23 = _p22._0;
+				var _p25 = _p24._0;
 				return _elm_lang$core$Native_Utils.update(
-					_p24,
+					_p26,
 					{
-						map: A2(_mordrax$cotwelm$Game_Maps$updateArea, _p23.area, _p21.map),
+						map: A2(_mordrax$cotwelm$Game_Maps$updateArea, _p25.area, _p23.map),
 						hero: _elm_lang$core$Native_Utils.update(
-							_p21.hero,
-							{position: _p23.pos})
+							_p23.hero,
+							{position: _p25.pos})
 					});
 			case 'ShopType':
 				return _elm_lang$core$Native_Utils.update(
-					_p24,
+					_p26,
 					{
 						currentScreen: _mordrax$cotwelm$Game_Data$BuildingScreen(building),
-						shop: A2(_mordrax$cotwelm$Shop_Shop$setCurrentShopType, _p22._0, _p24.shop)
+						shop: A2(_mordrax$cotwelm$Shop_Shop$setCurrentShopType, _p24._0, _p26.shop)
 					});
 			default:
 				return _elm_lang$core$Native_Utils.update(
-					_p24,
+					_p26,
 					{
 						currentScreen: _mordrax$cotwelm$Game_Data$BuildingScreen(building)
 					});
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$tryMoveHero = F2(
-	function (dir, _p25) {
-		var _p26 = _p25;
-		var _p29 = _p26;
-		var _p28 = _p26.hero;
+	function (dir, _p27) {
+		var _p28 = _p27;
+		var _p31 = _p28;
+		var _p30 = _p28.hero;
 		var movedHero = _elm_lang$core$Native_Utils.update(
-			_p28,
+			_p30,
 			{
 				position: A2(
 					_mordrax$cotwelm$Utils_Vector$add,
-					_p28.position,
+					_p30.position,
 					_mordrax$cotwelm$Game_Keyboard$dirToVector(dir))
 			});
-		var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedHero.position, _p29);
-		var _p27 = obstructions;
+		var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedHero.position, _p31);
+		var _p29 = obstructions;
 		_v29_1:
 		do {
 			_v29_0:
 			do {
-				if (_p27._0 === true) {
-					if (_p27._2.ctor === 'Just') {
+				if (_p29._0 === true) {
+					if (_p29._2.ctor === 'Just') {
 						break _v29_0;
 					} else {
-						if (_p27._1.ctor === 'Just') {
+						if (_p29._1.ctor === 'Just') {
 							break _v29_1;
 						} else {
-							return _p29;
+							return _p31;
 						}
 					}
 				} else {
-					if (_p27._2.ctor === 'Just') {
+					if (_p29._2.ctor === 'Just') {
 						break _v29_0;
 					} else {
-						if (_p27._1.ctor === 'Just') {
+						if (_p29._1.ctor === 'Just') {
 							break _v29_1;
 						} else {
 							return _elm_lang$core$Native_Utils.update(
-								_p29,
+								_p31,
 								{hero: movedHero});
 						}
 					}
 				}
 			} while(false);
-			return A2(_mordrax$cotwelm$Game_Collision$attack, _p27._2._0, _p29);
+			return A2(_mordrax$cotwelm$Game_Collision$attack, _p29._2._0, _p31);
 		} while(false);
-		return A2(_mordrax$cotwelm$Game_Collision$enterBuilding, _p27._1._0, _p29);
+		return A2(_mordrax$cotwelm$Game_Collision$enterBuilding, _p29._1._0, _p31);
 	});
 
 var _mordrax$cotwelm$Game_Inventory$viewPurse = function (_p0) {
@@ -22691,6 +22736,18 @@ var _mordrax$cotwelm$Monster_Monsters$init = function (gen) {
 		monsterFactory);
 };
 
+var _mordrax$cotwelm$Game_Game$simpleBtn = function (txt) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('ui button')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text(txt)
+			]));
+};
 var _mordrax$cotwelm$Game_Game$viewHero = function (hero) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -22729,6 +22786,84 @@ var _mordrax$cotwelm$Game_Game$viewHUD = function (model) {
 				_elm_lang$html$Html$text('messages')
 			]));
 };
+var _mordrax$cotwelm$Game_Game$viewQuickMenu = A2(
+	_elm_lang$html$Html$div,
+	_elm_lang$core$Native_List.fromArray(
+		[]),
+	A2(
+		_elm_lang$core$List$map,
+		_mordrax$cotwelm$Game_Game$simpleBtn,
+		_elm_lang$core$Native_List.fromArray(
+			['Get', 'Free Hand', 'Search', 'Disarm', 'Rest', 'Save'])));
+var _mordrax$cotwelm$Game_Game$viewMenu = A2(
+	_elm_lang$html$Html$div,
+	_elm_lang$core$Native_List.fromArray(
+		[
+			_elm_lang$html$Html_Attributes$class('ui buttons')
+		]),
+	A2(
+		_elm_lang$core$List$map,
+		_mordrax$cotwelm$Game_Game$simpleBtn,
+		_elm_lang$core$Native_List.fromArray(
+			['File', 'Character!', 'Inventory!', 'Map!', 'Spells', 'Activate', 'Verbs', 'Options', 'Window', 'Help'])));
+var _mordrax$cotwelm$Game_Game$viewStats = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text('TODO: Stats here')
+			]));
+};
+var _mordrax$cotwelm$Game_Game$viewMessages = function (model) {
+	var msg = function (txt) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(txt)
+				]));
+	};
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		A2(_elm_lang$core$List$map, msg, model.messages));
+};
+var _mordrax$cotwelm$Game_Game$viewStatus = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('ui grid')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('ui twelve wide column')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_mordrax$cotwelm$Game_Game$viewMessages(model)
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('ui four wide column')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_mordrax$cotwelm$Game_Game$viewStats(model)
+					]))
+			]));
+};
 var _mordrax$cotwelm$Game_Game$viewMonsters = function (_p0) {
 	var _p1 = _p0;
 	var monsterHtml = function (monster) {
@@ -22742,20 +22877,79 @@ var _mordrax$cotwelm$Game_Game$viewMonsters = function (_p0) {
 };
 var _mordrax$cotwelm$Game_Game$viewMap = function (_p2) {
 	var _p3 = _p2;
-	var _p8 = _p3.windowSize;
-	var _p7 = _p3;
+	var _p7 = _p3.windowSize;
+	var _p6 = _p3;
 	var px = function (x) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
 			_elm_lang$core$Basics$toString(x),
 			'px');
 	};
-	var _p4 = {ctor: '_Tuple2', _0: ((_p8.width / 32) | 0) * 16, _1: ((_p8.height / 32) | 0) * 16};
+	var _p4 = {ctor: '_Tuple2', _0: ((_p7.width / 32) | 0) * 16, _1: ((_p7.height / 32) | 0) * 16};
 	var xOff = _p4._0;
 	var yOff = _p4._1;
-	var _p5 = A2(_mordrax$cotwelm$Utils_Vector$scale, 32, _p7.hero.position);
+	var _p5 = A2(_mordrax$cotwelm$Utils_Vector$scale, 32, _p6.hero.position);
 	var x = _p5.x;
 	var y = _p5.y;
+	var viewport = function (html) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							{ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+							{ctor: '_Tuple2', _0: 'overflow', _1: 'hidden'},
+							{
+							ctor: '_Tuple2',
+							_0: 'width',
+							_1: px(_p7.width)
+						},
+							{
+							ctor: '_Tuple2',
+							_0: 'height',
+							_1: px(((_p7.height * 4) / 5) | 0)
+						}
+						]))
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$style(
+							_elm_lang$core$Native_List.fromArray(
+								[
+									{ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+									{
+									ctor: '_Tuple2',
+									_0: 'top',
+									_1: A2(
+										_elm_lang$core$Basics_ops['++'],
+										'-',
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											_elm_lang$core$Basics$toString(y - yOff),
+											'px'))
+								},
+									{
+									ctor: '_Tuple2',
+									_0: 'left',
+									_1: A2(
+										_elm_lang$core$Basics_ops['++'],
+										'-',
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											_elm_lang$core$Basics$toString(x - xOff),
+											'px'))
+								}
+								]))
+						]),
+					html)
+				]));
+	};
 	var title = A2(
 		_elm_lang$html$Html$h1,
 		_elm_lang$core$Native_List.fromArray(
@@ -22763,86 +22957,40 @@ var _mordrax$cotwelm$Game_Game$viewMap = function (_p2) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$html$Html$text(
-				A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', _p7.name))
+				A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', _p6.name))
 			]));
-	var _p6 = A2(_elm_lang$core$Debug$log, 'size: ', _p8);
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$style(
-				_elm_lang$core$Native_List.fromArray(
-					[
-						{ctor: '_Tuple2', _0: 'position', _1: 'relative'},
-						{ctor: '_Tuple2', _0: 'overflow', _1: 'hidden'},
-						{
-						ctor: '_Tuple2',
-						_0: 'width',
-						_1: px(_p8.width)
-					},
-						{
-						ctor: '_Tuple2',
-						_0: 'height',
-						_1: px(_p8.height)
-					}
-					]))
-			]),
+			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				A2(
-				_elm_lang$html$Html$div,
+				_mordrax$cotwelm$Game_Game$viewMenu,
+				_mordrax$cotwelm$Game_Game$viewQuickMenu,
+				viewport(
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Attributes$style(
-						_elm_lang$core$Native_List.fromArray(
-							[
-								{ctor: '_Tuple2', _0: 'position', _1: 'relative'},
-								{
-								ctor: '_Tuple2',
-								_0: 'top',
-								_1: A2(
-									_elm_lang$core$Basics_ops['++'],
-									'-',
-									A2(
-										_elm_lang$core$Basics_ops['++'],
-										_elm_lang$core$Basics$toString(y - yOff),
-										'px'))
-							},
-								{
-								ctor: '_Tuple2',
-								_0: 'left',
-								_1: A2(
-									_elm_lang$core$Basics_ops['++'],
-									'-',
-									A2(
-										_elm_lang$core$Basics_ops['++'],
-										_elm_lang$core$Basics$toString(x - xOff),
-										'px'))
-							}
-							]))
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_mordrax$cotwelm$Game_Maps$view(_p7.map),
-						_mordrax$cotwelm$Game_Game$viewHero(_p7.hero),
-						_mordrax$cotwelm$Game_Game$viewMonsters(_p7)
-					]))
+						_mordrax$cotwelm$Game_Maps$view(_p6.map),
+						_mordrax$cotwelm$Game_Game$viewHero(_p6.hero),
+						_mordrax$cotwelm$Game_Game$viewMonsters(_p6)
+					])),
+				_mordrax$cotwelm$Game_Game$viewStatus(_p6)
 			]));
 };
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
-		var _p9 = msg;
-		switch (_p9.ctor) {
+		var _p8 = msg;
+		switch (_p8.ctor) {
 			case 'InvMsg':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_mordrax$cotwelm$Game_Inventory$update, _p9._0, model),
+					_0: A2(_mordrax$cotwelm$Game_Inventory$update, _p8._0, model),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'ShopMsg':
-				var _p10 = A3(_mordrax$cotwelm$Shop_Shop$update, _p9._0, model.idGen, model.shop);
-				var shop$ = _p10._0;
-				var idGen$ = _p10._1;
+				var _p9 = A3(_mordrax$cotwelm$Shop_Shop$update, _p8._0, model.idGen, model.shop);
+				var shop$ = _p9._0;
+				var idGen$ = _p9._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -22851,9 +22999,9 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Keyboard':
-				switch (_p9._0.ctor) {
+				switch (_p8._0.ctor) {
 					case 'KeyDir':
-						var model$ = A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p9._0._0, model);
+						var model$ = A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p8._0._0, model);
 						var movedMovedMonsters = A3(
 							_mordrax$cotwelm$Game_Collision$moveMonsters,
 							model$.monsters,
@@ -22885,7 +23033,7 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{windowSize: _p9._0}),
+						{windowSize: _p8._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
@@ -22897,9 +23045,9 @@ var _mordrax$cotwelm$Game_Game$ShopMsg = function (a) {
 	return {ctor: 'ShopMsg', _0: a};
 };
 var _mordrax$cotwelm$Game_Game$initGame = function (seed) {
-	var _p11 = _mordrax$cotwelm$Shop_Shop$new;
-	var newShop = _p11._0;
-	var shopCmd = _p11._1;
+	var _p10 = _mordrax$cotwelm$Shop_Shop$new;
+	var newShop = _p10._0;
+	var shopCmd = _p10._1;
 	var cmd = A2(
 		_elm_lang$core$Platform_Cmd$map,
 		function (x) {
@@ -22907,12 +23055,12 @@ var _mordrax$cotwelm$Game_Game$initGame = function (seed) {
 		},
 		shopCmd);
 	var idGenerator = _mordrax$cotwelm$Utils_IdGenerator$new;
-	var _p12 = _mordrax$cotwelm$Equipment$init(idGenerator);
-	var idGenerator$ = _p12._0;
-	var equipment = _p12._1;
-	var _p13 = _mordrax$cotwelm$Monster_Monsters$init(idGenerator$);
-	var monsters = _p13._0;
-	var idGenerator$$ = _p13._1;
+	var _p11 = _mordrax$cotwelm$Equipment$init(idGenerator);
+	var idGenerator$ = _p11._0;
+	var equipment = _p11._1;
+	var _p12 = _mordrax$cotwelm$Monster_Monsters$init(idGenerator$);
+	var monsters = _p12._0;
+	var idGenerator$$ = _p12._1;
 	return {
 		ctor: '_Tuple2',
 		_0: {
@@ -22926,7 +23074,9 @@ var _mordrax$cotwelm$Game_Game$initGame = function (seed) {
 			idGen: idGenerator$$,
 			monsters: monsters,
 			seed: seed,
-			windowSize: {width: 640, height: 640}
+			windowSize: {width: 640, height: 640},
+			messages: _elm_lang$core$Native_List.fromArray(
+				['Welcome to castle of the winds!'])
 		},
 		_1: cmd
 	};
@@ -22935,68 +23085,20 @@ var _mordrax$cotwelm$Game_Game$InvMsg = function (a) {
 	return {ctor: 'InvMsg', _0: a};
 };
 var _mordrax$cotwelm$Game_Game$view = function (model) {
-	var _p14 = model.currentScreen;
-	switch (_p14.ctor) {
+	var _p13 = model.currentScreen;
+	switch (_p13.ctor) {
 		case 'MapScreen':
-			return A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('ui grid container')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('ui row')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('menu')
-							])),
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('ui row')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('buttons menu')
-							])),
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('ui row')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_mordrax$cotwelm$Game_Game$viewMap(model)
-							])),
-						A2(
-						_elm_lang$html$Html$div,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$class('ui row')
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_mordrax$cotwelm$Game_Game$viewHUD(model)
-							]))
-					]));
+			return _mordrax$cotwelm$Game_Game$viewMap(model);
 		case 'BuildingScreen':
-			var _p16 = _p14._0;
-			var _p15 = _mordrax$cotwelm$GameData_Building$buildingType(_p16);
-			if (_p15.ctor === 'ShopType') {
+			var _p15 = _p13._0;
+			var _p14 = _mordrax$cotwelm$GameData_Building$buildingType(_p15);
+			if (_p14.ctor === 'ShopType') {
 				return A2(
 					_elm_lang$html$Html_App$map,
 					_mordrax$cotwelm$Game_Game$InvMsg,
 					_mordrax$cotwelm$Game_Inventory$view(model));
 			} else {
-				return _mordrax$cotwelm$Game_Game$viewBuilding(_p16);
+				return _mordrax$cotwelm$Game_Game$viewBuilding(_p15);
 			}
 		default:
 			return A2(
