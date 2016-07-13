@@ -6,6 +6,8 @@ module Stats
         , takeHit
         , combatStats
         , isDead
+        , printHP
+        , printSP
         )
 
 
@@ -57,3 +59,13 @@ takeHit damage (A model) =
 combatStats : Stats -> ( ( Int, Int ), Int, Int )
 combatStats (A model) =
     ( model.damageRange, model.ac, model.hitChance )
+
+
+printHP : Stats -> String
+printHP (A model) =
+    (toString model.currentHP) ++ " / " ++ (Basics.toString model.maxHP)
+
+
+printSP : Stats -> String
+printSP (A model) =
+    (toString model.currentSP) ++ " / " ++ (Basics.toString model.maxSP)
