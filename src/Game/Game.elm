@@ -21,6 +21,7 @@ import GameData.Building as Building exposing (..)
 import Hero as Hero exposing (..)
 import Monster.Monster as Monster exposing (..)
 import Monster.Monsters as Monsters exposing (..)
+import Stats exposing (..)
 
 
 -- Common
@@ -194,12 +195,14 @@ viewMap ({ windowSize } as model) =
 
 viewStatus : Model -> Html Msg
 viewStatus model =
-    div [ class "ui grid" ]
-        [ div [ class "ui twelve wide column" ]
-            [ viewMessages model
-            ]
-        , div [ class "ui four wide column" ]
-            [ viewStats model
+    div []
+        [ div [ class "ui padded grid" ]
+            [ div [ style [ ( "overflow", "auto" ), ( "height", "100px" ) ], class "ui twelve wide column" ]
+                [ viewMessages model
+                ]
+            , div [ class "ui four wide column" ]
+                [ viewStats model
+                ]
             ]
         ]
 
@@ -214,8 +217,12 @@ viewMessages model =
 
 
 viewStats : Model -> Html Msg
-viewStats model =
-    div [] [ text "TODO: Stats here" ]
+viewStats ({ hero } as model) =
+    div []
+        [ div [] [ text "Stats:" ]
+        , div [] [ text <| "HP: " ++ (Stats.printHP hero.stats) ]
+        , div [] [ text <| "SP: " ++ (Stats.printSP hero.stats) ]
+        ]
 
 
 viewMenu : Html Msg
