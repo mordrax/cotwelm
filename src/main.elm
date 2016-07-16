@@ -27,7 +27,6 @@ import Task exposing (perform)
 import Random exposing (initialSeed)
 import Time exposing (inSeconds, now)
 import TimeTravel.Navigation as TimeTravel
-import Window exposing (..)
 
 
 type Msg

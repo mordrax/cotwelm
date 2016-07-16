@@ -9,6 +9,7 @@
     ],
     "exposed-modules": [],
     "dependencies": {
+        "eeue56/elm-all-dict": "1.1.2 <= v < 2.0.0",
         "elm-community/maybe-extra": "1.1.0 <= v < 2.0.0",
         "elm-community/random-extra": "1.0.0 <= v < 2.0.0",
         "elm-lang/core": "4.0.1 <= v < 5.0.0",
@@ -20,7 +21,7 @@
         "jinjor/elm-time-travel": "1.0.11 <= v < 2.0.0"
     },
     "elm-version": "0.17.0 <= v < 0.18.0",
-    "sublime-build": {
+    "sublimebuild": {
         "output": {
             "path": "dist/js/cotw.js",
             "components": {

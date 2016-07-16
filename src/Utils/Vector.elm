@@ -63,6 +63,15 @@ scale magnitude { x, y } =
     { x = x * magnitude, y = y * magnitude }
 
 
+distance : Vector -> Vector -> Int
+distance a b =
+    let
+        { x, y } =
+            sub a b
+    in
+        abs x + abs y
+
+
 {-| a -> (topLeft, bottomRight) -> isIntersect
   Checks if vector a's x/y values are within the bounding box created by the tuple (topLeft, bottomRight)
 -}
