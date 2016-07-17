@@ -282,49 +282,123 @@ var _elm_lang$core$Native_Utils = function() {
 
 // COMPARISONS
 
-function eq(rootX, rootY)
+function eq(x, y)
 {
-	var stack = [{ x: rootX, y: rootY }];
-	while (stack.length > 0)
+	var stack = [];
+	var isEqual = eqHelp(x, y, 0, stack);
+	var pair;
+	while (isEqual && (pair = stack.pop()))
 	{
-		var front = stack.pop();
-		var x = front.x;
-		var y = front.y;
-		if (x === y)
+		isEqual = eqHelp(pair.x, pair.y, 0, stack);
+	}
+	return isEqual;
+}
+
+
+function eqHelp(x, y, depth, stack)
+{
+	if (depth > 100)
+	{
+		stack.push({ x: x, y: y });
+		return true;
+	}
+
+	if (x === y)
+	{
+		return true;
+	}
+
+	if (typeof x !== 'object')
+	{
+		if (typeof x === 'function')
 		{
-			continue;
+			throw new Error(
+				'Trying to use `(==)` on functions. There is no way to know if functions are "the same" in the Elm sense.'
+				+ ' Read more about this at http://package.elm-lang.org/packages/elm-lang/core/latest/Basics#=='
+				+ ' which describes why it is this way and what the better version will look like.'
+			);
 		}
-		if (typeof x === 'object')
+		return false;
+	}
+
+	if (x === null || y === null)
+	{
+		return false
+	}
+
+	if (x instanceof Date)
+	{
+		return x.getTime() === y.getTime();
+	}
+
+	if (!('ctor' in x))
+	{
+		for (var key in x)
 		{
-			var c = 0;
-			for (var key in x)
-			{
-				++c;
-				if (!(key in y))
-				{
-					return false;
-				}
-				if (key === 'ctor')
-				{
-					continue;
-				}
-				stack.push({ x: x[key], y: y[key] });
-			}
-			if ('ctor' in x)
-			{
-				stack.push({ x: x.ctor, y: y.ctor});
-			}
-			if (c !== Object.keys(y).length)
+			if (!eqHelp(x[key], y[key], depth + 1, stack))
 			{
 				return false;
 			}
 		}
-		else if (typeof x === 'function')
+		return true;
+	}
+
+	// convert Dicts and Sets to lists
+	if (x.ctor === 'RBNode_elm_builtin' || x.ctor === 'RBEmpty_elm_builtin')
+	{
+		x = _elm_lang$core$Dict$toList(x);
+		y = _elm_lang$core$Dict$toList(y);
+	}
+	if (x.ctor === 'Set_elm_builtin')
+	{
+		x = _elm_lang$core$Set$toList(x);
+		y = _elm_lang$core$Set$toList(y);
+	}
+
+	// check if lists are equal without recursion
+	if (x.ctor === '::')
+	{
+		var a = x;
+		var b = y;
+		while (a.ctor === '::' && b.ctor === '::')
 		{
-			throw new Error('Equality error: general function equality is ' +
-							'undecidable, and therefore, unsupported');
+			if (!eqHelp(a._0, b._0, depth + 1, stack))
+			{
+				return false;
+			}
+			a = a._1;
+			b = b._1;
 		}
-		else
+		return a.ctor === b.ctor;
+	}
+
+	// check if Arrays are equal
+	if (x.ctor === '_Array')
+	{
+		var xs = _elm_lang$core$Native_Array.toJSArray(x);
+		var ys = _elm_lang$core$Native_Array.toJSArray(y);
+		if (xs.length !== ys.length)
+		{
+			return false;
+		}
+		for (var i = 0; i < xs.length; i++)
+		{
+			if (!eqHelp(xs[i], ys[i], depth + 1, stack))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	if (!eqHelp(x.ctor, y.ctor, depth + 1, stack))
+	{
+		return false;
+	}
+
+	for (var key in x)
+	{
+		if (!eqHelp(x[key], y[key], depth + 1, stack))
 		{
 			return false;
 		}
@@ -339,34 +413,23 @@ var LT = -1, EQ = 0, GT = 1;
 
 function cmp(x, y)
 {
-	var ord;
 	if (typeof x !== 'object')
 	{
 		return x === y ? EQ : x < y ? LT : GT;
 	}
-	else if (x instanceof String)
+
+	if (x instanceof String)
 	{
 		var a = x.valueOf();
 		var b = y.valueOf();
-		return a === b
-			? EQ
-			: a < b
-				? LT
-				: GT;
+		return a === b ? EQ : a < b ? LT : GT;
 	}
-	else if (x.ctor === '::' || x.ctor === '[]')
+
+	if (x.ctor === '::' || x.ctor === '[]')
 	{
-		while (true)
+		while (x.ctor === '::' && y.ctor === '::')
 		{
-			if (x.ctor === '[]' && y.ctor === '[]')
-			{
-				return EQ;
-			}
-			if (x.ctor !== y.ctor)
-			{
-				return x.ctor === '[]' ? LT : GT;
-			}
-			ord = cmp(x._0, y._0);
+			var ord = cmp(x._0, y._0);
 			if (ord !== EQ)
 			{
 				return ord;
@@ -374,9 +437,12 @@ function cmp(x, y)
 			x = x._1;
 			y = y._1;
 		}
+		return x.ctor === y.ctor ? EQ : x.ctor === '[]' ? LT : GT;
 	}
-	else if (x.ctor.slice(0, 6) === '_Tuple')
+
+	if (x.ctor.slice(0, 6) === '_Tuple')
 	{
+		var ord;
 		var n = x.ctor.slice(6) - 0;
 		var err = 'cannot compare tuples with more than 6 elements.';
 		if (n === 0) return EQ;
@@ -389,12 +455,12 @@ function cmp(x, y)
 		if (n >= 7) throw new Error('Comparison error: ' + err); } } } } } }
 		return EQ;
 	}
-	else
-	{
-		throw new Error('Comparison error: comparison is only defined on ints, ' +
-						'floats, times, chars, strings, lists of comparable values, ' +
-						'and tuples of comparable values.');
-	}
+
+	throw new Error(
+		'Comparison error: comparison is only defined on ints, '
+		+ 'floats, times, chars, strings, lists of comparable values, '
+		+ 'and tuples of comparable values.'
+	);
 }
 
 
@@ -607,24 +673,14 @@ function toString(v)
 			return '[]';
 		}
 
-		if (v.ctor === 'RBNode_elm_builtin' || v.ctor === 'RBEmpty_elm_builtin' || v.ctor === 'Set_elm_builtin')
+		if (v.ctor === 'Set_elm_builtin')
 		{
-			var name, list;
-			if (v.ctor === 'Set_elm_builtin')
-			{
-				name = 'Set';
-				list = A2(
-					_elm_lang$core$List$map,
-					function(x) {return x._0; },
-					_elm_lang$core$Dict$toList(v._0)
-				);
-			}
-			else
-			{
-				name = 'Dict';
-				list = _elm_lang$core$Dict$toList(v);
-			}
-			return name + '.fromList ' + toString(list);
+			return 'Set.fromList ' + toString(_elm_lang$core$Set$toList(v));
+		}
+
+		if (v.ctor === 'RBNode_elm_builtin' || v.ctor === 'RBEmpty_elm_builtin')
+		{
+			return 'Dict.fromList ' + toString(_elm_lang$core$Dict$toList(v));
 		}
 
 		var output = '';
@@ -641,6 +697,16 @@ function toString(v)
 
 	if (type === 'object')
 	{
+		if (v instanceof Date)
+		{
+			return '<' + v.toString() + '>';
+		}
+
+		if (v.elm_web_socket)
+		{
+			return '<websocket>';
+		}
+
 		var output = [];
 		for (var k in v)
 		{
@@ -4141,33 +4207,50 @@ var _elm_lang$core$Dict$merge = F6(
 	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
 		var stepState = F3(
 			function (rKey, rValue, _p2) {
-				var _p3 = _p2;
-				var _p9 = _p3._1;
-				var _p8 = _p3._0;
-				var _p4 = _p8;
-				if (_p4.ctor === '[]') {
-					return {
-						ctor: '_Tuple2',
-						_0: _p8,
-						_1: A3(rightStep, rKey, rValue, _p9)
-					};
-				} else {
-					var _p7 = _p4._1;
-					var _p6 = _p4._0._1;
-					var _p5 = _p4._0._0;
-					return (_elm_lang$core$Native_Utils.cmp(_p5, rKey) < 0) ? {
-						ctor: '_Tuple2',
-						_0: _p7,
-						_1: A3(leftStep, _p5, _p6, _p9)
-					} : ((_elm_lang$core$Native_Utils.cmp(_p5, rKey) > 0) ? {
-						ctor: '_Tuple2',
-						_0: _p8,
-						_1: A3(rightStep, rKey, rValue, _p9)
-					} : {
-						ctor: '_Tuple2',
-						_0: _p7,
-						_1: A4(bothStep, _p5, _p6, rValue, _p9)
-					});
+				stepState:
+				while (true) {
+					var _p3 = _p2;
+					var _p9 = _p3._1;
+					var _p8 = _p3._0;
+					var _p4 = _p8;
+					if (_p4.ctor === '[]') {
+						return {
+							ctor: '_Tuple2',
+							_0: _p8,
+							_1: A3(rightStep, rKey, rValue, _p9)
+						};
+					} else {
+						var _p7 = _p4._1;
+						var _p6 = _p4._0._1;
+						var _p5 = _p4._0._0;
+						if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) < 0) {
+							var _v10 = rKey,
+								_v11 = rValue,
+								_v12 = {
+								ctor: '_Tuple2',
+								_0: _p7,
+								_1: A3(leftStep, _p5, _p6, _p9)
+							};
+							rKey = _v10;
+							rValue = _v11;
+							_p2 = _v12;
+							continue stepState;
+						} else {
+							if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) > 0) {
+								return {
+									ctor: '_Tuple2',
+									_0: _p8,
+									_1: A3(rightStep, rKey, rValue, _p9)
+								};
+							} else {
+								return {
+									ctor: '_Tuple2',
+									_0: _p7,
+									_1: A4(bothStep, _p5, _p6, rValue, _p9)
+								};
+							}
+						}
+					}
 				}
 			});
 		var _p10 = A3(
@@ -4210,19 +4293,19 @@ var _elm_lang$core$Dict$reportRemBug = F4(
 	});
 var _elm_lang$core$Dict$isBBlack = function (dict) {
 	var _p13 = dict;
-	_v11_2:
+	_v14_2:
 	do {
 		if (_p13.ctor === 'RBNode_elm_builtin') {
 			if (_p13._0.ctor === 'BBlack') {
 				return true;
 			} else {
-				break _v11_2;
+				break _v14_2;
 			}
 		} else {
 			if (_p13._0.ctor === 'LBBlack') {
 				return true;
 			} else {
-				break _v11_2;
+				break _v14_2;
 			}
 		}
 	} while(false);
@@ -4236,10 +4319,10 @@ var _elm_lang$core$Dict$sizeHelp = F2(
 			if (_p14.ctor === 'RBEmpty_elm_builtin') {
 				return n;
 			} else {
-				var _v13 = A2(_elm_lang$core$Dict$sizeHelp, n + 1, _p14._4),
-					_v14 = _p14._3;
-				n = _v13;
-				dict = _v14;
+				var _v16 = A2(_elm_lang$core$Dict$sizeHelp, n + 1, _p14._4),
+					_v17 = _p14._3;
+				n = _v16;
+				dict = _v17;
 				continue sizeHelp;
 			}
 		}
@@ -4258,18 +4341,18 @@ var _elm_lang$core$Dict$get = F2(
 				var _p16 = A2(_elm_lang$core$Basics$compare, targetKey, _p15._1);
 				switch (_p16.ctor) {
 					case 'LT':
-						var _v17 = targetKey,
-							_v18 = _p15._3;
-						targetKey = _v17;
-						dict = _v18;
+						var _v20 = targetKey,
+							_v21 = _p15._3;
+						targetKey = _v20;
+						dict = _v21;
 						continue get;
 					case 'EQ':
 						return _elm_lang$core$Maybe$Just(_p15._2);
 					default:
-						var _v19 = targetKey,
-							_v20 = _p15._4;
-						targetKey = _v19;
-						dict = _v20;
+						var _v22 = targetKey,
+							_v23 = _p15._4;
+						targetKey = _v22;
+						dict = _v23;
 						continue get;
 				}
 			}
@@ -4292,12 +4375,12 @@ var _elm_lang$core$Dict$maxWithDefault = F3(
 			if (_p18.ctor === 'RBEmpty_elm_builtin') {
 				return {ctor: '_Tuple2', _0: k, _1: v};
 			} else {
-				var _v23 = _p18._1,
-					_v24 = _p18._2,
-					_v25 = _p18._4;
-				k = _v23;
-				v = _v24;
-				r = _v25;
+				var _v26 = _p18._1,
+					_v27 = _p18._2,
+					_v28 = _p18._4;
+				k = _v26;
+				v = _v27;
+				r = _v28;
 				continue maxWithDefault;
 			}
 		}
@@ -4423,19 +4506,19 @@ var _elm_lang$core$Dict$redden = function (t) {
 };
 var _elm_lang$core$Dict$balanceHelp = function (tree) {
 	var _p27 = tree;
-	_v33_6:
+	_v36_6:
 	do {
-		_v33_5:
+		_v36_5:
 		do {
-			_v33_4:
+			_v36_4:
 			do {
-				_v33_3:
+				_v36_3:
 				do {
-					_v33_2:
+					_v36_2:
 					do {
-						_v33_1:
+						_v36_1:
 						do {
-							_v33_0:
+							_v36_0:
 							do {
 								if (_p27.ctor === 'RBNode_elm_builtin') {
 									if (_p27._3.ctor === 'RBNode_elm_builtin') {
@@ -4445,44 +4528,44 @@ var _elm_lang$core$Dict$balanceHelp = function (tree) {
 													switch (_p27._4._0.ctor) {
 														case 'Red':
 															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v33_0;
+																break _v36_0;
 															} else {
 																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v33_1;
+																	break _v36_1;
 																} else {
 																	if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																		break _v33_2;
+																		break _v36_2;
 																	} else {
 																		if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																			break _v33_3;
+																			break _v36_3;
 																		} else {
-																			break _v33_6;
+																			break _v36_6;
 																		}
 																	}
 																}
 															}
 														case 'NBlack':
 															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v33_0;
+																break _v36_0;
 															} else {
 																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v33_1;
+																	break _v36_1;
 																} else {
 																	if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																		break _v33_4;
+																		break _v36_4;
 																	} else {
-																		break _v33_6;
+																		break _v36_6;
 																	}
 																}
 															}
 														default:
 															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v33_0;
+																break _v36_0;
 															} else {
 																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v33_1;
+																	break _v36_1;
 																} else {
-																	break _v33_6;
+																	break _v36_6;
 																}
 															}
 													}
@@ -4490,81 +4573,81 @@ var _elm_lang$core$Dict$balanceHelp = function (tree) {
 													switch (_p27._4._0.ctor) {
 														case 'Red':
 															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																break _v33_2;
+																break _v36_2;
 															} else {
 																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																	break _v33_3;
+																	break _v36_3;
 																} else {
 																	if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																		break _v33_5;
+																		break _v36_5;
 																	} else {
-																		break _v33_6;
+																		break _v36_6;
 																	}
 																}
 															}
 														case 'NBlack':
 															if (_p27._0.ctor === 'BBlack') {
 																if ((((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																	break _v33_4;
+																	break _v36_4;
 																} else {
 																	if ((((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																		break _v33_5;
+																		break _v36_5;
 																	} else {
-																		break _v33_6;
+																		break _v36_6;
 																	}
 																}
 															} else {
-																break _v33_6;
+																break _v36_6;
 															}
 														default:
 															if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																break _v33_5;
+																break _v36_5;
 															} else {
-																break _v33_6;
+																break _v36_6;
 															}
 													}
 												default:
 													switch (_p27._4._0.ctor) {
 														case 'Red':
 															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																break _v33_2;
+																break _v36_2;
 															} else {
 																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																	break _v33_3;
+																	break _v36_3;
 																} else {
-																	break _v33_6;
+																	break _v36_6;
 																}
 															}
 														case 'NBlack':
 															if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																break _v33_4;
+																break _v36_4;
 															} else {
-																break _v33_6;
+																break _v36_6;
 															}
 														default:
-															break _v33_6;
+															break _v36_6;
 													}
 											}
 										} else {
 											switch (_p27._3._0.ctor) {
 												case 'Red':
 													if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-														break _v33_0;
+														break _v36_0;
 													} else {
 														if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-															break _v33_1;
+															break _v36_1;
 														} else {
-															break _v33_6;
+															break _v36_6;
 														}
 													}
 												case 'NBlack':
 													if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-														break _v33_5;
+														break _v36_5;
 													} else {
-														break _v33_6;
+														break _v36_6;
 													}
 												default:
-													break _v33_6;
+													break _v36_6;
 											}
 										}
 									} else {
@@ -4572,29 +4655,29 @@ var _elm_lang$core$Dict$balanceHelp = function (tree) {
 											switch (_p27._4._0.ctor) {
 												case 'Red':
 													if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-														break _v33_2;
+														break _v36_2;
 													} else {
 														if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-															break _v33_3;
+															break _v36_3;
 														} else {
-															break _v33_6;
+															break _v36_6;
 														}
 													}
 												case 'NBlack':
 													if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-														break _v33_4;
+														break _v36_4;
 													} else {
-														break _v33_6;
+														break _v36_6;
 													}
 												default:
-													break _v33_6;
+													break _v36_6;
 											}
 										} else {
-											break _v33_6;
+											break _v36_6;
 										}
 									}
 								} else {
-									break _v33_6;
+									break _v36_6;
 								}
 							} while(false);
 							return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._3._1)(_p27._3._3._2)(_p27._3._1)(_p27._3._2)(_p27._1)(_p27._2)(_p27._3._3._3)(_p27._3._3._4)(_p27._3._4)(_p27._4);
@@ -6565,6 +6648,11 @@ function badOneOf(problems)
 	return { tag: 'oneOf', problems: problems };
 }
 
+function badCustom(msg)
+{
+	return { tag: 'custom', msg: msg };
+}
+
 function bad(msg)
 {
 	return { tag: 'fail', msg: msg };
@@ -6601,6 +6689,11 @@ function badToString(problem)
 				return 'I ran into the following problems'
 					+ (context === '_' ? '' : ' at ' + context)
 					+ ':\n\n' + problems.join('\n');
+
+			case 'custom':
+				return 'A `customDecode` failed'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ' with the message: ' + problem.msg;
 
 			case 'fail':
 				return 'I ran into a `fail` decoder'
@@ -6804,7 +6897,7 @@ function runHelp(decoder, value)
 			var realResult = decoder.callback(result.value);
 			if (realResult.ctor === 'Err')
 			{
-				return badPrimitive('something custom', value);
+				return badCustom(realResult._0);
 			}
 			return ok(realResult._0);
 
@@ -10841,7 +10934,7 @@ var _elm_lang$core$Random$magicNum8 = 2147483562;
 var _elm_lang$core$Random$range = function (_p2) {
 	return {ctor: '_Tuple2', _0: 0, _1: _elm_lang$core$Random$magicNum8};
 };
-var _elm_lang$core$Random$magicNum7 = 2137383399;
+var _elm_lang$core$Random$magicNum7 = 2147483399;
 var _elm_lang$core$Random$magicNum6 = 2147483563;
 var _elm_lang$core$Random$magicNum5 = 3791;
 var _elm_lang$core$Random$magicNum4 = 40692;
@@ -13741,7 +13834,8 @@ var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$detailView = F2(
 					_0: fixedToLeft ? 'right' : 'left',
 					_1: '-320px'
 				},
-					{ctor: '_Tuple2', _0: 'box-sizing', _1: 'border-box'}
+					{ctor: '_Tuple2', _0: 'box-sizing', _1: 'border-box'},
+					{ctor: '_Tuple2', _0: 'height', _1: 'calc(100% - 87px)'}
 				]),
 			A2(
 				_elm_lang$core$Basics_ops['++'],
@@ -13984,9 +14078,16 @@ var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$modelDetailView = functio
 			[
 				{ctor: '_Tuple2', _0: 'width', _1: '320px'},
 				{ctor: '_Tuple2', _0: 'z-index', _1: _jinjor$elm_time_travel$TimeTravel_Internal_Styles$zIndex.modelDetailView},
-				{ctor: '_Tuple2', _0: 'box-sizing', _1: 'border-box'}
+				{ctor: '_Tuple2', _0: 'box-sizing', _1: 'border-box'},
+				{ctor: '_Tuple2', _0: 'height', _1: '100%'},
+				{ctor: '_Tuple2', _0: 'overflow-y', _1: 'scroll'}
 			]),
-		_jinjor$elm_time_travel$TimeTravel_Internal_Styles$panel(true));
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'padding', _1: '20px'},
+				{ctor: '_Tuple2', _0: 'overflow-x', _1: 'hidden'},
+				{ctor: '_Tuple2', _0: 'overflow-y', _1: 'scroll'}
+			]));
 };
 var _jinjor$elm_time_travel$TimeTravel_Internal_Styles$resyncView = function (sync) {
 	return _elm_lang$core$Native_List.fromArray(
@@ -16871,14 +16972,36 @@ var _mordrax$cotwelm$CharCreation_CharCreation$update = F2(
 	});
 var _mordrax$cotwelm$CharCreation_CharCreation$initChar = {name: 'testing', attributes: _mordrax$cotwelm$CharCreation_Attributes$initModel, gender: _mordrax$cotwelm$CharCreation_Data$Female, difficulty: _mordrax$cotwelm$CharCreation_Data$Hard};
 
-var _mordrax$cotwelm$Stats$combatStats = function (_p0) {
+var _mordrax$cotwelm$Stats$printSP = function (_p0) {
 	var _p1 = _p0;
 	var _p2 = _p1._0;
-	return {ctor: '_Tuple3', _0: _p2.damageRange, _1: _p2.ac, _2: _p2.hitChance};
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(_p2.currentSP),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			' / ',
+			_elm_lang$core$Basics$toString(_p2.maxSP)));
 };
-var _mordrax$cotwelm$Stats$isDead = function (_p3) {
+var _mordrax$cotwelm$Stats$printHP = function (_p3) {
 	var _p4 = _p3;
-	return _elm_lang$core$Native_Utils.cmp(_p4._0.currentHP, 0) < 0;
+	var _p5 = _p4._0;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(_p5.currentHP),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			' / ',
+			_elm_lang$core$Basics$toString(_p5.maxHP)));
+};
+var _mordrax$cotwelm$Stats$combatStats = function (_p6) {
+	var _p7 = _p6;
+	var _p8 = _p7._0;
+	return {ctor: '_Tuple3', _0: _p8.damageRange, _1: _p8.ac, _2: _p8.hitChance};
+};
+var _mordrax$cotwelm$Stats$isDead = function (_p9) {
+	var _p10 = _p9;
+	return _elm_lang$core$Native_Utils.cmp(_p10._0.currentHP, 0) < 0;
 };
 var _mordrax$cotwelm$Stats$Model = F7(
 	function (a, b, c, d, e, f, g) {
@@ -16903,16 +17026,16 @@ var _mordrax$cotwelm$Stats$new = F2(
 var _mordrax$cotwelm$Stats$Dead = {ctor: 'Dead'};
 var _mordrax$cotwelm$Stats$Ok = {ctor: 'Ok'};
 var _mordrax$cotwelm$Stats$takeHit = F2(
-	function (damage, _p5) {
-		var _p6 = _p5;
-		var _p7 = _p6._0;
-		var hp$ = _p7.currentHP - damage;
+	function (damage, _p11) {
+		var _p12 = _p11;
+		var _p13 = _p12._0;
+		var hp$ = _p13.currentHP - damage;
 		var msg = (_elm_lang$core$Native_Utils.cmp(hp$, 0) > 0) ? _mordrax$cotwelm$Stats$Ok : _mordrax$cotwelm$Stats$Dead;
 		return {
 			ctor: '_Tuple2',
 			_0: _mordrax$cotwelm$Stats$A(
 				_elm_lang$core$Native_Utils.update(
-					_p7,
+					_p13,
 					{currentHP: hp$})),
 			_1: msg
 		};
@@ -19987,6 +20110,13 @@ var _mordrax$cotwelm$Utils_Vector$sub = F2(
 	function (a, b) {
 		return {x: a.x - b.x, y: a.y - b.y};
 	});
+var _mordrax$cotwelm$Utils_Vector$distance = F2(
+	function (a, b) {
+		var _p6 = A2(_mordrax$cotwelm$Utils_Vector$sub, a, b);
+		var x = _p6.x;
+		var y = _p6.y;
+		return _elm_lang$core$Basics$abs(x) + _elm_lang$core$Basics$abs(y);
+	});
 var _mordrax$cotwelm$Utils_Vector$add = F2(
 	function (v1, v2) {
 		return {x: v1.x + v2.x, y: v1.y + v2.y};
@@ -19995,6 +20125,14 @@ var _mordrax$cotwelm$Utils_Vector$equal = F2(
 	function (v1, v2) {
 		return _elm_lang$core$Native_Utils.eq(v1.x, v2.x) && _elm_lang$core$Native_Utils.eq(v1.y, v2.y);
 	});
+var _mordrax$cotwelm$Utils_Vector$toTuple = function (_p7) {
+	var _p8 = _p7;
+	return {ctor: '_Tuple2', _0: _p8.x, _1: _p8.y};
+};
+var _mordrax$cotwelm$Utils_Vector$newFromTuple = function (_p9) {
+	var _p10 = _p9;
+	return {x: _p10._0, y: _p10._1};
+};
 var _mordrax$cotwelm$Utils_Vector$new = F2(
 	function (x, y) {
 		return {x: x, y: y};
@@ -21710,6 +21848,140 @@ var _mordrax$cotwelm$Game_Keyboard$subscriptions = _elm_lang$core$Native_List.fr
 		_mordrax$cotwelm$Game_Keyboard$keycodeToMsg(_mordrax$cotwelm$Game_Keyboard$playerKeymap))
 	]);
 
+var _mordrax$cotwelm$Utils_Astar$bestCost = F2(
+	function (newDistance, oldDistance) {
+		var _p0 = oldDistance;
+		if (_p0.ctor === 'Nothing') {
+			return newDistance;
+		} else {
+			return A2(_elm_lang$core$Basics$min, _p0._0, newDistance);
+		}
+	});
+var _mordrax$cotwelm$Utils_Astar$reconstructPath = F2(
+	function (cameFrom, goal) {
+		var _p1 = A2(_elm_lang$core$Dict$get, goal, cameFrom);
+		if (_p1.ctor === 'Nothing') {
+			return _elm_lang$core$Array$empty;
+		} else {
+			return A2(
+				_elm_lang$core$Array$push,
+				goal,
+				A2(_mordrax$cotwelm$Utils_Astar$reconstructPath, cameFrom, _p1._0));
+		}
+	});
+var _mordrax$cotwelm$Utils_Astar$updateCost = F3(
+	function (current, neighbour, model) {
+		var newCameFrom = A3(_elm_lang$core$Dict$insert, neighbour, current, model.cameFrom);
+		var distanceTo = _elm_lang$core$Array$length(
+			A2(_mordrax$cotwelm$Utils_Astar$reconstructPath, newCameFrom, neighbour));
+		var newModel = _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				costs: A3(_elm_lang$core$Dict$insert, neighbour, distanceTo, model.costs),
+				cameFrom: newCameFrom
+			});
+		var _p2 = A2(_elm_lang$core$Dict$get, neighbour, model.costs);
+		if (_p2.ctor === 'Nothing') {
+			return newModel;
+		} else {
+			return (_elm_lang$core$Native_Utils.cmp(distanceTo, _p2._0) < 0) ? newModel : model;
+		}
+	});
+var _mordrax$cotwelm$Utils_Astar$cheapestOpen = F2(
+	function (costFn, model) {
+		return A2(
+			_elm_lang$core$Maybe$map,
+			_elm_lang$core$Basics$fst,
+			_elm_lang$core$List$head(
+				A2(
+					_elm_lang$core$List$sortBy,
+					_elm_lang$core$Basics$snd,
+					A2(
+						_elm_lang$core$List$filterMap,
+						function (position) {
+							var _p3 = A2(_elm_lang$core$Dict$get, position, model.costs);
+							if (_p3.ctor === 'Nothing') {
+								return _elm_lang$core$Maybe$Nothing;
+							} else {
+								return _elm_lang$core$Maybe$Just(
+									{
+										ctor: '_Tuple2',
+										_0: position,
+										_1: _p3._0 + costFn(position)
+									});
+							}
+						},
+						_elm_lang$core$Set$toList(model.openSet)))));
+	});
+var _mordrax$cotwelm$Utils_Astar$astar = F4(
+	function (costFn, moveFn, goal, model) {
+		astar:
+		while (true) {
+			var _p4 = A2(
+				_mordrax$cotwelm$Utils_Astar$cheapestOpen,
+				costFn(goal),
+				model);
+			if (_p4.ctor === 'Nothing') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p5 = _p4._0;
+				if (_elm_lang$core$Native_Utils.eq(_p5, goal)) {
+					return _elm_lang$core$Maybe$Just(
+						A2(_mordrax$cotwelm$Utils_Astar$reconstructPath, model.cameFrom, goal));
+				} else {
+					var neighbours = moveFn(_p5);
+					var modelPopped = _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							openSet: A2(_elm_lang$core$Set$remove, _p5, model.openSet),
+							evaluated: A2(_elm_lang$core$Set$insert, _p5, model.evaluated)
+						});
+					var newNeighbours = A2(_elm_lang$core$Set$diff, neighbours, modelPopped.evaluated);
+					var modelWithNeighbours = _elm_lang$core$Native_Utils.update(
+						modelPopped,
+						{
+							openSet: A2(_elm_lang$core$Set$union, modelPopped.openSet, newNeighbours)
+						});
+					var modelWithCosts = A3(
+						_elm_lang$core$Set$foldl,
+						_mordrax$cotwelm$Utils_Astar$updateCost(_p5),
+						modelWithNeighbours,
+						newNeighbours);
+					var _v5 = costFn,
+						_v6 = moveFn,
+						_v7 = goal,
+						_v8 = modelWithCosts;
+					costFn = _v5;
+					moveFn = _v6;
+					goal = _v7;
+					model = _v8;
+					continue astar;
+				}
+			}
+		}
+	});
+var _mordrax$cotwelm$Utils_Astar$initialModel = function (start) {
+	return {
+		evaluated: _elm_lang$core$Set$empty,
+		openSet: _elm_lang$core$Set$singleton(start),
+		costs: A2(_elm_lang$core$Dict$singleton, start, 0),
+		cameFrom: _elm_lang$core$Dict$empty
+	};
+};
+var _mordrax$cotwelm$Utils_Astar$findPath = F4(
+	function (costFn, moveFn, start, end) {
+		return A4(
+			_mordrax$cotwelm$Utils_Astar$astar,
+			costFn,
+			moveFn,
+			end,
+			_mordrax$cotwelm$Utils_Astar$initialModel(start));
+	});
+var _mordrax$cotwelm$Utils_Astar$Model = F4(
+	function (a, b, c, d) {
+		return {evaluated: a, openSet: b, costs: c, cameFrom: d};
+	});
+
 var _mordrax$cotwelm$Game_Collision$isMonsterObstruction = F2(
 	function (monster, monsters) {
 		return A2(
@@ -21722,20 +21994,10 @@ var _mordrax$cotwelm$Game_Collision$isMonsterObstruction = F2(
 				},
 				monsters));
 	});
-var _mordrax$cotwelm$Game_Collision$pathMonster = F2(
-	function (monster, hero) {
-		var _p0 = A2(_mordrax$cotwelm$Utils_Vector$sub, hero.position, monster.position);
-		var x = _p0.x;
-		var y = _p0.y;
-		var moveVector = A2(
-			_mordrax$cotwelm$Utils_Vector$new,
-			(x / _elm_lang$core$Basics$abs(x)) | 0,
-			(y / _elm_lang$core$Basics$abs(y)) | 0);
-		return _elm_lang$core$Native_Utils.update(
-			monster,
-			{
-				position: A2(_mordrax$cotwelm$Utils_Vector$add, monster.position, moveVector)
-			});
+var _mordrax$cotwelm$Game_Collision$heuristic = F2(
+	function (start, end) {
+		var diff = A2(_mordrax$cotwelm$Utils_Vector$sub, start, end);
+		return A2(_elm_lang$core$Basics$max, diff.x, diff.y);
 	});
 var _mordrax$cotwelm$Game_Collision$newHitMessage = F3(
 	function (attacker, defender, damage) {
@@ -21754,16 +22016,16 @@ var _mordrax$cotwelm$Game_Collision$newHitMessage = F3(
 						A2(_elm_lang$core$Basics_ops['++'], damage, ' damage!')))));
 	});
 var _mordrax$cotwelm$Game_Collision$defend = F2(
-	function (monster, _p1) {
-		var _p2 = _p1;
-		var _p5 = _p2;
-		var _p4 = _p2.hero;
-		var _p3 = A3(_mordrax$cotwelm$Combat$attack, monster.stats, _p4.stats, _p2.seed);
-		var heroStats$ = _p3._0;
-		var seed$ = _p3._1;
-		var damage = _p3._2;
+	function (monster, _p0) {
+		var _p1 = _p0;
+		var _p4 = _p1;
+		var _p3 = _p1.hero;
+		var _p2 = A3(_mordrax$cotwelm$Combat$attack, monster.stats, _p3.stats, _p1.seed);
+		var heroStats$ = _p2._0;
+		var seed$ = _p2._1;
+		var damage = _p2._2;
 		var hero$ = _elm_lang$core$Native_Utils.update(
-			_p4,
+			_p3,
 			{stats: heroStats$});
 		var newMsg = A3(
 			_mordrax$cotwelm$Game_Collision$newHitMessage,
@@ -21771,28 +22033,28 @@ var _mordrax$cotwelm$Game_Collision$defend = F2(
 			'you',
 			_elm_lang$core$Basics$toString(damage));
 		return _elm_lang$core$Native_Utils.update(
-			_p5,
+			_p4,
 			{
 				hero: hero$,
 				seed: seed$,
-				messages: A2(_elm_lang$core$List_ops['::'], newMsg, _p5.messages)
+				messages: A2(_elm_lang$core$List_ops['::'], newMsg, _p4.messages)
 			});
 	});
 var _mordrax$cotwelm$Game_Collision$attack = F2(
-	function (monster, _p6) {
-		var _p7 = _p6;
-		var _p9 = _p7;
+	function (monster, _p5) {
+		var _p6 = _p5;
+		var _p8 = _p6;
 		var monstersWithoutMonster = A2(
 			_elm_lang$core$List$filter,
 			function (x) {
 				return _elm_lang$core$Basics$not(
 					A2(_mordrax$cotwelm$Utils_IdGenerator$equals, monster.id, x.id));
 			},
-			_p7.monsters);
-		var _p8 = A3(_mordrax$cotwelm$Combat$attack, _p7.hero.stats, monster.stats, _p7.seed);
-		var stats$ = _p8._0;
-		var seed$ = _p8._1;
-		var damage = _p8._2;
+			_p6.monsters);
+		var _p7 = A3(_mordrax$cotwelm$Combat$attack, _p6.hero.stats, monster.stats, _p6.seed);
+		var stats$ = _p7._0;
+		var seed$ = _p7._1;
+		var damage = _p7._2;
 		var monster$ = _elm_lang$core$Native_Utils.update(
 			monster,
 			{stats: stats$});
@@ -21803,10 +22065,10 @@ var _mordrax$cotwelm$Game_Collision$attack = F2(
 			_mordrax$cotwelm$Monster_Monster$name(monster),
 			_elm_lang$core$Basics$toString(damage));
 		return _elm_lang$core$Native_Utils.update(
-			_p9,
+			_p8,
 			{
 				monsters: monsters$,
-				messages: A2(_elm_lang$core$List_ops['::'], newMsg, _p9.messages)
+				messages: A2(_elm_lang$core$List_ops['::'], newMsg, _p8.messages)
 			});
 	});
 var _mordrax$cotwelm$Game_Collision$buildingAtPosition = F2(
@@ -21815,207 +22077,311 @@ var _mordrax$cotwelm$Game_Collision$buildingAtPosition = F2(
 			_elm_lang$core$List$filter,
 			_mordrax$cotwelm$GameData_Building$isBuildingAtPosition(pos),
 			buildings);
-		var _p10 = buildingsAtTile;
-		if (_p10.ctor === '::') {
-			return _elm_lang$core$Maybe$Just(_p10._0);
+		var _p9 = buildingsAtTile;
+		if (_p9.ctor === '::') {
+			return _elm_lang$core$Maybe$Just(_p9._0);
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$queryPosition = F2(
-	function (pos, _p11) {
-		var _p12 = _p11;
-		var _p14 = _p12.map;
-		var isHero = A2(_mordrax$cotwelm$Utils_Vector$equal, _p12.hero.position, pos);
+	function (pos, _p10) {
+		var _p11 = _p10;
+		var _p13 = _p11.map;
+		var isHero = A2(_mordrax$cotwelm$Utils_Vector$equal, _p11.hero.position, pos);
 		var maybeMonster = _elm_lang$core$List$head(
 			A2(
 				_elm_lang$core$List$filter,
 				function (x) {
 					return A2(_mordrax$cotwelm$Utils_Vector$equal, pos, x.position);
 				},
-				_p12.monsters));
+				_p11.monsters));
 		var maybeBuilding = A2(
 			_mordrax$cotwelm$Game_Collision$buildingAtPosition,
 			pos,
-			_mordrax$cotwelm$Game_Maps$getBuildings(_p14));
+			_mordrax$cotwelm$Game_Maps$getBuildings(_p13));
 		var maybeTile = A2(
 			_elm_lang$core$Dict$get,
 			_elm_lang$core$Basics$toString(pos),
-			_mordrax$cotwelm$Game_Maps$getMap(_p14));
+			_mordrax$cotwelm$Game_Maps$getMap(_p13));
 		var tileObstruction = function () {
-			var _p13 = maybeTile;
-			if (_p13.ctor === 'Just') {
-				return _mordrax$cotwelm$Tile$isSolid(_p13._0);
+			var _p12 = maybeTile;
+			if (_p12.ctor === 'Just') {
+				return _mordrax$cotwelm$Tile$isSolid(_p12._0);
 			} else {
-				return false;
+				return true;
 			}
 		}();
 		return {ctor: '_Tuple4', _0: tileObstruction, _1: maybeBuilding, _2: maybeMonster, _3: isHero};
 	});
+var _mordrax$cotwelm$Game_Collision$isObstructed = F2(
+	function (position, model) {
+		var _p14 = A2(_mordrax$cotwelm$Game_Collision$queryPosition, position, model);
+		_v5_2:
+		do {
+			if (_p14.ctor === '_Tuple4') {
+				if (_p14._3 === true) {
+					return false;
+				} else {
+					if (((_p14._0 === false) && (_p14._1.ctor === 'Nothing')) && (_p14._2.ctor === 'Nothing')) {
+						return false;
+					} else {
+						break _v5_2;
+					}
+				}
+			} else {
+				break _v5_2;
+			}
+		} while(false);
+		return true;
+	});
+var _mordrax$cotwelm$Game_Collision$neighbours = F2(
+	function (position, model) {
+		var notObstructed = function (vector) {
+			return _elm_lang$core$Basics$not(
+				A2(_mordrax$cotwelm$Game_Collision$isObstructed, vector, model));
+		};
+		var add = F2(
+			function (x, y) {
+				return A2(
+					_mordrax$cotwelm$Utils_Vector$add,
+					position,
+					A2(_mordrax$cotwelm$Utils_Vector$new, x, y));
+			});
+		var possibleNeighbours = function (vector) {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(add, -1, -1),
+						A2(add, 0, -1),
+						A2(add, 1, -1)
+					]),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(add, -1, 0),
+							A2(add, 1, 0)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(add, -1, 1),
+							A2(add, 0, 1),
+							A2(add, 1, 1)
+						])));
+		};
+		return _elm_lang$core$Set$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				_mordrax$cotwelm$Utils_Vector$toTuple,
+				A2(
+					_elm_lang$core$List$filter,
+					notObstructed,
+					possibleNeighbours(position))));
+	});
+var _mordrax$cotwelm$Game_Collision$pathMonster = F3(
+	function (monster, hero, model) {
+		var neighboursFromPosition = function (position) {
+			return A2(
+				_mordrax$cotwelm$Game_Collision$neighbours,
+				_mordrax$cotwelm$Utils_Vector$newFromTuple(position),
+				model);
+		};
+		var heuristicFromPositions = F2(
+			function (pos1, pos2) {
+				return A2(
+					_mordrax$cotwelm$Game_Collision$heuristic,
+					_mordrax$cotwelm$Utils_Vector$newFromTuple(pos1),
+					_mordrax$cotwelm$Utils_Vector$newFromTuple(pos2));
+			});
+		var path = A4(
+			_mordrax$cotwelm$Utils_Astar$findPath,
+			heuristicFromPositions,
+			neighboursFromPosition,
+			_mordrax$cotwelm$Utils_Vector$toTuple(monster.position),
+			_mordrax$cotwelm$Utils_Vector$toTuple(hero.position));
+		var _p15 = path;
+		if (_p15.ctor === 'Nothing') {
+			return monster;
+		} else {
+			var head = A2(_elm_lang$core$Array$get, 0, _p15._0);
+			var _p16 = head;
+			if (_p16.ctor === 'Just') {
+				return _elm_lang$core$Native_Utils.update(
+					monster,
+					{
+						position: A2(_mordrax$cotwelm$Utils_Vector$new, _p16._0._0, _p16._0._1)
+					});
+			} else {
+				return monster;
+			}
+		}
+	});
 var _mordrax$cotwelm$Game_Collision$moveMonsters = F3(
-	function (monsters, movedMonsters, _p15) {
+	function (monsters, movedMonsters, _p17) {
 		moveMonsters:
 		while (true) {
-			var _p16 = _p15;
-			var _p21 = _p16;
-			var _p17 = monsters;
-			if (_p17.ctor === '[]') {
+			var _p18 = _p17;
+			var _p23 = _p18;
+			var _p19 = monsters;
+			if (_p19.ctor === '[]') {
 				return _elm_lang$core$Native_Utils.update(
-					_p21,
+					_p23,
 					{monsters: movedMonsters});
 			} else {
-				var _p20 = _p17._1;
-				var _p19 = _p17._0;
-				var movedMonster = A2(_mordrax$cotwelm$Game_Collision$pathMonster, _p19, _p16.hero);
-				var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedMonster.position, _p21);
+				var _p22 = _p19._1;
+				var _p21 = _p19._0;
+				var movedMonster = A3(_mordrax$cotwelm$Game_Collision$pathMonster, _p21, _p18.hero, _p23);
+				var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedMonster.position, _p23);
 				var isObstructedByMovedMonsters = A2(_mordrax$cotwelm$Game_Collision$isMonsterObstruction, movedMonster, movedMonsters);
-				var _p18 = obstructions;
-				_v7_4:
+				var _p20 = obstructions;
+				_v10_4:
 				do {
-					if (_p18.ctor === '_Tuple4') {
-						if (_p18._3 === true) {
-							var model$ = A2(_mordrax$cotwelm$Game_Collision$defend, _p19, _p21);
-							var _v8 = _p20,
-								_v9 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
-								_v10 = model$;
-							monsters = _v8;
-							movedMonsters = _v9;
-							_p15 = _v10;
+					if (_p20.ctor === '_Tuple4') {
+						if (_p20._3 === true) {
+							var model$ = A2(_mordrax$cotwelm$Game_Collision$defend, _p21, _p23);
+							var _v11 = _p22,
+								_v12 = A2(_elm_lang$core$List_ops['::'], _p21, movedMonsters),
+								_v13 = model$;
+							monsters = _v11;
+							movedMonsters = _v12;
+							_p17 = _v13;
 							continue moveMonsters;
 						} else {
-							if (_p18._0 === true) {
-								var _v11 = _p20,
-									_v12 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
-									_v13 = _p21;
-								monsters = _v11;
-								movedMonsters = _v12;
-								_p15 = _v13;
+							if (_p20._0 === true) {
+								var _v14 = _p22,
+									_v15 = A2(_elm_lang$core$List_ops['::'], _p21, movedMonsters),
+									_v16 = _p23;
+								monsters = _v14;
+								movedMonsters = _v15;
+								_p17 = _v16;
 								continue moveMonsters;
 							} else {
-								if (_p18._1.ctor === 'Just') {
-									var _v14 = _p20,
-										_v15 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
-										_v16 = _p21;
-									monsters = _v14;
-									movedMonsters = _v15;
-									_p15 = _v16;
+								if (_p20._1.ctor === 'Just') {
+									var _v17 = _p22,
+										_v18 = A2(_elm_lang$core$List_ops['::'], _p21, movedMonsters),
+										_v19 = _p23;
+									monsters = _v17;
+									movedMonsters = _v18;
+									_p17 = _v19;
 									continue moveMonsters;
 								} else {
-									if (_p18._2.ctor === 'Just') {
-										var _v17 = _p20,
-											_v18 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
-											_v19 = _p21;
-										monsters = _v17;
-										movedMonsters = _v18;
-										_p15 = _v19;
+									if (_p20._2.ctor === 'Just') {
+										var _v20 = _p22,
+											_v21 = A2(_elm_lang$core$List_ops['::'], _p21, movedMonsters),
+											_v22 = _p23;
+										monsters = _v20;
+										movedMonsters = _v21;
+										_p17 = _v22;
 										continue moveMonsters;
 									} else {
-										break _v7_4;
+										break _v10_4;
 									}
 								}
 							}
 						}
 					} else {
-						break _v7_4;
+						break _v10_4;
 					}
 				} while(false);
 				if (isObstructedByMovedMonsters) {
-					var _v20 = _p20,
-						_v21 = A2(_elm_lang$core$List_ops['::'], _p19, movedMonsters),
-						_v22 = _p21;
-					monsters = _v20;
-					movedMonsters = _v21;
-					_p15 = _v22;
-					continue moveMonsters;
-				} else {
-					var _v23 = _p20,
-						_v24 = A2(_elm_lang$core$List_ops['::'], movedMonster, movedMonsters),
-						_v25 = _p21;
+					var _v23 = _p22,
+						_v24 = A2(_elm_lang$core$List_ops['::'], _p21, movedMonsters),
+						_v25 = _p23;
 					monsters = _v23;
 					movedMonsters = _v24;
-					_p15 = _v25;
+					_p17 = _v25;
+					continue moveMonsters;
+				} else {
+					var _v26 = _p22,
+						_v27 = A2(_elm_lang$core$List_ops['::'], movedMonster, movedMonsters),
+						_v28 = _p23;
+					monsters = _v26;
+					movedMonsters = _v27;
+					_p17 = _v28;
 					continue moveMonsters;
 				}
 			}
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$enterBuilding = F2(
-	function (building, _p22) {
-		var _p23 = _p22;
-		var _p26 = _p23;
-		var _p24 = _mordrax$cotwelm$GameData_Building$buildingType(building);
-		switch (_p24.ctor) {
+	function (building, _p24) {
+		var _p25 = _p24;
+		var _p28 = _p25;
+		var _p26 = _mordrax$cotwelm$GameData_Building$buildingType(building);
+		switch (_p26.ctor) {
 			case 'LinkType':
-				var _p25 = _p24._0;
+				var _p27 = _p26._0;
 				return _elm_lang$core$Native_Utils.update(
-					_p26,
+					_p28,
 					{
-						map: A2(_mordrax$cotwelm$Game_Maps$updateArea, _p25.area, _p23.map),
+						map: A2(_mordrax$cotwelm$Game_Maps$updateArea, _p27.area, _p25.map),
 						hero: _elm_lang$core$Native_Utils.update(
-							_p23.hero,
-							{position: _p25.pos})
+							_p25.hero,
+							{position: _p27.pos})
 					});
 			case 'ShopType':
 				return _elm_lang$core$Native_Utils.update(
-					_p26,
+					_p28,
 					{
 						currentScreen: _mordrax$cotwelm$Game_Data$BuildingScreen(building),
-						shop: A2(_mordrax$cotwelm$Shop_Shop$setCurrentShopType, _p24._0, _p26.shop)
+						shop: A2(_mordrax$cotwelm$Shop_Shop$setCurrentShopType, _p26._0, _p28.shop)
 					});
 			default:
 				return _elm_lang$core$Native_Utils.update(
-					_p26,
+					_p28,
 					{
 						currentScreen: _mordrax$cotwelm$Game_Data$BuildingScreen(building)
 					});
 		}
 	});
 var _mordrax$cotwelm$Game_Collision$tryMoveHero = F2(
-	function (dir, _p27) {
-		var _p28 = _p27;
-		var _p31 = _p28;
-		var _p30 = _p28.hero;
+	function (dir, _p29) {
+		var _p30 = _p29;
+		var _p33 = _p30;
+		var _p32 = _p30.hero;
 		var movedHero = _elm_lang$core$Native_Utils.update(
-			_p30,
+			_p32,
 			{
 				position: A2(
 					_mordrax$cotwelm$Utils_Vector$add,
-					_p30.position,
+					_p32.position,
 					_mordrax$cotwelm$Game_Keyboard$dirToVector(dir))
 			});
-		var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedHero.position, _p31);
-		var _p29 = obstructions;
-		_v29_1:
+		var obstructions = A2(_mordrax$cotwelm$Game_Collision$queryPosition, movedHero.position, _p33);
+		var _p31 = obstructions;
+		_v32_1:
 		do {
-			_v29_0:
+			_v32_0:
 			do {
-				if (_p29._0 === true) {
-					if (_p29._2.ctor === 'Just') {
-						break _v29_0;
+				if (_p31._0 === true) {
+					if (_p31._2.ctor === 'Just') {
+						break _v32_0;
 					} else {
-						if (_p29._1.ctor === 'Just') {
-							break _v29_1;
+						if (_p31._1.ctor === 'Just') {
+							break _v32_1;
 						} else {
-							return _p31;
+							return _p33;
 						}
 					}
 				} else {
-					if (_p29._2.ctor === 'Just') {
-						break _v29_0;
+					if (_p31._2.ctor === 'Just') {
+						break _v32_0;
 					} else {
-						if (_p29._1.ctor === 'Just') {
-							break _v29_1;
+						if (_p31._1.ctor === 'Just') {
+							break _v32_1;
 						} else {
 							return _elm_lang$core$Native_Utils.update(
-								_p31,
+								_p33,
 								{hero: movedHero});
 						}
 					}
 				}
 			} while(false);
-			return A2(_mordrax$cotwelm$Game_Collision$attack, _p29._2._0, _p31);
+			return A2(_mordrax$cotwelm$Game_Collision$attack, _p31._2._0, _p33);
 		} while(false);
-		return A2(_mordrax$cotwelm$Game_Collision$enterBuilding, _p29._1._0, _p31);
+		return A2(_mordrax$cotwelm$Game_Collision$enterBuilding, _p31._1._0, _p33);
 	});
 
 var _mordrax$cotwelm$Game_Inventory$viewPurse = function (_p0) {
@@ -22806,14 +23172,47 @@ var _mordrax$cotwelm$Game_Game$viewMenu = A2(
 		_mordrax$cotwelm$Game_Game$simpleBtn,
 		_elm_lang$core$Native_List.fromArray(
 			['File', 'Character!', 'Inventory!', 'Map!', 'Spells', 'Activate', 'Verbs', 'Options', 'Window', 'Help'])));
-var _mordrax$cotwelm$Game_Game$viewStats = function (model) {
+var _mordrax$cotwelm$Game_Game$viewStats = function (_p0) {
+	var _p1 = _p0;
+	var _p2 = _p1.hero;
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html$text('TODO: Stats here')
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Stats:')
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'HP: ',
+							_mordrax$cotwelm$Stats$printHP(_p2.stats)))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'SP: ',
+							_mordrax$cotwelm$Stats$printSP(_p2.stats)))
+					]))
 			]));
 };
 var _mordrax$cotwelm$Game_Game$viewMessages = function (model) {
@@ -22837,35 +23236,48 @@ var _mordrax$cotwelm$Game_Game$viewStatus = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('ui grid')
-			]),
+			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
 				A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Attributes$class('ui twelve wide column')
+						_elm_lang$html$Html_Attributes$class('ui padded grid')
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_mordrax$cotwelm$Game_Game$viewMessages(model)
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('ui four wide column')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_mordrax$cotwelm$Game_Game$viewStats(model)
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$style(
+								_elm_lang$core$Native_List.fromArray(
+									[
+										{ctor: '_Tuple2', _0: 'overflow', _1: 'auto'},
+										{ctor: '_Tuple2', _0: 'height', _1: '100px'}
+									])),
+								_elm_lang$html$Html_Attributes$class('ui twelve wide column')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_mordrax$cotwelm$Game_Game$viewMessages(model)
+							])),
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui four wide column')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_mordrax$cotwelm$Game_Game$viewStats(model)
+							]))
 					]))
 			]));
 };
-var _mordrax$cotwelm$Game_Game$viewMonsters = function (_p0) {
-	var _p1 = _p0;
+var _mordrax$cotwelm$Game_Game$viewMonsters = function (_p3) {
+	var _p4 = _p3;
 	var monsterHtml = function (monster) {
 		return _mordrax$cotwelm$Monster_Monster$view(monster);
 	};
@@ -22873,24 +23285,24 @@ var _mordrax$cotwelm$Game_Game$viewMonsters = function (_p0) {
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[]),
-		A2(_elm_lang$core$List$map, monsterHtml, _p1.monsters));
+		A2(_elm_lang$core$List$map, monsterHtml, _p4.monsters));
 };
-var _mordrax$cotwelm$Game_Game$viewMap = function (_p2) {
-	var _p3 = _p2;
-	var _p7 = _p3.windowSize;
-	var _p6 = _p3;
+var _mordrax$cotwelm$Game_Game$viewMap = function (_p5) {
+	var _p6 = _p5;
+	var _p10 = _p6.windowSize;
+	var _p9 = _p6;
 	var px = function (x) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
 			_elm_lang$core$Basics$toString(x),
 			'px');
 	};
-	var _p4 = {ctor: '_Tuple2', _0: ((_p7.width / 32) | 0) * 16, _1: ((_p7.height / 32) | 0) * 16};
-	var xOff = _p4._0;
-	var yOff = _p4._1;
-	var _p5 = A2(_mordrax$cotwelm$Utils_Vector$scale, 32, _p6.hero.position);
-	var x = _p5.x;
-	var y = _p5.y;
+	var _p7 = {ctor: '_Tuple2', _0: ((_p10.width / 32) | 0) * 16, _1: ((_p10.height / 32) | 0) * 16};
+	var xOff = _p7._0;
+	var yOff = _p7._1;
+	var _p8 = A2(_mordrax$cotwelm$Utils_Vector$scale, 32, _p9.hero.position);
+	var x = _p8.x;
+	var y = _p8.y;
 	var viewport = function (html) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -22904,12 +23316,12 @@ var _mordrax$cotwelm$Game_Game$viewMap = function (_p2) {
 							{
 							ctor: '_Tuple2',
 							_0: 'width',
-							_1: px(_p7.width)
+							_1: px(_p10.width)
 						},
 							{
 							ctor: '_Tuple2',
 							_0: 'height',
-							_1: px(((_p7.height * 4) / 5) | 0)
+							_1: px(((_p10.height * 4) / 5) | 0)
 						}
 						]))
 				]),
@@ -22957,7 +23369,7 @@ var _mordrax$cotwelm$Game_Game$viewMap = function (_p2) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$html$Html$text(
-				A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', _p6.name))
+				A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', _p9.name))
 			]));
 	return A2(
 		_elm_lang$html$Html$div,
@@ -22970,27 +23382,27 @@ var _mordrax$cotwelm$Game_Game$viewMap = function (_p2) {
 				viewport(
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_mordrax$cotwelm$Game_Maps$view(_p6.map),
-						_mordrax$cotwelm$Game_Game$viewHero(_p6.hero),
-						_mordrax$cotwelm$Game_Game$viewMonsters(_p6)
+						_mordrax$cotwelm$Game_Maps$view(_p9.map),
+						_mordrax$cotwelm$Game_Game$viewHero(_p9.hero),
+						_mordrax$cotwelm$Game_Game$viewMonsters(_p9)
 					])),
-				_mordrax$cotwelm$Game_Game$viewStatus(_p6)
+				_mordrax$cotwelm$Game_Game$viewStatus(_p9)
 			]));
 };
 var _mordrax$cotwelm$Game_Game$update = F2(
 	function (msg, model) {
-		var _p8 = msg;
-		switch (_p8.ctor) {
+		var _p11 = msg;
+		switch (_p11.ctor) {
 			case 'InvMsg':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_mordrax$cotwelm$Game_Inventory$update, _p8._0, model),
+					_0: A2(_mordrax$cotwelm$Game_Inventory$update, _p11._0, model),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'ShopMsg':
-				var _p9 = A3(_mordrax$cotwelm$Shop_Shop$update, _p8._0, model.idGen, model.shop);
-				var shop$ = _p9._0;
-				var idGen$ = _p9._1;
+				var _p12 = A3(_mordrax$cotwelm$Shop_Shop$update, _p11._0, model.idGen, model.shop);
+				var shop$ = _p12._0;
+				var idGen$ = _p12._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -22999,9 +23411,9 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Keyboard':
-				switch (_p8._0.ctor) {
+				switch (_p11._0.ctor) {
 					case 'KeyDir':
-						var model$ = A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p8._0._0, model);
+						var model$ = A2(_mordrax$cotwelm$Game_Collision$tryMoveHero, _p11._0._0, model);
 						var movedMovedMonsters = A3(
 							_mordrax$cotwelm$Game_Collision$moveMonsters,
 							model$.monsters,
@@ -23033,7 +23445,7 @@ var _mordrax$cotwelm$Game_Game$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{windowSize: _p8._0}),
+						{windowSize: _p11._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
@@ -23045,9 +23457,9 @@ var _mordrax$cotwelm$Game_Game$ShopMsg = function (a) {
 	return {ctor: 'ShopMsg', _0: a};
 };
 var _mordrax$cotwelm$Game_Game$initGame = function (seed) {
-	var _p10 = _mordrax$cotwelm$Shop_Shop$new;
-	var newShop = _p10._0;
-	var shopCmd = _p10._1;
+	var _p13 = _mordrax$cotwelm$Shop_Shop$new;
+	var newShop = _p13._0;
+	var shopCmd = _p13._1;
 	var cmd = A2(
 		_elm_lang$core$Platform_Cmd$map,
 		function (x) {
@@ -23055,12 +23467,12 @@ var _mordrax$cotwelm$Game_Game$initGame = function (seed) {
 		},
 		shopCmd);
 	var idGenerator = _mordrax$cotwelm$Utils_IdGenerator$new;
-	var _p11 = _mordrax$cotwelm$Equipment$init(idGenerator);
-	var idGenerator$ = _p11._0;
-	var equipment = _p11._1;
-	var _p12 = _mordrax$cotwelm$Monster_Monsters$init(idGenerator$);
-	var monsters = _p12._0;
-	var idGenerator$$ = _p12._1;
+	var _p14 = _mordrax$cotwelm$Equipment$init(idGenerator);
+	var idGenerator$ = _p14._0;
+	var equipment = _p14._1;
+	var _p15 = _mordrax$cotwelm$Monster_Monsters$init(idGenerator$);
+	var monsters = _p15._0;
+	var idGenerator$$ = _p15._1;
 	return {
 		ctor: '_Tuple2',
 		_0: {
@@ -23085,20 +23497,20 @@ var _mordrax$cotwelm$Game_Game$InvMsg = function (a) {
 	return {ctor: 'InvMsg', _0: a};
 };
 var _mordrax$cotwelm$Game_Game$view = function (model) {
-	var _p13 = model.currentScreen;
-	switch (_p13.ctor) {
+	var _p16 = model.currentScreen;
+	switch (_p16.ctor) {
 		case 'MapScreen':
 			return _mordrax$cotwelm$Game_Game$viewMap(model);
 		case 'BuildingScreen':
-			var _p15 = _p13._0;
-			var _p14 = _mordrax$cotwelm$GameData_Building$buildingType(_p15);
-			if (_p14.ctor === 'ShopType') {
+			var _p18 = _p16._0;
+			var _p17 = _mordrax$cotwelm$GameData_Building$buildingType(_p18);
+			if (_p17.ctor === 'ShopType') {
 				return A2(
 					_elm_lang$html$Html_App$map,
 					_mordrax$cotwelm$Game_Game$InvMsg,
 					_mordrax$cotwelm$Game_Inventory$view(model));
 			} else {
-				return _mordrax$cotwelm$Game_Game$viewBuilding(_p15);
+				return _mordrax$cotwelm$Game_Game$viewBuilding(_p18);
 			}
 		default:
 			return A2(
