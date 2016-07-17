@@ -21,7 +21,7 @@
         "jinjor/elm-time-travel": "1.0.11 <= v < 2.0.0"
     },
     "elm-version": "0.17.0 <= v < 0.18.0",
-    "sublimebuild": {
+    "sublime-build": {
         "output": {
             "path": "dist/js/cotw.js",
             "components": {

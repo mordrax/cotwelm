@@ -1,101 +1,152 @@
-module Utils.Astar
-    exposing
-        ( Astar
-        , findPath
-        )
+module Utils.Astar exposing (findPath, Position, Path)
 
-import Utils.Vector as Vector exposing (..)
-import Utils.PairingHeap as Queue exposing (..)
-import EveryDict exposing (..)
+-- Deftly 'borrowed' from: https://github.com/krisajenkins/the-prize/blob/master/src/Astar.elm
+
+import Set exposing (Set)
+import Dict exposing (Dict)
+import Array exposing (Array)
 
 
-type Node
-    = Node NodeData
+type alias Position =
+    ( Int, Int )
 
 
-{-| h - heuristic, estimated distance to the goal
-    d - distance, from the start, so far
-    f - priority, h + d
--}
-type alias NodeData =
-    { point : Vector
-    , from : Maybe Node
-    , f : Int
-    , h : Int
-    , d : Int
-    }
-
-
-type alias Cost =
-    Int
+type alias Path =
+    Array Position
 
 
 type alias Model =
-    { frontier : Queue.PairingHeap Int Node
-    , allNodes : EveryDict Vector Node
-    , start : Vector
-    , finish : Vector
+    { evaluated : Set Position
+    , openSet : Set Position
+    , costs : Dict Position Int
+    , cameFrom : Dict Position Position
     }
 
 
-type Astar
-    = A Model
+initialModel : Position -> Model
+initialModel start =
+    { evaluated = Set.empty
+    , openSet = Set.singleton start
+    , costs = Dict.singleton start 0
+    , cameFrom = Dict.empty
+    }
 
 
-makeNode : ( Vector, Cost ) -> Node
-makeNode ( vector, weight ) =
-    Node (NodeData vector Nothing 0 0 0)
+cheapestOpen : (Position -> Int) -> Model -> Maybe Position
+cheapestOpen costFn model =
+    model.openSet
+        |> Set.toList
+        |> List.filterMap
+            (\position ->
+                case Dict.get position model.costs of
+                    Nothing ->
+                        Nothing
+
+                    Just cost ->
+                        Just ( position, cost + costFn position )
+            )
+        |> List.sortBy snd
+        |> List.head
+        |> Maybe.map fst
 
 
-init : List ( Vector, Cost ) -> ( Vector, Vector ) -> Astar
-init inputNodes ( start, finish ) =
+reconstructPath : Dict Position Position -> Position -> Path
+reconstructPath cameFrom goal =
+    case Dict.get goal cameFrom of
+        Nothing ->
+            Array.empty
+
+        Just next ->
+            Array.push goal
+                (reconstructPath cameFrom next)
+
+
+bestCost : Int -> Maybe Int -> Int
+bestCost newDistance oldDistance =
+    case oldDistance of
+        Nothing ->
+            newDistance
+
+        Just distance ->
+            min distance newDistance
+
+
+updateCost : Position -> Position -> Model -> Model
+updateCost current neighbour model =
     let
-        nodeToKVP =
-            \(( vector, cost ) as node) -> ( vector, makeNode node )
+        newCameFrom =
+            Dict.insert neighbour current model.cameFrom
 
-        tuples =
-            List.map nodeToKVP inputNodes
-    in
-        A
-            { frontier = Queue.empty
-            , allNodes = EveryDict.fromList tuples
-            , start = start
-            , finish = finish
+        distanceTo =
+            Array.length (reconstructPath newCameFrom neighbour)
+
+        newModel =
+            { model
+                | costs = Dict.insert neighbour distanceTo model.costs
+                , cameFrom = newCameFrom
             }
-
-
-findPath : Astar -> List Vector
-findPath (A model) =
-    []
-
-
-find : Model -> List Vector
-find { frontier, allNodes, start, finish } =
-    let
-        ( maybeNode, frontier' ) =
-            ( Queue.findMin frontier, Queue.deleteMin frontier )
-
-        neighbours =
-            case maybeNode of
-                Nothing ->
-                    Debug.crash "Could not find a path to" finish
-
-                Just node ->
-                    neighbours allNodes node
     in
-        []
+        case Dict.get neighbour model.costs of
+            Nothing ->
+                newModel
 
-neighbours: EveryDict Vector Node -> Node -> List Node
-neighbours allNodes centreNode =
-    
+            Just previousDistance ->
+                if distanceTo < previousDistance then
+                    newModel
+                else
+                    model
 
 
-{-| Manhattan distance between two points, taking max because you can move diagonally
+astar : (Position -> Position -> Int) -> (Position -> Set Position) -> Position -> Model -> Maybe Path
+astar costFn moveFn goal model =
+    case cheapestOpen (costFn goal) model of
+        Nothing ->
+            Nothing
+
+        Just current ->
+            if current == goal then
+                Just (reconstructPath model.cameFrom goal)
+            else
+                let
+                    modelPopped =
+                        { model
+                            | openSet = Set.remove current model.openSet
+                            , evaluated = Set.insert current model.evaluated
+                        }
+
+                    neighbours =
+                        moveFn current
+
+                    newNeighbours =
+                        Set.diff neighbours modelPopped.evaluated
+
+                    modelWithNeighbours =
+                        { modelPopped
+                            | openSet =
+                                Set.union modelPopped.openSet
+                                    newNeighbours
+                        }
+
+                    modelWithCosts =
+                        Set.foldl (updateCost current) modelWithNeighbours newNeighbours
+                in
+                    astar costFn moveFn goal modelWithCosts
+
+
+{-| Find a path between `start` and `end`. You must supply a cost function and a move function.
+
+  The cost function must estimate the distance between any two
+  positions. It doesn't really matter how accurate this estimate is,
+  as long as it _never_ underestimates.
+
+  The move function takes a `Position` and returns a `Set` of possible
+  places you can move to in one step.
+
+  If this function returns `Nothing`, there is no path between the two
+  points. Otherwise it returns `Just` an `Array` of steps from `start`
+  to `end`.
 -}
-heuristic : NodeData -> NodeData -> Cost
-heuristic a b =
-    let
-        { x, y } =
-            Vector.sub a.point b.point
-    in
-        max x y
+findPath : (Position -> Position -> Int) -> (Position -> Set Position) -> Position -> Position -> Maybe Path
+findPath costFn moveFn start end =
+    initialModel start
+        |> astar costFn moveFn end

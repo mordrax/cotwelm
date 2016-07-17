@@ -16,7 +16,9 @@ import Hero exposing (..)
 import Combat exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
 import Stats exposing (..)
-import Utils.Astar as Pathfinder exposing (..)
+import Utils.Astar as Astar exposing (..)
+import Set exposing (..)
+import Array exposing (..)
 
 
 tryMoveHero : Direction -> Model -> Model
@@ -89,7 +91,7 @@ queryPosition pos ({ hero, map, monsters } as model) =
                     Tile.isSolid tile
 
                 Nothing ->
-                    False
+                    True
     in
         ( tileObstruction, maybeBuilding, maybeMonster, isHero )
 
@@ -169,7 +171,7 @@ moveMonsters monsters movedMonsters ({ hero, map } as model) =
         monster :: restOfMonsters ->
             let
                 movedMonster =
-                    pathMonster monster hero
+                    pathMonster monster hero model
 
                 obstructions =
                     queryPosition movedMonster.position model
@@ -202,16 +204,99 @@ moveMonsters monsters movedMonsters ({ hero, map } as model) =
                             moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
 
 
-pathMonster : Monster -> Hero -> Monster
-pathMonster monster hero =
-    let
-        { x, y } =
-            Vector.sub hero.position monster.position
 
-        moveVector =
-            Vector.new (x // abs x) (y // abs y)
+-----------------
+-- Pathfinding --
+-----------------
+
+
+pathMonster : Monster -> Hero -> Model -> Monster
+pathMonster monster hero model =
+    let
+        heuristicFromPositions =
+            \pos1 pos2 ->
+                heuristic (Vector.newFromTuple pos1) (Vector.newFromTuple pos2)
+
+        neighboursFromPosition =
+            \position -> neighbours (Vector.newFromTuple position) model
+
+        path =
+            Astar.findPath heuristicFromPositions
+                neighboursFromPosition
+                (Vector.toTuple monster.position)
+                (Vector.toTuple hero.position)
     in
-        { monster | position = Vector.add monster.position moveVector }
+        case path of
+            Nothing ->
+                monster
+
+            Just arr ->
+                let
+                    head =
+                        Array.get 0 arr
+                in
+                    case head of
+                        Just ( x, y ) ->
+                            { monster | position = Vector.new x y }
+
+                        Nothing ->
+                            monster
+
+
+{-| Manhattan but counts diagonal cost as one (since you can move diagonally)
+-}
+heuristic : Vector -> Vector -> Int
+heuristic start end =
+    let
+        diff =
+            Vector.sub start end
+
+        --_ =
+        --    Debug.log "heuristic: " { s = start, e = end, d = diff }
+    in
+        max (diff.x) (diff.y)
+
+
+neighbours : Vector -> Model -> Set Position
+neighbours position model =
+    let
+        add =
+            \x y -> Vector.add position (Vector.new x y)
+
+        possibleNeighbours =
+            \vector ->
+                [ add -1 -1, add 0 -1, add 1 -1 ]
+                    ++ [ add -1 0, add 1 0 ]
+                    ++ [ add -1 1, add 0 1, add 1 1 ]
+
+        notObstructed =
+            \vector -> not (isObstructed vector model)
+
+        --_ =
+        --    Debug.log "neighbours"
+        --        { possible = possibleNeighbours position
+        --        , valid = List.filter notObstructed (possibleNeighbours position)
+        --        }
+    in
+        position
+            |> possibleNeighbours
+            |> List.filter notObstructed
+            |> List.map Vector.toTuple
+            |> Set.fromList
+
+
+isObstructed : Vector -> Model -> Bool
+isObstructed position model =
+    --(tile, building, monster, hero)
+    case queryPosition position model of
+        ( _, _, _, True ) ->
+            False
+
+        ( False, Nothing, Nothing, _ ) ->
+            False
+
+        _ ->
+            True
 
 
 isMonsterObstruction : Monster -> List Monster -> Bool

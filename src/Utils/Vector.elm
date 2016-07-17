@@ -33,6 +33,16 @@ new x y =
     }
 
 
+newFromTuple : ( Int, Int ) -> Vector
+newFromTuple ( x, y ) =
+    { x = x, y = y }
+
+
+toTuple : Vector -> ( Int, Int )
+toTuple { x, y } =
+    ( x, y )
+
+
 {-| Compares two Vecotr2D
 -}
 equal : Vector -> Vector -> Bool
