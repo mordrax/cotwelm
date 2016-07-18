@@ -18,7 +18,6 @@ import Utils.IdGenerator as IdGenerator exposing (..)
 import Stats exposing (..)
 import AStar exposing (..)
 import Set exposing (..)
-import Array exposing (..)
 
 
 tryMoveHero : Direction -> Model -> Model

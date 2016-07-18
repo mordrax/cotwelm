@@ -161,6 +161,13 @@ viewMap ({ windowSize } as model) =
         px =
             \x -> (toString x) ++ "px"
 
+        _ =
+            Debug.log "viewMap"
+                { hero = ( x, y )
+                , offsets = ( xOff, yOff )
+                , sub = ( y - yOff, x - xOff )
+                }
+
         viewport =
             \html ->
                 div
@@ -174,8 +181,8 @@ viewMap ({ windowSize } as model) =
                     [ div
                         [ style
                             [ ( "position", "relative" )
-                            , ( "top", "-" ++ (toString (y - yOff)) ++ "px" )
-                            , ( "left", "-" ++ (toString (x - xOff)) ++ "px" )
+                            , ( "top", px (yOff - y) )
+                            , ( "left", px (xOff - x) )
                             ]
                         ]
                         html

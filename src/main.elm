@@ -26,7 +26,9 @@ import String exposing (..)
 import Task exposing (perform)
 import Random exposing (initialSeed)
 import Time exposing (inSeconds, now)
-import TimeTravel.Navigation as TimeTravel
+
+
+--import TimeTravel.Navigation as TimeTravel
 
 
 type Msg
@@ -46,8 +48,8 @@ type Page
 
 main : Program Never
 main =
-    --Navigation.program urlParser
-    TimeTravel.program urlParser
+    Navigation.program urlParser
+        --TimeTravel.program urlParser
         { init = initModel
         , update = update
         , view = view
@@ -63,8 +65,7 @@ subscriptions model =
             \x -> Sub.map GameMsg x
 
         gameSubs =
-            \game ->
-                List.map toMsg (Game.subscriptions game)
+            \game -> List.map toMsg (Game.subscriptions game)
     in
         case model.game of
             Nothing ->
