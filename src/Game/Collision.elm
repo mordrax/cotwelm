@@ -16,7 +16,7 @@ import Hero exposing (..)
 import Combat exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
 import Stats exposing (..)
-import Utils.Astar as Astar exposing (..)
+import AStar exposing (..)
 import Set exposing (..)
 import Array exposing (..)
 
@@ -221,7 +221,7 @@ pathMonster monster hero model =
             \position -> neighbours (Vector.newFromTuple position) model
 
         path =
-            Astar.findPath heuristicFromPositions
+            AStar.findPath heuristicFromPositions
                 neighboursFromPosition
                 (Vector.toTuple monster.position)
                 (Vector.toTuple hero.position)
@@ -230,22 +230,16 @@ pathMonster monster hero model =
             Nothing ->
                 monster
 
-            Just arr ->
-                let
-                    head =
-                        Array.get 0 arr
-                in
-                    case head of
-                        Just ( x, y ) ->
-                            { monster | position = Vector.new x y }
+            Just [] ->
+                monster
 
-                        Nothing ->
-                            monster
+            Just (( x, y ) :: _) ->
+                { monster | position = Vector.new x y }
 
 
 {-| Manhattan but counts diagonal cost as one (since you can move diagonally)
 -}
-heuristic : Vector -> Vector -> Int
+heuristic : Vector -> Vector -> Float
 heuristic start end =
     let
         diff =
@@ -254,7 +248,7 @@ heuristic start end =
         --_ =
         --    Debug.log "heuristic: " { s = start, e = end, d = diff }
     in
-        max (diff.x) (diff.y)
+        toFloat <| max (diff.x) (diff.y)
 
 
 neighbours : Vector -> Model -> Set Position
