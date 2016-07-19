@@ -89,7 +89,7 @@ isBuildingAtPosition : Vector -> Building -> Bool
 isBuildingAtPosition pos (BM model) =
     let
         bottomLeft =
-            Vector.sub (Vector.add model.pos model.size) (Vector.new 1 1)
+            Vector.sub (Vector.add model.pos model.size) ( 1, 1 )
     in
         boxIntersect pos ( model.pos, bottomLeft )
 
@@ -110,22 +110,22 @@ new buildingTile pos name buildingType =
     in
         case buildingTile of
             Gate_NS ->
-                newBuilding (Vector.new 1 0) (Vector.new 3 1)
+                newBuilding ( 1, 0 ) ( 3, 1 )
 
             Hut_EF ->
-                newBuilding (Vector.new 0 1) (Vector.new 2 2)
+                newBuilding ( 0, 1 ) ( 2, 2 )
 
             StrawHouse_EF ->
-                newBuilding (Vector.new 2 1) (Vector.new 3 3)
+                newBuilding ( 2, 1 ) ( 3, 3 )
 
             StrawHouse_WF ->
-                newBuilding (Vector.new 0 1) (Vector.new 3 3)
+                newBuilding ( 0, 1 ) ( 3, 3 )
 
             BurntStrawHouse_WF ->
-                newBuilding (Vector.new 0 1) (Vector.new 3 3)
+                newBuilding ( 0, 1 ) ( 3, 3 )
 
             HutTemple_NF ->
-                newBuilding (Vector.new 2 0) (Vector.new 5 6)
+                newBuilding ( 2, 0 ) ( 5, 6 )
 
             MineEntrance ->
-                newBuilding (Vector.new 0 0) (Vector.new 1 1)
+                newBuilding ( 0, 0 ) ( 1, 1 )

@@ -27,6 +27,6 @@ type BaseHero
 init : Hero
 init =
     { base = (A <| Model "Bob the Brave")
-    , position = Vector.new 11 17
+    , position = ( 11, 17 )
     , stats = Stats.new 20 10
     }

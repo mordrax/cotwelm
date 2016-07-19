@@ -5,9 +5,14 @@ import Html exposing (..)
 import Utils.Vector exposing (..)
 
 
+px : number -> String
+px a =
+    (toString a) ++ "px"
+
+
 vectorToHtmlStyle : Vector -> Attribute msg
-vectorToHtmlStyle v =
+vectorToHtmlStyle ( x, y ) =
     style
-        [ ( "top", (toString (v.y * 32)) ++ "px" )
-        , ( "left", (toString (v.x * 32)) ++ "px" )
+        [ ( "top", px (y * 32) )
+        , ( "left", px (x * 32) )
         ]

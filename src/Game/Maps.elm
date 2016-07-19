@@ -165,16 +165,16 @@ villageBuildings : List Building
 villageBuildings =
     let
         farmGate =
-            Building.newLink Farm (Vector.new 11 31)
+            Building.newLink Farm ( 11, 31 )
     in
-        [ Building.new Gate_NS (Vector.new 10 0) "Village Gate" farmGate
-        , Building.new StrawHouse_EF (Vector.new 3 6) "Junk Shop" Ordinary
-        , Building.new StrawHouse_WF (Vector.new 16 5) "Private House" Ordinary
-        , Building.new Hut_EF (Vector.new 7 13) "Potion Store" (ShopType PotionStore)
-        , Building.new StrawHouse_WF (Vector.new 14 12) "Private House 2" Ordinary
-        , Building.new StrawHouse_EF (Vector.new 6 17) "Weapon Shop" (ShopType WeaponSmith)
-        , Building.new StrawHouse_WF (Vector.new 14 17) "General Store" (ShopType GeneralStore)
-        , Building.new HutTemple_NF (Vector.new 9 22) "Odin's Temple" Ordinary
+        [ Building.new Gate_NS ( 10, 0 ) "Village Gate" farmGate
+        , Building.new StrawHouse_EF ( 3, 6 ) "Junk Shop" Ordinary
+        , Building.new StrawHouse_WF ( 16, 5 ) "Private House" Ordinary
+        , Building.new Hut_EF ( 7, 13 ) "Potion Store" (ShopType PotionStore)
+        , Building.new StrawHouse_WF ( 14, 12 ) "Private House 2" Ordinary
+        , Building.new StrawHouse_EF ( 6, 17 ) "Weapon Shop" (ShopType WeaponSmith)
+        , Building.new StrawHouse_WF ( 14, 17 ) "General Store" (ShopType GeneralStore)
+        , Building.new HutTemple_NF ( 9, 22 ) "Odin's Temple" Ordinary
         ]
 
 
@@ -182,14 +182,14 @@ farmBuildings : List Building
 farmBuildings =
     let
         villageGate =
-            Building.newLink Village (Vector.new 11 1)
+            Building.newLink Village ( 11, 1 )
 
         mineExit =
-            Building.newLink DungeonLevelOne (Vector.new 22 39)
+            Building.newLink DungeonLevelOne ( 22, 39 )
     in
-        [ Building.new Gate_NS (Vector.new 10 32) "Farm Gate" villageGate
-        , Building.new StrawHouse_WF (Vector.new 43 23) "Adopted Parents House" Ordinary
-        , Building.new MineEntrance (Vector.new 24 1) "Mine Entrance" mineExit
+        [ Building.new Gate_NS ( 10, 32 ) "Farm Gate" villageGate
+        , Building.new StrawHouse_WF ( 43, 23 ) "Adopted Parents House" Ordinary
+        , Building.new MineEntrance ( 24, 1 ) "Mine Entrance" mineExit
         ]
 
 
@@ -197,9 +197,9 @@ dungeonLevelOneBuildings : List Building
 dungeonLevelOneBuildings =
     let
         mineEntrance =
-            Building.newLink Farm (Vector.new 24 2)
+            Building.newLink Farm ( 24, 2 )
     in
-        [ Building.new MineEntrance (Vector.new 22 40) "Mine Exit" mineEntrance
+        [ Building.new MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance
         ]
 
 
@@ -215,8 +215,8 @@ tileNeighbours { position } map =
         getNeighbour =
             \vector -> Dict.get (toString (Vector.add position vector)) map
     in
-        ( getNeighbour (Vector.new 0 -1)
-        , getNeighbour (Vector.new 1 0)
-        , getNeighbour (Vector.new 0 1)
-        , getNeighbour (Vector.new -1 0)
+        ( getNeighbour ( 0, -1 )
+        , getNeighbour ( 1, 0 )
+        , getNeighbour ( 0, 1 )
+        , getNeighbour ( -1, 0 )
         )
