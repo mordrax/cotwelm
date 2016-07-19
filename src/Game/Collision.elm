@@ -212,12 +212,9 @@ moveMonsters monsters movedMonsters ({ hero, map } as model) =
 pathMonster : Monster -> Hero -> Model -> Monster
 pathMonster monster hero model =
     let
-        neighboursFromPosition =
-            \position -> neighbours position model
-
         path =
             AStar.findPath heuristic
-                neighboursFromPosition
+                (neighbours model)
                 monster.position
                 hero.position
     in
@@ -243,8 +240,8 @@ heuristic start end =
         toFloat (max dx dy)
 
 
-neighbours : Vector -> Model -> Set Position
-neighbours position model =
+neighbours : Model -> Vector -> Set Position
+neighbours model position =
     let
         add =
             \x y -> Vector.add position ( x, y )
@@ -257,12 +254,6 @@ neighbours position model =
 
         notObstructed =
             \vector -> not (isObstructed vector model)
-
-        --_ =
-        --    Debug.log "neighbours"
-        --        { possible = possibleNeighbours position
-        --        , valid = List.filter notObstructed (possibleNeighbours position)
-        --        }
     in
         position
             |> possibleNeighbours
@@ -272,7 +263,6 @@ neighbours position model =
 
 isObstructed : Vector -> Model -> Bool
 isObstructed position model =
-    --(tile, building, monster, hero)
     case queryPosition position model of
         ( _, _, _, True ) ->
             False
