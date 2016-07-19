@@ -1,97 +1,50 @@
 module Utils.Vector exposing (..)
 
 {-| 2D vector for representing coordinates as well as dimensions of objects
-# Model
-@docs Vector
-
-# Constructor
-@docs vector
-
-# Comparison
-@docs equal
-
-# Basic Arithmatics
-@docs add, sub, div, mul
 
 -}
 
 
-{-| Represents the Vector model
--}
 type alias Vector =
-    { x : Int
-    , y : Int
-    }
+    ( Int, Int )
 
 
-{-| Creates Vector from two numbers
--}
-new : Int -> Int -> Vector
-new x y =
-    { x = x
-    , y = y
-    }
-
-
-newFromTuple : ( Int, Int ) -> Vector
-newFromTuple ( x, y ) =
-    { x = x, y = y }
-
-
-toTuple : Vector -> ( Int, Int )
-toTuple { x, y } =
-    ( x, y )
-
-
-{-| Compares two Vecotr2D
--}
-equal : Vector -> Vector -> Bool
-equal v1 v2 =
-    v1.x == v2.x && v1.y == v2.y
-
-
-{-| Adds two Vector and returns summation of them
--}
 add : Vector -> Vector -> Vector
-add v1 v2 =
-    { x = v1.x + v2.x
-    , y = v1.y + v2.y
-    }
+add ( v1x, v1y ) ( v2x, v2y ) =
+    ( v1x + v2x, v1y + v2y )
 
 
-{-| Subtract two vectors. a -> b -> c means a - b = c
--}
 sub : Vector -> Vector -> Vector
-sub a b =
-    { x = a.x - b.x
-    , y = a.y - b.y
-    }
+sub ( v1x, v1y ) ( v2x, v2y ) =
+    ( v1x - v2x, v1y - v2y )
 
 
 scale : Int -> Vector -> Vector
-scale magnitude { x, y } =
-    { x = x * magnitude, y = y * magnitude }
+scale magnitude ( x, y ) =
+    ( x * magnitude, y * magnitude )
 
 
-distance : Vector -> Vector -> Int
-distance a b =
+distance : Vector -> Vector -> Float
+distance ( v1x, v1y ) ( v2x, v2y ) =
     let
-        { x, y } =
-            sub a b
+        ( dx, dy ) =
+            sub ( v1x, v1y ) ( v2x, v2y )
     in
-        abs x + abs y
+        (dx ^ 2 + dy ^ 2)
+            |> toFloat
+            |> sqrt
 
 
 {-| a -> (topLeft, bottomRight) -> isIntersect
   Checks if vector a's x/y values are within the bounding box created by the tuple (topLeft, bottomRight)
 -}
 boxIntersect : Vector -> ( Vector, Vector ) -> Bool
-boxIntersect target ( topLeft, bottomRight ) =
+boxIntersect ( x, y ) ( ( topLeftX, topLeftY ), ( bottomRightX, bottomRightY ) ) =
     let
         isWithinX =
-            target.x >= topLeft.x && target.x <= bottomRight.x
+            x >= topLeftX && x <= bottomRightX
 
         isWithinY =
-            target.y >= topLeft.y && target.y <= bottomRight.y
+            y >= topLeftY && y <= bottomRightY
     in
         isWithinX && isWithinY

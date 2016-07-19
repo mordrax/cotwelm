@@ -72,28 +72,28 @@ dirToVector : Direction -> Vector
 dirToVector dir =
     case dir of
         Up ->
-            Vector.new 0 -1
+            ( 0, -1 )
 
         Down ->
-            Vector.new 0 1
+            ( 0, 1 )
 
         Left ->
-            Vector.new -1 0
+            ( -1, 0 )
 
         Right ->
-            Vector.new 1 0
+            ( 1, 0 )
 
         UpLeft ->
-            Vector.new -1 -1
+            ( -1, -1 )
 
         UpRight ->
-            Vector.new 1 -1
+            ( 1, -1 )
 
         DownLeft ->
-            Vector.new -1 1
+            ( -1, 1 )
 
         DownRight ->
-            Vector.new 1 1
+            ( 1, 1 )
 
 
 keycodeToMsg : KeyMap -> Keyboard.KeyCode -> Msg

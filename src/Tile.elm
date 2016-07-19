@@ -129,13 +129,10 @@ toTiles y asciiTiles =
 toTile : Int -> Int -> Char -> Tile
 toTile y x asciiTile =
     let
-        pos =
-            { x = x, y = y }
-
         ( tileType, solid ) =
             asciiTileData asciiTile
     in
-        Tile (Base <| Model tileType solid [] Empty) pos
+        Tile (Base <| Model tileType solid [] Empty) ( x, y )
 
 
 tileToHtml : Tile -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile ) -> Html a

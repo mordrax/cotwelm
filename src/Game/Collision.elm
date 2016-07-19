@@ -78,11 +78,11 @@ queryPosition pos ({ hero, map, monsters } as model) =
 
         maybeMonster =
             monsters
-                |> List.filter (\x -> pos `Vector.equal` x.position)
+                |> List.filter (\x -> pos == x.position)
                 |> List.head
 
         isHero =
-            hero.position `Vector.equal` pos
+            hero.position == pos
 
         tileObstruction =
             case maybeTile of
@@ -212,18 +212,14 @@ moveMonsters monsters movedMonsters ({ hero, map } as model) =
 pathMonster : Monster -> Hero -> Model -> Monster
 pathMonster monster hero model =
     let
-        heuristicFromPositions =
-            \pos1 pos2 ->
-                heuristic (Vector.newFromTuple pos1) (Vector.newFromTuple pos2)
-
         neighboursFromPosition =
-            \position -> neighbours (Vector.newFromTuple position) model
+            \position -> neighbours position model
 
         path =
-            AStar.findPath heuristicFromPositions
+            AStar.findPath heuristic
                 neighboursFromPosition
-                (Vector.toTuple monster.position)
-                (Vector.toTuple hero.position)
+                monster.position
+                hero.position
     in
         case path of
             Nothing ->
@@ -233,7 +229,7 @@ pathMonster monster hero model =
                 monster
 
             Just (( x, y ) :: _) ->
-                { monster | position = Vector.new x y }
+                { monster | position = ( x, y ) }
 
 
 {-| Manhattan but counts diagonal cost as one (since you can move diagonally)
@@ -241,20 +237,17 @@ pathMonster monster hero model =
 heuristic : Vector -> Vector -> Float
 heuristic start end =
     let
-        diff =
+        ( dx, dy ) =
             Vector.sub start end
-
-        --_ =
-        --    Debug.log "heuristic: " { s = start, e = end, d = diff }
     in
-        toFloat <| max (diff.x) (diff.y)
+        toFloat (max dx dy)
 
 
 neighbours : Vector -> Model -> Set Position
 neighbours position model =
     let
         add =
-            \x y -> Vector.add position (Vector.new x y)
+            \x y -> Vector.add position ( x, y )
 
         possibleNeighbours =
             \vector ->
@@ -274,7 +267,6 @@ neighbours position model =
         position
             |> possibleNeighbours
             |> List.filter notObstructed
-            |> List.map Vector.toTuple
             |> Set.fromList
 
 
@@ -294,4 +286,4 @@ isObstructed position model =
 
 isMonsterObstruction : Monster -> List Monster -> Bool
 isMonsterObstruction monster monsters =
-    List.any (Vector.equal monster.position) (List.map .position monsters)
+    List.any (\x -> x == monster.position) (List.map .position monsters)

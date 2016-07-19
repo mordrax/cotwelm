@@ -152,7 +152,7 @@ viewMap ({ windowSize } as model) =
         title =
             h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
 
-        { x, y } =
+        ( x, y ) =
             Vector.scale 32 model.hero.position
 
         ( xOff, yOff ) =
