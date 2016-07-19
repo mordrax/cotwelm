@@ -2,6 +2,7 @@ module Tile
     exposing
         ( Tile
         , TileType
+        , isSameType
         , isSolid
         , mapToTiles
         , tileToHtml
@@ -18,6 +19,7 @@ import List exposing (..)
 import String exposing (..)
 import Hero exposing (..)
 import Monster.Monster as Monster exposing (..)
+import List.Extra exposing (..)
 
 
 type alias Model =
@@ -82,6 +84,18 @@ isSolid { base } =
         solid
 
 
+isSameType : Tile -> Tile -> Bool
+isSameType t1 t2 =
+    let
+        (Base m1) =
+            t1.base
+
+        (Base m2) =
+            t2.base
+    in
+        m1.tile == m2.tile
+
+
 {-| Given a ASCII list of strings representing tiles, output a list of tiles
 -}
 mapToTiles : List String -> List Tile
@@ -124,13 +138,91 @@ toTile y x asciiTile =
         Tile (Base <| Model tileType solid [] Empty) pos
 
 
-tileToHtml : Tile -> Html a
-tileToHtml { base, position } =
+tileToHtml : Tile -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile ) -> Html a
+tileToHtml ({ base, position } as tile) neighbours =
     let
         (Base model) =
             base
+
+        halfTiles =
+            [ ( PathRock, Path )
+            , ( PathGrass, Path )
+            , ( WaterGrass, Water )
+            , ( WaterPath, Water )
+              --, (Grass50Cave50, Grass)
+              --, (White50Cave50, White)
+            , ( WallDarkDgn, Rock )
+            , ( WallLitDgn, Rock )
+            ]
+
+        halfTile =
+            List.Extra.find (\x -> model.tile == (fst x)) halfTiles
+
+        getType =
+            \tile ->
+                let
+                    { base } =
+                        tile
+
+                    (Base model) =
+                        base
+                in
+                    model.tile
+
+        aOrb =
+            \x a b -> x == a || x == b
+
+        rotation =
+            case halfTile of
+                Nothing ->
+                    0
+
+                Just ( _, tileType ) ->
+                    let
+                        checkUpLeft =
+                            \up left ->
+                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ up, left ] then
+                                    90
+                                else
+                                    0
+
+                        checkUpRight =
+                            \up right ->
+                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ up, right ] then
+                                    180
+                                else
+                                    0
+
+                        -- no down left check as this is default tile direction
+                        checkDownRight =
+                            \down right ->
+                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ right, down ] then
+                                    -90
+                                else
+                                    0
+                    in
+                        case neighbours of
+                            ( Nothing, _, _, _ ) ->
+                                0
+
+                            ( _, Nothing, _, _ ) ->
+                                0
+
+                            ( _, _, Nothing, _ ) ->
+                                0
+
+                            ( _, _, _, Nothing ) ->
+                                0
+
+                            ( Just up, Just right, Just down, Just left ) ->
+                                (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right)
     in
-        div [ class ("tile " ++ toString model.tile), Lib.vectorToHtmlStyle position ] []
+        div
+            [ class ("tile " ++ toString model.tile)
+            , style [ ( "transform", "rotate(" ++ (toString rotation) ++ "deg)" ) ]
+            , Lib.vectorToHtmlStyle position
+            ]
+            []
 
 
 asciiTileData : Char -> ( TileType, Bool )
