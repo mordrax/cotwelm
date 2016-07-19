@@ -13,7 +13,10 @@ import Utils.Vector as Vector exposing (..)
 
 subscriptions : List (Sub Msg)
 subscriptions =
-    [ ups (keycodeToMsg playerKeymapUps), presses (keycodeToMsg playerKeymap) ]
+    [ --ups (keycodeToMsg playerKeymapUps)
+      --, presses (keycodeToMsg playerKeymap)
+      downs (keycodeToMsg playerKeymap)
+    ]
 
 
 type Msg
@@ -28,6 +31,10 @@ type Direction
     | Down
     | Left
     | Right
+    | UpLeft
+    | UpRight
+    | DownLeft
+    | DownRight
 
 
 type alias KeyMap =
@@ -45,14 +52,17 @@ playerKeymap =
         , ( 97, KeyDir Left )
         , ( 68, KeyDir Right )
         , ( 100, KeyDir Right )
-        ]
-
-
-playerKeymapUps : KeyMap
-playerKeymapUps =
-    Dict.fromList
-        [ -- Esc
-          ( 27, Map )
+          --numpad
+        , ( 38, KeyDir Up )
+        , ( 40, KeyDir Down )
+        , ( 37, KeyDir Left )
+        , ( 39, KeyDir Right )
+        , ( 36, KeyDir UpLeft )
+        , ( 33, KeyDir UpRight )
+        , ( 35, KeyDir DownLeft )
+        , ( 34, KeyDir DownRight )
+          -- Esc
+        , ( 27, Map )
           -- i
         , ( 73, Inventory )
         ]
@@ -73,12 +83,25 @@ dirToVector dir =
         Right ->
             Vector.new 1 0
 
+        UpLeft ->
+            Vector.new -1 -1
+
+        UpRight ->
+            Vector.new 1 -1
+
+        DownLeft ->
+            Vector.new -1 1
+
+        DownRight ->
+            Vector.new 1 1
+
 
 keycodeToMsg : KeyMap -> Keyboard.KeyCode -> Msg
 keycodeToMsg map code =
     let
-        --_ =
-        --    Debug.log ("keycode: " ++ toString code) 1
+        _ =
+            Debug.log ("keycode: " ++ toString code) 1
+
         maybeMsg =
             map |> Dict.get code
     in
