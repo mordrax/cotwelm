@@ -161,13 +161,6 @@ viewMap ({ windowSize } as model) =
         px =
             \x -> (toString x) ++ "px"
 
-        _ =
-            Debug.log "viewMap"
-                { hero = ( x, y )
-                , offsets = ( xOff, yOff )
-                , sub = ( y - yOff, x - xOff )
-                }
-
         viewport =
             \html ->
                 div
@@ -205,11 +198,9 @@ viewStatus model =
     div []
         [ div [ class "ui padded grid" ]
             [ div [ style [ ( "overflow", "auto" ), ( "height", "100px" ) ], class "ui twelve wide column" ]
-                [ viewMessages model
-                ]
+                [ viewMessages model ]
             , div [ class "ui four wide column" ]
-                [ viewStats model
-                ]
+                [ viewStats model ]
             ]
         ]
 

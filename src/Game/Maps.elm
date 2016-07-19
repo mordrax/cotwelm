@@ -82,11 +82,28 @@ updateArea area (A model) =
 
 
 view : Maps -> Html a
-view (A model) =
-    mapToHtml model.currentArea (A model)
+view maps =
+    let
+        map =
+            getMap maps
+
+        neighbours =
+            \tile -> tileNeighbours tile map
+
+        listOfTiles =
+            Dict.toList map
+                |> List.map snd
+
+        tilesHtml =
+            List.map (\x -> tileToHtml x (neighbours x)) listOfTiles
+
+        buildingsHtml =
+            List.map Building.view (getBuildings maps)
+    in
+        div [] (tilesHtml ++ buildingsHtml)
 
 
-{-| Given an area, will return a map of that area or an empty dictionary if invalid area
+{-| Get the map for the current area
 -}
 getMap : Maps -> Map
 getMap (A model) =
@@ -102,6 +119,8 @@ getMap (A model) =
                 Dict.empty
 
 
+{-| Get the buildings in the current area
+-}
 getBuildings : Maps -> List Building
 getBuildings (A model) =
     let
@@ -116,6 +135,10 @@ getBuildings (A model) =
                 []
 
 
+{-| Get the ascii map for a specific area.
+    This is used to create a map and not during gameplay so it doesn't
+    make sense to ask for it for the current area.
+-}
 getASCIIMap : Area -> List String
 getASCIIMap area =
     case area of
@@ -186,16 +209,14 @@ dungeonLevelOneBuildings =
 ------------------------------------------
 
 
-mapToHtml : Area -> Maps -> Html a
-mapToHtml area (A model) =
+tileNeighbours : Tile -> Map -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
+tileNeighbours { position } map =
     let
-        listOfTiles =
-            Dict.toList (getMap (A model)) |> List.map snd
-
-        tilesHtml =
-            List.map tileToHtml listOfTiles
-
-        buildingsHtml =
-            List.map Building.view (getBuildings (A model))
+        getNeighbour =
+            \vector -> Dict.get (toString (Vector.add position vector)) map
     in
-        div [] (tilesHtml ++ buildingsHtml)
+        ( getNeighbour (Vector.new 0 -1)
+        , getNeighbour (Vector.new 1 0)
+        , getNeighbour (Vector.new 0 1)
+        , getNeighbour (Vector.new -1 0)
+        )
