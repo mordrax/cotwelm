@@ -47,11 +47,11 @@ tryMoveHero dir ({ hero } as model) =
 
 
 enterBuilding : Building -> Model -> Model
-enterBuilding building ({ hero, map } as model) =
+enterBuilding building ({ hero, maps } as model) =
     case Building.buildingType building of
         LinkType link ->
             { model
-                | map = Maps.updateArea link.area map
+                | maps = Maps.updateArea link.area maps
                 , hero = { hero | position = link.pos }
             }
 
@@ -68,13 +68,13 @@ enterBuilding building ({ hero, map } as model) =
 {-| Given a position and a map, work out everything on the square
 -}
 queryPosition : Vector -> Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
-queryPosition pos ({ hero, map, monsters } as model) =
+queryPosition pos ({ hero, maps, monsters } as model) =
     let
         maybeTile =
-            Dict.get (toString pos) (getMap map)
+            Dict.get pos (getMap maps)
 
         maybeBuilding =
-            buildingAtPosition pos (Maps.getBuildings map)
+            buildingAtPosition pos (Maps.getBuildings maps)
 
         maybeMonster =
             monsters
@@ -162,7 +162,7 @@ newHitMessage attacker defender damage =
 
 
 moveMonsters : List Monster -> List Monster -> Model -> Model
-moveMonsters monsters movedMonsters ({ hero, map } as model) =
+moveMonsters monsters movedMonsters ({ hero, maps } as model) =
     case monsters of
         [] ->
             { model | monsters = movedMonsters }

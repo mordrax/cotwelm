@@ -45,6 +45,7 @@ type Msg
     = Keyboard (Keyboard.Msg)
     | InvMsg (InventoryMsg Drag Drop)
     | ShopMsg Shop.Msg
+    | MapsMsg Maps.Msg
     | WindowSize Window.Size
 
 
@@ -63,19 +64,25 @@ initGame seed =
         ( newShop, shopCmd ) =
             Shop.new
 
+        ( maps, mapCmd, seed' ) =
+            Maps.init seed
+
         cmd =
-            Cmd.map (\x -> ShopMsg x) shopCmd
+            Cmd.batch
+                [ Cmd.map (\x -> ShopMsg x) shopCmd
+                , Cmd.map (\x -> MapsMsg x) mapCmd
+                ]
     in
         ( { name = "A new game"
           , hero = Hero.init
-          , map = Maps.init
+          , maps = maps
           , currentScreen = MapScreen
           , dnd = DragDrop.new
           , equipment = equipment
           , shop = newShop
           , idGen = idGenerator''
           , monsters = monsters
-          , seed = seed
+          , seed = seed'
           , windowSize = { width = 640, height = 640 }
           , messages = [ "Welcome to castle of the winds!" ]
           }
@@ -111,6 +118,9 @@ update msg model =
                     Shop.update msg model.idGen model.shop
             in
                 ( { model | shop = shop', idGen = idGen' }, Cmd.none )
+
+        MapsMsg msg ->
+            ( { model | maps = Maps.update msg model.maps }, Cmd.none )
 
         Keyboard (Keyboard.NoOp) ->
             ( model, Cmd.none )
@@ -185,7 +195,7 @@ viewMap ({ windowSize } as model) =
             [ viewMenu
             , viewQuickMenu
             , viewport
-                [ Maps.view model.map
+                [ Maps.view model.maps
                 , viewHero model.hero
                 , viewMonsters model
                 ]

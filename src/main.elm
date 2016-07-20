@@ -43,6 +43,7 @@ type Page
     | CharCreationPage
     | GamePage
     | ShopPage
+    | DungeonPage
     | NotImplementedPage
 
 
@@ -170,8 +171,6 @@ urlUpdate url model =
         ( { model | currentPage = CharCreationPage }, Cmd.none )
     else if url == "game" then
         ( { model | currentPage = GamePage }, Cmd.none )
-    else if url == "inventory" then
-        ( { model | currentPage = GamePage }, Cmd.none )
     else
         ( { model | currentPage = SplashPage }, Cmd.none )
 
@@ -190,10 +189,8 @@ urlParser =
     Navigation.makeParser (fromUrl << .hash)
 
 
-
--- Random number seed
-
-
+{-| Random number seed
+-}
 getSeed : Cmd Msg
 getSeed =
     let

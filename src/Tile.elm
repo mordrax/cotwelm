@@ -6,6 +6,7 @@ module Tile
         , isSolid
         , mapToTiles
         , tileToHtml
+        , toTile
         )
 
 import Utils.Vector exposing (..)
