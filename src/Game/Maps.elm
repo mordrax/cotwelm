@@ -2,7 +2,9 @@ module Game.Maps
     exposing
         ( Maps
         , Map
+        , Msg
         , init
+        , update
         , updateArea
         , view
         , getMap
@@ -29,6 +31,8 @@ import GameData.Types exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Html exposing (..)
 import Dict exposing (..)
+import DungeonGenerator exposing (generate)
+import Random exposing (..)
 
 
 type Maps
@@ -43,11 +47,15 @@ type alias Model =
 
 
 type alias Map =
-    Dict String Tile
+    Dict Vector Tile
 
 
-init : Maps
-init =
+type Msg
+    = GenerateDungeonLevel Int
+
+
+init : Random.Seed -> ( Maps, Cmd Msg, Random.Seed )
+init seed =
     let
         getTiles =
             \area ->
@@ -57,15 +65,19 @@ init =
             \area -> List.map toKVPair (getTiles area)
 
         toKVPair =
-            \tile -> ( toString tile.position, tile )
+            \tile -> ( tile.position, tile )
+
+        ( level, seed' ) =
+            DungeonGenerator.generate seed
     in
-        A
-            { currentArea = Village
+        ( A
+            { currentArea = DungeonLevel 2
             , maps =
                 Dict.fromList
                     [ ( toString Village, Dict.fromList (tilesToTuples Village) )
                     , ( toString Farm, Dict.fromList (tilesToTuples Farm) )
                     , ( toString DungeonLevelOne, Dict.fromList (tilesToTuples DungeonLevelOne) )
+                    , ( toString (DungeonLevel 2), level )
                     ]
             , buildings =
                 Dict.fromList
@@ -74,6 +86,18 @@ init =
                     , ( toString DungeonLevelOne, dungeonLevelOneBuildings )
                     ]
             }
+        , Cmd.none
+        , seed'
+        )
+
+
+update : Msg -> Maps -> Maps
+update msg (A model) =
+    let
+        _ =
+            Debug.log "maps update" 1
+    in
+        (A { model | currentArea = Village })
 
 
 updateArea : GameData.Types.Area -> Maps -> Maps
@@ -199,8 +223,7 @@ dungeonLevelOneBuildings =
         mineEntrance =
             Building.newLink Farm ( 24, 2 )
     in
-        [ Building.new MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance
-        ]
+        [ Building.new MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance ]
 
 
 
@@ -213,7 +236,7 @@ tileNeighbours : Tile -> Map -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile
 tileNeighbours { position } map =
     let
         getNeighbour =
-            \vector -> Dict.get (toString (Vector.add position vector)) map
+            \vector -> Dict.get (Vector.add position vector) map
     in
         ( getNeighbour ( 0, -1 )
         , getNeighbour ( 1, 0 )

@@ -16,7 +16,7 @@ import Window exposing (Size)
 type alias Model =
     { name : String
     , hero : Hero
-    , map : Maps.Maps
+    , maps : Maps.Maps
     , currentScreen : Screen
     , dnd : DragDrop Drag Drop
     , equipment : Equipment
