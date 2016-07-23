@@ -62,12 +62,17 @@ init =
         }
 
 
+design : Room -> ( List ( Entrance, Vector ), List Vector, List Vector )
+design (A { doors, walls, floor }) =
+    ( doors, walls, floor )
+
+
 {-| Dig a room of a certain size. This will randomly generate
 one or more entrances which can be a door, broken door or clear corridor.
 
 -}
-dig : RoomType -> Dimension -> Vector -> Random.Seed -> ( Room, Random.Seed )
-dig roomType (( w, h ) as dim) (( x, y ) as start) seed =
+new : RoomType -> Dimension -> Vector -> Random.Seed -> ( Room, Random.Seed )
+new roomType (( w, h ) as dim) (( x, y ) as start) seed =
     let
         ( walls, floor ) =
             case roomType of
@@ -113,14 +118,23 @@ addDoors : ( Vector, Bool ) -> ( List ( Vector, Bool ), List ( Entrance, Vector 
 addDoors (( wallPos, isSoft ) as wall) ( walls, entrances, seed ) =
     let
         ( res, seed' ) =
-            Dice.d 2 seed
-    in
-        case res of
-            1 ->
-                ( wall :: walls, entrances, seed' )
+            Dice.d 10 seed
 
-            _ ->
-                ( walls, ( Door, wallPos ) :: entrances, seed' )
+        addToWall =
+            ( wall :: walls, entrances, seed' )
+
+        addToDoor =
+            ( walls, ( Door, wallPos ) :: entrances, seed' )
+    in
+        if not isSoft then
+            addToWall
+        else
+            case res of
+                1 ->
+                    addToDoor
+
+                _ ->
+                    addToWall
 
 
 

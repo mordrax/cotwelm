@@ -71,7 +71,9 @@ init seed =
             DungeonGenerator.generate seed
     in
         ( A
-            { currentArea = DungeonLevel 2
+            { currentArea =
+                DungeonLevel 2
+                --currentArea = Village
             , maps =
                 Dict.fromList
                     [ ( toString Village, Dict.fromList (tilesToTuples Village) )
@@ -213,7 +215,7 @@ farmBuildings =
     in
         [ Building.new Gate_NS ( 10, 32 ) "Farm Gate" villageGate
         , Building.new StrawHouse_WF ( 43, 23 ) "Adopted Parents House" Ordinary
-        , Building.new MineEntrance ( 24, 1 ) "Mine Entrance" mineExit
+        , Building.new Building.MineEntrance ( 24, 1 ) "Mine Entrance" mineExit
         ]
 
 
@@ -223,7 +225,7 @@ dungeonLevelOneBuildings =
         mineEntrance =
             Building.newLink Farm ( 24, 2 )
     in
-        [ Building.new MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance ]
+        [ Building.new Building.MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance ]
 
 
 

@@ -5,87 +5,132 @@
     position: absolute;
 }
 
+
+/* Row 1 */
 .Rock {
-    background: url('/assets/original/tiles.png') -0px -0px;
-}
-.Grass {
-    background: url('/assets/original/tiles.png') -0px -32px;
-}
-.DarkDgn {
-    background: url('/assets/original/tiles.png') -0px -64px;
-}
-.Water {
-    background: url('/assets/original/tiles.png') -0px -96px;
-}
-.Path {
-    background: url('/assets/original/tiles.png') -0px -128px;
-}
-.LitDgn {
-    background: url('/assets/original/tiles.png') -0px -160px;
+    background: url('/assets/original/tiles.png') 0 0;
 }
 .PathRock {
-    background: url('/assets/original/tiles.png') -32px -0px;
+    background: url('/assets/original/tiles.png') -32px 0;
+}
+.MineEntrance {
+    background: url('/assets/original/tiles.png') -64px 0;
+}
+.PortcullisClosed {
+    background: url('/assets/original/tiles.png') -96px 0;
+}
+.PortcullisOpen {
+    background: url('/assets/original/tiles.png') -128px 0;
+}
+.Sign {
+    background: url('/assets/original/tiles.png') -160px 0;
+}
+.Favicon {
+    background: url('/assets/original/tiles.png') -192px 0;
+}
+
+
+/* Row 2 */
+.Grass {
+    background: url('/assets/original/tiles.png') 0 -32px;
 }
 .PathGrass {
     background: url('/assets/original/tiles.png') -32px -32px;
 }
-.WallDarkDgn {
-    background: url('/assets/original/tiles.png') -32px -64px;
-}
-.WaterGrass {
-    background: url('/assets/original/tiles.png') -32px -96px;
-}
-.WaterPath {
-    background: url('/assets/original/tiles.png') -32px -128px;
-}
-.WallLitDgn {
-    background: url('/assets/original/tiles.png') -32px -160px;
-}
-.Grass50Cave50 {
-    background: url('/assets/original/tiles.png') -0px -192px;
-}
-.Grass10Cave90 {
-    background: url('/assets/original/tiles.png') -32px -192px;
-}
-.White50Cave50 {
-    background: url('/assets/original/tiles.png') -0px -224px;
-}
-.White90Cave10 {
-    background: url('/assets/original/tiles.png') -32px -224px;
-}
 .Crop {
     background: url('/assets/original/tiles.png') -64px -32px;
 }
-.MineEntrance {
-    background: url('/assets/original/tiles.png') -64px -0px;
-}
-.Well {
-    background: url('/assets/original/tiles.png') -160px -32px;
-}
-.TreasurePile {
-    background: url('/assets/original/tiles.png') -128px -640px;
-}
-
-.Fountain {
-    background: url('/assets/original/tiles.png') -96px -96px;
-}
-.Sign {
-    background: url('/assets/original/tiles.png') -160px -0px;
-}
-.Well {
-    background: url('/assets/original/tiles.png') -160px -32px;
+.DestoyedVegePatch {
+    background: url('/assets/original/tiles.png') -96px -32px;
 }
 .VegePatch {
     background: url('/assets/original/tiles.png') -128px -32px;
 }
+.Well {
+    background: url('/assets/original/tiles.png') -160px -32px;
+}
 .Wagon {
     background: url('/assets/original/tiles.png') -192px -32px;
+}
+
+
+/* Row 3 - Unlit floor */
+.DarkDgn {
+    background: url('/assets/original/tiles.png') 0 -64px;
+}
+.WallDarkDgn {
+    background: url('/assets/original/tiles.png') -32px -64px;
+}
+.CastleCornerParapet {
+    background: : url('/assets/original/tiles.png') -64px -64px;
+}
+.CastleWall {
+    background: : url('/assets/original/tiles.png') -96px -64px;
+}
+.CastleParapet {
+    background: : url('/assets/original/tiles.png') -128px -64px;
+}
+.GreenWell {
+    background: : url('/assets/original/tiles.png') -160px -64px;
+}
+.Ashes {
+    background: : url('/assets/original/tiles.png') -192px -64px;
+}
+
+
+/* Row 4 - Water */
+.Water {
+    background: url('/assets/original/tiles.png') 0 -96px;
+}
+.WaterGrass {
+    background: url('/assets/original/tiles.png') -32px -96px;
+}
+.BlueSquare {
+    background: url('/assets/original/tiles.png') -64px -96px;
+}
+.Fountain {
+    background: url('/assets/original/tiles.png') -96px -96px;
+}
+.Altar {
+    background: url('/assets/original/tiles.png') -128px -96px;
+}
+.Status {
+    background: url('/assets/original/tiles.png') -160px -96px;
+}
+.Throne {
+    background: url('/assets/original/tiles.png') -192px -96px;
+}
+
+/* Row 5 - Path */
+.Path {
+    background: url('/assets/original/tiles.png') 0 -128px;
+}
+.WaterPath {
+    background: url('/assets/original/tiles.png') -32px -128px;
+}
+.StairsUp {
+    background: url('/assets/original/tiles.png') -64px -128px;
 }
 .StairsDown {
     background: url('/assets/original/tiles.png') -96px -128px;
 }
-.StairsUp {
-    background: url('/assets/original/tiles.png') -64px -128px;
+.TownWallCorner {
+    background: url('/assets/original/tiles.png') -128px -96px;
+}
+.TownWallStop {
+    background: url('/assets/original/tiles.png') -160px -96px;
+}
+.TownWall {
+    background: url('/assets/original/tiles.png') -192px -96px;
+}
+
+
+/* Row 6 - Lit floor */
+.LitDgn {
+    background: url('/assets/original/tiles.png') 0 -160px;
+}
+.WallLitDgn {
+    background: url('/assets/original/tiles.png') -32px -160px;
 }
 .DoorClosed {
     background: url('/assets/original/tiles.png') -64px -160px;
@@ -93,3 +138,50 @@
 .DoorOpen {
     background: url('/assets/original/tiles.png') -96px -160px;
 }
+.DoorBroken {
+    background: url('/assets/original/tiles.png') -128px -160px;
+}
+.Cobweb {
+    background: url('/assets/original/tiles.png') -160px -160px;
+}
+.Pillar {
+    background: url('/assets/original/tiles.png') -192px -160px;
+}
+
+
+/* Row 7 - Grass50Cave50 */
+
+.Grass50Cave50 {
+    background: url('/assets/original/tiles.png') 0 -192px;
+}
+.Grass10Cave90 {
+    background: url('/assets/original/tiles.png') -32px -192px;
+}
+
+
+/* Row 8 - White50Cave50 */
+.White50Cave50 {
+    background: url('/assets/original/tiles.png') 0 -224px;
+}
+.White90Cave10 {
+    background: url('/assets/original/tiles.png') -32px -224px;
+}
+
+/* Row 9 - Pit */
+
+
+/* Row 10 - Axe trap */
+
+
+.TreasurePile {
+    background: url('/assets/original/tiles.png') -128px -640px;
+}
+
+
+
+
+
+
+
+
+

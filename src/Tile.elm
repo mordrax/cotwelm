@@ -1,7 +1,7 @@
 module Tile
     exposing
         ( Tile
-        , TileType
+        , TileType(..)
         , isSameType
         , isSolid
         , mapToTiles
@@ -17,6 +17,7 @@ import Html.Attributes exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Utils.Lib as Lib exposing (..)
 import List exposing (..)
+import Dict exposing (..)
 import String exposing (..)
 import Hero exposing (..)
 import Monster.Monster as Monster exposing (..)
@@ -39,7 +40,7 @@ type Occupant
 
 
 type BaseTile
-    = Base Model
+    = A Model
 
 
 type alias Tile =
@@ -50,23 +51,51 @@ type alias Tile =
 
 type TileType
     = Rock
-    | Grass
-    | DarkDgn
-    | Water
-    | Path
-    | LitDgn
     | PathRock
+    | MineEntrance
+    | PortcullisClosed
+    | PortcullisOpen
+    | Sign
+    | Favicon
+    | Grass
     | PathGrass
+    | Crop
+    | DestoyedVegePatch
+    | VegePatch
+    | Well
+    | Wagon
+    | DarkDgn
     | WallDarkDgn
+    | CastleCornerParapet
+    | CastleWall
+    | CastleParapet
+    | GreenWell
+    | Ashes
+    | Water
     | WaterGrass
+    | BlueSquare
+    | Fountain
+    | Altar
+    | Status
+    | Throne
+    | Path
     | WaterPath
+    | StairsUp
+    | StairsDown
+    | TownWallCorner
+    | TownWallStop
+    | TownWall
+    | LitDgn
     | WallLitDgn
+    | DoorClosed
+    | DoorOpen
+    | DoorBroken
+    | Cobweb
+    | Pillar
     | Grass50Cave50
     | Grass10Cave90
     | White50Cave50
     | White90Cave10
-    | Crop
-    | Well
     | TreasurePile
 
 
@@ -79,7 +108,7 @@ type TileType
 isSolid : Tile -> Bool
 isSolid { base } =
     let
-        (Base { solid }) =
+        (A { solid }) =
             base
     in
         solid
@@ -88,10 +117,10 @@ isSolid { base } =
 isSameType : Tile -> Tile -> Bool
 isSameType t1 t2 =
     let
-        (Base m1) =
+        (A m1) =
             t1.base
 
-        (Base m2) =
+        (A m2) =
             t2.base
     in
         m1.tile == m2.tile
@@ -102,44 +131,33 @@ isSameType t1 t2 =
 mapToTiles : List String -> List Tile
 mapToTiles asciiMap =
     let
+        rowToTiles =
+            \y asciiRow -> List.indexedMap (\x char -> toTile ( x, y ) (asciiToTileType char)) (String.toList asciiRow)
+
         tiles =
-            List.indexedMap mapOneRowToTiles asciiMap
+            List.indexedMap rowToTiles asciiMap
     in
         List.concat tiles
 
 
-{-| Given a row of ascii, turn it into a row of Html
--}
-mapOneRowToTiles : Int -> String -> List Tile
-mapOneRowToTiles y asciiRow =
-    let
-        -- turn a row of string into a list of chars
-        asciiChars =
-            String.toList asciiRow
-    in
-        toTiles y asciiChars
-
-
-toTiles : Int -> List Char -> List Tile
-toTiles y asciiTiles =
-    List.indexedMap (toTile y) asciiTiles
-
-
 {-| Create a Tile from some x,y coordinates and a tile type
 -}
-toTile : Int -> Int -> Char -> Tile
-toTile y x asciiTile =
+toTile : Vector -> TileType -> Tile
+toTile ( x, y ) tileType =
     let
-        ( tileType, solid ) =
-            asciiTileData asciiTile
+        solidTiles =
+            [ Rock, Grass10Cave90, White50Cave50, Crop, Well ]
+
+        solid =
+            List.member tileType solidTiles
     in
-        Tile (Base <| Model tileType solid [] Empty) ( x, y )
+        Tile (A <| Model tileType solid [] Empty) ( x, y )
 
 
 tileToHtml : Tile -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile ) -> Html a
 tileToHtml ({ base, position } as tile) neighbours =
     let
-        (Base model) =
+        (A model) =
             base
 
         halfTiles =
@@ -162,7 +180,7 @@ tileToHtml ({ base, position } as tile) neighbours =
                     { base } =
                         tile
 
-                    (Base model) =
+                    (A model) =
                         base
                 in
                     model.tile
@@ -200,20 +218,11 @@ tileToHtml ({ base, position } as tile) neighbours =
                                     0
                     in
                         case neighbours of
-                            ( Nothing, _, _, _ ) ->
-                                0
-
-                            ( _, Nothing, _, _ ) ->
-                                0
-
-                            ( _, _, Nothing, _ ) ->
-                                0
-
-                            ( _, _, _, Nothing ) ->
-                                0
-
                             ( Just up, Just right, Just down, Just left ) ->
                                 (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right)
+
+                            _ ->
+                                0
     in
         div
             [ class ("tile " ++ toString model.tile)
@@ -223,62 +232,30 @@ tileToHtml ({ base, position } as tile) neighbours =
             []
 
 
-asciiTileData : Char -> ( TileType, Bool )
-asciiTileData char =
-    case char of
-        '^' ->
-            ( Rock, True )
+asciiToTileType : Char -> TileType
+asciiToTileType char =
+    Maybe.withDefault Grass (Dict.get char asciiTileMap)
 
-        ',' ->
-            ( Grass, False )
 
-        'o' ->
-            ( DarkDgn, False )
-
-        '~' ->
-            ( Water, False )
-
-        '.' ->
-            ( Path, False )
-
-        'O' ->
-            ( LitDgn, False )
-
-        '_' ->
-            ( PathRock, False )
-
-        ';' ->
-            ( PathGrass, False )
-
-        'd' ->
-            ( WallDarkDgn, False )
-
-        'w' ->
-            ( WaterGrass, False )
-
-        'W' ->
-            ( WaterPath, False )
-
-        'D' ->
-            ( WallLitDgn, False )
-
-        'g' ->
-            ( Grass50Cave50, False )
-
-        'G' ->
-            ( Grass10Cave90, True )
-
-        'c' ->
-            ( White50Cave50, True )
-
-        'C' ->
-            ( White90Cave10, False )
-
-        '=' ->
-            ( Crop, True )
-
-        'e' ->
-            ( Well, True )
-
-        _ ->
-            ( Grass, False )
+asciiTileMap : Dict Char TileType
+asciiTileMap =
+    Dict.fromList
+        [ ( '^', Rock )
+        , ( ',', Grass )
+        , ( 'o', DarkDgn )
+        , ( '~', Water )
+        , ( '.', Path )
+        , ( 'O', LitDgn )
+        , ( '_', PathRock )
+        , ( ';', PathGrass )
+        , ( 'd', WallDarkDgn )
+        , ( 'w', WaterGrass )
+        , ( 'W', WaterPath )
+        , ( 'D', WallLitDgn )
+        , ( 'g', Grass50Cave50 )
+        , ( 'G', Grass10Cave90 )
+        , ( 'c', White50Cave50 )
+        , ( 'C', White90Cave10 )
+        , ( '=', Crop )
+        , ( 'e', Well )
+        ]
