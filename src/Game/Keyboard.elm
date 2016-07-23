@@ -99,9 +99,8 @@ dirToVector dir =
 keycodeToMsg : KeyMap -> Keyboard.KeyCode -> Msg
 keycodeToMsg map code =
     let
-        _ =
-            Debug.log ("keycode: " ++ toString code) 1
-
+        --_ =
+        --    Debug.log ("keycode: " ++ toString code) 1
         maybeMsg =
             map |> Dict.get code
     in

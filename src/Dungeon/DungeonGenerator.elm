@@ -1,10 +1,11 @@
-module DungeonGenerator exposing (generate)
+module Dungeon.DungeonGenerator exposing (generate)
 
 import Random exposing (..)
 import Dict exposing (..)
 import Tile exposing (..)
 import Utils.Vector as Vector exposing (..)
 import List.Extra exposing (lift2)
+import Dungeon.Room as Room exposing (..)
 
 
 type alias Model =
@@ -25,5 +26,11 @@ generate seed =
 
         tiles =
             List.Extra.lift2 makeTile roomSize roomSize
+
+        -- TODO: currently not using room
+        -- need to incorporate walls, floor, entrances into dungeon
+        -- start empty, add rooms, connections, lastly rocks to fill gap
+        ( room, seed' ) =
+            Room.dig Room.Rectangular ( 6, 6 ) ( 2, 5 ) seed
     in
-        ( Dict.fromList (List.map toKVPair tiles), seed )
+        ( Dict.fromList (List.map toKVPair tiles), seed' )

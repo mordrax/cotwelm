@@ -31,7 +31,7 @@ import GameData.Types exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Html exposing (..)
 import Dict exposing (..)
-import DungeonGenerator exposing (generate)
+import Dungeon.DungeonGenerator as DungeonGenerator exposing (generate)
 import Random exposing (..)
 
 
