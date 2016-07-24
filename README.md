@@ -6,14 +6,21 @@ Checkout the progress here: [game.castleofthewinds.com](http://game.castleofthew
 
 # Running from source
 
-Assuming you have npm installed.
+### First
 
-- `npm install -g elm` or [here](https://www.npmjs.com/package/elm) for official instructions.
-- `git clone https://github.com/mordrax/cotwelm/`
-- `./build.sh` OR if you don't trust my `.sh` it just runs `elm make src/make.elm dist/js/cost.js`
-- Open `dist/index.html` in your favourite browser (as long as it's Chrome)
+Install [Elm](http://elm-lang.org/install) by itself or through node `npm i -g elm`
+
+### \`andThen\`
+
+1. Clone: `git clone https://github.com/mordrax/cotwelm/`
+2. Run: `./build.sh` (it cleans `elm-stuff` and runs `elm make src/make.elm dist/js/cotw.js`)
+3. Open: `dist/index.html` in your favourite browser (as long as it's Chrome)
+
+### Contributing
 
 If you'd like to hack on it, the `./dev.sh` script is nice to get auto refreshing of the browser. To do this you will need the `http-server` and `browser-sync` packages off npm as well. It should open up ports 5000 for elm reactor and 5008 for the html version with external semantic ui css.
+
+I welcome suggestions for stats messages in the [character creation screen](http://game.castleofthewinds.com/#/charCreation)!
 
 # Devlog
 
