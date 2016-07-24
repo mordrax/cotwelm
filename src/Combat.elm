@@ -20,7 +20,7 @@ attack attacker defender seed =
             min - 1
 
         ( cappedDamage, seed' ) =
-            Dice.d (max - bonus) seed
+            Dice.rollD (max - bonus) seed
 
         damage =
             cappedDamage + bonus

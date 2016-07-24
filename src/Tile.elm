@@ -49,56 +49,6 @@ type alias Tile =
     }
 
 
-type TileType
-    = Rock
-    | PathRock
-    | MineEntrance
-    | PortcullisClosed
-    | PortcullisOpen
-    | Sign
-    | Favicon
-    | Grass
-    | PathGrass
-    | Crop
-    | DestoyedVegePatch
-    | VegePatch
-    | Well
-    | Wagon
-    | DarkDgn
-    | WallDarkDgn
-    | CastleCornerParapet
-    | CastleWall
-    | CastleParapet
-    | GreenWell
-    | Ashes
-    | Water
-    | WaterGrass
-    | BlueSquare
-    | Fountain
-    | Altar
-    | Status
-    | Throne
-    | Path
-    | WaterPath
-    | StairsUp
-    | StairsDown
-    | TownWallCorner
-    | TownWallStop
-    | TownWall
-    | LitDgn
-    | WallLitDgn
-    | DoorClosed
-    | DoorOpen
-    | DoorBroken
-    | Cobweb
-    | Pillar
-    | Grass50Cave50
-    | Grass10Cave90
-    | White50Cave50
-    | White90Cave10
-    | TreasurePile
-
-
 
 -----------------------------------------------------------------------------------
 -- Turn a list of strings which represents ascii encoded tiles into actual Tiles --
@@ -145,9 +95,6 @@ mapToTiles asciiMap =
 toTile : Vector -> TileType -> Tile
 toTile ( x, y ) tileType =
     let
-        solidTiles =
-            [ Rock, Grass10Cave90, White50Cave50, Crop, Well ]
-
         solid =
             List.member tileType solidTiles
     in
@@ -259,3 +206,58 @@ asciiTileMap =
         , ( '=', Crop )
         , ( 'e', Well )
         ]
+
+
+solidTiles : List TileType
+solidTiles =
+    [ Rock, Grass10Cave90, White50Cave50, Crop, Well, PathRock, WallDarkDgn, WallLitDgn ]
+
+
+type TileType
+    = Rock
+    | PathRock
+    | MineEntrance
+    | PortcullisClosed
+    | PortcullisOpen
+    | Sign
+    | Favicon
+    | Grass
+    | PathGrass
+    | Crop
+    | DestoyedVegePatch
+    | VegePatch
+    | Well
+    | Wagon
+    | DarkDgn
+    | WallDarkDgn
+    | CastleCornerParapet
+    | CastleWall
+    | CastleParapet
+    | GreenWell
+    | Ashes
+    | Water
+    | WaterGrass
+    | BlueSquare
+    | Fountain
+    | Altar
+    | Status
+    | Throne
+    | Path
+    | WaterPath
+    | StairsUp
+    | StairsDown
+    | TownWallCorner
+    | TownWallStop
+    | TownWall
+    | LitDgn
+    | WallLitDgn
+    | DoorClosed
+    | DoorOpen
+    | DoorBroken
+    | Cobweb
+    | Pillar
+    | Grass50Cave50
+    | Grass10Cave90
+    | White50Cave50
+    | White90Cave10
+    | TreasurePile

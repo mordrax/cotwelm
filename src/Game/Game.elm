@@ -39,6 +39,7 @@ import Html.Attributes exposing (..)
 import Html.App exposing (map)
 import Random exposing (..)
 import Window exposing (..)
+import Task exposing (perform)
 
 
 type Msg
@@ -67,10 +68,14 @@ initGame seed =
         ( maps, mapCmd, seed' ) =
             Maps.init seed
 
+        gameCmds =
+            initialWindowSizeCmd
+
         cmd =
             Cmd.batch
                 [ Cmd.map (\x -> ShopMsg x) shopCmd
                 , Cmd.map (\x -> MapsMsg x) mapCmd
+                , gameCmds
                 ]
     in
         ( { name = "A new game"
@@ -299,6 +304,19 @@ subscriptions model =
             Window.resizes (\x -> WindowSize x)
     in
         windowSubs :: inventorySubs ++ keyboardSubs
+
+
+
+--------------
+-- Commands --
+--------------
+
+
+initialWindowSizeCmd : Cmd Msg
+initialWindowSizeCmd =
+    Task.perform (\x -> Debug.log "Getting window size failed: " x)
+        (\x -> WindowSize x)
+        Window.size
 
 
 
