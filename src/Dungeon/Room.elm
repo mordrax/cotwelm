@@ -78,28 +78,34 @@ design (A { doors, walls, floor }) =
 one or more entrances which can be a door, broken door or clear corridor.
 
 -}
-new : RoomType -> Dimension -> Random.Seed -> ( Room, Random.Seed )
-new roomType (( w, h ) as dim) seed =
+new : RoomType -> Int -> Random.Seed -> ( Room, Random.Seed )
+new roomType size seed =
     let
+        ( partialDimension, seed' ) =
+            Dice.roll2D (size - 2) seed
+
+        dimension =
+            Vector.add ( 2, 2 ) partialDimension
+
         ( walls, floor ) =
             case roomType of
                 Rectangular ->
-                    rectangular dim
+                    rectangular dimension
 
                 Cross ->
-                    cross dim
+                    cross dimension
 
                 Diamond ->
-                    diamond dim
+                    diamond dimension
 
                 Potion ->
-                    potion dim
+                    potion dimension
 
                 Circular ->
-                    circular dim
+                    circular dimension
 
                 DiagonalSquares ->
-                    diagonalSquares dim
+                    diagonalSquares dimension
 
                 DeadEnd ->
                     -- will generate one tile for the room which is forced
@@ -107,8 +113,8 @@ new roomType (( w, h ) as dim) seed =
                     -- one entrance
                     ( [], [ ( 0, 0 ) ] )
 
-        ( walls', entrances, seed' ) =
-            List.foldl addDoors ( [], [], seed ) walls
+        ( walls', entrances, seed'' ) =
+            List.foldl addDoors ( [], [], seed' ) walls
     in
         ( A
             { doors = entrances
@@ -117,13 +123,54 @@ new roomType (( w, h ) as dim) seed =
             , roomType = roomType
             , isLit = False
             }
-        , seed'
+        , seed''
         )
+
+
+addDoors : ( Vector, Bool ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed )
+addDoors (( wallPos, isSoft ) as wall) ( walls, entrances, seed ) =
+    let
+        ( res, seed' ) =
+            Dice.rollD 10 seed
+
+        addToWall =
+            ( wall :: walls, entrances, seed' )
+
+        addToDoor =
+            ( walls, ( Door, wallPos ) :: entrances, seed' )
+    in
+        if not isSoft then
+            addToWall
+        else
+            case res of
+                1 ->
+                    addToDoor
+
+                _ ->
+                    addToWall
 
 
 
 --------------------------------------------------------------
--- Different room types
+
+
+{-| Hard walls cannot have entrances in them, soft walls can
+-}
+makeHardWall : Vector -> ( Vector, Bool )
+makeHardWall pos =
+    ( pos, False )
+
+
+makeSoftWall : Vector -> ( Vector, Bool )
+makeSoftWall pos =
+    ( pos, True )
+
+
+
+-------------------------------------------------------------------------------
+-- Room types
+--
+-------------------------------------------------------------------------------
 
 
 rectangular : Dimension -> RoomComponents
@@ -174,42 +221,3 @@ circular ( w, h ) =
 diagonalSquares : Dimension -> RoomComponents
 diagonalSquares ( w, h ) =
     ( [], [] )
-
-
-addDoors : ( Vector, Bool ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed )
-addDoors (( wallPos, isSoft ) as wall) ( walls, entrances, seed ) =
-    let
-        ( res, seed' ) =
-            Dice.rollD 10 seed
-
-        addToWall =
-            ( wall :: walls, entrances, seed' )
-
-        addToDoor =
-            ( walls, ( Door, wallPos ) :: entrances, seed' )
-    in
-        if not isSoft then
-            addToWall
-        else
-            case res of
-                1 ->
-                    addToDoor
-
-                _ ->
-                    addToWall
-
-
-
---------------------------------------------------------------
-
-
-{-| Hard walls cannot have entrances in them, soft walls can
--}
-makeHardWall : Vector -> ( Vector, Bool )
-makeHardWall pos =
-    ( pos, False )
-
-
-makeSoftWall : Vector -> ( Vector, Bool )
-makeSoftWall pos =
-    ( pos, True )
