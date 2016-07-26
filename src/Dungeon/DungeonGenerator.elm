@@ -7,6 +7,8 @@ import Utils.Vector as Vector exposing (..)
 import List.Extra exposing (lift2)
 import Dungeon.Room as Room exposing (..)
 import Dice exposing (..)
+import AStar exposing (findPath, Position)
+import Set exposing (..)
 
 
 type alias Model =
@@ -22,20 +24,43 @@ generate seed =
         toKVPair =
             \tile -> ( tile.position, tile )
 
-        --tiles =
-        --    List.Extra.lift2 (\x y -> makeTile x y Tile.DarkDgn) roomSize roomSize
         -- TODO: currently not using room
         -- need to incorporate walls, floor, entrances into dungeon
         -- start empty, add rooms, connections, lastly rocks to fill gap
-        --( room, seed' ) =
-        --    generateRoom seed 9
+        ( room1, _ ) =
+            generateRoom seed 9
+
+        ( room2, _ ) =
+            generateRoom seed 5
+
         ( rooms, startPositions, seed' ) =
-            generateRooms 10 ( [], [], seed )
+            generateRooms 3 ( [], [], seed )
 
         tiles =
-            List.concat <| List.map2 (\room pos -> roomToTiles room pos) rooms startPositions
+            List.concat <| List.map2 (\room pos -> roomToTiles room pos) [ room1, room2 ] startPositions
+
+        map =
+            Dict.fromList (List.map toKVPair tiles)
+
+        path =
+            connectRooms room1 room2 map
+
+        _ =
+            Debug.log "pathfinding"
+                { room1 = room1
+                , room2 = room2
+                , path = path
+                }
+
+        corridor =
+            case path of
+                Nothing ->
+                    []
+
+                Just realPath ->
+                    List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
     in
-        ( Dict.fromList (List.map toKVPair tiles), seed' )
+        ( Dict.fromList (List.map toKVPair (corridor ++ tiles)), seed' )
 
 
 roomToTiles : Room -> Vector -> List Tile
@@ -97,3 +122,65 @@ entranceToTileType entrance =
 
         NoDoor ->
             Tile.DarkDgn
+
+
+connectRooms : Room -> Room -> Dict Vector Tile -> Maybe AStar.Path
+connectRooms r1 r2 map =
+    let
+        ( door1, _, _ ) =
+            Room.design r1
+
+        ( door2, _, _ ) =
+            Room.design r2
+    in
+        case ( door1, door2 ) of
+            ( [], _ ) ->
+                Nothing
+
+            ( _, [] ) ->
+                Nothing
+
+            ( ( _, start ) :: _, ( _, end ) :: _ ) ->
+                AStar.findPath heuristic (neighbours map) start end
+
+
+
+--------------------------
+-- Corridor pathfinding --
+--------------------------
+
+
+heuristic : Vector -> Vector -> Float
+heuristic start end =
+    let
+        ( dx, dy ) =
+            Vector.sub start end
+    in
+        toFloat (max dx dy)
+
+
+neighbours : Dict Vector Tile -> Vector -> Set Position
+neighbours map position =
+    let
+        add =
+            \x y -> Vector.add position ( x, y )
+
+        possibleNeighbours =
+            \vector ->
+                [ add -1 -1, add 0 -1, add 1 -1 ]
+                    ++ [ add -1 0, add 1 0 ]
+                    ++ [ add -1 1, add 0 1, add 1 1 ]
+
+        notObstructed =
+            \vector ->
+                case Dict.get vector map of
+                    Just tile ->
+                        not (Tile.isSolid tile)
+
+                    Nothing ->
+                        True
+    in
+        position
+            |> possibleNeighbours
+            |> List.filter notObstructed
+            |> Set.fromList
