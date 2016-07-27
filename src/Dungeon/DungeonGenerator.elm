@@ -11,6 +11,11 @@ import AStar exposing (findPath, Position)
 import Set exposing (..)
 
 
+maxRoomSize : Int
+maxRoomSize =
+    30
+
+
 type alias Model =
     {}
 
@@ -19,7 +24,7 @@ generate : Random.Seed -> ( Dict Vector Tile, Random.Seed )
 generate seed =
     let
         roomSize =
-            [0..30]
+            [0..maxRoomSize]
 
         toKVPair =
             \tile -> ( tile.position, tile )
@@ -27,11 +32,11 @@ generate seed =
         -- TODO: currently not using room
         -- need to incorporate walls, floor, entrances into dungeon
         -- start empty, add rooms, connections, lastly rocks to fill gap
-        ( room1, _ ) =
+        ( room1, seed1 ) =
             generateRoom seed 9
 
         ( room2, _ ) =
-            generateRoom seed 5
+            generateRoom seed1 5
 
         ( rooms, startPositions, seed' ) =
             generateRooms 3 ( [], [], seed )
@@ -42,15 +47,13 @@ generate seed =
         map =
             Dict.fromList (List.map toKVPair tiles)
 
-        path =
-            connectRooms room1 room2 map
+        defaultPosition =
+            \x -> Maybe.withDefault ( 0, 0 ) x
 
-        _ =
-            Debug.log "pathfinding"
-                { room1 = room1
-                , room2 = room2
-                , path = path
-                }
+        path =
+            connectRooms ( room1, defaultPosition <| List.head startPositions )
+                ( room2, defaultPosition <| List.head <| List.drop 1 startPositions )
+                map
 
         corridor =
             case path of
@@ -59,8 +62,30 @@ generate seed =
 
                 Just realPath ->
                     List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
+
+        roomsWithCorridors =
+            Dict.fromList (List.map toKVPair (corridor ++ tiles))
+
+        filledMap =
+            fillWithWall roomsWithCorridors
     in
-        ( Dict.fromList (List.map toKVPair (corridor ++ tiles)), seed' )
+        --( Dict.fromList (List.map toKVPair filledMap), seed' )
+        ( roomsWithCorridors, seed' )
+
+
+fillWithWall : Dict Vector Tile -> List Tile
+fillWithWall partialMap =
+    let
+        addWallIfTileDoesNotExist =
+            \x y ->
+                case Dict.get ( x, y ) partialMap of
+                    Nothing ->
+                        Tile.toTile ( x, y ) Tile.Rock
+
+                    Just tile ->
+                        tile
+    in
+        List.Extra.lift2 addWallIfTileDoesNotExist [0..maxRoomSize] [0..maxRoomSize]
 
 
 roomToTiles : Room -> Vector -> List Tile
@@ -124,8 +149,8 @@ entranceToTileType entrance =
             Tile.DarkDgn
 
 
-connectRooms : Room -> Room -> Dict Vector Tile -> Maybe AStar.Path
-connectRooms r1 r2 map =
+connectRooms : ( Room, Vector ) -> ( Room, Vector ) -> Dict Vector Tile -> Maybe AStar.Path
+connectRooms ( r1, r1Offset ) ( r2, r2Offset ) map =
     let
         ( door1, _, _ ) =
             Room.design r1
@@ -141,7 +166,10 @@ connectRooms r1 r2 map =
                 Nothing
 
             ( ( _, start ) :: _, ( _, end ) :: _ ) ->
-                AStar.findPath heuristic (neighbours map) start end
+                AStar.findPath heuristic
+                    (neighbours map)
+                    (Vector.add start r1Offset)
+                    (Vector.add end r2Offset)
 
 
 
@@ -171,16 +199,19 @@ neighbours map position =
                     ++ [ add -1 0, add 1 0 ]
                     ++ [ add -1 1, add 0 1, add 1 1 ]
 
-        notObstructed =
-            \vector ->
-                case Dict.get vector map of
-                    Just tile ->
-                        not (Tile.isSolid tile)
+        isObstructed =
+            \(( x, y ) as vector) ->
+                if x > maxRoomSize || y > maxRoomSize then
+                    True
+                else
+                    case Dict.get vector map of
+                        Just tile ->
+                            Tile.isSolid tile
 
-                    Nothing ->
-                        True
+                        Nothing ->
+                            False
     in
         position
             |> possibleNeighbours
-            |> List.filter notObstructed
+            |> List.filter (\x -> not <| isObstructed x)
             |> Set.fromList
