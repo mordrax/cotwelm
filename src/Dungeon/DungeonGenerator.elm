@@ -29,10 +29,10 @@ generate seed =
         -- need to incorporate walls, floor, entrances into dungeon
         -- start empty, add rooms, connections, lastly rocks to fill gap
         ( room1, seed1 ) =
-            generateRoom seed 9
+            generateRoom seed
 
         ( room2, _ ) =
-            generateRoom seed1 5
+            generateRoom seed1
 
         ( rooms, startPositions, seed' ) =
             generateRooms 3 ( [], [], seed )
@@ -116,7 +116,7 @@ generateRooms nRooms ( rooms, startPositions, seed ) =
         n ->
             let
                 ( newRoom, seed' ) =
-                    generateRoom seed 9
+                    generateRoom seed
 
                 ( newStartPos, seed'' ) =
                     Dice.roll2D 30 seed'
