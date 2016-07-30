@@ -210,7 +210,15 @@ asciiTileMap =
 
 solidTiles : List TileType
 solidTiles =
-    [ Rock, Grass10Cave90, White50Cave50, Crop, Well, PathRock, WallDarkDgn, WallLitDgn ]
+    [ Rock
+    , Grass10Cave90
+    , White50Cave50
+    , Crop
+    , Well
+    , PathRock
+    , WallDarkDgn
+    , WallLitDgn
+    ]
 
 
 type TileType

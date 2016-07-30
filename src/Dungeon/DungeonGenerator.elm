@@ -1,19 +1,15 @@
 module Dungeon.DungeonGenerator exposing (generate)
 
-import Random exposing (..)
+import AStar exposing (findPath, Position)
+import Dungeon.Config as Config exposing (..)
+import Dice exposing (..)
 import Dict exposing (..)
+import Dungeon.Room as Room exposing (..)
+import List.Extra exposing (lift2)
+import Random exposing (..)
+import Set exposing (..)
 import Tile exposing (..)
 import Utils.Vector as Vector exposing (..)
-import List.Extra exposing (lift2)
-import Dungeon.Room as Room exposing (..)
-import Dice exposing (..)
-import AStar exposing (findPath, Position)
-import Set exposing (..)
-
-
-maxRoomSize : Int
-maxRoomSize =
-    30
 
 
 type alias Model =
@@ -24,7 +20,7 @@ generate : Random.Seed -> ( Dict Vector Tile, Random.Seed )
 generate seed =
     let
         roomSize =
-            [0..maxRoomSize]
+            [0..Config.size]
 
         toKVPair =
             \tile -> ( tile.position, tile )
@@ -85,20 +81,17 @@ fillWithWall partialMap =
                     Just tile ->
                         tile
     in
-        List.Extra.lift2 addWallIfTileDoesNotExist [0..maxRoomSize] [0..maxRoomSize]
+        List.Extra.lift2 addWallIfTileDoesNotExist [0..Config.size] [0..Config.size]
 
 
 roomToTiles : Room -> Vector -> List Tile
 roomToTiles room startPos =
     let
-        ( doors, walls, floor ) =
-            Room.design room
-
         toWorldPos =
             \localPos -> Vector.add startPos localPos
 
         items =
-            [ ( Tile.DarkDgn, floor ), ( Tile.Rock, walls ) ]
+            [ ( Tile.DarkDgn, room.floors ), ( Tile.Rock, room.walls ) ]
 
         makeTiles =
             \( tileType, positions ) ->
@@ -111,7 +104,7 @@ roomToTiles room startPos =
                 (\( entrance, pos ) ->
                     Tile.toTile (toWorldPos pos) (entranceToTileType entrance)
                 )
-                doors
+                room.doors
 
 
 generateRooms : Int -> ( List Room, List Vector, Random.Seed ) -> ( List Room, List Vector, Random.Seed )
@@ -131,9 +124,9 @@ generateRooms nRooms ( rooms, startPositions, seed ) =
                 generateRooms (n - 1) ( newRoom :: rooms, newStartPos :: startPositions, seed'' )
 
 
-generateRoom : Random.Seed -> Int -> ( Room, Random.Seed )
-generateRoom seed size =
-    Room.new Room.Rectangular size seed
+generateRoom : Random.Seed -> ( Room, Random.Seed )
+generateRoom seed =
+    Room.generate seed
 
 
 entranceToTileType : Room.Entrance -> Tile.TileType
@@ -142,34 +135,26 @@ entranceToTileType entrance =
         Door ->
             Tile.DoorClosed
 
-        BrokenDoor ->
-            Tile.DoorBroken
-
+        --BrokenDoor ->
+        --    Tile.DoorBroken
         NoDoor ->
             Tile.DarkDgn
 
 
 connectRooms : ( Room, Vector ) -> ( Room, Vector ) -> Dict Vector Tile -> Maybe AStar.Path
 connectRooms ( r1, r1Offset ) ( r2, r2Offset ) map =
-    let
-        ( door1, _, _ ) =
-            Room.design r1
+    case ( r1.doors, r2.doors ) of
+        ( [], _ ) ->
+            Nothing
 
-        ( door2, _, _ ) =
-            Room.design r2
-    in
-        case ( door1, door2 ) of
-            ( [], _ ) ->
-                Nothing
+        ( _, [] ) ->
+            Nothing
 
-            ( _, [] ) ->
-                Nothing
-
-            ( ( _, start ) :: _, ( _, end ) :: _ ) ->
-                AStar.findPath heuristic
-                    (neighbours map)
-                    (Vector.add start r1Offset)
-                    (Vector.add end r2Offset)
+        ( ( _, start ) :: _, ( _, end ) :: _ ) ->
+            AStar.findPath heuristic
+                (neighbours map)
+                (Vector.add start r1Offset)
+                (Vector.add end r2Offset)
 
 
 
@@ -199,9 +184,18 @@ neighbours map position =
                     ++ [ add -1 0, add 1 0 ]
                     ++ [ add -1 1, add 0 1, add 1 1 ]
 
+        isOutOfBounds =
+            \( x, y ) ->
+                if x > Config.roomSize || y > Config.roomSize then
+                    True
+                else if x < 0 || y < 0 then
+                    True
+                else
+                    False
+
         isObstructed =
             \(( x, y ) as vector) ->
-                if x > maxRoomSize || y > maxRoomSize then
+                if isOutOfBounds vector then
                     True
                 else
                     case Dict.get vector map of

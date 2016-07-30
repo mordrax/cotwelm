@@ -1,58 +1,44 @@
 module Dungeon.Room
     exposing
         ( Room
-        , RoomType(..)
         , Entrance(..)
-        , design
-        , new
+        , generate
         )
 
-import Utils.Vector as Vector exposing (..)
-import Random exposing (..)
-import List.Extra exposing (..)
-import Dice exposing (..)
+{-| The room module will generate random rooms given a seed. It uses Config.elm for
+    all random parameters such as the type/size of room generated.
 
-
-{-| Holds different room types for the dungeon. Rooms are surrounded by a layer of
-    walls with at least one door or doorless entry into the room.
+    Generated rooms have a list of walls, floors and doors. These lists are just a
+    list of 2D tuples. It is up to the caller to then convert these types.
 -}
-type Room
-    = A Model
+
+import Dice exposing (..)
+import Dungeon.Config as Config exposing (..)
+import List.Extra exposing (..)
+import Random exposing (..)
+import Utils.Vector as Vector exposing (..)
 
 
 type alias Dimension =
     Vector
 
 
-type RoomType
-    = Rectangular
-    | Cross
-    | Diamond
-    | Potion
-    | Circular
-    | DiagonalSquares
-    | DeadEnd
-
-
 type Entrance
     = Door
-    | BrokenDoor
     | NoDoor
 
 
-type alias Model =
+type alias Room =
     { doors : List ( Entrance, Vector )
     , walls : List Vector
     , floor : List Vector
     , roomType : RoomType
-    , isLit : Bool
     }
 
 
 {-| RoomComponents:
     - List of (walls, canHaveEntrance)
     - List of floors
-    - updated seed
 -}
 type alias RoomComponents =
     ( List ( Vector, Bool ), List Vector )
@@ -60,18 +46,29 @@ type alias RoomComponents =
 
 init : Room
 init =
-    A
-        { doors = [ ( Door, ( 0, 0 ) ) ]
-        , walls = []
-        , floor = []
-        , roomType = DeadEnd
-        , isLit = False
-        }
+    { doors = [ ( Door, ( 0, 0 ) ) ]
+    , walls = []
+    , floor = []
+    , roomType = DeadEnd
+    }
 
 
-design : Room -> ( List ( Entrance, Vector ), List Vector, List Vector )
-design (A { doors, walls, floor }) =
-    ( doors, walls, floor )
+{-| Given a seed will work out:
+- what type of room to generate
+- how big a room
+- where the doors are
+-}
+generate : Random.Seed -> ( Room, Random.Seed )
+generate seed =
+    let
+        ( roomType, seed' ) =
+            Dice.rollD 100 seed
+                |> \( randInt, seed' ) -> ( Config.generateRoomType randInt, seed )
+
+        ( roomSize, seed'' ) =
+            Dice.rollD Config.roomSize seed'
+    in
+        new roomType roomSize seed''
 
 
 {-| Dig a room of a certain size. This will randomly generate
@@ -116,15 +113,7 @@ new roomType size seed =
         ( walls', entrances, seed'' ) =
             List.foldl addDoors ( [], [], seed' ) walls
     in
-        ( A
-            { doors = entrances
-            , walls = List.map fst walls'
-            , floor = floor
-            , roomType = roomType
-            , isLit = False
-            }
-        , seed''
-        )
+        ( Room entrances (List.map fst walls') floor roomType, seed'' )
 
 
 addDoors : ( Vector, Bool ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed )
