@@ -16,6 +16,7 @@ import Dice exposing (..)
 import Dungeon.Config as Config exposing (..)
 import List.Extra exposing (..)
 import Random exposing (..)
+import Random.Extra exposing (..)
 import Utils.Vector as Vector exposing (..)
 
 
@@ -28,27 +29,31 @@ type Entrance
     | NoDoor
 
 
+type alias Door =
+    ( Entrance, Vector )
+
+
+type alias Walls =
+    List Vector
+
+
+type alias Floors =
+    List Vector
+
+
 type alias Room =
-    { doors : List ( Entrance, Vector )
-    , walls : List Vector
-    , floor : List Vector
+    { doors : List Door
+    , walls : Walls
+    , floors : Floors
     , roomType : RoomType
     }
-
-
-{-| RoomComponents:
-    - List of (walls, canHaveEntrance)
-    - List of floors
--}
-type alias RoomComponents =
-    ( List ( Vector, Bool ), List Vector )
 
 
 init : Room
 init =
     { doors = [ ( Door, ( 0, 0 ) ) ]
     , walls = []
-    , floor = []
+    , floors = []
     , roomType = DeadEnd
     }
 
@@ -67,146 +72,150 @@ generate seed =
 
         ( roomSize, seed'' ) =
             Dice.rollD Config.roomSize seed'
+
+        _ =
+            Debug.log "Generating..."
+                { roomType = toString roomType
+                , roomSize = toString size
+                }
     in
-        new roomType roomSize seed''
+        case roomType of
+            Rectangular ->
+                rectangular size seed''
+
+            Cross ->
+                cross size seed''
+
+            Diamond ->
+                diamond size seed''
+
+            Potion ->
+                potion size seed''
+
+            Circular ->
+                circular size seed''
+
+            DiagonalSquares ->
+                diagonalSquares size seed''
+
+            DeadEnd ->
+                -- will generate one tile for the room which is forced
+                -- into an entrance as all rooms must have at least
+                -- one entrance
+                ( init, seed'' )
 
 
-{-| Dig a room of a certain size. This will randomly generate
-one or more entrances which can be a door, broken door or clear corridor.
 
+--    ( walls', entrances, seed'' ) =
+--        List.foldl addDoors ( [], [], seed' ) walls
+--in
+--    ( Room entrances (List.map fst walls') floors roomType, seed'' )
+
+
+{-| Continually adds a door to the next wall until no more doors are left or
+no more space in the walls
 -}
-new : RoomType -> Int -> Random.Seed -> ( Room, Random.Seed )
-new roomType size seed =
-    let
-        ( partialDimension, seed' ) =
-            Dice.roll2D (size - 2) seed
+addDoors :
+    Int
+    -> ( List Walls, List Walls, List Door, Random.Seed )
+    -> ( Walls, List Door, Random.Seed )
+addDoors nDoors ( walls, fullWalls, doors, seed ) =
+    case ( nDoors, walls ) of
+        ( 0, _ ) ->
+            ( List.concat (walls ++ fullWalls), doors, seed )
 
-        dimension =
-            Vector.add ( 2, 2 ) partialDimension
+        ( _, [] ) ->
+            ( List.concat (walls ++ fullWalls), doors, seed )
 
-        ( walls, floor ) =
-            case roomType of
-                Rectangular ->
-                    rectangular dimension
+        ( _, [] :: restOfWalls ) ->
+            ( List.concat (walls ++ fullWalls), doors, seed )
 
-                Cross ->
-                    cross dimension
-
-                Diamond ->
-                    diamond dimension
-
-                Potion ->
-                    potion dimension
-
-                Circular ->
-                    circular dimension
-
-                DiagonalSquares ->
-                    diagonalSquares dimension
-
-                DeadEnd ->
-                    -- will generate one tile for the room which is forced
-                    -- into an entrance as all rooms must have at least
-                    -- one entrance
-                    ( [], [ ( 0, 0 ) ] )
-
-        ( walls', entrances, seed'' ) =
-            List.foldl addDoors ( [], [], seed' ) walls
-    in
-        ( Room entrances (List.map fst walls') floor roomType, seed'' )
-
-
-addDoors : ( Vector, Bool ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed )
-addDoors (( wallPos, isSoft ) as wall) ( walls, entrances, seed ) =
-    let
-        ( res, seed' ) =
-            Dice.rollD 10 seed
-
-        addToWall =
-            ( wall :: walls, entrances, seed' )
-
-        addToDoor =
-            ( walls, ( Door, wallPos ) :: entrances, seed' )
-    in
-        if not isSoft then
-            addToWall
-        else
-            case res of
-                1 ->
-                    addToDoor
-
-                _ ->
-                    addToWall
+        ( n, (rock :: wall) :: restOfWalls ) ->
+            let
+                doorGenerator =
+                    Random.Extra.sample (rock :: wall)
+                        |> Random.map (Maybe.withDefault rock)
+            in
+                addDoors (n - 1) ( walls, fullWalls, doors, seed )
 
 
 
---------------------------------------------------------------
-
-
-{-| Hard walls cannot have entrances in them, soft walls can
--}
-makeHardWall : Vector -> ( Vector, Bool )
-makeHardWall pos =
-    ( pos, False )
-
-
-makeSoftWall : Vector -> ( Vector, Bool )
-makeSoftWall pos =
-    ( pos, True )
-
-
-
+--addDoors : ( Vector, Bool ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed )
+--addDoors (( wallPos, isSoft ) as wall) ( walls, entrances, seed ) =
+--    let
+--        ( res, seed' ) =
+--            Dice.rollD 10 seed
+--        addToWall =
+--            ( wall :: walls, entrances, seed' )
+--        addToDoor =
+--            ( walls, ( Door, wallPos ) :: entrances, seed' )
+--    in
+--        if not isSoft then
+--            addToWall
+--        else
+--            case res of
+--                1 ->
+--                    addToDoor
+--                _ ->
+--                    addToWall
 -------------------------------------------------------------------------------
 -- Room types
 --
 -------------------------------------------------------------------------------
 
 
-rectangular : Dimension -> RoomComponents
-rectangular ( w, h ) =
+rectangular : Int -> Random.Seed -> ( Room, Random.Seed )
+rectangular size seed =
     let
-        ( xMax, yMax ) =
-            ( w - 1, h - 1 )
+        ( ( width, height ), seed' ) =
+            Dice.roll2D size seed
+                |> \( ( x, y ), s ) -> ( ( max 4 x, max 4 y ), s )
 
-        cornerPoints =
-            [ ( 0, 0 ), ( xMax, 0 ), ( 0, yMax ), ( xMax, yMax ) ]
+        ( xMax, yMax ) =
+            ( width - 1, height - 1 )
 
         corners =
-            List.map makeHardWall cornerPoints
-
-        softWall =
-            \x y -> makeSoftWall ( x, y )
+            [ ( 0, 0 ), ( xMax, 0 ), ( 0, yMax ), ( xMax, yMax ) ]
 
         walls =
-            lift2 softWall [1..xMax - 1] [ 0, yMax ]
-                ++ lift2 softWall [ 0, xMax ] [1..yMax - 1]
+            [ List.map (\y -> ( 0, y )) [1..yMax - 1]
+            , List.map (\y -> ( xMax - 1, y )) [1..yMax - 1]
+            , List.map (\x -> ( x, 0 )) [1..xMax - 1]
+            , List.map (\x -> ( x, yMax - 1 )) [1..xMax - 1]
+            ]
+
+        ( nDoors, seed'' ) =
+            Dice.rollD 6 seed'
+
+        ( newWalls, doors, seed''' ) =
+            addDoors 6 ( walls, [], [], seed'' )
 
         floors =
             List.Extra.lift2 (,) [1..xMax - 1] [1..yMax - 1]
     in
-        ( walls ++ corners, floors )
+        ( Room doors newWalls floors Rectangular, seed''' )
 
 
-cross : Dimension -> RoomComponents
-cross ( w, h ) =
-    ( [], [] )
+cross : Int -> Random.Seed -> ( Room, Random.Seed )
+cross size seed =
+    ( init, seed )
 
 
-diamond : Dimension -> RoomComponents
-diamond ( w, h ) =
-    ( [], [] )
+diamond : Int -> Random.Seed -> ( Room, Random.Seed )
+diamond size seed =
+    ( init, seed )
 
 
-potion : Dimension -> RoomComponents
-potion ( w, h ) =
-    ( [], [] )
+potion : Int -> Random.Seed -> ( Room, Random.Seed )
+potion size seed =
+    ( init, seed )
 
 
-circular : Dimension -> RoomComponents
-circular ( w, h ) =
-    ( [], [] )
+circular : Int -> Random.Seed -> ( Room, Random.Seed )
+circular size seed =
+    ( init, seed )
 
 
-diagonalSquares : Dimension -> RoomComponents
-diagonalSquares ( w, h ) =
-    ( [], [] )
+diagonalSquares : Int -> Random.Seed -> ( Room, Random.Seed )
+diagonalSquares size seed =
+    ( init, seed )
