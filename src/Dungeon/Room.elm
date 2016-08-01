@@ -17,6 +17,8 @@ import Dungeon.Config as Config exposing (..)
 import List.Extra exposing (..)
 import Random exposing (..)
 import Random.Extra exposing (..)
+import Random.Array exposing (..)
+import Array exposing (..)
 import Utils.Vector as Vector exposing (..)
 
 
@@ -35,6 +37,10 @@ type alias Door =
 
 type alias Walls =
     List Vector
+
+
+type alias Wall =
+    Vector
 
 
 type alias Floors =
@@ -68,7 +74,8 @@ generate seed =
     let
         ( roomType, seed' ) =
             Dice.rollD 100 seed
-                |> \( randInt, seed' ) -> ( Config.generateRoomType randInt, seed )
+                |> \( randInt, seed' ) ->
+                    ( Config.generateRoomType randInt, seed' )
 
         ( roomSize, seed'' ) =
             Dice.rollD Config.roomSize seed'
@@ -132,32 +139,25 @@ addDoors nDoors ( walls, fullWalls, doors, seed ) =
 
         ( n, (rock :: wall) :: restOfWalls ) ->
             let
-                doorGenerator =
-                    Random.Extra.sample (rock :: wall)
+                randomDoorSampler =
+                    doorSample (rock :: wall)
                         |> Random.map (Maybe.withDefault rock)
+
+                ( door, seed' ) =
+                    Random.step randomDoorSampler seed
+
+                wallWithoutDoor =
+                    List.filter (\x -> x /= door) (rock :: wall)
             in
-                addDoors (n - 1) ( walls, fullWalls, doors, seed )
+                addDoors (n - 1) ( restOfWalls ++ [ wallWithoutDoor ], fullWalls, ( Door, door ) :: doors, seed' )
+
+
+doorSample : Walls -> Generator (Maybe Wall)
+doorSample walls =
+    Random.Extra.sample walls
 
 
 
---addDoors : ( Vector, Bool ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed ) -> ( List ( Vector, Bool ), List ( Entrance, Vector ), Random.Seed )
---addDoors (( wallPos, isSoft ) as wall) ( walls, entrances, seed ) =
---    let
---        ( res, seed' ) =
---            Dice.rollD 10 seed
---        addToWall =
---            ( wall :: walls, entrances, seed' )
---        addToDoor =
---            ( walls, ( Door, wallPos ) :: entrances, seed' )
---    in
---        if not isSoft then
---            addToWall
---        else
---            case res of
---                1 ->
---                    addToDoor
---                _ ->
---                    addToWall
 -------------------------------------------------------------------------------
 -- Room types
 --
@@ -179,21 +179,28 @@ rectangular size seed =
 
         walls =
             [ List.map (\y -> ( 0, y )) [1..yMax - 1]
-            , List.map (\y -> ( xMax - 1, y )) [1..yMax - 1]
+            , List.map (\y -> ( xMax, y )) [1..yMax - 1]
             , List.map (\x -> ( x, 0 )) [1..xMax - 1]
-            , List.map (\x -> ( x, yMax - 1 )) [1..xMax - 1]
+            , List.map (\x -> ( x, yMax )) [1..xMax - 1]
             ]
 
-        ( nDoors, seed'' ) =
-            Dice.rollD 6 seed'
+        wallsShuffler =
+            Random.Array.shuffle (Array.fromList walls)
 
-        ( newWalls, doors, seed''' ) =
-            addDoors 6 ( walls, [], [], seed'' )
+        ( walls', seed'' ) =
+            Random.step wallsShuffler seed'
+                |> (\( w, s ) -> ( (Array.toList w), s ))
+
+        ( nDoors, seed''' ) =
+            Dice.rollD 6 seed''
+
+        ( newWalls, doors, seed'''' ) =
+            addDoors 2 ( walls', [], [], seed''' )
 
         floors =
             List.Extra.lift2 (,) [1..xMax - 1] [1..yMax - 1]
     in
-        ( Room doors newWalls floors Rectangular, seed''' )
+        ( Room doors (newWalls ++ corners) floors Rectangular, seed'''' )
 
 
 cross : Int -> Random.Seed -> ( Room, Random.Seed )

@@ -37,24 +37,22 @@ roomSize =
     a room type based on the hardcoded distribution of types
 -}
 generateRoomType : Int -> RoomType
-generateRoomType uncappedRandomIndex =
+generateRoomType index =
     let
-        random =
-            uncappedRandomIndex
-                |> min 0
-                |> max 100
+        clampedIndex =
+            clamp 0 100 index
     in
-        if random < 40 then
+        if clampedIndex < 100 then
             Rectangular
-        else if random < 50 then
+        else if clampedIndex < 50 then
             Cross
-        else if random < 60 then
+        else if clampedIndex < 60 then
             Diamond
-        else if random < 70 then
+        else if clampedIndex < 70 then
             Potion
-        else if random < 80 then
+        else if clampedIndex < 80 then
             Circular
-        else if random < 90 then
+        else if clampedIndex < 90 then
             DiagonalSquares
         else
             DeadEnd
