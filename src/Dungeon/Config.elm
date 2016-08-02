@@ -1,13 +1,14 @@
 module Dungeon.Config exposing (..)
 
+import Random exposing (..)
+
+
 {-| This module houses the configuration properties of the dungeon such as dungeon size,
 max number of rooms on a floor, all details about the rooms, corridor lengths etc...
 
 The module has no model but rather are mostly a collection of constants used by the
 dungeon generator to create random dungeon levels.
 -}
-
-
 type RoomType
     = Rectangular
     | Cross
@@ -33,11 +34,16 @@ roomSize =
     10
 
 
+generateRoomSize : Generator Int
+generateRoomSize =
+    Random.int 1 10
+
+
 {-| Given a int between 0 and 100 (will cap if outside of range), will return
     a room type based on the hardcoded distribution of types
 -}
-generateRoomType : Int -> RoomType
-generateRoomType index =
+getRoomType : Int -> RoomType
+getRoomType index =
     let
         clampedIndex =
             clamp 0 100 index
@@ -56,3 +62,8 @@ generateRoomType index =
             DiagonalSquares
         else
             DeadEnd
+
+
+generateRoomType : Generator RoomType
+generateRoomType =
+    Random.map getRoomType (Random.int 0 100)

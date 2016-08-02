@@ -76,13 +76,9 @@ init =
 generate : Random.Seed -> ( Room, Random.Seed )
 generate seed =
     let
-        ( roomType, seed' ) =
-            Dice.rollD 100 seed
-                |> \( randInt, seed' ) ->
-                    ( Config.generateRoomType randInt, seed' )
-
-        ( roomSize, seed'' ) =
-            Dice.rollD Config.roomSize seed'
+        ( ( roomType, roomSize ), seed' ) =
+            Random.step (Random.pair Config.generateRoomType Config.generateRoomSize)
+                seed
 
         _ =
             Debug.log "Generating..."
@@ -92,28 +88,28 @@ generate seed =
     in
         case roomType of
             Rectangular ->
-                rectangular size seed''
+                rectangular size seed'
 
             Cross ->
-                cross size seed''
+                cross size seed'
 
             Diamond ->
-                diamond size seed''
+                diamond size seed'
 
             Potion ->
-                potion size seed''
+                potion size seed'
 
             Circular ->
-                circular size seed''
+                circular size seed'
 
             DiagonalSquares ->
-                diagonalSquares size seed''
+                diagonalSquares size seed'
 
             DeadEnd ->
                 -- will generate one tile for the room which is forced
                 -- into an entrance as all rooms must have at least
                 -- one entrance
-                ( init, seed'' )
+                ( init, seed' )
 
 
 
@@ -144,8 +140,7 @@ addDoors nDoors ( walls, fullWalls, doors, seed ) =
         ( n, (rock :: wall) :: restOfWalls ) ->
             let
                 randomDoorSampler =
-                    doorSample (rock :: wall)
-                        |> Random.map (Maybe.withDefault rock)
+                    doorSampleWithDefault (rock :: wall) rock
 
                 ( door, seed' ) =
                     Random.step randomDoorSampler seed
@@ -156,9 +151,10 @@ addDoors nDoors ( walls, fullWalls, doors, seed ) =
                 addDoors (n - 1) ( restOfWalls ++ [ wallWithoutDoor ], fullWalls, ( Door, door ) :: doors, seed' )
 
 
-doorSample : Walls -> Generator (Maybe Wall)
-doorSample walls =
+doorSampleWithDefault : Walls -> Wall -> Generator Wall
+doorSampleWithDefault walls wall =
     Random.Extra.sample walls
+        |> Random.map (Maybe.withDefault wall)
 
 
 
