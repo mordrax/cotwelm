@@ -51,7 +51,9 @@ type alias Room =
     { doors : List Door
     , walls : Walls
     , floors : Floors
+    , corners : Walls
     , roomType : RoomType
+    , dimension : Dimension
     }
 
 
@@ -60,7 +62,9 @@ init =
     { doors = [ ( Door, ( 0, 0 ) ) ]
     , walls = []
     , floors = []
+    , corners = [ ( 0, 0 ) ]
     , roomType = DeadEnd
+    , dimension = ( 1, 1 )
     }
 
 
@@ -160,7 +164,6 @@ doorSample walls =
 
 -------------------------------------------------------------------------------
 -- Room types
---
 -------------------------------------------------------------------------------
 
 
@@ -184,23 +187,27 @@ rectangular size seed =
             , List.map (\x -> ( x, yMax )) [1..xMax - 1]
             ]
 
-        wallsShuffler =
-            Random.Array.shuffle (Array.fromList walls)
+        doorGenerator =
+            Dice.d 6
 
-        ( walls', seed'' ) =
-            Random.step wallsShuffler seed'
-                |> (\( w, s ) -> ( (Array.toList w), s ))
+        ( ( shuffledWalls, nDoors ), seed'' ) =
+            Random.step (Random.pair (shuffle walls) doorGenerator) seed'
 
-        ( nDoors, seed''' ) =
-            Dice.rollD 6 seed''
-
-        ( newWalls, doors, seed'''' ) =
-            addDoors 2 ( walls', [], [], seed''' )
+        ( newWalls, doors, seed''' ) =
+            addDoors nDoors ( shuffledWalls, [], [], seed'' )
 
         floors =
             List.Extra.lift2 (,) [1..xMax - 1] [1..yMax - 1]
     in
-        ( Room doors (newWalls ++ corners) floors Rectangular, seed'''' )
+        ( Room doors (newWalls ++ corners) floors corners Rectangular ( width, height ), seed''' )
+
+
+shuffle : List a -> Generator (List a)
+shuffle list =
+    list
+        |> Array.fromList
+        |> Random.Array.shuffle
+        |> Random.map Array.toList
 
 
 cross : Int -> Random.Seed -> ( Room, Random.Seed )

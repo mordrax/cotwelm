@@ -1,6 +1,7 @@
 module Dice
     exposing
-        ( rollD
+        ( d
+        , rollD
         , roll2D
         , roll3D
         , roll4D
@@ -11,6 +12,16 @@ module Dice
 -}
 
 import Random exposing (..)
+
+
+d : Int -> Generator Int
+d faces =
+    Random.int 1 faces
+
+
+d2d : Int -> Int -> Generator ( Int, Int )
+d2d faces1 faces2 =
+    Random.map2 (,) (d faces1) (d faces2)
 
 
 {-| Given a dice of n faces and a starting seed, will generate a number and pass

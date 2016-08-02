@@ -16,6 +16,12 @@ type alias Model =
     {}
 
 
+type alias DungeonRoom =
+    { position : Vector
+    , room : Room
+    }
+
+
 generate : Random.Seed -> ( Dict Vector Tile, Random.Seed )
 generate seed =
     let
@@ -28,17 +34,12 @@ generate seed =
         -- TODO: currently not using room
         -- need to incorporate walls, floor, entrances into dungeon
         -- start empty, add rooms, connections, lastly rocks to fill gap
-        ( room1, seed1 ) =
-            generateRoom seed
-
-        ( room2, _ ) =
-            generateRoom seed1
-
-        ( rooms, startPositions, seed' ) =
-            generateRooms 3 ( [], [], seed )
+        ( dungeonRooms, seed' ) =
+            generateRooms 3 ( 30, [], seed )
 
         tiles =
-            List.concat <| List.map2 (\room pos -> roomToTiles room pos) [ room1, room2 ] startPositions
+            List.concat
+                <| List.map (\x -> roomToTiles x.room x.position) dungeonRooms
 
         map =
             Dict.fromList (List.map toKVPair tiles)
@@ -46,27 +47,26 @@ generate seed =
         defaultPosition =
             \x -> Maybe.withDefault ( 0, 0 ) x
 
-        path =
-            connectRooms ( room1, defaultPosition <| List.head startPositions )
-                ( room2, defaultPosition <| List.head <| List.drop 1 startPositions )
-                map
-
-        corridor =
-            case path of
-                Nothing ->
-                    []
-
-                Just realPath ->
-                    List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
-
-        roomsWithCorridors =
-            Dict.fromList (List.map toKVPair (corridor ++ tiles))
-
-        filledMap =
-            fillWithWall roomsWithCorridors
+        --path =
+        --    connectRooms ( room1, defaultPosition <| List.head startPositions )
+        --        ( room2, defaultPosition <| List.head <| List.drop 1 startPositions )
+        --        map
+        --corridor =
+        --    case path of
+        --        Nothing ->
+        --            []
+        --        Just realPath ->
+        --            List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
+        --roomsWithCorridors =
+        --    Dict.fromList (List.map toKVPair (corridor ++ tiles))
+        --filledMap =
+        --    fillWithWall roomsWithCorridors
     in
-        --( Dict.fromList (List.map toKVPair filledMap), seed' )
-        ( roomsWithCorridors, seed' )
+        ( Dict.fromList (List.map toKVPair tiles), seed' )
+
+
+
+--( roomsWithCorridors, seed' )
 
 
 fillWithWall : Dict Vector Tile -> List Tile
@@ -107,26 +107,44 @@ roomToTiles room startPos =
                 room.doors
 
 
-generateRooms : Int -> ( List Room, List Vector, Random.Seed ) -> ( List Room, List Vector, Random.Seed )
-generateRooms nRooms ( rooms, startPositions, seed ) =
-    case nRooms of
-        0 ->
-            ( rooms, startPositions, seed )
+generateRooms : Int -> ( Int, List DungeonRoom, Random.Seed ) -> ( List DungeonRoom, Random.Seed )
+generateRooms nRooms ( retries, rooms, seed ) =
+    case ( nRooms, retries ) of
+        ( 0, _ ) ->
+            ( rooms, seed )
 
-        n ->
+        ( _, 0 ) ->
+            ( rooms, seed )
+
+        ( n, _ ) ->
             let
-                ( newRoom, seed' ) =
-                    generateRoom seed
+                ( room, seed' ) =
+                    Room.generate seed
 
-                ( newStartPos, seed'' ) =
+                ( pos, seed'' ) =
                     Dice.roll2D 30 seed'
             in
-                generateRooms (n - 1) ( newRoom :: rooms, newStartPos :: startPositions, seed'' )
+                if overlapsRooms room pos rooms then
+                    generateRooms n ( (retries - 1), rooms, seed'' )
+                else
+                    generateRooms (n - 1) ( (retries - 1), (DungeonRoom pos room) :: rooms, seed'' )
 
 
-generateRoom : Random.Seed -> ( Room, Random.Seed )
-generateRoom seed =
-    Room.generate seed
+overlapsRooms : Room -> Vector -> List DungeonRoom -> Bool
+overlapsRooms newRoom pos rooms =
+    case rooms of
+        [] ->
+            False
+
+        dungeonRoom :: restOfRooms ->
+            let
+                roomBox =
+                    ( dungeonRoom.position, Vector.add dungeonRoom.position dungeonRoom.room.dimension )
+            in
+                if List.any (\x -> Vector.boxIntersect (Vector.add x pos) roomBox) newRoom.corners then
+                    True
+                else
+                    overlapsRooms newRoom pos restOfRooms
 
 
 entranceToTileType : Room.Entrance -> Tile.TileType
