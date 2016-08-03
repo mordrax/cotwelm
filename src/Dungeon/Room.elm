@@ -259,16 +259,16 @@ crossDots size =
 
 
 crossCorners : Int -> Walls
-crossCorners size =
+crossCorners roomSize =
     let
         dots =
-            crossDots size
+            crossDots roomSize
 
         grid =
             List.Extra.lift2 (,) dots dots
 
         corners =
-            [ ( 0, 0 ), ( 0, size ), ( size, 0 ), ( size, size ) ]
+            lift2 (,) [ 0, roomSize ] [ 0, roomSize ]
 
         isNotCorner =
             not << flip List.member corners
