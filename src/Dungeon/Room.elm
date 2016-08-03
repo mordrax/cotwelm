@@ -3,6 +3,7 @@ module Dungeon.Room
         ( Room
         , Entrance(..)
         , generate
+        , crossCorners
         )
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
@@ -73,12 +74,23 @@ init =
 - how big a room
 - where the doors are
 -}
+type alias RoomSize =
+    Int
+
+
+roomTypeAndSizeGenerator : RoomType -> Generator ( RoomType, RoomSize )
+roomTypeAndSizeGenerator roomType =
+    Random.map (\size -> ( roomType, size )) (roomSizeGenerator roomType)
+
+
 generate : Random.Seed -> ( Room, Random.Seed )
 generate seed =
     let
+        gen =
+            Config.roomTypeGenerator `Random.andThen` roomTypeAndSizeGenerator
+
         ( ( roomType, roomSize ), seed' ) =
-            Random.step (Random.pair Config.generateRoomType Config.generateRoomSize)
-                seed
+            Random.step gen seed
 
         _ =
             Debug.log "Generating..."
@@ -91,7 +103,7 @@ generate seed =
                 rectangular size seed'
 
             Cross ->
-                cross size seed'
+                Random.step cross seed'
 
             Diamond ->
                 diamond size seed'
@@ -206,9 +218,72 @@ shuffle list =
         |> Random.map Array.toList
 
 
-cross : Int -> Random.Seed -> ( Room, Random.Seed )
-cross size seed =
-    ( init, seed )
+{-| Crosses are at a minimum of 7x7 for a single square of doorable wall
+    "..###.."
+    "..#.#.."
+    "###.###"
+    "#.....#"
+    "###.###"
+    "..#.#.."
+    "..###.."
+
+-}
+cross : Generator Room
+cross =
+    let
+        sizeGen =
+            Config.roomSizeGenerator Cross
+
+        wallsGen =
+            Random.map (\x -> crossWalls x) sizeGen
+
+        floorsGen =
+            Random.map (\x -> crossFloors x) sizeGen
+
+        doors =
+            []
+
+        cornersGen =
+            Random.map (\x -> crossCorners x) sizeGen
+    in
+        Random.map4 (\size walls floors corners -> Room doors walls floors corners Cross ( size, size )) sizeGen wallsGen floorsGen cornersGen
+
+
+{-| The 4 main points of interest in a cross room can be expressed by a formula of:
+    (1 + X) * [0, 1, 2, 3] where X is the length of wall minus the two corner walls on each edge
+    So for any given sized cross room, this function gives the dots for that sized cross.
+-}
+crossDots : Int -> List Int
+crossDots size =
+    List.map (\x -> (size + 1) * x) [0..3]
+
+
+crossCorners : Int -> Walls
+crossCorners size =
+    let
+        dots =
+            crossDots size
+
+        grid =
+            List.Extra.lift2 (,) dots dots
+
+        corners =
+            [ ( 0, 0 ), ( 0, size ), ( size, 0 ), ( size, size ) ]
+
+        isNotCorner =
+            not << flip List.member corners
+    in
+        List.filter isNotCorner grid
+
+
+crossFloors : Int -> Floors
+crossFloors size =
+    []
+
+
+crossWalls : Int -> Walls
+crossWalls size =
+    []
 
 
 diamond : Int -> Random.Seed -> ( Room, Random.Seed )
@@ -229,3 +304,17 @@ circular size seed =
 diagonalSquares : Int -> Random.Seed -> ( Room, Random.Seed )
 diagonalSquares size seed =
     ( init, seed )
+
+
+diamondTemplate : List String
+diamondTemplate =
+    [ "....#...."
+    , "...#.#..."
+    , "..#...#.."
+    , ".#.....#."
+    , "#.......#"
+    , ".#.....#."
+    , "..#...#.."
+    , "...#.#..."
+    , "....#...."
+    ]

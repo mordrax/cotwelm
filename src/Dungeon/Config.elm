@@ -39,6 +39,31 @@ generateRoomSize =
     Random.int 1 10
 
 
+roomSizeGenerator : RoomType -> Generator Int
+roomSizeGenerator roomType =
+    case roomType of
+        Rectangular ->
+            Random.int 4 10
+
+        Cross ->
+            Random.int 1 4
+
+        Diamond ->
+            Random.int 4 10
+
+        Potion ->
+            Random.int 4 10
+
+        Circular ->
+            Random.int 4 10
+
+        DiagonalSquares ->
+            Random.int 4 10
+
+        DeadEnd ->
+            Random.int 1 1
+
+
 {-| Given a int between 0 and 100 (will cap if outside of range), will return
     a room type based on the hardcoded distribution of types
 -}
@@ -64,6 +89,6 @@ getRoomType index =
             DeadEnd
 
 
-generateRoomType : Generator RoomType
-generateRoomType =
+roomTypeGenerator : Generator RoomType
+roomTypeGenerator =
     Random.map getRoomType (Random.int 0 100)
