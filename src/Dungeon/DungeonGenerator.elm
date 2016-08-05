@@ -1,7 +1,8 @@
 module Dungeon.DungeonGenerator exposing (generate)
 
 import AStar exposing (findPath, Position)
-import Dungeon.Config as Config exposing (..)
+import Dungeon.Rooms.Config as Config exposing (..)
+import Dungeon.Rooms.Type exposing (..)
 import Dice exposing (..)
 import Dict exposing (..)
 import Dungeon.Room as Room exposing (..)
@@ -147,7 +148,7 @@ overlapsRooms newRoom pos rooms =
                     overlapsRooms newRoom pos restOfRooms
 
 
-entranceToTileType : Room.Entrance -> Tile.TileType
+entranceToTileType : Entrance -> Tile.TileType
 entranceToTileType entrance =
     case entrance of
         Door ->

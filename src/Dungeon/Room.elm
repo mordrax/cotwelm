@@ -14,48 +14,13 @@ module Dungeon.Room exposing (..)
 
 import Array exposing (..)
 import Dice exposing (..)
-import Dungeon.Config as Config exposing (..)
+import Dungeon.Rooms.Config as Config exposing (..)
 import List.Extra exposing (..)
 import Random exposing (..)
 import Random.Extra exposing (..)
 import Random.Array exposing (..)
-import Set exposing (toList, fromList)
-import Utils.Vector as Vector exposing (..)
-
-
-type alias Dimension =
-    Vector
-
-
-type Entrance
-    = Door
-    | NoDoor
-
-
-type alias Door =
-    ( Entrance, Vector )
-
-
-type alias Walls =
-    List Vector
-
-
-type alias Wall =
-    Vector
-
-
-type alias Floors =
-    List Vector
-
-
-type alias Room =
-    { doors : List Door
-    , walls : Walls
-    , floors : Floors
-    , corners : Walls
-    , roomType : RoomType
-    , dimension : Dimension
-    }
+import Dungeon.Rooms.Type exposing (..)
+import Dungeon.Rooms.Cross as Cross exposing (generate)
 
 
 init : Room
@@ -74,10 +39,6 @@ init =
 - how big a room
 - where the doors are
 -}
-type alias RoomSize =
-    Int
-
-
 roomTypeAndSizeGenerator : RoomType -> Generator ( RoomType, RoomSize )
 roomTypeAndSizeGenerator roomType =
     Random.map (\size -> ( roomType, size )) (roomSizeGenerator roomType)
@@ -103,7 +64,7 @@ generate seed =
                 rectangular size seed'
 
             Cross ->
-                Random.step cross seed'
+                Random.step Cross.generate seed'
 
             Diamond ->
                 diamond size seed'
@@ -230,124 +191,6 @@ shuffle list =
     "..###.."
 
 -}
-cross : Generator Room
-cross =
-    let
-        sizeGen =
-            Config.roomSizeGenerator Cross
-
-        wallsGen =
-            Random.map crossWalls sizeGen
-
-        floorsGen =
-            Random.map crossFloors sizeGen
-
-        doors =
-            []
-
-        cornersGen =
-            Random.map (\x -> crossCorners x) sizeGen
-    in
-        Random.map4
-            (\size walls floors corners ->
-                Room doors (List.concat walls) floors corners Cross ( size, size )
-            )
-            sizeGen
-            wallsGen
-            floorsGen
-            cornersGen
-
-
-{-| The 4 main points of interest in a cross room can be expressed by a formula of:
-    (1 + X) * [0, 1, 2, 3] where X is the length of wall minus the two corner walls on each edge
-    So for any given sized cross room, this function gives the dots for that sized cross.
--}
-crossDots : Int -> List Int
-crossDots wallSize =
-    List.map (crossDot wallSize) [0..3]
-
-
-crossDot : Int -> Int -> Int
-crossDot wallSize axis =
-    (wallSize + 1) * axis
-
-
-crossCorners : Int -> Walls
-crossCorners wallSize =
-    let
-        roomSize =
-            wallSize + 5
-
-        dots =
-            crossDots wallSize
-
-        grid =
-            lift2 (,) dots dots
-
-        corners =
-            lift2 (,) [ 0, roomSize ] [ 0, roomSize ]
-
-        isNotCorner =
-            not << flip List.member corners
-    in
-        List.filter isNotCorner grid
-
-
-{-| F denotes the floor. To get all floor, add up
-    all Xs inside the crossDots 1, 2 for Y between 1 and Height - 1 inclusive
-    and all Ys in the same way
-
-     0 1 2 3  <-- cross dot axis
-    "..###.."
-    "..#F#.."
-    "###F###"
-    "#FFFFF#"
-    "###F###"
-    "..#F#.."
-    "..###.."
--}
-crossFloors : Int -> Floors
-crossFloors wallSize =
-    let
-        floorMiddles =
-            [(crossDot wallSize 1) + 1..(crossDot wallSize 2) - 1]
-
-        vertical =
-            lift2 (,) floorMiddles [1..(wallSize + 5) - 1]
-
-        horizontal =
-            lift2 (,) [1..(wallSize + 5) - 1] floorMiddles
-    in
-        Set.toList <| Set.fromList (vertical ++ horizontal)
-
-
-crossWalls : Int -> List Walls
-crossWalls wallSize =
-    let
-        roomSize =
-            wallSize + 5
-
-        axis =
-            \a b ->
-                [(crossDot wallSize a) + 1..(crossDot wallSize b) - 1]
-
-        horizontalTopBottom =
-            lift2 (,) (axis 1 2) [ 0, roomSize ]
-
-        horizontalMiddles =
-            lift2 (,) (axis 1 2) (axis 0 1)
-                ++ lift2 (,) (axis 1 2) (axis 2 3)
-
-        verticalTopBottom =
-            lift2 (,) [ 0, roomSize ] (axis 1 2)
-
-        verticalMiddles =
-            lift2 (,) (axis 0 1) (axis 1 2)
-                ++ lift2 (,) (axis 2 3) (axis 1 2)
-    in
-        [ horizontalTopBottom ++ verticalTopBottom ++ horizontalMiddles ++ verticalMiddles ]
-
-
 diamond : Int -> Random.Seed -> ( Room, Random.Seed )
 diamond size seed =
     ( init, seed )
