@@ -1,7 +1,4 @@
-module Dungeon.Config exposing (..)
-
-import Random exposing (..)
-
+module Dungeon.Rooms.Config exposing (..)
 
 {-| This module houses the configuration properties of the dungeon such as dungeon size,
 max number of rooms on a floor, all details about the rooms, corridor lengths etc...
@@ -9,14 +6,10 @@ max number of rooms on a floor, all details about the rooms, corridor lengths et
 The module has no model but rather are mostly a collection of constants used by the
 dungeon generator to create random dungeon levels.
 -}
-type RoomType
-    = Rectangular
-    | Cross
-    | Diamond
-    | Potion
-    | Circular
-    | DiagonalSquares
-    | DeadEnd
+
+import Random exposing (..)
+import Random.Extra exposing (..)
+import Dungeon.Rooms.Type exposing (..)
 
 
 {-| Width and height dimensions of the dungeon level
@@ -91,4 +84,5 @@ getRoomType index =
 
 roomTypeGenerator : Generator RoomType
 roomTypeGenerator =
-    Random.map getRoomType (Random.int 0 100)
+    --Random.map getRoomType (Random.int 0 100)
+    Random.Extra.constant Cross
