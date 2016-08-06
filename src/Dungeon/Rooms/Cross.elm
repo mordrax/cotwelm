@@ -1,5 +1,18 @@
 module Dungeon.Rooms.Cross exposing (..)
 
+{-| Crosses are at a minimum of 7x7 for a single square of doorable wall
+    The following picture shows a 7x7 cross with possible door positions
+    on any of the flat walls (not on any of the corners)
+    "..###.."
+    "..#.#.."
+    "###.###"
+    "#.....#"
+    "###.###"
+    "..#.#.."
+    "..###.."
+
+-}
+
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Random exposing (..)
@@ -16,9 +29,9 @@ generate : Generator Room
 generate =
     let
         wallSizeGen =
-            --Config.roomSizeGenerator Cross
-            constant 1
+            Config.roomSizeGenerator Cross
 
+        --constant 1
         wallsGen =
             Random.map walls wallSizeGen
 
