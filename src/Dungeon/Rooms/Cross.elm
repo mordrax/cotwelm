@@ -1,10 +1,9 @@
 module Dungeon.Rooms.Cross exposing (..)
 
---(generate)
-
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Random exposing (..)
+import Random.Extra exposing (..)
 import List.Extra exposing (..)
 import Set exposing (..)
 
@@ -17,11 +16,13 @@ generate : Generator Room
 generate =
     let
         wallSizeGen =
-            Config.roomSizeGenerator Cross
+            --Config.roomSizeGenerator Cross
+            constant 1
 
         wallsGen =
             Random.map walls wallSizeGen
 
+        --constant []
         floorsGen =
             Random.map floors wallSizeGen
 
@@ -63,6 +64,9 @@ dot wallSize axis =
 corners : WallSize -> Walls
 corners wallSize =
     let
+        axis =
+            dot wallSize
+
         roomSize =
             toRoomSize wallSize
 
@@ -73,7 +77,7 @@ corners wallSize =
             lift2 (,) allDots allDots
 
         corners =
-            lift2 (,) [ 0, roomSize - 1 ] [ 0, roomSize - 1 ]
+            lift2 (,) [ 0, axis 3 ] [ 0, axis 3 ]
 
         isNotCorner =
             not << flip List.member corners
@@ -97,14 +101,17 @@ corners wallSize =
 floors : WallSize -> Floors
 floors wallSize =
     let
+        axis =
+            dot wallSize
+
         floorMiddles =
-            [(dot wallSize 1) + 1..(dot wallSize 2) - 1]
+            [axis 1 + 1..axis 2 - 1]
 
         vertical =
-            lift2 (,) floorMiddles [1..(toRoomSize wallSize) - 1]
+            lift2 (,) floorMiddles [axis 0 + 1..axis 3 - 1]
 
         horizontal =
-            lift2 (,) [1..(toRoomSize wallSize) - 1] floorMiddles
+            lift2 (,) [axis 0 + 1..axis 3 - 1] floorMiddles
     in
         Set.toList <| Set.fromList (vertical ++ horizontal)
 
@@ -142,11 +149,14 @@ walls wallSize =
         right =
             between 2 3
 
+        axis =
+            dot wallSize
+
         topAxis =
-            0
+            axis 0
 
         bottomAxis =
-            toRoomSize wallSize - 1
+            axis 3
 
         horizontalTop =
             lift2 (,) middle [ topAxis ]
@@ -161,12 +171,12 @@ walls wallSize =
             lift2 (,) [ bottomAxis ] middle
 
         horizontalMiddles =
-            lift2 (,) middle left
-                ++ lift2 (,) middle right
+            lift2 (,) left [ axis 1, axis 2 ]
+                ++ lift2 (,) right [ axis 1, axis 2 ]
 
         verticalMiddles =
-            lift2 (,) left middle
-                ++ lift2 (,) right middle
+            lift2 (,) [ axis 1, axis 2 ] left
+                ++ lift2 (,) [ axis 1, axis 2 ] right
     in
         [ horizontalTop ]
             ++ [ horizontalBottom ]
