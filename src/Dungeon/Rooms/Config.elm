@@ -60,8 +60,8 @@ roomSizeGenerator roomType =
 {-| Given a int between 0 and 100 (will cap if outside of range), will return
     a room type based on the hardcoded distribution of types
 -}
-getRoomType : Int -> RoomType
-getRoomType index =
+roomType : Int -> RoomType
+roomType index =
     let
         clampedIndex =
             clamp 0 100 index
@@ -84,5 +84,60 @@ getRoomType index =
 
 roomTypeGenerator : Generator RoomType
 roomTypeGenerator =
-    --Random.map getRoomType (Random.int 0 100)
-    Random.Extra.constant Cross
+    --Random.map roomType (Random.int 0 100)
+    constant Cross
+
+
+wallSampler : Walls -> Wall -> Generator Wall
+wallSampler walls defaultWall =
+    Random.Extra.sample walls
+        |> map (Maybe.withDefault defaultWall)
+
+
+without : Wall -> Walls -> Walls
+without wall walls =
+    List.filter (\x -> x /= wall) walls
+
+
+addDoors :
+    Int
+    -> ( List Walls, List Walls, List Door )
+    -> Generator ( Walls, List Door )
+addDoors nDoors ( walls, fullWalls, doors ) =
+    let
+        createGenerator =
+            constant ( List.concat (walls ++ fullWalls), doors )
+    in
+        case ( nDoors, walls ) of
+            ( 0, _ ) ->
+                createGenerator
+
+            ( _, [] ) ->
+                createGenerator
+
+            ( _, [] :: restOfWalls ) ->
+                createGenerator
+
+            ( n, (rock :: wall) :: restOfWalls ) ->
+                let
+                    generateWall =
+                        wallSampler (rock :: wall) rock
+
+                    wallWithoutDoor =
+                        flip without (rock :: wall)
+
+                    recurse =
+                        \(( _, pos ) as door) ->
+                            addDoors (n - 1)
+                                ( restOfWalls ++ [ wallWithoutDoor pos ]
+                                , fullWalls
+                                , door :: doors
+                                )
+                in
+                    (wallToDoor generateWall)
+                        `andThen` recurse
+
+
+wallToDoor : Generator Wall -> Generator Door
+wallToDoor wallGen =
+    Random.map (\pos -> ( Door, pos )) wallGen
