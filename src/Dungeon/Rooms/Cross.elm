@@ -27,7 +27,16 @@ type alias WallSize =
 
 generate : Generator Room
 generate =
-    generateWallSize `Random.andThen` generateRoom
+    generateWallSize
+        `Random.andThen` (\wallSize ->
+                            generateDoors (walls wallSize)
+                                `Random.andThen` (\doors -> generateRoom wallSize doors)
+                         )
+
+
+generateDoors : List Walls -> Generator ( Walls, List Door )
+generateDoors walls =
+    Config.addDoors 4 ( walls, [], [] )
 
 
 generateWallSize : Generator WallSize
@@ -35,15 +44,15 @@ generateWallSize =
     Config.roomSizeGenerator Cross
 
 
-generateRoom : WallSize -> Generator Room
-generateRoom wallSize =
+generateRoom : WallSize -> ( Walls, List Door ) -> Generator Room
+generateRoom wallSize ( walls, doors ) =
     let
         roomSize =
             toRoomSize wallSize
     in
         constant
-            <| { doors = []
-               , walls = (List.concat <| walls wallSize)
+            <| { doors = doors
+               , walls = walls
                , floors = floors wallSize
                , corners = corners wallSize
                , roomType = Cross
