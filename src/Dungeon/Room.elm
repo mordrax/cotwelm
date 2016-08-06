@@ -168,7 +168,7 @@ rectangular size seed =
         floors =
             List.Extra.lift2 (,) [1..xMax - 1] [1..yMax - 1]
     in
-        ( Room doors (newWalls ++ corners) floors corners Rectangular ( width, height ), seed''' )
+        ( Room doors newWalls floors corners Rectangular ( width, height ), seed''' )
 
 
 shuffle : List a -> Generator (List a)

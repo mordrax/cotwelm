@@ -92,7 +92,7 @@ roomToTiles room startPos =
             \localPos -> Vector.add startPos localPos
 
         items =
-            [ ( Tile.DarkDgn, room.floors ), ( Tile.Rock, room.walls ) ]
+            [ ( Tile.DarkDgn, room.floors ), ( Tile.Rock, room.walls ), ( Tile.Rock, room.corners ) ]
 
         makeTiles =
             \( tileType, positions ) ->
