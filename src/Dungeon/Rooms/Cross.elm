@@ -25,34 +25,58 @@ type alias WallSize =
     Int
 
 
+type alias Model =
+    { wallSize : Int
+    , walls : List Walls
+    , doors : List Door
+    }
+
+
 generate : Generator Room
 generate =
     generateWallSize
-        `Random.andThen` (\wallSize ->
-                            generateDoors (walls wallSize)
-                                `Random.andThen` (\doors -> generateRoom wallSize doors)
-                         )
+        `Random.andThen` generateWalls
+        `Random.andThen` shuffleWalls
+        `Random.andThen` generateDoors
+        `Random.andThen` generateRoom
 
 
-generateDoors : List Walls -> Generator ( Walls, List Door )
-generateDoors walls =
-    Config.addDoors 4 ( walls, [], [] )
+shuffleWalls : Model -> Generator Model
+shuffleWalls model =
+    let
+        updateModel =
+            \walls -> { model | walls = walls }
+    in
+        Random.map updateModel (Config.shuffle model.walls)
 
 
-generateWallSize : Generator WallSize
+generateDoors : Model -> Generator Model
+generateDoors ({ wallSize, walls, doors } as model) =
+    let
+        wallsDoorsGen =
+            Config.addDoors 4 ( walls, [], [] )
+
+        updateModel =
+            \( walls, doors ) -> { model | walls = walls, doors = doors }
+    in
+        Random.map updateModel wallsDoorsGen
+
+
+generateWallSize : Generator Model
 generateWallSize =
     Config.roomSizeGenerator Cross
+        |> Random.map (\wallSize -> Model wallSize [] [])
 
 
-generateRoom : WallSize -> ( Walls, List Door ) -> Generator Room
-generateRoom wallSize ( walls, doors ) =
+generateRoom : Model -> Generator Room
+generateRoom { wallSize, walls, doors } =
     let
         roomSize =
             toRoomSize wallSize
     in
         constant
             <| { doors = doors
-               , walls = walls
+               , walls = List.concat walls
                , floors = floors wallSize
                , corners = corners wallSize
                , roomType = Cross
@@ -150,6 +174,11 @@ floors wallSize =
 betweenDots : WallSize -> Int -> Int -> List Int
 betweenDots wallSize dot1 dot2 =
     [(dot wallSize dot1) + 1..(dot wallSize dot2) - 1]
+
+
+generateWalls : Model -> Generator Model
+generateWalls ({ wallSize } as model) =
+    constant { model | walls = walls wallSize }
 
 
 walls : WallSize -> List Walls

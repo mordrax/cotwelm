@@ -7,7 +7,9 @@ The module has no model but rather are mostly a collection of constants used by 
 dungeon generator to create random dungeon levels.
 -}
 
+import Array exposing (..)
 import Random exposing (..)
+import Random.Array exposing (..)
 import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 
@@ -66,7 +68,7 @@ roomType index =
         clampedIndex =
             clamp 0 100 index
     in
-        if clampedIndex < 100 then
+        if clampedIndex < 40 then
             Rectangular
         else if clampedIndex < 50 then
             Cross
@@ -84,14 +86,18 @@ roomType index =
 
 roomTypeGenerator : Generator RoomType
 roomTypeGenerator =
-    --Random.map roomType (Random.int 0 100)
-    constant Cross
+    Random.map roomType (Random.int 0 100)
 
 
-wallSampler : Walls -> Wall -> Generator Wall
-wallSampler walls defaultWall =
-    Random.Extra.sample walls
-        |> map (Maybe.withDefault defaultWall)
+wallSampler : Walls -> Generator Wall
+wallSampler walls =
+    case walls of
+        [] ->
+            constant ( 0, 0 )
+
+        wall :: restOfWalls ->
+            Random.Extra.sample walls
+                |> Random.map (Maybe.withDefault wall)
 
 
 without : Wall -> Walls -> Walls
@@ -102,11 +108,11 @@ without wall walls =
 addDoors :
     Int
     -> ( List Walls, List Walls, List Door )
-    -> Generator ( Walls, List Door )
+    -> Generator ( List Walls, List Door )
 addDoors nDoors ( walls, fullWalls, doors ) =
     let
         createGenerator =
-            constant ( List.concat (walls ++ fullWalls), doors )
+            constant ( walls ++ fullWalls, doors )
     in
         case ( nDoors, walls ) of
             ( 0, _ ) ->
@@ -118,13 +124,13 @@ addDoors nDoors ( walls, fullWalls, doors ) =
             ( _, [] :: restOfWalls ) ->
                 createGenerator
 
-            ( n, (rock :: wall) :: restOfWalls ) ->
+            ( n, wall :: restOfWalls ) ->
                 let
                     generateWall =
-                        wallSampler (rock :: wall) rock
+                        wallSampler wall
 
                     wallWithoutDoor =
-                        flip without (rock :: wall)
+                        flip without wall
 
                     recurse =
                         \(( _, pos ) as door) ->
@@ -141,3 +147,11 @@ addDoors nDoors ( walls, fullWalls, doors ) =
 wallToDoor : Generator Wall -> Generator Door
 wallToDoor wallGen =
     Random.map (\pos -> ( Door, pos )) wallGen
+
+
+shuffle : List a -> Generator (List a)
+shuffle list =
+    list
+        |> Array.fromList
+        |> Random.Array.shuffle
+        |> Random.map Array.toList
