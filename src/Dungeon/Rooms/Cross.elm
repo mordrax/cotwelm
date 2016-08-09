@@ -50,6 +50,11 @@ shuffleWalls model =
         Random.map updateModel (Config.shuffle model.walls)
 
 
+generateWalls : Model -> Generator Model
+generateWalls ({ wallSize } as model) =
+    constant { model | walls = walls wallSize }
+
+
 generateDoors : Model -> Generator Model
 generateDoors ({ wallSize, walls, doors } as model) =
     let
@@ -174,11 +179,6 @@ floors wallSize =
 betweenDots : WallSize -> Int -> Int -> List Int
 betweenDots wallSize dot1 dot2 =
     [(dot wallSize dot1) + 1..(dot wallSize dot2) - 1]
-
-
-generateWalls : Model -> Generator Model
-generateWalls ({ wallSize } as model) =
-    constant { model | walls = walls wallSize }
 
 
 walls : WallSize -> List Walls

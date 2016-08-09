@@ -1,4 +1,4 @@
-module Dungeon.DungeonGenerator exposing (generate)
+module Dungeon.DungeonGenerator exposing (..)
 
 import AStar exposing (findPath, Position)
 import Dungeon.Rooms.Config as Config exposing (..)

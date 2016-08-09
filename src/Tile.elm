@@ -101,7 +101,10 @@ toTile ( x, y ) tileType =
         Tile (A <| Model tileType solid [] Empty) ( x, y )
 
 
-tileToHtml : Tile -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile ) -> Html a
+tileToHtml :
+    Tile
+    -> (Tile -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile ))
+    -> Html a
 tileToHtml ({ base, position } as tile) neighbours =
     let
         (A model) =
@@ -164,7 +167,7 @@ tileToHtml ({ base, position } as tile) neighbours =
                                 else
                                     0
                     in
-                        case neighbours of
+                        case neighbours tile of
                             ( Just up, Just right, Just down, Just left ) ->
                                 (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right)
 

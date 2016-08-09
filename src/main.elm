@@ -28,6 +28,11 @@ import Random exposing (initialSeed)
 import Time exposing (inSeconds, now)
 
 
+-- Dungeon Editor
+
+import Dungeon.Editor as Editor exposing (..)
+
+
 --import TimeTravel.Navigation as TimeTravel
 
 
@@ -36,6 +41,7 @@ type Msg
     | CharCreationMsg CharCreation.Data.Msg
     | GameMsg (Game.Msg)
     | InitSeed Random.Seed
+    | EditorMsg Editor.Msg
 
 
 type Page
@@ -44,6 +50,7 @@ type Page
     | GamePage
     | ShopPage
     | DungeonPage
+    | EditorPage
     | NotImplementedPage
 
 
@@ -83,6 +90,7 @@ initModel url =
             { currentPage = GamePage
             , character = CharCreation.initChar
             , game = Nothing
+            , editor = Editor.init
             }
 
         ( modelWithUrl, urlCmds ) =
@@ -95,6 +103,7 @@ type alias Model =
     { currentPage : Page
     , character : CharCreation.Data.Model
     , game : Maybe Game.Data.Model
+    , editor : Editor.Model
     }
 
 
@@ -124,6 +133,9 @@ update msg model =
                             Game.update msg game
                     in
                         ( { model | game = Just game' }, Cmd.none )
+
+        EditorMsg msg ->
+            ( { model | editor = Editor.update msg model.editor }, Cmd.none )
 
         InitSeed seed ->
             let
@@ -161,18 +173,27 @@ view model =
                             (Game.view game)
                         ]
 
+        EditorPage ->
+            Html.App.map EditorMsg (Editor.view model.editor)
+
         _ ->
             h1 [] [ text "Page not implemented!" ]
 
 
 urlUpdate : String -> Model -> ( Model, Cmd Msg )
 urlUpdate url model =
-    if url == "charCreation" then
-        ( { model | currentPage = CharCreationPage }, Cmd.none )
-    else if url == "game" then
-        ( { model | currentPage = GamePage }, Cmd.none )
-    else
-        ( { model | currentPage = SplashPage }, Cmd.none )
+    let
+        setPage =
+            \x -> ( { model | currentPage = x }, Cmd.none )
+    in
+        if url == "charCreation" then
+            setPage CharCreationPage
+        else if url == "game" then
+            setPage GamePage
+        else if url == "editor" then
+            setPage EditorPage
+        else
+            setPage SplashPage
 
 
 

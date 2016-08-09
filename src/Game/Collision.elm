@@ -71,7 +71,7 @@ queryPosition : Vector -> Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
 queryPosition pos ({ hero, maps, monsters } as model) =
     let
         maybeTile =
-            Dict.get pos (getMap maps)
+            Dict.get pos (currentAreaMap maps)
 
         maybeBuilding =
             buildingAtPosition pos (Maps.getBuildings maps)
