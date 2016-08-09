@@ -2,10 +2,11 @@ module Tile
     exposing
         ( Tile
         , TileType(..)
+        , TileNeighbours
         , isSameType
         , isSolid
         , mapToTiles
-        , tileToHtml
+        , view
         , toTile
         )
 
@@ -30,6 +31,10 @@ type alias Model =
     , items : List Item
     , occupant : Occupant
     }
+
+
+type alias TileNeighbours =
+    ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
 
 
 type Occupant
@@ -101,11 +106,8 @@ toTile ( x, y ) tileType =
         Tile (A <| Model tileType solid [] Empty) ( x, y )
 
 
-tileToHtml :
-    Tile
-    -> (Tile -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile ))
-    -> Html a
-tileToHtml ({ base, position } as tile) neighbours =
+view : Tile -> TileNeighbours -> Html a
+view ({ base, position } as tile) neighbours =
     let
         (A model) =
             base
@@ -167,7 +169,7 @@ tileToHtml ({ base, position } as tile) neighbours =
                                 else
                                     0
                     in
-                        case neighbours tile of
+                        case neighbours of
                             ( Just up, Just right, Just down, Just left ) ->
                                 (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right)
 

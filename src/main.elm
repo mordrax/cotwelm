@@ -135,7 +135,14 @@ update msg model =
                         ( { model | game = Just game' }, Cmd.none )
 
         EditorMsg msg ->
-            ( { model | editor = Editor.update msg model.editor }, Cmd.none )
+            let
+                ( editor', cmds ) =
+                    Editor.update msg model.editor
+
+                gameCmds =
+                    Cmd.map (\x -> EditorMsg x) cmds
+            in
+                ( { model | editor = editor' }, gameCmds )
 
         InitSeed seed ->
             let

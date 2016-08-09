@@ -7,6 +7,8 @@ module Game.Maps
         , update
         , updateArea
         , view
+        , draw
+        , toMap
         , currentAreaMap
         , getASCIIMap
         , getBuildings
@@ -119,17 +121,26 @@ view maps =
         div [] (draw map ++ buildingsHtml)
 
 
+toMap : List Tile -> Map
+toMap tiles =
+    tiles
+        |> List.map (\({ position } as tile) -> ( position, tile ))
+        |> Dict.fromList
+
+
 draw : Map -> List (Html a)
 draw map =
     let
         neighbours =
-            flip tileNeighbours map
+            tileNeighbours map
 
-        tiles =
+        mapTiles =
             toTiles map
+
+        toHtml =
+            \tile -> Tile.view tile (neighbours tile)
     in
-        tiles
-            |> List.map (flip tileToHtml neighbours)
+        List.map toHtml mapTiles
 
 
 toTiles : Map -> List Tile
@@ -242,19 +253,17 @@ dungeonLevelOneBuildings =
 ------------------------------------------
 
 
-tileNeighbours : Tile -> Map -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
-tileNeighbours { position } map =
+tileNeighbours : Map -> Tile -> TileNeighbours
+tileNeighbours map { position } =
     let
-        neighbourPosition =
+        addTilePosition =
             Vector.add position
 
-        neighbourFromMap =
+        getTile =
             flip Dict.get map
 
         getNeighbour =
-            neighbourPosition >> neighbourFromMap
-
-        --\vector -> Dict.get (Vector.add position vector) map
+            addTilePosition >> getTile
     in
         ( getNeighbour ( 0, -1 )
         , getNeighbour ( 1, 0 )
