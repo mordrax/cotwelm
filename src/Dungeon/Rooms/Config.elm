@@ -14,6 +14,21 @@ import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 
 
+type Config
+    = A Model
+
+
+type alias Model =
+    { dungeonSize : Int
+    , roomSize : Int
+    }
+
+
+init : Model
+init =
+    Model 30 10
+
+
 {-| Width and height dimensions of the dungeon level
 -}
 size : Int
@@ -27,11 +42,6 @@ size =
 roomSize : Int
 roomSize =
     10
-
-
-generateRoomSize : Generator Int
-generateRoomSize =
-    Random.int 1 10
 
 
 roomSizeGenerator : RoomType -> Generator Int
