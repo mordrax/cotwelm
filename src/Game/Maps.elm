@@ -74,8 +74,8 @@ init seed =
     in
         ( A
             { currentArea =
-                DungeonLevel 2
-                --currentArea = Village
+                --DungeonLevel 2
+                Village
             , maps =
                 Dict.fromList
                     [ ( toString Village, Dict.fromList (tilesToTuples Village) )
