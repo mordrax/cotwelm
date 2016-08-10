@@ -32,9 +32,9 @@ type alias Model =
     }
 
 
-generate : Generator Room
-generate =
-    generateWallSize
+generate : Config.Model -> Generator Room
+generate model =
+    generateWallSize model
         `Random.andThen` generateWalls
         `Random.andThen` shuffleWalls
         `Random.andThen` generateDoors
@@ -67,9 +67,9 @@ generateDoors ({ wallSize, walls, doors } as model) =
         Random.map updateModel wallsDoorsGen
 
 
-generateWallSize : Generator Model
-generateWallSize =
-    Config.roomSizeGenerator Cross
+generateWallSize : Config.Model -> Generator Model
+generateWallSize model =
+    Config.roomSizeGenerator Cross model
         |> Random.map (\wallSize -> Model wallSize [] [])
 
 
@@ -89,7 +89,7 @@ generateRoom { wallSize, walls, doors } =
                }
 
 
-toRoomSize : WallSize -> RoomSize
+toRoomSize : WallSize -> Dungeon.Rooms.Type.RoomSize
 toRoomSize wallSize =
     wallSize + 6
 

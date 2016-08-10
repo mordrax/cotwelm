@@ -19,54 +19,65 @@ type Config
 
 
 type alias Model =
-    { dungeonSize : Int
-    , roomSize : Int
+    { -- Width and height dimensions of the dungeon level
+      dungeonSize : Int
+    , roomSizeRanges : RoomSizeRanges
+    }
+
+
+type alias RoomSizeRanges =
+    { rectangular : ( Int, Int )
+    , cross : ( Int, Int )
+    , diamond : ( Int, Int )
+    , potion : ( Int, Int )
+    , circular : ( Int, Int )
+    , diagonalSquares : ( Int, Int )
+    , deadEnd : ( Int, Int )
     }
 
 
 init : Model
 init =
-    Model 30 10
+    { dungeonSize = 30
+    , roomSizeRanges =
+        { rectangular = ( 4, 10 )
+        , cross = ( 1, 4 )
+        , diamond = ( 4, 10 )
+        , potion = ( 4, 10 )
+        , circular = ( 4, 10 )
+        , diagonalSquares = ( 4, 10 )
+        , deadEnd = ( 1, 1 )
+        }
+    }
 
 
-{-| Width and height dimensions of the dungeon level
--}
-size : Int
-size =
-    30
+roomSizeGenerator : RoomType -> Model -> Generator Int
+roomSizeGenerator roomType model =
+    let
+        tupleToGen =
+            \( min, max ) -> Random.int min max
+    in
+        case roomType of
+            Rectangular ->
+                tupleToGen model.roomSizeRanges.rectangular
 
+            Cross ->
+                tupleToGen model.roomSizeRanges.cross
 
-{-| Maximum allowed width and height dimension of a room. The minimum dimension is
-   dependent on the room type (e.g the rectangular room has a minimum of 3 x 3)
--}
-roomSize : Int
-roomSize =
-    10
+            Diamond ->
+                tupleToGen model.roomSizeRanges.diamond
 
+            Potion ->
+                tupleToGen model.roomSizeRanges.potion
 
-roomSizeGenerator : RoomType -> Generator Int
-roomSizeGenerator roomType =
-    case roomType of
-        Rectangular ->
-            Random.int 4 10
+            Circular ->
+                tupleToGen model.roomSizeRanges.circular
 
-        Cross ->
-            Random.int 1 4
+            DiagonalSquares ->
+                tupleToGen model.roomSizeRanges.diagonalSquares
 
-        Diamond ->
-            Random.int 4 10
-
-        Potion ->
-            Random.int 4 10
-
-        Circular ->
-            Random.int 4 10
-
-        DiagonalSquares ->
-            Random.int 4 10
-
-        DeadEnd ->
-            Random.int 1 1
+            DeadEnd ->
+                tupleToGen model.roomSizeRanges.deadEnd
 
 
 {-| Given a int between 0 and 100 (will cap if outside of range), will return

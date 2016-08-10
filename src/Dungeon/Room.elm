@@ -37,7 +37,7 @@ init =
 -}
 roomTypeAndSizeGenerator : RoomType -> Generator ( RoomType, RoomSize )
 roomTypeAndSizeGenerator roomType =
-    Random.map (\size -> ( roomType, size )) (roomSizeGenerator roomType)
+    Random.map (\size -> ( roomType, size )) (roomSizeGenerator roomType Config.init)
 
 
 generate : Random.Seed -> ( Room, Random.Seed )
@@ -52,29 +52,25 @@ generate seed =
         _ =
             Debug.log "Generating..."
                 { roomType = toString roomType
-                , roomSize = toString size
+                , roomSize = toString roomSize
                 }
     in
         case roomType of
             Rectangular ->
-                Rectangular.generate size seed'
+                Rectangular.generate roomSize seed'
 
-            Cross ->
-                Random.step Cross.generate seed'
-
-            Diamond ->
-                diamond size seed'
-
-            Potion ->
-                potion size seed'
-
-            Circular ->
-                circular size seed'
-
-            DiagonalSquares ->
-                diagonalSquares size seed'
-
-            DeadEnd ->
+            --Cross ->
+            --    Random.step Cross.generate seed'
+            --Diamond ->
+            --    diamond size seed'
+            --Potion ->
+            --    potion size seed'
+            --Circular ->
+            --    circular size seed'
+            --DiagonalSquares ->
+            --    diagonalSquares size seed'
+            --DeadEnd ->
+            _ ->
                 -- will generate one tile for the room which is forced
                 -- into an entrance as all rooms must have at least
                 -- one entrance

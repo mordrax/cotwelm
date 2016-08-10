@@ -14,7 +14,8 @@ import Utils.Vector as Vector exposing (..)
 
 
 type alias Model =
-    {}
+    { config : Config.Model
+    }
 
 
 type alias DungeonRoom =
@@ -23,12 +24,15 @@ type alias DungeonRoom =
     }
 
 
+init : Model
+init =
+    { config = Config.init
+    }
+
+
 generate : Random.Seed -> ( Dict Vector Tile, Random.Seed )
 generate seed =
     let
-        roomSize =
-            [0..Config.size]
-
         toKVPair =
             \tile -> ( tile.position, tile )
 
@@ -81,8 +85,11 @@ fillWithWall partialMap =
 
                     Just tile ->
                         tile
+
+        dungeonSize =
+            .dungeonSize Config.init
     in
-        List.Extra.lift2 addWallIfTileDoesNotExist [0..Config.size] [0..Config.size]
+        List.Extra.lift2 addWallIfTileDoesNotExist [0..dungeonSize] [0..dungeonSize]
 
 
 roomToTiles : Room -> Vector -> List Tile
@@ -194,6 +201,9 @@ heuristic start end =
 neighbours : Dict Vector Tile -> Vector -> Set Position
 neighbours map position =
     let
+        dungeonSize =
+            .dungeonSize Config.init
+
         add =
             \x y -> Vector.add position ( x, y )
 
@@ -205,7 +215,7 @@ neighbours map position =
 
         isOutOfBounds =
             \( x, y ) ->
-                if x > Config.roomSize || y > Config.roomSize then
+                if x > dungeonSize || y > dungeonSize then
                     True
                 else if x < 0 || y < 0 then
                     True
