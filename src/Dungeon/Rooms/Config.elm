@@ -36,6 +36,10 @@ type alias RoomSizeRanges =
     }
 
 
+type Msg
+    = DungeonSize Int
+
+
 init : Model
 init =
     { dungeonSize = 30
@@ -49,6 +53,13 @@ init =
         , deadEnd = ( 1, 1 )
         }
     }
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        DungeonSize size ->
+            { model | dungeonSize = size }
 
 
 roomSizeGenerator : RoomType -> Model -> Generator Int

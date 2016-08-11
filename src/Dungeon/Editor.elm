@@ -1,8 +1,10 @@
 module Dungeon.Editor exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as HA exposing (..)
+import Html.Events exposing (..)
 import Game.Maps as Maps exposing (..)
+import UI exposing (..)
 
 
 -- Dungeon
@@ -18,19 +20,11 @@ import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 
 import Dict exposing (..)
 import Random exposing (..)
-
-
--- mdl
-
-import Material exposing (..)
-import Material.Scheme exposing (..)
-import Material.Button as Button exposing (..)
-import Material.Slider as Slider
+import String exposing (..)
 
 
 type alias Model =
     { map : Map
-    , mdl : Material.Model
     , config : Config.Model
     }
 
@@ -38,21 +32,21 @@ type alias Model =
 type Msg
     = GenerateMap
     | GenerateRoom Room
-    | Mdl (Material.Msg Msg)
-    | SliderMsg SliderType Float
-
-
-type SliderType
-    = Room RoomType
-    | Map
+    | SliderMsg String
+    | DungeonSize String
+    | DungeonSizeInt Int
 
 
 init : Model
 init =
     { map = Dict.empty
-    , mdl = Material.model
     , config = Config.init
     }
+
+
+toIntWithDefault : String -> Int -> Int
+toIntWithDefault str default =
+    Result.withDefault default (String.toInt str)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -68,20 +62,22 @@ update msg model =
             in
                 ( { model | map = Maps.toMap tiles }, Cmd.none )
 
-        SliderMsg sliderType newSliderValue ->
-            case sliderType of
-                Room roomType ->
-                    ( { model | roomSize = round newSliderValue }, Cmd.none )
+        DungeonSize sizeStr ->
+            let
+                size =
+                    toIntWithDefault sizeStr 0
+            in
+                ( { model | config = Config.update (Config.DungeonSize size) model.config }, Cmd.none )
 
-                Map ->
-                    ( { model | mapSize = round newSliderValue }, Cmd.none )
+        DungeonSizeInt size ->
+            ( { model | config = Config.update (Config.DungeonSize size) model.config }, Cmd.none )
 
-        Mdl msg' ->
-            Material.update msg' model
+        SliderMsg newSliderValue ->
+            ( model, Cmd.none )
 
 
-type alias Mdl =
-    Material.Model
+
+--( { model | config = Config.update (Config.DungeonSize (toInt newSliderValue)) model.config }, Cmd.none )
 
 
 updateRoomSizeMax : RoomType -> Int -> Model -> Model
@@ -96,6 +92,9 @@ updateRoomSizeMax roomType max ({ config } as model) =
         roomSizeRanges' =
             case roomType of
                 Rectangular ->
+                    { roomSizeRanges | rectangular = mapSnd roomSizeRanges.rectangular max }
+
+                _ ->
                     { roomSizeRanges | rectangular = mapSnd roomSizeRanges.rectangular max }
 
         --Cross ->
@@ -114,66 +113,44 @@ updateRoomSizeMax roomType max ({ config } as model) =
         model
 
 
-button : String -> Model -> Msg -> Html Msg
-button txt model msg =
-    Button.render Mdl
-        [ 0 ]
-        model.mdl
-        [ Button.colored
-        , Button.ripple
-        , Button.raised
-        , Button.onClick msg
-        ]
-        [ text txt ]
 
-
-roomSizeView : Model -> RoomType -> Html Msg
-roomSizeView ({ config } as model) roomType =
-    let
-        ( min, max ) =
-            case roomType of
-                Rectangular ->
-                    config.roomSizeRanges.rectangular
-
-                Cross ->
-                    config.roomSizeRanges.cross
-
-                Diamond ->
-                    config.roomSizeRanges.diamond
-
-                Potion ->
-                    config.roomSizeRanges.potion
-
-                Circular ->
-                    config.roomSizeRanges.circular
-
-                DiagonalSquares ->
-                    config.roomSizeRanges.diagonalSquares
-
-                DeadEnd ->
-                    config.roomSizeRanges.deadEnd
-    in
-        p [ style [ ( "width", "300px" ) ] ]
-            [ h6 [] [ text "Room Size: " ++ (toString min) ++ " to " ++ (toString max) ]
-            , Slider.view
-                [ Slider.onChange (SliderMsg (Room roomType))
-                , Slider.value (toFloat max)
-                , Slider.min min
-                , Slider.max max
-                ]
-            ]
+--roomSizeView : Model -> RoomType -> Html Msg
+--roomSizeView ({ config } as model) roomType =
+--    let
+--        ( min, max ) =
+--            case roomType of
+--                Rectangular ->
+--                    config.roomSizeRanges.rectangular
+--                Cross ->
+--                    config.roomSizeRanges.cross
+--                Diamond ->
+--                    config.roomSizeRanges.diamond
+--                Potion ->
+--                    config.roomSizeRanges.potion
+--                Circular ->
+--                    config.roomSizeRanges.circular
+--                DiagonalSquares ->
+--                    config.roomSizeRanges.diagonalSquares
+--                DeadEnd ->
+--                    config.roomSizeRanges.deadEnd
+--    in
+--        p [ style [ ( "width", "300px" ) ] ]
+--            [ h6 [] [ text "Room Size: " ++ (toString min) ++ " to " ++ (toString max) ]
+--              --, Slider.view
+--              --    [ Slider.onChange (SliderMsg (Room roomType))
+--              --    , Slider.value (toFloat max)
+--              --    , Slider.min min
+--              --    , Slider.max max
+--              --    ]
+--            ]
 
 
 mapSizeView : Model -> Html Msg
 mapSizeView model =
     p [ style [ ( "width", "300px" ) ] ]
         [ h6 [] [ text "Map Size: ", text (toString model.config.dungeonSize) ]
-        , Slider.view
-            [ Slider.onChange (SliderMsg Map)
-            , Slider.value (toFloat model.config.dungeonSize)
-            , Slider.min 10
-            , Slider.max 100
-            ]
+        , UI.labeledInput "Map size" (toString model.config.dungeonSize) DungeonSize
+        , UI.inputWithIncDec model.config.dungeonSize DungeonSizeInt
         ]
 
 
@@ -181,11 +158,10 @@ view : Model -> Html Msg
 view model =
     div []
         [ div []
-            [ roomSizeView model
-            , mapSizeView model
-            , button "Generate Dungeon" model GenerateMap
+            [ --roomSizeView model,
+              mapSizeView model
+            , button [ class "ui button", onClick GenerateMap ] [ text "Generate Dungeon" ]
             ]
-            |> Material.Scheme.top
         , div []
             (Maps.draw model.map)
         ]
