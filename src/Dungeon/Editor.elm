@@ -33,8 +33,7 @@ type Msg
     = GenerateMap
     | GenerateRoom Room
     | SliderMsg String
-    | DungeonSize String
-    | DungeonSizeInt Int
+    | ConfigMsg Config.Msg
 
 
 init : Model
@@ -62,18 +61,11 @@ update msg model =
             in
                 ( { model | map = Maps.toMap tiles }, Cmd.none )
 
-        DungeonSize sizeStr ->
-            let
-                size =
-                    toIntWithDefault sizeStr 0
-            in
-                ( { model | config = Config.update (Config.DungeonSize size) model.config }, Cmd.none )
-
-        DungeonSizeInt size ->
-            ( { model | config = Config.update (Config.DungeonSize size) model.config }, Cmd.none )
-
         SliderMsg newSliderValue ->
             ( model, Cmd.none )
+
+        ConfigMsg msg ->
+            ( { model | config = Config.update msg model.config }, Cmd.none )
 
 
 
@@ -143,15 +135,6 @@ updateRoomSizeMax roomType max ({ config } as model) =
 --              --    , Slider.max max
 --              --    ]
 --            ]
-
-
-mapSizeView : Model -> Html Msg
-mapSizeView model =
-    p [ style [ ( "width", "300px" ) ] ]
-        [ h6 [] [ text "Map Size: ", text (toString model.config.dungeonSize) ]
-        , UI.labeledInput "Map size" (toString model.config.dungeonSize) DungeonSize
-        , UI.inputWithIncDec model.config.dungeonSize DungeonSizeInt
-        ]
 
 
 view : Model -> Html Msg

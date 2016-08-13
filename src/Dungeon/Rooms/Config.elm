@@ -7,11 +7,19 @@ The module has no model but rather are mostly a collection of constants used by 
 dungeon generator to create random dungeon levels.
 -}
 
+import UI exposing (..)
 import Array exposing (..)
 import Random exposing (..)
 import Random.Array exposing (..)
 import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
+
+
+-- html
+
+import Html exposing (..)
+import Html.Attributes as HA exposing (..)
+import Html.Events exposing (..)
 
 
 type Config
@@ -38,6 +46,12 @@ type alias RoomSizeRanges =
 
 type Msg
     = DungeonSize Int
+    | RoomSize RoomSizeValue RoomType Int
+
+
+type RoomSizeValue
+    = Min
+    | Max
 
 
 init : Model
@@ -60,6 +74,9 @@ update msg model =
     case msg of
         DungeonSize size ->
             { model | dungeonSize = size }
+
+        RoomSize roomSizeValue roomType val ->
+            model
 
 
 roomSizeGenerator : RoomType -> Model -> Generator Int
@@ -187,3 +204,15 @@ shuffle list =
         |> Array.fromList
         |> Random.Array.shuffle
         |> Random.map Array.toList
+
+
+mapSizeView : Model -> Html Msg
+mapSizeView model =
+    p [ style [ ( "width", "300px" ) ] ]
+        [ h6 [] [ text "Map Size: ", text (toString model.dungeonSize) ]
+        , UI.labeledNumber "Map size" model.dungeonSize DungeonSize
+        , UI.labeledMinMaxInput "Cross size"
+            model.roomSizeRanges.cross
+            (RoomSize Min Cross)
+            (RoomSize Max Cross)
+        ]
