@@ -10,14 +10,14 @@ type alias Label =
     String
 
 
-labeledInput : Label -> String -> (String -> a) -> Html a
-labeledInput label inputValue msg =
+labeledNumber : Label -> Int -> (Int -> a) -> Html a
+labeledNumber label number msg =
     div [ class "ui labeled input" ]
         [ div [ class "ui label" ] [ text label ]
         , input
             [ type' "number"
-            , onInput msg
-            , value inputValue
+            , onInput (\input -> msg <| toIntWithDefault input 0)
+            , value (toString number)
             ]
             []
         ]
@@ -36,6 +36,15 @@ inputWithIncDec val msg =
         ]
 
 
+toIntWithDefault : String -> Int -> Int
+toIntWithDefault str default =
+    Result.withDefault default (String.toInt str)
 
---minMaxInput: (Int, Int) -> (String -> a) -> (String -> a) -> Html a
---minMaxInput (min, max) minMsg maxMsg =
+
+labeledMinMaxInput : Label -> ( Int, Int ) -> (Int -> a) -> (Int -> a) -> Html a
+labeledMinMaxInput label ( min, max ) minMsg maxMsg =
+    div []
+        [ text label
+        , labeledNumber "Min" min minMsg
+        , labeledNumber "Max" max maxMsg
+        ]
