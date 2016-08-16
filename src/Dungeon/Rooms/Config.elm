@@ -22,10 +22,6 @@ import Html.Attributes as HA exposing (..)
 import Html.Events exposing (..)
 
 
-type Config
-    = A Model
-
-
 type alias Model =
     { -- Width and height dimensions of the dungeon level
       dungeonSize : Int
@@ -33,25 +29,24 @@ type alias Model =
     }
 
 
+type alias MinMax =
+    ( Int, Int )
+
+
 type alias RoomSizeRanges =
-    { rectangular : ( Int, Int )
-    , cross : ( Int, Int )
-    , diamond : ( Int, Int )
-    , potion : ( Int, Int )
-    , circular : ( Int, Int )
-    , diagonalSquares : ( Int, Int )
-    , deadEnd : ( Int, Int )
+    { rectangular : MinMax
+    , cross : MinMax
+    , diamond : MinMax
+    , potion : MinMax
+    , circular : MinMax
+    , diagonalSquares : MinMax
+    , deadEnd : MinMax
     }
 
 
 type Msg
     = DungeonSize Int
-    | RoomSize RoomSizeValue RoomType Int
-
-
-type RoomSizeValue
-    = Min
-    | Max
+    | RoomSize RoomType MinMax
 
 
 init : Model
@@ -75,8 +70,33 @@ update msg model =
         DungeonSize size ->
             { model | dungeonSize = size }
 
-        RoomSize roomSizeValue roomType val ->
-            model
+        RoomSize roomType val ->
+            { model | roomSizeRanges = updateRoomSizeRanges roomType val model.roomSizeRanges }
+
+
+updateRoomSizeRanges : RoomType -> MinMax -> RoomSizeRanges -> RoomSizeRanges
+updateRoomSizeRanges roomType val ranges =
+    case roomType of
+        Rectangular ->
+            { ranges | rectangular = val }
+
+        Cross ->
+            { ranges | cross = val }
+
+        Diamond ->
+            { ranges | diamond = val }
+
+        Potion ->
+            { ranges | potion = val }
+
+        Circular ->
+            { ranges | circular = val }
+
+        DiagonalSquares ->
+            { ranges | diagonalSquares = val }
+
+        DeadEnd ->
+            { ranges | deadEnd = val }
 
 
 roomSizeGenerator : RoomType -> Model -> Generator Int
@@ -206,13 +226,33 @@ shuffle list =
         |> Random.map Array.toList
 
 
-mapSizeView : Model -> Html Msg
-mapSizeView model =
-    p [ style [ ( "width", "300px" ) ] ]
-        [ h6 [] [ text "Map Size: ", text (toString model.dungeonSize) ]
-        , UI.labeledNumber "Map size" model.dungeonSize DungeonSize
-        , UI.labeledMinMaxInput "Cross size"
-            model.roomSizeRanges.cross
-            (RoomSize Min Cross)
-            (RoomSize Max Cross)
-        ]
+dungeonSizeView : Model -> Html Msg
+dungeonSizeView model =
+    UI.labeledNumber "Dungeon size" model.dungeonSize DungeonSize
+
+
+roomSizesView : Model -> Html Msg
+roomSizesView model =
+    let
+        rooms =
+            [ ( Rectangular, model.roomSizeRanges.rectangular )
+            , ( Cross, model.roomSizeRanges.cross )
+            , ( Diamond, model.roomSizeRanges.diamond )
+            , ( Potion, model.roomSizeRanges.potion )
+            , ( Circular, model.roomSizeRanges.circular )
+            , ( DiagonalSquares, model.roomSizeRanges.diagonalSquares )
+            ]
+    in
+        div [] (List.map (\( roomType, val ) -> roomSizeView roomType val) rooms)
+
+
+roomSizeView : RoomType -> MinMax -> Html Msg
+roomSizeView roomType ( min, max ) =
+    let
+        lbl =
+            (toString roomType) ++ " size: "
+    in
+        UI.labeled2TupleNumber lbl
+            ( min, max )
+            (\min' -> RoomSize roomType ( min', max ))
+            (\max' -> RoomSize roomType ( min, max' ))

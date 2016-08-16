@@ -41,10 +41,12 @@ toIntWithDefault str default =
     Result.withDefault default (String.toInt str)
 
 
-labeledMinMaxInput : Label -> ( Int, Int ) -> (Int -> a) -> (Int -> a) -> Html a
-labeledMinMaxInput label ( min, max ) minMsg maxMsg =
+labeled2TupleNumber : Label -> ( Int, Int ) -> (Int -> a) -> (Int -> a) -> Html a
+labeled2TupleNumber label ( min, max ) minMsg maxMsg =
     div []
         [ text label
-        , labeledNumber "Min" min minMsg
-        , labeledNumber "Max" max maxMsg
+        , div []
+            [ labeledNumber "Min" min minMsg
+            , labeledNumber "Max" max maxMsg
+            ]
         ]
