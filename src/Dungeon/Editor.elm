@@ -3,13 +3,14 @@ module Dungeon.Editor exposing (..)
 import Html exposing (..)
 import Html.Attributes as HA exposing (..)
 import Html.Events exposing (..)
+import Html.App exposing (map)
 import Game.Maps as Maps exposing (..)
-import UI exposing (..)
 
 
+--import UI exposing (..)
 -- Dungeon
+--import Dungeon.Room as Room exposing (..)
 
-import Dungeon.Room as Room exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.Rooms.Cross as Cross exposing (..)
 import Dungeon.Rooms.Type exposing (..)
@@ -32,7 +33,6 @@ type alias Model =
 type Msg
     = GenerateMap
     | GenerateRoom Room
-    | SliderMsg String
     | ConfigMsg Config.Msg
 
 
@@ -60,9 +60,6 @@ update msg model =
                     DungeonGenerator.roomToTiles room ( 10, 0 )
             in
                 ( { model | map = Maps.toMap tiles }, Cmd.none )
-
-        SliderMsg newSliderValue ->
-            ( model, Cmd.none )
 
         ConfigMsg msg ->
             ( { model | config = Config.update msg model.config }, Cmd.none )
@@ -147,4 +144,13 @@ view model =
             ]
         , div []
             (Maps.draw model.map)
+        ]
+
+
+mapSizeView : Model -> Html Msg
+mapSizeView model =
+    p [ style [ ( "width", "300px" ) ] ]
+        [ h6 [] [ text "Map Size: ", text (toString model.config.dungeonSize) ]
+        , Html.App.map ConfigMsg (Config.dungeonSizeView model.config)
+        , Html.App.map ConfigMsg (Config.roomSizesView model.config)
         ]
