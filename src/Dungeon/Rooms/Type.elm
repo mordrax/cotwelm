@@ -26,6 +26,10 @@ type alias Door =
     ( Entrance, Vector )
 
 
+type alias Doors =
+    List Door
+
+
 type alias Walls =
     List Vector
 
@@ -44,9 +48,16 @@ type alias RoomSize =
 
 type alias Room =
     { doors : List Door
-    , walls : Walls
+    , walls : List Walls
     , floors : Floors
     , corners : Walls
     , roomType : RoomType
     , dimension : Dimension
+    }
+
+
+type alias RoomTemplate =
+    { makeWalls : Dimension -> List Walls
+    , makeCorners : Dimension -> Walls
+    , makeFloors : Dimension -> Floors
     }
