@@ -32,45 +32,41 @@ init =
 
 generate : Random.Seed -> ( Dict Vector Tile, Random.Seed )
 generate seed =
-    let
-        toKVPair =
-            \tile -> ( tile.position, tile )
-
-        -- TODO: currently not using room
-        -- need to incorporate walls, floor, entrances into dungeon
-        -- start empty, add rooms, connections, lastly rocks to fill gap
-        ( dungeonRooms, seed' ) =
-            generateRooms 3 ( 30, [], seed )
-
-        tiles =
-            List.concat
-                <| List.map (\x -> roomToTiles x.room x.position) dungeonRooms
-
-        map =
-            Dict.fromList (List.map toKVPair tiles)
-
-        defaultPosition =
-            \x -> Maybe.withDefault ( 0, 0 ) x
-
-        --path =
-        --    connectRooms ( room1, defaultPosition <| List.head startPositions )
-        --        ( room2, defaultPosition <| List.head <| List.drop 1 startPositions )
-        --        map
-        --corridor =
-        --    case path of
-        --        Nothing ->
-        --            []
-        --        Just realPath ->
-        --            List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
-        --roomsWithCorridors =
-        --    Dict.fromList (List.map toKVPair (corridor ++ tiles))
-        --filledMap =
-        --    fillWithWall roomsWithCorridors
-    in
-        ( Dict.fromList (List.map toKVPair tiles), seed' )
+    ( Dict.empty, seed )
 
 
 
+--let
+--    toKVPair =
+--        \tile -> ( tile.position, tile )
+--    -- TODO: currently not using room
+--    -- need to incorporate walls, floor, entrances into dungeon
+--    -- start empty, add rooms, connections, lastly rocks to fill gap
+--    ( dungeonRooms, seed' ) =
+--        generateRooms 3 ( 30, [], seed )
+--    tiles =
+--        List.concat
+--            <| List.map (\x -> roomToTiles x.room x.position) dungeonRooms
+--    map =
+--        Dict.fromList (List.map toKVPair tiles)
+--    defaultPosition =
+--        \x -> Maybe.withDefault ( 0, 0 ) x
+--    --path =
+--    --    connectRooms ( room1, defaultPosition <| List.head startPositions )
+--    --        ( room2, defaultPosition <| List.head <| List.drop 1 startPositions )
+--    --        map
+--    --corridor =
+--    --    case path of
+--    --        Nothing ->
+--    --            []
+--    --        Just realPath ->
+--    --            List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
+--    --roomsWithCorridors =
+--    --    Dict.fromList (List.map toKVPair (corridor ++ tiles))
+--    --filledMap =
+--    --    fillWithWall roomsWithCorridors
+--in
+--    ( Dict.fromList (List.map toKVPair tiles), seed' )
 --( roomsWithCorridors, seed' )
 
 
@@ -99,7 +95,7 @@ roomToTiles room startPos =
             \localPos -> Vector.add startPos localPos
 
         items =
-            [ ( Tile.DarkDgn, room.floors ), ( Tile.Rock, room.walls ), ( Tile.Rock, room.corners ) ]
+            [ ( Tile.DarkDgn, room.floors ), ( Tile.Rock, List.concat room.walls ), ( Tile.Rock, room.corners ) ]
 
         makeTiles =
             \( tileType, positions ) ->
@@ -115,27 +111,25 @@ roomToTiles room startPos =
                 room.doors
 
 
-generateRooms : Int -> ( Int, List DungeonRoom, Random.Seed ) -> ( List DungeonRoom, Random.Seed )
-generateRooms nRooms ( retries, rooms, seed ) =
-    case ( nRooms, retries ) of
-        ( 0, _ ) ->
-            ( rooms, seed )
 
-        ( _, 0 ) ->
-            ( rooms, seed )
-
-        ( n, _ ) ->
-            let
-                ( room, seed' ) =
-                    Room.generate seed
-
-                ( pos, seed'' ) =
-                    Dice.roll2D 30 seed'
-            in
-                if overlapsRooms room pos rooms then
-                    generateRooms n ( (retries - 1), rooms, seed'' )
-                else
-                    generateRooms (n - 1) ( (retries - 1), (DungeonRoom pos room) :: rooms, seed'' )
+--generateRooms : Int -> ( Int, List DungeonRoom, Random.Seed ) -> ( List DungeonRoom, Random.Seed )
+--generateRooms nRooms ( retries, rooms, seed ) =
+--    case ( nRooms, retries ) of
+--        ( 0, _ ) ->
+--            ( rooms, seed )
+--        ( _, 0 ) ->
+--            ( rooms, seed )
+--        ( n, _ ) ->
+--            let
+--                ( room, seed' ) =
+--                    Room.generate seed
+--                ( pos, seed'' ) =
+--                    Dice.roll2D 30 seed'
+--            in
+--                if overlapsRooms room pos rooms then
+--                    generateRooms n ( (retries - 1), rooms, seed'' )
+--                else
+--                    generateRooms (n - 1) ( (retries - 1), (DungeonRoom pos room) :: rooms, seed'' )
 
 
 overlapsRooms : Room -> Vector -> List DungeonRoom -> Bool

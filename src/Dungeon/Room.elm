@@ -7,16 +7,21 @@ module Dungeon.Room exposing (..)
     list of 2D tuples. It is up to the caller to then convert these types.
 -}
 
---( Room
---, Entrance(..)
---, generate
---)
-
 import Dungeon.Rooms.Config as Config exposing (..)
-import Random exposing (..)
+import Random exposing (andThen, Generator)
+import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
-import Dungeon.Rooms.Cross as Cross exposing (generate)
-import Dungeon.Rooms.Rectangular as Rectangular exposing (generate)
+
+
+-- room types
+
+import Dungeon.Rooms.Rectangular as Rectangular exposing (..)
+import Dungeon.Rooms.Cross as Cross exposing (..)
+import Dungeon.Rooms.Diamond as Diamond exposing (..)
+import Dungeon.Rooms.Potion as Potion exposing (..)
+import Dungeon.Rooms.Circular as Circular exposing (..)
+import Dungeon.Rooms.DiagonalSquares as DiagonalSquares exposing (..)
+import Dungeon.Rooms.DeadEnd as DeadEnd exposing (..)
 
 
 init : Room
@@ -30,81 +35,104 @@ init =
     }
 
 
-{-| Given a seed will work out:
-- what type of room to generate
-- how big a room
-- where the doors are
--}
-roomTypeAndSizeGenerator : RoomType -> Generator ( RoomType, RoomSize )
-roomTypeAndSizeGenerator roomType =
-    Random.map (\size -> ( roomType, size )) (roomSizeGenerator roomType Config.init)
-
-
-generate : Random.Seed -> ( Room, Random.Seed )
-generate seed =
+generate : Config.Model -> Generator Room
+generate model =
     let
-        gen =
-            Config.roomTypeGenerator `Random.andThen` roomTypeAndSizeGenerator
-
-        ( ( roomType, roomSize ), seed' ) =
-            Random.step gen seed
-
-        _ =
-            Debug.log "Generating..."
-                { roomType = toString roomType
-                , roomSize = toString roomSize
-                }
+        roomTypeToRoom =
+            (\roomType -> Room [] [] [] [] roomType ( 0, 0 ))
     in
-        case roomType of
-            Rectangular ->
-                Rectangular.generate roomSize seed'
-
-            --Cross ->
-            --    Random.step Cross.generate seed'
-            --Diamond ->
-            --    diamond size seed'
-            --Potion ->
-            --    potion size seed'
-            --Circular ->
-            --    circular size seed'
-            --DiagonalSquares ->
-            --    diagonalSquares size seed'
-            --DeadEnd ->
-            _ ->
-                -- will generate one tile for the room which is forced
-                -- into an entrance as all rooms must have at least
-                -- one entrance
-                ( init, seed' )
+        (Random.map roomTypeToRoom Config.roomTypeGenerator)
+            `andThen` roomSizeGenerator model
+            `andThen` wallsGenerator
+            `andThen` shuffleWalls
+            `andThen` doorsGenerator
+            `andThen` floorsGenerator
+            `andThen` cornersGenerator
 
 
+roomSizeGenerator : Config.Model -> Room -> Generator Room
+roomSizeGenerator config ({ roomType } as room) =
+    Config.roomSizeGenerator roomType config
+        `andThen` (\roomSize -> constant { room | dimension = ( roomSize, roomSize ) })
 
---    ( walls', entrances, seed'' ) =
---        List.foldl addDoors ( [], [], seed' ) walls
---in
---    ( Room entrances (List.map fst walls') floors roomType, seed'' )
+
+shuffleWalls : Room -> Generator Room
+shuffleWalls ({ walls } as room) =
+    let
+        model' =
+            \walls -> { room | walls = walls }
+    in
+        Random.map model' (Config.shuffle room.walls)
+
+
+doorsGenerator : Room -> Generator Room
+doorsGenerator ({ walls, doors } as room) =
+    let
+        wallsDoorsGen =
+            Config.addDoors 4 ( walls, [], [] )
+
+        room' =
+            \( walls, doors ) -> { room | walls = walls, doors = doors }
+    in
+        Random.map room' wallsDoorsGen
+
+
+wallsGenerator : Room -> Generator Room
+wallsGenerator ({ roomType, dimension } as room) =
+    let
+        makeWalls =
+            (templates roomType).makeWalls
+    in
+        constant { room | walls = makeWalls dimension }
+
+
+floorsGenerator : Room -> Generator Room
+floorsGenerator ({ roomType, dimension } as room) =
+    let
+        makeFloors =
+            (templates roomType).makeFloors
+    in
+        constant { room | floors = makeFloors dimension }
+
+
+cornersGenerator : Room -> Generator Room
+cornersGenerator ({ roomType, dimension } as room) =
+    let
+        makeCorners =
+            (templates roomType).makeCorners
+    in
+        constant { room | corners = makeCorners dimension }
+
+
+templates : RoomType -> RoomTemplate
+templates roomType =
+    case roomType of
+        Rectangular ->
+            Rectangular.template
+
+        Cross ->
+            Cross.template
+
+        Diamond ->
+            Diamond.template
+
+        Potion ->
+            Potion.template
+
+        Circular ->
+            Circular.template
+
+        DiagonalSquares ->
+            DiagonalSquares.template
+
+        DeadEnd ->
+            DeadEnd.template
+
+
+
 -------------------------------------------------------------------------------
 -- Room types
 -------------------------------------------------------------------------------
-
-
-diamond : Int -> Random.Seed -> ( Room, Random.Seed )
-diamond size seed =
-    ( init, seed )
-
-
-potion : Int -> Random.Seed -> ( Room, Random.Seed )
-potion size seed =
-    ( init, seed )
-
-
-circular : Int -> Random.Seed -> ( Room, Random.Seed )
-circular size seed =
-    ( init, seed )
-
-
-diagonalSquares : Int -> Random.Seed -> ( Room, Random.Seed )
-diagonalSquares size seed =
-    ( init, seed )
 
 
 diamondTemplate : List String

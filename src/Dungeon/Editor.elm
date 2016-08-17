@@ -12,8 +12,8 @@ import Game.Maps as Maps exposing (..)
 --import Dungeon.Room as Room exposing (..)
 
 import Dungeon.Rooms.Config as Config exposing (..)
-import Dungeon.Rooms.Cross as Cross exposing (..)
 import Dungeon.Rooms.Type exposing (..)
+import Dungeon.Room as Room exposing (..)
 import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 
 
@@ -52,10 +52,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GenerateMap ->
-            ( model, Random.generate GenerateRoom (Cross.generate model.config) )
+            ( model, Random.generate GenerateRoom (Room.generate model.config) )
 
         GenerateRoom room ->
             let
+                _ =
+                    Debug.log "Generated room: " room
+
                 tiles =
                     DungeonGenerator.roomToTiles room ( 10, 0 )
             in
@@ -67,42 +70,6 @@ update msg model =
 
 
 --( { model | config = Config.update (Config.DungeonSize (toInt newSliderValue)) model.config }, Cmd.none )
-
-
-updateRoomSizeMax : RoomType -> Int -> Model -> Model
-updateRoomSizeMax roomType max ({ config } as model) =
-    let
-        mapSnd =
-            \( x, y ) y' -> ( x, y' )
-
-        roomSizeRanges =
-            config.roomSizeRanges
-
-        roomSizeRanges' =
-            case roomType of
-                Rectangular ->
-                    { roomSizeRanges | rectangular = mapSnd roomSizeRanges.rectangular max }
-
-                _ ->
-                    { roomSizeRanges | rectangular = mapSnd roomSizeRanges.rectangular max }
-
-        --Cross ->
-        --    config.roomSizeRanges.cross
-        --Diamond ->
-        --    config.roomSizeRanges.diamond
-        --Potion ->
-        --    config.roomSizeRanges.potion
-        --Circular ->
-        --    config.roomSizeRanges.circular
-        --DiagonalSquares ->
-        --    config.roomSizeRanges.diagonalSquares
-        --DeadEnd ->
-        --    config.roomSizeRanges.deadEnd
-    in
-        model
-
-
-
 --roomSizeView : Model -> RoomType -> Html Msg
 --roomSizeView ({ config } as model) roomType =
 --    let
@@ -150,7 +117,6 @@ view model =
 mapSizeView : Model -> Html Msg
 mapSizeView model =
     p [ style [ ( "width", "300px" ) ] ]
-        [ h6 [] [ text "Map Size: ", text (toString model.config.dungeonSize) ]
-        , Html.App.map ConfigMsg (Config.dungeonSizeView model.config)
+        [ Html.App.map ConfigMsg (Config.dungeonSizeView model.config)
         , Html.App.map ConfigMsg (Config.roomSizesView model.config)
         ]
