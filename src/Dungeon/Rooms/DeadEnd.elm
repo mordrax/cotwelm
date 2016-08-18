@@ -15,16 +15,16 @@ template =
     }
 
 
-corners : RoomSize -> Walls
-corners roomSize =
+corners : Dimension -> Walls
+corners dimension =
     []
 
 
-floors : RoomSize -> Floors
-floors roomSize =
+floors : Dimension -> Floors
+floors dimension =
     []
 
 
-walls : RoomSize -> List Walls
-walls roomSize =
+walls : Dimension -> List Walls
+walls dimension =
     []
