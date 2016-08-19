@@ -76,16 +76,22 @@ floors dimension =
             info dimension
 
         leftToTop =
-            \x -> List.map ((,) x) [model.mid..model.mid + 1 + x]
+            \x -> model.mid + 1 + x
 
         leftToBottom =
-            \x -> List.map ((,) x) [model.mid..model.mid - 1 - x]
+            \x -> model.mid - 1 - x
 
         topToRight =
-            \x -> List.map ((,) x) [model.mid..(-1 + (x - model.mid))]
+            \x -> (-1 - model.mid) + x
 
         bottomToRight =
-            \x -> List.map ((,) x) [model.mid..((model.max + 1) - (x - model.mid))]
+            \x -> (model.max + 1 + model.mid) - x
+
+        floorsLeft =
+            \x -> List.map ((,) x) [(leftToBottom x)..(leftToTop x)]
+
+        floorsRight =
+            \x -> List.map ((,) x) [(topToRight x)..(bottomToRight x)]
 
         zeroToMidX =
             [0..model.mid - 1]
@@ -95,11 +101,10 @@ floors dimension =
     in
         List.concat
             [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
-              List.concat <| List.map leftToTop zeroToMidX
-            , List.concat <| List.map leftToBottom zeroToMidX
+              List.concat <| List.map floorsLeft zeroToMidX
             , -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
-              List.concat <| List.map topToRight midToMaxX
-            , List.concat <| List.map bottomToRight midToMaxX
+              List.concat <| List.map floorsRight midToMaxX
+            , List.map ((,) model.mid) [1..model.max - 1]
             ]
 
 
@@ -120,10 +125,10 @@ corners dimension =
             \x -> ( x, model.mid - 1 - x )
 
         topToRight =
-            \x -> ( x, -1 + (x - model.mid) )
+            \x -> ( x, (-1 - model.mid) + x )
 
         bottomToRight =
-            \x -> ( x, (model.max + 1) - (x - model.mid) )
+            \x -> ( x, (model.max + 1 + model.mid) - x )
 
         zeroToMidX =
             [0..model.mid - 1]
@@ -135,8 +140,8 @@ corners dimension =
             [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
               List.map leftToTop zeroToMidX
             , List.map leftToBottom zeroToMidX
-            , -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
-              List.map topToRight midToMaxX
+              -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
+            , List.map topToRight midToMaxX
             , List.map bottomToRight midToMaxX
             ]
 
