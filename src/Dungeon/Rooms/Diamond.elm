@@ -104,6 +104,8 @@ floors dimension =
 
 
 {-| For a diagonal room, the corners are the diagonal walls. They cannot have doors.
+    To calculate the diagonal positions, picture a diamond on a cartesian plane
+    with the diamond being in the +x, -y quadrant (screen coords)
 -}
 corners : Dimension -> Walls
 corners dimension =

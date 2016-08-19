@@ -118,5 +118,5 @@ mapSizeView : Model -> Html Msg
 mapSizeView model =
     p [ style [ ( "width", "300px" ) ] ]
         [ Html.App.map ConfigMsg (Config.dungeonSizeView model.config)
-        , Html.App.map ConfigMsg (Config.roomSizesView model.config)
+        , Html.App.map ConfigMsg (Config.roomsConfigView model.config)
         ]

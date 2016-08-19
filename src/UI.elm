@@ -44,7 +44,7 @@ toIntWithDefault str default =
 labeled2TupleNumber : Label -> ( Int, Int ) -> (Int -> a) -> (Int -> a) -> Html a
 labeled2TupleNumber label ( min, max ) minMsg maxMsg =
     div []
-        [ text label
+        [ h4 [] [ text label ]
         , div []
             [ labeledNumber "Min" min minMsg
             , labeledNumber "Max" max maxMsg

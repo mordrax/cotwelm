@@ -39,9 +39,10 @@ generate : Config.Model -> Generator Room
 generate model =
     let
         roomTypeToRoom =
-            (\roomType -> Room [] [] [] [] roomType ( 0, 0 ))
+            (\roomType -> constant <| Room [] [] [] [] roomType ( 0, 0 ))
     in
-        (Random.map roomTypeToRoom Config.roomTypeGenerator)
+        Config.roomTypeGenerator model
+            `andThen` roomTypeToRoom
             `andThen` roomSizeGenerator model
             `andThen` wallsGenerator
             `andThen` shuffleWalls
