@@ -53,19 +53,20 @@ type alias MinMax =
 type Msg
     = DungeonSize Int
     | RoomSize RoomType MinMax
+    | ChangeFrequency RoomType Int
 
 
 init : Model
 init =
     { dungeonSize = 30
     , roomsConfig =
-        { rectangular = RoomConfig ( 4, 10 ) 20
-        , cross = RoomConfig ( 7, 11 ) 20
-        , diamond = RoomConfig ( 4, 10 ) 20
-        , potion = RoomConfig ( 4, 10 ) 20
-        , circular = RoomConfig ( 4, 10 ) 20
-        , diagonalSquares = RoomConfig ( 4, 10 ) 20
-        , deadEnd = RoomConfig ( 1, 1 ) 20
+        { rectangular = RoomConfig ( 4, 10 ) 0
+        , cross = RoomConfig ( 7, 11 ) 0
+        , diamond = RoomConfig ( 4, 10 ) 1
+        , potion = RoomConfig ( 4, 10 ) 0
+        , circular = RoomConfig ( 4, 10 ) 0
+        , diagonalSquares = RoomConfig ( 4, 10 ) 0
+        , deadEnd = RoomConfig ( 1, 1 ) 0
         }
     }
 
@@ -77,40 +78,47 @@ update msg model =
             { model | dungeonSize = size }
 
         RoomSize roomType val ->
-            { model | roomsConfig = updateRoomSizeRange roomType val model.roomsConfig }
+            let
+                updateSizeRange =
+                    (\sizeRange' config -> { config | sizeRange = sizeRange' })
+            in
+                { model | roomsConfig = updateRoomsConfig roomType (updateSizeRange val) model.roomsConfig }
+
+        ChangeFrequency roomType freq ->
+            let
+                updateFrequency =
+                    (\freq config -> { config | frequency = freq })
+            in
+                { model | roomsConfig = updateRoomsConfig roomType (updateFrequency freq) model.roomsConfig }
 
 
-updateRoomSizeRange : RoomType -> MinMax -> RoomsConfig -> RoomsConfig
-updateRoomSizeRange roomType val roomsConfig =
-    let
-        newRoomConfig =
-            \sizeRange roomConfig -> { roomConfig | sizeRange = sizeRange }
-    in
-        case roomType of
-            Rectangular ->
-                { roomsConfig | rectangular = newRoomConfig val roomsConfig.rectangular }
+updateRoomsConfig : RoomType -> (RoomConfig -> RoomConfig) -> RoomsConfig -> RoomsConfig
+updateRoomsConfig roomType updater roomsConfig =
+    case roomType of
+        Rectangular ->
+            { roomsConfig | rectangular = updater roomsConfig.rectangular }
 
-            Cross ->
-                { roomsConfig | cross = newRoomConfig val roomsConfig.cross }
+        Cross ->
+            { roomsConfig | cross = updater roomsConfig.cross }
 
-            Diamond ->
-                { roomsConfig | diamond = newRoomConfig val roomsConfig.diamond }
+        Diamond ->
+            { roomsConfig | diamond = updater roomsConfig.diamond }
 
-            Potion ->
-                { roomsConfig | potion = newRoomConfig val roomsConfig.potion }
+        Potion ->
+            { roomsConfig | potion = updater roomsConfig.potion }
 
-            Circular ->
-                { roomsConfig | circular = newRoomConfig val roomsConfig.circular }
+        Circular ->
+            { roomsConfig | circular = updater roomsConfig.circular }
 
-            DiagonalSquares ->
-                { roomsConfig | diagonalSquares = newRoomConfig val roomsConfig.diagonalSquares }
+        DiagonalSquares ->
+            { roomsConfig | diagonalSquares = updater roomsConfig.diagonalSquares }
 
-            DeadEnd ->
-                { roomsConfig | deadEnd = newRoomConfig val roomsConfig.deadEnd }
+        DeadEnd ->
+            { roomsConfig | deadEnd = updater roomsConfig.deadEnd }
 
 
 roomSizeGenerator : RoomType -> Model -> Generator Int
-roomSizeGenerator roomType model =
+roomSizeGenerator roomType ({ roomsConfig } as model) =
     let
         tupleToGen =
             \( min, max ) -> Random.int min max
@@ -138,34 +146,17 @@ roomSizeGenerator roomType model =
                 tupleToGen model.roomsConfig.deadEnd.sizeRange
 
 
-{-| Given a int between 0 and 100 (will cap if outside of range), will return
-    a room type based on the hardcoded distribution of types
--}
-roomType : Int -> RoomType
-roomType index =
-    let
-        clampedIndex =
-            clamp 0 100 index
-    in
-        if clampedIndex < 40 then
-            Rectangular
-        else if clampedIndex < 50 then
-            Cross
-        else if clampedIndex < 60 then
-            Diamond
-        else if clampedIndex < 70 then
-            Potion
-        else if clampedIndex < 80 then
-            Circular
-        else if clampedIndex < 90 then
-            DiagonalSquares
-        else
-            DeadEnd
-
-
-roomTypeGenerator : Generator RoomType
-roomTypeGenerator =
-    Random.map roomType (Random.int 0 100)
+roomTypeGenerator : Model -> Generator RoomType
+roomTypeGenerator { roomsConfig } =
+    Random.Extra.frequency
+        [ ( toFloat roomsConfig.rectangular.frequency, constant Rectangular )
+        , ( toFloat roomsConfig.cross.frequency, constant Cross )
+        , ( toFloat roomsConfig.diamond.frequency, constant Diamond )
+        , ( toFloat roomsConfig.potion.frequency, constant Potion )
+        , ( toFloat roomsConfig.circular.frequency, constant Circular )
+        , ( toFloat roomsConfig.diagonalSquares.frequency, constant DiagonalSquares )
+        , ( toFloat roomsConfig.deadEnd.frequency, constant DeadEnd )
+        ]
 
 
 wallSampler : Walls -> Generator Wall
@@ -247,19 +238,28 @@ dungeonSizeView model =
     UI.labeledNumber "Dungeon size" model.dungeonSize DungeonSize
 
 
-roomSizesView : Model -> Html Msg
-roomSizesView model =
+roomsConfigView : Model -> Html Msg
+roomsConfigView model =
     let
         rooms =
-            [ ( Rectangular, model.roomsConfig.rectangular.sizeRange )
-            , ( Cross, model.roomsConfig.cross.sizeRange )
-            , ( Diamond, model.roomsConfig.diamond.sizeRange )
-            , ( Potion, model.roomsConfig.potion.sizeRange )
-            , ( Circular, model.roomsConfig.circular.sizeRange )
-            , ( DiagonalSquares, model.roomsConfig.diagonalSquares.sizeRange )
+            [ ( Rectangular, model.roomsConfig.rectangular )
+            , ( Cross, model.roomsConfig.cross )
+            , ( Diamond, model.roomsConfig.diamond )
+            , ( Potion, model.roomsConfig.potion )
+            , ( Circular, model.roomsConfig.circular )
+            , ( DiagonalSquares, model.roomsConfig.diagonalSquares )
             ]
     in
-        div [] (List.map (\( roomType, val ) -> roomSizeView roomType val) rooms)
+        div []
+            (List.concat
+                <| List.map
+                    (\( roomType, config ) ->
+                        [ roomSizeView roomType config.sizeRange
+                        , roomFrequencyView roomType config.frequency
+                        ]
+                    )
+                    rooms
+            )
 
 
 roomSizeView : RoomType -> MinMax -> Html Msg
@@ -272,3 +272,8 @@ roomSizeView roomType ( min, max ) =
             ( min, max )
             (\min' -> RoomSize roomType ( min', max ))
             (\max' -> RoomSize roomType ( min, max' ))
+
+
+roomFrequencyView : RoomType -> Int -> Html Msg
+roomFrequencyView roomType freq =
+    UI.labeledNumber "Freq" freq (ChangeFrequency roomType)
