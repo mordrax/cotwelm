@@ -8,6 +8,7 @@ import Dict exposing (..)
 import Dungeon.Room as Room exposing (..)
 import List.Extra exposing (lift2)
 import Random exposing (..)
+import Random.Extra exposing (..)
 import Set exposing (..)
 import Tile exposing (..)
 import Utils.Vector as Vector exposing (..)
@@ -16,6 +17,22 @@ import Utils.Vector as Vector exposing (..)
 type alias Model =
     { config : Config.Model
     }
+
+
+type alias Map =
+    Dict Vector Tile
+
+
+type alias Tiles =
+    List Tile
+
+
+type alias Rooms =
+    List Room
+
+
+type alias DungeonRooms =
+    List DungeonRoom
 
 
 type alias DungeonRoom =
@@ -30,44 +47,72 @@ init =
     }
 
 
-generate : Random.Seed -> ( Dict Vector Tile, Random.Seed )
-generate seed =
-    ( Dict.empty, seed )
+generate : Config.Model -> Generator Map
+generate config =
+    let
+        toKVPair =
+            \tile -> ( tile.position, tile )
+    in
+        generateDungeonRooms config 5 []
+            `andThen` (\rooms ->
+                        rooms
+                            |> roomsToTiles
+                            |> Random.Extra.constant
+                      )
+            `andThen` (\tiles ->
+                        tiles
+                            |> List.map toKVPair
+                            |> Dict.fromList
+                            |> Random.Extra.constant
+                      )
 
 
+generateDungeonRooms : Config.Model -> Int -> DungeonRooms -> Generator DungeonRooms
+generateDungeonRooms config num dungeonRooms =
+    let
+        recurse =
+            \dungeonRoom -> generateDungeonRooms config (num - 1) (dungeonRoom :: dungeonRooms)
+    in
+        if num == 0 then
+            Random.Extra.constant dungeonRooms
+        else
+            Room.generate config
+                `andThen` (\room -> roomToDungeonRoom room config)
+                `andThen` recurse
 
---let
---    toKVPair =
---        \tile -> ( tile.position, tile )
---    -- TODO: currently not using room
---    -- need to incorporate walls, floor, entrances into dungeon
---    -- start empty, add rooms, connections, lastly rocks to fill gap
---    ( dungeonRooms, seed' ) =
---        generateRooms 3 ( 30, [], seed )
---    tiles =
---        List.concat
---            <| List.map (\x -> roomToTiles x.room x.position) dungeonRooms
---    map =
---        Dict.fromList (List.map toKVPair tiles)
---    defaultPosition =
---        \x -> Maybe.withDefault ( 0, 0 ) x
---    --path =
---    --    connectRooms ( room1, defaultPosition <| List.head startPositions )
---    --        ( room2, defaultPosition <| List.head <| List.drop 1 startPositions )
---    --        map
---    --corridor =
---    --    case path of
---    --        Nothing ->
---    --            []
---    --        Just realPath ->
---    --            List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
---    --roomsWithCorridors =
---    --    Dict.fromList (List.map toKVPair (corridor ++ tiles))
---    --filledMap =
---    --    fillWithWall roomsWithCorridors
---in
---    ( Dict.fromList (List.map toKVPair tiles), seed' )
---( roomsWithCorridors, seed' )
+
+roomToDungeonRoom : Room -> Config.Model -> Generator DungeonRoom
+roomToDungeonRoom room { dungeonSize } =
+    (Dice.d2d dungeonSize dungeonSize)
+        `andThen` (\pos -> Random.Extra.constant (DungeonRoom pos room))
+
+
+roomsToTiles : DungeonRooms -> Tiles
+roomsToTiles dungeonRooms =
+    let
+        tiles =
+            List.concat
+                <| List.map (\x -> roomToTiles x.room x.position) dungeonRooms
+
+        defaultPosition =
+            \x -> Maybe.withDefault ( 0, 0 ) x
+
+        --path =
+        --    connectRooms ( room1, defaultPosition <| List.head startPositions )
+        --        ( room2, defaultPosition <| List.head <| List.drop 1 startPositions )
+        --        map
+        --corridor =
+        --    case path of
+        --        Nothing ->
+        --            []
+        --        Just realPath ->
+        --            List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
+        --roomsWithCorridors =
+        --    Dict.fromList (List.map toKVPair (corridor ++ tiles))
+        --filledMap =
+        --    fillWithWall roomsWithCorridors
+    in
+        tiles
 
 
 fillWithWall : Dict Vector Tile -> List Tile

@@ -1,12 +1,4 @@
-module Dice
-    exposing
-        ( d
-        , rollD
-        , roll2D
-        , roll3D
-        , roll4D
-        , rollDs
-        )
+module Dice exposing (..)
 
 {-| Simple dice system that will generate a random int between 1 and the max passed in.
 -}
