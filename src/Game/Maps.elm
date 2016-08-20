@@ -35,6 +35,7 @@ import Html exposing (..)
 import Dict exposing (..)
 import Dungeon.DungeonGenerator as DungeonGenerator exposing (generate)
 import Random exposing (..)
+import Dungeon.Rooms.Config as Config exposing (..)
 
 
 type Maps
@@ -70,7 +71,7 @@ init seed =
             \tile -> ( tile.position, tile )
 
         ( level, seed' ) =
-            DungeonGenerator.generate seed
+            Random.step (DungeonGenerator.generate Config.init) seed
     in
         ( A
             { currentArea =

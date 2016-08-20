@@ -25,14 +25,14 @@ import String exposing (..)
 
 
 type alias Model =
-    { map : Map
+    { map : Maps.Map
     , config : Config.Model
     }
 
 
 type Msg
     = GenerateMap
-    | GenerateRoom Room
+    | Dungeon Maps.Map
     | ConfigMsg Config.Msg
 
 
@@ -52,17 +52,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GenerateMap ->
-            ( model, Random.generate GenerateRoom (Room.generate model.config) )
+            ( model, Random.generate Dungeon (DungeonGenerator.generate model.config) )
 
-        GenerateRoom room ->
-            let
-                _ =
-                    Debug.log "Generated room: " room
-
-                tiles =
-                    DungeonGenerator.roomToTiles room ( 10, 0 )
-            in
-                ( { model | map = Maps.toMap tiles }, Cmd.none )
+        Dungeon map ->
+            ( { model | map = map }, Cmd.none )
 
         ConfigMsg msg ->
             ( { model | config = Config.update msg model.config }, Cmd.none )
