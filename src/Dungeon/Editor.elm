@@ -96,15 +96,19 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div []
-            [ --roomSizeView model,
-              mapSizeView model
-            , button [ class "ui button", onClick GenerateMap ] [ text "Generate Dungeon" ]
+    let
+        border =
+            ( "border", "1px solid black" )
+    in
+        div []
+            [ div []
+                [ --roomSizeView model,
+                  button [ class "ui button", onClick GenerateMap ] [ text "Generate Dungeon" ]
+                , mapSizeView model
+                ]
+            , div []
+                (Maps.draw model.map model.config.mapScale)
             ]
-        , div []
-            (Maps.draw model.map)
-        ]
 
 
 mapSizeView : Model -> Html Msg

@@ -23,6 +23,19 @@ labeledNumber label number msg =
         ]
 
 
+labeledFloat : Label -> Float -> (Float -> a) -> Html a
+labeledFloat label number msg =
+    div [ class "ui labeled input" ]
+        [ div [ class "ui label" ] [ text label ]
+        , input
+            [ type' "number"
+            , onInput (\input -> msg <| toFloatWithDefault input 0)
+            , value (toString number)
+            ]
+            []
+        ]
+
+
 inputWithIncDec : Int -> (Int -> a) -> Html a
 inputWithIncDec val msg =
     div [ class "ui left action right action input" ]
@@ -34,6 +47,11 @@ inputWithIncDec val msg =
             [ i [ class "plus icon" ] []
             ]
         ]
+
+
+toFloatWithDefault : String -> Float -> Float
+toFloatWithDefault str default =
+    Result.withDefault default (String.toFloat str)
 
 
 toIntWithDefault : String -> Int -> Int

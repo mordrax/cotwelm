@@ -119,7 +119,7 @@ view maps =
         buildingsHtml =
             List.map Building.view (getBuildings maps)
     in
-        div [] (draw map ++ buildingsHtml)
+        div [] (draw map 1.0 ++ buildingsHtml)
 
 
 toMap : List Tile -> Map
@@ -129,8 +129,8 @@ toMap tiles =
         |> Dict.fromList
 
 
-draw : Map -> List (Html a)
-draw map =
+draw : Map -> Float -> List (Html a)
+draw map scale =
     let
         neighbours =
             tileNeighbours map
@@ -139,7 +139,7 @@ draw map =
             toTiles map
 
         toHtml =
-            \tile -> Tile.view tile (neighbours tile)
+            \tile -> Tile.scaledView tile scale (neighbours tile)
     in
         List.map toHtml mapTiles
 

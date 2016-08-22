@@ -53,7 +53,7 @@ generate config =
         toKVPair =
             \tile -> ( tile.position, tile )
     in
-        generateDungeonRooms config 5 []
+        generateDungeonRooms config config.nRooms []
             `andThen` (\rooms ->
                         rooms
                             |> roomsToTiles

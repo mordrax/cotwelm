@@ -19,9 +19,9 @@ sub ( v1x, v1y ) ( v2x, v2y ) =
     ( v1x - v2x, v1y - v2y )
 
 
-scale : Int -> Vector -> Vector
+scale : Float -> Vector -> Vector
 scale magnitude ( x, y ) =
-    ( x * magnitude, y * magnitude )
+    ( round <| toFloat x * magnitude, round <| toFloat y * magnitude )
 
 
 distance : Vector -> Vector -> Float

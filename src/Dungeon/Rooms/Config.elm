@@ -26,6 +26,8 @@ type alias Model =
     { -- Width and height dimensions of the dungeon level
       dungeonSize : Int
     , roomsConfig : RoomsConfig
+    , nRooms : Int
+    , mapScale : Float
     }
 
 
@@ -54,20 +56,24 @@ type Msg
     = DungeonSize Int
     | RoomSize RoomType MinMax
     | ChangeFrequency RoomType Int
+    | MapScale Float
+    | NumberOfRooms Int
 
 
 init : Model
 init =
-    { dungeonSize = 30
+    { dungeonSize = 300
     , roomsConfig =
-        { rectangular = RoomConfig ( 4, 10 ) 0
-        , cross = RoomConfig ( 7, 11 ) 0
+        { rectangular = RoomConfig ( 4, 10 ) 1
+        , cross = RoomConfig ( 7, 11 ) 1
         , diamond = RoomConfig ( 5, 11 ) 1
         , potion = RoomConfig ( 4, 10 ) 0
         , circular = RoomConfig ( 4, 10 ) 0
         , diagonalSquares = RoomConfig ( 4, 10 ) 0
         , deadEnd = RoomConfig ( 1, 1 ) 0
         }
+    , nRooms = 50
+    , mapScale = 0.2
     }
 
 
@@ -90,6 +96,12 @@ update msg model =
                     (\freq config -> { config | frequency = freq })
             in
                 { model | roomsConfig = updateRoomsConfig roomType (updateFrequency freq) model.roomsConfig }
+
+        MapScale scale ->
+            { model | mapScale = scale }
+
+        NumberOfRooms rooms ->
+            { model | nRooms = rooms }
 
 
 updateRoomsConfig : RoomType -> (RoomConfig -> RoomConfig) -> RoomsConfig -> RoomsConfig
@@ -235,7 +247,11 @@ shuffle list =
 
 dungeonSizeView : Model -> Html Msg
 dungeonSizeView model =
-    UI.labeledNumber "Dungeon size" model.dungeonSize DungeonSize
+    div []
+        [ UI.labeledNumber "Dungeon size" model.dungeonSize DungeonSize
+        , UI.labeledFloat "Map scale" model.mapScale MapScale
+        , UI.labeledNumber "Number of Rooms" model.nRooms NumberOfRooms
+        ]
 
 
 roomsConfigView : Model -> Html Msg

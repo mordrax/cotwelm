@@ -7,6 +7,7 @@ module Tile
         , isSolid
         , mapToTiles
         , view
+        , scaledView
         , toTile
         )
 
@@ -107,7 +108,12 @@ toTile ( x, y ) tileType =
 
 
 view : Tile -> TileNeighbours -> Html a
-view ({ base, position } as tile) neighbours =
+view tile neighbours =
+    scaledView tile 1.0 neighbours
+
+
+scaledView : Tile -> Float -> TileNeighbours -> Html a
+scaledView ({ base, position } as tile) scale neighbours =
     let
         (A model) =
             base
@@ -139,6 +145,12 @@ view ({ base, position } as tile) neighbours =
 
         aOrb =
             \x a b -> x == a || x == b
+
+        rotate =
+            \deg -> ( "transform", "rotate(" ++ (toString deg) ++ "deg)" )
+
+        scaleStyle =
+            ( "transform", "scale(" ++ (toString scale) ++ "," ++ (toString scale) ++ ")" )
 
         rotation =
             case halfTile of
@@ -178,8 +190,8 @@ view ({ base, position } as tile) neighbours =
     in
         div
             [ class ("tile " ++ toString model.tile)
-            , style [ ( "transform", "rotate(" ++ (toString rotation) ++ "deg)" ) ]
-            , Lib.vectorToHtmlStyle position
+            , style [ rotate rotation, scaleStyle ]
+            , Lib.toScaledTilePosition position scale
             ]
             []
 
