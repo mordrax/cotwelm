@@ -16,3 +16,15 @@ vectorToHtmlStyle ( x, y ) =
         [ ( "top", px (y * 32) )
         , ( "left", px (x * 32) )
         ]
+
+
+toScaledTilePosition : Vector -> Float -> Attribute msg
+toScaledTilePosition ( x, y ) scale =
+    let
+        size =
+            round <| scale * 32
+    in
+        style
+            [ ( "top", px (y * size) )
+            , ( "left", px (x * size) )
+            ]
