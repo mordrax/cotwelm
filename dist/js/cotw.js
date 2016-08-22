@@ -12901,16 +12901,16 @@ var _mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig = F2(
 		return {sizeRange: a, frequency: b};
 	});
 var _mordrax$cotwelm$Dungeon_Rooms_Config$init = {
-	dungeonSize: 30,
+	dungeonSize: 300,
 	roomsConfig: {
 		rectangular: A2(
 			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
 			{ctor: '_Tuple2', _0: 4, _1: 10},
-			0),
+			1),
 		cross: A2(
 			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
 			{ctor: '_Tuple2', _0: 7, _1: 11},
-			0),
+			1),
 		diamond: A2(
 			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
 			{ctor: '_Tuple2', _0: 5, _1: 11},
@@ -12932,8 +12932,8 @@ var _mordrax$cotwelm$Dungeon_Rooms_Config$init = {
 			{ctor: '_Tuple2', _0: 1, _1: 1},
 			0)
 	},
-	nRooms: 5,
-	mapScale: 0.5
+	nRooms: 50,
+	mapScale: 0.2
 };
 var _mordrax$cotwelm$Dungeon_Rooms_Config$NumberOfRooms = function (a) {
 	return {ctor: 'NumberOfRooms', _0: a};
