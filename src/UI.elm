@@ -10,30 +10,35 @@ type alias Label =
     String
 
 
-labeledNumber : Label -> Int -> (Int -> a) -> Html a
-labeledNumber label number msg =
+labeledNumber' : (String -> number -> number) -> Label -> number -> (number -> a) -> Html a
+labeledNumber' convert label number msg =
     div [ class "ui labeled input" ]
         [ div [ class "ui label" ] [ text label ]
         , input
             [ type' "number"
-            , onInput (\input -> msg <| toIntWithDefault input 0)
+            , onInput (\input -> msg <| convert input 0)
             , value (toString number)
             ]
             []
         ]
+
+
+labeledNumber : Label -> Int -> (Int -> a) -> Html a
+labeledNumber label number msg =
+    let
+        toIntWithDefault str default =
+            Result.withDefault default (String.toInt str)
+    in
+        labeledNumber' toIntWithDefault label number msg
 
 
 labeledFloat : Label -> Float -> (Float -> a) -> Html a
 labeledFloat label number msg =
-    div [ class "ui labeled input" ]
-        [ div [ class "ui label" ] [ text label ]
-        , input
-            [ type' "number"
-            , onInput (\input -> msg <| toFloatWithDefault input 0)
-            , value (toString number)
-            ]
-            []
-        ]
+    let
+        toFloatWithDefault str default =
+            Result.withDefault default (String.toFloat str)
+    in
+        labeledNumber' toFloatWithDefault label number msg
 
 
 inputWithIncDec : Int -> (Int -> a) -> Html a
@@ -47,16 +52,6 @@ inputWithIncDec val msg =
             [ i [ class "plus icon" ] []
             ]
         ]
-
-
-toFloatWithDefault : String -> Float -> Float
-toFloatWithDefault str default =
-    Result.withDefault default (String.toFloat str)
-
-
-toIntWithDefault : String -> Int -> Int
-toIntWithDefault str default =
-    Result.withDefault default (String.toInt str)
 
 
 labeled2TupleNumber : Label -> ( Int, Int ) -> (Int -> a) -> (Int -> a) -> Html a

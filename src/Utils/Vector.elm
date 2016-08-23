@@ -38,8 +38,8 @@ distance ( v1x, v1y ) ( v2x, v2y ) =
 {-| a -> (topLeft, bottomRight) -> isIntersect
   Checks if vector a's x/y values are within the bounding box created by the tuple (topLeft, bottomRight)
 -}
-boxIntersect : Vector -> ( Vector, Vector ) -> Bool
-boxIntersect ( x, y ) ( ( topLeftX, topLeftY ), ( bottomRightX, bottomRightY ) ) =
+boxIntersectVector : Vector -> ( Vector, Vector ) -> Bool
+boxIntersectVector ( x, y ) ( ( topLeftX, topLeftY ), ( bottomRightX, bottomRightY ) ) =
     let
         isWithinX =
             x >= topLeftX && x <= bottomRightX
@@ -48,3 +48,13 @@ boxIntersect ( x, y ) ( ( topLeftX, topLeftY ), ( bottomRightX, bottomRightY ) )
             y >= topLeftY && y <= bottomRightY
     in
         isWithinX && isWithinY
+
+
+boxIntersectXAxis : Int -> ( Vector, Vector ) -> Bool
+boxIntersectXAxis xAxis ( ( startX, _ ), ( endX, _ ) ) =
+    xAxis >= startX && xAxis <= endX
+
+
+boxIntersectYAxis : Int -> ( Vector, Vector ) -> Bool
+boxIntersectYAxis yAxis ( ( _, startY ), ( _, endY ) ) =
+    yAxis >= startY && yAxis <= endY

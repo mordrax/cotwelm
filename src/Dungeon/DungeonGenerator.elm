@@ -54,6 +54,7 @@ generate config =
             \tile -> ( tile.position, tile )
     in
         generateDungeonRooms config config.nRooms []
+            `andThen` removeOverlaps
             `andThen` (\rooms ->
                         rooms
                             |> roomsToTiles
@@ -177,21 +178,63 @@ roomToTiles room startPos =
 --                    generateRooms (n - 1) ( (retries - 1), (DungeonRoom pos room) :: rooms, seed'' )
 
 
-overlapsRooms : Room -> Vector -> List DungeonRoom -> Bool
-overlapsRooms newRoom pos rooms =
-    case rooms of
-        [] ->
-            False
+removeOverlaps : DungeonRooms -> Generator DungeonRooms
+removeOverlaps rooms =
+    let
+        overlapFolder room rooms =
+            case isOverlapping room rooms of
+                True ->
+                    let
+                        _ =
+                            Debug.log "rejected" room
+                    in
+                        rooms
 
-        dungeonRoom :: restOfRooms ->
-            let
-                roomBox =
-                    ( dungeonRoom.position, Vector.add dungeonRoom.position dungeonRoom.room.dimension )
-            in
-                if List.any (\x -> Vector.boxIntersect (Vector.add x pos) roomBox) newRoom.corners then
-                    True
-                else
-                    overlapsRooms newRoom pos restOfRooms
+                False ->
+                    let
+                        _ =
+                            Debug.log "accepted" room
+                    in
+                        room :: rooms
+    in
+        Random.Extra.constant <| List.foldl overlapFolder [] rooms
+
+
+isOverlapping : DungeonRoom -> List DungeonRoom -> Bool
+isOverlapping room rooms =
+    let
+        end room =
+            Vector.add room.position room.room.dimension
+
+        roomStart =
+            room.position
+
+        roomEnd =
+            end room
+    in
+        case rooms of
+            [] ->
+                False
+
+            firstRoom :: xs ->
+                let
+                    firstRoomStart =
+                        firstRoom.position
+
+                    firstRoomEnd =
+                        Vector.add firstRoom.position firstRoom.room.dimension
+
+                    intersects =
+                        { startX = Vector.boxIntersectXAxis (fst roomStart) ( firstRoomStart, firstRoomEnd )
+                        , endX = Vector.boxIntersectXAxis (fst roomEnd) ( firstRoomStart, firstRoomEnd )
+                        , startY = Vector.boxIntersectYAxis (snd roomStart) ( firstRoomStart, firstRoomEnd )
+                        , endY = Vector.boxIntersectYAxis (snd roomEnd) ( firstRoomStart, firstRoomEnd )
+                        }
+                in
+                    if (intersects.startX || intersects.endX) && (intersects.startY || intersects.endY) then
+                        True
+                    else
+                        isOverlapping room xs
 
 
 entranceToTileType : Entrance -> Tile.TileType
