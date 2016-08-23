@@ -12,10 +12,16 @@ type alias Label =
 
 labeledNumber' : (String -> number -> number) -> Label -> number -> (number -> a) -> Html a
 labeledNumber' convert label number msg =
+    labeledNumberWithStep convert label number 1.0 msg
+
+
+labeledNumberWithStep : (String -> number -> number) -> Label -> number -> Float -> (number -> a) -> Html a
+labeledNumberWithStep convert label number inc msg =
     div [ class "ui labeled input" ]
         [ div [ class "ui label" ] [ text label ]
         , input
             [ type' "number"
+            , step (toString inc)
             , onInput (\input -> msg <| convert input 0)
             , value (toString number)
             ]
@@ -38,7 +44,7 @@ labeledFloat label number msg =
         toFloatWithDefault str default =
             Result.withDefault default (String.toFloat str)
     in
-        labeledNumber' toFloatWithDefault label number msg
+        labeledNumberWithStep toFloatWithDefault label number 0.1 msg
 
 
 inputWithIncDec : Int -> (Int -> a) -> Html a
