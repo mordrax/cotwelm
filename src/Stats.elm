@@ -63,9 +63,14 @@ combatStats (A model) =
 
 printHP : Stats -> String
 printHP (A model) =
-    (toString model.currentHP) ++ " / " ++ (Basics.toString model.maxHP)
+    printAOverB model.currentHP model.maxHP
 
 
 printSP : Stats -> String
 printSP (A model) =
-    (toString model.currentSP) ++ " / " ++ (Basics.toString model.maxSP)
+    printAOverB model.currentSP model.maxSP
+
+
+printAOverB : a -> b -> String
+printAOverB a b =
+    toString a ++ " / " ++ toString b

@@ -117,9 +117,8 @@ removeFrom item model =
         equals =
             Item.equals
 
-        removeFromShop =
-            \shop ->
-                List.filter (\x -> (not (equals item x))) shop
+        removeFromShop shop =
+            List.filter (\x -> (not (equals item x))) shop
     in
         case model.currentShop of
             WeaponSmith ->
@@ -139,15 +138,14 @@ replenish : List ItemFactory -> IdGenerator -> Seed -> ( IdGenerator, List Item 
 replenish itemFactories idGenerator seed =
     let
         defaultProduct : Maybe (ID -> Item) -> (ID -> Item)
-        defaultProduct =
-            \maybe ->
-                Maybe.withDefault (Item.new (Item.Weapon BrokenSword)) maybe
+        defaultProduct maybe =
+            Maybe.withDefault (Item.new (Item.Weapon BrokenSword)) maybe
 
         itemGenerator =
             sample itemFactories |> (Random.map defaultProduct)
 
-        itemsGenerator =
-            \n -> Random.list n itemGenerator
+        itemsGenerator n =
+            Random.list n itemGenerator
 
         ( foldableProducts, _ ) =
             Random.step (itemsGenerator 10) seed

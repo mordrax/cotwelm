@@ -155,8 +155,8 @@ view model =
 viewMonsters : Model -> Html Msg
 viewMonsters ({ monsters } as model) =
     let
-        monsterHtml =
-            \monster -> Monster.view monster
+        monsterHtml monster =
+            Monster.view monster
     in
         div [] (List.map monsterHtml monsters)
 
@@ -173,28 +173,27 @@ viewMap ({ windowSize } as model) =
         ( xOff, yOff ) =
             ( windowSize.width // 32 * 16, windowSize.height // 32 * 16 )
 
-        px =
-            \x -> (toString x) ++ "px"
+        px x =
+            (toString x) ++ "px"
 
-        viewport =
-            \html ->
-                div
+        viewport html =
+            div
+                [ style
+                    [ ( "position", "relative" )
+                    , ( "overflow", "hidden" )
+                    , ( "width", px windowSize.width )
+                    , ( "height", px (windowSize.height * 4 // 5) )
+                    ]
+                ]
+                [ div
                     [ style
                         [ ( "position", "relative" )
-                        , ( "overflow", "hidden" )
-                        , ( "width", px windowSize.width )
-                        , ( "height", px (windowSize.height * 4 // 5) )
+                        , ( "top", px (yOff - y) )
+                        , ( "left", px (xOff - x) )
                         ]
                     ]
-                    [ div
-                        [ style
-                            [ ( "position", "relative" )
-                            , ( "top", px (yOff - y) )
-                            , ( "left", px (xOff - x) )
-                            ]
-                        ]
-                        html
-                    ]
+                    html
+                ]
     in
         div []
             [ viewMenu
@@ -223,8 +222,8 @@ viewStatus model =
 viewMessages : Model -> Html Msg
 viewMessages model =
     let
-        msg =
-            \txt -> div [] [ text txt ]
+        msg txt =
+            div [] [ text txt ]
     in
         div [] (List.map msg model.messages)
 
@@ -288,11 +287,11 @@ viewHero hero =
 subscriptions : Model -> List (Sub Msg)
 subscriptions model =
     let
-        toInvMsg =
-            \x -> Sub.map InvMsg x
+        toInvMsg x =
+            Sub.map InvMsg x
 
-        toKeyboardMsg =
-            \x -> Sub.map Keyboard x
+        toKeyboardMsg x =
+            Sub.map Keyboard x
 
         inventorySubs =
             List.map toInvMsg (Inventory.subscriptions model)

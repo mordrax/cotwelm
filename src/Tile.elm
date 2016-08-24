@@ -87,8 +87,8 @@ isSameType t1 t2 =
 mapToTiles : List String -> List Tile
 mapToTiles asciiMap =
     let
-        rowToTiles =
-            \y asciiRow -> List.indexedMap (\x char -> toTile ( x, y ) (asciiToTileType char)) (String.toList asciiRow)
+        rowToTiles y asciiRow =
+            List.indexedMap (\x char -> toTile ( x, y ) (asciiToTileType char)) (String.toList asciiRow)
 
         tiles =
             List.indexedMap rowToTiles asciiMap
@@ -132,22 +132,21 @@ scaledView ({ base, position } as tile) scale neighbours =
         halfTile =
             List.Extra.find (\x -> model.tile == (fst x)) halfTiles
 
-        getType =
-            \tile ->
-                let
-                    { base } =
-                        tile
+        getType tile =
+            let
+                { base } =
+                    tile
 
-                    (A model) =
-                        base
-                in
-                    model.tile
+                (A model) =
+                    base
+            in
+                model.tile
 
-        aOrb =
-            \x a b -> x == a || x == b
+        aOrb x a b =
+            x == a || x == b
 
-        rotate =
-            \deg -> ( "transform", "rotate(" ++ (toString deg) ++ "deg)" )
+        rotate deg =
+            ( "transform", "rotate(" ++ (toString deg) ++ "deg)" )
 
         scaleStyle =
             ( "transform", "scale(" ++ (toString scale) ++ "," ++ (toString scale) ++ ")" )

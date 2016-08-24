@@ -244,11 +244,6 @@ putInPack item (EM model) =
                     ( EM { model | pack = Just pack' }, ItemMsg msg )
 
 
-
---             _ ->
---                 noChange
-
-
 removeFromPack : Item -> Equipment -> Equipment
 removeFromPack item (EM model) =
     let
@@ -261,11 +256,6 @@ removeFromPack item (EM model) =
 
             Just pack ->
                 EM { model | pack = Just (Item.removeFromPack item pack) }
-
-
-
---             _ ->
---                 Debug.crash "The pack seems to be a non-pack!" 1
 
 
 getPackContent : Equipment -> List Item

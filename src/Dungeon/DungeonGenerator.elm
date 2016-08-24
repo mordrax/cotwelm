@@ -50,28 +50,30 @@ init =
 generate : Config.Model -> Generator Map
 generate config =
     let
-        toKVPair =
-            \tile -> ( tile.position, tile )
+        toKVPair tile =
+            ( tile.position, tile )
+
+        roomsToTileGenerator rooms =
+            rooms
+                |> roomsToTiles
+                |> Random.Extra.constant
+
+        tilesToMapGenerator tiles =
+            tiles
+                |> List.map toKVPair
+                |> Dict.fromList
+                |> Random.Extra.constant
     in
         generateDungeonRooms config config.nRooms []
-            `andThen` (\rooms ->
-                        rooms
-                            |> roomsToTiles
-                            |> Random.Extra.constant
-                      )
-            `andThen` (\tiles ->
-                        tiles
-                            |> List.map toKVPair
-                            |> Dict.fromList
-                            |> Random.Extra.constant
-                      )
+            `andThen` roomsToTileGenerator
+            `andThen` tilesToMapGenerator
 
 
 generateDungeonRooms : Config.Model -> Int -> DungeonRooms -> Generator DungeonRooms
 generateDungeonRooms config num dungeonRooms =
     let
-        recurse =
-            \dungeonRoom -> generateDungeonRooms config (num - 1) (dungeonRoom :: dungeonRooms)
+        recurse dungeonRoom =
+            generateDungeonRooms config (num - 1) (dungeonRoom :: dungeonRooms)
     in
         if num == 0 then
             Random.Extra.constant dungeonRooms
@@ -90,9 +92,13 @@ roomToDungeonRoom room { dungeonSize } =
 roomsToTiles : DungeonRooms -> Tiles
 roomsToTiles dungeonRooms =
     let
+        roomsToTiles room =
+            roomToTiles room.room room.position
+
         tiles =
-            List.concat
-                <| List.map (\x -> roomToTiles x.room x.position) dungeonRooms
+            dungeonRooms
+                |> List.map roomsToTiles
+                |> List.concat
 
         defaultPosition =
             \x -> Maybe.withDefault ( 0, 0 ) x
@@ -136,17 +142,16 @@ fillWithWall partialMap =
 roomToTiles : Room -> Vector -> List Tile
 roomToTiles room startPos =
     let
-        toWorldPos =
-            \localPos -> Vector.add startPos localPos
+        toWorldPos localPos =
+            Vector.add startPos localPos
 
         items =
             [ ( Tile.DarkDgn, room.floors ), ( Tile.Rock, List.concat room.walls ), ( Tile.Rock, room.corners ) ]
 
-        makeTiles =
-            \( tileType, positions ) ->
-                positions
-                    |> List.map toWorldPos
-                    |> List.map (\pos -> Tile.toTile pos tileType)
+        makeTiles ( tileType, positions ) =
+            positions
+                |> List.map toWorldPos
+                |> List.map (\pos -> Tile.toTile pos tileType)
     in
         List.concat (List.map makeTiles items)
             ++ List.map
@@ -243,35 +248,32 @@ neighbours map position =
         dungeonSize =
             .dungeonSize Config.init
 
-        add =
-            \x y -> Vector.add position ( x, y )
+        add x y =
+            Vector.add position ( x, y )
 
-        possibleNeighbours =
-            \vector ->
-                [ add -1 -1, add 0 -1, add 1 -1 ]
-                    ++ [ add -1 0, add 1 0 ]
-                    ++ [ add -1 1, add 0 1, add 1 1 ]
+        possibleNeighbours vector =
+            [ add -1 -1, add 0 -1, add 1 -1 ]
+                ++ [ add -1 0, add 1 0 ]
+                ++ [ add -1 1, add 0 1, add 1 1 ]
 
-        isOutOfBounds =
-            \( x, y ) ->
-                if x > dungeonSize || y > dungeonSize then
-                    True
-                else if x < 0 || y < 0 then
-                    True
-                else
-                    False
+        isOutOfBounds ( x, y ) =
+            if x > dungeonSize || y > dungeonSize then
+                True
+            else if x < 0 || y < 0 then
+                True
+            else
+                False
 
-        isObstructed =
-            \(( x, y ) as vector) ->
-                if isOutOfBounds vector then
-                    True
-                else
-                    case Dict.get vector map of
-                        Just tile ->
-                            Tile.isSolid tile
+        isObstructed (( x, y ) as vector) =
+            if isOutOfBounds vector then
+                True
+            else
+                case Dict.get vector map of
+                    Just tile ->
+                        Tile.isSolid tile
 
-                        Nothing ->
-                            False
+                    Nothing ->
+                        False
     in
         position
             |> possibleNeighbours

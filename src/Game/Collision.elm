@@ -243,17 +243,16 @@ heuristic start end =
 neighbours : Model -> Vector -> Set Position
 neighbours model position =
     let
-        add =
-            \x y -> Vector.add position ( x, y )
+        add x y =
+            Vector.add position ( x, y )
 
-        possibleNeighbours =
-            \vector ->
-                [ add -1 -1, add 0 -1, add 1 -1 ]
-                    ++ [ add -1 0, add 1 0 ]
-                    ++ [ add -1 1, add 0 1, add 1 1 ]
+        possibleNeighbours vector =
+            [ add -1 -1, add 0 -1, add 1 -1 ]
+                ++ [ add -1 0, add 1 0 ]
+                ++ [ add -1 1, add 0 1, add 1 1 ]
 
-        notObstructed =
-            \vector -> not (isObstructed vector model)
+        notObstructed vector =
+            not (isObstructed vector model)
     in
         position
             |> possibleNeighbours
@@ -276,4 +275,10 @@ isObstructed position model =
 
 isMonsterObstruction : Monster -> List Monster -> Bool
 isMonsterObstruction monster monsters =
-    List.any (\x -> x == monster.position) (List.map .position monsters)
+    let
+        atMonsterPosition pos =
+            pos == monster.position
+    in
+        monsters
+            |> List.map .position
+            |> List.any atMonsterPosition
