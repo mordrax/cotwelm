@@ -43,11 +43,6 @@ init =
     }
 
 
-toIntWithDefault : String -> Int -> Int
-toIntWithDefault str default =
-    Result.withDefault default (String.toInt str)
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of

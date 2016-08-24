@@ -91,7 +91,7 @@ isBuildingAtPosition pos (BM model) =
         bottomLeft =
             Vector.sub (Vector.add model.pos model.size) ( 1, 1 )
     in
-        boxIntersect pos ( model.pos, bottomLeft )
+        boxIntersectVector pos ( model.pos, bottomLeft )
 
 
 buildingType : Building -> BuildingType
