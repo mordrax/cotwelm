@@ -76,11 +76,11 @@ getDragSourceDropTarget (DragDropModel model) =
 update : DragDropMsg s t -> DragDrop s t -> DragDrop s t
 update msg (DragDropModel model) =
     let
-        startDrag =
-            \source html pos -> Model source model.dropTarget pos (Just (Dragging pos pos html))
+        startDrag source html pos =
+            Model source model.dropTarget pos (Just (Dragging pos pos html))
 
-        atDrag =
-            \source html pos -> Model source model.dropTarget model.position (Maybe.map (\{ start } -> (Dragging start pos html)) model.dragging)
+        atDrag source html pos =
+            Model source model.dropTarget model.position (Maybe.map (\{ start } -> (Dragging start pos html)) model.dragging)
     in
         case msg of
             Start source html pos ->
@@ -104,8 +104,8 @@ update msg (DragDropModel model) =
 view : DragDrop s t -> Html (DragDropMsg s t)
 view (DragDropModel ({ dragSource, position, dragging } as model)) =
     let
-        px =
-            \x -> toString x ++ "px"
+        px x =
+            toString x ++ "px"
 
         newPos =
             getDisplacement model

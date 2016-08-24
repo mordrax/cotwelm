@@ -87,8 +87,8 @@ add item (ContainerModel model) =
 take : a -> Container a -> Container a
 take item (ContainerModel model) =
     let
-        notEquals =
-            \x -> not <| model.equals item x
+        notEquals x =
+            not <| model.equals item x
 
         itemsWithoutIdItem =
             List.filter notEquals model.items

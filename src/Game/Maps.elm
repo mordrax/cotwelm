@@ -60,15 +60,14 @@ type Msg
 init : Random.Seed -> ( Maps, Cmd Msg, Random.Seed )
 init seed =
     let
-        getTiles =
-            \area ->
-                Tile.mapToTiles (getASCIIMap area)
+        getTiles area =
+            Tile.mapToTiles (getASCIIMap area)
 
-        tilesToTuples =
-            \area -> List.map toKVPair (getTiles area)
+        tilesToTuples area =
+            List.map toKVPair (getTiles area)
 
-        toKVPair =
-            \tile -> ( tile.position, tile )
+        toKVPair tile =
+            ( tile.position, tile )
 
         ( level, seed' ) =
             Random.step (DungeonGenerator.generate Config.init) seed
@@ -124,9 +123,13 @@ view maps =
 
 toMap : List Tile -> Map
 toMap tiles =
-    tiles
-        |> List.map (\({ position } as tile) -> ( position, tile ))
-        |> Dict.fromList
+    let
+        toKVPair ({ position } as tile) =
+            ( position, tile )
+    in
+        tiles
+            |> List.map toKVPair
+            |> Dict.fromList
 
 
 draw : Map -> Float -> List (Html a)
@@ -138,8 +141,8 @@ draw map scale =
         mapTiles =
             toTiles map
 
-        toHtml =
-            \tile -> Tile.scaledView tile scale (neighbours tile)
+        toHtml tile =
+            Tile.scaledView tile scale (neighbours tile)
     in
         List.map toHtml mapTiles
 

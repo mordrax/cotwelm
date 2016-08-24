@@ -162,15 +162,13 @@ type MonsterType
 new : MonsterType -> Vector -> ID -> Monster
 new monsterType pos id =
     let
-        newMonster =
+        newMonster class css name hp =
             -- class: overall how dangerous monster is
             -- css: css class for drawing
-            \class css name hp ->
-                newSpellcaster class css name hp 0
+            newSpellcaster class css name hp 0
 
-        newSpellcaster =
-            \class css name hp sp ->
-                Monster (A <| Model class css name) pos (Stats.new hp sp) id
+        newSpellcaster class css name hp sp =
+            Monster (A <| Model class css name) pos (Stats.new hp sp) id
     in
         case monsterType of
             GiantRat ->

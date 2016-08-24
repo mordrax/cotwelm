@@ -115,18 +115,17 @@ handleDragDrop dragSource dropTarget model =
         noChange =
             model
 
-        handleDrop' =
-            \item modelWithDrag ->
-                case (handleDrop dropTarget item modelWithDrag) of
-                    Result.Ok modelWithDragDrop ->
-                        modelWithDragDrop
+        handleDrop' item modelWithDrag =
+            case (handleDrop dropTarget item modelWithDrag) of
+                Result.Ok modelWithDragDrop ->
+                    modelWithDragDrop
 
-                    Err msg ->
-                        let
-                            _ =
-                                Debug.log "Drop failed: " msg
-                        in
-                            noChange
+                Err msg ->
+                    let
+                        _ =
+                            Debug.log "Drop failed: " msg
+                    in
+                        noChange
     in
         case dragResult of
             Result.Ok ( modelWithDrag, item ) ->
@@ -281,15 +280,14 @@ handleDrop drop item model =
 view : Model -> Html (InventoryMsg Drag Drop)
 view ({ equipment, dnd } as model) =
     let
-        header =
-            \title -> div [ class "ui block header" ] [ text title ]
+        header title =
+            div [ class "ui block header" ] [ text title ]
 
-        heading =
-            \title ->
-                span [ class "ui text container segment" ] [ text title ]
+        heading title =
+            span [ class "ui text container segment" ] [ text title ]
 
-        columnWidth =
-            \width children -> div [ class (width ++ " wide column") ] children
+        columnWidth width children =
+            div [ class (width ++ " wide column") ] children
 
         equipmentColumn =
             columnWidth "six" [ viewEquipment equipment dnd ]
@@ -307,11 +305,11 @@ view ({ equipment, dnd } as model) =
 viewShopPackPurse : Model -> Html (InventoryMsg Drag Drop)
 viewShopPackPurse ({ equipment, dnd, currentScreen } as model) =
     let
-        header =
-            \title -> div [ class "ui block header" ] [ text title ]
+        header title =
+            div [ class "ui block header" ] [ text title ]
 
-        columnWidth =
-            \width children -> div [ class (width ++ " wide column") ] children
+        columnWidth width children =
+            div [ class (width ++ " wide column") ] children
 
         groundHtml =
             div [] [ header "Ground", viewGround model ]
@@ -378,8 +376,8 @@ viewPackInfo maybeItem =
                 ( capBulk, capWeight ) =
                     Mass.info capMass
 
-                print =
-                    \name a b -> name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
+                print name a b =
+                    name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
             in
                 (print "Bulk" curBulk capBulk) ++ ", " ++ (print "Weight" curWeight capWeight)
 
@@ -404,9 +402,8 @@ viewPack maybePack ({ dnd } as model) =
         packStyle =
             style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
 
-        droppableHtml =
-            \pack ->
-                (div [ packStyle ] [ viewContainer (ItemPack pack) model ])
+        droppableHtml pack =
+            (div [ packStyle ] [ viewContainer (ItemPack pack) model ])
     in
         case maybePack of
             Just pack ->
@@ -422,8 +419,8 @@ viewShop ({ shop, dnd } as model) =
         items =
             Shop.list shop
 
-        makeDraggable =
-            \shop item -> DragDrop.draggable (Item.view item) (DragShop item shop) dnd
+        makeDraggable shop item =
+            DragDrop.draggable (Item.view item) (DragShop item shop) dnd
 
         droppableDiv =
             div [ class "ui cards" ] (List.map (makeDraggable shop) items)
@@ -442,8 +439,8 @@ viewContainer containerItem ({ equipment, dnd } as model) =
         items =
             Equipment.getPackContent equipment
 
-        makeDraggable =
-            \pack item -> DragDrop.draggable (Item.view item) (DragPack item pack) dnd
+        makeDraggable pack item =
+            DragDrop.draggable (Item.view item) (DragPack item pack) dnd
     in
         case (containerItem) of
             ItemPack pack ->
@@ -463,28 +460,26 @@ viewContainer containerItem ({ equipment, dnd } as model) =
 viewEquipment : Equipment -> DragDrop Drag Drop -> Html (DragDropMsg Drag Drop)
 viewEquipment equipment dnd =
     let
-        getEquipment =
-            \slot -> Equipment.get slot equipment
+        getEquipment slot =
+            Equipment.get slot equipment
 
-        drawItem =
-            \item slot ->
-                DragDrop.draggable (Item.viewSlot item ("Slot: " ++ (toString slot))) (DragSlot item slot) dnd
+        drawItem item slot =
+            DragDrop.draggable (Item.viewSlot item ("Slot: " ++ (toString slot))) (DragSlot item slot) dnd
 
-        drawSlot =
-            \slot ->
-                let
-                    slotName =
-                        "Slot: [" ++ (toString slot) ++ "]"
-                in
-                    case (getEquipment slot) of
-                        Just item ->
-                            div [ class "three wide column equipmentSlot" ]
-                                [ drawItem item slot ]
+        drawSlot slot =
+            let
+                slotName =
+                    "Slot: [" ++ (toString slot) ++ "]"
+            in
+                case (getEquipment slot) of
+                    Just item ->
+                        div [ class "three wide column equipmentSlot" ]
+                            [ drawItem item slot ]
 
-                        Nothing ->
-                            div [ class "three wide column equipmentSlot" ]
-                                [ DragDrop.droppable (DropEquipment slot) dnd (div [] [ text slotName ])
-                                ]
+                    Nothing ->
+                        div [ class "three wide column equipmentSlot" ]
+                            [ DragDrop.droppable (DropEquipment slot) dnd (div [] [ text slotName ])
+                            ]
     in
         div [ class "ui grid" ]
             [ drawSlot Equipment.Weapon
@@ -519,8 +514,8 @@ viewPurse ({ equipment } as model) =
                 `Maybe.andThen` Item.toPurse
                 `Maybe.andThen` maybeCoins
 
-        maybeCoins =
-            \x -> Just (Purse.getCoins x)
+        maybeCoins coins =
+            Just (Purse.getCoins coins)
     in
         case maybePurseContents of
             Just ( c, s, g, p ) ->
