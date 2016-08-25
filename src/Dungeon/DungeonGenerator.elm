@@ -16,6 +16,8 @@ import Utils.Vector as Vector exposing (..)
 
 type alias Model =
     { config : Config.Model
+    , rooms : Rooms
+    , activeRooms : Rooms
     }
 
 
@@ -44,6 +46,8 @@ type alias DungeonRoom =
 init : Model
 init =
     { config = Config.init
+    , rooms = []
+    , activeRooms = []
     }
 
 
@@ -53,22 +57,22 @@ generate config =
         toKVPair tile =
             ( tile.position, tile )
 
-        roomsToTileGenerator rooms =
+        roomsToMapGenerator rooms =
             rooms
                 |> roomsToTiles
-                |> Random.Extra.constant
-
-        tilesToMapGenerator tiles =
-            tiles
                 |> List.map toKVPair
                 |> Dict.fromList
                 |> Random.Extra.constant
     in
-        generateDungeonRooms config config.nRooms []
-            `andThen` roomsToTileGenerator
-            `andThen` tilesToMapGenerator
+        Room.generate config
+            `andThen` Room.generateDoor
+            `andThen` roomToDungeonRoom config
+            `andThen` (\x -> constant [ x ])
+            `andThen` roomsToMapGenerator
 
 
+{-| Generate dungeon rooms based on the config
+-}
 generateDungeonRooms : Config.Model -> Int -> DungeonRooms -> Generator DungeonRooms
 generateDungeonRooms config num dungeonRooms =
     let
@@ -79,12 +83,12 @@ generateDungeonRooms config num dungeonRooms =
             Random.Extra.constant dungeonRooms
         else
             Room.generate config
-                `andThen` (\room -> roomToDungeonRoom room config)
+                `andThen` roomToDungeonRoom config
                 `andThen` recurse
 
 
-roomToDungeonRoom : Room -> Config.Model -> Generator DungeonRoom
-roomToDungeonRoom room { dungeonSize } =
+roomToDungeonRoom : Config.Model -> Room -> Generator DungeonRoom
+roomToDungeonRoom { dungeonSize } room =
     (Dice.d2d dungeonSize dungeonSize)
         `andThen` (\pos -> Random.Extra.constant (DungeonRoom pos room))
 
@@ -159,27 +163,6 @@ roomToTiles room startPos =
                     Tile.toTile (toWorldPos pos) (entranceToTileType entrance)
                 )
                 room.doors
-
-
-
---generateRooms : Int -> ( Int, List DungeonRoom, Random.Seed ) -> ( List DungeonRoom, Random.Seed )
---generateRooms nRooms ( retries, rooms, seed ) =
---    case ( nRooms, retries ) of
---        ( 0, _ ) ->
---            ( rooms, seed )
---        ( _, 0 ) ->
---            ( rooms, seed )
---        ( n, _ ) ->
---            let
---                ( room, seed' ) =
---                    Room.generate seed
---                ( pos, seed'' ) =
---                    Dice.roll2D 30 seed'
---            in
---                if overlapsRooms room pos rooms then
---                    generateRooms n ( (retries - 1), rooms, seed'' )
---                else
---                    generateRooms (n - 1) ( (retries - 1), (DungeonRoom pos room) :: rooms, seed'' )
 
 
 removeOverlaps : DungeonRooms -> Generator DungeonRooms

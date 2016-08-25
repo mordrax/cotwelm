@@ -30,12 +30,12 @@ type alias Doors =
     List Door
 
 
-type alias Walls =
-    List Vector
-
-
 type alias Wall =
     Vector
+
+
+type alias Walls =
+    List Wall
 
 
 type alias Floors =
