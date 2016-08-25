@@ -62,7 +62,7 @@ type Msg
 
 init : Model
 init =
-    { dungeonSize = 300
+    { dungeonSize = 100
     , roomsConfig =
         { rectangular = RoomConfig ( 4, 10 ) 1
         , cross = RoomConfig ( 7, 11 ) 1
@@ -85,15 +85,15 @@ update msg model =
 
         RoomSize roomType val ->
             let
-                updateSizeRange =
-                    (\sizeRange' config -> { config | sizeRange = sizeRange' })
+                updateSizeRange sizeRange' config =
+                    { config | sizeRange = sizeRange' }
             in
                 { model | roomsConfig = updateRoomsConfig roomType (updateSizeRange val) model.roomsConfig }
 
         ChangeFrequency roomType freq ->
             let
-                updateFrequency =
-                    (\freq config -> { config | frequency = freq })
+                updateFrequency freq config =
+                    { config | frequency = freq }
             in
                 { model | roomsConfig = updateRoomsConfig roomType (updateFrequency freq) model.roomsConfig }
 
@@ -182,11 +182,6 @@ wallSampler walls =
                 |> Random.map (Maybe.withDefault wall)
 
 
-without : Wall -> Walls -> Walls
-without wall walls =
-    List.filter (\x -> x /= wall) walls
-
-
 addDoors :
     Int
     -> ( List Walls, List Walls, List Door )
@@ -211,8 +206,8 @@ addDoors nDoors ( walls, fullWalls, doors ) =
                     generateWall =
                         wallSampler wall
 
-                    wallWithoutDoor =
-                        flip without wall
+                    wallWithoutDoor door =
+                        List.filter ((/=) door) wall
 
                     recurse =
                         \(( _, pos ) as door) ->
@@ -229,14 +224,6 @@ addDoors nDoors ( walls, fullWalls, doors ) =
 wallToDoor : Generator Wall -> Generator Door
 wallToDoor wallGen =
     Random.map (\pos -> ( Door, pos )) wallGen
-
-
-shuffle : List a -> Generator (List a)
-shuffle list =
-    list
-        |> Array.fromList
-        |> Random.Array.shuffle
-        |> Random.map Array.toList
 
 
 

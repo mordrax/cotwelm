@@ -7,13 +7,9 @@ import Html.App exposing (map)
 import Game.Maps as Maps exposing (..)
 
 
---import UI exposing (..)
 -- Dungeon
---import Dungeon.Room as Room exposing (..)
 
 import Dungeon.Rooms.Config as Config exposing (..)
-import Dungeon.Rooms.Type exposing (..)
-import Dungeon.Room as Room exposing (..)
 import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 
 
@@ -21,7 +17,6 @@ import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 
 import Dict exposing (..)
 import Random exposing (..)
-import String exposing (..)
 
 
 type alias Model =
@@ -101,7 +96,7 @@ view model =
                   button [ class "ui button", onClick GenerateMap ] [ text "Generate Dungeon" ]
                 , mapSizeView model
                 ]
-            , div []
+            , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
                 (Maps.draw model.map model.config.mapScale)
             ]
 

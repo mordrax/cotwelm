@@ -1,4 +1,4 @@
-module Dungeon.Room exposing (..)
+module Dungeon.Room exposing (generate, generateDoor)
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
     all random parameters such as the type/size of room generated.
@@ -11,6 +11,7 @@ import Dungeon.Rooms.Config as Config exposing (..)
 import Random exposing (andThen, Generator)
 import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
+import Lodash exposing (..)
 
 
 -- room types
@@ -45,10 +46,12 @@ generate model =
             `andThen` roomTypeToRoom
             `andThen` roomSizeGenerator model
             `andThen` wallsGenerator
-            `andThen` shuffleWalls
-            `andThen` doorsGenerator
             `andThen` floorsGenerator
             `andThen` cornersGenerator
+
+
+
+-- Privates
 
 
 roomSizeGenerator : Config.Model -> Room -> Generator Room
@@ -60,10 +63,40 @@ roomSizeGenerator config ({ roomType } as room) =
 shuffleWalls : Room -> Generator Room
 shuffleWalls ({ walls } as room) =
     let
-        model' =
+        room' =
             \walls -> { room | walls = walls }
     in
-        Random.map model' (Config.shuffle room.walls)
+        Random.map room' (shuffle room.walls)
+
+
+generateDoor : Room -> Generator Room
+generateDoor ({ walls, doors } as room) =
+    let
+        headOfWalls walls =
+            walls
+                |> List.concat
+                |> List.head
+                |> Maybe.withDefault ( 0, 0 )
+
+        doorGenerator =
+            shuffle walls
+                `andThen` (headOfWalls >> constant)
+
+        wallsWithoutDoor doorPos =
+            let
+                _ =
+                    Debug.log "wallsWithoutDoor" { doorpos = doorPos, walls = walls }
+            in
+                List.map (without doorPos) walls
+
+        wallsGenerator =
+            doorGenerator
+                `andThen` (wallsWithoutDoor >> constant)
+
+        mapToRoom doorPos walls =
+            { room | doors = ( Door, doorPos ) :: doors, walls = walls }
+    in
+        Random.map2 mapToRoom doorGenerator wallsGenerator
 
 
 doorsGenerator : Room -> Generator Room
