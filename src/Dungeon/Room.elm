@@ -50,6 +50,19 @@ generate model =
             `andThen` cornersGenerator
 
 
+{-| Add a door to the room using one of the room's remaining walls.
+It also reports the door that just got added)
+-}
+generateDoor : Room -> Generator ( Room, Door )
+generateDoor ({ walls, doors } as room) =
+    let
+        toReturn ( door, walls ) =
+            ( { room | doors = door :: doors, walls = walls }, door )
+    in
+        generateDoorHelper walls
+            |> Random.map toReturn
+
+
 
 -- Privates
 
@@ -60,43 +73,27 @@ roomSizeGenerator config ({ roomType } as room) =
         `andThen` (\roomSize -> constant { room | dimension = ( roomSize, roomSize ) })
 
 
-shuffleWalls : Room -> Generator Room
-shuffleWalls ({ walls } as room) =
-    let
-        room' =
-            \walls -> { room | walls = walls }
-    in
-        Random.map room' (shuffle room.walls)
+headOfWalls : List Walls -> Wall
+headOfWalls walls =
+    walls
+        |> List.concat
+        |> List.head
+        |> Maybe.withDefault ( 0, 0 )
 
 
-generateDoor : Room -> Generator Room
-generateDoor ({ walls, doors } as room) =
+generateDoorHelper : List Walls -> Generator ( Door, List Walls )
+generateDoorHelper walls =
     let
-        headOfWalls walls =
+        doorPosition walls =
+            headOfWalls walls
+
+        makeHeadADoor walls =
             walls
-                |> List.concat
-                |> List.head
-                |> Maybe.withDefault ( 0, 0 )
-
-        doorGenerator =
-            shuffle walls
-                `andThen` (headOfWalls >> constant)
-
-        wallsWithoutDoor doorPos =
-            let
-                _ =
-                    Debug.log "wallsWithoutDoor" { doorpos = doorPos, walls = walls }
-            in
-                List.map (without doorPos) walls
-
-        wallsGenerator =
-            doorGenerator
-                `andThen` (wallsWithoutDoor >> constant)
-
-        mapToRoom doorPos walls =
-            { room | doors = ( Door, doorPos ) :: doors, walls = walls }
+                |> headOfWalls
+                |> (\x -> ( ( Door, x ), List.map (without x) walls ))
     in
-        Random.map2 mapToRoom doorGenerator wallsGenerator
+        shuffle walls
+            `andThen` (makeHeadADoor >> constant)
 
 
 doorsGenerator : Room -> Generator Room
