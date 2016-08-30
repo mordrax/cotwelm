@@ -22,12 +22,13 @@ import Random exposing (..)
 type alias Model =
     { map : Maps.Map
     , config : Config.Model
+    , dungeonSteps : List DungeonGenerator.Model
     }
 
 
 type Msg
     = GenerateMap
-    | Dungeon Maps.Map
+    | Dungeon ( DungeonGenerator.Model, Maps.Map )
     | ConfigMsg Config.Msg
 
 
@@ -35,6 +36,7 @@ init : Model
 init =
     { map = Dict.empty
     , config = Config.init
+    , dungeonSteps = [ DungeonGenerator.init ]
     }
 
 
@@ -42,10 +44,20 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GenerateMap ->
-            ( model, Random.generate Dungeon (DungeonGenerator.generate model.config) )
+            let
+                dungeonModelGen' =
+                    model.dungeonSteps
+                        |> List.head
+                        |> Maybe.withDefault DungeonGenerator.init
+                        |> DungeonGenerator.step
 
-        Dungeon map ->
-            ( { model | map = map }, Cmd.none )
+                dungeonMapGen =
+                    Random.map (\dungeonModel -> ( dungeonModel, DungeonGenerator.toMap dungeonModel )) dungeonModelGen'
+            in
+                ( model, Random.generate Dungeon dungeonMapGen )
+
+        Dungeon ( dungeonModel, map ) ->
+            ( { model | dungeonSteps = dungeonModel :: model.dungeonSteps, map = map }, Cmd.none )
 
         ConfigMsg msg ->
             ( { model | config = Config.update msg model.config }, Cmd.none )
