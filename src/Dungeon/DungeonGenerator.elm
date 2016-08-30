@@ -16,9 +16,13 @@ import Utils.Vector as Vector exposing (..)
 
 type alias Model =
     { config : Config.Model
-    , rooms : Rooms
-    , activeRooms : Rooms
+    , rooms : DungeonRooms
+    , actives : List Active
     }
+
+
+type Active
+    = RoomEntrance Door
 
 
 type alias Map =
@@ -47,28 +51,48 @@ init : Model
 init =
     { config = Config.init
     , rooms = []
-    , activeRooms = []
+    , actives = []
     }
 
 
 generate : Config.Model -> Generator Map
 generate config =
     let
+        model =
+            init
+    in
+        model
+            |> toMap
+            |> constant
+
+
+
+--Room.generate config
+--    `andThen` Room.generateDoor
+--    `andThen` (\room -> constant (addRoomToModel model room))
+--    `andThen` (toMap >> constant)
+
+
+step : Model -> Generator Model
+step ({ config, rooms, actives } as model) =
+    constant model
+
+
+toMap : Model -> Map
+toMap model =
+    let
         toKVPair tile =
             ( tile.position, tile )
-
-        roomsToMapGenerator rooms =
-            rooms
-                |> roomsToTiles
-                |> List.map toKVPair
-                |> Dict.fromList
-                |> Random.Extra.constant
     in
-        Room.generate config
-            `andThen` Room.generateDoor
-            `andThen` roomToDungeonRoom config
-            `andThen` (\x -> constant [ x ])
-            `andThen` roomsToMapGenerator
+        model.rooms
+            |> roomsToTiles
+            |> List.map toKVPair
+            |> Dict.fromList
+
+
+addRoomToModel : Model -> ( DungeonRoom, Door ) -> Model
+addRoomToModel model ( dungeonRoom, door ) =
+    { model | rooms = dungeonRoom :: model.rooms, actives = (RoomEntrance door) :: model.actives }
 
 
 {-| Generate dungeon rooms based on the config
