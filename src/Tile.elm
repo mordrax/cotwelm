@@ -1,6 +1,7 @@
 module Tile
     exposing
         ( Tile
+        , Tiles
         , TileType(..)
         , TileNeighbours
         , isSameType
@@ -53,6 +54,10 @@ type alias Tile =
     { base : BaseTile
     , position : Vector
     }
+
+
+type alias Tiles =
+    List Tile
 
 
 

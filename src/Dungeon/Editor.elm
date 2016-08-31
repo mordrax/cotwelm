@@ -15,6 +15,7 @@ import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 
 -- libs
 
+import Tile exposing (..)
 import Dict exposing (..)
 import Random exposing (..)
 
@@ -28,7 +29,7 @@ type alias Model =
 
 type Msg
     = GenerateMap
-    | Dungeon ( DungeonGenerator.Model, Maps.Map )
+    | Dungeon DungeonGenerator.Model
     | ConfigMsg Config.Msg
 
 
@@ -36,31 +37,42 @@ init : Model
 init =
     { map = Dict.empty
     , config = Config.init
-    , dungeonSteps = [ DungeonGenerator.init ]
+    , dungeonSteps = []
     }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        GenerateMap ->
-            let
-                dungeonModelGen' =
-                    model.dungeonSteps
-                        |> List.head
-                        |> Maybe.withDefault DungeonGenerator.init
-                        |> DungeonGenerator.step
+    let
+        _ =
+            Debug.log "steps" model.dungeonSteps
+    in
+        case msg of
+            GenerateMap ->
+                let
+                    dungeonModelGen =
+                        model.dungeonSteps
+                            |> List.head
+                            |> Maybe.withDefault DungeonGenerator.init
 
-                dungeonMapGen =
-                    Random.map (\dungeonModel -> ( dungeonModel, DungeonGenerator.toMap dungeonModel )) dungeonModelGen'
-            in
-                ( model, Random.generate Dungeon dungeonMapGen )
+                    dungeonModelGen' =
+                        dungeonModelGen `andThen` DungeonGenerator.step
+                in
+                    ( model, Random.generate Dungeon dungeonModelGen' )
 
-        Dungeon ( dungeonModel, map ) ->
-            ( { model | dungeonSteps = dungeonModel :: model.dungeonSteps, map = map }, Cmd.none )
+            Dungeon dungeonModel ->
+                let
+                    map =
+                        dungeonModel
+                            |> DungeonGenerator.toTiles
+                            |> Maps.fromTiles
+                in
+                    ( { model | dungeonSteps = dungeonModel :: [], map = map }
+                    , Cmd.none
+                    )
 
-        ConfigMsg msg ->
-            ( { model | config = Config.update msg model.config }, Cmd.none )
+            ConfigMsg msg ->
+                ( { model | config = Config.update msg model.config }, Cmd.none )
 
 
 

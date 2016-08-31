@@ -8,7 +8,7 @@ module Game.Maps
         , updateArea
         , view
         , draw
-        , toMap
+        , fromTiles
         , currentAreaMap
         , getASCIIMap
         , getBuildings
@@ -33,7 +33,6 @@ import GameData.Types exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Html exposing (..)
 import Dict exposing (..)
-import Dungeon.DungeonGenerator as DungeonGenerator exposing (generate)
 import Random exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 
@@ -69,8 +68,8 @@ init seed =
         toKVPair tile =
             ( tile.position, tile )
 
-        ( level, seed' ) =
-            Random.step (DungeonGenerator.generate Config.init) seed
+        --( level, seed' ) =
+        --    Random.step (DungeonGenerator.generate Config.init) seed
     in
         ( A
             { currentArea =
@@ -81,7 +80,7 @@ init seed =
                     [ ( toString Village, Dict.fromList (tilesToTuples Village) )
                     , ( toString Farm, Dict.fromList (tilesToTuples Farm) )
                     , ( toString DungeonLevelOne, Dict.fromList (tilesToTuples DungeonLevelOne) )
-                    , ( toString (DungeonLevel 2), level )
+                      --, ( toString (DungeonLevel 2), level )
                     ]
             , buildings =
                 Dict.fromList
@@ -91,7 +90,7 @@ init seed =
                     ]
             }
         , Cmd.none
-        , seed'
+        , seed
         )
 
 
@@ -121,8 +120,8 @@ view maps =
         div [] (draw map 1.0 ++ buildingsHtml)
 
 
-toMap : List Tile -> Map
-toMap tiles =
+fromTiles : Tiles -> Map
+fromTiles tiles =
     let
         toKVPair ({ position } as tile) =
             ( position, tile )

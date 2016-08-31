@@ -56,6 +56,10 @@ type alias Room =
     }
 
 
+type alias Rooms =
+    List Room
+
+
 type alias RoomTemplate =
     { makeWalls : Dimension -> List Walls
     , makeCorners : Dimension -> Walls

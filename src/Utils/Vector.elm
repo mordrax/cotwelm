@@ -9,6 +9,10 @@ type alias Vector =
     ( Int, Int )
 
 
+type alias Vectors =
+    List Vector
+
+
 add : Vector -> Vector -> Vector
 add ( v1x, v1y ) ( v2x, v2y ) =
     ( v1x + v2x, v1y + v2y )
