@@ -17,17 +17,17 @@ type alias Dimension =
     Vector
 
 
-type Entrance
+type EntranceType
     = Door
     | NoDoor
 
 
-type alias Door =
-    ( Entrance, Vector )
+type alias Entrance =
+    ( EntranceType, Vector )
 
 
-type alias Doors =
-    List Door
+type alias Entrances =
+    List Entrance
 
 
 type alias Wall =
@@ -47,7 +47,7 @@ type alias RoomSize =
 
 
 type alias Room =
-    { doors : List Door
+    { entrances : Entrances
     , walls : List Walls
     , floors : Floors
     , corners : Walls

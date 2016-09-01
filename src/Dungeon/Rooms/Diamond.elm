@@ -1,7 +1,7 @@
 module Dungeon.Rooms.Diamond exposing (..)
 
 {-|
-    Diamond rooms looks like this with potential doors on it's single flat wall
+    Diamond rooms looks like this with potential entrances on it's single flat wall
     and cornices around the flat wall.
 
     Diamonds have a minimum size of 5 and their dimensions must
@@ -53,8 +53,7 @@ type alias RoomSize =
     Int
 
 
-{-| Diamons have 4 corners which are also the only walls that can support doors.
-    For a
+{-| Diamons have 4 corners which are also the only walls that can support entrancess.
 -}
 walls : Dimension -> List Walls
 walls dimension =
@@ -108,7 +107,7 @@ floors dimension =
             ]
 
 
-{-| For a diagonal room, the corners are the diagonal walls. They cannot have doors.
+{-| For a diagonal room, the corners are the diagonal walls. They cannot have entrances.
     To calculate the diagonal positions, picture a diamond on a cartesian plane
     with the diamond being in the +x, -y quadrant (screen coords)
 -}

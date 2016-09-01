@@ -50,15 +50,18 @@ update msg model =
         case msg of
             GenerateMap ->
                 let
-                    dungeonModelGen =
-                        model.dungeonSteps
-                            |> List.head
-                            |> Maybe.withDefault DungeonGenerator.init
+                    latestDungeonModel =
+                        List.head model.dungeonSteps
 
-                    dungeonModelGen' =
-                        dungeonModelGen `andThen` DungeonGenerator.step
+                    dungeonGenerator =
+                        case latestDungeonModel of
+                            Just model ->
+                                DungeonGenerator.step model
+
+                            Nothing ->
+                                DungeonGenerator.init
                 in
-                    ( model, Random.generate Dungeon dungeonModelGen' )
+                    ( model, Random.generate Dungeon dungeonGenerator )
 
             Dungeon dungeonModel ->
                 let
@@ -117,7 +120,7 @@ view model =
         div []
             [ div []
                 [ --roomSizeView model,
-                  button [ class "ui button", onClick GenerateMap ] [ text "Generate Dungeon" ]
+                  button [ class "ui button", onClick GenerateMap ] [ text "Step" ]
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]

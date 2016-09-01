@@ -182,16 +182,16 @@ wallSampler walls =
                 |> Random.map (Maybe.withDefault wall)
 
 
-addDoors :
+addEntrances :
     Int
-    -> ( List Walls, List Walls, List Door )
-    -> Generator ( List Walls, List Door )
-addDoors nDoors ( walls, fullWalls, doors ) =
+    -> ( List Walls, List Walls, Entrances )
+    -> Generator ( List Walls, Entrances )
+addEntrances nEntrances ( walls, fullWalls, doors ) =
     let
         createGenerator =
             constant ( walls ++ fullWalls, doors )
     in
-        case ( nDoors, walls ) of
+        case ( nEntrances, walls ) of
             ( 0, _ ) ->
                 createGenerator
 
@@ -206,23 +206,23 @@ addDoors nDoors ( walls, fullWalls, doors ) =
                     generateWall =
                         wallSampler wall
 
-                    wallWithoutDoor door =
+                    wallWithoutEntrance door =
                         List.filter ((/=) door) wall
 
                     recurse =
                         \(( _, pos ) as door) ->
-                            addDoors (n - 1)
-                                ( restOfWalls ++ [ wallWithoutDoor pos ]
+                            addEntrances (n - 1)
+                                ( restOfWalls ++ [ wallWithoutEntrance pos ]
                                 , fullWalls
                                 , door :: doors
                                 )
                 in
-                    (wallToDoor generateWall)
+                    (wallToEntrance generateWall)
                         `andThen` recurse
 
 
-wallToDoor : Generator Wall -> Generator Door
-wallToDoor wallGen =
+wallToEntrance : Generator Wall -> Generator Entrance
+wallToEntrance wallGen =
     Random.map (\pos -> ( Door, pos )) wallGen
 
 

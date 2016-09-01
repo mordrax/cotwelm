@@ -1,9 +1,9 @@
-module Dungeon.Room exposing (generate, generateDoor)
+module Dungeon.Room exposing (generate, generateEntrance)
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
     all random parameters such as the type/size of room generated.
 
-    Generated rooms have a list of walls, floors and doors. These lists are just a
+    Generated rooms have a list of walls, floors and entrances. These lists are just a
     list of 2D tuples. It is up to the caller to then convert these types.
 -}
 
@@ -27,7 +27,7 @@ import Dungeon.Rooms.DeadEnd as DeadEnd exposing (..)
 
 init : Room
 init =
-    { doors = [ ( Door, ( 0, 0 ) ) ]
+    { entrances = [ ( Door, ( 0, 0 ) ) ]
     , walls = []
     , floors = []
     , corners = [ ( 0, 0 ) ]
@@ -53,13 +53,13 @@ generate model =
 {-| Add a door to the room using one of the room's remaining walls.
 It also reports the door that just got added)
 -}
-generateDoor : Room -> Generator ( Room, Door )
-generateDoor ({ walls, doors } as room) =
+generateEntrance : Room -> Generator ( Room, Entrance )
+generateEntrance ({ walls, entrances } as room) =
     let
         toReturn ( door, walls ) =
-            ( { room | doors = door :: doors, walls = walls }, door )
+            ( { room | entrances = door :: entrances, walls = walls }, door )
     in
-        generateDoorHelper walls
+        generateEntranceHelper walls
             |> Random.map toReturn
 
 
@@ -81,8 +81,8 @@ headOfWalls walls =
         |> Maybe.withDefault ( 0, 0 )
 
 
-generateDoorHelper : List Walls -> Generator ( Door, List Walls )
-generateDoorHelper walls =
+generateEntranceHelper : List Walls -> Generator ( Entrance, List Walls )
+generateEntranceHelper walls =
     let
         doorPosition walls =
             headOfWalls walls
@@ -97,13 +97,13 @@ generateDoorHelper walls =
 
 
 doorsGenerator : Room -> Generator Room
-doorsGenerator ({ walls, doors } as room) =
+doorsGenerator ({ walls, entrances } as room) =
     let
         wallsDoorsGen =
-            Config.addDoors 4 ( walls, [], [] )
+            Config.addEntrances 4 ( walls, [], [] )
 
         room' =
-            \( walls, doors ) -> { room | walls = walls, doors = doors }
+            \( walls, entrances ) -> { room | walls = walls, entrances = entrances }
     in
         Random.map room' wallsDoorsGen
 

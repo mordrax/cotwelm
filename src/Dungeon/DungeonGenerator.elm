@@ -31,8 +31,8 @@ type alias ActiveRooms =
     List ActiveRoom
 
 
-type alias CorridorPoints =
-    List CorridorPoint
+type alias ActiveCorridors =
+    List ActiveCorridor
 
 
 type alias Corridors =
@@ -45,7 +45,7 @@ type alias Corridors =
 
 
 type alias ActiveRoom =
-    ( DungeonRoom, Doors )
+    ( DungeonRoom, Entrances )
 
 
 type alias ActiveCorridor =
@@ -58,13 +58,9 @@ type alias ActiveCorridor =
 
 type alias Corridor =
     { points : List Vector
-    , start : Door
-    , end : Door
+    , start : Vector
+    , end : Vector
     }
-
-
-type alias CorridorPoint =
-    Vector
 
 
 type alias Model =
@@ -72,7 +68,7 @@ type alias Model =
     , rooms : DungeonRooms
     , corridors : Corridors
     , activeRooms : ActiveRooms
-    , activeCorridors : Corridors
+    , activeCorridors : ActiveCorridors
     }
 
 
@@ -91,12 +87,12 @@ init =
         roomGenerator =
             Room.generate config
 
-        modelGenerator room =
+        modelGenerator dungeonRoom =
             constant
                 { config = config
                 , rooms = []
                 , corridors = []
-                , activeRooms = [ ( room, [] ) ]
+                , activeRooms = [ ( dungeonRoom, [] ) ]
                 , activeCorridors = []
                 }
     in
@@ -110,21 +106,43 @@ For a room this could be make doors if the room has no doors or for a corridor
 this could be create a dead end, link up to a room etc.
 -}
 step : Model -> Generator Model
-step model =
-    constant model
+step ({ config, rooms, activeRooms, activeCorridors } as model) =
+    case ( activeRooms, activeCorridors ) of
+        ( _, activeCorridor :: restOfCorridors ) ->
+            stepCorridor activeCorridor { model | activeCorridors = restOfCorridors }
+
+        ( activeRoom :: restOfRooms, _ ) ->
+            stepRoom activeRoom { model | activeRooms = restOfRooms }
+
+        ( [], [] ) ->
+            constant model
 
 
+{-| Given an active room, will try to generate doors if there aren't any, or make corridors if
+    there are active entrances to the room.
+-}
+stepRoom : ActiveRoom -> Model -> Generator Model
+stepRoom ( dungeonRoom, activeEntrances ) ({ config } as model) =
+    case ( dungeonRoom.room.entrances, activeEntrances ) of
+        ( [], [] ) ->
+            let
+                newEntranceGen =
+                    Room.generateEntrance dungeonRoom.room
 
---stepRooms model `andThen` stepCorridors
+                entranceToModel ( room', entrance' ) =
+                    { model
+                        | activeRooms =
+                            ( DungeonRoom dungeonRoom.position room', [ entrance' ] ) :: model.activeRooms
+                    }
+            in
+                Random.map entranceToModel newEntranceGen
+
+        _ ->
+            constant model
 
 
-stepRooms : Model -> Generator Model
-stepRooms model =
-    constant model
-
-
-stepCorridors : Model -> Generator Model
-stepCorridors model =
+stepCorridor : ActiveCorridor -> Model -> Generator Model
+stepCorridor corridor model =
     constant model
 
 
@@ -136,4 +154,73 @@ toDungeonRoom { dungeonSize } room =
 
 toTiles : Model -> Tiles
 toTiles model =
-    []
+    let
+        activeRoomsTiles =
+            model.activeRooms
+                |> List.map fst
+                |> roomsToTiles
+
+        dungeonRoomsTiles =
+            model.rooms
+                |> roomsToTiles
+    in
+        activeRoomsTiles ++ dungeonRoomsTiles
+
+
+
+--------------------
+-- Rooms to tiles --
+--------------------
+
+
+roomsToTiles : DungeonRooms -> Tiles
+roomsToTiles dungeonRooms =
+    let
+        roomsToTiles room =
+            roomToTiles room.room room.position
+
+        tiles =
+            dungeonRooms
+                |> List.map roomsToTiles
+                |> List.concat
+
+        defaultPosition =
+            \x -> Maybe.withDefault ( 0, 0 ) x
+    in
+        tiles
+
+
+roomToTiles : Room -> Vector -> List Tile
+roomToTiles room startPos =
+    let
+        toWorldPos localPos =
+            Vector.add startPos localPos
+
+        roomTileTypes =
+            [ ( Tile.DarkDgn, room.floors )
+            , ( Tile.Rock, List.concat room.walls )
+            , ( Tile.Rock, room.corners )
+            ]
+
+        makeTiles ( tileType, positions ) =
+            positions
+                |> List.map toWorldPos
+                |> List.map (\pos -> Tile.toTile pos tileType)
+
+        entranceToTiles ( entranceType, pos ) =
+            Tile.toTile (toWorldPos pos) (entranceToTileType entranceType)
+    in
+        List.concat (List.map makeTiles roomTileTypes)
+            ++ List.map entranceToTiles room.entrances
+
+
+entranceToTileType : EntranceType -> Tile.TileType
+entranceToTileType entranceType =
+    case entranceType of
+        Door ->
+            Tile.DoorClosed
+
+        --BrokenDoor ->
+        --    Tile.DoorBroken
+        NoDoor ->
+            Tile.DarkDgn
