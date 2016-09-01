@@ -60,38 +60,6 @@ generateDungeonRooms config num dungeonRooms =
                 `andThen` recurse
 
 
-roomsToTiles : DungeonRooms -> Tiles
-roomsToTiles dungeonRooms =
-    let
-        roomsToTiles room =
-            roomToTiles room.room room.position
-
-        tiles =
-            dungeonRooms
-                |> List.map roomsToTiles
-                |> List.concat
-
-        defaultPosition =
-            \x -> Maybe.withDefault ( 0, 0 ) x
-
-        --path =
-        --    connectRooms ( room1, defaultPosition <| List.head startPositions )
-        --        ( room2, defaultPosition <| List.head <| List.drop 1 startPositions )
-        --        map
-        --corridor =
-        --    case path of
-        --        Nothing ->
-        --            []
-        --        Just realPath ->
-        --            List.map (\x -> Tile.toTile x Tile.DarkDgn) realPath
-        --roomsWithCorridors =
-        --    Dict.fromList (List.map toKVPair (corridor ++ tiles))
-        --filledMap =
-        --    fillWithWall roomsWithCorridors
-    in
-        tiles
-
-
 fillWithWall : Dict Vector Tile -> List Tile
 fillWithWall partialMap =
     let
@@ -108,28 +76,6 @@ fillWithWall partialMap =
             .dungeonSize Config.init
     in
         List.Extra.lift2 addWallIfTileDoesNotExist [0..dungeonSize] [0..dungeonSize]
-
-
-roomToTiles : Room -> Vector -> List Tile
-roomToTiles room startPos =
-    let
-        toWorldPos localPos =
-            Vector.add startPos localPos
-
-        items =
-            [ ( Tile.DarkDgn, room.floors ), ( Tile.Rock, List.concat room.walls ), ( Tile.Rock, room.corners ) ]
-
-        makeTiles ( tileType, positions ) =
-            positions
-                |> List.map toWorldPos
-                |> List.map (\pos -> Tile.toTile pos tileType)
-    in
-        List.concat (List.map makeTiles items)
-            ++ List.map
-                (\( entrance, pos ) ->
-                    Tile.toTile (toWorldPos pos) (entranceToTileType entrance)
-                )
-                room.doors
 
 
 removeOverlaps : DungeonRooms -> Generator DungeonRooms
@@ -189,18 +135,6 @@ isOverlapping room rooms =
                         True
                     else
                         isOverlapping room xs
-
-
-entranceToTileType : Entrance -> Tile.TileType
-entranceToTileType entrance =
-    case entrance of
-        Door ->
-            Tile.DoorClosed
-
-        --BrokenDoor ->
-        --    Tile.DoorBroken
-        NoDoor ->
-            Tile.DarkDgn
 
 
 connectRooms : ( Room, Vector ) -> ( Room, Vector ) -> Dict Vector Tile -> Maybe AStar.Path
