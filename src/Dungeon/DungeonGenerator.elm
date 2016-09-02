@@ -6,18 +6,15 @@ module Dungeon.DungeonGenerator
         , Model
         )
 
-import AStar exposing (findPath, Position)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Dice exposing (..)
-import Dict exposing (..)
 import Dungeon.Room as Room exposing (..)
-import List.Extra exposing (lift2)
 import Random exposing (..)
 import Random.Extra exposing (..)
-import Set exposing (..)
 import Tile exposing (..)
 import Utils.Vector as Vector exposing (..)
+import Game.Maps as Maps exposing (..)
 
 
 -- sugar types
@@ -108,11 +105,11 @@ this could be create a dead end, link up to a room etc.
 step : Model -> Generator Model
 step ({ config, rooms, activeRooms, activeCorridors } as model) =
     case ( activeRooms, activeCorridors ) of
-        ( _, activeCorridor :: restOfCorridors ) ->
-            stepCorridor activeCorridor { model | activeCorridors = restOfCorridors }
+        ( _, c :: cs ) ->
+            stepCorridor c { model | activeCorridors = cs }
 
-        ( activeRoom :: restOfRooms, _ ) ->
-            stepRoom activeRoom { model | activeRooms = restOfRooms }
+        ( r :: rs, _ ) ->
+            stepRoom r { model | activeRooms = rs }
 
         ( [], [] ) ->
             constant model
@@ -122,23 +119,61 @@ step ({ config, rooms, activeRooms, activeCorridors } as model) =
     there are active entrances to the room.
 -}
 stepRoom : ActiveRoom -> Model -> Generator Model
-stepRoom ( dungeonRoom, activeEntrances ) ({ config } as model) =
-    case ( dungeonRoom.room.entrances, activeEntrances ) of
-        ( [], [] ) ->
-            let
-                newEntranceGen =
-                    Room.generateEntrance dungeonRoom.room
+stepRoom (( dungeonRoom, activeEntrances ) as activeRoom) ({ config } as model) =
+    let
+        noChange =
+            constant { model | activeRooms = activeRoom :: model.activeRooms }
+    in
+        case activeEntrances of
+            [] ->
+                if List.length dungeonRoom.room.entrances >= config.maxEntrances then
+                    noChange
+                else
+                    generateEntranceForModel dungeonRoom model
 
-                entranceToModel ( room', entrance' ) =
-                    { model
-                        | activeRooms =
-                            ( DungeonRoom dungeonRoom.position room', [ entrance' ] ) :: model.activeRooms
-                    }
-            in
-                Random.map entranceToModel newEntranceGen
+            e :: es ->
+                generateCorridor e ( dungeonRoom, es ) model
 
-        _ ->
-            constant model
+
+generateEntranceForModel : DungeonRoom -> Model -> Generator Model
+generateEntranceForModel dungeonRoom model =
+    let
+        entranceGenerator =
+            Room.generateEntrance dungeonRoom.room
+
+        entranceToModel ( room', entrance' ) =
+            { model
+                | activeRooms =
+                    ( DungeonRoom dungeonRoom.position room', [ entrance' ] ) :: model.activeRooms
+            }
+    in
+        Random.map entranceToModel entranceGenerator
+
+
+generateCorridor : Entrance -> ActiveRoom -> Model -> Generator Model
+generateCorridor (( entranceType, position ) as entrance) ( dungeonRoom, entrances ) model =
+    let
+        map =
+            model
+                |> toTiles
+                |> Maps.fromTiles
+
+        neighbours =
+            Maps.tileNeighbours map position
+
+        isBlocked pos =
+            Maps.getTile map pos == Nothing
+    in
+        case neighbours of
+            --( Nothing, _, _, _ ) ->
+            --    [snd position .. 0]
+            _ ->
+                constant { model | activeRooms = ( dungeonRoom, entrance :: entrances ) :: model.activeRooms }
+
+
+dig : Vector -> Vector -> Model -> Generator Model
+dig direction start model =
+    constant model
 
 
 stepCorridor : ActiveCorridor -> Model -> Generator Model

@@ -28,6 +28,7 @@ type alias Model =
     , roomsConfig : RoomsConfig
     , nRooms : Int
     , mapScale : Float
+    , maxEntrances : Int
     }
 
 
@@ -74,6 +75,7 @@ init =
         }
     , nRooms = 50
     , mapScale = 0.2
+    , maxEntrances = 4
     }
 
 

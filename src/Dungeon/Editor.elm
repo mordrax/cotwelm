@@ -15,7 +15,6 @@ import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 
 -- libs
 
-import Tile exposing (..)
 import Dict exposing (..)
 import Random exposing (..)
 

@@ -12,6 +12,8 @@ module Game.Maps
         , currentAreaMap
         , getASCIIMap
         , getBuildings
+        , getTile
+        , tileNeighbours
         )
 
 {-| Handles rendering of all the static/dynamic game areas
@@ -141,7 +143,7 @@ draw map scale =
             toTiles map
 
         toHtml tile =
-            Tile.scaledView tile scale (neighbours tile)
+            Tile.scaledView tile scale (neighbours tile.position)
     in
         List.map toHtml mapTiles
 
@@ -149,6 +151,11 @@ draw map scale =
 toTiles : Map -> List Tile
 toTiles =
     Dict.toList >> List.map snd
+
+
+getTile : Map -> Vector -> Maybe Tile
+getTile map pos =
+    Dict.get pos map
 
 
 {-| Get the map for the current area
@@ -256,11 +263,13 @@ dungeonLevelOneBuildings =
 ------------------------------------------
 
 
-tileNeighbours : Map -> Tile -> TileNeighbours
-tileNeighbours map { position } =
+{-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
+-}
+tileNeighbours : Map -> Vector -> TileNeighbours
+tileNeighbours map center =
     let
         addTilePosition =
-            Vector.add position
+            Vector.add center
 
         getTile =
             flip Dict.get map
