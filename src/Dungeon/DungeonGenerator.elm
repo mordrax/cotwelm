@@ -21,10 +21,6 @@ import Game.Maps as Maps exposing (..)
 -- sugar types
 
 
-type alias ActiveRooms =
-    List ActiveRoom
-
-
 type alias ActiveCorridors =
     List ActiveCorridor
 
@@ -36,10 +32,6 @@ type alias Corridors =
 
 -- active denotes those nodes which can expand to have more random stuff attached
 -- on each step of the algorithm
-
-
-type alias ActiveRoom =
-    ( Room, Entrances )
 
 
 type alias ActiveCorridor =
@@ -61,7 +53,7 @@ type alias Model =
     { config : Config.Model
     , rooms : Rooms
     , corridors : Corridors
-    , activeRooms : ActiveRooms
+    , activeRooms : Rooms
     , activeCorridors : ActiveCorridors
     }
 
@@ -80,7 +72,7 @@ init =
                 { config = config
                 , rooms = []
                 , corridors = []
-                , activeRooms = [ ( room, [] ) ]
+                , activeRooms = [ room ]
                 , activeCorridors = []
                 }
     in
@@ -108,42 +100,39 @@ step ({ config, rooms, activeRooms, activeCorridors } as model) =
 {-| Given an active room, will try to generate entrances if there aren't any,
     or make corridors if there are active entrances to the room.
 -}
-stepRoom : ActiveRoom -> Model -> Generator Model
-stepRoom (( room, activeEntrances ) as activeRoom) ({ config } as model) =
+stepRoom : Room -> Model -> Generator Model
+stepRoom room ({ config } as model) =
     let
         roomAtMaxEntrances =
-            False
-
-        --            List.length room.entrances >= config.maxEntrances
+            List.length (Room.entrances room) >= config.maxEntrances
     in
-        case activeEntrances of
+        case Room.unconnectedEntrances room of
             [] ->
                 if roomAtMaxEntrances then
                     constant { model | rooms = room :: model.rooms }
                 else
                     generateEntranceForModel room model
 
-            e :: es ->
-                generateCorridor e ( room, es ) model
+            e :: _ ->
+                generateCorridor e room model
 
 
 generateEntranceForModel : Room -> Model -> Generator Model
 generateEntranceForModel room model =
     let
-        entranceGenerator =
+        roomGen' =
             Room.generateEntrance room
 
-        entranceToModel ( room', entrance' ) =
+        entranceToModel room' =
             { model
-                | activeRooms =
-                    ( room', [ entrance' ] ) :: model.activeRooms
+                | activeRooms = room' :: model.activeRooms
             }
     in
-        Random.map entranceToModel entranceGenerator
+        Random.map entranceToModel roomGen'
 
 
-generateCorridor : Entrance -> ActiveRoom -> Model -> Generator Model
-generateCorridor entrance ( room, entrances ) model =
+generateCorridor : Entrance -> Room -> Model -> Generator Model
+generateCorridor entrance room model =
     let
         map =
             model
@@ -160,7 +149,7 @@ generateCorridor entrance ( room, entrances ) model =
             --( Nothing, _, _, _ ) ->
             --    [snd position .. 0]
             _ ->
-                constant { model | activeRooms = ( room, entrance :: entrances ) :: model.activeRooms }
+                constant { model | activeRooms = room :: model.activeRooms }
 
 
 dig : Vector -> Vector -> Model -> Generator Model
@@ -175,16 +164,6 @@ stepCorridor corridor model =
 
 toTiles : Model -> Tiles
 toTiles model =
-    let
-        activeRoomsTiles =
-            model.activeRooms
-                |> List.map fst
-                |> List.map Room.toTiles
-                |> List.concat
-
-        roomsTiles =
-            model.rooms
-                |> List.map Room.toTiles
-                |> List.concat
-    in
-        activeRoomsTiles ++ roomsTiles
+    (model.rooms ++ model.activeRooms)
+        |> List.map Room.toTiles
+        |> List.concat

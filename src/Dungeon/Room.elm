@@ -60,7 +60,7 @@ type alias Rooms =
 init : Room
 init =
     A
-        { entrances = [ Entrance.init Door Vector.zero ]
+        { entrances = []
         , walls = []
         , floors = []
         , corners = [ ( 0, 0 ) ]
@@ -90,15 +90,18 @@ generate config =
 {-| Add a door to the room using one of the room's remaining walls.
 It also reports the door that just got added)
 -}
-generateEntrance : Room -> Generator ( Room, Entrance )
+generateEntrance : Room -> Generator Room
 generateEntrance (A ({ walls, entrances } as model)) =
     let
-        toReturn ( door, walls ) =
-            ( A { model | entrances = door :: entrances, walls = walls }, door )
+        _ =
+            Debug.log "entrances" entrances
+
+        toModel ( entrance, walls ) =
+            A { model | entrances = entrance :: entrances, walls = walls }
     in
         walls
             |> generateEntranceHelper
-            |> Random.map toReturn
+            |> Random.map toModel
 
 
 toTiles : Room -> Tiles
