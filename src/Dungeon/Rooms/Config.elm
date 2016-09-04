@@ -13,6 +13,7 @@ import Random exposing (..)
 import Random.Array exposing (..)
 import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
+import Dungeon.Entrance as Entrance exposing (..)
 
 
 -- html
@@ -188,10 +189,10 @@ addEntrances :
     Int
     -> ( List Walls, List Walls, Entrances )
     -> Generator ( List Walls, Entrances )
-addEntrances nEntrances ( walls, fullWalls, doors ) =
+addEntrances nEntrances ( walls, fullWalls, entrances ) =
     let
         createGenerator =
-            constant ( walls ++ fullWalls, doors )
+            constant ( walls ++ fullWalls, entrances )
     in
         case ( nEntrances, walls ) of
             ( 0, _ ) ->
@@ -208,16 +209,15 @@ addEntrances nEntrances ( walls, fullWalls, doors ) =
                     generateWall =
                         wallSampler wall
 
-                    wallWithoutEntrance door =
-                        List.filter ((/=) door) wall
+                    wallWithoutEntrance entrance =
+                        List.filter ((/=) (Entrance.position entrance)) wall
 
-                    recurse =
-                        \(( _, pos ) as door) ->
-                            addEntrances (n - 1)
-                                ( restOfWalls ++ [ wallWithoutEntrance pos ]
-                                , fullWalls
-                                , door :: doors
-                                )
+                    recurse entrance =
+                        addEntrances (n - 1)
+                            ( restOfWalls ++ [ wallWithoutEntrance entrance ]
+                            , fullWalls
+                            , entrance :: entrances
+                            )
                 in
                     (wallToEntrance generateWall)
                         `andThen` recurse
@@ -225,7 +225,7 @@ addEntrances nEntrances ( walls, fullWalls, doors ) =
 
 wallToEntrance : Generator Wall -> Generator Entrance
 wallToEntrance wallGen =
-    Random.map (\pos -> ( Door, pos )) wallGen
+    Random.map (Entrance.init Door) wallGen
 
 
 
