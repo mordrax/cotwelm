@@ -22,10 +22,6 @@ import Game.Maps as Maps exposing (..)
 -- sugar types
 
 
-type alias DungeonRooms =
-    List DungeonRoom
-
-
 type alias ActiveRooms =
     List ActiveRoom
 
@@ -71,12 +67,6 @@ type alias Model =
     }
 
 
-type alias DungeonRoom =
-    { position : Vector
-    , room : Room
-    }
-
-
 init : Generator Model
 init =
     let
@@ -96,7 +86,7 @@ init =
                 }
     in
         (Room.generate config)
-            `andThen` (toDungeonRoom config)
+            `andThen` (DungeonRoom.generate config)
             `andThen` modelGenerator
 
 
@@ -124,7 +114,8 @@ stepRoom : ActiveRoom -> Model -> Generator Model
 stepRoom (( dungeonRoom, activeEntrances ) as activeRoom) ({ config } as model) =
     let
         roomAtMaxEntrances =
-            List.length dungeonRoom.room.entrances >= config.maxEntrances
+            False
+        --            List.length dungeonRoom.room.entrances >= config.maxEntrances
     in
         case activeEntrances of
             [] ->
@@ -141,12 +132,12 @@ generateEntranceForModel : DungeonRoom -> Model -> Generator Model
 generateEntranceForModel dungeonRoom model =
     let
         entranceGenerator =
-            Room.generateEntrance dungeonRoom.room
+            DungeonRoom.generateEntrance dungeonRoom
 
-        entranceToModel ( room', entrance' ) =
+        entranceToModel ( dungeonRoom', entrance' ) =
             { model
                 | activeRooms =
-                    ( DungeonRoom dungeonRoom.position room', [ entrance' ] ) :: model.activeRooms
+                    ( dungeonRoom', [ entrance' ] ) :: model.activeRooms
             }
     in
         Random.map entranceToModel entranceGenerator
@@ -183,50 +174,18 @@ stepCorridor corridor model =
     constant model
 
 
-toDungeonRoom : Config.Model -> Room -> Generator DungeonRoom
-toDungeonRoom { dungeonSize } room =
-    (Dice.d2d dungeonSize dungeonSize)
-        `andThen` (\pos -> Random.Extra.constant (DungeonRoom pos room))
-
-
 toTiles : Model -> Tiles
 toTiles model =
     let
         activeRoomsTiles =
             model.activeRooms
                 |> List.map fst
-                |> roomsToTiles
+                |> List.map DungeonRoom.roomToTiles
+                |> List.concat
 
         dungeonRoomsTiles =
             model.rooms
-                |> roomsToTiles
+                |> List.map DungeonRoom.roomToTiles
+                |> List.concat
     in
         activeRoomsTiles ++ dungeonRoomsTiles
-
-
-
---------------------
--- Rooms to tiles --
---------------------
-
-
-roomsToTiles : DungeonRooms -> Tiles
-roomsToTiles dungeonRooms =
-    let
-        roomsToTiles dungeonRoom =
-            roomToTiles dungeonRoom
-
-        tiles =
-            dungeonRooms
-                |> List.map roomsToTiles
-                |> List.concat
-
-        defaultPosition =
-            \x -> Maybe.withDefault ( 0, 0 ) x
-    in
-        tiles
-
-
-
-
-

@@ -29,10 +29,6 @@ type alias Entrances =
     List Entrance
 
 
-type Msg
-    = NoOp
-
-
 init : EntranceType -> Vector -> Entrance
 init t v =
     A ( t, v )
