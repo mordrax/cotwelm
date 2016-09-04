@@ -1,8 +1,12 @@
 module Dungeon.Room
     exposing
-        ( generate
+        ( Room
+        , Rooms
+        , generate
         , generateEntrance
         , toTiles
+        , entrances
+        , unconnectedEntrances
         )
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
@@ -34,40 +38,63 @@ import Dungeon.Rooms.DiagonalSquares as DiagonalSquares exposing (..)
 import Dungeon.Rooms.DeadEnd as DeadEnd exposing (..)
 
 
-init : Room
-init =
-    { entrances = [ Entrance.init Door Vector.zero ]
-    , walls = []
-    , floors = []
-    , corners = [ ( 0, 0 ) ]
-    , roomType = DeadEnd
-    , dimension = ( 1, 1 )
-    , position = Vector.zero
+type alias Model =
+    { entrances : Entrances
+    , walls : List Walls
+    , floors : Floors
+    , corners : Walls
+    , roomType : RoomType
+    , dimension : Dimension
+    , position : Vector
     }
 
 
+type Room
+    = A Model
+
+
+type alias Rooms =
+    List Room
+
+
+init : Room
+init =
+    A
+        { entrances = [ Entrance.init Door Vector.zero ]
+        , walls = []
+        , floors = []
+        , corners = [ ( 0, 0 ) ]
+        , roomType = DeadEnd
+        , dimension = ( 1, 1 )
+        , position = Vector.zero
+        }
+
+
 generate : Config.Model -> Generator Room
-generate model =
+generate config =
     let
-        roomTypeToRoom roomType =
-            constant { init | roomType = roomType }
+        (A model) =
+            init
+
+        toRoomGenerator model =
+            constant (A model)
     in
-        Config.roomTypeGenerator model
-            `andThen` roomTypeToRoom
-            `andThen` roomSizeGenerator model
+        roomTypeGenerator config model
+            `andThen` roomSizeGenerator config
             `andThen` wallsGenerator
             `andThen` floorsGenerator
             `andThen` cornersGenerator
+            `andThen` toRoomGenerator
 
 
 {-| Add a door to the room using one of the room's remaining walls.
 It also reports the door that just got added)
 -}
 generateEntrance : Room -> Generator ( Room, Entrance )
-generateEntrance ({ walls, entrances } as room) =
+generateEntrance (A ({ walls, entrances } as model)) =
     let
         toReturn ( door, walls ) =
-            ( { room | entrances = door :: entrances, walls = walls }, door )
+            ( A { model | entrances = door :: entrances, walls = walls }, door )
     in
         walls
             |> generateEntranceHelper
@@ -75,7 +102,7 @@ generateEntrance ({ walls, entrances } as room) =
 
 
 toTiles : Room -> Tiles
-toTiles { floors, walls, entrances, corners, position } =
+toTiles (A { floors, walls, entrances, corners, position }) =
     let
         toWorldPos localPos =
             Vector.add position localPos
@@ -95,20 +122,36 @@ toTiles { floors, walls, entrances, corners, position } =
             ++ List.map Entrance.toTile entrances
 
 
+entrances : Room -> Entrances
+entrances (A { entrances }) =
+    entrances
+
+
+unconnectedEntrances : Room -> Entrances
+unconnectedEntrances (A { entrances }) =
+    entrances
+
+
 
 -- Privates
 
 
-positionGenerator : Config.Model -> Room -> Generator Room
-positionGenerator { dungeonSize } room =
+roomTypeGenerator : Config.Model -> Model -> Generator Model
+roomTypeGenerator config model =
+    Config.roomTypeGenerator config
+        `andThen` (\roomType' -> constant { model | roomType = roomType' })
+
+
+positionGenerator : Config.Model -> Model -> Generator Model
+positionGenerator { dungeonSize } model =
     (Dice.d2d dungeonSize dungeonSize)
-        `andThen` (\position' -> constant { room | position = position' })
+        `andThen` (\position' -> constant { model | position = position' })
 
 
-roomSizeGenerator : Config.Model -> Room -> Generator Room
-roomSizeGenerator config ({ roomType } as room) =
+roomSizeGenerator : Config.Model -> Model -> Generator Model
+roomSizeGenerator config ({ roomType } as model) =
     Config.roomSizeGenerator roomType config
-        `andThen` (\roomSize -> constant { room | dimension = ( roomSize, roomSize ) })
+        `andThen` (\roomSize -> constant { model | dimension = ( roomSize, roomSize ) })
 
 
 headOfWalls : List Walls -> Wall
@@ -134,43 +177,43 @@ generateEntranceHelper walls =
             `andThen` (makeHeadADoor >> constant)
 
 
-doorsGenerator : Room -> Generator Room
-doorsGenerator ({ walls, entrances } as room) =
+doorsGenerator : Model -> Generator Model
+doorsGenerator ({ walls, entrances } as model) =
     let
         wallsDoorsGen =
             Config.addEntrances 4 ( walls, [], [] )
 
-        room' =
-            \( walls, entrances ) -> { room | walls = walls, entrances = entrances }
+        model' =
+            \( walls, entrances ) -> { model | walls = walls, entrances = entrances }
     in
-        Random.map room' wallsDoorsGen
+        Random.map model' wallsDoorsGen
 
 
-wallsGenerator : Room -> Generator Room
-wallsGenerator ({ roomType, dimension } as room) =
+wallsGenerator : Model -> Generator Model
+wallsGenerator ({ roomType, dimension } as model) =
     let
         makeWalls =
             (templates roomType).makeWalls
     in
-        constant { room | walls = makeWalls dimension }
+        constant { model | walls = makeWalls dimension }
 
 
-floorsGenerator : Room -> Generator Room
-floorsGenerator ({ roomType, dimension } as room) =
+floorsGenerator : Model -> Generator Model
+floorsGenerator ({ roomType, dimension } as model) =
     let
         makeFloors =
             (templates roomType).makeFloors
     in
-        constant { room | floors = makeFloors dimension }
+        constant { model | floors = makeFloors dimension }
 
 
-cornersGenerator : Room -> Generator Room
-cornersGenerator ({ roomType, dimension } as room) =
+cornersGenerator : Model -> Generator Model
+cornersGenerator ({ roomType, dimension } as model) =
     let
         makeCorners =
             (templates roomType).makeCorners
     in
-        constant { room | corners = makeCorners dimension }
+        constant { model | corners = makeCorners dimension }
 
 
 templates : RoomType -> RoomTemplate

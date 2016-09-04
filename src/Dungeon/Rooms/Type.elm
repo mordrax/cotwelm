@@ -34,19 +34,6 @@ type alias RoomSize =
     Int
 
 
-type alias Room =
-    { entrances : Entrances
-    , walls : List Walls
-    , floors : Floors
-    , corners : Walls
-    , roomType : RoomType
-    , dimension : Dimension
-    , position : Vector
-    }
-
-
-type alias Rooms =
-    List Room
 
 
 type alias RoomTemplate =
