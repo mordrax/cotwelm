@@ -1,4 +1,9 @@
-module Dungeon.Room exposing (generate, generateEntrance)
+module Dungeon.Room
+    exposing
+        ( generate
+        , generateEntrance
+        , toTiles
+        )
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
     all random parameters such as the type/size of room generated.
@@ -14,6 +19,9 @@ import Dungeon.Rooms.Type exposing (..)
 import Lodash exposing (..)
 import Tile exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
+import Utils.Vector as Vector exposing (..)
+import Dice exposing (..)
+
 
 -- room types
 
@@ -28,20 +36,21 @@ import Dungeon.Rooms.DeadEnd as DeadEnd exposing (..)
 
 init : Room
 init =
-    { entrances = [ Entrance.init Door ( 0, 0 ) ]
+    { entrances = [ Entrance.init Door Vector.zero ]
     , walls = []
     , floors = []
     , corners = [ ( 0, 0 ) ]
     , roomType = DeadEnd
     , dimension = ( 1, 1 )
+    , position = Vector.zero
     }
 
 
 generate : Config.Model -> Generator Room
 generate model =
     let
-        roomTypeToRoom =
-            (\roomType -> constant <| Room [] [] [] [] roomType ( 0, 0 ))
+        roomTypeToRoom roomType =
+            constant { init | roomType = roomType }
     in
         Config.roomTypeGenerator model
             `andThen` roomTypeToRoom
@@ -65,8 +74,35 @@ generateEntrance ({ walls, entrances } as room) =
             |> Random.map toReturn
 
 
+toTiles : Room -> Tiles
+toTiles { floors, walls, entrances, corners, position } =
+    let
+        toWorldPos localPos =
+            Vector.add position localPos
+
+        roomTileTypes =
+            [ ( Tile.DarkDgn, floors )
+            , ( Tile.Rock, List.concat walls )
+            , ( Tile.Rock, corners )
+            ]
+
+        makeTiles ( tileType, positions ) =
+            positions
+                |> List.map toWorldPos
+                |> List.map (\pos -> Tile.toTile pos tileType)
+    in
+        List.concat (List.map makeTiles roomTileTypes)
+            ++ List.map Entrance.toTile entrances
+
+
 
 -- Privates
+
+
+positionGenerator : Config.Model -> Room -> Generator Room
+positionGenerator { dungeonSize } room =
+    (Dice.d2d dungeonSize dungeonSize)
+        `andThen` (\position' -> constant { room | position = position' })
 
 
 roomSizeGenerator : Config.Model -> Room -> Generator Room
@@ -92,7 +128,7 @@ generateEntranceHelper walls =
         makeHeadADoor walls =
             walls
                 |> headOfWalls
-                |> (\x -> ( Entrance.init Door x , List.map (without x) walls ))
+                |> (\x -> ( Entrance.init Door x, List.map (without x) walls ))
     in
         shuffle walls
             `andThen` (makeHeadADoor >> constant)

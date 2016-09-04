@@ -41,6 +41,7 @@ type alias Room =
     , corners : Walls
     , roomType : RoomType
     , dimension : Dimension
+    , position : Vector
     }
 
 

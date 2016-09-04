@@ -11,7 +11,6 @@ import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Dice exposing (..)
 import Dungeon.Room as Room exposing (..)
-import Dungeon.DungeonRoom as DungeonRoom exposing (..)
 import Random exposing (..)
 import Random.Extra exposing (..)
 import Tile exposing (..)
@@ -40,7 +39,7 @@ type alias Corridors =
 
 
 type alias ActiveRoom =
-    ( DungeonRoom, Entrances )
+    ( Room, Entrances )
 
 
 type alias ActiveCorridor =
@@ -60,7 +59,7 @@ type alias Corridor =
 
 type alias Model =
     { config : Config.Model
-    , rooms : DungeonRooms
+    , rooms : Rooms
     , corridors : Corridors
     , activeRooms : ActiveRooms
     , activeCorridors : ActiveCorridors
@@ -76,17 +75,16 @@ init =
         roomGenerator =
             Room.generate config
 
-        modelGenerator dungeonRoom =
+        modelGenerator room =
             constant
                 { config = config
                 , rooms = []
                 , corridors = []
-                , activeRooms = [ ( dungeonRoom, [] ) ]
+                , activeRooms = [ ( room, [] ) ]
                 , activeCorridors = []
                 }
     in
         (Room.generate config)
-            `andThen` (DungeonRoom.generate config)
             `andThen` modelGenerator
 
 
@@ -111,40 +109,41 @@ step ({ config, rooms, activeRooms, activeCorridors } as model) =
     or make corridors if there are active entrances to the room.
 -}
 stepRoom : ActiveRoom -> Model -> Generator Model
-stepRoom (( dungeonRoom, activeEntrances ) as activeRoom) ({ config } as model) =
+stepRoom (( room, activeEntrances ) as activeRoom) ({ config } as model) =
     let
         roomAtMaxEntrances =
             False
-        --            List.length dungeonRoom.room.entrances >= config.maxEntrances
+
+        --            List.length room.entrances >= config.maxEntrances
     in
         case activeEntrances of
             [] ->
                 if roomAtMaxEntrances then
-                    constant { model | rooms = dungeonRoom :: model.rooms }
+                    constant { model | rooms = room :: model.rooms }
                 else
-                    generateEntranceForModel dungeonRoom model
+                    generateEntranceForModel room model
 
             e :: es ->
-                generateCorridor e ( dungeonRoom, es ) model
+                generateCorridor e ( room, es ) model
 
 
-generateEntranceForModel : DungeonRoom -> Model -> Generator Model
-generateEntranceForModel dungeonRoom model =
+generateEntranceForModel : Room -> Model -> Generator Model
+generateEntranceForModel room model =
     let
         entranceGenerator =
-            DungeonRoom.generateEntrance dungeonRoom
+            Room.generateEntrance room
 
-        entranceToModel ( dungeonRoom', entrance' ) =
+        entranceToModel ( room', entrance' ) =
             { model
                 | activeRooms =
-                    ( dungeonRoom', [ entrance' ] ) :: model.activeRooms
+                    ( room', [ entrance' ] ) :: model.activeRooms
             }
     in
         Random.map entranceToModel entranceGenerator
 
 
 generateCorridor : Entrance -> ActiveRoom -> Model -> Generator Model
-generateCorridor entrance ( dungeonRoom, entrances ) model =
+generateCorridor entrance ( room, entrances ) model =
     let
         map =
             model
@@ -161,7 +160,7 @@ generateCorridor entrance ( dungeonRoom, entrances ) model =
             --( Nothing, _, _, _ ) ->
             --    [snd position .. 0]
             _ ->
-                constant { model | activeRooms = ( dungeonRoom, entrance :: entrances ) :: model.activeRooms }
+                constant { model | activeRooms = ( room, entrance :: entrances ) :: model.activeRooms }
 
 
 dig : Vector -> Vector -> Model -> Generator Model
@@ -180,12 +179,12 @@ toTiles model =
         activeRoomsTiles =
             model.activeRooms
                 |> List.map fst
-                |> List.map DungeonRoom.roomToTiles
+                |> List.map Room.toTiles
                 |> List.concat
 
-        dungeonRoomsTiles =
+        roomsTiles =
             model.rooms
-                |> List.map DungeonRoom.roomToTiles
+                |> List.map Room.toTiles
                 |> List.concat
     in
-        activeRoomsTiles ++ dungeonRoomsTiles
+        activeRoomsTiles ++ roomsTiles
