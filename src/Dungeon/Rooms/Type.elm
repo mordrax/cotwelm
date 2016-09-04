@@ -1,6 +1,7 @@
 module Dungeon.Rooms.Type exposing (..)
 
 import Utils.Vector exposing (..)
+import Dungeon.Entrance exposing (..)
 
 
 type RoomType
@@ -15,19 +16,6 @@ type RoomType
 
 type alias Dimension =
     Vector
-
-
-type EntranceType
-    = Door
-    | NoDoor
-
-
-type alias Entrance =
-    ( EntranceType, Vector )
-
-
-type alias Entrances =
-    List Entrance
 
 
 type alias Wall =

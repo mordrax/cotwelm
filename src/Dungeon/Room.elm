@@ -12,7 +12,8 @@ import Random exposing (andThen, Generator)
 import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Lodash exposing (..)
-
+import Tile exposing (..)
+import Dungeon.Entrance as Entrance exposing (..)
 
 -- room types
 
@@ -27,7 +28,7 @@ import Dungeon.Rooms.DeadEnd as DeadEnd exposing (..)
 
 init : Room
 init =
-    { entrances = [ ( Door, ( 0, 0 ) ) ]
+    { entrances = [ Entrance.init Door ( 0, 0 ) ]
     , walls = []
     , floors = []
     , corners = [ ( 0, 0 ) ]
@@ -59,7 +60,8 @@ generateEntrance ({ walls, entrances } as room) =
         toReturn ( door, walls ) =
             ( { room | entrances = door :: entrances, walls = walls }, door )
     in
-        generateEntranceHelper walls
+        walls
+            |> generateEntranceHelper
             |> Random.map toReturn
 
 
@@ -90,7 +92,7 @@ generateEntranceHelper walls =
         makeHeadADoor walls =
             walls
                 |> headOfWalls
-                |> (\x -> ( ( Door, x ), List.map (without x) walls ))
+                |> (\x -> ( Entrance.init Door x , List.map (without x) walls ))
     in
         shuffle walls
             `andThen` (makeHeadADoor >> constant)

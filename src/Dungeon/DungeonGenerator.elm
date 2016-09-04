@@ -8,8 +8,10 @@ module Dungeon.DungeonGenerator
 
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.Rooms.Type exposing (..)
+import Dungeon.Entrance as Entrance exposing (..)
 import Dice exposing (..)
 import Dungeon.Room as Room exposing (..)
+import Dungeon.DungeonRoom as DungeonRoom exposing (..)
 import Random exposing (..)
 import Random.Extra exposing (..)
 import Tile exposing (..)
@@ -115,19 +117,19 @@ step ({ config, rooms, activeRooms, activeCorridors } as model) =
             constant model
 
 
-{-| Given an active room, will try to generate doors if there aren't any, or make corridors if
-    there are active entrances to the room.
+{-| Given an active room, will try to generate entrances if there aren't any,
+    or make corridors if there are active entrances to the room.
 -}
 stepRoom : ActiveRoom -> Model -> Generator Model
 stepRoom (( dungeonRoom, activeEntrances ) as activeRoom) ({ config } as model) =
     let
-        noChange =
-            constant { model | activeRooms = activeRoom :: model.activeRooms }
+        roomAtMaxEntrances =
+            List.length dungeonRoom.room.entrances >= config.maxEntrances
     in
         case activeEntrances of
             [] ->
-                if List.length dungeonRoom.room.entrances >= config.maxEntrances then
-                    noChange
+                if roomAtMaxEntrances then
+                    constant { model | rooms = dungeonRoom :: model.rooms }
                 else
                     generateEntranceForModel dungeonRoom model
 
@@ -151,7 +153,7 @@ generateEntranceForModel dungeonRoom model =
 
 
 generateCorridor : Entrance -> ActiveRoom -> Model -> Generator Model
-generateCorridor (( entranceType, position ) as entrance) ( dungeonRoom, entrances ) model =
+generateCorridor entrance ( dungeonRoom, entrances ) model =
     let
         map =
             model
@@ -159,7 +161,7 @@ generateCorridor (( entranceType, position ) as entrance) ( dungeonRoom, entranc
                 |> Maps.fromTiles
 
         neighbours =
-            Maps.tileNeighbours map position
+            Maps.tileNeighbours map (Entrance.position entrance)
 
         isBlocked pos =
             Maps.getTile map pos == Nothing
@@ -211,8 +213,8 @@ toTiles model =
 roomsToTiles : DungeonRooms -> Tiles
 roomsToTiles dungeonRooms =
     let
-        roomsToTiles room =
-            roomToTiles room.room room.position
+        roomsToTiles dungeonRoom =
+            roomToTiles dungeonRoom
 
         tiles =
             dungeonRooms
@@ -225,37 +227,6 @@ roomsToTiles dungeonRooms =
         tiles
 
 
-roomToTiles : Room -> Vector -> List Tile
-roomToTiles room startPos =
-    let
-        toWorldPos localPos =
-            Vector.add startPos localPos
-
-        roomTileTypes =
-            [ ( Tile.DarkDgn, room.floors )
-            , ( Tile.Rock, List.concat room.walls )
-            , ( Tile.Rock, room.corners )
-            ]
-
-        makeTiles ( tileType, positions ) =
-            positions
-                |> List.map toWorldPos
-                |> List.map (\pos -> Tile.toTile pos tileType)
-
-        entranceToTiles ( entranceType, pos ) =
-            Tile.toTile (toWorldPos pos) (entranceToTileType entranceType)
-    in
-        List.concat (List.map makeTiles roomTileTypes)
-            ++ List.map entranceToTiles room.entrances
 
 
-entranceToTileType : EntranceType -> Tile.TileType
-entranceToTileType entranceType =
-    case entranceType of
-        Door ->
-            Tile.DoorClosed
 
-        --BrokenDoor ->
-        --    Tile.DoorBroken
-        NoDoor ->
-            Tile.DarkDgn
