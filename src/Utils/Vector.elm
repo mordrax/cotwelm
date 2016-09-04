@@ -13,6 +13,11 @@ type alias Vectors =
     List Vector
 
 
+zero : Vector
+zero =
+    ( 0, 0 )
+
+
 add : Vector -> Vector -> Vector
 add ( v1x, v1y ) ( v2x, v2y ) =
     ( v1x + v2x, v1y + v2y )
