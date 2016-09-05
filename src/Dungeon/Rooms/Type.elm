@@ -34,8 +34,6 @@ type alias RoomSize =
     Int
 
 
-
-
 type alias RoomTemplate =
     { makeWalls : Dimension -> List Walls
     , makeCorners : Dimension -> Walls
