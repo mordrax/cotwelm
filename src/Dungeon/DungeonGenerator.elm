@@ -9,8 +9,9 @@ module Dungeon.DungeonGenerator
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
-import Dice exposing (..)
+import Dungeon.Corridor as Corridor exposing (..)
 import Dungeon.Room as Room exposing (..)
+import Dice exposing (..)
 import Random exposing (..)
 import Random.Extra exposing (..)
 import Tile exposing (..)
@@ -18,35 +19,7 @@ import Utils.Vector as Vector exposing (..)
 import Game.Maps as Maps exposing (..)
 
 
--- sugar types
-
-
-type alias ActiveCorridors =
-    List ActiveCorridor
-
-
-type alias Corridors =
-    List Corridor
-
-
-
--- active denotes those nodes which can expand to have more random stuff attached
--- on each step of the algorithm
-
-
-type alias ActiveCorridor =
-    ( Corridor, Vectors )
-
-
-
 -- types
-
-
-type alias Corridor =
-    { points : List Vector
-    , start : Vector
-    , end : Vector
-    }
 
 
 type alias Model =
@@ -54,7 +27,7 @@ type alias Model =
     , rooms : Rooms
     , corridors : Corridors
     , activeRooms : Rooms
-    , activeCorridors : ActiveCorridors
+    , activeCorridors : Corridors
     }
 
 
@@ -134,30 +107,78 @@ generateEntranceForModel room model =
 generateCorridor : Entrance -> Room -> Model -> Generator Model
 generateCorridor entrance room model =
     let
-        map =
-            model
-                |> toTiles
-                |> Maps.fromTiles
+        start =
+            Vector.add (Entrance.position entrance) dir
 
-        neighbours =
-            Maps.tileNeighbours map (Entrance.position entrance)
+        dir =
+            Room.entranceFacing room entrance
 
         isBlocked pos =
-            Maps.getTile map pos == Nothing
+            atMapPos pos model /= Nothing
     in
-        case neighbours of
+        case prospector start dir model of
             --( Nothing, _, _, _ ) ->
             --    [snd position .. 0]
             _ ->
                 constant { model | activeRooms = room :: model.activeRooms }
 
 
-dig : Vector -> Vector -> Model -> Generator Model
-dig direction start model =
-    constant model
+atMapPos : Vector -> Model -> Maybe Tile
+atMapPos pos model =
+    let
+        map =
+            model
+                |> toTiles
+                |> Maps.fromTiles
+    in
+        Maps.getTile map pos
 
 
-stepCorridor : ActiveCorridor -> Model -> Generator Model
+type alias Direction =
+    Vector
+
+
+type Finding
+    = Room
+    | Corridor
+    | EdgeOfMap
+
+
+type alias ProspectResult =
+    ( Vector, Finding )
+
+
+prospector : Vector -> Vector -> Model -> ( ProspectResult, ProspectResult, ProspectResult )
+prospector start direction model =
+    let
+        oneStepAhead =
+            Vector.add start direction
+
+        --        leftPath = dig (oneStepAhead, oneStepAhead ) ??? model
+        --        rightPath = dig (oneStepAhead, oneStepAhead ) ??? model
+        straightAhead =
+            dig start direction model
+    in
+        --        (leftPath, straightAhead, rightPath)
+        ( straightAhead, straightAhead, straightAhead )
+
+
+dig : Vector -> Vector -> Model -> ProspectResult
+dig position direction model =
+    case atMapPos position model of
+        Nothing ->
+            dig (Vector.add position direction) direction model
+
+        Just tile ->
+            ( Vector.sub position direction, dungeonConstructAtPos position model )
+
+
+dungeonConstructAtPos : Vector -> Model -> Finding
+dungeonConstructAtPos pos model =
+    EdgeOfMap
+
+
+stepCorridor : Corridor -> Model -> Generator Model
 stepCorridor corridor model =
     constant model
 

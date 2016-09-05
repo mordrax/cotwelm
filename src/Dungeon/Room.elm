@@ -5,6 +5,7 @@ module Dungeon.Room
         , generate
         , generateEntrance
         , toTiles
+        , entranceFacing
         , entrances
         , unconnectedEntrances
         )
@@ -25,6 +26,7 @@ import Tile exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Dice exposing (..)
+import List exposing (..)
 
 
 -- room types
@@ -81,6 +83,7 @@ generate config =
     in
         roomTypeGenerator config model
             `andThen` roomSizeGenerator config
+            `andThen` positionGenerator config
             `andThen` wallsGenerator
             `andThen` floorsGenerator
             `andThen` cornersGenerator
@@ -91,16 +94,13 @@ generate config =
 It also reports the door that just got added)
 -}
 generateEntrance : Room -> Generator Room
-generateEntrance (A ({ walls, entrances } as model)) =
+generateEntrance (A ({ walls, entrances, position } as model)) =
     let
-        _ =
-            Debug.log "entrances" entrances
-
         toModel ( entrance, walls ) =
             A { model | entrances = entrance :: entrances, walls = walls }
     in
         walls
-            |> generateEntranceHelper
+            |> generateEntranceHelper position
             |> Random.map toModel
 
 
@@ -135,6 +135,38 @@ unconnectedEntrances (A { entrances }) =
     entrances
 
 
+entranceFacing : Room -> Entrance -> Vector
+entranceFacing (A { walls, floors, position }) entrance =
+    let
+        entrancePos =
+            entrance
+                |> Entrance.position
+                |> Vector.sub position
+
+        north =
+            ( 0, 1 )
+
+        east =
+            ( 1, 0 )
+
+        south =
+            ( 0, -1 )
+
+        west =
+            ( -1, 0 )
+    in
+        if List.member (Vector.add entrancePos north) floors then
+            south
+        else if List.member (Vector.add entrancePos south) floors then
+            north
+        else if List.member (Vector.add entrancePos east) floors then
+            west
+        else if List.member (Vector.add entrancePos west) floors then
+            east
+        else
+            north
+
+
 
 -- Privates
 
@@ -165,16 +197,19 @@ headOfWalls walls =
         |> Maybe.withDefault ( 0, 0 )
 
 
-generateEntranceHelper : List Walls -> Generator ( Entrance, List Walls )
-generateEntranceHelper walls =
+generateEntranceHelper : Vector -> List Walls -> Generator ( Entrance, List Walls )
+generateEntranceHelper topLeft walls =
     let
         doorPosition walls =
             headOfWalls walls
 
+        newEntrance pos =
+            Entrance.init Door (Vector.add pos topLeft)
+
         makeHeadADoor walls =
             walls
                 |> headOfWalls
-                |> (\x -> ( Entrance.init Door x, List.map (without x) walls ))
+                |> (\x -> ( newEntrance x, List.map (without x) walls ))
     in
         shuffle walls
             `andThen` (makeHeadADoor >> constant)

@@ -1,6 +1,6 @@
 {
     "version": "0.0.1",
-    "summary": "Castle of the Winds using Elm",
+    "summary": "Castle of the Winds",
     "repository": "https://github.com/mordrax/cotwelm.git",
     "license": "BSD3",
     "source-directories": [
