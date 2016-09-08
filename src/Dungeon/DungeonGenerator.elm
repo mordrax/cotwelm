@@ -160,15 +160,16 @@ prospector start direction model =
 
         rightDirection =
             Vector.rotate direction Right
+
+        prospectingInDirection direction =
+            prospecting oneStepAhead model direction
+
+        randomDirection =
+            shuffle [ direction, leftDirection, rightDirection ]
+                `andThen` (headWithDefault direction >> constant)
     in
-        shuffle [ direction, leftDirection, rightDirection ]
-            `andThen` (\dirs ->
-                        dirs
-                            |> List.head
-                            |> Maybe.withDefault direction
-                            |> prospecting oneStepAhead model
-                            |> constant
-                      )
+        randomDirection
+            `andThen` (prospectingInDirection >> constant)
 
 
 prospecting : Vector -> Model -> Vector -> ProspectResult
