@@ -8,6 +8,7 @@ module Dungeon.Room
         , entranceFacing
         , entrances
         , unconnectedEntrances
+        , isPositionWithinRoom
         )
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
@@ -165,6 +166,23 @@ entranceFacing (A { walls, floors, position }) entrance =
             east
         else
             north
+
+
+isPositionWithinRoom : Room -> Vector -> Bool
+isPositionWithinRoom (A { entrances, walls, floors, corners }) position =
+    let
+        isPositionAEntrance =
+            entrances
+                |> List.map Entrance.position
+                |> List.any (\x -> x == position)
+
+        isPositionAWallFloorOrCorner =
+            (List.concat walls)
+                ++ floors
+                ++ corners
+                |> List.any (\x -> x == position)
+    in
+        isPositionAEntrance || isPositionAWallFloorOrCorner
 
 
 

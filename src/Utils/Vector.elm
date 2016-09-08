@@ -9,6 +9,11 @@ type alias Vector =
     ( Int, Int )
 
 
+type RotationDirection
+    = Left
+    | Right
+
+
 type alias Vectors =
     List Vector
 
@@ -42,6 +47,33 @@ distance ( v1x, v1y ) ( v2x, v2y ) =
         (dx ^ 2 + dy ^ 2)
             |> toFloat
             |> sqrt
+
+
+{-| Rotates a 2d vector by 45 degrees either to the left or right of the
+original vector. Original vector can take the form of (+-x, +-y) where
+x and y can only have a magnitude of 1
+-}
+rotate : Vector -> RotationDirection -> Vector
+rotate ( xInt, yInt ) dir =
+    let
+        ( x, y ) =
+            ( toFloat xInt, toFloat yInt )
+
+        angle =
+            case dir of
+                Left ->
+                    45
+
+                Right ->
+                    -45
+
+        x' =
+            x * cos angle - y * sin angle
+
+        y' =
+            x * sin angle + y * cos angle
+    in
+        ( round x', round y' )
 
 
 {-| a -> (topLeft, bottomRight) -> isIntersect

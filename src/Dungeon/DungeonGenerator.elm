@@ -17,6 +17,7 @@ import Random.Extra exposing (..)
 import Tile exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Game.Maps as Maps exposing (..)
+import Lodash exposing (..)
 
 
 -- types
@@ -112,26 +113,16 @@ generateCorridor entrance room model =
 
         dir =
             Room.entranceFacing room entrance
-
-        isBlocked pos =
-            atMapPos pos model /= Nothing
     in
-        case prospector start dir model of
-            --( Nothing, _, _, _ ) ->
-            --    [snd position .. 0]
-            _ ->
-                constant { model | activeRooms = room :: model.activeRooms }
+        prospector start dir model
+            `andThen` (\x -> constant { model | activeRooms = room :: model.activeRooms })
 
 
-atMapPos : Vector -> Model -> Maybe Tile
-atMapPos pos model =
-    let
-        map =
-            model
-                |> toTiles
-                |> Maps.fromTiles
-    in
-        Maps.getTile map pos
+toMap : Model -> Map
+toMap model =
+    model
+        |> toTiles
+        |> Maps.fromTiles
 
 
 type alias Direction =
@@ -139,43 +130,125 @@ type alias Direction =
 
 
 type Finding
-    = Room
-    | Corridor
+    = Room Room
+    | Corridor Corridor
     | EdgeOfMap
+    | Nothing
+
+
+type alias ProspectResults =
+    List ProspectResult
 
 
 type alias ProspectResult =
-    ( Vector, Finding )
+    { position : Vector
+    , found : Finding
+    }
 
 
-prospector : Vector -> Vector -> Model -> ( ProspectResult, ProspectResult, ProspectResult )
+{-| A prospector takes a starting point and a direction then looks in
+a random direction to see what's down that path.
+-}
+prospector : Vector -> Vector -> Model -> Generator ProspectResult
 prospector start direction model =
     let
         oneStepAhead =
             Vector.add start direction
 
-        --        leftPath = dig (oneStepAhead, oneStepAhead ) ??? model
-        --        rightPath = dig (oneStepAhead, oneStepAhead ) ??? model
-        straightAhead =
-            dig start direction model
+        leftDirection =
+            Vector.rotate direction Left
+
+        rightDirection =
+            Vector.rotate direction Right
     in
-        --        (leftPath, straightAhead, rightPath)
-        ( straightAhead, straightAhead, straightAhead )
+        shuffle [ direction, leftDirection, rightDirection ]
+            `andThen` (\dirs ->
+                        dirs
+                            |> List.head
+                            |> Maybe.withDefault direction
+                            |> prospecting oneStepAhead model
+                            |> constant
+                      )
 
 
-dig : Vector -> Vector -> Model -> ProspectResult
-dig position direction model =
-    case atMapPos position model of
-        Nothing ->
-            dig (Vector.add position direction) direction model
+prospecting : Vector -> Model -> Vector -> ProspectResult
+prospecting currentSquare model direction =
+    let
+        nextSquare =
+            Vector.add currentSquare direction
 
-        Just tile ->
-            ( Vector.sub position direction, dungeonConstructAtPos position model )
+        previousSquare =
+            Vector.sub currentSquare direction
+
+        continueProspecting nextSquare =
+            prospecting nextSquare model direction
+    in
+        if isWithinDungeonBounds model currentSquare then
+            case (dungeonConstructAtPos currentSquare model) of
+                Nothing ->
+                    continueProspecting nextSquare
+
+                something ->
+                    ProspectResult previousSquare something
+        else
+            ProspectResult previousSquare EdgeOfMap
+
+
+isWithinDungeonBounds : Model -> Vector -> Bool
+isWithinDungeonBounds ({ config } as model) ( x, y ) =
+    (x >= 0)
+        && (y >= 0)
+        && (x <= model.config.dungeonSize)
+        && (y <= model.config.dungeonSize)
 
 
 dungeonConstructAtPos : Vector -> Model -> Finding
-dungeonConstructAtPos pos model =
-    EdgeOfMap
+dungeonConstructAtPos pos ({ rooms, corridors, activeRooms, activeCorridors } as model) =
+    let
+        map =
+            toMap model
+
+        constructsAtPosition pos =
+            ( roomAtPosition model pos, corridorAtPosition model pos )
+    in
+        case Maps.getTile map pos of
+            Maybe.Nothing ->
+                Nothing
+
+            Just _ ->
+                case constructsAtPosition pos of
+                    ( Just room, _ ) ->
+                        Room room
+
+                    ( _, Just corridor ) ->
+                        Corridor corridor
+
+                    _ ->
+                        -- should not hit this, caught by outer case
+                        Nothing
+
+
+roomAtPosition : Model -> Vector -> Maybe Room
+roomAtPosition { rooms, activeRooms } position =
+    let
+        isInRoom room =
+            Room.isPositionWithinRoom room position
+    in
+        (rooms ++ activeRooms)
+            |> List.filter isInRoom
+            |> List.head
+
+
+corridorAtPosition : Model -> Vector -> Maybe Corridor
+corridorAtPosition corridor position =
+    Maybe.Nothing
+
+
+atMapPos : Vector -> Model -> Maybe Tile
+atMapPos pos model =
+    model
+        |> toMap
+        |> flip Maps.getTile pos
 
 
 stepCorridor : Corridor -> Model -> Generator Model
