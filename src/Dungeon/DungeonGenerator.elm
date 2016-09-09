@@ -20,6 +20,30 @@ import Game.Maps as Maps exposing (..)
 import Lodash exposing (..)
 
 
+{-| The dungeon generator module creates a dungeon progressively by allowing the caller
+to use the returned Generator type to step through a dungeon creation. The caller can
+hook the generator up to a UI and have the user see it being created one step at a
+time or it can be called in a fold and generated programmatically.
+
+The strategy used here is like that of a miner with the overarching goal of making
+a dungeon that looks like the original Castle of the Winds.
+
+The algorithm is as follows:
+1. On initialise, create a room, this will be the entrance to the level with a
+   randomly generated up staircase.
+
+2. On each call to 'step', look through the 'active' rooms and corridors. Generate
+   a new model based on the first active room or corridor.
+
+
+Active -
+   A room or corridor which is still being explored. Once a room or corridor
+   has all their entrances connected, and cannot hold any more entrances as
+   dictated by the config model, they are no longer active.
+-}
+
+
+
 -- types
 
 
@@ -30,6 +54,10 @@ type alias Model =
     , activeRooms : Rooms
     , activeCorridors : Corridors
     }
+
+
+type Msg
+    = AddActiveRoom Room
 
 
 init : Generator Model
@@ -54,21 +82,32 @@ init =
             `andThen` modelGenerator
 
 
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        AddActiveRoom room ->
+            { model | activeRooms = room :: model.activeRooms }
+
+
 {-| For each of the active rooms and corridors, generate another 'step'.
 For a room this could be make doors if the room has no doors or for a corridor
 this could be create a dead end, link up to a room etc.
 -}
 step : Model -> Generator Model
 step ({ config, rooms, activeRooms, activeCorridors } as model) =
-    case ( activeRooms, activeCorridors ) of
-        ( _, c :: cs ) ->
-            stepCorridor c { model | activeCorridors = cs }
+    let
+        _ =
+            Debug.log "Taking a step" 1
+    in
+        case ( activeRooms, activeCorridors ) of
+            ( _, c :: cs ) ->
+                stepCorridor c { model | activeCorridors = cs }
 
-        ( r :: rs, _ ) ->
-            stepRoom r { model | activeRooms = rs }
+            ( r :: rs, _ ) ->
+                stepRoom r { model | activeRooms = rs }
 
-        ( [], [] ) ->
-            constant model
+            ( [], [] ) ->
+                constant model
 
 
 {-| Given an active room, will try to generate entrances if there aren't any,
@@ -113,9 +152,38 @@ generateCorridor entrance room model =
 
         dir =
             Room.entranceFacing room entrance
+
+        toReturn prospectResult =
+            prospectResult
+                |> addCorridor model
+                |> update (AddActiveRoom room)
+                |> constant
     in
         prospector start dir model
-            `andThen` (\x -> constant { model | activeRooms = room :: model.activeRooms })
+            `andThen` toReturn
+
+
+addCorridor : Model -> ProspectResult -> Model
+addCorridor ({ config } as model) { position, found } =
+    let
+        noChange =
+            model
+    in
+        case found of
+            Room room ->
+                -- create corridor between two rooms
+                noChange
+
+            Corridor corridor ->
+                -- create intersection between two corridors
+                noChange
+
+            EdgeOfMap ->
+                -- explore adding room possibilities or just create a dead end?
+                noChange
+
+            _ ->
+                noChange
 
 
 toMap : Model -> Map
