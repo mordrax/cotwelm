@@ -7,7 +7,6 @@ module Dungeon.Room
         , toTiles
         , entranceFacing
         , entrances
-        , unconnectedEntrances
         , isPositionWithinRoom
         )
 
@@ -94,15 +93,17 @@ generate config =
 {-| Add a door to the room using one of the room's remaining walls.
 It also reports the door that just got added)
 -}
-generateEntrance : Room -> Generator Room
+generateEntrance : Room -> Generator ( Room, Entrance )
 generateEntrance (A ({ walls, entrances, position } as model)) =
     let
-        toModel ( entrance, walls ) =
-            A { model | entrances = entrance :: entrances, walls = walls }
+        toReturn ( entrance, walls ) =
+            ( A { model | entrances = entrance :: entrances, walls = walls }
+            , entrance
+            )
     in
         walls
             |> generateEntranceHelper position
-            |> Random.map toModel
+            |> Random.map toReturn
 
 
 toTiles : Room -> Tiles
@@ -128,11 +129,6 @@ toTiles (A { floors, walls, entrances, corners, position }) =
 
 entrances : Room -> Entrances
 entrances (A { entrances }) =
-    entrances
-
-
-unconnectedEntrances : Room -> Entrances
-unconnectedEntrances (A { entrances }) =
     entrances
 
 

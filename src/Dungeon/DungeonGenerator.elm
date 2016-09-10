@@ -32,9 +32,11 @@ The algorithm is as follows:
 1. On initialise, create a room, this will be the entrance to the level with a
    randomly generated up staircase.
 
-2. On each call to 'step', look through the 'active' rooms and corridors. Generate
-   a new model based on the first active room or corridor.
+2. On each call to 'step', look through the 'active' rooms and corridors. Pick the
+   first active room found. Or the first active corridor if there is no active rooms.
+   If there are neither active rooms nor corridor, end the step.
 
+3a Given a active room, if there is an unconnected entrance
 
 Active -
    A room or corridor which is still being explored. Once a room or corridor
@@ -51,13 +53,18 @@ type alias Model =
     { config : Config.Model
     , rooms : Rooms
     , corridors : Corridors
-    , activeRooms : Rooms
-    , activeCorridors : Corridors
+    , activePoints : ActivePoints
     }
 
 
-type Msg
-    = AddActiveRoom Room
+type alias ActivePoints =
+    List ActivePoint
+
+
+type ActivePoint
+    = ActiveEntrance Room Entrance
+    | ActiveCorridor Corridor Vector
+    | ActiveRoom Room
 
 
 init : Generator Model
@@ -69,24 +76,16 @@ init =
         roomGenerator =
             Room.generate config
 
-        modelGenerator room =
-            constant
-                { config = config
-                , rooms = []
-                , corridors = []
-                , activeRooms = [ room ]
-                , activeCorridors = []
-                }
+        model =
+            Model config [] [] []
+
+        addRoomToModel room =
+            { model
+                | rooms = [ room ]
+                , activePoints = [ ActiveRoom room ]
+            }
     in
-        (Room.generate config)
-            `andThen` modelGenerator
-
-
-update : Msg -> Model -> Model
-update msg model =
-    case msg of
-        AddActiveRoom room ->
-            { model | activeRooms = room :: model.activeRooms }
+        Random.map addRoomToModel roomGenerator
 
 
 {-| For each of the active rooms and corridors, generate another 'step'.
@@ -94,58 +93,83 @@ For a room this could be make doors if the room has no doors or for a corridor
 this could be create a dead end, link up to a room etc.
 -}
 step : Model -> Generator Model
-step ({ config, rooms, activeRooms, activeCorridors } as model) =
+step ({ activePoints } as model) =
     let
         _ =
             Debug.log "Taking a step" 1
     in
-        case ( activeRooms, activeCorridors ) of
-            ( _, c :: cs ) ->
-                stepCorridor c { model | activeCorridors = cs }
-
-            ( r :: rs, _ ) ->
-                stepRoom r { model | activeRooms = rs }
-
-            ( [], [] ) ->
+        case activePoints of
+            -- when nothing's active, no more exploration
+            [] ->
                 constant model
+
+            (ActiveRoom room) :: remainingPoints ->
+                generateEntrance room { model | activePoints = remainingPoints }
+
+            -- pick a active room and either make a new entrance or
+            -- make a corridor from a existing entrance
+            (ActiveEntrance room entrance) :: remainingPoints ->
+                generateCorridor room entrance { model | activePoints = remainingPoints }
+
+            -- pick a active corridor and keep digging!
+            (ActiveCorridor corridor point) :: remainingPoints ->
+                constant model
+
+
+{-| Generate a new entrance for a room
+-}
+generateEntrance : Room -> Model -> Generator Model
+generateEntrance room ({ config } as model) =
+    let
+        isRoomAtMaxEntrances =
+            (room |> Room.entrances |> List.length) >= config.maxEntrances
+
+        modelWithActiveRoomRemoved =
+            model
+
+        mapEntranceToModel ( r, e ) =
+            { model | activePoints = [ ActiveEntrance r e, ActiveRoom r ] ++ model.activePoints }
+    in
+        if isRoomAtMaxEntrances then
+            constant modelWithActiveRoomRemoved
+        else
+            Random.map mapEntranceToModel (Room.generateEntrance room)
 
 
 {-| Given an active room, will try to generate entrances if there aren't any,
     or make corridors if there are active entrances to the room.
 -}
-stepRoom : Room -> Model -> Generator Model
-stepRoom room ({ config } as model) =
-    let
-        roomAtMaxEntrances =
-            List.length (Room.entrances room) >= config.maxEntrances
-    in
-        case Room.unconnectedEntrances room of
-            [] ->
-                if roomAtMaxEntrances then
-                    constant { model | rooms = room :: model.rooms }
-                else
-                    generateEntranceForModel room model
-
-            e :: _ ->
-                generateCorridor e room model
 
 
-generateEntranceForModel : Room -> Model -> Generator Model
-generateEntranceForModel room model =
-    let
-        roomGen' =
-            Room.generateEntrance room
 
-        entranceToModel room' =
-            { model
-                | activeRooms = room' :: model.activeRooms
-            }
-    in
-        Random.map entranceToModel roomGen'
+--stepRoom : Room -> Model -> Generator Model
+--stepRoom room ({ config } as model) =
+--    let
+--        isRoomAtMaxEntrances =
+--            (room |> Room.entrances |> List.length) >= config.maxEntrances
+--
+--        modelWithRoomMadeInactive =
+--            { model | rooms = room :: model.rooms }
+--
+--        modelWithRoomKeptActive =
+--            { model | activeRooms = room :: model.activeRooms }
+--
+--        updateModelWithActiveRoom room =
+--            { model | activeRooms = room :: model.activeRooms }
+--    in
+--        case Room.unconnectedEntrances room of
+--            [] ->
+--                if isRoomAtMaxEntrances then
+--                    constant modelWithRoomMadeInactive
+--                else
+--                    Random.map updateModelWithActiveRoom (Room.generateEntrance room)
+--
+--            entrance :: _ ->
+--                generateCorridor entrance room modelWithRoomKeptActive
 
 
-generateCorridor : Entrance -> Room -> Model -> Generator Model
-generateCorridor entrance room model =
+generateCorridor : Room -> Entrance -> Model -> Generator Model
+generateCorridor room entrance model =
     let
         start =
             Vector.add (Entrance.position entrance) dir
@@ -156,7 +180,6 @@ generateCorridor entrance room model =
         toReturn prospectResult =
             prospectResult
                 |> addCorridor model
-                |> update (AddActiveRoom room)
                 |> constant
     in
         prospector start dir model
@@ -272,7 +295,7 @@ isWithinDungeonBounds ({ config } as model) ( x, y ) =
 
 
 dungeonConstructAtPos : Vector -> Model -> Finding
-dungeonConstructAtPos pos ({ rooms, corridors, activeRooms, activeCorridors } as model) =
+dungeonConstructAtPos pos ({ rooms, corridors } as model) =
     let
         map =
             toMap model
@@ -298,12 +321,12 @@ dungeonConstructAtPos pos ({ rooms, corridors, activeRooms, activeCorridors } as
 
 
 roomAtPosition : Model -> Vector -> Maybe Room
-roomAtPosition { rooms, activeRooms } position =
+roomAtPosition { rooms } position =
     let
         isInRoom room =
             Room.isPositionWithinRoom room position
     in
-        (rooms ++ activeRooms)
+        rooms
             |> List.filter isInRoom
             |> List.head
 
@@ -326,7 +349,7 @@ stepCorridor corridor model =
 
 
 toTiles : Model -> Tiles
-toTiles model =
-    (model.rooms ++ model.activeRooms)
+toTiles { rooms, corridors } =
+    rooms
         |> List.map Room.toTiles
         |> List.concat
