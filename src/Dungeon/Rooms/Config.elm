@@ -30,6 +30,13 @@ type alias Model =
     , nRooms : Int
     , mapScale : Float
     , maxEntrances : Int
+    , corridor : CorridorConfig
+    }
+
+
+type alias CorridorConfig =
+    { minLength : Int
+    , maxLength : Int
     }
 
 
@@ -65,6 +72,10 @@ type Msg
 init : Model
 init =
     { dungeonSize = 100
+    , corridor =
+        { minLength = 5
+        , maxLength = 100
+        }
     , roomsConfig =
         { rectangular = RoomConfig ( 4, 10 ) 1
         , cross = RoomConfig ( 7, 11 ) 1

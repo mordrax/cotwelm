@@ -18,6 +18,7 @@ import Tile exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Game.Maps as Maps exposing (..)
 import Lodash exposing (..)
+import List.Extra exposing (dropWhile)
 
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
@@ -62,9 +63,8 @@ type alias ActivePoints =
 
 
 type ActivePoint
-    = ActiveEntrance Room Entrance
+    = ActiveRoom Room (Maybe Entrance)
     | ActiveCorridor Corridor Vector
-    | ActiveRoom Room
 
 
 init : Generator Model
@@ -82,7 +82,7 @@ init =
         addRoomToModel room =
             { model
                 | rooms = [ room ]
-                , activePoints = [ ActiveRoom room ]
+                , activePoints = [ ActiveRoom room Maybe.Nothing ]
             }
     in
         Random.map addRoomToModel roomGenerator
@@ -96,19 +96,19 @@ step : Model -> Generator Model
 step ({ activePoints } as model) =
     let
         _ =
-            Debug.log "Taking a step" 1
+            Debug.log "Taking a step" model
     in
         case activePoints of
             -- when nothing's active, no more exploration
             [] ->
                 constant model
 
-            (ActiveRoom room) :: remainingPoints ->
+            (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
                 generateEntrance room { model | activePoints = remainingPoints }
 
             -- pick a active room and either make a new entrance or
             -- make a corridor from a existing entrance
-            (ActiveEntrance room entrance) :: remainingPoints ->
+            (ActiveRoom room (Just entrance)) :: remainingPoints ->
                 generateCorridor room entrance { model | activePoints = remainingPoints }
 
             -- pick a active corridor and keep digging!
@@ -116,7 +116,8 @@ step ({ activePoints } as model) =
                 constant model
 
 
-{-| Generate a new entrance for a room
+{-| Generate a new entrance for a room, then adds the room/entrance as a
+    active point
 -}
 generateEntrance : Room -> Model -> Generator Model
 generateEntrance room ({ config } as model) =
@@ -128,7 +129,7 @@ generateEntrance room ({ config } as model) =
             model
 
         mapEntranceToModel ( r, e ) =
-            { model | activePoints = [ ActiveEntrance r e, ActiveRoom r ] ++ model.activePoints }
+            { model | activePoints = ActiveRoom r (Just e) :: model.activePoints }
     in
         if isRoomAtMaxEntrances then
             constant modelWithActiveRoomRemoved
@@ -136,84 +137,84 @@ generateEntrance room ({ config } as model) =
             Random.map mapEntranceToModel (Room.generateEntrance room)
 
 
-{-| Given an active room, will try to generate entrances if there aren't any,
-    or make corridors if there are active entrances to the room.
+{-| Generate a new corridor given a room and a entrance of the room.
+    The corridor will go in a random direction and be of random length.
 -}
-
-
-
---stepRoom : Room -> Model -> Generator Model
---stepRoom room ({ config } as model) =
---    let
---        isRoomAtMaxEntrances =
---            (room |> Room.entrances |> List.length) >= config.maxEntrances
---
---        modelWithRoomMadeInactive =
---            { model | rooms = room :: model.rooms }
---
---        modelWithRoomKeptActive =
---            { model | activeRooms = room :: model.activeRooms }
---
---        updateModelWithActiveRoom room =
---            { model | activeRooms = room :: model.activeRooms }
---    in
---        case Room.unconnectedEntrances room of
---            [] ->
---                if isRoomAtMaxEntrances then
---                    constant modelWithRoomMadeInactive
---                else
---                    Random.map updateModelWithActiveRoom (Room.generateEntrance room)
---
---            entrance :: _ ->
---                generateCorridor entrance room modelWithRoomKeptActive
-
-
 generateCorridor : Room -> Entrance -> Model -> Generator Model
-generateCorridor room entrance model =
+generateCorridor room entrance ({ config } as model) =
     let
-        start =
-            Vector.add (Entrance.position entrance) dir
-
-        dir =
+        straightAhead =
             Room.entranceFacing room entrance
 
-        toReturn prospectResult =
-            prospectResult
-                |> addCorridor model
-                |> constant
+        corridorStart =
+            Vector.add (Entrance.position entrance) straightAhead
+
+        leftDirection =
+            Vector.rotate straightAhead Left
+
+        rightDirection =
+            Vector.rotate straightAhead Right
+
+        randomDirection =
+            [ leftDirection, rightDirection, straightAhead ]
+                |> shuffle
+                |> Random.map (headWithDefault straightAhead)
+
+        randomCorridorLength =
+            range config.corridor.minLength config.corridor.maxLength
     in
-        prospector start dir model
-            `andThen` toReturn
+        Random.map2 (,) randomCorridorLength randomDirection
+            `andThen` \( len, dir ) ->
+                        constant <| digger (DigInstruction corridorStart dir len) model
 
 
-addCorridor : Model -> ProspectResult -> Model
-addCorridor ({ config } as model) { position, found } =
+
+------------
+-- Digger --
+------------
+
+
+type alias DigInstruction =
+    { start : Vector
+    , direction : Vector
+    , length : Int
+    }
+
+
+digger : DigInstruction -> Model -> Model
+digger { start, direction, length } model =
     let
-        noChange =
-            model
+        emptyAtPosition pos =
+            dungeonConstructAtPos pos model == Nothing
+
+        ( sx, sy ) =
+            start
+
+        (( fx, fy ) as finish) =
+            Vector.add start (Vector.scaleInt length direction)
+
+        digPath =
+            List.map2 (,) [sx..fx] [sy..fy]
+
+        obstaclePosition =
+            List.Extra.dropWhile emptyAtPosition digPath
+
+        corridor =
+            Corridor.new (Entrance.init Door start)
     in
-        case found of
-            Room room ->
-                -- create corridor between two rooms
-                noChange
-
-            Corridor corridor ->
-                -- create intersection between two corridors
-                noChange
-
-            EdgeOfMap ->
-                -- explore adding room possibilities or just create a dead end?
-                noChange
-
+        case obstaclePosition of
             _ ->
-                noChange
+                let
+                    activeCorridor =
+                        ActiveCorridor (Corridor.add finish corridor) finish
+                in
+                    { model | activePoints = activeCorridor :: model.activePoints }
 
 
-toMap : Model -> Map
-toMap model =
-    model
-        |> toTiles
-        |> Maps.fromTiles
+
+-----------------
+-- Prospecting --
+-----------------
 
 
 type alias Direction =
@@ -237,53 +238,28 @@ type alias ProspectResult =
     }
 
 
-{-| A prospector takes a starting point and a direction then looks in
-a random direction to see what's down that path.
--}
-prospector : Vector -> Vector -> Model -> Generator ProspectResult
-prospector start direction model =
-    let
-        oneStepAhead =
-            Vector.add start direction
 
-        leftDirection =
-            Vector.rotate direction Left
-
-        rightDirection =
-            Vector.rotate direction Right
-
-        prospectingInDirection direction =
-            prospecting oneStepAhead model direction
-
-        randomDirection =
-            shuffle [ direction, leftDirection, rightDirection ]
-                `andThen` (headWithDefault direction >> constant)
-    in
-        randomDirection
-            `andThen` (prospectingInDirection >> constant)
-
-
-prospecting : Vector -> Model -> Vector -> ProspectResult
-prospecting currentSquare model direction =
-    let
-        nextSquare =
-            Vector.add currentSquare direction
-
-        previousSquare =
-            Vector.sub currentSquare direction
-
-        continueProspecting nextSquare =
-            prospecting nextSquare model direction
-    in
-        if isWithinDungeonBounds model currentSquare then
-            case (dungeonConstructAtPos currentSquare model) of
-                Nothing ->
-                    continueProspecting nextSquare
-
-                something ->
-                    ProspectResult previousSquare something
-        else
-            ProspectResult previousSquare EdgeOfMap
+--prospecting : Vector -> Model -> Vector -> Int -> ProspectResult
+--prospecting currentSquare ({ config } as model) direction length =
+--    let
+--        nextSquare =
+--            Vector.add currentSquare direction
+--
+--        previousSquare =
+--            Vector.sub currentSquare direction
+--
+--        continueProspecting nextSquare =
+--            prospecting nextSquare model direction
+--    in
+--        if isWithinDungeonBounds model currentSquare then
+--            case (dungeonConstructAtPos currentSquare model) of
+--                Nothing ->
+--                    continueProspecting nextSquare
+--
+--                something ->
+--                    ProspectResult previousSquare something
+--        else
+--            ProspectResult previousSquare EdgeOfMap
 
 
 isWithinDungeonBounds : Model -> Vector -> Bool
@@ -336,20 +312,48 @@ corridorAtPosition corridor position =
     Maybe.Nothing
 
 
-atMapPos : Vector -> Model -> Maybe Tile
-atMapPos pos model =
-    model
-        |> toMap
-        |> flip Maps.getTile pos
-
-
 stepCorridor : Corridor -> Model -> Generator Model
 stepCorridor corridor model =
     constant model
 
 
+
+------------------
+-- Model to Map --
+------------------
+
+
+toMap : Model -> Map
+toMap model =
+    model
+        |> toTiles
+        |> Maps.fromTiles
+
+
 toTiles : Model -> Tiles
-toTiles { rooms, corridors } =
-    rooms
-        |> List.map Room.toTiles
-        |> List.concat
+toTiles { rooms, corridors, activePoints } =
+    let
+        (activeRooms, activeCorridors) =
+            List.foldl roomsAndCorridorsFromActivePoint ([], []) activePoints
+
+        roomTiles = (rooms ++ activeRooms)
+                                |> List.map Room.toTiles
+                                |> List.concat
+
+        corridorTiles = (corridors ++ activeCorridors)
+            |> List.map Corridor.toTiles
+            |> List.concat
+
+    in  roomTiles ++ corridorTiles
+
+
+
+roomsAndCorridorsFromActivePoint : ActivePoint -> (Rooms, Corridors) -> (Rooms, Corridors)
+roomsAndCorridorsFromActivePoint point (rooms, corridors) =
+    case point of
+        ActiveRoom room _ ->
+            (room :: rooms, corridors)
+
+        ActiveCorridor corridor _ ->
+            (rooms, corridor::corridors)
+

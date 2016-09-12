@@ -42,39 +42,39 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
---    let
---        _ =
---            Debug.log "steps" model.dungeonSteps
---    in
-        case msg of
-            GenerateMap ->
-                let
-                    latestDungeonModel =
-                        List.head model.dungeonSteps
+    --    let
+    --        _ =
+    --            Debug.log "steps" model.dungeonSteps
+    --    in
+    case msg of
+        GenerateMap ->
+            let
+                latestDungeonModel =
+                    List.head model.dungeonSteps
 
-                    dungeonGenerator =
-                        case latestDungeonModel of
-                            Just model ->
-                                DungeonGenerator.step model
+                dungeonGenerator =
+                    case latestDungeonModel of
+                        Just model ->
+                            DungeonGenerator.step model
 
-                            Nothing ->
-                                DungeonGenerator.init
-                in
-                    ( model, Random.generate Dungeon dungeonGenerator )
+                        Nothing ->
+                            DungeonGenerator.init
+            in
+                ( model, Random.generate Dungeon dungeonGenerator )
 
-            Dungeon dungeonModel ->
-                let
-                    map =
-                        dungeonModel
-                            |> DungeonGenerator.toTiles
-                            |> Maps.fromTiles
-                in
-                    ( { model | dungeonSteps = dungeonModel :: [], map = map }
-                    , Cmd.none
-                    )
+        Dungeon dungeonModel ->
+            let
+                map =
+                    dungeonModel
+                        |> DungeonGenerator.toTiles
+                        |> Maps.fromTiles
+            in
+                ( { model | dungeonSteps = dungeonModel :: [], map = map }
+                , Cmd.none
+                )
 
-            ConfigMsg msg ->
-                ( { model | config = Config.update msg model.config }, Cmd.none )
+        ConfigMsg msg ->
+            ( { model | config = Config.update msg model.config }, Cmd.none )
 
 
 
