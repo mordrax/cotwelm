@@ -33,6 +33,11 @@ sub ( v1x, v1y ) ( v2x, v2y ) =
     ( v1x - v2x, v1y - v2y )
 
 
+scaleInt : Int -> Vector -> Vector
+scaleInt magnitude =
+    scale (toFloat magnitude)
+
+
 scale : Float -> Vector -> Vector
 scale magnitude ( x, y ) =
     ( round <| toFloat x * magnitude, round <| toFloat y * magnitude )

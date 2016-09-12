@@ -47,7 +47,7 @@ type alias Model =
     , corners : Walls
     , roomType : RoomType
     , dimension : Dimension
-    , position : Vector
+    , worldPos : Vector
     }
 
 
@@ -68,7 +68,7 @@ init =
         , corners = [ ( 0, 0 ) ]
         , roomType = DeadEnd
         , dimension = ( 1, 1 )
-        , position = Vector.zero
+        , worldPos = Vector.zero
         }
 
 
@@ -94,7 +94,7 @@ generate config =
 It also reports the door that just got added)
 -}
 generateEntrance : Room -> Generator ( Room, Entrance )
-generateEntrance (A ({ walls, entrances, position } as model)) =
+generateEntrance (A ({ walls, entrances, worldPos } as model)) =
     let
         toReturn ( entrance, walls ) =
             ( A { model | entrances = entrance :: entrances, walls = walls }
@@ -102,15 +102,15 @@ generateEntrance (A ({ walls, entrances, position } as model)) =
             )
     in
         walls
-            |> generateEntranceHelper position
+            |> generateEntranceHelper worldPos
             |> Random.map toReturn
 
 
 toTiles : Room -> Tiles
-toTiles (A { floors, walls, entrances, corners, position }) =
+toTiles (A { floors, walls, entrances, corners, worldPos }) =
     let
         toWorldPos localPos =
-            Vector.add position localPos
+            Vector.add worldPos localPos
 
         roomTileTypes =
             [ ( Tile.DarkDgn, floors )
@@ -133,12 +133,12 @@ entrances (A { entrances }) =
 
 
 entranceFacing : Room -> Entrance -> Vector
-entranceFacing (A { walls, floors, position }) entrance =
+entranceFacing (A { walls, floors, worldPos }) entrance =
     let
         entrancePos =
             entrance
                 |> Entrance.position
-                |> Vector.sub position
+                |> Vector.sub worldPos
 
         north =
             ( 0, 1 )
@@ -194,7 +194,7 @@ roomTypeGenerator config model =
 positionGenerator : Config.Model -> Model -> Generator Model
 positionGenerator { dungeonSize } model =
     (Dice.d2d dungeonSize dungeonSize)
-        `andThen` (\position' -> constant { model | position = position' })
+        `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
 
 
 roomSizeGenerator : Config.Model -> Model -> Generator Model

@@ -8,7 +8,12 @@ import Random exposing (..)
 
 d : Int -> Generator Int
 d faces =
-    Random.int 1 faces
+    range 1 faces
+
+
+range : Int -> Int -> Generator Int
+range small large =
+    Random.int (min small large) (max small large)
 
 
 d2d : Int -> Int -> Generator ( Int, Int )
