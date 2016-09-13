@@ -160,6 +160,14 @@ generateCorridor room entrance ({ config } as model) =
                 |> shuffle
                 |> Random.map (headWithDefault straightAhead)
 
+        _ =
+            Debug.log "generateCorridor"
+                { straightAhead = straightAhead
+                , corridorStart = corridorStart
+                , leftDirection = leftDirection
+                , rightDirection = rightDirection
+                }
+
         randomCorridorLength =
             range config.corridor.minLength config.corridor.maxLength
     in
@@ -182,7 +190,7 @@ type alias DigInstruction =
 
 
 digger : DigInstruction -> Model -> Model
-digger { start, direction, length } model =
+digger ({ start, direction, length } as instruction) model =
     let
         emptyAtPosition pos =
             dungeonConstructAtPos pos model == Nothing
@@ -201,6 +209,15 @@ digger { start, direction, length } model =
 
         corridor =
             Corridor.new (Entrance.init Door start)
+
+        _ =
+            Debug.log "digger"
+                { finish = finish
+                , digPath = digPath
+                , obstaclePosition = obstaclePosition
+                , corridor = corridor
+                , instruction = instruction
+                }
     in
         case obstaclePosition of
             _ ->
@@ -333,27 +350,27 @@ toMap model =
 toTiles : Model -> Tiles
 toTiles { rooms, corridors, activePoints } =
     let
-        (activeRooms, activeCorridors) =
-            List.foldl roomsAndCorridorsFromActivePoint ([], []) activePoints
+        ( activeRooms, activeCorridors ) =
+            List.foldl roomsAndCorridorsFromActivePoint ( [], [] ) activePoints
 
-        roomTiles = (rooms ++ activeRooms)
-                                |> List.map Room.toTiles
-                                |> List.concat
+        roomTiles =
+            (rooms ++ activeRooms)
+                |> List.map Room.toTiles
+                |> List.concat
 
-        corridorTiles = (corridors ++ activeCorridors)
-            |> List.map Corridor.toTiles
-            |> List.concat
+        corridorTiles =
+            (corridors ++ activeCorridors)
+                |> List.map Corridor.toTiles
+                |> List.concat
+    in
+        roomTiles ++ corridorTiles
 
-    in  roomTiles ++ corridorTiles
 
-
-
-roomsAndCorridorsFromActivePoint : ActivePoint -> (Rooms, Corridors) -> (Rooms, Corridors)
-roomsAndCorridorsFromActivePoint point (rooms, corridors) =
+roomsAndCorridorsFromActivePoint : ActivePoint -> ( Rooms, Corridors ) -> ( Rooms, Corridors )
+roomsAndCorridorsFromActivePoint point ( rooms, corridors ) =
     case point of
         ActiveRoom room _ ->
-            (room :: rooms, corridors)
+            ( room :: rooms, corridors )
 
         ActiveCorridor corridor _ ->
-            (rooms, corridor::corridors)
-
+            ( rooms, corridor :: corridors )

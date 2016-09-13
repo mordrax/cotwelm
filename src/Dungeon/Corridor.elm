@@ -1,15 +1,16 @@
-module Dungeon.Corridor
-    exposing
-        ( Corridor
-        , Corridors
-        , init
-        , new
-        , add
-        , toTiles
-          --    , addEntrance
-          --    , addPoint
-          --    , addPointAsEntrance
-        )
+module Dungeon.Corridor exposing (..)
+
+--    exposing
+--        ( Corridor
+--        , Corridors
+--        , init
+--        , new
+--        , add
+--        , toTiles
+--          --    , addEntrance
+--          --    , addPoint
+--          --    , addPointAsEntrance
+--        )
 
 import List exposing (..)
 import Dict exposing (..)
@@ -63,10 +64,13 @@ toTiles (A { points, walls, entrances }) =
         --        toWorldPos localPos =
         --            Vector.add worldPos localPos
         paths =
-            getPaths points
+            constructPath points
+
+        _ =
+            Debug.log "paths" paths
 
         data =
-            [ ( Tile.DarkDgn, List.concat paths )
+            [ ( Tile.DarkDgn, paths )
             , ( Tile.Rock, List.concat walls )
             ]
 
@@ -87,14 +91,38 @@ toTiles (A { points, walls, entrances }) =
 {-| Give a list of points that denote the start, end and each turn of a corridor
    generates all the points in between.
 -}
-getPaths : Vectors -> List Vectors
-getPaths points =
+constructPath : Vectors -> Vectors
+constructPath points =
     case points of
         [] ->
-            [ [] ]
+            []
 
         pt :: [] ->
-            [ [ pt ] ]
+            [ pt ]
 
-        ( xs, ys ) :: (( xf, yf ) as pt) :: pts ->
-            List.map2 (,) [xs..xf] [ys..yf] :: (getPaths (pt :: pts))
+        p1 :: ((p2 :: _) as remainingPts) ->
+            (path p1 p2) ++ (constructPath remainingPts)
+
+
+path : Vector -> Vector -> Vectors
+path ( x1, y1 ) ( x2, y2 ) =
+    let
+        length =
+            max (abs (x1 - x2)) (abs (y1 - y2))
+
+        rangeX =
+            range x1 x2 length
+
+        rangeY =
+            range y1 y2 length
+    in
+        List.map2 (,) rangeX rangeY
+
+range: Int -> Int -> Int -> List Int
+range x y length =
+    if x < y then
+        [x..y]
+    else if x > y then
+        reverse [y..x]
+    else
+        repeat length x
