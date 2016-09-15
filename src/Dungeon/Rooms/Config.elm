@@ -93,6 +93,7 @@ init =
 
 update : Msg -> Model -> Model
 update msg model =
+    let _ = Debug.log "Config.update" msg in
     case msg of
         DungeonSize size ->
             { model | dungeonSize = size }

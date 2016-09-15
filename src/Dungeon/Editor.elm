@@ -30,6 +30,7 @@ type Msg
     = GenerateMap
     | Dungeon DungeonGenerator.Model
     | ConfigMsg Config.Msg
+    | ResetMap
 
 
 init : Model
@@ -42,72 +43,42 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    --    let
-    --        _ =
-    --            Debug.log "steps" model.dungeonSteps
-    --    in
-    case msg of
-        GenerateMap ->
-            let
-                latestDungeonModel =
-                    List.head model.dungeonSteps
+    let
+        _ =
+            Debug.log "Editor.update" msg
+    in
+        case msg of
+            GenerateMap ->
+                let
+                    latestDungeonModel =
+                        List.head model.dungeonSteps
 
-                dungeonGenerator =
-                    case latestDungeonModel of
-                        Just model ->
-                            DungeonGenerator.step model
+                    dungeonGenerator =
+                        case latestDungeonModel of
+                            Just dungeonModel ->
+                                DungeonGenerator.step { dungeonModel | config = model.config }
 
-                        Nothing ->
-                            DungeonGenerator.init
-            in
-                ( model, Random.generate Dungeon dungeonGenerator )
+                            Nothing ->
+                                DungeonGenerator.init model.config
+                in
+                    ( model, Random.generate Dungeon dungeonGenerator )
 
-        Dungeon dungeonModel ->
-            let
-                map =
-                    dungeonModel
-                        |> DungeonGenerator.toTiles
-                        |> Maps.fromTiles
-            in
-                ( { model | dungeonSteps = dungeonModel :: [], map = map }
-                , Cmd.none
-                )
+            Dungeon dungeonModel ->
+                let
+                    map =
+                        dungeonModel
+                            |> DungeonGenerator.toTiles
+                            |> Maps.fromTiles
+                in
+                    ( { model | dungeonSteps = dungeonModel :: [], map = map }
+                    , Cmd.none
+                    )
 
-        ConfigMsg msg ->
-            ( { model | config = Config.update msg model.config }, Cmd.none )
+            ConfigMsg msg ->
+                ( { model | config = Config.update msg model.config }, Cmd.none )
 
-
-
---( { model | config = Config.update (Config.DungeonSize (toInt newSliderValue)) model.config }, Cmd.none )
---roomSizeView : Model -> RoomType -> Html Msg
---roomSizeView ({ config } as model) roomType =
---    let
---        ( min, max ) =
---            case roomType of
---                Rectangular ->
---                    config.roomSizeRanges.rectangular
---                Cross ->
---                    config.roomSizeRanges.cross
---                Diamond ->
---                    config.roomSizeRanges.diamond
---                Potion ->
---                    config.roomSizeRanges.potion
---                Circular ->
---                    config.roomSizeRanges.circular
---                DiagonalSquares ->
---                    config.roomSizeRanges.diagonalSquares
---                DeadEnd ->
---                    config.roomSizeRanges.deadEnd
---    in
---        p [ style [ ( "width", "300px" ) ] ]
---            [ h6 [] [ text "Room Size: " ++ (toString min) ++ " to " ++ (toString max) ]
---              --, Slider.view
---              --    [ Slider.onChange (SliderMsg (Room roomType))
---              --    , Slider.value (toFloat max)
---              --    , Slider.min min
---              --    , Slider.max max
---              --    ]
---            ]
+            ResetMap ->
+                ( { model | map = Dict.empty, dungeonSteps = [] }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -120,6 +91,7 @@ view model =
             [ div []
                 [ --roomSizeView model,
                   button [ class "ui button", onClick GenerateMap ] [ text "Step" ]
+                , button [ class "ui button", onClick ResetMap ] [ text "Reset" ]
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]

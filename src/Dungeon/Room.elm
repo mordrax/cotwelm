@@ -109,6 +109,9 @@ generateEntrance (A ({ walls, entrances, worldPos } as model)) =
 toTiles : Room -> Tiles
 toTiles (A { floors, walls, entrances, corners, worldPos }) =
     let
+        _ =
+            Debug.log "Room.toTiles" entrances
+
         toWorldPos localPos =
             Vector.add worldPos localPos
 
@@ -123,8 +126,8 @@ toTiles (A { floors, walls, entrances, corners, worldPos }) =
                 |> List.map toWorldPos
                 |> List.map (\pos -> Tile.toTile pos tileType)
     in
-        List.concat (List.map makeTiles roomTileTypes)
-            ++ List.map Entrance.toTile entrances
+        List.map Entrance.toTile entrances
+            ++ List.concat (List.map makeTiles roomTileTypes)
 
 
 entrances : Room -> Entrances
@@ -214,16 +217,14 @@ headOfWalls walls =
 generateEntranceHelper : Vector -> List Walls -> Generator ( Entrance, List Walls )
 generateEntranceHelper topLeft walls =
     let
-        doorPosition walls =
-            headOfWalls walls
-
         newEntrance pos =
             Entrance.init Door (Vector.add pos topLeft)
 
         makeHeadADoor walls =
             walls
                 |> headOfWalls
-                |> (\x -> ( newEntrance x, List.map (without x) walls ))
+                |> \x ->
+                    ( newEntrance x, List.map (without x) walls )
     in
         shuffle walls
             `andThen` (makeHeadADoor >> constant)
