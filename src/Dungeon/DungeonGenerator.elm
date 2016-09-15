@@ -67,12 +67,9 @@ type ActivePoint
     | ActiveCorridor Corridor Vector
 
 
-init : Generator Model
-init =
+init : Config.Model -> Generator Model
+init config =
     let
-        config =
-            Config.init
-
         roomGenerator =
             Room.generate config
 
@@ -81,7 +78,7 @@ init =
 
         addRoomToModel room =
             { model
-                | rooms = [ room ]
+                | rooms = [  ]
                 , activePoints = [ ActiveRoom room Maybe.Nothing ]
             }
     in
@@ -109,7 +106,12 @@ step ({ activePoints } as model) =
             -- pick a active room and either make a new entrance or
             -- make a corridor from a existing entrance
             (ActiveRoom room (Just entrance)) :: remainingPoints ->
-                generateCorridor room entrance { model | activePoints = remainingPoints }
+                generateCorridor room
+                    entrance
+                    { model
+                        | activePoints = remainingPoints
+                        , rooms = room :: model.rooms
+                    }
 
             -- pick a active corridor and keep digging!
             (ActiveCorridor corridor point) :: remainingPoints ->
@@ -128,8 +130,10 @@ generateEntrance room ({ config } as model) =
         modelWithActiveRoomRemoved =
             model
 
-        mapEntranceToModel ( r, e ) =
-            { model | activePoints = ActiveRoom r (Just e) :: model.activePoints }
+        mapEntranceToModel ( room', entrance ) =
+            { model
+                | activePoints = ActiveRoom room' (Just entrance) :: model.activePoints
+            }
     in
         if isRoomAtMaxEntrances then
             constant modelWithActiveRoomRemoved
@@ -169,7 +173,7 @@ generateCorridor room entrance ({ config } as model) =
                 }
 
         randomCorridorLength =
-            range config.corridor.minLength config.corridor.maxLength
+            Dice.range config.corridor.minLength config.corridor.maxLength
     in
         Random.map2 (,) randomCorridorLength randomDirection
             `andThen` \( len, dir ) ->
