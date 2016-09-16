@@ -141,7 +141,7 @@ entranceFacing (A { walls, floors, worldPos }) entrance =
         entrancePos =
             entrance
                 |> Entrance.position
-                |> Vector.sub worldPos
+                |> flip Vector.sub worldPos
 
         north =
             ( 0, 1 )
