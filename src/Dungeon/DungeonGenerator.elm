@@ -42,7 +42,8 @@ The algorithm is as follows:
 Active -
    A room or corridor which is still being explored. Once a room or corridor
    has all their entrances connected, and cannot hold any more entrances as
-   dictated by the config model, they are no longer active.
+   dictated by the config model, they are no longer active and moved out of
+   activePoints.
 -}
 
 
@@ -70,19 +71,13 @@ type ActivePoint
 init : Config.Model -> Generator Model
 init config =
     let
-        roomGenerator =
-            Room.generate config
-
         model =
             Model config [] [] []
 
         addRoomToModel room =
-            { model
-                | rooms = [  ]
-                , activePoints = [ ActiveRoom room Maybe.Nothing ]
-            }
+            { model | activePoints = [ ActiveRoom room Maybe.Nothing ] }
     in
-        Random.map addRoomToModel roomGenerator
+        Random.map addRoomToModel (Room.generate config)
 
 
 {-| For each of the active rooms and corridors, generate another 'step'.
