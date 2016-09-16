@@ -32,27 +32,42 @@ type alias Corridors =
 
 
 type alias Model =
-    { points : Vectors
+    { start : Vector
+    , points : Vectors
     , walls : List Walls
     , entrances : Entrances
     }
 
 
-init : Model
-init =
-    { points = []
-    , walls = []
-    , entrances = []
-    }
-
-
 new : Entrance -> Corridor
 new entrance =
-    A
-        { points = [ Entrance.position entrance ]
-        , walls = []
-        , entrances = [ entrance ]
-        }
+    let
+        startPoint =
+            Entrance.position entrance
+    in
+        A
+            { start = startPoint
+            , points = [ startPoint ]
+            , walls = []
+            , entrances = [ entrance ]
+            }
+
+
+facing : Corridor -> Vector
+facing (A { start, points }) =
+    case List.reverse points of
+        last :: secondLast :: _ ->
+            Vector.sub secondLast last |> Vector.unit
+
+        _ ->
+            ( 0, 0 )
+
+
+finish : Corridor -> Vector
+finish (A { start, points }) =
+    points
+        |> List.reverse
+        |> Lodash.headWithDefault start
 
 
 add : Vector -> Corridor -> Corridor
