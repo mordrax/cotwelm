@@ -109,8 +109,8 @@ step ({ activePoints } as model) =
                     }
 
             -- pick a active corridor and keep digging!
-            (ActiveCorridor corridor point) :: remainingPoints ->
-                constant model
+            (ActiveCorridor corridor exit) :: remainingPoints ->
+                generateRoomOffCorridor corridor { model | corridors = corridor :: model.corridors }
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -175,6 +175,21 @@ generateCorridor room entrance ({ config } as model) =
                         constant <| digger (DigInstruction corridorStart dir len) model
 
 
+generateRoomOffCorridor : Corridor -> Model -> Generator Model
+generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
+    let
+        corridorFacing =
+            Corridor.facing corridor
+
+        corridorFinish =
+            Corridor.finish corridor
+
+        roomGen =
+            Room.generate config
+    in
+        constant model
+
+
 
 ------------
 -- Digger --
@@ -223,8 +238,10 @@ digger ({ start, direction, length } as instruction) model =
                         ActiveCorridor (Corridor.add actualFinish corridor) actualFinish
                 in
                     { model | activePoints = activeCorridor :: model.activePoints }
+
             [] ->
                 { model | corridors = corridor :: model.corridors }
+
 
 
 -----------------
