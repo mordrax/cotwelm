@@ -194,17 +194,15 @@ digger ({ start, direction, length } as instruction) model =
         emptyAtPosition pos =
             dungeonConstructAtPos pos model == Nothing
 
-        ( sx, sy ) =
-            start
-
-        (( fx, fy ) as finish) =
+        finish =
             Vector.add start (Vector.scaleInt length direction)
 
         digPath =
-            List.map2 (,) [sx..fx] [sy..fy]
+            Corridor.path start finish
 
-        obstaclePosition =
-            List.Extra.dropWhile emptyAtPosition digPath
+        dugPath =
+            List.Extra.takeWhile emptyAtPosition digPath
+                |> List.reverse
 
         corridor =
             Corridor.new (Entrance.init Door start)
@@ -213,19 +211,20 @@ digger ({ start, direction, length } as instruction) model =
             Debug.log "digger"
                 { finish = finish
                 , digPath = digPath
-                , obstaclePosition = obstaclePosition
+                , dugPath = dugPath
                 , corridor = corridor
                 , instruction = instruction
                 }
     in
-        case obstaclePosition of
-            _ ->
+        case dugPath of
+            actualFinish :: _ ->
                 let
                     activeCorridor =
-                        ActiveCorridor (Corridor.add finish corridor) finish
+                        ActiveCorridor (Corridor.add actualFinish corridor) actualFinish
                 in
                     { model | activePoints = activeCorridor :: model.activePoints }
-
+            [] ->
+                { model | corridors = corridor :: model.corridors }
 
 
 -----------------
@@ -294,22 +293,29 @@ dungeonConstructAtPos pos ({ rooms, corridors } as model) =
 
         constructsAtPosition pos =
             ( roomAtPosition model pos, corridorAtPosition model pos )
+
+        mapTile =
+            Maps.getTile map pos
+
+        inBounds =
+            isWithinDungeonBounds model pos
     in
-        case Maps.getTile map pos of
-            Maybe.Nothing ->
+        case ( mapTile, inBounds, constructsAtPosition pos ) of
+            ( _, False, _ ) ->
+                EdgeOfMap
+
+            ( Maybe.Nothing, _, _ ) ->
                 Nothing
 
-            Just _ ->
-                case constructsAtPosition pos of
-                    ( Just room, _ ) ->
-                        Room room
+            ( Just _, _, ( Just room, _ ) ) ->
+                Room room
 
-                    ( _, Just corridor ) ->
-                        Corridor corridor
+            ( Just _, _, ( _, Just corridor ) ) ->
+                Corridor corridor
 
-                    _ ->
-                        -- should not hit this, caught by outer case
-                        Nothing
+            _ ->
+                -- should not hit this, caught by outer case
+                Nothing
 
 
 roomAtPosition : Model -> Vector -> Maybe Room

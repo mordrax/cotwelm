@@ -7,6 +7,7 @@ module Dungeon.Corridor exposing (..)
 --        , new
 --        , add
 --        , toTiles
+--        , path
 --          --    , addEntrance
 --          --    , addPoint
 --          --    , addPointAsEntrance
@@ -19,6 +20,7 @@ import Utils.Vector as Vector exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Tile exposing (..)
+import Lodash exposing (..)
 
 
 type Corridor
@@ -111,18 +113,15 @@ path ( x1, y1 ) ( x2, y2 ) =
             max (abs (x1 - x2)) (abs (y1 - y2))
 
         rangeX =
-            range x1 x2 length
+            if x1 == x2 then
+                repeat length x1
+            else
+                Lodash.range x1 x2
 
         rangeY =
-            range y1 y2 length
+            if y1 == y2 then
+                repeat length y1
+            else
+                Lodash.range y1 y2
     in
         List.map2 (,) rangeX rangeY
-
-range: Int -> Int -> Int -> List Int
-range x y length =
-    if x < y then
-        [x..y]
-    else if x > y then
-        reverse [y..x]
-    else
-        repeat length x

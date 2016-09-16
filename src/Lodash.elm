@@ -4,6 +4,7 @@ import Array exposing (..)
 import Random exposing (..)
 import Random.Array exposing (..)
 import Maybe exposing (withDefault)
+import List exposing (reverse)
 
 
 shuffle : List a -> Generator (List a)
@@ -24,3 +25,11 @@ headWithDefault default xs =
 without : a -> List a -> List a
 without x xs =
     List.filter ((/=) x) xs
+
+
+range : Int -> Int -> List Int
+range x y =
+    if x < y then
+        [x..y]
+    else
+        reverse [y..x]
