@@ -71,7 +71,7 @@ type Msg
 
 init : Model
 init =
-    { dungeonSize = 100
+    { dungeonSize = 50
     , corridor =
         { minLength = 5
         , maxLength = 100
