@@ -39,49 +39,70 @@ type alias Model =
     }
 
 
-new : Entrance -> Corridor
-new entrance =
-    let
-        startPoint =
-            Entrance.position entrance
-    in
-        A
-            { start = startPoint
-            , points = [ startPoint ]
-            , walls = []
-            , entrances = [ entrance ]
-            }
+new : Vector -> Corridor
+new start =
+    A
+        { start = start
+        , points = []
+        , walls = []
+        , entrances = []
+        }
 
 
-facing : Corridor -> Vector
-facing (A { start, points }) =
-    case List.reverse points of
+facing : Vector -> Vectors -> CompassDirection
+facing start points =
+    case List.reverse (start :: points) of
         last :: secondLast :: _ ->
-            Vector.sub secondLast last |> Vector.unit
+            Vector.sub last secondLast |> Vector.unit
 
         _ ->
-            ( 0, 0 )
+            -- if in doubt, journey to the west
+            west
 
+type alias CorridorEnding = ( Corridor, Vector, CompassDirection )
 
-finish : Corridor -> Vector
-finish (A { start, points }) =
-    points
-        |> List.reverse
-        |> Lodash.headWithDefault start
+allPossibleEndings : Corridor -> List CorridorEnding
+allPossibleEndings ((A ({ start, points } as model)) as corridor) =
+    let
+        lastPoint =
+            points |> reverse |> headWithDefault start
+
+        straightAhead =
+            facing start points
+
+        ( left, right ) =
+            ( Vector.rotate straightAhead Left
+            , Vector.rotate straightAhead Right
+            )
+
+        ( leftEnd, rightEnd ) =
+            ( Vector.add lastPoint left
+            , Vector.add lastPoint right
+            )
+
+        corridorWithEnd point =
+            A { model | points = points ++ [ point ] }
+    in
+        [ ( corridor, lastPoint, straightAhead )
+          -- the corridor is rotated 45 deg, but rooms must be facing a cardinal
+          -- direction
+        , ( corridorWithEnd leftEnd, leftEnd, Vector.rotateUnlessCardinal left Left )
+        , ( corridorWithEnd rightEnd, rightEnd, Vector.rotateUnlessCardinal right Right )
+        ]
 
 
 add : Vector -> Corridor -> Corridor
 add point (A ({ points } as model)) =
-    A { model | points = point :: points }
+    A { model | points = points ++ [ point ] }
 
 
 toTiles : Corridor -> Tiles
-toTiles (A { points, walls, entrances }) =
+toTiles (A { start, points, walls, entrances }) =
     let
         --        toWorldPos localPos =
         --            Vector.add worldPos localPos
         paths =
-            constructPath points
+            constructPath (start :: points)
 
         _ =
             Debug.log "paths" paths
@@ -121,6 +142,9 @@ constructPath points =
             (path p1 p2) ++ (constructPath remainingPts)
 
 
+{-| The path between any two vectors is the linear line that connects them.
+   e.g path (5, 0) (0, 5) = [(5, 0), (4, 1), (3, 2), (2, 3), (1, 4), (0, 5)]
+-}
 path : Vector -> Vector -> Vectors
 path ( x1, y1 ) ( x2, y2 ) =
     let
