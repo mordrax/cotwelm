@@ -166,6 +166,8 @@ entranceFacing (A { walls, floors, worldPos }) entrance =
         else
             north
 
+--makeEntranceFacing: Room -> Direction -> (Room, Entrance)
+
 
 isPositionWithinRoom : Room -> Vector -> Bool
 isPositionWithinRoom (A { entrances, walls, floors, corners }) position =

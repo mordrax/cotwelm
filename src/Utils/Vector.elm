@@ -14,6 +14,46 @@ type RotationDirection
     | Right
 
 
+type alias CompassDirection =
+    ( Int, Int )
+
+
+north =
+    ( 0, 1 )
+
+
+east =
+    ( 1, 0 )
+
+
+south =
+    ( 0, -1 )
+
+
+west =
+    ( -1, 0 )
+
+
+northeast =
+    add north east
+
+
+northwest =
+    add north west
+
+
+southeast =
+    add south east
+
+
+southwest =
+    add south west
+
+
+cardinalDirections =
+    [ north, east, south, west ]
+
+
 type alias Vectors =
     List Vector
 
@@ -84,6 +124,14 @@ rotate ( xInt, yInt ) dir =
             x * sin angle + y * cos angle
     in
         ( round x', round y' )
+
+
+rotateUnlessCardinal : Vector -> RotationDirection -> Vector
+rotateUnlessCardinal currentDirection rotation =
+    if List.member currentDirection cardinalDirections then
+        currentDirection
+    else
+        rotate currentDirection rotation
 
 
 {-| a -> (topLeft, bottomRight) -> isIntersect

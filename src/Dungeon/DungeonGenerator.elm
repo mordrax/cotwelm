@@ -178,14 +178,17 @@ generateCorridor room entrance ({ config } as model) =
 generateRoomOffCorridor : Corridor -> Model -> Generator Model
 generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
     let
-        corridorFacing =
-            Corridor.facing corridor
+        _ =
+            Debug.log "generateRoomOffCorridor" corridorEndingOptions
 
-        corridorFinish =
-            Corridor.finish corridor
+        corridorEndingOptions =
+            Corridor.allPossibleEndings corridor
 
         roomGen =
             Room.generate config
+
+
+
     in
         constant model
 
@@ -220,7 +223,7 @@ digger ({ start, direction, length } as instruction) model =
                 |> List.reverse
 
         corridor =
-            Corridor.new (Entrance.init Door start)
+            Corridor.new start
 
         _ =
             Debug.log "digger"
@@ -242,7 +245,11 @@ digger ({ start, direction, length } as instruction) model =
             [] ->
                 { model | corridors = corridor :: model.corridors }
 
-
+--------------------
+-- Room placement --
+--------------------
+canFitRoom: Room -> CorridorEnding -> Model -> Bool
+canFitRoom room (corridor, corridorEnd, facing) model = True
 
 -----------------
 -- Prospecting --
