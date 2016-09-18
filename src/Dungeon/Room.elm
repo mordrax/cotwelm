@@ -1,4 +1,12 @@
 module Dungeon.Room exposing (..)
+
+{-| The room module will generate random rooms given a seed. It uses Config.elm for
+    all random parameters such as the type/size of room generated.
+
+    Generated rooms have a list of walls, floors and entrances. These lists are just a
+    list of 2D tuples. It is up to the caller to then convert these types.
+-}
+
 --    exposing
 --        ( Room
 --        , Rooms
@@ -10,13 +18,6 @@ module Dungeon.Room exposing (..)
 --        , isPositionWithinRoom
 --        , placeRoom
 --        )
-
-{-| The room module will generate random rooms given a seed. It uses Config.elm for
-    all random parameters such as the type/size of room generated.
-
-    Generated rooms have a list of walls, floors and entrances. These lists are just a
-    list of 2D tuples. It is up to the caller to then convert these types.
--}
 
 import Dungeon.Rooms.Config as Config exposing (..)
 import Random exposing (andThen, Generator)
@@ -47,11 +48,15 @@ type alias Model =
     { entrances : Entrances
     , walls : List Walls
     , floors : Floors
-    , corners : Walls
+    , corners : Corners
     , roomType : RoomType
     , dimension : Dimension
     , worldPos : Vector
     }
+
+
+type alias Corners =
+    Vectors
 
 
 type Room
@@ -72,6 +77,19 @@ init =
         , roomType = DeadEnd
         , dimension = ( 1, 1 )
         , worldPos = Vector.zero
+        }
+
+
+new : Entrances -> List Walls -> Floors -> Corners -> RoomType -> Dimension -> Vector -> Room
+new entrances walls floors corners roomType dimension worldPos =
+    A
+        { entrances = entrances
+        , walls = walls
+        , floors = floors
+        , corners = corners
+        , roomType = roomType
+        , dimension = dimension
+        , worldPos = worldPos
         }
 
 
@@ -197,7 +215,7 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
                         { entrance = entrance
                         , wall = wall
                         , roomWorldPosition = roomWorldPosition
-                        , corridor = (corridor, endPoint, facing)
+                        , corridor = ( corridor, endPoint, facing )
                         , dim = dimension
                         }
             in
