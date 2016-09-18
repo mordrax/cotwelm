@@ -4,6 +4,8 @@ module Utils.Vector exposing (..)
 
 -}
 
+import Utils.CompassDirection exposing (..)
+
 
 type alias Vector =
     ( Int, Int )
@@ -12,46 +14,6 @@ type alias Vector =
 type RotationDirection
     = Left
     | Right
-
-
-type alias CompassDirection =
-    ( Int, Int )
-
-
-north =
-    ( 0, 1 )
-
-
-east =
-    ( 1, 0 )
-
-
-south =
-    ( 0, -1 )
-
-
-west =
-    ( -1, 0 )
-
-
-northeast =
-    add north east
-
-
-northwest =
-    add north west
-
-
-southeast =
-    add south east
-
-
-southwest =
-    add south west
-
-
-cardinalDirections =
-    [ north, east, south, west ]
 
 
 type alias Vectors =
@@ -126,12 +88,76 @@ rotate ( xInt, yInt ) dir =
         ( round x', round y' )
 
 
+
+toDirection : Vector -> CompassDirection
+toDirection vector =
+    case unit vector of
+        ( 0, 1 ) ->
+            N
+
+        ( 1, 0 ) ->
+            S
+
+        ( 0, -1 ) ->
+            E
+
+        ( -1, 0 ) ->
+            W
+
+        ( 1, 1 ) ->
+            NE
+
+        ( -1, 1 ) ->
+            NW
+
+        ( 1, -1 ) ->
+            SE
+
+        ( -1, -1 ) ->
+            SW
+
+        _ ->
+            W
+
+
+fromCompass : CompassDirection -> Vector
+fromCompass dir =
+    case dir of
+        N ->
+            ( 0, 1 )
+
+        S ->
+            ( 1, 0 )
+
+        E ->
+            ( 0, -1 )
+
+        W ->
+            ( -1, 0 )
+
+        NE ->
+            ( 1, 1 )
+
+        NW ->
+            ( -1, 1 )
+
+        SE ->
+            ( 1, -1 )
+
+        SW ->
+            ( -1, -1 )
+
+
 rotateUnlessCardinal : Vector -> RotationDirection -> Vector
 rotateUnlessCardinal currentDirection rotation =
-    if List.member currentDirection cardinalDirections then
-        currentDirection
-    else
-        rotate currentDirection rotation
+    let
+        cardinalVectors =
+            List.map fromCompass cardinalDirections
+    in
+        if List.member currentDirection cardinalVectors then
+            currentDirection
+        else
+            rotate currentDirection rotation
 
 
 {-| a -> (topLeft, bottomRight) -> isIntersect

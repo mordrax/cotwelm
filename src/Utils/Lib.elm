@@ -5,16 +5,6 @@ import Html exposing (..)
 import Utils.Vector exposing (..)
 
 
-type CompassDirection
-    = N
-    | E
-    | S
-    | W
-    | NE
-    | NW
-    | SE
-    | SW
-
 px : number -> String
 px a =
     (toString a) ++ "px"

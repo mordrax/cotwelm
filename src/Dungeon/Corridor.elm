@@ -21,7 +21,7 @@ import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Tile exposing (..)
 import Lodash exposing (..)
-
+import Utils.CompassDirection exposing (..)
 
 type Corridor
     = A Model
@@ -53,11 +53,11 @@ facing : Vector -> Vectors -> CompassDirection
 facing start points =
     case List.reverse (start :: points) of
         last :: secondLast :: _ ->
-            Vector.sub last secondLast |> Vector.unit
+            Vector.sub last secondLast |> Vector.toDirection
 
         _ ->
             -- if in doubt, journey to the west
-            west
+            W
 
 type alias CorridorEnding = ( Corridor, Vector, CompassDirection )
 
@@ -68,7 +68,7 @@ allPossibleEndings ((A ({ start, points } as model)) as corridor) =
             points |> reverse |> headWithDefault start
 
         straightAhead =
-            facing start points
+            facing start points |> Vector.fromCompass
 
         ( left, right ) =
             ( Vector.rotate straightAhead Left
@@ -82,12 +82,13 @@ allPossibleEndings ((A ({ start, points } as model)) as corridor) =
 
         corridorWithEnd point =
             A { model | points = points ++ [ point ] }
+
     in
-        [ ( corridor, lastPoint, straightAhead )
+        [ ( corridor, lastPoint, Vector.toDirection straightAhead )
           -- the corridor is rotated 45 deg, but rooms must be facing a cardinal
           -- direction
-        , ( corridorWithEnd leftEnd, leftEnd, Vector.rotateUnlessCardinal left Left )
-        , ( corridorWithEnd rightEnd, rightEnd, Vector.rotateUnlessCardinal right Right )
+        , ( corridorWithEnd leftEnd, leftEnd, Vector.rotateUnlessCardinal left Left |> Vector.toDirection )
+        , ( corridorWithEnd rightEnd, rightEnd, Vector.rotateUnlessCardinal right Right |> Vector.toDirection)
         ]
 
 
