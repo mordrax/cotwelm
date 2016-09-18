@@ -8,6 +8,7 @@ module Dungeon.Room
         , entranceFacing
         , entrances
         , isPositionWithinRoom
+        , placeRoom
         )
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
@@ -27,6 +28,8 @@ import Dungeon.Entrance as Entrance exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Dice exposing (..)
 import List exposing (..)
+import Dungeon.Corridor exposing (..)
+import Utils.CompassDirection exposing (..)
 
 
 -- room types
@@ -166,7 +169,78 @@ entranceFacing (A { walls, floors, worldPos }) entrance =
         else
             north
 
---makeEntranceFacing: Room -> Direction -> (Room, Entrance)
+
+placeRoom : CorridorEnding -> Room -> Generator Room
+placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
+    let
+        validWalls =
+            wallsFacingDirection facing (List.concat walls) dimension
+
+        pickAWall walls =
+            walls
+                |> shuffle
+                |> Random.map (headWithDefault ( 0, 0 ))
+
+        makeADoor wall =
+            let
+                entrancePosition =
+                    Vector.add endPoint (Vector.fromCompass facing)
+
+                entrance =
+                    Entrance.init Door entrancePosition
+
+                roomWorldPosition =
+                    Vector.sub entrancePosition wall
+
+                _ =
+                    Debug.log "placeRoom"
+                        { entrance = entrance
+                        , wall = wall
+                        , roomWorldPosition = roomWorldPosition
+                        , corridor = (corridor, endPoint, facing)
+                        , dim = dimension
+                        }
+            in
+                constant
+                    <| A
+                        { model
+                            | walls = List.map (without wall) walls
+                            , worldPos = roomWorldPosition
+                        }
+    in
+        pickAWall validWalls `andThen` makeADoor
+
+
+wallsFacingDirection : CompassDirection -> Walls -> Dimension -> Walls
+wallsFacingDirection compassDirection walls ( maxX, maxY ) =
+    let
+        yEqualsZero ( x, y ) =
+            y == 0
+
+        yEqualsMaxY ( x, y ) =
+            y == maxY
+
+        xEqualsZero ( x, y ) =
+            x == 0
+
+        xEqualsMaxX ( x, y ) =
+            x == maxX
+    in
+        case compassDirection of
+            N ->
+                List.filter yEqualsZero walls
+
+            E ->
+                List.filter xEqualsMaxX walls
+
+            S ->
+                List.filter yEqualsMaxY walls
+
+            W ->
+                List.filter xEqualsZero walls
+
+            _ ->
+                []
 
 
 isPositionWithinRoom : Room -> Vector -> Bool

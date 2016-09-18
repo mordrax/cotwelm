@@ -187,10 +187,18 @@ generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
         roomGen =
             Room.generate config
 
+        placeRoomWithOptions room =
+            Random.Extra.together <| List.map (flip Room.placeRoom room) corridorEndingOptions
 
+        addToModel options =
+            case options of
+                room :: _ ->
+                    constant { model | activePoints = ActiveRoom room Maybe.Nothing :: activePoints }
 
+                [] ->
+                    constant model
     in
-        constant model
+        roomGen `andThen` placeRoomWithOptions `andThen` addToModel
 
 
 
@@ -245,11 +253,18 @@ digger ({ start, direction, length } as instruction) model =
             [] ->
                 { model | corridors = corridor :: model.corridors }
 
+
+
 --------------------
 -- Room placement --
 --------------------
-canFitRoom: Room -> CorridorEnding -> Model -> Bool
-canFitRoom room (corridor, corridorEnd, facing) model = True
+
+
+canFitRoom : Room -> CorridorEnding -> Model -> Bool
+canFitRoom room ( corridor, corridorEnd, facing ) model =
+    True
+
+
 
 -----------------
 -- Prospecting --
