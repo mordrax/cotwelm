@@ -21,7 +21,8 @@ import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Tile exposing (..)
 import Lodash exposing (..)
-import Utils.CompassDirection exposing (..)
+import Utils.CompassDirection as CompassDirection exposing (..)
+
 
 type Corridor
     = A Model
@@ -59,7 +60,10 @@ facing start points =
             -- if in doubt, journey to the west
             W
 
-type alias CorridorEnding = ( Corridor, Vector, CompassDirection )
+
+type alias CorridorEnding =
+    ( Corridor, Vector, CompassDirection )
+
 
 allPossibleEndings : Corridor -> List CorridorEnding
 allPossibleEndings ((A ({ start, points } as model)) as corridor) =
@@ -68,11 +72,14 @@ allPossibleEndings ((A ({ start, points } as model)) as corridor) =
             points |> reverse |> headWithDefault start
 
         straightAhead =
-            facing start points |> Vector.fromCompass
+            facing start points
+
+        straightAheadVector =
+            straightAhead |> Vector.fromCompass
 
         ( left, right ) =
-            ( Vector.rotate straightAhead Left
-            , Vector.rotate straightAhead Right
+            ( Vector.rotate straightAheadVector Left
+            , Vector.rotate straightAheadVector Right
             )
 
         ( leftEnd, rightEnd ) =
@@ -82,14 +89,15 @@ allPossibleEndings ((A ({ start, points } as model)) as corridor) =
 
         corridorWithEnd point =
             A { model | points = points ++ [ point ] }
-
     in
-        [ ( corridor, lastPoint, Vector.toDirection straightAhead )
-          -- the corridor is rotated 45 deg, but rooms must be facing a cardinal
-          -- direction
-        , ( corridorWithEnd leftEnd, leftEnd, Vector.rotateUnlessCardinal left Left |> Vector.toDirection )
-        , ( corridorWithEnd rightEnd, rightEnd, Vector.rotateUnlessCardinal right Right |> Vector.toDirection)
-        ]
+        (if CompassDirection.isCardinal straightAhead then
+            [ ( corridor, lastPoint, straightAhead ) ]
+         else
+            []
+        )
+            ++ [ ( corridorWithEnd leftEnd, leftEnd, Vector.rotateUnlessCardinal left Left |> Vector.toDirection )
+               , ( corridorWithEnd rightEnd, rightEnd, Vector.rotateUnlessCardinal right Right |> Vector.toDirection )
+               ]
 
 
 add : Vector -> Corridor -> Corridor
