@@ -1,15 +1,15 @@
-module Dungeon.Room
-    exposing
-        ( Room
-        , Rooms
-        , generate
-        , generateEntrance
-        , toTiles
-        , entranceFacing
-        , entrances
-        , isPositionWithinRoom
-        , placeRoom
-        )
+module Dungeon.Room exposing (..)
+--    exposing
+--        ( Room
+--        , Rooms
+--        , generate
+--        , generateEntrance
+--        , toTiles
+--        , entranceFacing
+--        , entrances
+--        , isPositionWithinRoom
+--        , placeRoom
+--        )
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
     all random parameters such as the type/size of room generated.
@@ -218,13 +218,13 @@ wallsFacingDirection compassDirection walls ( maxX, maxY ) =
             y == 0
 
         yEqualsMaxY ( x, y ) =
-            y == maxY
+            y == maxY - 1
 
         xEqualsZero ( x, y ) =
             x == 0
 
         xEqualsMaxX ( x, y ) =
-            x == maxX
+            x == maxX - 1
     in
         case compassDirection of
             N ->
