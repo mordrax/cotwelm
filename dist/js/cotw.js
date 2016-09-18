@@ -2326,17 +2326,40 @@ var incomingPortMap = F2(function subMap(tagger, finalTagger)
 
 function setupIncomingPort(name, callback)
 {
+	var sentBeforeInit = [];
 	var subs = _elm_lang$core$Native_List.Nil;
 	var converter = effectManagers[name].converter;
+	var currentOnEffects = preInitOnEffects;
+	var currentSend = preInitSend;
 
 	// CREATE MANAGER
 
 	var init = _elm_lang$core$Native_Scheduler.succeed(null);
 
-	function onEffects(router, subList, state)
+	function preInitOnEffects(router, subList, state)
+	{
+		var postInitResult = postInitOnEffects(router, subList, state);
+
+		for(var i = 0; i < sentBeforeInit.length; i++)
+		{
+			postInitSend(sentBeforeInit[i]);
+		}
+
+		sentBeforeInit = null; // to release objects held in queue
+		currentSend = postInitSend;
+		currentOnEffects = postInitOnEffects;
+		return postInitResult;
+	}
+
+	function postInitOnEffects(router, subList, state)
 	{
 		subs = subList;
 		return init;
+	}
+
+	function onEffects(router, subList, state)
+	{
+		return currentOnEffects(router, subList, state);
 	}
 
 	effectManagers[name].init = init;
@@ -2344,9 +2367,14 @@ function setupIncomingPort(name, callback)
 
 	// PUBLIC API
 
-	function send(value)
+	function preInitSend(value)
 	{
-		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, value);
+		sentBeforeInit.push(value);
+	}
+
+	function postInitSend(incomingValue)
+	{
+		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
 		if (result.ctor === 'Err')
 		{
 			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
@@ -2359,6 +2387,11 @@ function setupIncomingPort(name, callback)
 			callback(temp._0(value));
 			temp = temp._1;
 		}
+	}
+
+	function send(incomingValue)
+	{
+		currentSend(incomingValue);
 	}
 
 	return { send: send };
@@ -2383,6 +2416,7 @@ return {
 };
 
 }();
+
 //import Native.Utils //
 
 var _elm_lang$core$Native_Scheduler = function() {
@@ -3131,6 +3165,900 @@ var _elm_lang$core$String$fromChar = function ($char) {
 	return A2(_elm_lang$core$String$cons, $char, '');
 };
 var _elm_lang$core$String$isEmpty = _elm_lang$core$Native_String.isEmpty;
+
+var _elm_lang$core$Dict$foldr = F3(
+	function (f, acc, t) {
+		foldr:
+		while (true) {
+			var _p0 = t;
+			if (_p0.ctor === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var _v1 = f,
+					_v2 = A3(
+					f,
+					_p0._1,
+					_p0._2,
+					A3(_elm_lang$core$Dict$foldr, f, acc, _p0._4)),
+					_v3 = _p0._3;
+				f = _v1;
+				acc = _v2;
+				t = _v3;
+				continue foldr;
+			}
+		}
+	});
+var _elm_lang$core$Dict$keys = function (dict) {
+	return A3(
+		_elm_lang$core$Dict$foldr,
+		F3(
+			function (key, value, keyList) {
+				return A2(_elm_lang$core$List_ops['::'], key, keyList);
+			}),
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		dict);
+};
+var _elm_lang$core$Dict$values = function (dict) {
+	return A3(
+		_elm_lang$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2(_elm_lang$core$List_ops['::'], value, valueList);
+			}),
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		dict);
+};
+var _elm_lang$core$Dict$toList = function (dict) {
+	return A3(
+		_elm_lang$core$Dict$foldr,
+		F3(
+			function (key, value, list) {
+				return A2(
+					_elm_lang$core$List_ops['::'],
+					{ctor: '_Tuple2', _0: key, _1: value},
+					list);
+			}),
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		dict);
+};
+var _elm_lang$core$Dict$foldl = F3(
+	function (f, acc, dict) {
+		foldl:
+		while (true) {
+			var _p1 = dict;
+			if (_p1.ctor === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var _v5 = f,
+					_v6 = A3(
+					f,
+					_p1._1,
+					_p1._2,
+					A3(_elm_lang$core$Dict$foldl, f, acc, _p1._3)),
+					_v7 = _p1._4;
+				f = _v5;
+				acc = _v6;
+				dict = _v7;
+				continue foldl;
+			}
+		}
+	});
+var _elm_lang$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _p2) {
+				stepState:
+				while (true) {
+					var _p3 = _p2;
+					var _p9 = _p3._1;
+					var _p8 = _p3._0;
+					var _p4 = _p8;
+					if (_p4.ctor === '[]') {
+						return {
+							ctor: '_Tuple2',
+							_0: _p8,
+							_1: A3(rightStep, rKey, rValue, _p9)
+						};
+					} else {
+						var _p7 = _p4._1;
+						var _p6 = _p4._0._1;
+						var _p5 = _p4._0._0;
+						if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) < 0) {
+							var _v10 = rKey,
+								_v11 = rValue,
+								_v12 = {
+								ctor: '_Tuple2',
+								_0: _p7,
+								_1: A3(leftStep, _p5, _p6, _p9)
+							};
+							rKey = _v10;
+							rValue = _v11;
+							_p2 = _v12;
+							continue stepState;
+						} else {
+							if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) > 0) {
+								return {
+									ctor: '_Tuple2',
+									_0: _p8,
+									_1: A3(rightStep, rKey, rValue, _p9)
+								};
+							} else {
+								return {
+									ctor: '_Tuple2',
+									_0: _p7,
+									_1: A4(bothStep, _p5, _p6, rValue, _p9)
+								};
+							}
+						}
+					}
+				}
+			});
+		var _p10 = A3(
+			_elm_lang$core$Dict$foldl,
+			stepState,
+			{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Dict$toList(leftDict),
+				_1: initialResult
+			},
+			rightDict);
+		var leftovers = _p10._0;
+		var intermediateResult = _p10._1;
+		return A3(
+			_elm_lang$core$List$foldl,
+			F2(
+				function (_p11, result) {
+					var _p12 = _p11;
+					return A3(leftStep, _p12._0, _p12._1, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var _elm_lang$core$Dict$reportRemBug = F4(
+	function (msg, c, lgot, rgot) {
+		return _elm_lang$core$Native_Debug.crash(
+			_elm_lang$core$String$concat(
+				_elm_lang$core$Native_List.fromArray(
+					[
+						'Internal red-black tree invariant violated, expected ',
+						msg,
+						' and got ',
+						_elm_lang$core$Basics$toString(c),
+						'/',
+						lgot,
+						'/',
+						rgot,
+						'\nPlease report this bug to <https://github.com/elm-lang/core/issues>'
+					])));
+	});
+var _elm_lang$core$Dict$isBBlack = function (dict) {
+	var _p13 = dict;
+	_v14_2:
+	do {
+		if (_p13.ctor === 'RBNode_elm_builtin') {
+			if (_p13._0.ctor === 'BBlack') {
+				return true;
+			} else {
+				break _v14_2;
+			}
+		} else {
+			if (_p13._0.ctor === 'LBBlack') {
+				return true;
+			} else {
+				break _v14_2;
+			}
+		}
+	} while(false);
+	return false;
+};
+var _elm_lang$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			var _p14 = dict;
+			if (_p14.ctor === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var _v16 = A2(_elm_lang$core$Dict$sizeHelp, n + 1, _p14._4),
+					_v17 = _p14._3;
+				n = _v16;
+				dict = _v17;
+				continue sizeHelp;
+			}
+		}
+	});
+var _elm_lang$core$Dict$size = function (dict) {
+	return A2(_elm_lang$core$Dict$sizeHelp, 0, dict);
+};
+var _elm_lang$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			var _p15 = dict;
+			if (_p15.ctor === 'RBEmpty_elm_builtin') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p16 = A2(_elm_lang$core$Basics$compare, targetKey, _p15._1);
+				switch (_p16.ctor) {
+					case 'LT':
+						var _v20 = targetKey,
+							_v21 = _p15._3;
+						targetKey = _v20;
+						dict = _v21;
+						continue get;
+					case 'EQ':
+						return _elm_lang$core$Maybe$Just(_p15._2);
+					default:
+						var _v22 = targetKey,
+							_v23 = _p15._4;
+						targetKey = _v22;
+						dict = _v23;
+						continue get;
+				}
+			}
+		}
+	});
+var _elm_lang$core$Dict$member = F2(
+	function (key, dict) {
+		var _p17 = A2(_elm_lang$core$Dict$get, key, dict);
+		if (_p17.ctor === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var _elm_lang$core$Dict$maxWithDefault = F3(
+	function (k, v, r) {
+		maxWithDefault:
+		while (true) {
+			var _p18 = r;
+			if (_p18.ctor === 'RBEmpty_elm_builtin') {
+				return {ctor: '_Tuple2', _0: k, _1: v};
+			} else {
+				var _v26 = _p18._1,
+					_v27 = _p18._2,
+					_v28 = _p18._4;
+				k = _v26;
+				v = _v27;
+				r = _v28;
+				continue maxWithDefault;
+			}
+		}
+	});
+var _elm_lang$core$Dict$NBlack = {ctor: 'NBlack'};
+var _elm_lang$core$Dict$BBlack = {ctor: 'BBlack'};
+var _elm_lang$core$Dict$Black = {ctor: 'Black'};
+var _elm_lang$core$Dict$blackish = function (t) {
+	var _p19 = t;
+	if (_p19.ctor === 'RBNode_elm_builtin') {
+		var _p20 = _p19._0;
+		return _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$Black) || _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$BBlack);
+	} else {
+		return true;
+	}
+};
+var _elm_lang$core$Dict$Red = {ctor: 'Red'};
+var _elm_lang$core$Dict$moreBlack = function (color) {
+	var _p21 = color;
+	switch (_p21.ctor) {
+		case 'Black':
+			return _elm_lang$core$Dict$BBlack;
+		case 'Red':
+			return _elm_lang$core$Dict$Black;
+		case 'NBlack':
+			return _elm_lang$core$Dict$Red;
+		default:
+			return _elm_lang$core$Native_Debug.crash('Can\'t make a double black node more black!');
+	}
+};
+var _elm_lang$core$Dict$lessBlack = function (color) {
+	var _p22 = color;
+	switch (_p22.ctor) {
+		case 'BBlack':
+			return _elm_lang$core$Dict$Black;
+		case 'Black':
+			return _elm_lang$core$Dict$Red;
+		case 'Red':
+			return _elm_lang$core$Dict$NBlack;
+		default:
+			return _elm_lang$core$Native_Debug.crash('Can\'t make a negative black node less black!');
+	}
+};
+var _elm_lang$core$Dict$LBBlack = {ctor: 'LBBlack'};
+var _elm_lang$core$Dict$LBlack = {ctor: 'LBlack'};
+var _elm_lang$core$Dict$RBEmpty_elm_builtin = function (a) {
+	return {ctor: 'RBEmpty_elm_builtin', _0: a};
+};
+var _elm_lang$core$Dict$empty = _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+var _elm_lang$core$Dict$isEmpty = function (dict) {
+	return _elm_lang$core$Native_Utils.eq(dict, _elm_lang$core$Dict$empty);
+};
+var _elm_lang$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {ctor: 'RBNode_elm_builtin', _0: a, _1: b, _2: c, _3: d, _4: e};
+	});
+var _elm_lang$core$Dict$ensureBlackRoot = function (dict) {
+	var _p23 = dict;
+	if ((_p23.ctor === 'RBNode_elm_builtin') && (_p23._0.ctor === 'Red')) {
+		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p23._1, _p23._2, _p23._3, _p23._4);
+	} else {
+		return dict;
+	}
+};
+var _elm_lang$core$Dict$lessBlackTree = function (dict) {
+	var _p24 = dict;
+	if (_p24.ctor === 'RBNode_elm_builtin') {
+		return A5(
+			_elm_lang$core$Dict$RBNode_elm_builtin,
+			_elm_lang$core$Dict$lessBlack(_p24._0),
+			_p24._1,
+			_p24._2,
+			_p24._3,
+			_p24._4);
+	} else {
+		return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+	}
+};
+var _elm_lang$core$Dict$balancedTree = function (col) {
+	return function (xk) {
+		return function (xv) {
+			return function (yk) {
+				return function (yv) {
+					return function (zk) {
+						return function (zv) {
+							return function (a) {
+								return function (b) {
+									return function (c) {
+										return function (d) {
+											return A5(
+												_elm_lang$core$Dict$RBNode_elm_builtin,
+												_elm_lang$core$Dict$lessBlack(col),
+												yk,
+												yv,
+												A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, xk, xv, a, b),
+												A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, zk, zv, c, d));
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _elm_lang$core$Dict$blacken = function (t) {
+	var _p25 = t;
+	if (_p25.ctor === 'RBEmpty_elm_builtin') {
+		return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+	} else {
+		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p25._1, _p25._2, _p25._3, _p25._4);
+	}
+};
+var _elm_lang$core$Dict$redden = function (t) {
+	var _p26 = t;
+	if (_p26.ctor === 'RBEmpty_elm_builtin') {
+		return _elm_lang$core$Native_Debug.crash('can\'t make a Leaf red');
+	} else {
+		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Red, _p26._1, _p26._2, _p26._3, _p26._4);
+	}
+};
+var _elm_lang$core$Dict$balanceHelp = function (tree) {
+	var _p27 = tree;
+	_v36_6:
+	do {
+		_v36_5:
+		do {
+			_v36_4:
+			do {
+				_v36_3:
+				do {
+					_v36_2:
+					do {
+						_v36_1:
+						do {
+							_v36_0:
+							do {
+								if (_p27.ctor === 'RBNode_elm_builtin') {
+									if (_p27._3.ctor === 'RBNode_elm_builtin') {
+										if (_p27._4.ctor === 'RBNode_elm_builtin') {
+											switch (_p27._3._0.ctor) {
+												case 'Red':
+													switch (_p27._4._0.ctor) {
+														case 'Red':
+															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
+																break _v36_0;
+															} else {
+																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
+																	break _v36_1;
+																} else {
+																	if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
+																		break _v36_2;
+																	} else {
+																		if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
+																			break _v36_3;
+																		} else {
+																			break _v36_6;
+																		}
+																	}
+																}
+															}
+														case 'NBlack':
+															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
+																break _v36_0;
+															} else {
+																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
+																	break _v36_1;
+																} else {
+																	if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
+																		break _v36_4;
+																	} else {
+																		break _v36_6;
+																	}
+																}
+															}
+														default:
+															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
+																break _v36_0;
+															} else {
+																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
+																	break _v36_1;
+																} else {
+																	break _v36_6;
+																}
+															}
+													}
+												case 'NBlack':
+													switch (_p27._4._0.ctor) {
+														case 'Red':
+															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
+																break _v36_2;
+															} else {
+																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
+																	break _v36_3;
+																} else {
+																	if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
+																		break _v36_5;
+																	} else {
+																		break _v36_6;
+																	}
+																}
+															}
+														case 'NBlack':
+															if (_p27._0.ctor === 'BBlack') {
+																if ((((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
+																	break _v36_4;
+																} else {
+																	if ((((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
+																		break _v36_5;
+																	} else {
+																		break _v36_6;
+																	}
+																}
+															} else {
+																break _v36_6;
+															}
+														default:
+															if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
+																break _v36_5;
+															} else {
+																break _v36_6;
+															}
+													}
+												default:
+													switch (_p27._4._0.ctor) {
+														case 'Red':
+															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
+																break _v36_2;
+															} else {
+																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
+																	break _v36_3;
+																} else {
+																	break _v36_6;
+																}
+															}
+														case 'NBlack':
+															if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
+																break _v36_4;
+															} else {
+																break _v36_6;
+															}
+														default:
+															break _v36_6;
+													}
+											}
+										} else {
+											switch (_p27._3._0.ctor) {
+												case 'Red':
+													if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
+														break _v36_0;
+													} else {
+														if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
+															break _v36_1;
+														} else {
+															break _v36_6;
+														}
+													}
+												case 'NBlack':
+													if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
+														break _v36_5;
+													} else {
+														break _v36_6;
+													}
+												default:
+													break _v36_6;
+											}
+										}
+									} else {
+										if (_p27._4.ctor === 'RBNode_elm_builtin') {
+											switch (_p27._4._0.ctor) {
+												case 'Red':
+													if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
+														break _v36_2;
+													} else {
+														if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
+															break _v36_3;
+														} else {
+															break _v36_6;
+														}
+													}
+												case 'NBlack':
+													if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
+														break _v36_4;
+													} else {
+														break _v36_6;
+													}
+												default:
+													break _v36_6;
+											}
+										} else {
+											break _v36_6;
+										}
+									}
+								} else {
+									break _v36_6;
+								}
+							} while(false);
+							return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._3._1)(_p27._3._3._2)(_p27._3._1)(_p27._3._2)(_p27._1)(_p27._2)(_p27._3._3._3)(_p27._3._3._4)(_p27._3._4)(_p27._4);
+						} while(false);
+						return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._1)(_p27._3._2)(_p27._3._4._1)(_p27._3._4._2)(_p27._1)(_p27._2)(_p27._3._3)(_p27._3._4._3)(_p27._3._4._4)(_p27._4);
+					} while(false);
+					return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._1)(_p27._2)(_p27._4._3._1)(_p27._4._3._2)(_p27._4._1)(_p27._4._2)(_p27._3)(_p27._4._3._3)(_p27._4._3._4)(_p27._4._4);
+				} while(false);
+				return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._1)(_p27._2)(_p27._4._1)(_p27._4._2)(_p27._4._4._1)(_p27._4._4._2)(_p27._3)(_p27._4._3)(_p27._4._4._3)(_p27._4._4._4);
+			} while(false);
+			return A5(
+				_elm_lang$core$Dict$RBNode_elm_builtin,
+				_elm_lang$core$Dict$Black,
+				_p27._4._3._1,
+				_p27._4._3._2,
+				A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p27._1, _p27._2, _p27._3, _p27._4._3._3),
+				A5(
+					_elm_lang$core$Dict$balance,
+					_elm_lang$core$Dict$Black,
+					_p27._4._1,
+					_p27._4._2,
+					_p27._4._3._4,
+					_elm_lang$core$Dict$redden(_p27._4._4)));
+		} while(false);
+		return A5(
+			_elm_lang$core$Dict$RBNode_elm_builtin,
+			_elm_lang$core$Dict$Black,
+			_p27._3._4._1,
+			_p27._3._4._2,
+			A5(
+				_elm_lang$core$Dict$balance,
+				_elm_lang$core$Dict$Black,
+				_p27._3._1,
+				_p27._3._2,
+				_elm_lang$core$Dict$redden(_p27._3._3),
+				_p27._3._4._3),
+			A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p27._1, _p27._2, _p27._3._4._4, _p27._4));
+	} while(false);
+	return tree;
+};
+var _elm_lang$core$Dict$balance = F5(
+	function (c, k, v, l, r) {
+		var tree = A5(_elm_lang$core$Dict$RBNode_elm_builtin, c, k, v, l, r);
+		return _elm_lang$core$Dict$blackish(tree) ? _elm_lang$core$Dict$balanceHelp(tree) : tree;
+	});
+var _elm_lang$core$Dict$bubble = F5(
+	function (c, k, v, l, r) {
+		return (_elm_lang$core$Dict$isBBlack(l) || _elm_lang$core$Dict$isBBlack(r)) ? A5(
+			_elm_lang$core$Dict$balance,
+			_elm_lang$core$Dict$moreBlack(c),
+			k,
+			v,
+			_elm_lang$core$Dict$lessBlackTree(l),
+			_elm_lang$core$Dict$lessBlackTree(r)) : A5(_elm_lang$core$Dict$RBNode_elm_builtin, c, k, v, l, r);
+	});
+var _elm_lang$core$Dict$removeMax = F5(
+	function (c, k, v, l, r) {
+		var _p28 = r;
+		if (_p28.ctor === 'RBEmpty_elm_builtin') {
+			return A3(_elm_lang$core$Dict$rem, c, l, r);
+		} else {
+			return A5(
+				_elm_lang$core$Dict$bubble,
+				c,
+				k,
+				v,
+				l,
+				A5(_elm_lang$core$Dict$removeMax, _p28._0, _p28._1, _p28._2, _p28._3, _p28._4));
+		}
+	});
+var _elm_lang$core$Dict$rem = F3(
+	function (c, l, r) {
+		var _p29 = {ctor: '_Tuple2', _0: l, _1: r};
+		if (_p29._0.ctor === 'RBEmpty_elm_builtin') {
+			if (_p29._1.ctor === 'RBEmpty_elm_builtin') {
+				var _p30 = c;
+				switch (_p30.ctor) {
+					case 'Red':
+						return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+					case 'Black':
+						return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBBlack);
+					default:
+						return _elm_lang$core$Native_Debug.crash('cannot have bblack or nblack nodes at this point');
+				}
+			} else {
+				var _p33 = _p29._1._0;
+				var _p32 = _p29._0._0;
+				var _p31 = {ctor: '_Tuple3', _0: c, _1: _p32, _2: _p33};
+				if ((((_p31.ctor === '_Tuple3') && (_p31._0.ctor === 'Black')) && (_p31._1.ctor === 'LBlack')) && (_p31._2.ctor === 'Red')) {
+					return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p29._1._1, _p29._1._2, _p29._1._3, _p29._1._4);
+				} else {
+					return A4(
+						_elm_lang$core$Dict$reportRemBug,
+						'Black/LBlack/Red',
+						c,
+						_elm_lang$core$Basics$toString(_p32),
+						_elm_lang$core$Basics$toString(_p33));
+				}
+			}
+		} else {
+			if (_p29._1.ctor === 'RBEmpty_elm_builtin') {
+				var _p36 = _p29._1._0;
+				var _p35 = _p29._0._0;
+				var _p34 = {ctor: '_Tuple3', _0: c, _1: _p35, _2: _p36};
+				if ((((_p34.ctor === '_Tuple3') && (_p34._0.ctor === 'Black')) && (_p34._1.ctor === 'Red')) && (_p34._2.ctor === 'LBlack')) {
+					return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p29._0._1, _p29._0._2, _p29._0._3, _p29._0._4);
+				} else {
+					return A4(
+						_elm_lang$core$Dict$reportRemBug,
+						'Black/Red/LBlack',
+						c,
+						_elm_lang$core$Basics$toString(_p35),
+						_elm_lang$core$Basics$toString(_p36));
+				}
+			} else {
+				var _p40 = _p29._0._2;
+				var _p39 = _p29._0._4;
+				var _p38 = _p29._0._1;
+				var l$ = A5(_elm_lang$core$Dict$removeMax, _p29._0._0, _p38, _p40, _p29._0._3, _p39);
+				var _p37 = A3(_elm_lang$core$Dict$maxWithDefault, _p38, _p40, _p39);
+				var k = _p37._0;
+				var v = _p37._1;
+				return A5(_elm_lang$core$Dict$bubble, c, k, v, l$, r);
+			}
+		}
+	});
+var _elm_lang$core$Dict$map = F2(
+	function (f, dict) {
+		var _p41 = dict;
+		if (_p41.ctor === 'RBEmpty_elm_builtin') {
+			return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+		} else {
+			var _p42 = _p41._1;
+			return A5(
+				_elm_lang$core$Dict$RBNode_elm_builtin,
+				_p41._0,
+				_p42,
+				A2(f, _p42, _p41._2),
+				A2(_elm_lang$core$Dict$map, f, _p41._3),
+				A2(_elm_lang$core$Dict$map, f, _p41._4));
+		}
+	});
+var _elm_lang$core$Dict$Same = {ctor: 'Same'};
+var _elm_lang$core$Dict$Remove = {ctor: 'Remove'};
+var _elm_lang$core$Dict$Insert = {ctor: 'Insert'};
+var _elm_lang$core$Dict$update = F3(
+	function (k, alter, dict) {
+		var up = function (dict) {
+			var _p43 = dict;
+			if (_p43.ctor === 'RBEmpty_elm_builtin') {
+				var _p44 = alter(_elm_lang$core$Maybe$Nothing);
+				if (_p44.ctor === 'Nothing') {
+					return {ctor: '_Tuple2', _0: _elm_lang$core$Dict$Same, _1: _elm_lang$core$Dict$empty};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Dict$Insert,
+						_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Red, k, _p44._0, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty)
+					};
+				}
+			} else {
+				var _p55 = _p43._2;
+				var _p54 = _p43._4;
+				var _p53 = _p43._3;
+				var _p52 = _p43._1;
+				var _p51 = _p43._0;
+				var _p45 = A2(_elm_lang$core$Basics$compare, k, _p52);
+				switch (_p45.ctor) {
+					case 'EQ':
+						var _p46 = alter(
+							_elm_lang$core$Maybe$Just(_p55));
+						if (_p46.ctor === 'Nothing') {
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Dict$Remove,
+								_1: A3(_elm_lang$core$Dict$rem, _p51, _p53, _p54)
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Dict$Same,
+								_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p46._0, _p53, _p54)
+							};
+						}
+					case 'LT':
+						var _p47 = up(_p53);
+						var flag = _p47._0;
+						var newLeft = _p47._1;
+						var _p48 = flag;
+						switch (_p48.ctor) {
+							case 'Same':
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Same,
+									_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p55, newLeft, _p54)
+								};
+							case 'Insert':
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Insert,
+									_1: A5(_elm_lang$core$Dict$balance, _p51, _p52, _p55, newLeft, _p54)
+								};
+							default:
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Remove,
+									_1: A5(_elm_lang$core$Dict$bubble, _p51, _p52, _p55, newLeft, _p54)
+								};
+						}
+					default:
+						var _p49 = up(_p54);
+						var flag = _p49._0;
+						var newRight = _p49._1;
+						var _p50 = flag;
+						switch (_p50.ctor) {
+							case 'Same':
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Same,
+									_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p55, _p53, newRight)
+								};
+							case 'Insert':
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Insert,
+									_1: A5(_elm_lang$core$Dict$balance, _p51, _p52, _p55, _p53, newRight)
+								};
+							default:
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Remove,
+									_1: A5(_elm_lang$core$Dict$bubble, _p51, _p52, _p55, _p53, newRight)
+								};
+						}
+				}
+			}
+		};
+		var _p56 = up(dict);
+		var flag = _p56._0;
+		var updatedDict = _p56._1;
+		var _p57 = flag;
+		switch (_p57.ctor) {
+			case 'Same':
+				return updatedDict;
+			case 'Insert':
+				return _elm_lang$core$Dict$ensureBlackRoot(updatedDict);
+			default:
+				return _elm_lang$core$Dict$blacken(updatedDict);
+		}
+	});
+var _elm_lang$core$Dict$insert = F3(
+	function (key, value, dict) {
+		return A3(
+			_elm_lang$core$Dict$update,
+			key,
+			_elm_lang$core$Basics$always(
+				_elm_lang$core$Maybe$Just(value)),
+			dict);
+	});
+var _elm_lang$core$Dict$singleton = F2(
+	function (key, value) {
+		return A3(_elm_lang$core$Dict$insert, key, value, _elm_lang$core$Dict$empty);
+	});
+var _elm_lang$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3(_elm_lang$core$Dict$foldl, _elm_lang$core$Dict$insert, t2, t1);
+	});
+var _elm_lang$core$Dict$filter = F2(
+	function (predicate, dictionary) {
+		var add = F3(
+			function (key, value, dict) {
+				return A2(predicate, key, value) ? A3(_elm_lang$core$Dict$insert, key, value, dict) : dict;
+			});
+		return A3(_elm_lang$core$Dict$foldl, add, _elm_lang$core$Dict$empty, dictionary);
+	});
+var _elm_lang$core$Dict$intersect = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Dict$filter,
+			F2(
+				function (k, _p58) {
+					return A2(_elm_lang$core$Dict$member, k, t2);
+				}),
+			t1);
+	});
+var _elm_lang$core$Dict$partition = F2(
+	function (predicate, dict) {
+		var add = F3(
+			function (key, value, _p59) {
+				var _p60 = _p59;
+				var _p62 = _p60._1;
+				var _p61 = _p60._0;
+				return A2(predicate, key, value) ? {
+					ctor: '_Tuple2',
+					_0: A3(_elm_lang$core$Dict$insert, key, value, _p61),
+					_1: _p62
+				} : {
+					ctor: '_Tuple2',
+					_0: _p61,
+					_1: A3(_elm_lang$core$Dict$insert, key, value, _p62)
+				};
+			});
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			add,
+			{ctor: '_Tuple2', _0: _elm_lang$core$Dict$empty, _1: _elm_lang$core$Dict$empty},
+			dict);
+	});
+var _elm_lang$core$Dict$fromList = function (assocs) {
+	return A3(
+		_elm_lang$core$List$foldl,
+		F2(
+			function (_p63, dict) {
+				var _p64 = _p63;
+				return A3(_elm_lang$core$Dict$insert, _p64._0, _p64._1, dict);
+			}),
+		_elm_lang$core$Dict$empty,
+		assocs);
+};
+var _elm_lang$core$Dict$remove = F2(
+	function (key, dict) {
+		return A3(
+			_elm_lang$core$Dict$update,
+			key,
+			_elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing),
+			dict);
+	});
+var _elm_lang$core$Dict$diff = F2(
+	function (t1, t2) {
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, v, t) {
+					return A2(_elm_lang$core$Dict$remove, k, t);
+				}),
+			t1,
+			t2);
+	});
 
 //import Native.List //
 
@@ -4153,898 +5081,1234 @@ var _elm_lang$core$Array$repeat = F2(
 	});
 var _elm_lang$core$Array$Array = {ctor: 'Array'};
 
-var _elm_lang$core$Dict$foldr = F3(
-	function (f, acc, t) {
-		foldr:
-		while (true) {
-			var _p0 = t;
-			if (_p0.ctor === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var _v1 = f,
-					_v2 = A3(
-					f,
-					_p0._1,
-					_p0._2,
-					A3(_elm_lang$core$Dict$foldr, f, acc, _p0._4)),
-					_v3 = _p0._3;
-				f = _v1;
-				acc = _v2;
-				t = _v3;
-				continue foldr;
-			}
-		}
+var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
+var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
+var _elm_lang$core$Task$spawnCmd = F2(
+	function (router, _p0) {
+		var _p1 = _p0;
+		return _elm_lang$core$Native_Scheduler.spawn(
+			A2(
+				_elm_lang$core$Task$andThen,
+				_p1._0,
+				_elm_lang$core$Platform$sendToApp(router)));
 	});
-var _elm_lang$core$Dict$keys = function (dict) {
-	return A3(
-		_elm_lang$core$Dict$foldr,
-		F3(
-			function (key, value, keyList) {
-				return A2(_elm_lang$core$List_ops['::'], key, keyList);
-			}),
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		dict);
-};
-var _elm_lang$core$Dict$values = function (dict) {
-	return A3(
-		_elm_lang$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2(_elm_lang$core$List_ops['::'], value, valueList);
-			}),
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		dict);
-};
-var _elm_lang$core$Dict$toList = function (dict) {
-	return A3(
-		_elm_lang$core$Dict$foldr,
-		F3(
-			function (key, value, list) {
-				return A2(
-					_elm_lang$core$List_ops['::'],
-					{ctor: '_Tuple2', _0: key, _1: value},
-					list);
-			}),
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		dict);
-};
-var _elm_lang$core$Dict$foldl = F3(
-	function (f, acc, dict) {
-		foldl:
-		while (true) {
-			var _p1 = dict;
-			if (_p1.ctor === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var _v5 = f,
-					_v6 = A3(
-					f,
-					_p1._1,
-					_p1._2,
-					A3(_elm_lang$core$Dict$foldl, f, acc, _p1._3)),
-					_v7 = _p1._4;
-				f = _v5;
-				acc = _v6;
-				dict = _v7;
-				continue foldl;
-			}
-		}
-	});
-var _elm_lang$core$Dict$merge = F6(
-	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
-		var stepState = F3(
-			function (rKey, rValue, _p2) {
-				stepState:
-				while (true) {
-					var _p3 = _p2;
-					var _p9 = _p3._1;
-					var _p8 = _p3._0;
-					var _p4 = _p8;
-					if (_p4.ctor === '[]') {
-						return {
-							ctor: '_Tuple2',
-							_0: _p8,
-							_1: A3(rightStep, rKey, rValue, _p9)
-						};
-					} else {
-						var _p7 = _p4._1;
-						var _p6 = _p4._0._1;
-						var _p5 = _p4._0._0;
-						if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) < 0) {
-							var _v10 = rKey,
-								_v11 = rValue,
-								_v12 = {
-								ctor: '_Tuple2',
-								_0: _p7,
-								_1: A3(leftStep, _p5, _p6, _p9)
-							};
-							rKey = _v10;
-							rValue = _v11;
-							_p2 = _v12;
-							continue stepState;
-						} else {
-							if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) > 0) {
-								return {
-									ctor: '_Tuple2',
-									_0: _p8,
-									_1: A3(rightStep, rKey, rValue, _p9)
-								};
-							} else {
-								return {
-									ctor: '_Tuple2',
-									_0: _p7,
-									_1: A4(bothStep, _p5, _p6, rValue, _p9)
-								};
-							}
-						}
-					}
-				}
+var _elm_lang$core$Task$fail = _elm_lang$core$Native_Scheduler.fail;
+var _elm_lang$core$Task$mapError = F2(
+	function (f, task) {
+		return A2(
+			_elm_lang$core$Task$onError,
+			task,
+			function (err) {
+				return _elm_lang$core$Task$fail(
+					f(err));
 			});
-		var _p10 = A3(
-			_elm_lang$core$Dict$foldl,
-			stepState,
-			{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Dict$toList(leftDict),
-				_1: initialResult
-			},
-			rightDict);
-		var leftovers = _p10._0;
-		var intermediateResult = _p10._1;
+	});
+var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
+var _elm_lang$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return _elm_lang$core$Task$succeed(
+					func(a));
+			});
+	});
+var _elm_lang$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskB,
+					function (b) {
+						return _elm_lang$core$Task$succeed(
+							A2(func, a, b));
+					});
+			});
+	});
+var _elm_lang$core$Task$map3 = F4(
+	function (func, taskA, taskB, taskC) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							taskC,
+							function (c) {
+								return _elm_lang$core$Task$succeed(
+									A3(func, a, b, c));
+							});
+					});
+			});
+	});
+var _elm_lang$core$Task$map4 = F5(
+	function (func, taskA, taskB, taskC, taskD) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							taskC,
+							function (c) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									taskD,
+									function (d) {
+										return _elm_lang$core$Task$succeed(
+											A4(func, a, b, c, d));
+									});
+							});
+					});
+			});
+	});
+var _elm_lang$core$Task$map5 = F6(
+	function (func, taskA, taskB, taskC, taskD, taskE) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							taskC,
+							function (c) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									taskD,
+									function (d) {
+										return A2(
+											_elm_lang$core$Task$andThen,
+											taskE,
+											function (e) {
+												return _elm_lang$core$Task$succeed(
+													A5(func, a, b, c, d, e));
+											});
+									});
+							});
+					});
+			});
+	});
+var _elm_lang$core$Task$andMap = F2(
+	function (taskFunc, taskValue) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			taskFunc,
+			function (func) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					taskValue,
+					function (value) {
+						return _elm_lang$core$Task$succeed(
+							func(value));
+					});
+			});
+	});
+var _elm_lang$core$Task$sequence = function (tasks) {
+	var _p2 = tasks;
+	if (_p2.ctor === '[]') {
+		return _elm_lang$core$Task$succeed(
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	} else {
 		return A3(
-			_elm_lang$core$List$foldl,
+			_elm_lang$core$Task$map2,
 			F2(
-				function (_p11, result) {
-					var _p12 = _p11;
-					return A3(leftStep, _p12._0, _p12._1, result);
+				function (x, y) {
+					return A2(_elm_lang$core$List_ops['::'], x, y);
 				}),
-			intermediateResult,
-			leftovers);
+			_p2._0,
+			_elm_lang$core$Task$sequence(_p2._1));
+	}
+};
+var _elm_lang$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			_elm_lang$core$Task$map,
+			function (_p3) {
+				return {ctor: '_Tuple0'};
+			},
+			_elm_lang$core$Task$sequence(
+				A2(
+					_elm_lang$core$List$map,
+					_elm_lang$core$Task$spawnCmd(router),
+					commands)));
 	});
-var _elm_lang$core$Dict$reportRemBug = F4(
-	function (msg, c, lgot, rgot) {
-		return _elm_lang$core$Native_Debug.crash(
-			_elm_lang$core$String$concat(
+var _elm_lang$core$Task$toMaybe = function (task) {
+	return A2(
+		_elm_lang$core$Task$onError,
+		A2(_elm_lang$core$Task$map, _elm_lang$core$Maybe$Just, task),
+		function (_p4) {
+			return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+		});
+};
+var _elm_lang$core$Task$fromMaybe = F2(
+	function ($default, maybe) {
+		var _p5 = maybe;
+		if (_p5.ctor === 'Just') {
+			return _elm_lang$core$Task$succeed(_p5._0);
+		} else {
+			return _elm_lang$core$Task$fail($default);
+		}
+	});
+var _elm_lang$core$Task$toResult = function (task) {
+	return A2(
+		_elm_lang$core$Task$onError,
+		A2(_elm_lang$core$Task$map, _elm_lang$core$Result$Ok, task),
+		function (msg) {
+			return _elm_lang$core$Task$succeed(
+				_elm_lang$core$Result$Err(msg));
+		});
+};
+var _elm_lang$core$Task$fromResult = function (result) {
+	var _p6 = result;
+	if (_p6.ctor === 'Ok') {
+		return _elm_lang$core$Task$succeed(_p6._0);
+	} else {
+		return _elm_lang$core$Task$fail(_p6._0);
+	}
+};
+var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
+	{ctor: '_Tuple0'});
+var _elm_lang$core$Task$onSelfMsg = F3(
+	function (_p9, _p8, _p7) {
+		return _elm_lang$core$Task$succeed(
+			{ctor: '_Tuple0'});
+	});
+var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
+var _elm_lang$core$Task$T = function (a) {
+	return {ctor: 'T', _0: a};
+};
+var _elm_lang$core$Task$perform = F3(
+	function (onFail, onSuccess, task) {
+		return _elm_lang$core$Task$command(
+			_elm_lang$core$Task$T(
+				A2(
+					_elm_lang$core$Task$onError,
+					A2(_elm_lang$core$Task$map, onSuccess, task),
+					function (x) {
+						return _elm_lang$core$Task$succeed(
+							onFail(x));
+					})));
+	});
+var _elm_lang$core$Task$cmdMap = F2(
+	function (tagger, _p10) {
+		var _p11 = _p10;
+		return _elm_lang$core$Task$T(
+			A2(_elm_lang$core$Task$map, tagger, _p11._0));
+	});
+_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
+
+//import Native.Scheduler //
+
+var _elm_lang$core$Native_Time = function() {
+
+var now = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+{
+	callback(_elm_lang$core$Native_Scheduler.succeed(Date.now()));
+});
+
+function setInterval_(interval, task)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		var id = setInterval(function() {
+			_elm_lang$core$Native_Scheduler.rawSpawn(task);
+		}, interval);
+
+		return function() { clearInterval(id); };
+	});
+}
+
+return {
+	now: now,
+	setInterval_: F2(setInterval_)
+};
+
+}();
+var _elm_lang$core$Time$setInterval = _elm_lang$core$Native_Time.setInterval_;
+var _elm_lang$core$Time$spawnHelp = F3(
+	function (router, intervals, processes) {
+		var _p0 = intervals;
+		if (_p0.ctor === '[]') {
+			return _elm_lang$core$Task$succeed(processes);
+		} else {
+			var _p1 = _p0._0;
+			return A2(
+				_elm_lang$core$Task$andThen,
+				_elm_lang$core$Native_Scheduler.spawn(
+					A2(
+						_elm_lang$core$Time$setInterval,
+						_p1,
+						A2(_elm_lang$core$Platform$sendToSelf, router, _p1))),
+				function (id) {
+					return A3(
+						_elm_lang$core$Time$spawnHelp,
+						router,
+						_p0._1,
+						A3(_elm_lang$core$Dict$insert, _p1, id, processes));
+				});
+		}
+	});
+var _elm_lang$core$Time$addMySub = F2(
+	function (_p2, state) {
+		var _p3 = _p2;
+		var _p6 = _p3._1;
+		var _p5 = _p3._0;
+		var _p4 = A2(_elm_lang$core$Dict$get, _p5, state);
+		if (_p4.ctor === 'Nothing') {
+			return A3(
+				_elm_lang$core$Dict$insert,
+				_p5,
 				_elm_lang$core$Native_List.fromArray(
-					[
-						'Internal red-black tree invariant violated, expected ',
-						msg,
-						' and got ',
-						_elm_lang$core$Basics$toString(c),
-						'/',
-						lgot,
-						'/',
-						rgot,
-						'\nPlease report this bug to <https://github.com/elm-lang/core/issues>'
-					])));
-	});
-var _elm_lang$core$Dict$isBBlack = function (dict) {
-	var _p13 = dict;
-	_v14_2:
-	do {
-		if (_p13.ctor === 'RBNode_elm_builtin') {
-			if (_p13._0.ctor === 'BBlack') {
-				return true;
-			} else {
-				break _v14_2;
-			}
+					[_p6]),
+				state);
 		} else {
-			if (_p13._0.ctor === 'LBBlack') {
-				return true;
-			} else {
-				break _v14_2;
-			}
-		}
-	} while(false);
-	return false;
-};
-var _elm_lang$core$Dict$sizeHelp = F2(
-	function (n, dict) {
-		sizeHelp:
-		while (true) {
-			var _p14 = dict;
-			if (_p14.ctor === 'RBEmpty_elm_builtin') {
-				return n;
-			} else {
-				var _v16 = A2(_elm_lang$core$Dict$sizeHelp, n + 1, _p14._4),
-					_v17 = _p14._3;
-				n = _v16;
-				dict = _v17;
-				continue sizeHelp;
-			}
+			return A3(
+				_elm_lang$core$Dict$insert,
+				_p5,
+				A2(_elm_lang$core$List_ops['::'], _p6, _p4._0),
+				state);
 		}
 	});
-var _elm_lang$core$Dict$size = function (dict) {
-	return A2(_elm_lang$core$Dict$sizeHelp, 0, dict);
+var _elm_lang$core$Time$inMilliseconds = function (t) {
+	return t;
 };
-var _elm_lang$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			var _p15 = dict;
-			if (_p15.ctor === 'RBEmpty_elm_builtin') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				var _p16 = A2(_elm_lang$core$Basics$compare, targetKey, _p15._1);
-				switch (_p16.ctor) {
-					case 'LT':
-						var _v20 = targetKey,
-							_v21 = _p15._3;
-						targetKey = _v20;
-						dict = _v21;
-						continue get;
-					case 'EQ':
-						return _elm_lang$core$Maybe$Just(_p15._2);
-					default:
-						var _v22 = targetKey,
-							_v23 = _p15._4;
-						targetKey = _v22;
-						dict = _v23;
-						continue get;
-				}
-			}
-		}
-	});
-var _elm_lang$core$Dict$member = F2(
-	function (key, dict) {
-		var _p17 = A2(_elm_lang$core$Dict$get, key, dict);
-		if (_p17.ctor === 'Just') {
-			return true;
+var _elm_lang$core$Time$millisecond = 1;
+var _elm_lang$core$Time$second = 1000 * _elm_lang$core$Time$millisecond;
+var _elm_lang$core$Time$minute = 60 * _elm_lang$core$Time$second;
+var _elm_lang$core$Time$hour = 60 * _elm_lang$core$Time$minute;
+var _elm_lang$core$Time$inHours = function (t) {
+	return t / _elm_lang$core$Time$hour;
+};
+var _elm_lang$core$Time$inMinutes = function (t) {
+	return t / _elm_lang$core$Time$minute;
+};
+var _elm_lang$core$Time$inSeconds = function (t) {
+	return t / _elm_lang$core$Time$second;
+};
+var _elm_lang$core$Time$now = _elm_lang$core$Native_Time.now;
+var _elm_lang$core$Time$onSelfMsg = F3(
+	function (router, interval, state) {
+		var _p7 = A2(_elm_lang$core$Dict$get, interval, state.taggers);
+		if (_p7.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
 		} else {
-			return false;
+			return A2(
+				_elm_lang$core$Task$andThen,
+				_elm_lang$core$Time$now,
+				function (time) {
+					return A2(
+						_elm_lang$core$Task$andThen,
+						_elm_lang$core$Task$sequence(
+							A2(
+								_elm_lang$core$List$map,
+								function (tagger) {
+									return A2(
+										_elm_lang$core$Platform$sendToApp,
+										router,
+										tagger(time));
+								},
+								_p7._0)),
+						function (_p8) {
+							return _elm_lang$core$Task$succeed(state);
+						});
+				});
 		}
 	});
-var _elm_lang$core$Dict$maxWithDefault = F3(
-	function (k, v, r) {
-		maxWithDefault:
-		while (true) {
-			var _p18 = r;
-			if (_p18.ctor === 'RBEmpty_elm_builtin') {
-				return {ctor: '_Tuple2', _0: k, _1: v};
-			} else {
-				var _v26 = _p18._1,
-					_v27 = _p18._2,
-					_v28 = _p18._4;
-				k = _v26;
-				v = _v27;
-				r = _v28;
-				continue maxWithDefault;
-			}
-		}
+var _elm_lang$core$Time$subscription = _elm_lang$core$Native_Platform.leaf('Time');
+var _elm_lang$core$Time$State = F2(
+	function (a, b) {
+		return {taggers: a, processes: b};
 	});
-var _elm_lang$core$Dict$NBlack = {ctor: 'NBlack'};
-var _elm_lang$core$Dict$BBlack = {ctor: 'BBlack'};
-var _elm_lang$core$Dict$Black = {ctor: 'Black'};
-var _elm_lang$core$Dict$blackish = function (t) {
-	var _p19 = t;
-	if (_p19.ctor === 'RBNode_elm_builtin') {
-		var _p20 = _p19._0;
-		return _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$Black) || _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$BBlack);
-	} else {
-		return true;
-	}
-};
-var _elm_lang$core$Dict$Red = {ctor: 'Red'};
-var _elm_lang$core$Dict$moreBlack = function (color) {
-	var _p21 = color;
-	switch (_p21.ctor) {
-		case 'Black':
-			return _elm_lang$core$Dict$BBlack;
-		case 'Red':
-			return _elm_lang$core$Dict$Black;
-		case 'NBlack':
-			return _elm_lang$core$Dict$Red;
-		default:
-			return _elm_lang$core$Native_Debug.crash('Can\'t make a double black node more black!');
-	}
-};
-var _elm_lang$core$Dict$lessBlack = function (color) {
-	var _p22 = color;
-	switch (_p22.ctor) {
-		case 'BBlack':
-			return _elm_lang$core$Dict$Black;
-		case 'Black':
-			return _elm_lang$core$Dict$Red;
-		case 'Red':
-			return _elm_lang$core$Dict$NBlack;
-		default:
-			return _elm_lang$core$Native_Debug.crash('Can\'t make a negative black node less black!');
-	}
-};
-var _elm_lang$core$Dict$LBBlack = {ctor: 'LBBlack'};
-var _elm_lang$core$Dict$LBlack = {ctor: 'LBlack'};
-var _elm_lang$core$Dict$RBEmpty_elm_builtin = function (a) {
-	return {ctor: 'RBEmpty_elm_builtin', _0: a};
-};
-var _elm_lang$core$Dict$empty = _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-var _elm_lang$core$Dict$isEmpty = function (dict) {
-	return _elm_lang$core$Native_Utils.eq(dict, _elm_lang$core$Dict$empty);
-};
-var _elm_lang$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {ctor: 'RBNode_elm_builtin', _0: a, _1: b, _2: c, _3: d, _4: e};
-	});
-var _elm_lang$core$Dict$ensureBlackRoot = function (dict) {
-	var _p23 = dict;
-	if ((_p23.ctor === 'RBNode_elm_builtin') && (_p23._0.ctor === 'Red')) {
-		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p23._1, _p23._2, _p23._3, _p23._4);
-	} else {
-		return dict;
-	}
-};
-var _elm_lang$core$Dict$lessBlackTree = function (dict) {
-	var _p24 = dict;
-	if (_p24.ctor === 'RBNode_elm_builtin') {
-		return A5(
-			_elm_lang$core$Dict$RBNode_elm_builtin,
-			_elm_lang$core$Dict$lessBlack(_p24._0),
-			_p24._1,
-			_p24._2,
-			_p24._3,
-			_p24._4);
-	} else {
-		return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-	}
-};
-var _elm_lang$core$Dict$balancedTree = function (col) {
-	return function (xk) {
-		return function (xv) {
-			return function (yk) {
-				return function (yv) {
-					return function (zk) {
-						return function (zv) {
-							return function (a) {
-								return function (b) {
-									return function (c) {
-										return function (d) {
-											return A5(
-												_elm_lang$core$Dict$RBNode_elm_builtin,
-												_elm_lang$core$Dict$lessBlack(col),
-												yk,
-												yv,
-												A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, xk, xv, a, b),
-												A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, zk, zv, c, d));
-										};
-									};
-								};
-							};
-						};
-					};
+var _elm_lang$core$Time$init = _elm_lang$core$Task$succeed(
+	A2(_elm_lang$core$Time$State, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty));
+var _elm_lang$core$Time$onEffects = F3(
+	function (router, subs, _p9) {
+		var _p10 = _p9;
+		var rightStep = F3(
+			function (_p12, id, _p11) {
+				var _p13 = _p11;
+				return {
+					ctor: '_Tuple3',
+					_0: _p13._0,
+					_1: _p13._1,
+					_2: A2(
+						_elm_lang$core$Task$andThen,
+						_elm_lang$core$Native_Scheduler.kill(id),
+						function (_p14) {
+							return _p13._2;
+						})
 				};
-			};
-		};
+			});
+		var bothStep = F4(
+			function (interval, taggers, id, _p15) {
+				var _p16 = _p15;
+				return {
+					ctor: '_Tuple3',
+					_0: _p16._0,
+					_1: A3(_elm_lang$core$Dict$insert, interval, id, _p16._1),
+					_2: _p16._2
+				};
+			});
+		var leftStep = F3(
+			function (interval, taggers, _p17) {
+				var _p18 = _p17;
+				return {
+					ctor: '_Tuple3',
+					_0: A2(_elm_lang$core$List_ops['::'], interval, _p18._0),
+					_1: _p18._1,
+					_2: _p18._2
+				};
+			});
+		var newTaggers = A3(_elm_lang$core$List$foldl, _elm_lang$core$Time$addMySub, _elm_lang$core$Dict$empty, subs);
+		var _p19 = A6(
+			_elm_lang$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			newTaggers,
+			_p10.processes,
+			{
+				ctor: '_Tuple3',
+				_0: _elm_lang$core$Native_List.fromArray(
+					[]),
+				_1: _elm_lang$core$Dict$empty,
+				_2: _elm_lang$core$Task$succeed(
+					{ctor: '_Tuple0'})
+			});
+		var spawnList = _p19._0;
+		var existingDict = _p19._1;
+		var killTask = _p19._2;
+		return A2(
+			_elm_lang$core$Task$andThen,
+			killTask,
+			function (_p20) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					A3(_elm_lang$core$Time$spawnHelp, router, spawnList, existingDict),
+					function (newProcesses) {
+						return _elm_lang$core$Task$succeed(
+							A2(_elm_lang$core$Time$State, newTaggers, newProcesses));
+					});
+			});
+	});
+var _elm_lang$core$Time$Every = F2(
+	function (a, b) {
+		return {ctor: 'Every', _0: a, _1: b};
+	});
+var _elm_lang$core$Time$every = F2(
+	function (interval, tagger) {
+		return _elm_lang$core$Time$subscription(
+			A2(_elm_lang$core$Time$Every, interval, tagger));
+	});
+var _elm_lang$core$Time$subMap = F2(
+	function (f, _p21) {
+		var _p22 = _p21;
+		return A2(
+			_elm_lang$core$Time$Every,
+			_p22._0,
+			function (_p23) {
+				return f(
+					_p22._1(_p23));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Time'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Time$init, onEffects: _elm_lang$core$Time$onEffects, onSelfMsg: _elm_lang$core$Time$onSelfMsg, tag: 'sub', subMap: _elm_lang$core$Time$subMap};
+
+var _elm_lang$core$Random$onSelfMsg = F3(
+	function (_p1, _p0, seed) {
+		return _elm_lang$core$Task$succeed(seed);
+	});
+var _elm_lang$core$Random$magicNum8 = 2147483562;
+var _elm_lang$core$Random$range = function (_p2) {
+	return {ctor: '_Tuple2', _0: 0, _1: _elm_lang$core$Random$magicNum8};
+};
+var _elm_lang$core$Random$magicNum7 = 2147483399;
+var _elm_lang$core$Random$magicNum6 = 2147483563;
+var _elm_lang$core$Random$magicNum5 = 3791;
+var _elm_lang$core$Random$magicNum4 = 40692;
+var _elm_lang$core$Random$magicNum3 = 52774;
+var _elm_lang$core$Random$magicNum2 = 12211;
+var _elm_lang$core$Random$magicNum1 = 53668;
+var _elm_lang$core$Random$magicNum0 = 40014;
+var _elm_lang$core$Random$step = F2(
+	function (_p3, seed) {
+		var _p4 = _p3;
+		return _p4._0(seed);
+	});
+var _elm_lang$core$Random$onEffects = F3(
+	function (router, commands, seed) {
+		var _p5 = commands;
+		if (_p5.ctor === '[]') {
+			return _elm_lang$core$Task$succeed(seed);
+		} else {
+			var _p6 = A2(_elm_lang$core$Random$step, _p5._0._0, seed);
+			var value = _p6._0;
+			var newSeed = _p6._1;
+			return A2(
+				_elm_lang$core$Task$andThen,
+				A2(_elm_lang$core$Platform$sendToApp, router, value),
+				function (_p7) {
+					return A3(_elm_lang$core$Random$onEffects, router, _p5._1, newSeed);
+				});
+		}
+	});
+var _elm_lang$core$Random$listHelp = F4(
+	function (list, n, generate, seed) {
+		listHelp:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(n, 1) < 0) {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$List$reverse(list),
+					_1: seed
+				};
+			} else {
+				var _p8 = generate(seed);
+				var value = _p8._0;
+				var newSeed = _p8._1;
+				var _v2 = A2(_elm_lang$core$List_ops['::'], value, list),
+					_v3 = n - 1,
+					_v4 = generate,
+					_v5 = newSeed;
+				list = _v2;
+				n = _v3;
+				generate = _v4;
+				seed = _v5;
+				continue listHelp;
+			}
+		}
+	});
+var _elm_lang$core$Random$minInt = -2147483648;
+var _elm_lang$core$Random$maxInt = 2147483647;
+var _elm_lang$core$Random$iLogBase = F2(
+	function (b, i) {
+		return (_elm_lang$core$Native_Utils.cmp(i, b) < 0) ? 1 : (1 + A2(_elm_lang$core$Random$iLogBase, b, (i / b) | 0));
+	});
+var _elm_lang$core$Random$command = _elm_lang$core$Native_Platform.leaf('Random');
+var _elm_lang$core$Random$Generator = function (a) {
+	return {ctor: 'Generator', _0: a};
+};
+var _elm_lang$core$Random$list = F2(
+	function (n, _p9) {
+		var _p10 = _p9;
+		return _elm_lang$core$Random$Generator(
+			function (seed) {
+				return A4(
+					_elm_lang$core$Random$listHelp,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					n,
+					_p10._0,
+					seed);
+			});
+	});
+var _elm_lang$core$Random$map = F2(
+	function (func, _p11) {
+		var _p12 = _p11;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p13 = _p12._0(seed0);
+				var a = _p13._0;
+				var seed1 = _p13._1;
+				return {
+					ctor: '_Tuple2',
+					_0: func(a),
+					_1: seed1
+				};
+			});
+	});
+var _elm_lang$core$Random$map2 = F3(
+	function (func, _p15, _p14) {
+		var _p16 = _p15;
+		var _p17 = _p14;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p18 = _p16._0(seed0);
+				var a = _p18._0;
+				var seed1 = _p18._1;
+				var _p19 = _p17._0(seed1);
+				var b = _p19._0;
+				var seed2 = _p19._1;
+				return {
+					ctor: '_Tuple2',
+					_0: A2(func, a, b),
+					_1: seed2
+				};
+			});
+	});
+var _elm_lang$core$Random$pair = F2(
+	function (genA, genB) {
+		return A3(
+			_elm_lang$core$Random$map2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			genA,
+			genB);
+	});
+var _elm_lang$core$Random$map3 = F4(
+	function (func, _p22, _p21, _p20) {
+		var _p23 = _p22;
+		var _p24 = _p21;
+		var _p25 = _p20;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p26 = _p23._0(seed0);
+				var a = _p26._0;
+				var seed1 = _p26._1;
+				var _p27 = _p24._0(seed1);
+				var b = _p27._0;
+				var seed2 = _p27._1;
+				var _p28 = _p25._0(seed2);
+				var c = _p28._0;
+				var seed3 = _p28._1;
+				return {
+					ctor: '_Tuple2',
+					_0: A3(func, a, b, c),
+					_1: seed3
+				};
+			});
+	});
+var _elm_lang$core$Random$map4 = F5(
+	function (func, _p32, _p31, _p30, _p29) {
+		var _p33 = _p32;
+		var _p34 = _p31;
+		var _p35 = _p30;
+		var _p36 = _p29;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p37 = _p33._0(seed0);
+				var a = _p37._0;
+				var seed1 = _p37._1;
+				var _p38 = _p34._0(seed1);
+				var b = _p38._0;
+				var seed2 = _p38._1;
+				var _p39 = _p35._0(seed2);
+				var c = _p39._0;
+				var seed3 = _p39._1;
+				var _p40 = _p36._0(seed3);
+				var d = _p40._0;
+				var seed4 = _p40._1;
+				return {
+					ctor: '_Tuple2',
+					_0: A4(func, a, b, c, d),
+					_1: seed4
+				};
+			});
+	});
+var _elm_lang$core$Random$map5 = F6(
+	function (func, _p45, _p44, _p43, _p42, _p41) {
+		var _p46 = _p45;
+		var _p47 = _p44;
+		var _p48 = _p43;
+		var _p49 = _p42;
+		var _p50 = _p41;
+		return _elm_lang$core$Random$Generator(
+			function (seed0) {
+				var _p51 = _p46._0(seed0);
+				var a = _p51._0;
+				var seed1 = _p51._1;
+				var _p52 = _p47._0(seed1);
+				var b = _p52._0;
+				var seed2 = _p52._1;
+				var _p53 = _p48._0(seed2);
+				var c = _p53._0;
+				var seed3 = _p53._1;
+				var _p54 = _p49._0(seed3);
+				var d = _p54._0;
+				var seed4 = _p54._1;
+				var _p55 = _p50._0(seed4);
+				var e = _p55._0;
+				var seed5 = _p55._1;
+				return {
+					ctor: '_Tuple2',
+					_0: A5(func, a, b, c, d, e),
+					_1: seed5
+				};
+			});
+	});
+var _elm_lang$core$Random$andThen = F2(
+	function (_p56, callback) {
+		var _p57 = _p56;
+		return _elm_lang$core$Random$Generator(
+			function (seed) {
+				var _p58 = _p57._0(seed);
+				var result = _p58._0;
+				var newSeed = _p58._1;
+				var _p59 = callback(result);
+				var genB = _p59._0;
+				return genB(newSeed);
+			});
+	});
+var _elm_lang$core$Random$State = F2(
+	function (a, b) {
+		return {ctor: 'State', _0: a, _1: b};
+	});
+var _elm_lang$core$Random$initState = function (s$) {
+	var s = A2(_elm_lang$core$Basics$max, s$, 0 - s$);
+	var q = (s / (_elm_lang$core$Random$magicNum6 - 1)) | 0;
+	var s2 = A2(_elm_lang$core$Basics_ops['%'], q, _elm_lang$core$Random$magicNum7 - 1);
+	var s1 = A2(_elm_lang$core$Basics_ops['%'], s, _elm_lang$core$Random$magicNum6 - 1);
+	return A2(_elm_lang$core$Random$State, s1 + 1, s2 + 1);
+};
+var _elm_lang$core$Random$next = function (_p60) {
+	var _p61 = _p60;
+	var _p63 = _p61._1;
+	var _p62 = _p61._0;
+	var k$ = (_p63 / _elm_lang$core$Random$magicNum3) | 0;
+	var s2$ = (_elm_lang$core$Random$magicNum4 * (_p63 - (k$ * _elm_lang$core$Random$magicNum3))) - (k$ * _elm_lang$core$Random$magicNum5);
+	var s2$$ = (_elm_lang$core$Native_Utils.cmp(s2$, 0) < 0) ? (s2$ + _elm_lang$core$Random$magicNum7) : s2$;
+	var k = (_p62 / _elm_lang$core$Random$magicNum1) | 0;
+	var s1$ = (_elm_lang$core$Random$magicNum0 * (_p62 - (k * _elm_lang$core$Random$magicNum1))) - (k * _elm_lang$core$Random$magicNum2);
+	var s1$$ = (_elm_lang$core$Native_Utils.cmp(s1$, 0) < 0) ? (s1$ + _elm_lang$core$Random$magicNum6) : s1$;
+	var z = s1$$ - s2$$;
+	var z$ = (_elm_lang$core$Native_Utils.cmp(z, 1) < 0) ? (z + _elm_lang$core$Random$magicNum8) : z;
+	return {
+		ctor: '_Tuple2',
+		_0: z$,
+		_1: A2(_elm_lang$core$Random$State, s1$$, s2$$)
 	};
 };
-var _elm_lang$core$Dict$blacken = function (t) {
-	var _p25 = t;
-	if (_p25.ctor === 'RBEmpty_elm_builtin') {
-		return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-	} else {
-		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p25._1, _p25._2, _p25._3, _p25._4);
-	}
+var _elm_lang$core$Random$split = function (_p64) {
+	var _p65 = _p64;
+	var _p68 = _p65._1;
+	var _p67 = _p65._0;
+	var _p66 = _elm_lang$core$Basics$snd(
+		_elm_lang$core$Random$next(_p65));
+	var t1 = _p66._0;
+	var t2 = _p66._1;
+	var new_s2 = _elm_lang$core$Native_Utils.eq(_p68, 1) ? (_elm_lang$core$Random$magicNum7 - 1) : (_p68 - 1);
+	var new_s1 = _elm_lang$core$Native_Utils.eq(_p67, _elm_lang$core$Random$magicNum6 - 1) ? 1 : (_p67 + 1);
+	return {
+		ctor: '_Tuple2',
+		_0: A2(_elm_lang$core$Random$State, new_s1, t2),
+		_1: A2(_elm_lang$core$Random$State, t1, new_s2)
+	};
 };
-var _elm_lang$core$Dict$redden = function (t) {
-	var _p26 = t;
-	if (_p26.ctor === 'RBEmpty_elm_builtin') {
-		return _elm_lang$core$Native_Debug.crash('can\'t make a Leaf red');
-	} else {
-		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Red, _p26._1, _p26._2, _p26._3, _p26._4);
-	}
+var _elm_lang$core$Random$Seed = function (a) {
+	return {ctor: 'Seed', _0: a};
 };
-var _elm_lang$core$Dict$balanceHelp = function (tree) {
-	var _p27 = tree;
-	_v36_6:
-	do {
-		_v36_5:
-		do {
-			_v36_4:
-			do {
-				_v36_3:
-				do {
-					_v36_2:
-					do {
-						_v36_1:
-						do {
-							_v36_0:
-							do {
-								if (_p27.ctor === 'RBNode_elm_builtin') {
-									if (_p27._3.ctor === 'RBNode_elm_builtin') {
-										if (_p27._4.ctor === 'RBNode_elm_builtin') {
-											switch (_p27._3._0.ctor) {
-												case 'Red':
-													switch (_p27._4._0.ctor) {
-														case 'Red':
-															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v36_0;
-															} else {
-																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v36_1;
-																} else {
-																	if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																		break _v36_2;
-																	} else {
-																		if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																			break _v36_3;
-																		} else {
-																			break _v36_6;
-																		}
-																	}
-																}
-															}
-														case 'NBlack':
-															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v36_0;
-															} else {
-																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v36_1;
-																} else {
-																	if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																		break _v36_4;
-																	} else {
-																		break _v36_6;
-																	}
-																}
-															}
-														default:
-															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v36_0;
-															} else {
-																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v36_1;
-																} else {
-																	break _v36_6;
-																}
-															}
-													}
-												case 'NBlack':
-													switch (_p27._4._0.ctor) {
-														case 'Red':
-															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																break _v36_2;
-															} else {
-																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																	break _v36_3;
-																} else {
-																	if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																		break _v36_5;
-																	} else {
-																		break _v36_6;
-																	}
-																}
-															}
-														case 'NBlack':
-															if (_p27._0.ctor === 'BBlack') {
-																if ((((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																	break _v36_4;
-																} else {
-																	if ((((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																		break _v36_5;
-																	} else {
-																		break _v36_6;
-																	}
-																}
-															} else {
-																break _v36_6;
-															}
-														default:
-															if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																break _v36_5;
-															} else {
-																break _v36_6;
-															}
-													}
-												default:
-													switch (_p27._4._0.ctor) {
-														case 'Red':
-															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																break _v36_2;
-															} else {
-																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																	break _v36_3;
-																} else {
-																	break _v36_6;
-																}
-															}
-														case 'NBlack':
-															if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																break _v36_4;
-															} else {
-																break _v36_6;
-															}
-														default:
-															break _v36_6;
-													}
-											}
-										} else {
-											switch (_p27._3._0.ctor) {
-												case 'Red':
-													if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-														break _v36_0;
-													} else {
-														if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-															break _v36_1;
-														} else {
-															break _v36_6;
-														}
-													}
-												case 'NBlack':
-													if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-														break _v36_5;
-													} else {
-														break _v36_6;
-													}
-												default:
-													break _v36_6;
-											}
-										}
-									} else {
-										if (_p27._4.ctor === 'RBNode_elm_builtin') {
-											switch (_p27._4._0.ctor) {
-												case 'Red':
-													if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-														break _v36_2;
-													} else {
-														if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-															break _v36_3;
-														} else {
-															break _v36_6;
-														}
-													}
-												case 'NBlack':
-													if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-														break _v36_4;
-													} else {
-														break _v36_6;
-													}
-												default:
-													break _v36_6;
-											}
-										} else {
-											break _v36_6;
-										}
-									}
-								} else {
-									break _v36_6;
-								}
-							} while(false);
-							return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._3._1)(_p27._3._3._2)(_p27._3._1)(_p27._3._2)(_p27._1)(_p27._2)(_p27._3._3._3)(_p27._3._3._4)(_p27._3._4)(_p27._4);
-						} while(false);
-						return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._1)(_p27._3._2)(_p27._3._4._1)(_p27._3._4._2)(_p27._1)(_p27._2)(_p27._3._3)(_p27._3._4._3)(_p27._3._4._4)(_p27._4);
-					} while(false);
-					return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._1)(_p27._2)(_p27._4._3._1)(_p27._4._3._2)(_p27._4._1)(_p27._4._2)(_p27._3)(_p27._4._3._3)(_p27._4._3._4)(_p27._4._4);
-				} while(false);
-				return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._1)(_p27._2)(_p27._4._1)(_p27._4._2)(_p27._4._4._1)(_p27._4._4._2)(_p27._3)(_p27._4._3)(_p27._4._4._3)(_p27._4._4._4);
-			} while(false);
-			return A5(
-				_elm_lang$core$Dict$RBNode_elm_builtin,
-				_elm_lang$core$Dict$Black,
-				_p27._4._3._1,
-				_p27._4._3._2,
-				A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p27._1, _p27._2, _p27._3, _p27._4._3._3),
-				A5(
-					_elm_lang$core$Dict$balance,
-					_elm_lang$core$Dict$Black,
-					_p27._4._1,
-					_p27._4._2,
-					_p27._4._3._4,
-					_elm_lang$core$Dict$redden(_p27._4._4)));
-		} while(false);
-		return A5(
-			_elm_lang$core$Dict$RBNode_elm_builtin,
-			_elm_lang$core$Dict$Black,
-			_p27._3._4._1,
-			_p27._3._4._2,
-			A5(
-				_elm_lang$core$Dict$balance,
-				_elm_lang$core$Dict$Black,
-				_p27._3._1,
-				_p27._3._2,
-				_elm_lang$core$Dict$redden(_p27._3._3),
-				_p27._3._4._3),
-			A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p27._1, _p27._2, _p27._3._4._4, _p27._4));
-	} while(false);
-	return tree;
-};
-var _elm_lang$core$Dict$balance = F5(
-	function (c, k, v, l, r) {
-		var tree = A5(_elm_lang$core$Dict$RBNode_elm_builtin, c, k, v, l, r);
-		return _elm_lang$core$Dict$blackish(tree) ? _elm_lang$core$Dict$balanceHelp(tree) : tree;
-	});
-var _elm_lang$core$Dict$bubble = F5(
-	function (c, k, v, l, r) {
-		return (_elm_lang$core$Dict$isBBlack(l) || _elm_lang$core$Dict$isBBlack(r)) ? A5(
-			_elm_lang$core$Dict$balance,
-			_elm_lang$core$Dict$moreBlack(c),
-			k,
-			v,
-			_elm_lang$core$Dict$lessBlackTree(l),
-			_elm_lang$core$Dict$lessBlackTree(r)) : A5(_elm_lang$core$Dict$RBNode_elm_builtin, c, k, v, l, r);
-	});
-var _elm_lang$core$Dict$removeMax = F5(
-	function (c, k, v, l, r) {
-		var _p28 = r;
-		if (_p28.ctor === 'RBEmpty_elm_builtin') {
-			return A3(_elm_lang$core$Dict$rem, c, l, r);
-		} else {
-			return A5(
-				_elm_lang$core$Dict$bubble,
-				c,
-				k,
-				v,
-				l,
-				A5(_elm_lang$core$Dict$removeMax, _p28._0, _p28._1, _p28._2, _p28._3, _p28._4));
-		}
-	});
-var _elm_lang$core$Dict$rem = F3(
-	function (c, l, r) {
-		var _p29 = {ctor: '_Tuple2', _0: l, _1: r};
-		if (_p29._0.ctor === 'RBEmpty_elm_builtin') {
-			if (_p29._1.ctor === 'RBEmpty_elm_builtin') {
-				var _p30 = c;
-				switch (_p30.ctor) {
-					case 'Red':
-						return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-					case 'Black':
-						return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBBlack);
-					default:
-						return _elm_lang$core$Native_Debug.crash('cannot have bblack or nblack nodes at this point');
-				}
-			} else {
-				var _p33 = _p29._1._0;
-				var _p32 = _p29._0._0;
-				var _p31 = {ctor: '_Tuple3', _0: c, _1: _p32, _2: _p33};
-				if ((((_p31.ctor === '_Tuple3') && (_p31._0.ctor === 'Black')) && (_p31._1.ctor === 'LBlack')) && (_p31._2.ctor === 'Red')) {
-					return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p29._1._1, _p29._1._2, _p29._1._3, _p29._1._4);
-				} else {
-					return A4(
-						_elm_lang$core$Dict$reportRemBug,
-						'Black/LBlack/Red',
-						c,
-						_elm_lang$core$Basics$toString(_p32),
-						_elm_lang$core$Basics$toString(_p33));
-				}
-			}
-		} else {
-			if (_p29._1.ctor === 'RBEmpty_elm_builtin') {
-				var _p36 = _p29._1._0;
-				var _p35 = _p29._0._0;
-				var _p34 = {ctor: '_Tuple3', _0: c, _1: _p35, _2: _p36};
-				if ((((_p34.ctor === '_Tuple3') && (_p34._0.ctor === 'Black')) && (_p34._1.ctor === 'Red')) && (_p34._2.ctor === 'LBlack')) {
-					return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p29._0._1, _p29._0._2, _p29._0._3, _p29._0._4);
-				} else {
-					return A4(
-						_elm_lang$core$Dict$reportRemBug,
-						'Black/Red/LBlack',
-						c,
-						_elm_lang$core$Basics$toString(_p35),
-						_elm_lang$core$Basics$toString(_p36));
-				}
-			} else {
-				var _p40 = _p29._0._2;
-				var _p39 = _p29._0._4;
-				var _p38 = _p29._0._1;
-				var l$ = A5(_elm_lang$core$Dict$removeMax, _p29._0._0, _p38, _p40, _p29._0._3, _p39);
-				var _p37 = A3(_elm_lang$core$Dict$maxWithDefault, _p38, _p40, _p39);
-				var k = _p37._0;
-				var v = _p37._1;
-				return A5(_elm_lang$core$Dict$bubble, c, k, v, l$, r);
-			}
-		}
-	});
-var _elm_lang$core$Dict$map = F2(
-	function (f, dict) {
-		var _p41 = dict;
-		if (_p41.ctor === 'RBEmpty_elm_builtin') {
-			return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-		} else {
-			var _p42 = _p41._1;
-			return A5(
-				_elm_lang$core$Dict$RBNode_elm_builtin,
-				_p41._0,
-				_p42,
-				A2(f, _p42, _p41._2),
-				A2(_elm_lang$core$Dict$map, f, _p41._3),
-				A2(_elm_lang$core$Dict$map, f, _p41._4));
-		}
-	});
-var _elm_lang$core$Dict$Same = {ctor: 'Same'};
-var _elm_lang$core$Dict$Remove = {ctor: 'Remove'};
-var _elm_lang$core$Dict$Insert = {ctor: 'Insert'};
-var _elm_lang$core$Dict$update = F3(
-	function (k, alter, dict) {
-		var up = function (dict) {
-			var _p43 = dict;
-			if (_p43.ctor === 'RBEmpty_elm_builtin') {
-				var _p44 = alter(_elm_lang$core$Maybe$Nothing);
-				if (_p44.ctor === 'Nothing') {
-					return {ctor: '_Tuple2', _0: _elm_lang$core$Dict$Same, _1: _elm_lang$core$Dict$empty};
-				} else {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Dict$Insert,
-						_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Red, k, _p44._0, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty)
-					};
-				}
-			} else {
-				var _p55 = _p43._2;
-				var _p54 = _p43._4;
-				var _p53 = _p43._3;
-				var _p52 = _p43._1;
-				var _p51 = _p43._0;
-				var _p45 = A2(_elm_lang$core$Basics$compare, k, _p52);
-				switch (_p45.ctor) {
-					case 'EQ':
-						var _p46 = alter(
-							_elm_lang$core$Maybe$Just(_p55));
-						if (_p46.ctor === 'Nothing') {
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Dict$Remove,
-								_1: A3(_elm_lang$core$Dict$rem, _p51, _p53, _p54)
-							};
-						} else {
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Dict$Same,
-								_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p46._0, _p53, _p54)
-							};
+var _elm_lang$core$Random$int = F2(
+	function (a, b) {
+		return _elm_lang$core$Random$Generator(
+			function (_p69) {
+				var _p70 = _p69;
+				var _p75 = _p70._0;
+				var base = 2147483561;
+				var f = F3(
+					function (n, acc, state) {
+						f:
+						while (true) {
+							var _p71 = n;
+							if (_p71 === 0) {
+								return {ctor: '_Tuple2', _0: acc, _1: state};
+							} else {
+								var _p72 = _p75.next(state);
+								var x = _p72._0;
+								var state$ = _p72._1;
+								var _v27 = n - 1,
+									_v28 = x + (acc * base),
+									_v29 = state$;
+								n = _v27;
+								acc = _v28;
+								state = _v29;
+								continue f;
+							}
 						}
-					case 'LT':
-						var _p47 = up(_p53);
-						var flag = _p47._0;
-						var newLeft = _p47._1;
-						var _p48 = flag;
-						switch (_p48.ctor) {
-							case 'Same':
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Same,
-									_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p55, newLeft, _p54)
-								};
-							case 'Insert':
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Insert,
-									_1: A5(_elm_lang$core$Dict$balance, _p51, _p52, _p55, newLeft, _p54)
-								};
-							default:
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Remove,
-									_1: A5(_elm_lang$core$Dict$bubble, _p51, _p52, _p55, newLeft, _p54)
-								};
-						}
-					default:
-						var _p49 = up(_p54);
-						var flag = _p49._0;
-						var newRight = _p49._1;
-						var _p50 = flag;
-						switch (_p50.ctor) {
-							case 'Same':
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Same,
-									_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p55, _p53, newRight)
-								};
-							case 'Insert':
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Insert,
-									_1: A5(_elm_lang$core$Dict$balance, _p51, _p52, _p55, _p53, newRight)
-								};
-							default:
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Remove,
-									_1: A5(_elm_lang$core$Dict$bubble, _p51, _p52, _p55, _p53, newRight)
-								};
-						}
-				}
-			}
-		};
-		var _p56 = up(dict);
-		var flag = _p56._0;
-		var updatedDict = _p56._1;
-		var _p57 = flag;
-		switch (_p57.ctor) {
-			case 'Same':
-				return updatedDict;
-			case 'Insert':
-				return _elm_lang$core$Dict$ensureBlackRoot(updatedDict);
-			default:
-				return _elm_lang$core$Dict$blacken(updatedDict);
-		}
-	});
-var _elm_lang$core$Dict$insert = F3(
-	function (key, value, dict) {
-		return A3(
-			_elm_lang$core$Dict$update,
-			key,
-			_elm_lang$core$Basics$always(
-				_elm_lang$core$Maybe$Just(value)),
-			dict);
-	});
-var _elm_lang$core$Dict$singleton = F2(
-	function (key, value) {
-		return A3(_elm_lang$core$Dict$insert, key, value, _elm_lang$core$Dict$empty);
-	});
-var _elm_lang$core$Dict$union = F2(
-	function (t1, t2) {
-		return A3(_elm_lang$core$Dict$foldl, _elm_lang$core$Dict$insert, t2, t1);
-	});
-var _elm_lang$core$Dict$filter = F2(
-	function (predicate, dictionary) {
-		var add = F3(
-			function (key, value, dict) {
-				return A2(predicate, key, value) ? A3(_elm_lang$core$Dict$insert, key, value, dict) : dict;
-			});
-		return A3(_elm_lang$core$Dict$foldl, add, _elm_lang$core$Dict$empty, dictionary);
-	});
-var _elm_lang$core$Dict$intersect = F2(
-	function (t1, t2) {
-		return A2(
-			_elm_lang$core$Dict$filter,
-			F2(
-				function (k, _p58) {
-					return A2(_elm_lang$core$Dict$member, k, t2);
-				}),
-			t1);
-	});
-var _elm_lang$core$Dict$partition = F2(
-	function (predicate, dict) {
-		var add = F3(
-			function (key, value, _p59) {
-				var _p60 = _p59;
-				var _p62 = _p60._1;
-				var _p61 = _p60._0;
-				return A2(predicate, key, value) ? {
+					});
+				var _p73 = (_elm_lang$core$Native_Utils.cmp(a, b) < 0) ? {ctor: '_Tuple2', _0: a, _1: b} : {ctor: '_Tuple2', _0: b, _1: a};
+				var lo = _p73._0;
+				var hi = _p73._1;
+				var k = (hi - lo) + 1;
+				var n = A2(_elm_lang$core$Random$iLogBase, base, k);
+				var _p74 = A3(f, n, 1, _p75.state);
+				var v = _p74._0;
+				var state$ = _p74._1;
+				return {
 					ctor: '_Tuple2',
-					_0: A3(_elm_lang$core$Dict$insert, key, value, _p61),
-					_1: _p62
-				} : {
-					ctor: '_Tuple2',
-					_0: _p61,
-					_1: A3(_elm_lang$core$Dict$insert, key, value, _p62)
+					_0: lo + A2(_elm_lang$core$Basics_ops['%'], v, k),
+					_1: _elm_lang$core$Random$Seed(
+						_elm_lang$core$Native_Utils.update(
+							_p75,
+							{state: state$}))
 				};
 			});
-		return A3(
-			_elm_lang$core$Dict$foldl,
-			add,
-			{ctor: '_Tuple2', _0: _elm_lang$core$Dict$empty, _1: _elm_lang$core$Dict$empty},
-			dict);
 	});
-var _elm_lang$core$Dict$fromList = function (assocs) {
-	return A3(
-		_elm_lang$core$List$foldl,
-		F2(
-			function (_p63, dict) {
-				var _p64 = _p63;
-				return A3(_elm_lang$core$Dict$insert, _p64._0, _p64._1, dict);
-			}),
-		_elm_lang$core$Dict$empty,
-		assocs);
+var _elm_lang$core$Random$bool = A2(
+	_elm_lang$core$Random$map,
+	F2(
+		function (x, y) {
+			return _elm_lang$core$Native_Utils.eq(x, y);
+		})(1),
+	A2(_elm_lang$core$Random$int, 0, 1));
+var _elm_lang$core$Random$float = F2(
+	function (a, b) {
+		return _elm_lang$core$Random$Generator(
+			function (seed) {
+				var _p76 = A2(
+					_elm_lang$core$Random$step,
+					A2(_elm_lang$core$Random$int, _elm_lang$core$Random$minInt, _elm_lang$core$Random$maxInt),
+					seed);
+				var number = _p76._0;
+				var newSeed = _p76._1;
+				var negativeOneToOne = _elm_lang$core$Basics$toFloat(number) / _elm_lang$core$Basics$toFloat(_elm_lang$core$Random$maxInt - _elm_lang$core$Random$minInt);
+				var _p77 = (_elm_lang$core$Native_Utils.cmp(a, b) < 0) ? {ctor: '_Tuple2', _0: a, _1: b} : {ctor: '_Tuple2', _0: b, _1: a};
+				var lo = _p77._0;
+				var hi = _p77._1;
+				var scaled = ((lo + hi) / 2) + ((hi - lo) * negativeOneToOne);
+				return {ctor: '_Tuple2', _0: scaled, _1: newSeed};
+			});
+	});
+var _elm_lang$core$Random$initialSeed = function (n) {
+	return _elm_lang$core$Random$Seed(
+		{
+			state: _elm_lang$core$Random$initState(n),
+			next: _elm_lang$core$Random$next,
+			split: _elm_lang$core$Random$split,
+			range: _elm_lang$core$Random$range
+		});
 };
-var _elm_lang$core$Dict$remove = F2(
-	function (key, dict) {
-		return A3(
-			_elm_lang$core$Dict$update,
-			key,
-			_elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing),
-			dict);
+var _elm_lang$core$Random$init = A2(
+	_elm_lang$core$Task$andThen,
+	_elm_lang$core$Time$now,
+	function (t) {
+		return _elm_lang$core$Task$succeed(
+			_elm_lang$core$Random$initialSeed(
+				_elm_lang$core$Basics$round(t)));
 	});
-var _elm_lang$core$Dict$diff = F2(
-	function (t1, t2) {
+var _elm_lang$core$Random$Generate = function (a) {
+	return {ctor: 'Generate', _0: a};
+};
+var _elm_lang$core$Random$generate = F2(
+	function (tagger, generator) {
+		return _elm_lang$core$Random$command(
+			_elm_lang$core$Random$Generate(
+				A2(_elm_lang$core$Random$map, tagger, generator)));
+	});
+var _elm_lang$core$Random$cmdMap = F2(
+	function (func, _p78) {
+		var _p79 = _p78;
+		return _elm_lang$core$Random$Generate(
+			A2(_elm_lang$core$Random$map, func, _p79._0));
+	});
+_elm_lang$core$Native_Platform.effectManagers['Random'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Random$init, onEffects: _elm_lang$core$Random$onEffects, onSelfMsg: _elm_lang$core$Random$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Random$cmdMap};
+
+var _elm_community$random_extra$Random_Extra$flatMap6 = F7(
+	function (constructor, generatorA, generatorB, generatorC, generatorD, generatorE, generatorF) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			generatorA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Random$andThen,
+					generatorB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Random$andThen,
+							generatorC,
+							function (c) {
+								return A2(
+									_elm_lang$core$Random$andThen,
+									generatorD,
+									function (d) {
+										return A2(
+											_elm_lang$core$Random$andThen,
+											generatorE,
+											function (e) {
+												return A2(
+													_elm_lang$core$Random$andThen,
+													generatorF,
+													function (f) {
+														return A6(constructor, a, b, c, d, e, f);
+													});
+											});
+									});
+							});
+					});
+			});
+	});
+var _elm_community$random_extra$Random_Extra$flatMap5 = F6(
+	function (constructor, generatorA, generatorB, generatorC, generatorD, generatorE) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			generatorA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Random$andThen,
+					generatorB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Random$andThen,
+							generatorC,
+							function (c) {
+								return A2(
+									_elm_lang$core$Random$andThen,
+									generatorD,
+									function (d) {
+										return A2(
+											_elm_lang$core$Random$andThen,
+											generatorE,
+											function (e) {
+												return A5(constructor, a, b, c, d, e);
+											});
+									});
+							});
+					});
+			});
+	});
+var _elm_community$random_extra$Random_Extra$flatMap4 = F5(
+	function (constructor, generatorA, generatorB, generatorC, generatorD) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			generatorA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Random$andThen,
+					generatorB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Random$andThen,
+							generatorC,
+							function (c) {
+								return A2(
+									_elm_lang$core$Random$andThen,
+									generatorD,
+									function (d) {
+										return A4(constructor, a, b, c, d);
+									});
+							});
+					});
+			});
+	});
+var _elm_community$random_extra$Random_Extra$flatMap3 = F4(
+	function (constructor, generatorA, generatorB, generatorC) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			generatorA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Random$andThen,
+					generatorB,
+					function (b) {
+						return A2(
+							_elm_lang$core$Random$andThen,
+							generatorC,
+							function (c) {
+								return A3(constructor, a, b, c);
+							});
+					});
+			});
+	});
+var _elm_community$random_extra$Random_Extra$flatMap2 = F3(
+	function (constructor, generatorA, generatorB) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			generatorA,
+			function (a) {
+				return A2(
+					_elm_lang$core$Random$andThen,
+					generatorB,
+					function (b) {
+						return A2(constructor, a, b);
+					});
+			});
+	});
+var _elm_community$random_extra$Random_Extra$flatMap = _elm_lang$core$Basics$flip(_elm_lang$core$Random$andThen);
+var _elm_community$random_extra$Random_Extra$rangeLengthList = F3(
+	function (minLength, maxLength, generator) {
+		return A2(
+			_elm_community$random_extra$Random_Extra$flatMap,
+			function (len) {
+				return A2(_elm_lang$core$Random$list, len, generator);
+			},
+			A2(_elm_lang$core$Random$int, minLength, maxLength));
+	});
+var _elm_community$random_extra$Random_Extra$result = F3(
+	function (genBool, genErr, genVal) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			genBool,
+			function (b) {
+				return b ? A2(_elm_lang$core$Random$map, _elm_lang$core$Result$Ok, genVal) : A2(_elm_lang$core$Random$map, _elm_lang$core$Result$Err, genErr);
+			});
+	});
+var _elm_community$random_extra$Random_Extra$sample = function () {
+	var find = F2(
+		function (k, ys) {
+			find:
+			while (true) {
+				var _p0 = ys;
+				if (_p0.ctor === '[]') {
+					return _elm_lang$core$Maybe$Nothing;
+				} else {
+					if (_elm_lang$core$Native_Utils.eq(k, 0)) {
+						return _elm_lang$core$Maybe$Just(_p0._0);
+					} else {
+						var _v1 = k - 1,
+							_v2 = _p0._1;
+						k = _v1;
+						ys = _v2;
+						continue find;
+					}
+				}
+			}
+		});
+	return function (xs) {
+		return A2(
+			_elm_lang$core$Random$map,
+			function (i) {
+				return A2(find, i, xs);
+			},
+			A2(
+				_elm_lang$core$Random$int,
+				0,
+				_elm_lang$core$List$length(xs) - 1));
+	};
+}();
+var _elm_community$random_extra$Random_Extra$frequency = function (pairs) {
+	var pick = F2(
+		function (choices, n) {
+			pick:
+			while (true) {
+				var _p1 = choices;
+				if ((_p1.ctor === '::') && (_p1._0.ctor === '_Tuple2')) {
+					var _p2 = _p1._0._0;
+					if (_elm_lang$core$Native_Utils.cmp(n, _p2) < 1) {
+						return _p1._0._1;
+					} else {
+						var _v4 = _p1._1,
+							_v5 = n - _p2;
+						choices = _v4;
+						n = _v5;
+						continue pick;
+					}
+				} else {
+					return _elm_lang$core$Native_Utils.crashCase(
+						'Random.Extra',
+						{
+							start: {line: 153, column: 13},
+							end: {line: 161, column: 79}
+						},
+						_p1)('Empty list passed to Random.Extra.frequency!');
+				}
+			}
+		});
+	var total = _elm_lang$core$List$sum(
+		A2(
+			_elm_lang$core$List$map,
+			function (_p4) {
+				return _elm_lang$core$Basics$abs(
+					_elm_lang$core$Basics$fst(_p4));
+			},
+			pairs));
+	return A2(
+		_elm_lang$core$Random$andThen,
+		A2(_elm_lang$core$Random$float, 0, total),
+		pick(pairs));
+};
+var _elm_community$random_extra$Random_Extra$choices = function (gens) {
+	return _elm_community$random_extra$Random_Extra$frequency(
+		A2(
+			_elm_lang$core$List$map,
+			function (g) {
+				return {ctor: '_Tuple2', _0: 1, _1: g};
+			},
+			gens));
+};
+var _elm_community$random_extra$Random_Extra$choice = F2(
+	function (x, y) {
+		return A2(
+			_elm_lang$core$Random$map,
+			function (b) {
+				return b ? x : y;
+			},
+			_elm_lang$core$Random$bool);
+	});
+var _elm_community$random_extra$Random_Extra$oneIn = function (n) {
+	return A2(
+		_elm_lang$core$Random$map,
+		F2(
+			function (x, y) {
+				return _elm_lang$core$Native_Utils.eq(x, y);
+			})(1),
+		A2(_elm_lang$core$Random$int, 1, n));
+};
+var _elm_community$random_extra$Random_Extra$andMap = F2(
+	function (funcGenerator, generator) {
 		return A3(
-			_elm_lang$core$Dict$foldl,
-			F3(
-				function (k, v, t) {
-					return A2(_elm_lang$core$Dict$remove, k, t);
+			_elm_lang$core$Random$map2,
+			F2(
+				function (x, y) {
+					return x(y);
 				}),
-			t1,
-			t2);
+			funcGenerator,
+			generator);
+	});
+var _elm_community$random_extra$Random_Extra$map6 = F7(
+	function (f, generatorA, generatorB, generatorC, generatorD, generatorE, generatorF) {
+		return A2(
+			_elm_community$random_extra$Random_Extra$andMap,
+			A6(_elm_lang$core$Random$map5, f, generatorA, generatorB, generatorC, generatorD, generatorE),
+			generatorF);
+	});
+var _elm_community$random_extra$Random_Extra$constant = function (value) {
+	return A2(
+		_elm_lang$core$Random$map,
+		function (_p5) {
+			return value;
+		},
+		_elm_lang$core$Random$bool);
+};
+var _elm_community$random_extra$Random_Extra$filter = F2(
+	function (predicate, generator) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			generator,
+			function (a) {
+				return predicate(a) ? _elm_community$random_extra$Random_Extra$constant(a) : A2(_elm_community$random_extra$Random_Extra$filter, predicate, generator);
+			});
+	});
+var _elm_community$random_extra$Random_Extra$together = function (generators) {
+	var _p6 = generators;
+	if (_p6.ctor === '[]') {
+		return _elm_community$random_extra$Random_Extra$constant(
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	} else {
+		return A3(
+			_elm_lang$core$Random$map2,
+			F2(
+				function (x, y) {
+					return A2(_elm_lang$core$List_ops['::'], x, y);
+				}),
+			_p6._0,
+			_elm_community$random_extra$Random_Extra$together(_p6._1));
+	}
+};
+var _elm_community$random_extra$Random_Extra$maybe = F2(
+	function (genBool, genA) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			genBool,
+			function (b) {
+				return b ? A2(_elm_lang$core$Random$map, _elm_lang$core$Maybe$Just, genA) : _elm_community$random_extra$Random_Extra$constant(_elm_lang$core$Maybe$Nothing);
+			});
+	});
+
+var _elm_community$random_extra$Random_Array$choose = function (arr) {
+	if (_elm_lang$core$Array$isEmpty(arr)) {
+		return _elm_community$random_extra$Random_Extra$constant(
+			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: arr});
+	} else {
+		var front = function (i) {
+			return A3(_elm_lang$core$Array$slice, 0, i, arr);
+		};
+		var lastIndex = _elm_lang$core$Array$length(arr) - 1;
+		var back = function (i) {
+			return _elm_lang$core$Native_Utils.eq(i, lastIndex) ? _elm_lang$core$Array$empty : A3(_elm_lang$core$Array$slice, i + 1, lastIndex + 1, arr);
+		};
+		var gen = A2(_elm_lang$core$Random$int, 0, lastIndex);
+		return A2(
+			_elm_lang$core$Random$map,
+			function (index) {
+				return {
+					ctor: '_Tuple2',
+					_0: A2(_elm_lang$core$Array$get, index, arr),
+					_1: A2(
+						_elm_lang$core$Array$append,
+						front(index),
+						back(index))
+				};
+			},
+			gen);
+	}
+};
+var _elm_community$random_extra$Random_Array$shuffle = function (arr) {
+	if (_elm_lang$core$Array$isEmpty(arr)) {
+		return _elm_community$random_extra$Random_Extra$constant(arr);
+	} else {
+		var helper = function (_p0) {
+			var _p1 = _p0;
+			var _p6 = _p1._0;
+			return A2(
+				_elm_lang$core$Random$andThen,
+				_elm_community$random_extra$Random_Array$choose(_p1._1),
+				function (_p2) {
+					var _p3 = _p2;
+					var _p5 = _p3._1;
+					var _p4 = _p3._0;
+					if (_p4.ctor === 'Nothing') {
+						return _elm_community$random_extra$Random_Extra$constant(
+							{ctor: '_Tuple2', _0: _p6, _1: _p5});
+					} else {
+						return helper(
+							{
+								ctor: '_Tuple2',
+								_0: A2(_elm_lang$core$List_ops['::'], _p4._0, _p6),
+								_1: _p5
+							});
+					}
+				});
+		};
+		return A2(
+			_elm_lang$core$Random$map,
+			function (_p7) {
+				return _elm_lang$core$Array$fromList(
+					_elm_lang$core$Basics$fst(_p7));
+			},
+			helper(
+				{
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_List.fromArray(
+						[]),
+					_1: arr
+				}));
+	}
+};
+var _elm_community$random_extra$Random_Array$sample = function (arr) {
+	var gen = A2(
+		_elm_lang$core$Random$int,
+		0,
+		_elm_lang$core$Array$length(arr) - 1);
+	return A2(
+		_elm_lang$core$Random$map,
+		function (index) {
+			return A2(_elm_lang$core$Array$get, index, arr);
+		},
+		gen);
+};
+var _elm_community$random_extra$Random_Array$array = F2(
+	function (arrayLength, generator) {
+		return A2(
+			_elm_lang$core$Random$map,
+			_elm_lang$core$Array$fromList,
+			A2(_elm_lang$core$Random$list, arrayLength, generator));
+	});
+var _elm_community$random_extra$Random_Array$rangeLengthArray = F3(
+	function (minLength, maxLength, generator) {
+		return A2(
+			_elm_community$random_extra$Random_Extra$flatMap,
+			function (len) {
+				return A2(_elm_community$random_extra$Random_Array$array, len, generator);
+			},
+			A2(_elm_lang$core$Random$int, minLength, maxLength));
 	});
 
 //import Maybe, Native.Array, Native.List, Native.Utils, Result //
@@ -7074,7 +8338,7 @@ function applyPatch(domNode, patch)
 	switch (patch.type)
 	{
 		case 'p-redraw':
-			return redraw(domNode, patch.data, patch.eventNode);
+			return applyPatchRedraw(domNode, patch.data, patch.eventNode);
 
 		case 'p-facts':
 			applyFacts(domNode, patch.eventNode, patch.data);
@@ -7123,57 +8387,7 @@ function applyPatch(domNode, patch)
 			return domNode;
 
 		case 'p-reorder':
-			var data = patch.data;
-
-			// end inserts
-			var endInserts = data.endInserts;
-			var end;
-			if (typeof endInserts !== 'undefined')
-			{
-				if (endInserts.length === 1)
-				{
-					var insert = endInserts[0];
-					var entry = insert.entry;
-					var end = entry.tag === 'move'
-						? entry.data
-						: render(entry.vnode, patch.eventNode);
-				}
-				else
-				{
-					end = document.createDocumentFragment();
-					for (var i = 0; i < endInserts.length; i++)
-					{
-						var insert = endInserts[i];
-						var entry = insert.entry;
-						var node = entry.tag === 'move'
-							? entry.data
-							: render(entry.vnode, patch.eventNode);
-						end.appendChild(node);
-					}
-				}
-			}
-
-			// removals
-			domNode = applyPatchesHelp(domNode, data.patches);
-
-			// inserts
-			var inserts = data.inserts;
-			for (var i = 0; i < inserts.length; i++)
-			{
-				var insert = inserts[i];
-				var entry = insert.entry;
-				var node = entry.tag === 'move'
-					? entry.data
-					: render(entry.vnode, patch.eventNode);
-				domNode.insertBefore(node, domNode.childNodes[insert.index]);
-			}
-
-			if (typeof end !== 'undefined')
-			{
-				domNode.appendChild(end);
-			}
-
-			return domNode;
+			return applyPatchReorder(domNode, patch);
 
 		case 'p-custom':
 			var impl = patch.data;
@@ -7185,7 +8399,7 @@ function applyPatch(domNode, patch)
 }
 
 
-function redraw(domNode, vNode, eventNode)
+function applyPatchRedraw(domNode, vNode, eventNode)
 {
 	var parentNode = domNode.parentNode;
 	var newNode = render(vNode, eventNode);
@@ -7200,6 +8414,59 @@ function redraw(domNode, vNode, eventNode)
 		parentNode.replaceChild(newNode, domNode);
 	}
 	return newNode;
+}
+
+
+function applyPatchReorder(domNode, patch)
+{
+	var data = patch.data;
+
+	// remove end inserts
+	var frag = applyPatchReorderEndInsertsHelp(data.endInserts, patch);
+
+	// removals
+	domNode = applyPatchesHelp(domNode, data.patches);
+
+	// inserts
+	var inserts = data.inserts;
+	for (var i = 0; i < inserts.length; i++)
+	{
+		var insert = inserts[i];
+		var entry = insert.entry;
+		var node = entry.tag === 'move'
+			? entry.data
+			: render(entry.vnode, patch.eventNode);
+		domNode.insertBefore(node, domNode.childNodes[insert.index]);
+	}
+
+	// add end inserts
+	if (typeof frag !== 'undefined')
+	{
+		domNode.appendChild(frag);
+	}
+
+	return domNode;
+}
+
+
+function applyPatchReorderEndInsertsHelp(endInserts, patch)
+{
+	if (typeof endInserts === 'undefined')
+	{
+		return;
+	}
+
+	var frag = document.createDocumentFragment();
+	for (var i = 0; i < endInserts.length; i++)
+	{
+		var insert = endInserts[i];
+		var entry = insert.entry;
+		frag.appendChild(entry.tag === 'move'
+			? entry.data
+			: render(entry.vnode, patch.eventNode)
+		);
+	}
+	return frag;
 }
 
 
@@ -7369,912 +8636,6 @@ var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
 var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
 var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
 
-var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
-var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'contextmenu', value);
-};
-var _elm_lang$html$Html_Attributes$draggable = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', value);
-};
-var _elm_lang$html$Html_Attributes$list = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'list', value);
-};
-var _elm_lang$html$Html_Attributes$maxlength = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'maxlength',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$datetime = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
-};
-var _elm_lang$html$Html_Attributes$pubdate = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'pubdate', value);
-};
-var _elm_lang$html$Html_Attributes$colspan = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'colspan',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$rowspan = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$attribute,
-		'rowspan',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
-var _elm_lang$html$Html_Attributes$stringProperty = F2(
-	function (name, string) {
-		return A2(
-			_elm_lang$html$Html_Attributes$property,
-			name,
-			_elm_lang$core$Json_Encode$string(string));
-	});
-var _elm_lang$html$Html_Attributes$class = function (name) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'className', name);
-};
-var _elm_lang$html$Html_Attributes$id = function (name) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'id', name);
-};
-var _elm_lang$html$Html_Attributes$title = function (name) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'title', name);
-};
-var _elm_lang$html$Html_Attributes$accesskey = function ($char) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'accessKey',
-		_elm_lang$core$String$fromChar($char));
-};
-var _elm_lang$html$Html_Attributes$dir = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dir', value);
-};
-var _elm_lang$html$Html_Attributes$dropzone = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dropzone', value);
-};
-var _elm_lang$html$Html_Attributes$itemprop = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'itemprop', value);
-};
-var _elm_lang$html$Html_Attributes$lang = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'lang', value);
-};
-var _elm_lang$html$Html_Attributes$tabindex = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'tabIndex',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$charset = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'charset', value);
-};
-var _elm_lang$html$Html_Attributes$content = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'content', value);
-};
-var _elm_lang$html$Html_Attributes$httpEquiv = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'httpEquiv', value);
-};
-var _elm_lang$html$Html_Attributes$language = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'language', value);
-};
-var _elm_lang$html$Html_Attributes$src = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'src', value);
-};
-var _elm_lang$html$Html_Attributes$height = function (value) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'height',
-		_elm_lang$core$Basics$toString(value));
-};
-var _elm_lang$html$Html_Attributes$width = function (value) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'width',
-		_elm_lang$core$Basics$toString(value));
-};
-var _elm_lang$html$Html_Attributes$alt = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'alt', value);
-};
-var _elm_lang$html$Html_Attributes$preload = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'preload', value);
-};
-var _elm_lang$html$Html_Attributes$poster = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'poster', value);
-};
-var _elm_lang$html$Html_Attributes$kind = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'kind', value);
-};
-var _elm_lang$html$Html_Attributes$srclang = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srclang', value);
-};
-var _elm_lang$html$Html_Attributes$sandbox = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'sandbox', value);
-};
-var _elm_lang$html$Html_Attributes$srcdoc = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srcdoc', value);
-};
-var _elm_lang$html$Html_Attributes$type$ = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'type', value);
-};
-var _elm_lang$html$Html_Attributes$value = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'value', value);
-};
-var _elm_lang$html$Html_Attributes$defaultValue = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'defaultValue', value);
-};
-var _elm_lang$html$Html_Attributes$placeholder = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'placeholder', value);
-};
-var _elm_lang$html$Html_Attributes$accept = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'accept', value);
-};
-var _elm_lang$html$Html_Attributes$acceptCharset = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'acceptCharset', value);
-};
-var _elm_lang$html$Html_Attributes$action = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'action', value);
-};
-var _elm_lang$html$Html_Attributes$autocomplete = function (bool) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'autocomplete',
-		bool ? 'on' : 'off');
-};
-var _elm_lang$html$Html_Attributes$autosave = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'autosave', value);
-};
-var _elm_lang$html$Html_Attributes$enctype = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'enctype', value);
-};
-var _elm_lang$html$Html_Attributes$formaction = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'formAction', value);
-};
-var _elm_lang$html$Html_Attributes$minlength = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'minLength',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$method = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'method', value);
-};
-var _elm_lang$html$Html_Attributes$name = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'name', value);
-};
-var _elm_lang$html$Html_Attributes$pattern = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'pattern', value);
-};
-var _elm_lang$html$Html_Attributes$size = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'size',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$for = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'htmlFor', value);
-};
-var _elm_lang$html$Html_Attributes$form = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'form', value);
-};
-var _elm_lang$html$Html_Attributes$max = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'max', value);
-};
-var _elm_lang$html$Html_Attributes$min = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'min', value);
-};
-var _elm_lang$html$Html_Attributes$step = function (n) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'step', n);
-};
-var _elm_lang$html$Html_Attributes$cols = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'cols',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$rows = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'rows',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$wrap = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'wrap', value);
-};
-var _elm_lang$html$Html_Attributes$usemap = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'useMap', value);
-};
-var _elm_lang$html$Html_Attributes$shape = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'shape', value);
-};
-var _elm_lang$html$Html_Attributes$coords = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'coords', value);
-};
-var _elm_lang$html$Html_Attributes$challenge = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'challenge', value);
-};
-var _elm_lang$html$Html_Attributes$keytype = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'keytype', value);
-};
-var _elm_lang$html$Html_Attributes$align = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'align', value);
-};
-var _elm_lang$html$Html_Attributes$cite = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'cite', value);
-};
-var _elm_lang$html$Html_Attributes$href = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'href', value);
-};
-var _elm_lang$html$Html_Attributes$target = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'target', value);
-};
-var _elm_lang$html$Html_Attributes$downloadAs = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'download', value);
-};
-var _elm_lang$html$Html_Attributes$hreflang = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'hreflang', value);
-};
-var _elm_lang$html$Html_Attributes$media = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'media', value);
-};
-var _elm_lang$html$Html_Attributes$ping = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'ping', value);
-};
-var _elm_lang$html$Html_Attributes$rel = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'rel', value);
-};
-var _elm_lang$html$Html_Attributes$start = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'start',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$headers = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'headers', value);
-};
-var _elm_lang$html$Html_Attributes$scope = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'scope', value);
-};
-var _elm_lang$html$Html_Attributes$manifest = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'manifest', value);
-};
-var _elm_lang$html$Html_Attributes$boolProperty = F2(
-	function (name, bool) {
-		return A2(
-			_elm_lang$html$Html_Attributes$property,
-			name,
-			_elm_lang$core$Json_Encode$bool(bool));
-	});
-var _elm_lang$html$Html_Attributes$hidden = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'hidden', bool);
-};
-var _elm_lang$html$Html_Attributes$contenteditable = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'contentEditable', bool);
-};
-var _elm_lang$html$Html_Attributes$spellcheck = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'spellcheck', bool);
-};
-var _elm_lang$html$Html_Attributes$async = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'async', bool);
-};
-var _elm_lang$html$Html_Attributes$defer = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'defer', bool);
-};
-var _elm_lang$html$Html_Attributes$scoped = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'scoped', bool);
-};
-var _elm_lang$html$Html_Attributes$autoplay = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autoplay', bool);
-};
-var _elm_lang$html$Html_Attributes$controls = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'controls', bool);
-};
-var _elm_lang$html$Html_Attributes$loop = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'loop', bool);
-};
-var _elm_lang$html$Html_Attributes$default = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'default', bool);
-};
-var _elm_lang$html$Html_Attributes$seamless = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'seamless', bool);
-};
-var _elm_lang$html$Html_Attributes$checked = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'checked', bool);
-};
-var _elm_lang$html$Html_Attributes$selected = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'selected', bool);
-};
-var _elm_lang$html$Html_Attributes$autofocus = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autofocus', bool);
-};
-var _elm_lang$html$Html_Attributes$disabled = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'disabled', bool);
-};
-var _elm_lang$html$Html_Attributes$multiple = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'multiple', bool);
-};
-var _elm_lang$html$Html_Attributes$novalidate = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'noValidate', bool);
-};
-var _elm_lang$html$Html_Attributes$readonly = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'readOnly', bool);
-};
-var _elm_lang$html$Html_Attributes$required = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'required', bool);
-};
-var _elm_lang$html$Html_Attributes$ismap = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'isMap', value);
-};
-var _elm_lang$html$Html_Attributes$download = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'download', bool);
-};
-var _elm_lang$html$Html_Attributes$reversed = function (bool) {
-	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'reversed', bool);
-};
-var _elm_lang$html$Html_Attributes$classList = function (list) {
-	return _elm_lang$html$Html_Attributes$class(
-		A2(
-			_elm_lang$core$String$join,
-			' ',
-			A2(
-				_elm_lang$core$List$map,
-				_elm_lang$core$Basics$fst,
-				A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
-};
-var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
-
-//import Native.Scheduler //
-
-var _elm_lang$core$Native_Time = function() {
-
-var now = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
-{
-	callback(_elm_lang$core$Native_Scheduler.succeed(Date.now()));
-});
-
-function setInterval_(interval, task)
-{
-	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
-	{
-		var id = setInterval(function() {
-			_elm_lang$core$Native_Scheduler.rawSpawn(task);
-		}, interval);
-
-		return function() { clearInterval(id); };
-	});
-}
-
-return {
-	now: now,
-	setInterval_: F2(setInterval_)
-};
-
-}();
-var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
-var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
-var _elm_lang$core$Task$spawnCmd = F2(
-	function (router, _p0) {
-		var _p1 = _p0;
-		return _elm_lang$core$Native_Scheduler.spawn(
-			A2(
-				_elm_lang$core$Task$andThen,
-				_p1._0,
-				_elm_lang$core$Platform$sendToApp(router)));
-	});
-var _elm_lang$core$Task$fail = _elm_lang$core$Native_Scheduler.fail;
-var _elm_lang$core$Task$mapError = F2(
-	function (f, task) {
-		return A2(
-			_elm_lang$core$Task$onError,
-			task,
-			function (err) {
-				return _elm_lang$core$Task$fail(
-					f(err));
-			});
-	});
-var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
-var _elm_lang$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return _elm_lang$core$Task$succeed(
-					func(a));
-			});
-	});
-var _elm_lang$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskB,
-					function (b) {
-						return _elm_lang$core$Task$succeed(
-							A2(func, a, b));
-					});
-			});
-	});
-var _elm_lang$core$Task$map3 = F4(
-	function (func, taskA, taskB, taskC) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							taskC,
-							function (c) {
-								return _elm_lang$core$Task$succeed(
-									A3(func, a, b, c));
-							});
-					});
-			});
-	});
-var _elm_lang$core$Task$map4 = F5(
-	function (func, taskA, taskB, taskC, taskD) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							taskC,
-							function (c) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									taskD,
-									function (d) {
-										return _elm_lang$core$Task$succeed(
-											A4(func, a, b, c, d));
-									});
-							});
-					});
-			});
-	});
-var _elm_lang$core$Task$map5 = F6(
-	function (func, taskA, taskB, taskC, taskD, taskE) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							taskC,
-							function (c) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									taskD,
-									function (d) {
-										return A2(
-											_elm_lang$core$Task$andThen,
-											taskE,
-											function (e) {
-												return _elm_lang$core$Task$succeed(
-													A5(func, a, b, c, d, e));
-											});
-									});
-							});
-					});
-			});
-	});
-var _elm_lang$core$Task$andMap = F2(
-	function (taskFunc, taskValue) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			taskFunc,
-			function (func) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					taskValue,
-					function (value) {
-						return _elm_lang$core$Task$succeed(
-							func(value));
-					});
-			});
-	});
-var _elm_lang$core$Task$sequence = function (tasks) {
-	var _p2 = tasks;
-	if (_p2.ctor === '[]') {
-		return _elm_lang$core$Task$succeed(
-			_elm_lang$core$Native_List.fromArray(
-				[]));
-	} else {
-		return A3(
-			_elm_lang$core$Task$map2,
-			F2(
-				function (x, y) {
-					return A2(_elm_lang$core$List_ops['::'], x, y);
-				}),
-			_p2._0,
-			_elm_lang$core$Task$sequence(_p2._1));
-	}
-};
-var _elm_lang$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			_elm_lang$core$Task$map,
-			function (_p3) {
-				return {ctor: '_Tuple0'};
-			},
-			_elm_lang$core$Task$sequence(
-				A2(
-					_elm_lang$core$List$map,
-					_elm_lang$core$Task$spawnCmd(router),
-					commands)));
-	});
-var _elm_lang$core$Task$toMaybe = function (task) {
-	return A2(
-		_elm_lang$core$Task$onError,
-		A2(_elm_lang$core$Task$map, _elm_lang$core$Maybe$Just, task),
-		function (_p4) {
-			return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
-		});
-};
-var _elm_lang$core$Task$fromMaybe = F2(
-	function ($default, maybe) {
-		var _p5 = maybe;
-		if (_p5.ctor === 'Just') {
-			return _elm_lang$core$Task$succeed(_p5._0);
-		} else {
-			return _elm_lang$core$Task$fail($default);
-		}
-	});
-var _elm_lang$core$Task$toResult = function (task) {
-	return A2(
-		_elm_lang$core$Task$onError,
-		A2(_elm_lang$core$Task$map, _elm_lang$core$Result$Ok, task),
-		function (msg) {
-			return _elm_lang$core$Task$succeed(
-				_elm_lang$core$Result$Err(msg));
-		});
-};
-var _elm_lang$core$Task$fromResult = function (result) {
-	var _p6 = result;
-	if (_p6.ctor === 'Ok') {
-		return _elm_lang$core$Task$succeed(_p6._0);
-	} else {
-		return _elm_lang$core$Task$fail(_p6._0);
-	}
-};
-var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
-	{ctor: '_Tuple0'});
-var _elm_lang$core$Task$onSelfMsg = F3(
-	function (_p9, _p8, _p7) {
-		return _elm_lang$core$Task$succeed(
-			{ctor: '_Tuple0'});
-	});
-var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
-var _elm_lang$core$Task$T = function (a) {
-	return {ctor: 'T', _0: a};
-};
-var _elm_lang$core$Task$perform = F3(
-	function (onFail, onSuccess, task) {
-		return _elm_lang$core$Task$command(
-			_elm_lang$core$Task$T(
-				A2(
-					_elm_lang$core$Task$onError,
-					A2(_elm_lang$core$Task$map, onSuccess, task),
-					function (x) {
-						return _elm_lang$core$Task$succeed(
-							onFail(x));
-					})));
-	});
-var _elm_lang$core$Task$cmdMap = F2(
-	function (tagger, _p10) {
-		var _p11 = _p10;
-		return _elm_lang$core$Task$T(
-			A2(_elm_lang$core$Task$map, tagger, _p11._0));
-	});
-_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
-
-var _elm_lang$core$Time$setInterval = _elm_lang$core$Native_Time.setInterval_;
-var _elm_lang$core$Time$spawnHelp = F3(
-	function (router, intervals, processes) {
-		var _p0 = intervals;
-		if (_p0.ctor === '[]') {
-			return _elm_lang$core$Task$succeed(processes);
-		} else {
-			var _p1 = _p0._0;
-			return A2(
-				_elm_lang$core$Task$andThen,
-				_elm_lang$core$Native_Scheduler.spawn(
-					A2(
-						_elm_lang$core$Time$setInterval,
-						_p1,
-						A2(_elm_lang$core$Platform$sendToSelf, router, _p1))),
-				function (id) {
-					return A3(
-						_elm_lang$core$Time$spawnHelp,
-						router,
-						_p0._1,
-						A3(_elm_lang$core$Dict$insert, _p1, id, processes));
-				});
-		}
-	});
-var _elm_lang$core$Time$addMySub = F2(
-	function (_p2, state) {
-		var _p3 = _p2;
-		var _p6 = _p3._1;
-		var _p5 = _p3._0;
-		var _p4 = A2(_elm_lang$core$Dict$get, _p5, state);
-		if (_p4.ctor === 'Nothing') {
-			return A3(
-				_elm_lang$core$Dict$insert,
-				_p5,
-				_elm_lang$core$Native_List.fromArray(
-					[_p6]),
-				state);
-		} else {
-			return A3(
-				_elm_lang$core$Dict$insert,
-				_p5,
-				A2(_elm_lang$core$List_ops['::'], _p6, _p4._0),
-				state);
-		}
-	});
-var _elm_lang$core$Time$inMilliseconds = function (t) {
-	return t;
-};
-var _elm_lang$core$Time$millisecond = 1;
-var _elm_lang$core$Time$second = 1000 * _elm_lang$core$Time$millisecond;
-var _elm_lang$core$Time$minute = 60 * _elm_lang$core$Time$second;
-var _elm_lang$core$Time$hour = 60 * _elm_lang$core$Time$minute;
-var _elm_lang$core$Time$inHours = function (t) {
-	return t / _elm_lang$core$Time$hour;
-};
-var _elm_lang$core$Time$inMinutes = function (t) {
-	return t / _elm_lang$core$Time$minute;
-};
-var _elm_lang$core$Time$inSeconds = function (t) {
-	return t / _elm_lang$core$Time$second;
-};
-var _elm_lang$core$Time$now = _elm_lang$core$Native_Time.now;
-var _elm_lang$core$Time$onSelfMsg = F3(
-	function (router, interval, state) {
-		var _p7 = A2(_elm_lang$core$Dict$get, interval, state.taggers);
-		if (_p7.ctor === 'Nothing') {
-			return _elm_lang$core$Task$succeed(state);
-		} else {
-			return A2(
-				_elm_lang$core$Task$andThen,
-				_elm_lang$core$Time$now,
-				function (time) {
-					return A2(
-						_elm_lang$core$Task$andThen,
-						_elm_lang$core$Task$sequence(
-							A2(
-								_elm_lang$core$List$map,
-								function (tagger) {
-									return A2(
-										_elm_lang$core$Platform$sendToApp,
-										router,
-										tagger(time));
-								},
-								_p7._0)),
-						function (_p8) {
-							return _elm_lang$core$Task$succeed(state);
-						});
-				});
-		}
-	});
-var _elm_lang$core$Time$subscription = _elm_lang$core$Native_Platform.leaf('Time');
-var _elm_lang$core$Time$State = F2(
-	function (a, b) {
-		return {taggers: a, processes: b};
-	});
-var _elm_lang$core$Time$init = _elm_lang$core$Task$succeed(
-	A2(_elm_lang$core$Time$State, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty));
-var _elm_lang$core$Time$onEffects = F3(
-	function (router, subs, _p9) {
-		var _p10 = _p9;
-		var rightStep = F3(
-			function (_p12, id, _p11) {
-				var _p13 = _p11;
-				return {
-					ctor: '_Tuple3',
-					_0: _p13._0,
-					_1: _p13._1,
-					_2: A2(
-						_elm_lang$core$Task$andThen,
-						_elm_lang$core$Native_Scheduler.kill(id),
-						function (_p14) {
-							return _p13._2;
-						})
-				};
-			});
-		var bothStep = F4(
-			function (interval, taggers, id, _p15) {
-				var _p16 = _p15;
-				return {
-					ctor: '_Tuple3',
-					_0: _p16._0,
-					_1: A3(_elm_lang$core$Dict$insert, interval, id, _p16._1),
-					_2: _p16._2
-				};
-			});
-		var leftStep = F3(
-			function (interval, taggers, _p17) {
-				var _p18 = _p17;
-				return {
-					ctor: '_Tuple3',
-					_0: A2(_elm_lang$core$List_ops['::'], interval, _p18._0),
-					_1: _p18._1,
-					_2: _p18._2
-				};
-			});
-		var newTaggers = A3(_elm_lang$core$List$foldl, _elm_lang$core$Time$addMySub, _elm_lang$core$Dict$empty, subs);
-		var _p19 = A6(
-			_elm_lang$core$Dict$merge,
-			leftStep,
-			bothStep,
-			rightStep,
-			newTaggers,
-			_p10.processes,
-			{
-				ctor: '_Tuple3',
-				_0: _elm_lang$core$Native_List.fromArray(
-					[]),
-				_1: _elm_lang$core$Dict$empty,
-				_2: _elm_lang$core$Task$succeed(
-					{ctor: '_Tuple0'})
-			});
-		var spawnList = _p19._0;
-		var existingDict = _p19._1;
-		var killTask = _p19._2;
-		return A2(
-			_elm_lang$core$Task$andThen,
-			killTask,
-			function (_p20) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					A3(_elm_lang$core$Time$spawnHelp, router, spawnList, existingDict),
-					function (newProcesses) {
-						return _elm_lang$core$Task$succeed(
-							A2(_elm_lang$core$Time$State, newTaggers, newProcesses));
-					});
-			});
-	});
-var _elm_lang$core$Time$Every = F2(
-	function (a, b) {
-		return {ctor: 'Every', _0: a, _1: b};
-	});
-var _elm_lang$core$Time$every = F2(
-	function (interval, tagger) {
-		return _elm_lang$core$Time$subscription(
-			A2(_elm_lang$core$Time$Every, interval, tagger));
-	});
-var _elm_lang$core$Time$subMap = F2(
-	function (f, _p21) {
-		var _p22 = _p21;
-		return A2(
-			_elm_lang$core$Time$Every,
-			_p22._0,
-			function (_p23) {
-				return f(
-					_p22._1(_p23));
-			});
-	});
-_elm_lang$core$Native_Platform.effectManagers['Time'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Time$init, onEffects: _elm_lang$core$Time$onEffects, onSelfMsg: _elm_lang$core$Time$onSelfMsg, tag: 'sub', subMap: _elm_lang$core$Time$subMap};
-
-var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
-var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
-var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
-
-var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode_ops[':='], 'keyCode', _elm_lang$core$Json_Decode$int);
-var _elm_lang$html$Html_Events$targetChecked = A2(
-	_elm_lang$core$Json_Decode$at,
-	_elm_lang$core$Native_List.fromArray(
-		['target', 'checked']),
-	_elm_lang$core$Json_Decode$bool);
-var _elm_lang$html$Html_Events$targetValue = A2(
-	_elm_lang$core$Json_Decode$at,
-	_elm_lang$core$Native_List.fromArray(
-		['target', 'value']),
-	_elm_lang$core$Json_Decode$string);
-var _elm_lang$html$Html_Events$defaultOptions = _elm_lang$virtual_dom$VirtualDom$defaultOptions;
-var _elm_lang$html$Html_Events$onWithOptions = _elm_lang$virtual_dom$VirtualDom$onWithOptions;
-var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
-var _elm_lang$html$Html_Events$onFocus = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'focus',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onBlur = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'blur',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onSubmitOptions = _elm_lang$core$Native_Utils.update(
-	_elm_lang$html$Html_Events$defaultOptions,
-	{preventDefault: true});
-var _elm_lang$html$Html_Events$onSubmit = function (msg) {
-	return A3(
-		_elm_lang$html$Html_Events$onWithOptions,
-		'submit',
-		_elm_lang$html$Html_Events$onSubmitOptions,
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onCheck = function (tagger) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'change',
-		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetChecked));
-};
-var _elm_lang$html$Html_Events$onInput = function (tagger) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'input',
-		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
-};
-var _elm_lang$html$Html_Events$onMouseOut = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseout',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseOver = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseover',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseLeave = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseleave',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseEnter = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseenter',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseUp = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseup',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseDown = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mousedown',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onDoubleClick = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'dblclick',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onClick = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'click',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$Options = F2(
-	function (a, b) {
-		return {stopPropagation: a, preventDefault: b};
-	});
-
 var _elm_lang$html$Html_App$programWithFlags = _elm_lang$virtual_dom$VirtualDom$programWithFlags;
 var _elm_lang$html$Html_App$program = function (app) {
 	return _elm_lang$html$Html_App$programWithFlags(
@@ -8312,1128 +8673,6 @@ var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
 		});
 };
 var _elm_lang$html$Html_App$map = _elm_lang$virtual_dom$VirtualDom$map;
-
-var _elm_lang$dom$Native_Dom = function() {
-
-function on(node)
-{
-	return function(eventName, decoder, toTask)
-	{
-		return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
-
-			function performTask(event)
-			{
-				var result = A2(_elm_lang$core$Json_Decode$decodeValue, decoder, event);
-				if (result.ctor === 'Ok')
-				{
-					_elm_lang$core$Native_Scheduler.rawSpawn(toTask(result._0));
-				}
-			}
-
-			node.addEventListener(eventName, performTask);
-
-			return function()
-			{
-				node.removeEventListener(eventName, performTask);
-			};
-		});
-	};
-}
-
-return {
-	onDocument: F3(on(document)),
-	onWindow: F3(on(window))
-};
-
-}();
-
-var _elm_lang$dom$Dom_LowLevel$onWindow = _elm_lang$dom$Native_Dom.onWindow;
-var _elm_lang$dom$Dom_LowLevel$onDocument = _elm_lang$dom$Native_Dom.onDocument;
-
-var _elm_lang$mouse$Mouse$onSelfMsg = F3(
-	function (router, _p0, state) {
-		var _p1 = _p0;
-		var _p2 = A2(_elm_lang$core$Dict$get, _p1.category, state);
-		if (_p2.ctor === 'Nothing') {
-			return _elm_lang$core$Task$succeed(state);
-		} else {
-			var send = function (tagger) {
-				return A2(
-					_elm_lang$core$Platform$sendToApp,
-					router,
-					tagger(_p1.position));
-			};
-			return A2(
-				_elm_lang$core$Task$andThen,
-				_elm_lang$core$Task$sequence(
-					A2(_elm_lang$core$List$map, send, _p2._0.taggers)),
-				function (_p3) {
-					return _elm_lang$core$Task$succeed(state);
-				});
-		}
-	});
-var _elm_lang$mouse$Mouse_ops = _elm_lang$mouse$Mouse_ops || {};
-_elm_lang$mouse$Mouse_ops['&>'] = F2(
-	function (t1, t2) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			t1,
-			function (_p4) {
-				return t2;
-			});
-	});
-var _elm_lang$mouse$Mouse$init = _elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty);
-var _elm_lang$mouse$Mouse$categorizeHelpHelp = F2(
-	function (value, maybeValues) {
-		var _p5 = maybeValues;
-		if (_p5.ctor === 'Nothing') {
-			return _elm_lang$core$Maybe$Just(
-				_elm_lang$core$Native_List.fromArray(
-					[value]));
-		} else {
-			return _elm_lang$core$Maybe$Just(
-				A2(_elm_lang$core$List_ops['::'], value, _p5._0));
-		}
-	});
-var _elm_lang$mouse$Mouse$categorizeHelp = F2(
-	function (subs, subDict) {
-		categorizeHelp:
-		while (true) {
-			var _p6 = subs;
-			if (_p6.ctor === '[]') {
-				return subDict;
-			} else {
-				var _v4 = _p6._1,
-					_v5 = A3(
-					_elm_lang$core$Dict$update,
-					_p6._0._0,
-					_elm_lang$mouse$Mouse$categorizeHelpHelp(_p6._0._1),
-					subDict);
-				subs = _v4;
-				subDict = _v5;
-				continue categorizeHelp;
-			}
-		}
-	});
-var _elm_lang$mouse$Mouse$categorize = function (subs) {
-	return A2(_elm_lang$mouse$Mouse$categorizeHelp, subs, _elm_lang$core$Dict$empty);
-};
-var _elm_lang$mouse$Mouse$subscription = _elm_lang$core$Native_Platform.leaf('Mouse');
-var _elm_lang$mouse$Mouse$Position = F2(
-	function (a, b) {
-		return {x: a, y: b};
-	});
-var _elm_lang$mouse$Mouse$position = A3(
-	_elm_lang$core$Json_Decode$object2,
-	_elm_lang$mouse$Mouse$Position,
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageX', _elm_lang$core$Json_Decode$int),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageY', _elm_lang$core$Json_Decode$int));
-var _elm_lang$mouse$Mouse$Watcher = F2(
-	function (a, b) {
-		return {taggers: a, pid: b};
-	});
-var _elm_lang$mouse$Mouse$Msg = F2(
-	function (a, b) {
-		return {category: a, position: b};
-	});
-var _elm_lang$mouse$Mouse$onEffects = F3(
-	function (router, newSubs, oldState) {
-		var rightStep = F3(
-			function (category, taggers, task) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					task,
-					function (state) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							_elm_lang$core$Process$spawn(
-								A3(
-									_elm_lang$dom$Dom_LowLevel$onDocument,
-									category,
-									_elm_lang$mouse$Mouse$position,
-									function (_p7) {
-										return A2(
-											_elm_lang$core$Platform$sendToSelf,
-											router,
-											A2(_elm_lang$mouse$Mouse$Msg, category, _p7));
-									})),
-							function (pid) {
-								return _elm_lang$core$Task$succeed(
-									A3(
-										_elm_lang$core$Dict$insert,
-										category,
-										A2(_elm_lang$mouse$Mouse$Watcher, taggers, pid),
-										state));
-							});
-					});
-			});
-		var bothStep = F4(
-			function (category, _p8, taggers, task) {
-				var _p9 = _p8;
-				return A2(
-					_elm_lang$core$Task$andThen,
-					task,
-					function (state) {
-						return _elm_lang$core$Task$succeed(
-							A3(
-								_elm_lang$core$Dict$insert,
-								category,
-								A2(_elm_lang$mouse$Mouse$Watcher, taggers, _p9.pid),
-								state));
-					});
-			});
-		var leftStep = F3(
-			function (category, _p10, task) {
-				var _p11 = _p10;
-				return A2(
-					_elm_lang$mouse$Mouse_ops['&>'],
-					_elm_lang$core$Process$kill(_p11.pid),
-					task);
-			});
-		return A6(
-			_elm_lang$core$Dict$merge,
-			leftStep,
-			bothStep,
-			rightStep,
-			oldState,
-			_elm_lang$mouse$Mouse$categorize(newSubs),
-			_elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty));
-	});
-var _elm_lang$mouse$Mouse$MySub = F2(
-	function (a, b) {
-		return {ctor: 'MySub', _0: a, _1: b};
-	});
-var _elm_lang$mouse$Mouse$clicks = function (tagger) {
-	return _elm_lang$mouse$Mouse$subscription(
-		A2(_elm_lang$mouse$Mouse$MySub, 'click', tagger));
-};
-var _elm_lang$mouse$Mouse$moves = function (tagger) {
-	return _elm_lang$mouse$Mouse$subscription(
-		A2(_elm_lang$mouse$Mouse$MySub, 'mousemove', tagger));
-};
-var _elm_lang$mouse$Mouse$downs = function (tagger) {
-	return _elm_lang$mouse$Mouse$subscription(
-		A2(_elm_lang$mouse$Mouse$MySub, 'mousedown', tagger));
-};
-var _elm_lang$mouse$Mouse$ups = function (tagger) {
-	return _elm_lang$mouse$Mouse$subscription(
-		A2(_elm_lang$mouse$Mouse$MySub, 'mouseup', tagger));
-};
-var _elm_lang$mouse$Mouse$subMap = F2(
-	function (func, _p12) {
-		var _p13 = _p12;
-		return A2(
-			_elm_lang$mouse$Mouse$MySub,
-			_p13._0,
-			function (_p14) {
-				return func(
-					_p13._1(_p14));
-			});
-	});
-_elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
-
-var _elm_lang$window$Native_Window = function()
-{
-
-var size = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)	{
-	callback(_elm_lang$core$Native_Scheduler.succeed({
-		width: window.innerWidth,
-		height: window.innerHeight
-	}));
-});
-
-return {
-	size: size
-};
-
-}();
-var _elm_lang$window$Window_ops = _elm_lang$window$Window_ops || {};
-_elm_lang$window$Window_ops['&>'] = F2(
-	function (t1, t2) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			t1,
-			function (_p0) {
-				return t2;
-			});
-	});
-var _elm_lang$window$Window$onSelfMsg = F3(
-	function (router, dimensions, state) {
-		var _p1 = state;
-		if (_p1.ctor === 'Nothing') {
-			return _elm_lang$core$Task$succeed(state);
-		} else {
-			var send = function (_p2) {
-				var _p3 = _p2;
-				return A2(
-					_elm_lang$core$Platform$sendToApp,
-					router,
-					_p3._0(dimensions));
-			};
-			return A2(
-				_elm_lang$window$Window_ops['&>'],
-				_elm_lang$core$Task$sequence(
-					A2(_elm_lang$core$List$map, send, _p1._0.subs)),
-				_elm_lang$core$Task$succeed(state));
-		}
-	});
-var _elm_lang$window$Window$init = _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
-var _elm_lang$window$Window$size = _elm_lang$window$Native_Window.size;
-var _elm_lang$window$Window$width = A2(
-	_elm_lang$core$Task$map,
-	function (_) {
-		return _.width;
-	},
-	_elm_lang$window$Window$size);
-var _elm_lang$window$Window$height = A2(
-	_elm_lang$core$Task$map,
-	function (_) {
-		return _.height;
-	},
-	_elm_lang$window$Window$size);
-var _elm_lang$window$Window$onEffects = F3(
-	function (router, newSubs, oldState) {
-		var _p4 = {ctor: '_Tuple2', _0: oldState, _1: newSubs};
-		if (_p4._0.ctor === 'Nothing') {
-			if (_p4._1.ctor === '[]') {
-				return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
-			} else {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					_elm_lang$core$Process$spawn(
-						A3(
-							_elm_lang$dom$Dom_LowLevel$onWindow,
-							'resize',
-							_elm_lang$core$Json_Decode$succeed(
-								{ctor: '_Tuple0'}),
-							function (_p5) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									_elm_lang$window$Window$size,
-									_elm_lang$core$Platform$sendToSelf(router));
-							})),
-					function (pid) {
-						return _elm_lang$core$Task$succeed(
-							_elm_lang$core$Maybe$Just(
-								{subs: newSubs, pid: pid}));
-					});
-			}
-		} else {
-			if (_p4._1.ctor === '[]') {
-				return A2(
-					_elm_lang$window$Window_ops['&>'],
-					_elm_lang$core$Process$kill(_p4._0._0.pid),
-					_elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing));
-			} else {
-				return _elm_lang$core$Task$succeed(
-					_elm_lang$core$Maybe$Just(
-						{subs: newSubs, pid: _p4._0._0.pid}));
-			}
-		}
-	});
-var _elm_lang$window$Window$subscription = _elm_lang$core$Native_Platform.leaf('Window');
-var _elm_lang$window$Window$Size = F2(
-	function (a, b) {
-		return {width: a, height: b};
-	});
-var _elm_lang$window$Window$MySub = function (a) {
-	return {ctor: 'MySub', _0: a};
-};
-var _elm_lang$window$Window$resizes = function (tagger) {
-	return _elm_lang$window$Window$subscription(
-		_elm_lang$window$Window$MySub(tagger));
-};
-var _elm_lang$window$Window$subMap = F2(
-	function (func, _p6) {
-		var _p7 = _p6;
-		return _elm_lang$window$Window$MySub(
-			function (_p8) {
-				return func(
-					_p7._0(_p8));
-			});
-	});
-_elm_lang$core$Native_Platform.effectManagers['Window'] = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
-
-var _elm_lang$core$Random$onSelfMsg = F3(
-	function (_p1, _p0, seed) {
-		return _elm_lang$core$Task$succeed(seed);
-	});
-var _elm_lang$core$Random$magicNum8 = 2147483562;
-var _elm_lang$core$Random$range = function (_p2) {
-	return {ctor: '_Tuple2', _0: 0, _1: _elm_lang$core$Random$magicNum8};
-};
-var _elm_lang$core$Random$magicNum7 = 2147483399;
-var _elm_lang$core$Random$magicNum6 = 2147483563;
-var _elm_lang$core$Random$magicNum5 = 3791;
-var _elm_lang$core$Random$magicNum4 = 40692;
-var _elm_lang$core$Random$magicNum3 = 52774;
-var _elm_lang$core$Random$magicNum2 = 12211;
-var _elm_lang$core$Random$magicNum1 = 53668;
-var _elm_lang$core$Random$magicNum0 = 40014;
-var _elm_lang$core$Random$step = F2(
-	function (_p3, seed) {
-		var _p4 = _p3;
-		return _p4._0(seed);
-	});
-var _elm_lang$core$Random$onEffects = F3(
-	function (router, commands, seed) {
-		var _p5 = commands;
-		if (_p5.ctor === '[]') {
-			return _elm_lang$core$Task$succeed(seed);
-		} else {
-			var _p6 = A2(_elm_lang$core$Random$step, _p5._0._0, seed);
-			var value = _p6._0;
-			var newSeed = _p6._1;
-			return A2(
-				_elm_lang$core$Task$andThen,
-				A2(_elm_lang$core$Platform$sendToApp, router, value),
-				function (_p7) {
-					return A3(_elm_lang$core$Random$onEffects, router, _p5._1, newSeed);
-				});
-		}
-	});
-var _elm_lang$core$Random$listHelp = F4(
-	function (list, n, generate, seed) {
-		listHelp:
-		while (true) {
-			if (_elm_lang$core$Native_Utils.cmp(n, 1) < 0) {
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$List$reverse(list),
-					_1: seed
-				};
-			} else {
-				var _p8 = generate(seed);
-				var value = _p8._0;
-				var newSeed = _p8._1;
-				var _v2 = A2(_elm_lang$core$List_ops['::'], value, list),
-					_v3 = n - 1,
-					_v4 = generate,
-					_v5 = newSeed;
-				list = _v2;
-				n = _v3;
-				generate = _v4;
-				seed = _v5;
-				continue listHelp;
-			}
-		}
-	});
-var _elm_lang$core$Random$minInt = -2147483648;
-var _elm_lang$core$Random$maxInt = 2147483647;
-var _elm_lang$core$Random$iLogBase = F2(
-	function (b, i) {
-		return (_elm_lang$core$Native_Utils.cmp(i, b) < 0) ? 1 : (1 + A2(_elm_lang$core$Random$iLogBase, b, (i / b) | 0));
-	});
-var _elm_lang$core$Random$command = _elm_lang$core$Native_Platform.leaf('Random');
-var _elm_lang$core$Random$Generator = function (a) {
-	return {ctor: 'Generator', _0: a};
-};
-var _elm_lang$core$Random$list = F2(
-	function (n, _p9) {
-		var _p10 = _p9;
-		return _elm_lang$core$Random$Generator(
-			function (seed) {
-				return A4(
-					_elm_lang$core$Random$listHelp,
-					_elm_lang$core$Native_List.fromArray(
-						[]),
-					n,
-					_p10._0,
-					seed);
-			});
-	});
-var _elm_lang$core$Random$map = F2(
-	function (func, _p11) {
-		var _p12 = _p11;
-		return _elm_lang$core$Random$Generator(
-			function (seed0) {
-				var _p13 = _p12._0(seed0);
-				var a = _p13._0;
-				var seed1 = _p13._1;
-				return {
-					ctor: '_Tuple2',
-					_0: func(a),
-					_1: seed1
-				};
-			});
-	});
-var _elm_lang$core$Random$map2 = F3(
-	function (func, _p15, _p14) {
-		var _p16 = _p15;
-		var _p17 = _p14;
-		return _elm_lang$core$Random$Generator(
-			function (seed0) {
-				var _p18 = _p16._0(seed0);
-				var a = _p18._0;
-				var seed1 = _p18._1;
-				var _p19 = _p17._0(seed1);
-				var b = _p19._0;
-				var seed2 = _p19._1;
-				return {
-					ctor: '_Tuple2',
-					_0: A2(func, a, b),
-					_1: seed2
-				};
-			});
-	});
-var _elm_lang$core$Random$pair = F2(
-	function (genA, genB) {
-		return A3(
-			_elm_lang$core$Random$map2,
-			F2(
-				function (v0, v1) {
-					return {ctor: '_Tuple2', _0: v0, _1: v1};
-				}),
-			genA,
-			genB);
-	});
-var _elm_lang$core$Random$map3 = F4(
-	function (func, _p22, _p21, _p20) {
-		var _p23 = _p22;
-		var _p24 = _p21;
-		var _p25 = _p20;
-		return _elm_lang$core$Random$Generator(
-			function (seed0) {
-				var _p26 = _p23._0(seed0);
-				var a = _p26._0;
-				var seed1 = _p26._1;
-				var _p27 = _p24._0(seed1);
-				var b = _p27._0;
-				var seed2 = _p27._1;
-				var _p28 = _p25._0(seed2);
-				var c = _p28._0;
-				var seed3 = _p28._1;
-				return {
-					ctor: '_Tuple2',
-					_0: A3(func, a, b, c),
-					_1: seed3
-				};
-			});
-	});
-var _elm_lang$core$Random$map4 = F5(
-	function (func, _p32, _p31, _p30, _p29) {
-		var _p33 = _p32;
-		var _p34 = _p31;
-		var _p35 = _p30;
-		var _p36 = _p29;
-		return _elm_lang$core$Random$Generator(
-			function (seed0) {
-				var _p37 = _p33._0(seed0);
-				var a = _p37._0;
-				var seed1 = _p37._1;
-				var _p38 = _p34._0(seed1);
-				var b = _p38._0;
-				var seed2 = _p38._1;
-				var _p39 = _p35._0(seed2);
-				var c = _p39._0;
-				var seed3 = _p39._1;
-				var _p40 = _p36._0(seed3);
-				var d = _p40._0;
-				var seed4 = _p40._1;
-				return {
-					ctor: '_Tuple2',
-					_0: A4(func, a, b, c, d),
-					_1: seed4
-				};
-			});
-	});
-var _elm_lang$core$Random$map5 = F6(
-	function (func, _p45, _p44, _p43, _p42, _p41) {
-		var _p46 = _p45;
-		var _p47 = _p44;
-		var _p48 = _p43;
-		var _p49 = _p42;
-		var _p50 = _p41;
-		return _elm_lang$core$Random$Generator(
-			function (seed0) {
-				var _p51 = _p46._0(seed0);
-				var a = _p51._0;
-				var seed1 = _p51._1;
-				var _p52 = _p47._0(seed1);
-				var b = _p52._0;
-				var seed2 = _p52._1;
-				var _p53 = _p48._0(seed2);
-				var c = _p53._0;
-				var seed3 = _p53._1;
-				var _p54 = _p49._0(seed3);
-				var d = _p54._0;
-				var seed4 = _p54._1;
-				var _p55 = _p50._0(seed4);
-				var e = _p55._0;
-				var seed5 = _p55._1;
-				return {
-					ctor: '_Tuple2',
-					_0: A5(func, a, b, c, d, e),
-					_1: seed5
-				};
-			});
-	});
-var _elm_lang$core$Random$andThen = F2(
-	function (_p56, callback) {
-		var _p57 = _p56;
-		return _elm_lang$core$Random$Generator(
-			function (seed) {
-				var _p58 = _p57._0(seed);
-				var result = _p58._0;
-				var newSeed = _p58._1;
-				var _p59 = callback(result);
-				var genB = _p59._0;
-				return genB(newSeed);
-			});
-	});
-var _elm_lang$core$Random$State = F2(
-	function (a, b) {
-		return {ctor: 'State', _0: a, _1: b};
-	});
-var _elm_lang$core$Random$initState = function (s$) {
-	var s = A2(_elm_lang$core$Basics$max, s$, 0 - s$);
-	var q = (s / (_elm_lang$core$Random$magicNum6 - 1)) | 0;
-	var s2 = A2(_elm_lang$core$Basics_ops['%'], q, _elm_lang$core$Random$magicNum7 - 1);
-	var s1 = A2(_elm_lang$core$Basics_ops['%'], s, _elm_lang$core$Random$magicNum6 - 1);
-	return A2(_elm_lang$core$Random$State, s1 + 1, s2 + 1);
-};
-var _elm_lang$core$Random$next = function (_p60) {
-	var _p61 = _p60;
-	var _p63 = _p61._1;
-	var _p62 = _p61._0;
-	var k$ = (_p63 / _elm_lang$core$Random$magicNum3) | 0;
-	var s2$ = (_elm_lang$core$Random$magicNum4 * (_p63 - (k$ * _elm_lang$core$Random$magicNum3))) - (k$ * _elm_lang$core$Random$magicNum5);
-	var s2$$ = (_elm_lang$core$Native_Utils.cmp(s2$, 0) < 0) ? (s2$ + _elm_lang$core$Random$magicNum7) : s2$;
-	var k = (_p62 / _elm_lang$core$Random$magicNum1) | 0;
-	var s1$ = (_elm_lang$core$Random$magicNum0 * (_p62 - (k * _elm_lang$core$Random$magicNum1))) - (k * _elm_lang$core$Random$magicNum2);
-	var s1$$ = (_elm_lang$core$Native_Utils.cmp(s1$, 0) < 0) ? (s1$ + _elm_lang$core$Random$magicNum6) : s1$;
-	var z = s1$$ - s2$$;
-	var z$ = (_elm_lang$core$Native_Utils.cmp(z, 1) < 0) ? (z + _elm_lang$core$Random$magicNum8) : z;
-	return {
-		ctor: '_Tuple2',
-		_0: z$,
-		_1: A2(_elm_lang$core$Random$State, s1$$, s2$$)
-	};
-};
-var _elm_lang$core$Random$split = function (_p64) {
-	var _p65 = _p64;
-	var _p68 = _p65._1;
-	var _p67 = _p65._0;
-	var _p66 = _elm_lang$core$Basics$snd(
-		_elm_lang$core$Random$next(_p65));
-	var t1 = _p66._0;
-	var t2 = _p66._1;
-	var new_s2 = _elm_lang$core$Native_Utils.eq(_p68, 1) ? (_elm_lang$core$Random$magicNum7 - 1) : (_p68 - 1);
-	var new_s1 = _elm_lang$core$Native_Utils.eq(_p67, _elm_lang$core$Random$magicNum6 - 1) ? 1 : (_p67 + 1);
-	return {
-		ctor: '_Tuple2',
-		_0: A2(_elm_lang$core$Random$State, new_s1, t2),
-		_1: A2(_elm_lang$core$Random$State, t1, new_s2)
-	};
-};
-var _elm_lang$core$Random$Seed = function (a) {
-	return {ctor: 'Seed', _0: a};
-};
-var _elm_lang$core$Random$int = F2(
-	function (a, b) {
-		return _elm_lang$core$Random$Generator(
-			function (_p69) {
-				var _p70 = _p69;
-				var _p75 = _p70._0;
-				var base = 2147483561;
-				var f = F3(
-					function (n, acc, state) {
-						f:
-						while (true) {
-							var _p71 = n;
-							if (_p71 === 0) {
-								return {ctor: '_Tuple2', _0: acc, _1: state};
-							} else {
-								var _p72 = _p75.next(state);
-								var x = _p72._0;
-								var state$ = _p72._1;
-								var _v27 = n - 1,
-									_v28 = x + (acc * base),
-									_v29 = state$;
-								n = _v27;
-								acc = _v28;
-								state = _v29;
-								continue f;
-							}
-						}
-					});
-				var _p73 = (_elm_lang$core$Native_Utils.cmp(a, b) < 0) ? {ctor: '_Tuple2', _0: a, _1: b} : {ctor: '_Tuple2', _0: b, _1: a};
-				var lo = _p73._0;
-				var hi = _p73._1;
-				var k = (hi - lo) + 1;
-				var n = A2(_elm_lang$core$Random$iLogBase, base, k);
-				var _p74 = A3(f, n, 1, _p75.state);
-				var v = _p74._0;
-				var state$ = _p74._1;
-				return {
-					ctor: '_Tuple2',
-					_0: lo + A2(_elm_lang$core$Basics_ops['%'], v, k),
-					_1: _elm_lang$core$Random$Seed(
-						_elm_lang$core$Native_Utils.update(
-							_p75,
-							{state: state$}))
-				};
-			});
-	});
-var _elm_lang$core$Random$bool = A2(
-	_elm_lang$core$Random$map,
-	F2(
-		function (x, y) {
-			return _elm_lang$core$Native_Utils.eq(x, y);
-		})(1),
-	A2(_elm_lang$core$Random$int, 0, 1));
-var _elm_lang$core$Random$float = F2(
-	function (a, b) {
-		return _elm_lang$core$Random$Generator(
-			function (seed) {
-				var _p76 = A2(
-					_elm_lang$core$Random$step,
-					A2(_elm_lang$core$Random$int, _elm_lang$core$Random$minInt, _elm_lang$core$Random$maxInt),
-					seed);
-				var number = _p76._0;
-				var newSeed = _p76._1;
-				var negativeOneToOne = _elm_lang$core$Basics$toFloat(number) / _elm_lang$core$Basics$toFloat(_elm_lang$core$Random$maxInt - _elm_lang$core$Random$minInt);
-				var _p77 = (_elm_lang$core$Native_Utils.cmp(a, b) < 0) ? {ctor: '_Tuple2', _0: a, _1: b} : {ctor: '_Tuple2', _0: b, _1: a};
-				var lo = _p77._0;
-				var hi = _p77._1;
-				var scaled = ((lo + hi) / 2) + ((hi - lo) * negativeOneToOne);
-				return {ctor: '_Tuple2', _0: scaled, _1: newSeed};
-			});
-	});
-var _elm_lang$core$Random$initialSeed = function (n) {
-	return _elm_lang$core$Random$Seed(
-		{
-			state: _elm_lang$core$Random$initState(n),
-			next: _elm_lang$core$Random$next,
-			split: _elm_lang$core$Random$split,
-			range: _elm_lang$core$Random$range
-		});
-};
-var _elm_lang$core$Random$init = A2(
-	_elm_lang$core$Task$andThen,
-	_elm_lang$core$Time$now,
-	function (t) {
-		return _elm_lang$core$Task$succeed(
-			_elm_lang$core$Random$initialSeed(
-				_elm_lang$core$Basics$round(t)));
-	});
-var _elm_lang$core$Random$Generate = function (a) {
-	return {ctor: 'Generate', _0: a};
-};
-var _elm_lang$core$Random$generate = F2(
-	function (tagger, generator) {
-		return _elm_lang$core$Random$command(
-			_elm_lang$core$Random$Generate(
-				A2(_elm_lang$core$Random$map, tagger, generator)));
-	});
-var _elm_lang$core$Random$cmdMap = F2(
-	function (func, _p78) {
-		var _p79 = _p78;
-		return _elm_lang$core$Random$Generate(
-			A2(_elm_lang$core$Random$map, func, _p79._0));
-	});
-_elm_lang$core$Native_Platform.effectManagers['Random'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Random$init, onEffects: _elm_lang$core$Random$onEffects, onSelfMsg: _elm_lang$core$Random$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Random$cmdMap};
-
-var _elm_community$random_extra$Random_Extra$flatMap6 = F7(
-	function (constructor, generatorA, generatorB, generatorC, generatorD, generatorE, generatorF) {
-		return A2(
-			_elm_lang$core$Random$andThen,
-			generatorA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Random$andThen,
-					generatorB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Random$andThen,
-							generatorC,
-							function (c) {
-								return A2(
-									_elm_lang$core$Random$andThen,
-									generatorD,
-									function (d) {
-										return A2(
-											_elm_lang$core$Random$andThen,
-											generatorE,
-											function (e) {
-												return A2(
-													_elm_lang$core$Random$andThen,
-													generatorF,
-													function (f) {
-														return A6(constructor, a, b, c, d, e, f);
-													});
-											});
-									});
-							});
-					});
-			});
-	});
-var _elm_community$random_extra$Random_Extra$flatMap5 = F6(
-	function (constructor, generatorA, generatorB, generatorC, generatorD, generatorE) {
-		return A2(
-			_elm_lang$core$Random$andThen,
-			generatorA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Random$andThen,
-					generatorB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Random$andThen,
-							generatorC,
-							function (c) {
-								return A2(
-									_elm_lang$core$Random$andThen,
-									generatorD,
-									function (d) {
-										return A2(
-											_elm_lang$core$Random$andThen,
-											generatorE,
-											function (e) {
-												return A5(constructor, a, b, c, d, e);
-											});
-									});
-							});
-					});
-			});
-	});
-var _elm_community$random_extra$Random_Extra$flatMap4 = F5(
-	function (constructor, generatorA, generatorB, generatorC, generatorD) {
-		return A2(
-			_elm_lang$core$Random$andThen,
-			generatorA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Random$andThen,
-					generatorB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Random$andThen,
-							generatorC,
-							function (c) {
-								return A2(
-									_elm_lang$core$Random$andThen,
-									generatorD,
-									function (d) {
-										return A4(constructor, a, b, c, d);
-									});
-							});
-					});
-			});
-	});
-var _elm_community$random_extra$Random_Extra$flatMap3 = F4(
-	function (constructor, generatorA, generatorB, generatorC) {
-		return A2(
-			_elm_lang$core$Random$andThen,
-			generatorA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Random$andThen,
-					generatorB,
-					function (b) {
-						return A2(
-							_elm_lang$core$Random$andThen,
-							generatorC,
-							function (c) {
-								return A3(constructor, a, b, c);
-							});
-					});
-			});
-	});
-var _elm_community$random_extra$Random_Extra$flatMap2 = F3(
-	function (constructor, generatorA, generatorB) {
-		return A2(
-			_elm_lang$core$Random$andThen,
-			generatorA,
-			function (a) {
-				return A2(
-					_elm_lang$core$Random$andThen,
-					generatorB,
-					function (b) {
-						return A2(constructor, a, b);
-					});
-			});
-	});
-var _elm_community$random_extra$Random_Extra$flatMap = _elm_lang$core$Basics$flip(_elm_lang$core$Random$andThen);
-var _elm_community$random_extra$Random_Extra$rangeLengthList = F3(
-	function (minLength, maxLength, generator) {
-		return A2(
-			_elm_community$random_extra$Random_Extra$flatMap,
-			function (len) {
-				return A2(_elm_lang$core$Random$list, len, generator);
-			},
-			A2(_elm_lang$core$Random$int, minLength, maxLength));
-	});
-var _elm_community$random_extra$Random_Extra$result = F3(
-	function (genBool, genErr, genVal) {
-		return A2(
-			_elm_lang$core$Random$andThen,
-			genBool,
-			function (b) {
-				return b ? A2(_elm_lang$core$Random$map, _elm_lang$core$Result$Ok, genVal) : A2(_elm_lang$core$Random$map, _elm_lang$core$Result$Err, genErr);
-			});
-	});
-var _elm_community$random_extra$Random_Extra$sample = function () {
-	var find = F2(
-		function (k, ys) {
-			find:
-			while (true) {
-				var _p0 = ys;
-				if (_p0.ctor === '[]') {
-					return _elm_lang$core$Maybe$Nothing;
-				} else {
-					if (_elm_lang$core$Native_Utils.eq(k, 0)) {
-						return _elm_lang$core$Maybe$Just(_p0._0);
-					} else {
-						var _v1 = k - 1,
-							_v2 = _p0._1;
-						k = _v1;
-						ys = _v2;
-						continue find;
-					}
-				}
-			}
-		});
-	return function (xs) {
-		return A2(
-			_elm_lang$core$Random$map,
-			function (i) {
-				return A2(find, i, xs);
-			},
-			A2(
-				_elm_lang$core$Random$int,
-				0,
-				_elm_lang$core$List$length(xs) - 1));
-	};
-}();
-var _elm_community$random_extra$Random_Extra$frequency = function (pairs) {
-	var pick = F2(
-		function (choices, n) {
-			pick:
-			while (true) {
-				var _p1 = choices;
-				if ((_p1.ctor === '::') && (_p1._0.ctor === '_Tuple2')) {
-					var _p2 = _p1._0._0;
-					if (_elm_lang$core$Native_Utils.cmp(n, _p2) < 1) {
-						return _p1._0._1;
-					} else {
-						var _v4 = _p1._1,
-							_v5 = n - _p2;
-						choices = _v4;
-						n = _v5;
-						continue pick;
-					}
-				} else {
-					return _elm_lang$core$Native_Utils.crashCase(
-						'Random.Extra',
-						{
-							start: {line: 153, column: 13},
-							end: {line: 161, column: 79}
-						},
-						_p1)('Empty list passed to Random.Extra.frequency!');
-				}
-			}
-		});
-	var total = _elm_lang$core$List$sum(
-		A2(
-			_elm_lang$core$List$map,
-			function (_p4) {
-				return _elm_lang$core$Basics$abs(
-					_elm_lang$core$Basics$fst(_p4));
-			},
-			pairs));
-	return A2(
-		_elm_lang$core$Random$andThen,
-		A2(_elm_lang$core$Random$float, 0, total),
-		pick(pairs));
-};
-var _elm_community$random_extra$Random_Extra$choices = function (gens) {
-	return _elm_community$random_extra$Random_Extra$frequency(
-		A2(
-			_elm_lang$core$List$map,
-			function (g) {
-				return {ctor: '_Tuple2', _0: 1, _1: g};
-			},
-			gens));
-};
-var _elm_community$random_extra$Random_Extra$choice = F2(
-	function (x, y) {
-		return A2(
-			_elm_lang$core$Random$map,
-			function (b) {
-				return b ? x : y;
-			},
-			_elm_lang$core$Random$bool);
-	});
-var _elm_community$random_extra$Random_Extra$oneIn = function (n) {
-	return A2(
-		_elm_lang$core$Random$map,
-		F2(
-			function (x, y) {
-				return _elm_lang$core$Native_Utils.eq(x, y);
-			})(1),
-		A2(_elm_lang$core$Random$int, 1, n));
-};
-var _elm_community$random_extra$Random_Extra$andMap = F2(
-	function (funcGenerator, generator) {
-		return A3(
-			_elm_lang$core$Random$map2,
-			F2(
-				function (x, y) {
-					return x(y);
-				}),
-			funcGenerator,
-			generator);
-	});
-var _elm_community$random_extra$Random_Extra$map6 = F7(
-	function (f, generatorA, generatorB, generatorC, generatorD, generatorE, generatorF) {
-		return A2(
-			_elm_community$random_extra$Random_Extra$andMap,
-			A6(_elm_lang$core$Random$map5, f, generatorA, generatorB, generatorC, generatorD, generatorE),
-			generatorF);
-	});
-var _elm_community$random_extra$Random_Extra$constant = function (value) {
-	return A2(
-		_elm_lang$core$Random$map,
-		function (_p5) {
-			return value;
-		},
-		_elm_lang$core$Random$bool);
-};
-var _elm_community$random_extra$Random_Extra$filter = F2(
-	function (predicate, generator) {
-		return A2(
-			_elm_lang$core$Random$andThen,
-			generator,
-			function (a) {
-				return predicate(a) ? _elm_community$random_extra$Random_Extra$constant(a) : A2(_elm_community$random_extra$Random_Extra$filter, predicate, generator);
-			});
-	});
-var _elm_community$random_extra$Random_Extra$together = function (generators) {
-	var _p6 = generators;
-	if (_p6.ctor === '[]') {
-		return _elm_community$random_extra$Random_Extra$constant(
-			_elm_lang$core$Native_List.fromArray(
-				[]));
-	} else {
-		return A3(
-			_elm_lang$core$Random$map2,
-			F2(
-				function (x, y) {
-					return A2(_elm_lang$core$List_ops['::'], x, y);
-				}),
-			_p6._0,
-			_elm_community$random_extra$Random_Extra$together(_p6._1));
-	}
-};
-var _elm_community$random_extra$Random_Extra$maybe = F2(
-	function (genBool, genA) {
-		return A2(
-			_elm_lang$core$Random$andThen,
-			genBool,
-			function (b) {
-				return b ? A2(_elm_lang$core$Random$map, _elm_lang$core$Maybe$Just, genA) : _elm_community$random_extra$Random_Extra$constant(_elm_lang$core$Maybe$Nothing);
-			});
-	});
-
-var _elm_community$random_extra$Random_Array$choose = function (arr) {
-	if (_elm_lang$core$Array$isEmpty(arr)) {
-		return _elm_community$random_extra$Random_Extra$constant(
-			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: arr});
-	} else {
-		var front = function (i) {
-			return A3(_elm_lang$core$Array$slice, 0, i, arr);
-		};
-		var lastIndex = _elm_lang$core$Array$length(arr) - 1;
-		var back = function (i) {
-			return _elm_lang$core$Native_Utils.eq(i, lastIndex) ? _elm_lang$core$Array$empty : A3(_elm_lang$core$Array$slice, i + 1, lastIndex + 1, arr);
-		};
-		var gen = A2(_elm_lang$core$Random$int, 0, lastIndex);
-		return A2(
-			_elm_lang$core$Random$map,
-			function (index) {
-				return {
-					ctor: '_Tuple2',
-					_0: A2(_elm_lang$core$Array$get, index, arr),
-					_1: A2(
-						_elm_lang$core$Array$append,
-						front(index),
-						back(index))
-				};
-			},
-			gen);
-	}
-};
-var _elm_community$random_extra$Random_Array$shuffle = function (arr) {
-	if (_elm_lang$core$Array$isEmpty(arr)) {
-		return _elm_community$random_extra$Random_Extra$constant(arr);
-	} else {
-		var helper = function (_p0) {
-			var _p1 = _p0;
-			var _p6 = _p1._0;
-			return A2(
-				_elm_lang$core$Random$andThen,
-				_elm_community$random_extra$Random_Array$choose(_p1._1),
-				function (_p2) {
-					var _p3 = _p2;
-					var _p5 = _p3._1;
-					var _p4 = _p3._0;
-					if (_p4.ctor === 'Nothing') {
-						return _elm_community$random_extra$Random_Extra$constant(
-							{ctor: '_Tuple2', _0: _p6, _1: _p5});
-					} else {
-						return helper(
-							{
-								ctor: '_Tuple2',
-								_0: A2(_elm_lang$core$List_ops['::'], _p4._0, _p6),
-								_1: _p5
-							});
-					}
-				});
-		};
-		return A2(
-			_elm_lang$core$Random$map,
-			function (_p7) {
-				return _elm_lang$core$Array$fromList(
-					_elm_lang$core$Basics$fst(_p7));
-			},
-			helper(
-				{
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_List.fromArray(
-						[]),
-					_1: arr
-				}));
-	}
-};
-var _elm_community$random_extra$Random_Array$sample = function (arr) {
-	var gen = A2(
-		_elm_lang$core$Random$int,
-		0,
-		_elm_lang$core$Array$length(arr) - 1);
-	return A2(
-		_elm_lang$core$Random$map,
-		function (index) {
-			return A2(_elm_lang$core$Array$get, index, arr);
-		},
-		gen);
-};
-var _elm_community$random_extra$Random_Array$array = F2(
-	function (arrayLength, generator) {
-		return A2(
-			_elm_lang$core$Random$map,
-			_elm_lang$core$Array$fromList,
-			A2(_elm_lang$core$Random$list, arrayLength, generator));
-	});
-var _elm_community$random_extra$Random_Array$rangeLengthArray = F3(
-	function (minLength, maxLength, generator) {
-		return A2(
-			_elm_community$random_extra$Random_Extra$flatMap,
-			function (len) {
-				return A2(_elm_community$random_extra$Random_Array$array, len, generator);
-			},
-			A2(_elm_lang$core$Random$int, minLength, maxLength));
-	});
 
 var _elm_lang$core$Set$foldr = F3(
 	function (f, b, _p0) {
@@ -9912,17 +9151,59 @@ var _elm_community$list_extra$List_Extra$scanl1 = F2(
 			return A3(_elm_lang$core$List$scanl, f, _p26._0, _p26._1);
 		}
 	});
+var _elm_community$list_extra$List_Extra$indexedFoldr = F3(
+	function (func, acc, list) {
+		var step = F2(
+			function (x, _p27) {
+				var _p28 = _p27;
+				var _p29 = _p28._0;
+				return {
+					ctor: '_Tuple2',
+					_0: _p29 - 1,
+					_1: A3(func, _p29, x, _p28._1)
+				};
+			});
+		return _elm_lang$core$Basics$snd(
+			A3(
+				_elm_lang$core$List$foldr,
+				step,
+				{
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$List$length(list) - 1,
+					_1: acc
+				},
+				list));
+	});
+var _elm_community$list_extra$List_Extra$indexedFoldl = F3(
+	function (func, acc, list) {
+		var step = F2(
+			function (x, _p30) {
+				var _p31 = _p30;
+				var _p32 = _p31._0;
+				return {
+					ctor: '_Tuple2',
+					_0: _p32 + 1,
+					_1: A3(func, _p32, x, _p31._1)
+				};
+			});
+		return _elm_lang$core$Basics$snd(
+			A3(
+				_elm_lang$core$List$foldl,
+				step,
+				{ctor: '_Tuple2', _0: 0, _1: acc},
+				list));
+	});
 var _elm_community$list_extra$List_Extra$foldr1 = F2(
 	function (f, xs) {
 		var mf = F2(
 			function (x, m) {
 				return _elm_lang$core$Maybe$Just(
 					function () {
-						var _p27 = m;
-						if (_p27.ctor === 'Nothing') {
+						var _p33 = m;
+						if (_p33.ctor === 'Nothing') {
 							return x;
 						} else {
-							return A2(f, x, _p27._0);
+							return A2(f, x, _p33._0);
 						}
 					}());
 			});
@@ -9934,11 +9215,11 @@ var _elm_community$list_extra$List_Extra$foldl1 = F2(
 			function (x, m) {
 				return _elm_lang$core$Maybe$Just(
 					function () {
-						var _p28 = m;
-						if (_p28.ctor === 'Nothing') {
+						var _p34 = m;
+						if (_p34.ctor === 'Nothing') {
 							return x;
 						} else {
-							return A2(f, _p28._0, x);
+							return A2(f, _p34._0, x);
 						}
 					}());
 			});
@@ -9948,34 +9229,34 @@ var _elm_community$list_extra$List_Extra$interweaveHelp = F3(
 	function (l1, l2, acc) {
 		interweaveHelp:
 		while (true) {
-			var _p29 = {ctor: '_Tuple2', _0: l1, _1: l2};
-			_v17_1:
+			var _p35 = {ctor: '_Tuple2', _0: l1, _1: l2};
+			_v19_1:
 			do {
-				if (_p29._0.ctor === '::') {
-					if (_p29._1.ctor === '::') {
-						var _v18 = _p29._0._1,
-							_v19 = _p29._1._1,
-							_v20 = A2(
+				if (_p35._0.ctor === '::') {
+					if (_p35._1.ctor === '::') {
+						var _v20 = _p35._0._1,
+							_v21 = _p35._1._1,
+							_v22 = A2(
 							_elm_lang$core$Basics_ops['++'],
 							acc,
 							_elm_lang$core$Native_List.fromArray(
-								[_p29._0._0, _p29._1._0]));
-						l1 = _v18;
-						l2 = _v19;
-						acc = _v20;
+								[_p35._0._0, _p35._1._0]));
+						l1 = _v20;
+						l2 = _v21;
+						acc = _v22;
 						continue interweaveHelp;
 					} else {
-						break _v17_1;
+						break _v19_1;
 					}
 				} else {
-					if (_p29._1.ctor === '[]') {
-						break _v17_1;
+					if (_p35._1.ctor === '[]') {
+						break _v19_1;
 					} else {
-						return A2(_elm_lang$core$Basics_ops['++'], acc, _p29._1);
+						return A2(_elm_lang$core$Basics_ops['++'], acc, _p35._1);
 					}
 				}
 			} while(false);
-			return A2(_elm_lang$core$Basics_ops['++'], acc, _p29._0);
+			return A2(_elm_lang$core$Basics_ops['++'], acc, _p35._0);
 		}
 	});
 var _elm_community$list_extra$List_Extra$interweave = F2(
@@ -9988,28 +9269,28 @@ var _elm_community$list_extra$List_Extra$interweave = F2(
 				[]));
 	});
 var _elm_community$list_extra$List_Extra$permutations = function (xs$) {
-	var _p30 = xs$;
-	if (_p30.ctor === '[]') {
+	var _p36 = xs$;
+	if (_p36.ctor === '[]') {
 		return _elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$core$Native_List.fromArray(
 				[])
 			]);
 	} else {
-		var f = function (_p31) {
-			var _p32 = _p31;
+		var f = function (_p37) {
+			var _p38 = _p37;
 			return A2(
 				_elm_lang$core$List$map,
 				F2(
 					function (x, y) {
 						return A2(_elm_lang$core$List_ops['::'], x, y);
-					})(_p32._0),
-				_elm_community$list_extra$List_Extra$permutations(_p32._1));
+					})(_p38._0),
+				_elm_community$list_extra$List_Extra$permutations(_p38._1));
 		};
 		return A2(
 			_elm_lang$core$List$concatMap,
 			f,
-			_elm_community$list_extra$List_Extra$select(_p30));
+			_elm_community$list_extra$List_Extra$select(_p36));
 	}
 };
 var _elm_community$list_extra$List_Extra$isPermutationOf = F2(
@@ -10020,12 +9301,12 @@ var _elm_community$list_extra$List_Extra$isPermutationOf = F2(
 			_elm_community$list_extra$List_Extra$permutations(xs));
 	});
 var _elm_community$list_extra$List_Extra$subsequencesNonEmpty = function (xs) {
-	var _p33 = xs;
-	if (_p33.ctor === '[]') {
+	var _p39 = xs;
+	if (_p39.ctor === '[]') {
 		return _elm_lang$core$Native_List.fromArray(
 			[]);
 	} else {
-		var _p34 = _p33._0;
+		var _p40 = _p39._0;
 		var f = F2(
 			function (ys, r) {
 				return A2(
@@ -10033,19 +9314,19 @@ var _elm_community$list_extra$List_Extra$subsequencesNonEmpty = function (xs) {
 					ys,
 					A2(
 						_elm_lang$core$List_ops['::'],
-						A2(_elm_lang$core$List_ops['::'], _p34, ys),
+						A2(_elm_lang$core$List_ops['::'], _p40, ys),
 						r));
 			});
 		return A2(
 			_elm_lang$core$List_ops['::'],
 			_elm_lang$core$Native_List.fromArray(
-				[_p34]),
+				[_p40]),
 			A3(
 				_elm_lang$core$List$foldr,
 				f,
 				_elm_lang$core$Native_List.fromArray(
 					[]),
-				_elm_community$list_extra$List_Extra$subsequencesNonEmpty(_p33._1)));
+				_elm_community$list_extra$List_Extra$subsequencesNonEmpty(_p39._1)));
 	}
 };
 var _elm_community$list_extra$List_Extra$subsequences = function (xs) {
@@ -10065,41 +9346,41 @@ var _elm_community$list_extra$List_Extra$isSubsequenceOf = F2(
 var _elm_community$list_extra$List_Extra$transpose = function (ll) {
 	transpose:
 	while (true) {
-		var _p35 = ll;
-		if (_p35.ctor === '[]') {
+		var _p41 = ll;
+		if (_p41.ctor === '[]') {
 			return _elm_lang$core$Native_List.fromArray(
 				[]);
 		} else {
-			if (_p35._0.ctor === '[]') {
-				var _v25 = _p35._1;
-				ll = _v25;
+			if (_p41._0.ctor === '[]') {
+				var _v27 = _p41._1;
+				ll = _v27;
 				continue transpose;
 			} else {
-				var _p36 = _p35._1;
-				var tails = A2(_elm_lang$core$List$filterMap, _elm_lang$core$List$tail, _p36);
-				var heads = A2(_elm_lang$core$List$filterMap, _elm_lang$core$List$head, _p36);
+				var _p42 = _p41._1;
+				var tails = A2(_elm_lang$core$List$filterMap, _elm_lang$core$List$tail, _p42);
+				var heads = A2(_elm_lang$core$List$filterMap, _elm_lang$core$List$head, _p42);
 				return A2(
 					_elm_lang$core$List_ops['::'],
-					A2(_elm_lang$core$List_ops['::'], _p35._0._0, heads),
+					A2(_elm_lang$core$List_ops['::'], _p41._0._0, heads),
 					_elm_community$list_extra$List_Extra$transpose(
-						A2(_elm_lang$core$List_ops['::'], _p35._0._1, tails)));
+						A2(_elm_lang$core$List_ops['::'], _p41._0._1, tails)));
 			}
 		}
 	}
 };
 var _elm_community$list_extra$List_Extra$intercalate = function (xs) {
-	return function (_p37) {
+	return function (_p43) {
 		return _elm_lang$core$List$concat(
-			A2(_elm_lang$core$List$intersperse, xs, _p37));
+			A2(_elm_lang$core$List$intersperse, xs, _p43));
 	};
 };
 var _elm_community$list_extra$List_Extra$filterNot = F2(
 	function (pred, list) {
 		return A2(
 			_elm_lang$core$List$filter,
-			function (_p38) {
+			function (_p44) {
 				return _elm_lang$core$Basics$not(
-					pred(_p38));
+					pred(_p44));
 			},
 			list);
 	});
@@ -10111,11 +9392,11 @@ var _elm_community$list_extra$List_Extra$removeAt = F2(
 			var tail = _elm_lang$core$List$tail(
 				A2(_elm_lang$core$List$drop, index, l));
 			var head = A2(_elm_lang$core$List$take, index, l);
-			var _p39 = tail;
-			if (_p39.ctor === 'Nothing') {
+			var _p45 = tail;
+			if (_p45.ctor === 'Nothing') {
 				return l;
 			} else {
-				return A2(_elm_lang$core$List$append, head, _p39._0);
+				return A2(_elm_lang$core$List$append, head, _p45._0);
 			}
 		}
 	});
@@ -10131,31 +9412,31 @@ var _elm_community$list_extra$List_Extra$setAt = F3(
 			var tail = _elm_lang$core$List$tail(
 				A2(_elm_lang$core$List$drop, index, l));
 			var head = A2(_elm_lang$core$List$take, index, l);
-			var _p40 = tail;
-			if (_p40.ctor === 'Nothing') {
+			var _p46 = tail;
+			if (_p46.ctor === 'Nothing') {
 				return _elm_lang$core$Maybe$Nothing;
 			} else {
 				return _elm_lang$core$Maybe$Just(
 					A2(
 						_elm_lang$core$List$append,
 						head,
-						A2(_elm_lang$core$List_ops['::'], value, _p40._0)));
+						A2(_elm_lang$core$List_ops['::'], value, _p46._0)));
 			}
 		}
 	});
 var _elm_community$list_extra$List_Extra$remove = F2(
 	function (x, xs) {
-		var _p41 = xs;
-		if (_p41.ctor === '[]') {
+		var _p47 = xs;
+		if (_p47.ctor === '[]') {
 			return _elm_lang$core$Native_List.fromArray(
 				[]);
 		} else {
-			var _p43 = _p41._1;
-			var _p42 = _p41._0;
-			return _elm_lang$core$Native_Utils.eq(x, _p42) ? _p43 : A2(
+			var _p49 = _p47._1;
+			var _p48 = _p47._0;
+			return _elm_lang$core$Native_Utils.eq(x, _p48) ? _p49 : A2(
 				_elm_lang$core$List_ops['::'],
-				_p42,
-				A2(_elm_community$list_extra$List_Extra$remove, x, _p43));
+				_p48,
+				A2(_elm_community$list_extra$List_Extra$remove, x, _p49));
 		}
 	});
 var _elm_community$list_extra$List_Extra$updateIfIndex = F3(
@@ -10200,15 +9481,15 @@ var _elm_community$list_extra$List_Extra$replaceIf = F3(
 			list);
 	});
 var _elm_community$list_extra$List_Extra$findIndices = function (p) {
-	return function (_p44) {
+	return function (_p50) {
 		return A2(
 			_elm_lang$core$List$map,
 			_elm_lang$core$Basics$fst,
 			A2(
 				_elm_lang$core$List$filter,
-				function (_p45) {
-					var _p46 = _p45;
-					return p(_p46._1);
+				function (_p51) {
+					var _p52 = _p51;
+					return p(_p52._1);
 				},
 				A2(
 					_elm_lang$core$List$indexedMap,
@@ -10216,13 +9497,13 @@ var _elm_community$list_extra$List_Extra$findIndices = function (p) {
 						function (v0, v1) {
 							return {ctor: '_Tuple2', _0: v0, _1: v1};
 						}),
-					_p44)));
+					_p50)));
 	};
 };
 var _elm_community$list_extra$List_Extra$findIndex = function (p) {
-	return function (_p47) {
+	return function (_p53) {
 		return _elm_lang$core$List$head(
-			A2(_elm_community$list_extra$List_Extra$findIndices, p, _p47));
+			A2(_elm_community$list_extra$List_Extra$findIndices, p, _p53));
 	};
 };
 var _elm_community$list_extra$List_Extra$elemIndices = function (x) {
@@ -10243,27 +9524,27 @@ var _elm_community$list_extra$List_Extra$find = F2(
 	function (predicate, list) {
 		find:
 		while (true) {
-			var _p48 = list;
-			if (_p48.ctor === '[]') {
+			var _p54 = list;
+			if (_p54.ctor === '[]') {
 				return _elm_lang$core$Maybe$Nothing;
 			} else {
-				var _p49 = _p48._0;
-				if (predicate(_p49)) {
-					return _elm_lang$core$Maybe$Just(_p49);
+				var _p55 = _p54._0;
+				if (predicate(_p55)) {
+					return _elm_lang$core$Maybe$Just(_p55);
 				} else {
-					var _v31 = predicate,
-						_v32 = _p48._1;
-					predicate = _v31;
-					list = _v32;
+					var _v33 = predicate,
+						_v34 = _p54._1;
+					predicate = _v33;
+					list = _v34;
 					continue find;
 				}
 			}
 		}
 	});
 var _elm_community$list_extra$List_Extra$notMember = function (x) {
-	return function (_p50) {
+	return function (_p56) {
 		return _elm_lang$core$Basics$not(
-			A2(_elm_lang$core$List$member, x, _p50));
+			A2(_elm_lang$core$List$member, x, _p56));
 	};
 };
 var _elm_community$list_extra$List_Extra$andThen = _elm_lang$core$Basics$flip(_elm_lang$core$List$concatMap);
@@ -10348,31 +9629,31 @@ var _elm_community$list_extra$List_Extra$uniqueHelp = F3(
 	function (f, existing, remaining) {
 		uniqueHelp:
 		while (true) {
-			var _p51 = remaining;
-			if (_p51.ctor === '[]') {
+			var _p57 = remaining;
+			if (_p57.ctor === '[]') {
 				return _elm_lang$core$Native_List.fromArray(
 					[]);
 			} else {
-				var _p53 = _p51._1;
-				var _p52 = _p51._0;
-				var computedFirst = f(_p52);
+				var _p59 = _p57._1;
+				var _p58 = _p57._0;
+				var computedFirst = f(_p58);
 				if (A2(_elm_lang$core$Set$member, computedFirst, existing)) {
-					var _v34 = f,
-						_v35 = existing,
-						_v36 = _p53;
-					f = _v34;
-					existing = _v35;
-					remaining = _v36;
+					var _v36 = f,
+						_v37 = existing,
+						_v38 = _p59;
+					f = _v36;
+					existing = _v37;
+					remaining = _v38;
 					continue uniqueHelp;
 				} else {
 					return A2(
 						_elm_lang$core$List_ops['::'],
-						_p52,
+						_p58,
 						A3(
 							_elm_community$list_extra$List_Extra$uniqueHelp,
 							f,
 							A2(_elm_lang$core$Set$insert, computedFirst, existing),
-							_p53));
+							_p59));
 				}
 			}
 		}
@@ -10388,16 +9669,16 @@ var _elm_community$list_extra$List_Extra$dropWhile = F2(
 	function (predicate, list) {
 		dropWhile:
 		while (true) {
-			var _p54 = list;
-			if (_p54.ctor === '[]') {
+			var _p60 = list;
+			if (_p60.ctor === '[]') {
 				return _elm_lang$core$Native_List.fromArray(
 					[]);
 			} else {
-				if (predicate(_p54._0)) {
-					var _v38 = predicate,
-						_v39 = _p54._1;
-					predicate = _v38;
-					list = _v39;
+				if (predicate(_p60._0)) {
+					var _v40 = predicate,
+						_v41 = _p60._1;
+					predicate = _v40;
+					list = _v41;
 					continue dropWhile;
 				} else {
 					return list;
@@ -10407,16 +9688,16 @@ var _elm_community$list_extra$List_Extra$dropWhile = F2(
 	});
 var _elm_community$list_extra$List_Extra$takeWhile = F2(
 	function (predicate, list) {
-		var _p55 = list;
-		if (_p55.ctor === '[]') {
+		var _p61 = list;
+		if (_p61.ctor === '[]') {
 			return _elm_lang$core$Native_List.fromArray(
 				[]);
 		} else {
-			var _p56 = _p55._0;
-			return predicate(_p56) ? A2(
+			var _p62 = _p61._0;
+			return predicate(_p62) ? A2(
 				_elm_lang$core$List_ops['::'],
-				_p56,
-				A2(_elm_community$list_extra$List_Extra$takeWhile, predicate, _p55._1)) : _elm_lang$core$Native_List.fromArray(
+				_p62,
+				A2(_elm_community$list_extra$List_Extra$takeWhile, predicate, _p61._1)) : _elm_lang$core$Native_List.fromArray(
 				[]);
 		}
 	});
@@ -10430,28 +9711,28 @@ var _elm_community$list_extra$List_Extra$span = F2(
 	});
 var _elm_community$list_extra$List_Extra$break = function (p) {
 	return _elm_community$list_extra$List_Extra$span(
-		function (_p57) {
+		function (_p63) {
 			return _elm_lang$core$Basics$not(
-				p(_p57));
+				p(_p63));
 		});
 };
 var _elm_community$list_extra$List_Extra$groupWhile = F2(
 	function (eq, xs$) {
-		var _p58 = xs$;
-		if (_p58.ctor === '[]') {
+		var _p64 = xs$;
+		if (_p64.ctor === '[]') {
 			return _elm_lang$core$Native_List.fromArray(
 				[]);
 		} else {
-			var _p60 = _p58._0;
-			var _p59 = A2(
+			var _p66 = _p64._0;
+			var _p65 = A2(
 				_elm_community$list_extra$List_Extra$span,
-				eq(_p60),
-				_p58._1);
-			var ys = _p59._0;
-			var zs = _p59._1;
+				eq(_p66),
+				_p64._1);
+			var ys = _p65._0;
+			var zs = _p65._1;
 			return A2(
 				_elm_lang$core$List_ops['::'],
-				A2(_elm_lang$core$List_ops['::'], _p60, ys),
+				A2(_elm_lang$core$List_ops['::'], _p66, ys),
 				A2(_elm_community$list_extra$List_Extra$groupWhile, eq, zs));
 		}
 	});
@@ -10463,18 +9744,18 @@ var _elm_community$list_extra$List_Extra$group = _elm_community$list_extra$List_
 var _elm_community$list_extra$List_Extra$minimumBy = F2(
 	function (f, ls) {
 		var minBy = F2(
-			function (x, _p61) {
-				var _p62 = _p61;
-				var _p63 = _p62._1;
+			function (x, _p67) {
+				var _p68 = _p67;
+				var _p69 = _p68._1;
 				var fx = f(x);
-				return (_elm_lang$core$Native_Utils.cmp(fx, _p63) < 0) ? {ctor: '_Tuple2', _0: x, _1: fx} : {ctor: '_Tuple2', _0: _p62._0, _1: _p63};
+				return (_elm_lang$core$Native_Utils.cmp(fx, _p69) < 0) ? {ctor: '_Tuple2', _0: x, _1: fx} : {ctor: '_Tuple2', _0: _p68._0, _1: _p69};
 			});
-		var _p64 = ls;
-		if (_p64.ctor === '::') {
-			if (_p64._1.ctor === '[]') {
-				return _elm_lang$core$Maybe$Just(_p64._0);
+		var _p70 = ls;
+		if (_p70.ctor === '::') {
+			if (_p70._1.ctor === '[]') {
+				return _elm_lang$core$Maybe$Just(_p70._0);
 			} else {
-				var _p65 = _p64._0;
+				var _p71 = _p70._0;
 				return _elm_lang$core$Maybe$Just(
 					_elm_lang$core$Basics$fst(
 						A3(
@@ -10482,10 +9763,10 @@ var _elm_community$list_extra$List_Extra$minimumBy = F2(
 							minBy,
 							{
 								ctor: '_Tuple2',
-								_0: _p65,
-								_1: f(_p65)
+								_0: _p71,
+								_1: f(_p71)
 							},
-							_p64._1)));
+							_p70._1)));
 			}
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
@@ -10494,18 +9775,18 @@ var _elm_community$list_extra$List_Extra$minimumBy = F2(
 var _elm_community$list_extra$List_Extra$maximumBy = F2(
 	function (f, ls) {
 		var maxBy = F2(
-			function (x, _p66) {
-				var _p67 = _p66;
-				var _p68 = _p67._1;
+			function (x, _p72) {
+				var _p73 = _p72;
+				var _p74 = _p73._1;
 				var fx = f(x);
-				return (_elm_lang$core$Native_Utils.cmp(fx, _p68) > 0) ? {ctor: '_Tuple2', _0: x, _1: fx} : {ctor: '_Tuple2', _0: _p67._0, _1: _p68};
+				return (_elm_lang$core$Native_Utils.cmp(fx, _p74) > 0) ? {ctor: '_Tuple2', _0: x, _1: fx} : {ctor: '_Tuple2', _0: _p73._0, _1: _p74};
 			});
-		var _p69 = ls;
-		if (_p69.ctor === '::') {
-			if (_p69._1.ctor === '[]') {
-				return _elm_lang$core$Maybe$Just(_p69._0);
+		var _p75 = ls;
+		if (_p75.ctor === '::') {
+			if (_p75._1.ctor === '[]') {
+				return _elm_lang$core$Maybe$Just(_p75._0);
 			} else {
-				var _p70 = _p69._0;
+				var _p76 = _p75._0;
 				return _elm_lang$core$Maybe$Just(
 					_elm_lang$core$Basics$fst(
 						A3(
@@ -10513,32 +9794,32 @@ var _elm_community$list_extra$List_Extra$maximumBy = F2(
 							maxBy,
 							{
 								ctor: '_Tuple2',
-								_0: _p70,
-								_1: f(_p70)
+								_0: _p76,
+								_1: f(_p76)
 							},
-							_p69._1)));
+							_p75._1)));
 			}
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
 	});
 var _elm_community$list_extra$List_Extra$uncons = function (xs) {
-	var _p71 = xs;
-	if (_p71.ctor === '[]') {
+	var _p77 = xs;
+	if (_p77.ctor === '[]') {
 		return _elm_lang$core$Maybe$Nothing;
 	} else {
 		return _elm_lang$core$Maybe$Just(
-			{ctor: '_Tuple2', _0: _p71._0, _1: _p71._1});
+			{ctor: '_Tuple2', _0: _p77._0, _1: _p77._1});
 	}
 };
 var _elm_community$list_extra$List_Extra$iterate = F2(
 	function (f, x) {
-		var _p72 = f(x);
-		if (_p72.ctor === 'Just') {
+		var _p78 = f(x);
+		if (_p78.ctor === 'Just') {
 			return A2(
 				_elm_lang$core$List_ops['::'],
 				x,
-				A2(_elm_community$list_extra$List_Extra$iterate, f, _p72._0));
+				A2(_elm_community$list_extra$List_Extra$iterate, f, _p78._0));
 		} else {
 			return _elm_lang$core$Native_List.fromArray(
 				[x]);
@@ -10554,22 +9835,22 @@ _elm_community$list_extra$List_Extra_ops['!!'] = _elm_lang$core$Basics$flip(_elm
 var _elm_community$list_extra$List_Extra$init = function () {
 	var maybe = F2(
 		function (d, f) {
-			return function (_p73) {
+			return function (_p79) {
 				return A2(
 					_elm_lang$core$Maybe$withDefault,
 					d,
-					A2(_elm_lang$core$Maybe$map, f, _p73));
+					A2(_elm_lang$core$Maybe$map, f, _p79));
 			};
 		});
 	return A2(
 		_elm_lang$core$List$foldr,
-		function (_p74) {
+		function (_p80) {
 			return A2(
 				F2(
 					function (x, y) {
-						return function (_p75) {
+						return function (_p81) {
 							return x(
-								y(_p75));
+								y(_p81));
 						};
 					}),
 				_elm_lang$core$Maybe$Just,
@@ -10580,12 +9861,647 @@ var _elm_community$list_extra$List_Extra$init = function () {
 					F2(
 						function (x, y) {
 							return A2(_elm_lang$core$List_ops['::'], x, y);
-						})(_p74)));
+						})(_p80)));
 		},
 		_elm_lang$core$Maybe$Nothing);
 }();
 var _elm_community$list_extra$List_Extra$last = _elm_community$list_extra$List_Extra$foldl1(
 	_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always));
+
+var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
+var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
+var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
+
+var _elm_lang$dom$Native_Dom = function() {
+
+function on(node)
+{
+	return function(eventName, decoder, toTask)
+	{
+		return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
+
+			function performTask(event)
+			{
+				var result = A2(_elm_lang$core$Json_Decode$decodeValue, decoder, event);
+				if (result.ctor === 'Ok')
+				{
+					_elm_lang$core$Native_Scheduler.rawSpawn(toTask(result._0));
+				}
+			}
+
+			node.addEventListener(eventName, performTask);
+
+			return function()
+			{
+				node.removeEventListener(eventName, performTask);
+			};
+		});
+	};
+}
+
+var rAF = typeof requestAnimationFrame !== 'undefined'
+	? requestAnimationFrame
+	: function(callback) { callback(); };
+
+function withNode(id, doStuff)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		rAF(function()
+		{
+			var node = document.getElementById(id);
+			if (node === null)
+			{
+				callback(_elm_lang$core$Native_Scheduler.fail({ ctor: 'NotFound', _0: id }));
+				return;
+			}
+			callback(_elm_lang$core$Native_Scheduler.succeed(doStuff(node)));
+		});
+	});
+}
+
+
+// FOCUS
+
+function focus(id)
+{
+	return withNode(id, function(node) {
+		node.focus();
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function blur(id)
+{
+	return withNode(id, function(node) {
+		node.blur();
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+
+// SCROLLING
+
+function getScrollTop(id)
+{
+	return withNode(id, function(node) {
+		return node.scrollTop;
+	});
+}
+
+function setScrollTop(id, desiredScrollTop)
+{
+	return withNode(id, function(node) {
+		node.scrollTop = desiredScrollTop;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function toBottom(id)
+{
+	return withNode(id, function(node) {
+		node.scrollTop = node.scrollHeight;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function getScrollLeft(id)
+{
+	return withNode(id, function(node) {
+		return node.scrollLeft;
+	});
+}
+
+function setScrollLeft(id, desiredScrollLeft)
+{
+	return withNode(id, function(node) {
+		node.scrollLeft = desiredScrollLeft;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function toRight(id)
+{
+	return withNode(id, function(node) {
+		node.scrollLeft = node.scrollWidth;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+
+// SIZE
+
+function width(options, id)
+{
+	return withNode(id, function(node) {
+		switch (options.ctor)
+		{
+			case 'Content':
+				return node.scrollWidth;
+			case 'VisibleContent':
+				return node.clientWidth;
+			case 'VisibleContentWithBorders':
+				return node.offsetWidth;
+			case 'VisibleContentWithBordersAndMargins':
+				var rect = node.getBoundingClientRect();
+				return rect.right - rect.left;
+		}
+	});
+}
+
+function height(options, id)
+{
+	return withNode(id, function(node) {
+		switch (options.ctor)
+		{
+			case 'Content':
+				return node.scrollHeight;
+			case 'VisibleContent':
+				return node.clientHeight;
+			case 'VisibleContentWithBorders':
+				return node.offsetHeight;
+			case 'VisibleContentWithBordersAndMargins':
+				var rect = node.getBoundingClientRect();
+				return rect.bottom - rect.top;
+		}
+	});
+}
+
+return {
+	onDocument: F3(on(document)),
+	onWindow: F3(on(window)),
+
+	focus: focus,
+	blur: blur,
+
+	getScrollTop: getScrollTop,
+	setScrollTop: F2(setScrollTop),
+	getScrollLeft: getScrollLeft,
+	setScrollLeft: F2(setScrollLeft),
+	toBottom: toBottom,
+	toRight: toRight,
+
+	height: F2(height),
+	width: F2(width)
+};
+
+}();
+
+var _elm_lang$dom$Dom_LowLevel$onWindow = _elm_lang$dom$Native_Dom.onWindow;
+var _elm_lang$dom$Dom_LowLevel$onDocument = _elm_lang$dom$Native_Dom.onDocument;
+
+var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
+var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'contextmenu', value);
+};
+var _elm_lang$html$Html_Attributes$draggable = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', value);
+};
+var _elm_lang$html$Html_Attributes$list = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'list', value);
+};
+var _elm_lang$html$Html_Attributes$maxlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'maxlength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$datetime = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
+};
+var _elm_lang$html$Html_Attributes$pubdate = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'pubdate', value);
+};
+var _elm_lang$html$Html_Attributes$colspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'colspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rowspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rowspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
+var _elm_lang$html$Html_Attributes$stringProperty = F2(
+	function (name, string) {
+		return A2(
+			_elm_lang$html$Html_Attributes$property,
+			name,
+			_elm_lang$core$Json_Encode$string(string));
+	});
+var _elm_lang$html$Html_Attributes$class = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'className', name);
+};
+var _elm_lang$html$Html_Attributes$id = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'id', name);
+};
+var _elm_lang$html$Html_Attributes$title = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'title', name);
+};
+var _elm_lang$html$Html_Attributes$accesskey = function ($char) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'accessKey',
+		_elm_lang$core$String$fromChar($char));
+};
+var _elm_lang$html$Html_Attributes$dir = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dir', value);
+};
+var _elm_lang$html$Html_Attributes$dropzone = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dropzone', value);
+};
+var _elm_lang$html$Html_Attributes$itemprop = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'itemprop', value);
+};
+var _elm_lang$html$Html_Attributes$lang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'lang', value);
+};
+var _elm_lang$html$Html_Attributes$tabindex = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'tabIndex',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$charset = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'charset', value);
+};
+var _elm_lang$html$Html_Attributes$content = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'content', value);
+};
+var _elm_lang$html$Html_Attributes$httpEquiv = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'httpEquiv', value);
+};
+var _elm_lang$html$Html_Attributes$language = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'language', value);
+};
+var _elm_lang$html$Html_Attributes$src = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'src', value);
+};
+var _elm_lang$html$Html_Attributes$height = function (value) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'height',
+		_elm_lang$core$Basics$toString(value));
+};
+var _elm_lang$html$Html_Attributes$width = function (value) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'width',
+		_elm_lang$core$Basics$toString(value));
+};
+var _elm_lang$html$Html_Attributes$alt = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'alt', value);
+};
+var _elm_lang$html$Html_Attributes$preload = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'preload', value);
+};
+var _elm_lang$html$Html_Attributes$poster = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'poster', value);
+};
+var _elm_lang$html$Html_Attributes$kind = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'kind', value);
+};
+var _elm_lang$html$Html_Attributes$srclang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srclang', value);
+};
+var _elm_lang$html$Html_Attributes$sandbox = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'sandbox', value);
+};
+var _elm_lang$html$Html_Attributes$srcdoc = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srcdoc', value);
+};
+var _elm_lang$html$Html_Attributes$type$ = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'type', value);
+};
+var _elm_lang$html$Html_Attributes$value = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'value', value);
+};
+var _elm_lang$html$Html_Attributes$defaultValue = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'defaultValue', value);
+};
+var _elm_lang$html$Html_Attributes$placeholder = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'placeholder', value);
+};
+var _elm_lang$html$Html_Attributes$accept = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'accept', value);
+};
+var _elm_lang$html$Html_Attributes$acceptCharset = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'acceptCharset', value);
+};
+var _elm_lang$html$Html_Attributes$action = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'action', value);
+};
+var _elm_lang$html$Html_Attributes$autocomplete = function (bool) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'autocomplete',
+		bool ? 'on' : 'off');
+};
+var _elm_lang$html$Html_Attributes$autosave = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'autosave', value);
+};
+var _elm_lang$html$Html_Attributes$enctype = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'enctype', value);
+};
+var _elm_lang$html$Html_Attributes$formaction = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'formAction', value);
+};
+var _elm_lang$html$Html_Attributes$minlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'minLength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$method = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'method', value);
+};
+var _elm_lang$html$Html_Attributes$name = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'name', value);
+};
+var _elm_lang$html$Html_Attributes$pattern = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'pattern', value);
+};
+var _elm_lang$html$Html_Attributes$size = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'size',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$for = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'htmlFor', value);
+};
+var _elm_lang$html$Html_Attributes$form = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'form', value);
+};
+var _elm_lang$html$Html_Attributes$max = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'max', value);
+};
+var _elm_lang$html$Html_Attributes$min = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'min', value);
+};
+var _elm_lang$html$Html_Attributes$step = function (n) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'step', n);
+};
+var _elm_lang$html$Html_Attributes$cols = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'cols',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rows = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'rows',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$wrap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'wrap', value);
+};
+var _elm_lang$html$Html_Attributes$usemap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'useMap', value);
+};
+var _elm_lang$html$Html_Attributes$shape = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'shape', value);
+};
+var _elm_lang$html$Html_Attributes$coords = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'coords', value);
+};
+var _elm_lang$html$Html_Attributes$challenge = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'challenge', value);
+};
+var _elm_lang$html$Html_Attributes$keytype = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'keytype', value);
+};
+var _elm_lang$html$Html_Attributes$align = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'align', value);
+};
+var _elm_lang$html$Html_Attributes$cite = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'cite', value);
+};
+var _elm_lang$html$Html_Attributes$href = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'href', value);
+};
+var _elm_lang$html$Html_Attributes$target = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'target', value);
+};
+var _elm_lang$html$Html_Attributes$downloadAs = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'download', value);
+};
+var _elm_lang$html$Html_Attributes$hreflang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'hreflang', value);
+};
+var _elm_lang$html$Html_Attributes$media = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'media', value);
+};
+var _elm_lang$html$Html_Attributes$ping = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'ping', value);
+};
+var _elm_lang$html$Html_Attributes$rel = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'rel', value);
+};
+var _elm_lang$html$Html_Attributes$start = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'start',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$headers = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'headers', value);
+};
+var _elm_lang$html$Html_Attributes$scope = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'scope', value);
+};
+var _elm_lang$html$Html_Attributes$manifest = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'manifest', value);
+};
+var _elm_lang$html$Html_Attributes$boolProperty = F2(
+	function (name, bool) {
+		return A2(
+			_elm_lang$html$Html_Attributes$property,
+			name,
+			_elm_lang$core$Json_Encode$bool(bool));
+	});
+var _elm_lang$html$Html_Attributes$hidden = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'hidden', bool);
+};
+var _elm_lang$html$Html_Attributes$contenteditable = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'contentEditable', bool);
+};
+var _elm_lang$html$Html_Attributes$spellcheck = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'spellcheck', bool);
+};
+var _elm_lang$html$Html_Attributes$async = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'async', bool);
+};
+var _elm_lang$html$Html_Attributes$defer = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'defer', bool);
+};
+var _elm_lang$html$Html_Attributes$scoped = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'scoped', bool);
+};
+var _elm_lang$html$Html_Attributes$autoplay = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autoplay', bool);
+};
+var _elm_lang$html$Html_Attributes$controls = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'controls', bool);
+};
+var _elm_lang$html$Html_Attributes$loop = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'loop', bool);
+};
+var _elm_lang$html$Html_Attributes$default = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'default', bool);
+};
+var _elm_lang$html$Html_Attributes$seamless = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'seamless', bool);
+};
+var _elm_lang$html$Html_Attributes$checked = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'checked', bool);
+};
+var _elm_lang$html$Html_Attributes$selected = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'selected', bool);
+};
+var _elm_lang$html$Html_Attributes$autofocus = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autofocus', bool);
+};
+var _elm_lang$html$Html_Attributes$disabled = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'disabled', bool);
+};
+var _elm_lang$html$Html_Attributes$multiple = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'multiple', bool);
+};
+var _elm_lang$html$Html_Attributes$novalidate = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'noValidate', bool);
+};
+var _elm_lang$html$Html_Attributes$readonly = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'readOnly', bool);
+};
+var _elm_lang$html$Html_Attributes$required = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'required', bool);
+};
+var _elm_lang$html$Html_Attributes$ismap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'isMap', value);
+};
+var _elm_lang$html$Html_Attributes$download = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'download', bool);
+};
+var _elm_lang$html$Html_Attributes$reversed = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'reversed', bool);
+};
+var _elm_lang$html$Html_Attributes$classList = function (list) {
+	return _elm_lang$html$Html_Attributes$class(
+		A2(
+			_elm_lang$core$String$join,
+			' ',
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$Basics$fst,
+				A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
+};
+var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
+
+var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode_ops[':='], 'keyCode', _elm_lang$core$Json_Decode$int);
+var _elm_lang$html$Html_Events$targetChecked = A2(
+	_elm_lang$core$Json_Decode$at,
+	_elm_lang$core$Native_List.fromArray(
+		['target', 'checked']),
+	_elm_lang$core$Json_Decode$bool);
+var _elm_lang$html$Html_Events$targetValue = A2(
+	_elm_lang$core$Json_Decode$at,
+	_elm_lang$core$Native_List.fromArray(
+		['target', 'value']),
+	_elm_lang$core$Json_Decode$string);
+var _elm_lang$html$Html_Events$defaultOptions = _elm_lang$virtual_dom$VirtualDom$defaultOptions;
+var _elm_lang$html$Html_Events$onWithOptions = _elm_lang$virtual_dom$VirtualDom$onWithOptions;
+var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
+var _elm_lang$html$Html_Events$onFocus = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'focus',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onBlur = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'blur',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onSubmitOptions = _elm_lang$core$Native_Utils.update(
+	_elm_lang$html$Html_Events$defaultOptions,
+	{preventDefault: true});
+var _elm_lang$html$Html_Events$onSubmit = function (msg) {
+	return A3(
+		_elm_lang$html$Html_Events$onWithOptions,
+		'submit',
+		_elm_lang$html$Html_Events$onSubmitOptions,
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onCheck = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'change',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetChecked));
+};
+var _elm_lang$html$Html_Events$onInput = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'input',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
+};
+var _elm_lang$html$Html_Events$onMouseOut = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseout',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseOver = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseover',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseLeave = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseleave',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseEnter = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseenter',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseUp = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseup',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseDown = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mousedown',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onDoubleClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'dblclick',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'click',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$Options = F2(
+	function (a, b) {
+		return {stopPropagation: a, preventDefault: b};
+	});
 
 var _elm_lang$keyboard$Keyboard$onSelfMsg = F3(
 	function (router, _p0, state) {
@@ -10756,6 +10672,188 @@ var _elm_lang$keyboard$Keyboard$subMap = F2(
 			});
 	});
 _elm_lang$core$Native_Platform.effectManagers['Keyboard'] = {pkg: 'elm-lang/keyboard', init: _elm_lang$keyboard$Keyboard$init, onEffects: _elm_lang$keyboard$Keyboard$onEffects, onSelfMsg: _elm_lang$keyboard$Keyboard$onSelfMsg, tag: 'sub', subMap: _elm_lang$keyboard$Keyboard$subMap};
+
+var _elm_lang$mouse$Mouse$onSelfMsg = F3(
+	function (router, _p0, state) {
+		var _p1 = _p0;
+		var _p2 = A2(_elm_lang$core$Dict$get, _p1.category, state);
+		if (_p2.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var send = function (tagger) {
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					tagger(_p1.position));
+			};
+			return A2(
+				_elm_lang$core$Task$andThen,
+				_elm_lang$core$Task$sequence(
+					A2(_elm_lang$core$List$map, send, _p2._0.taggers)),
+				function (_p3) {
+					return _elm_lang$core$Task$succeed(state);
+				});
+		}
+	});
+var _elm_lang$mouse$Mouse_ops = _elm_lang$mouse$Mouse_ops || {};
+_elm_lang$mouse$Mouse_ops['&>'] = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			t1,
+			function (_p4) {
+				return t2;
+			});
+	});
+var _elm_lang$mouse$Mouse$init = _elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty);
+var _elm_lang$mouse$Mouse$categorizeHelpHelp = F2(
+	function (value, maybeValues) {
+		var _p5 = maybeValues;
+		if (_p5.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Just(
+				_elm_lang$core$Native_List.fromArray(
+					[value]));
+		} else {
+			return _elm_lang$core$Maybe$Just(
+				A2(_elm_lang$core$List_ops['::'], value, _p5._0));
+		}
+	});
+var _elm_lang$mouse$Mouse$categorizeHelp = F2(
+	function (subs, subDict) {
+		categorizeHelp:
+		while (true) {
+			var _p6 = subs;
+			if (_p6.ctor === '[]') {
+				return subDict;
+			} else {
+				var _v4 = _p6._1,
+					_v5 = A3(
+					_elm_lang$core$Dict$update,
+					_p6._0._0,
+					_elm_lang$mouse$Mouse$categorizeHelpHelp(_p6._0._1),
+					subDict);
+				subs = _v4;
+				subDict = _v5;
+				continue categorizeHelp;
+			}
+		}
+	});
+var _elm_lang$mouse$Mouse$categorize = function (subs) {
+	return A2(_elm_lang$mouse$Mouse$categorizeHelp, subs, _elm_lang$core$Dict$empty);
+};
+var _elm_lang$mouse$Mouse$subscription = _elm_lang$core$Native_Platform.leaf('Mouse');
+var _elm_lang$mouse$Mouse$Position = F2(
+	function (a, b) {
+		return {x: a, y: b};
+	});
+var _elm_lang$mouse$Mouse$position = A3(
+	_elm_lang$core$Json_Decode$object2,
+	_elm_lang$mouse$Mouse$Position,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageX', _elm_lang$core$Json_Decode$int),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageY', _elm_lang$core$Json_Decode$int));
+var _elm_lang$mouse$Mouse$Watcher = F2(
+	function (a, b) {
+		return {taggers: a, pid: b};
+	});
+var _elm_lang$mouse$Mouse$Msg = F2(
+	function (a, b) {
+		return {category: a, position: b};
+	});
+var _elm_lang$mouse$Mouse$onEffects = F3(
+	function (router, newSubs, oldState) {
+		var rightStep = F3(
+			function (category, taggers, task) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					task,
+					function (state) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							_elm_lang$core$Process$spawn(
+								A3(
+									_elm_lang$dom$Dom_LowLevel$onDocument,
+									category,
+									_elm_lang$mouse$Mouse$position,
+									function (_p7) {
+										return A2(
+											_elm_lang$core$Platform$sendToSelf,
+											router,
+											A2(_elm_lang$mouse$Mouse$Msg, category, _p7));
+									})),
+							function (pid) {
+								return _elm_lang$core$Task$succeed(
+									A3(
+										_elm_lang$core$Dict$insert,
+										category,
+										A2(_elm_lang$mouse$Mouse$Watcher, taggers, pid),
+										state));
+							});
+					});
+			});
+		var bothStep = F4(
+			function (category, _p8, taggers, task) {
+				var _p9 = _p8;
+				return A2(
+					_elm_lang$core$Task$andThen,
+					task,
+					function (state) {
+						return _elm_lang$core$Task$succeed(
+							A3(
+								_elm_lang$core$Dict$insert,
+								category,
+								A2(_elm_lang$mouse$Mouse$Watcher, taggers, _p9.pid),
+								state));
+					});
+			});
+		var leftStep = F3(
+			function (category, _p10, task) {
+				var _p11 = _p10;
+				return A2(
+					_elm_lang$mouse$Mouse_ops['&>'],
+					_elm_lang$core$Process$kill(_p11.pid),
+					task);
+			});
+		return A6(
+			_elm_lang$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			oldState,
+			_elm_lang$mouse$Mouse$categorize(newSubs),
+			_elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty));
+	});
+var _elm_lang$mouse$Mouse$MySub = F2(
+	function (a, b) {
+		return {ctor: 'MySub', _0: a, _1: b};
+	});
+var _elm_lang$mouse$Mouse$clicks = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'click', tagger));
+};
+var _elm_lang$mouse$Mouse$moves = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mousemove', tagger));
+};
+var _elm_lang$mouse$Mouse$downs = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mousedown', tagger));
+};
+var _elm_lang$mouse$Mouse$ups = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mouseup', tagger));
+};
+var _elm_lang$mouse$Mouse$subMap = F2(
+	function (func, _p12) {
+		var _p13 = _p12;
+		return A2(
+			_elm_lang$mouse$Mouse$MySub,
+			_p13._0,
+			function (_p14) {
+				return func(
+					_p13._1(_p14));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
 var _elm_lang$navigation$Native_Navigation = function() {
 
@@ -11103,6 +11201,128 @@ var _elm_lang$navigation$Navigation$subMap = F2(
 			});
 	});
 _elm_lang$core$Native_Platform.effectManagers['Navigation'] = {pkg: 'elm-lang/navigation', init: _elm_lang$navigation$Navigation$init, onEffects: _elm_lang$navigation$Navigation$onEffects, onSelfMsg: _elm_lang$navigation$Navigation$onSelfMsg, tag: 'fx', cmdMap: _elm_lang$navigation$Navigation$cmdMap, subMap: _elm_lang$navigation$Navigation$subMap};
+
+var _elm_lang$window$Native_Window = function()
+{
+
+var size = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)	{
+	callback(_elm_lang$core$Native_Scheduler.succeed({
+		width: window.innerWidth,
+		height: window.innerHeight
+	}));
+});
+
+return {
+	size: size
+};
+
+}();
+var _elm_lang$window$Window_ops = _elm_lang$window$Window_ops || {};
+_elm_lang$window$Window_ops['&>'] = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			t1,
+			function (_p0) {
+				return t2;
+			});
+	});
+var _elm_lang$window$Window$onSelfMsg = F3(
+	function (router, dimensions, state) {
+		var _p1 = state;
+		if (_p1.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var send = function (_p2) {
+				var _p3 = _p2;
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					_p3._0(dimensions));
+			};
+			return A2(
+				_elm_lang$window$Window_ops['&>'],
+				_elm_lang$core$Task$sequence(
+					A2(_elm_lang$core$List$map, send, _p1._0.subs)),
+				_elm_lang$core$Task$succeed(state));
+		}
+	});
+var _elm_lang$window$Window$init = _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+var _elm_lang$window$Window$size = _elm_lang$window$Native_Window.size;
+var _elm_lang$window$Window$width = A2(
+	_elm_lang$core$Task$map,
+	function (_) {
+		return _.width;
+	},
+	_elm_lang$window$Window$size);
+var _elm_lang$window$Window$height = A2(
+	_elm_lang$core$Task$map,
+	function (_) {
+		return _.height;
+	},
+	_elm_lang$window$Window$size);
+var _elm_lang$window$Window$onEffects = F3(
+	function (router, newSubs, oldState) {
+		var _p4 = {ctor: '_Tuple2', _0: oldState, _1: newSubs};
+		if (_p4._0.ctor === 'Nothing') {
+			if (_p4._1.ctor === '[]') {
+				return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+			} else {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					_elm_lang$core$Process$spawn(
+						A3(
+							_elm_lang$dom$Dom_LowLevel$onWindow,
+							'resize',
+							_elm_lang$core$Json_Decode$succeed(
+								{ctor: '_Tuple0'}),
+							function (_p5) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									_elm_lang$window$Window$size,
+									_elm_lang$core$Platform$sendToSelf(router));
+							})),
+					function (pid) {
+						return _elm_lang$core$Task$succeed(
+							_elm_lang$core$Maybe$Just(
+								{subs: newSubs, pid: pid}));
+					});
+			}
+		} else {
+			if (_p4._1.ctor === '[]') {
+				return A2(
+					_elm_lang$window$Window_ops['&>'],
+					_elm_lang$core$Process$kill(_p4._0._0.pid),
+					_elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing));
+			} else {
+				return _elm_lang$core$Task$succeed(
+					_elm_lang$core$Maybe$Just(
+						{subs: newSubs, pid: _p4._0._0.pid}));
+			}
+		}
+	});
+var _elm_lang$window$Window$subscription = _elm_lang$core$Native_Platform.leaf('Window');
+var _elm_lang$window$Window$Size = F2(
+	function (a, b) {
+		return {width: a, height: b};
+	});
+var _elm_lang$window$Window$MySub = function (a) {
+	return {ctor: 'MySub', _0: a};
+};
+var _elm_lang$window$Window$resizes = function (tagger) {
+	return _elm_lang$window$Window$subscription(
+		_elm_lang$window$Window$MySub(tagger));
+};
+var _elm_lang$window$Window$subMap = F2(
+	function (func, _p6) {
+		var _p7 = _p6;
+		return _elm_lang$window$Window$MySub(
+			function (_p8) {
+				return func(
+					_p7._0(_p8));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Window'] = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
 
 var _krisajenkins$elm_astar$AStar_Generalised$reconstructPath = F2(
 	function (cameFrom, goal) {
@@ -12055,27 +12275,25 @@ var _mordrax$cotwelm$CharCreation_CharCreation$update = F2(
 	});
 var _mordrax$cotwelm$CharCreation_CharCreation$initChar = {name: 'testing', attributes: _mordrax$cotwelm$CharCreation_Attributes$initModel, gender: _mordrax$cotwelm$CharCreation_Data$Female, difficulty: _mordrax$cotwelm$CharCreation_Data$Hard};
 
+var _mordrax$cotwelm$Stats$printAOverB = F2(
+	function (a, b) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Basics$toString(a),
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				' / ',
+				_elm_lang$core$Basics$toString(b)));
+	});
 var _mordrax$cotwelm$Stats$printSP = function (_p0) {
 	var _p1 = _p0;
 	var _p2 = _p1._0;
-	return A2(
-		_elm_lang$core$Basics_ops['++'],
-		_elm_lang$core$Basics$toString(_p2.currentSP),
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			' / ',
-			_elm_lang$core$Basics$toString(_p2.maxSP)));
+	return A2(_mordrax$cotwelm$Stats$printAOverB, _p2.currentSP, _p2.maxSP);
 };
 var _mordrax$cotwelm$Stats$printHP = function (_p3) {
 	var _p4 = _p3;
 	var _p5 = _p4._0;
-	return A2(
-		_elm_lang$core$Basics_ops['++'],
-		_elm_lang$core$Basics$toString(_p5.currentHP),
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			' / ',
-			_elm_lang$core$Basics$toString(_p5.maxHP)));
+	return A2(_mordrax$cotwelm$Stats$printAOverB, _p5.currentHP, _p5.maxHP);
 };
 var _mordrax$cotwelm$Stats$combatStats = function (_p6) {
 	var _p7 = _p6;
@@ -12207,8 +12425,15 @@ var _mordrax$cotwelm$Dice$rollDs = F2(
 			},
 			faces);
 	});
+var _mordrax$cotwelm$Dice$range = F2(
+	function (small, large) {
+		return A2(
+			_elm_lang$core$Random$int,
+			A2(_elm_lang$core$Basics$min, small, large),
+			A2(_elm_lang$core$Basics$max, small, large));
+	});
 var _mordrax$cotwelm$Dice$d = function (faces) {
-	return A2(_elm_lang$core$Random$int, 1, faces);
+	return A2(_mordrax$cotwelm$Dice$range, 1, faces);
 };
 var _mordrax$cotwelm$Dice$d2d = F2(
 	function (faces1, faces2) {
@@ -12387,1257 +12612,192 @@ var _mordrax$cotwelm$Container$take = F2(
 				{items: itemsWithoutIdItem, currentMass: mass$}));
 	});
 
-var _mordrax$cotwelm$UI$toIntWithDefault = F2(
-	function (str, $default) {
-		return A2(
-			_elm_lang$core$Result$withDefault,
-			$default,
-			_elm_lang$core$String$toInt(str));
-	});
-var _mordrax$cotwelm$UI$toFloatWithDefault = F2(
-	function (str, $default) {
-		return A2(
-			_elm_lang$core$Result$withDefault,
-			$default,
-			_elm_lang$core$String$toFloat(str));
-	});
-var _mordrax$cotwelm$UI$inputWithIncDec = F2(
-	function (val, msg) {
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$class('ui left action right action input')
-				]),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					A2(
-					_elm_lang$html$Html$button,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$class('ui icon button')
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							A2(
-							_elm_lang$html$Html$i,
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html_Attributes$class('minus icon')
-								]),
-							_elm_lang$core$Native_List.fromArray(
-								[]))
-						])),
-					A2(
-					_elm_lang$html$Html$input,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$type$('number'),
-							_elm_lang$html$Html_Attributes$value(
-							_elm_lang$core$Basics$toString(val))
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[])),
-					A2(
-					_elm_lang$html$Html$button,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$class('ui icon button')
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							A2(
-							_elm_lang$html$Html$i,
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html_Attributes$class('plus icon')
-								]),
-							_elm_lang$core$Native_List.fromArray(
-								[]))
-						]))
-				]));
-	});
-var _mordrax$cotwelm$UI$labeledFloat = F3(
-	function (label, number, msg) {
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$class('ui labeled input')
-				]),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					A2(
-					_elm_lang$html$Html$div,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$class('ui label')
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html$text(label)
-						])),
-					A2(
-					_elm_lang$html$Html$input,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$type$('number'),
-							_elm_lang$html$Html_Events$onInput(
-							function (input) {
-								return msg(
-									A2(_mordrax$cotwelm$UI$toFloatWithDefault, input, 0));
-							}),
-							_elm_lang$html$Html_Attributes$value(
-							_elm_lang$core$Basics$toString(number))
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[]))
-				]));
-	});
-var _mordrax$cotwelm$UI$labeledNumber = F3(
-	function (label, number, msg) {
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$class('ui labeled input')
-				]),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					A2(
-					_elm_lang$html$Html$div,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$class('ui label')
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html$text(label)
-						])),
-					A2(
-					_elm_lang$html$Html$input,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$type$('number'),
-							_elm_lang$html$Html_Events$onInput(
-							function (input) {
-								return msg(
-									A2(_mordrax$cotwelm$UI$toIntWithDefault, input, 0));
-							}),
-							_elm_lang$html$Html_Attributes$value(
-							_elm_lang$core$Basics$toString(number))
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[]))
-				]));
-	});
-var _mordrax$cotwelm$UI$labeled2TupleNumber = F4(
-	function (label, _p0, minMsg, maxMsg) {
-		var _p1 = _p0;
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[]),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					A2(
-					_elm_lang$html$Html$h4,
-					_elm_lang$core$Native_List.fromArray(
-						[]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html$text(label)
-						])),
-					A2(
-					_elm_lang$html$Html$div,
-					_elm_lang$core$Native_List.fromArray(
-						[]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							A3(_mordrax$cotwelm$UI$labeledNumber, 'Min', _p1._0, minMsg),
-							A3(_mordrax$cotwelm$UI$labeledNumber, 'Max', _p1._1, maxMsg)
-						]))
-				]));
-	});
+var _mordrax$cotwelm$Utils_CompassDirection$SW = {ctor: 'SW'};
+var _mordrax$cotwelm$Utils_CompassDirection$SE = {ctor: 'SE'};
+var _mordrax$cotwelm$Utils_CompassDirection$NW = {ctor: 'NW'};
+var _mordrax$cotwelm$Utils_CompassDirection$NE = {ctor: 'NE'};
+var _mordrax$cotwelm$Utils_CompassDirection$W = {ctor: 'W'};
+var _mordrax$cotwelm$Utils_CompassDirection$S = {ctor: 'S'};
+var _mordrax$cotwelm$Utils_CompassDirection$E = {ctor: 'E'};
+var _mordrax$cotwelm$Utils_CompassDirection$N = {ctor: 'N'};
+var _mordrax$cotwelm$Utils_CompassDirection$cardinalDirections = _elm_lang$core$Native_List.fromArray(
+	[_mordrax$cotwelm$Utils_CompassDirection$N, _mordrax$cotwelm$Utils_CompassDirection$E, _mordrax$cotwelm$Utils_CompassDirection$S, _mordrax$cotwelm$Utils_CompassDirection$W]);
+var _mordrax$cotwelm$Utils_CompassDirection$isCardinal = function (dir) {
+	return A2(_elm_lang$core$List$member, dir, _mordrax$cotwelm$Utils_CompassDirection$cardinalDirections);
+};
 
-var _mordrax$cotwelm$Utils_Vector$boxIntersect = F2(
-	function (_p1, _p0) {
-		var _p2 = _p1;
-		var _p5 = _p2._1;
-		var _p4 = _p2._0;
-		var _p3 = _p0;
-		var isWithinY = (_elm_lang$core$Native_Utils.cmp(_p5, _p3._0._1) > -1) && (_elm_lang$core$Native_Utils.cmp(_p5, _p3._1._1) < 1);
-		var isWithinX = (_elm_lang$core$Native_Utils.cmp(_p4, _p3._0._0) > -1) && (_elm_lang$core$Native_Utils.cmp(_p4, _p3._1._0) < 1);
+var _mordrax$cotwelm$Utils_Vector$boxIntersectYAxis = F2(
+	function (yAxis, _p0) {
+		var _p1 = _p0;
+		return (_elm_lang$core$Native_Utils.cmp(yAxis, _p1._0._1) > -1) && (_elm_lang$core$Native_Utils.cmp(yAxis, _p1._1._1) < 1);
+	});
+var _mordrax$cotwelm$Utils_Vector$boxIntersectXAxis = F2(
+	function (xAxis, _p2) {
+		var _p3 = _p2;
+		return (_elm_lang$core$Native_Utils.cmp(xAxis, _p3._0._0) > -1) && (_elm_lang$core$Native_Utils.cmp(xAxis, _p3._1._0) < 1);
+	});
+var _mordrax$cotwelm$Utils_Vector$boxIntersectVector = F2(
+	function (_p5, _p4) {
+		var _p6 = _p5;
+		var _p9 = _p6._1;
+		var _p8 = _p6._0;
+		var _p7 = _p4;
+		var isWithinY = (_elm_lang$core$Native_Utils.cmp(_p9, _p7._0._1) > -1) && (_elm_lang$core$Native_Utils.cmp(_p9, _p7._1._1) < 1);
+		var isWithinX = (_elm_lang$core$Native_Utils.cmp(_p8, _p7._0._0) > -1) && (_elm_lang$core$Native_Utils.cmp(_p8, _p7._1._0) < 1);
 		return isWithinX && isWithinY;
 	});
+var _mordrax$cotwelm$Utils_Vector$fromCompass = function (dir) {
+	var _p10 = dir;
+	switch (_p10.ctor) {
+		case 'N':
+			return {ctor: '_Tuple2', _0: 0, _1: 1};
+		case 'S':
+			return {ctor: '_Tuple2', _0: 1, _1: 0};
+		case 'E':
+			return {ctor: '_Tuple2', _0: 0, _1: -1};
+		case 'W':
+			return {ctor: '_Tuple2', _0: -1, _1: 0};
+		case 'NE':
+			return {ctor: '_Tuple2', _0: 1, _1: 1};
+		case 'NW':
+			return {ctor: '_Tuple2', _0: -1, _1: 1};
+		case 'SE':
+			return {ctor: '_Tuple2', _0: 1, _1: -1};
+		default:
+			return {ctor: '_Tuple2', _0: -1, _1: -1};
+	}
+};
+var _mordrax$cotwelm$Utils_Vector$rotate = F2(
+	function (_p11, dir) {
+		var _p12 = _p11;
+		var angle = function () {
+			var _p13 = dir;
+			if (_p13.ctor === 'Left') {
+				return 45;
+			} else {
+				return -45;
+			}
+		}();
+		var _p14 = {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$toFloat(_p12._0),
+			_1: _elm_lang$core$Basics$toFloat(_p12._1)
+		};
+		var x = _p14._0;
+		var y = _p14._1;
+		var x$ = (x * _elm_lang$core$Basics$cos(angle)) - (y * _elm_lang$core$Basics$sin(angle));
+		var y$ = (x * _elm_lang$core$Basics$sin(angle)) + (y * _elm_lang$core$Basics$cos(angle));
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$round(x$),
+			_1: _elm_lang$core$Basics$round(y$)
+		};
+	});
+var _mordrax$cotwelm$Utils_Vector$rotateUnlessCardinal = F2(
+	function (currentDirection, rotation) {
+		var cardinalVectors = A2(_elm_lang$core$List$map, _mordrax$cotwelm$Utils_Vector$fromCompass, _mordrax$cotwelm$Utils_CompassDirection$cardinalDirections);
+		return A2(_elm_lang$core$List$member, currentDirection, cardinalVectors) ? currentDirection : A2(_mordrax$cotwelm$Utils_Vector$rotate, currentDirection, rotation);
+	});
 var _mordrax$cotwelm$Utils_Vector$scale = F2(
-	function (magnitude, _p6) {
-		var _p7 = _p6;
+	function (magnitude, _p15) {
+		var _p16 = _p15;
 		return {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$Basics$round(
-				_elm_lang$core$Basics$toFloat(_p7._0) * magnitude),
+				_elm_lang$core$Basics$toFloat(_p16._0) * magnitude),
 			_1: _elm_lang$core$Basics$round(
-				_elm_lang$core$Basics$toFloat(_p7._1) * magnitude)
+				_elm_lang$core$Basics$toFloat(_p16._1) * magnitude)
 		};
 	});
+var _mordrax$cotwelm$Utils_Vector$scaleInt = function (magnitude) {
+	return _mordrax$cotwelm$Utils_Vector$scale(
+		_elm_lang$core$Basics$toFloat(magnitude));
+};
 var _mordrax$cotwelm$Utils_Vector$sub = F2(
-	function (_p9, _p8) {
-		var _p10 = _p9;
-		var _p11 = _p8;
-		return {ctor: '_Tuple2', _0: _p10._0 - _p11._0, _1: _p10._1 - _p11._1};
+	function (_p18, _p17) {
+		var _p19 = _p18;
+		var _p20 = _p17;
+		return {ctor: '_Tuple2', _0: _p19._0 - _p20._0, _1: _p19._1 - _p20._1};
 	});
 var _mordrax$cotwelm$Utils_Vector$distance = F2(
-	function (_p13, _p12) {
-		var _p14 = _p13;
-		var _p15 = _p12;
-		var _p16 = A2(
+	function (_p22, _p21) {
+		var _p23 = _p22;
+		var _p24 = _p21;
+		var _p25 = A2(
 			_mordrax$cotwelm$Utils_Vector$sub,
-			{ctor: '_Tuple2', _0: _p14._0, _1: _p14._1},
-			{ctor: '_Tuple2', _0: _p15._0, _1: _p15._1});
-		var dx = _p16._0;
-		var dy = _p16._1;
+			{ctor: '_Tuple2', _0: _p23._0, _1: _p23._1},
+			{ctor: '_Tuple2', _0: _p24._0, _1: _p24._1});
+		var dx = _p25._0;
+		var dy = _p25._1;
 		return _elm_lang$core$Basics$sqrt(
 			_elm_lang$core$Basics$toFloat(
 				Math.pow(dx, 2) + Math.pow(dy, 2)));
 	});
 var _mordrax$cotwelm$Utils_Vector$add = F2(
-	function (_p18, _p17) {
-		var _p19 = _p18;
-		var _p20 = _p17;
-		return {ctor: '_Tuple2', _0: _p19._0 + _p20._0, _1: _p19._1 + _p20._1};
+	function (_p27, _p26) {
+		var _p28 = _p27;
+		var _p29 = _p26;
+		return {ctor: '_Tuple2', _0: _p28._0 + _p29._0, _1: _p28._1 + _p29._1};
 	});
-
-var _mordrax$cotwelm$Dungeon_Rooms_Type$Room = F6(
-	function (a, b, c, d, e, f) {
-		return {doors: a, walls: b, floors: c, corners: d, roomType: e, dimension: f};
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Type$RoomTemplate = F3(
-	function (a, b, c) {
-		return {makeWalls: a, makeCorners: b, makeFloors: c};
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Type$DeadEnd = {ctor: 'DeadEnd'};
-var _mordrax$cotwelm$Dungeon_Rooms_Type$DiagonalSquares = {ctor: 'DiagonalSquares'};
-var _mordrax$cotwelm$Dungeon_Rooms_Type$Circular = {ctor: 'Circular'};
-var _mordrax$cotwelm$Dungeon_Rooms_Type$Potion = {ctor: 'Potion'};
-var _mordrax$cotwelm$Dungeon_Rooms_Type$Diamond = {ctor: 'Diamond'};
-var _mordrax$cotwelm$Dungeon_Rooms_Type$Cross = {ctor: 'Cross'};
-var _mordrax$cotwelm$Dungeon_Rooms_Type$Rectangular = {ctor: 'Rectangular'};
-var _mordrax$cotwelm$Dungeon_Rooms_Type$NoDoor = {ctor: 'NoDoor'};
-var _mordrax$cotwelm$Dungeon_Rooms_Type$Door = {ctor: 'Door'};
-
-var _mordrax$cotwelm$Dungeon_Rooms_Config$shuffle = function (list) {
-	return A2(
-		_elm_lang$core$Random$map,
-		_elm_lang$core$Array$toList,
-		_elm_community$random_extra$Random_Array$shuffle(
-			_elm_lang$core$Array$fromList(list)));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$wallToDoor = function (wallGen) {
-	return A2(
-		_elm_lang$core$Random$map,
-		function (pos) {
-			return {ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Door, _1: pos};
-		},
-		wallGen);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$without = F2(
-	function (wall, walls) {
-		return A2(
-			_elm_lang$core$List$filter,
-			function (x) {
-				return !_elm_lang$core$Native_Utils.eq(x, wall);
-			},
-			walls);
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$wallSampler = function (walls) {
-	var _p0 = walls;
-	if (_p0.ctor === '[]') {
-		return _elm_community$random_extra$Random_Extra$constant(
-			{ctor: '_Tuple2', _0: 0, _1: 0});
-	} else {
-		return A2(
-			_elm_lang$core$Random$map,
-			_elm_lang$core$Maybe$withDefault(_p0._0),
-			_elm_community$random_extra$Random_Extra$sample(walls));
-	}
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$addDoors = F2(
-	function (nDoors, _p1) {
-		var _p2 = _p1;
-		var _p9 = _p2._0;
-		var _p8 = _p2._1;
-		var _p7 = _p2._2;
-		var createGenerator = _elm_community$random_extra$Random_Extra$constant(
-			{
-				ctor: '_Tuple2',
-				_0: A2(_elm_lang$core$Basics_ops['++'], _p9, _p8),
-				_1: _p7
-			});
-		var _p3 = {ctor: '_Tuple2', _0: nDoors, _1: _p9};
-		_v2_0:
-		do {
-			if (_p3._1.ctor === '[]') {
-				if (_p3._0 === 0) {
-					break _v2_0;
-				} else {
-					return createGenerator;
-				}
-			} else {
-				if (_p3._0 === 0) {
-					break _v2_0;
-				} else {
-					if (_p3._1._0.ctor === '[]') {
-						return createGenerator;
-					} else {
-						var _p6 = _p3._1._0;
-						var wallWithoutDoor = A2(_elm_lang$core$Basics$flip, _mordrax$cotwelm$Dungeon_Rooms_Config$without, _p6);
-						var recurse = function (_p4) {
-							var _p5 = _p4;
-							return A2(
-								_mordrax$cotwelm$Dungeon_Rooms_Config$addDoors,
-								_p3._0 - 1,
-								{
-									ctor: '_Tuple3',
-									_0: A2(
-										_elm_lang$core$Basics_ops['++'],
-										_p3._1._1,
-										_elm_lang$core$Native_List.fromArray(
-											[
-												wallWithoutDoor(_p5._1)
-											])),
-									_1: _p8,
-									_2: A2(_elm_lang$core$List_ops['::'], _p5, _p7)
-								});
-						};
-						var generateWall = _mordrax$cotwelm$Dungeon_Rooms_Config$wallSampler(_p6);
-						return A2(
-							_elm_lang$core$Random$andThen,
-							_mordrax$cotwelm$Dungeon_Rooms_Config$wallToDoor(generateWall),
-							recurse);
-					}
-				}
-			}
-		} while(false);
-		return createGenerator;
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$roomTypeGenerator = function (_p10) {
-	var _p11 = _p10;
-	var _p12 = _p11.roomsConfig;
-	return _elm_community$random_extra$Random_Extra$frequency(
-		_elm_lang$core$Native_List.fromArray(
-			[
-				{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$toFloat(_p12.rectangular.frequency),
-				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Rectangular)
-			},
-				{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$toFloat(_p12.cross.frequency),
-				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Cross)
-			},
-				{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$toFloat(_p12.diamond.frequency),
-				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Diamond)
-			},
-				{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$toFloat(_p12.potion.frequency),
-				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Potion)
-			},
-				{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$toFloat(_p12.circular.frequency),
-				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Circular)
-			},
-				{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$toFloat(_p12.diagonalSquares.frequency),
-				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$DiagonalSquares)
-			},
-				{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$toFloat(_p12.deadEnd.frequency),
-				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$DeadEnd)
-			}
-			]));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeGenerator = F2(
-	function (roomType, _p13) {
-		var _p14 = _p13;
-		var _p18 = _p14;
-		var tupleToGen = function (_p15) {
-			var _p16 = _p15;
-			return A2(_elm_lang$core$Random$int, _p16._0, _p16._1);
-		};
-		var _p17 = roomType;
-		switch (_p17.ctor) {
-			case 'Rectangular':
-				return tupleToGen(_p18.roomsConfig.rectangular.sizeRange);
-			case 'Cross':
-				return tupleToGen(_p18.roomsConfig.cross.sizeRange);
-			case 'Diamond':
-				return tupleToGen(_p18.roomsConfig.diamond.sizeRange);
-			case 'Potion':
-				return tupleToGen(_p18.roomsConfig.potion.sizeRange);
-			case 'Circular':
-				return tupleToGen(_p18.roomsConfig.circular.sizeRange);
-			case 'DiagonalSquares':
-				return tupleToGen(_p18.roomsConfig.diagonalSquares.sizeRange);
-			default:
-				return tupleToGen(_p18.roomsConfig.deadEnd.sizeRange);
-		}
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$updateRoomsConfig = F3(
-	function (roomType, updater, roomsConfig) {
-		var _p19 = roomType;
-		switch (_p19.ctor) {
-			case 'Rectangular':
-				return _elm_lang$core$Native_Utils.update(
-					roomsConfig,
-					{
-						rectangular: updater(roomsConfig.rectangular)
-					});
-			case 'Cross':
-				return _elm_lang$core$Native_Utils.update(
-					roomsConfig,
-					{
-						cross: updater(roomsConfig.cross)
-					});
-			case 'Diamond':
-				return _elm_lang$core$Native_Utils.update(
-					roomsConfig,
-					{
-						diamond: updater(roomsConfig.diamond)
-					});
-			case 'Potion':
-				return _elm_lang$core$Native_Utils.update(
-					roomsConfig,
-					{
-						potion: updater(roomsConfig.potion)
-					});
-			case 'Circular':
-				return _elm_lang$core$Native_Utils.update(
-					roomsConfig,
-					{
-						circular: updater(roomsConfig.circular)
-					});
-			case 'DiagonalSquares':
-				return _elm_lang$core$Native_Utils.update(
-					roomsConfig,
-					{
-						diagonalSquares: updater(roomsConfig.diagonalSquares)
-					});
-			default:
-				return _elm_lang$core$Native_Utils.update(
-					roomsConfig,
-					{
-						deadEnd: updater(roomsConfig.deadEnd)
-					});
-		}
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$update = F2(
-	function (msg, model) {
-		var _p20 = msg;
-		switch (_p20.ctor) {
-			case 'DungeonSize':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{dungeonSize: _p20._0});
-			case 'RoomSize':
-				var updateSizeRange = F2(
-					function (sizeRange$, config) {
-						return _elm_lang$core$Native_Utils.update(
-							config,
-							{sizeRange: sizeRange$});
-					});
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						roomsConfig: A3(
-							_mordrax$cotwelm$Dungeon_Rooms_Config$updateRoomsConfig,
-							_p20._0,
-							updateSizeRange(_p20._1),
-							model.roomsConfig)
-					});
-			case 'ChangeFrequency':
-				var updateFrequency = F2(
-					function (freq, config) {
-						return _elm_lang$core$Native_Utils.update(
-							config,
-							{frequency: freq});
-					});
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						roomsConfig: A3(
-							_mordrax$cotwelm$Dungeon_Rooms_Config$updateRoomsConfig,
-							_p20._0,
-							updateFrequency(_p20._1),
-							model.roomsConfig)
-					});
-			case 'MapScale':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{mapScale: _p20._0});
-			default:
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{nRooms: _p20._0});
-		}
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$Model = F4(
-	function (a, b, c, d) {
-		return {dungeonSize: a, roomsConfig: b, nRooms: c, mapScale: d};
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$RoomsConfig = F7(
-	function (a, b, c, d, e, f, g) {
-		return {rectangular: a, cross: b, diamond: c, potion: d, circular: e, diagonalSquares: f, deadEnd: g};
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig = F2(
-	function (a, b) {
-		return {sizeRange: a, frequency: b};
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$init = {
-	dungeonSize: 300,
-	roomsConfig: {
-		rectangular: A2(
-			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
-			{ctor: '_Tuple2', _0: 4, _1: 10},
-			1),
-		cross: A2(
-			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
-			{ctor: '_Tuple2', _0: 7, _1: 11},
-			1),
-		diamond: A2(
-			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
-			{ctor: '_Tuple2', _0: 5, _1: 11},
-			1),
-		potion: A2(
-			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
-			{ctor: '_Tuple2', _0: 4, _1: 10},
-			0),
-		circular: A2(
-			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
-			{ctor: '_Tuple2', _0: 4, _1: 10},
-			0),
-		diagonalSquares: A2(
-			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
-			{ctor: '_Tuple2', _0: 4, _1: 10},
-			0),
-		deadEnd: A2(
-			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
-			{ctor: '_Tuple2', _0: 1, _1: 1},
-			0)
-	},
-	nRooms: 50,
-	mapScale: 0.2
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$NumberOfRooms = function (a) {
-	return {ctor: 'NumberOfRooms', _0: a};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$MapScale = function (a) {
-	return {ctor: 'MapScale', _0: a};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$ChangeFrequency = F2(
-	function (a, b) {
-		return {ctor: 'ChangeFrequency', _0: a, _1: b};
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$roomFrequencyView = F2(
-	function (roomType, freq) {
-		return A3(
-			_mordrax$cotwelm$UI$labeledNumber,
-			'Freq',
-			freq,
-			_mordrax$cotwelm$Dungeon_Rooms_Config$ChangeFrequency(roomType));
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$RoomSize = F2(
-	function (a, b) {
-		return {ctor: 'RoomSize', _0: a, _1: b};
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeView = F2(
-	function (roomType, _p21) {
-		var _p22 = _p21;
-		var _p24 = _p22._0;
-		var _p23 = _p22._1;
-		var lbl = A2(
-			_elm_lang$core$Basics_ops['++'],
-			_elm_lang$core$Basics$toString(roomType),
-			' size: ');
-		return A4(
-			_mordrax$cotwelm$UI$labeled2TupleNumber,
-			lbl,
-			{ctor: '_Tuple2', _0: _p24, _1: _p23},
-			function (min$) {
-				return A2(
-					_mordrax$cotwelm$Dungeon_Rooms_Config$RoomSize,
-					roomType,
-					{ctor: '_Tuple2', _0: min$, _1: _p23});
-			},
-			function (max$) {
-				return A2(
-					_mordrax$cotwelm$Dungeon_Rooms_Config$RoomSize,
-					roomType,
-					{ctor: '_Tuple2', _0: _p24, _1: max$});
-			});
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Config$roomsConfigView = function (model) {
-	var rooms = _elm_lang$core$Native_List.fromArray(
-		[
-			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Rectangular, _1: model.roomsConfig.rectangular},
-			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Cross, _1: model.roomsConfig.cross},
-			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Diamond, _1: model.roomsConfig.diamond},
-			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Potion, _1: model.roomsConfig.potion},
-			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Circular, _1: model.roomsConfig.circular},
-			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$DiagonalSquares, _1: model.roomsConfig.diagonalSquares}
-		]);
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$List$concat(
-			A2(
-				_elm_lang$core$List$map,
-				function (_p25) {
-					var _p26 = _p25;
-					var _p28 = _p26._0;
-					var _p27 = _p26._1;
-					return _elm_lang$core$Native_List.fromArray(
-						[
-							A2(_mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeView, _p28, _p27.sizeRange),
-							A2(_mordrax$cotwelm$Dungeon_Rooms_Config$roomFrequencyView, _p28, _p27.frequency)
-						]);
-				},
-				rooms)));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$DungeonSize = function (a) {
-	return {ctor: 'DungeonSize', _0: a};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Config$dungeonSizeView = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A3(_mordrax$cotwelm$UI$labeledNumber, 'Dungeon size', model.dungeonSize, _mordrax$cotwelm$Dungeon_Rooms_Config$DungeonSize),
-				A3(_mordrax$cotwelm$UI$labeledFloat, 'Map scale', model.mapScale, _mordrax$cotwelm$Dungeon_Rooms_Config$MapScale),
-				A3(_mordrax$cotwelm$UI$labeledNumber, 'Number of Rooms', model.nRooms, _mordrax$cotwelm$Dungeon_Rooms_Config$NumberOfRooms)
-			]));
-};
-
-var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$walls = function (_p0) {
-	var _p1 = _p0;
-	var _p2 = {ctor: '_Tuple2', _0: _p1._0 - 1, _1: _p1._1 - 1};
-	var xMax = _p2._0;
-	var yMax = _p2._1;
-	return _elm_lang$core$Native_List.fromArray(
-		[
-			A2(
-			_elm_lang$core$List$map,
-			function (y) {
-				return {ctor: '_Tuple2', _0: 0, _1: y};
-			},
-			_elm_lang$core$Native_List.range(1, yMax - 1)),
-			A2(
-			_elm_lang$core$List$map,
-			function (y) {
-				return {ctor: '_Tuple2', _0: xMax, _1: y};
-			},
-			_elm_lang$core$Native_List.range(1, yMax - 1)),
-			A2(
-			_elm_lang$core$List$map,
-			function (x) {
-				return {ctor: '_Tuple2', _0: x, _1: 0};
-			},
-			_elm_lang$core$Native_List.range(1, xMax - 1)),
-			A2(
-			_elm_lang$core$List$map,
-			function (x) {
-				return {ctor: '_Tuple2', _0: x, _1: yMax};
-			},
-			_elm_lang$core$Native_List.range(1, xMax - 1))
-		]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$floors = function (_p3) {
-	var _p4 = _p3;
-	var _p5 = {ctor: '_Tuple2', _0: _p4._0 - 1, _1: _p4._1 - 1};
-	var xMax = _p5._0;
-	var yMax = _p5._1;
-	return A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		_elm_lang$core$Native_List.range(1, xMax - 1),
-		_elm_lang$core$Native_List.range(1, yMax - 1));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$corners = function (_p6) {
-	var _p7 = _p6;
-	var _p8 = {ctor: '_Tuple2', _0: _p7._0 - 1, _1: _p7._1 - 1};
-	var xMax = _p8._0;
-	var yMax = _p8._1;
-	return _elm_lang$core$Native_List.fromArray(
-		[
-			{ctor: '_Tuple2', _0: 0, _1: 0},
-			{ctor: '_Tuple2', _0: xMax, _1: 0},
-			{ctor: '_Tuple2', _0: 0, _1: yMax},
-			{ctor: '_Tuple2', _0: xMax, _1: yMax}
-		]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$floors};
-
-var _mordrax$cotwelm$Dungeon_Rooms_Cross$dot = F2(
-	function (wallSize, axis) {
-		return (wallSize + 1) * axis;
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Cross$betweenDots = F3(
-	function (wallSize, dot1, dot2) {
-		return _elm_lang$core$Native_List.range(
-			A2(_mordrax$cotwelm$Dungeon_Rooms_Cross$dot, wallSize, dot1) + 1,
-			A2(_mordrax$cotwelm$Dungeon_Rooms_Cross$dot, wallSize, dot2) - 1);
-	});
-var _mordrax$cotwelm$Dungeon_Rooms_Cross$dots = function (wallSize) {
-	return A2(
-		_elm_lang$core$List$map,
-		_mordrax$cotwelm$Dungeon_Rooms_Cross$dot(wallSize),
-		_elm_lang$core$Native_List.range(0, 3));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Cross$toWallSize = function (roomSize) {
-	return roomSize - 6;
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Cross$corners = function (_p0) {
-	var _p1 = _p0;
-	var wallSize = _mordrax$cotwelm$Dungeon_Rooms_Cross$toWallSize(_p1._0);
-	var axis = _mordrax$cotwelm$Dungeon_Rooms_Cross$dot(wallSize);
-	var corners = A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				0,
-				axis(3)
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				0,
-				axis(3)
-			]));
-	var isNotCorner = function (_p2) {
-		return _elm_lang$core$Basics$not(
-			A3(_elm_lang$core$Basics$flip, _elm_lang$core$List$member, corners, _p2));
-	};
-	var allDots = _mordrax$cotwelm$Dungeon_Rooms_Cross$dots(wallSize);
-	var grid = A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		allDots,
-		allDots);
-	return A2(_elm_lang$core$List$filter, isNotCorner, grid);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Cross$floors = function (_p3) {
-	var _p4 = _p3;
-	var wallSize = _mordrax$cotwelm$Dungeon_Rooms_Cross$toWallSize(_p4._0);
-	var axis = _mordrax$cotwelm$Dungeon_Rooms_Cross$dot(wallSize);
-	var floorMiddles = _elm_lang$core$Native_List.range(
-		axis(1) + 1,
-		axis(2) - 1);
-	var vertical = A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		floorMiddles,
-		_elm_lang$core$Native_List.range(
-			axis(0) + 1,
-			axis(3) - 1));
-	var horizontal = A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		_elm_lang$core$Native_List.range(
-			axis(0) + 1,
-			axis(3) - 1),
-		floorMiddles);
-	return _elm_lang$core$Set$toList(
-		_elm_lang$core$Set$fromList(
-			A2(_elm_lang$core$Basics_ops['++'], vertical, horizontal)));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Cross$walls = function (_p5) {
-	var _p6 = _p5;
-	var wallSize = _mordrax$cotwelm$Dungeon_Rooms_Cross$toWallSize(_p6._0);
-	var between = _mordrax$cotwelm$Dungeon_Rooms_Cross$betweenDots(wallSize);
-	var left = A2(between, 0, 1);
-	var middle = A2(between, 1, 2);
-	var right = A2(between, 2, 3);
-	var axis = _mordrax$cotwelm$Dungeon_Rooms_Cross$dot(wallSize);
-	var topAxis = axis(0);
-	var horizontalTop = A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		middle,
-		_elm_lang$core$Native_List.fromArray(
-			[topAxis]));
-	var verticalTop = A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		_elm_lang$core$Native_List.fromArray(
-			[topAxis]),
-		middle);
-	var bottomAxis = axis(3);
-	var horizontalBottom = A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		middle,
-		_elm_lang$core$Native_List.fromArray(
-			[bottomAxis]));
-	var verticalBottom = A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		_elm_lang$core$Native_List.fromArray(
-			[bottomAxis]),
-		middle);
-	var horizontalMiddles = A2(
-		_elm_lang$core$Basics_ops['++'],
-		A3(
-			_elm_community$list_extra$List_Extra$lift2,
-			F2(
-				function (v0, v1) {
-					return {ctor: '_Tuple2', _0: v0, _1: v1};
-				}),
-			left,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					axis(1),
-					axis(2)
-				])),
-		A3(
-			_elm_community$list_extra$List_Extra$lift2,
-			F2(
-				function (v0, v1) {
-					return {ctor: '_Tuple2', _0: v0, _1: v1};
-				}),
-			right,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					axis(1),
-					axis(2)
-				])));
-	var verticalMiddles = A2(
-		_elm_lang$core$Basics_ops['++'],
-		A3(
-			_elm_community$list_extra$List_Extra$lift2,
-			F2(
-				function (v0, v1) {
-					return {ctor: '_Tuple2', _0: v0, _1: v1};
-				}),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					axis(1),
-					axis(2)
-				]),
-			left),
-		A3(
-			_elm_community$list_extra$List_Extra$lift2,
-			F2(
-				function (v0, v1) {
-					return {ctor: '_Tuple2', _0: v0, _1: v1};
-				}),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					axis(1),
-					axis(2)
-				]),
-			right));
-	return A2(
-		_elm_lang$core$Basics_ops['++'],
-		_elm_lang$core$Native_List.fromArray(
-			[horizontalTop]),
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			_elm_lang$core$Native_List.fromArray(
-				[horizontalBottom]),
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Native_List.fromArray(
-					[verticalTop]),
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Native_List.fromArray(
-						[verticalBottom]),
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Native_List.fromArray(
-							[horizontalMiddles]),
-						_elm_lang$core$Native_List.fromArray(
-							[verticalMiddles]))))));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Cross$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Cross$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Cross$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Cross$floors};
-
-var _mordrax$cotwelm$Dungeon_Rooms_Diamond$largestEquilaterialDimension = function (_p0) {
-	var _p1 = _p0;
-	var _p4 = _p1._1;
-	var _p3 = _p1._0;
-	var _p2 = {
+var _mordrax$cotwelm$Utils_Vector$unit = function (_p30) {
+	var _p31 = _p30;
+	var _p33 = _p31._1;
+	var _p32 = _p31._0;
+	return {
 		ctor: '_Tuple2',
-		_0: _p3 - A2(_elm_lang$core$Basics_ops['%'], _p3 + 1, 2),
-		_1: _p4 - A2(_elm_lang$core$Basics_ops['%'], _p4 + 1, 2)
+		_0: (_p32 / _elm_lang$core$Basics$abs(_p32)) | 0,
+		_1: (_p33 / _elm_lang$core$Basics$abs(_p33)) | 0
 	};
-	var x$ = _p2._0;
-	var y$ = _p2._1;
-	var smallestSide = A2(_elm_lang$core$Basics$min, x$, y$);
-	return smallestSide;
 };
-var _mordrax$cotwelm$Dungeon_Rooms_Diamond$info = function (dimension) {
-	var size = _mordrax$cotwelm$Dungeon_Rooms_Diamond$largestEquilaterialDimension(dimension);
-	var mid = (size / 2) | 0;
-	var max = size - 1;
-	return {size: size, mid: mid, max: max};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Diamond$corners = function (dimension) {
-	var model = _mordrax$cotwelm$Dungeon_Rooms_Diamond$info(dimension);
-	var leftToTop = function (x) {
-		return {ctor: '_Tuple2', _0: x, _1: (model.mid + 1) + x};
-	};
-	var leftToBottom = function (x) {
-		return {ctor: '_Tuple2', _0: x, _1: (model.mid - 1) - x};
-	};
-	var topToRight = function (x) {
-		return {ctor: '_Tuple2', _0: x, _1: (-1 - model.mid) + x};
-	};
-	var bottomToRight = function (x) {
-		return {ctor: '_Tuple2', _0: x, _1: ((model.max + 1) + model.mid) - x};
-	};
-	var zeroToMidX = _elm_lang$core$Native_List.range(0, model.mid - 1);
-	var midToMaxX = _elm_lang$core$Native_List.range(model.mid + 1, model.max);
-	return _elm_lang$core$List$concat(
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(_elm_lang$core$List$map, leftToTop, zeroToMidX),
-				A2(_elm_lang$core$List$map, leftToBottom, zeroToMidX),
-				A2(_elm_lang$core$List$map, topToRight, midToMaxX),
-				A2(_elm_lang$core$List$map, bottomToRight, midToMaxX)
-			]));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Diamond$floors = function (dimension) {
-	var model = _mordrax$cotwelm$Dungeon_Rooms_Diamond$info(dimension);
-	var leftToTop = function (x) {
-		return (model.mid + 1) + x;
-	};
-	var leftToBottom = function (x) {
-		return (model.mid - 1) - x;
-	};
-	var floorsLeft = function (x) {
-		return A2(
-			_elm_lang$core$List$map,
-			F2(
-				function (v0, v1) {
-					return {ctor: '_Tuple2', _0: v0, _1: v1};
-				})(x),
-			_elm_lang$core$Native_List.range(
-				leftToBottom(x),
-				leftToTop(x)));
-	};
-	var topToRight = function (x) {
-		return (-1 - model.mid) + x;
-	};
-	var bottomToRight = function (x) {
-		return ((model.max + 1) + model.mid) - x;
-	};
-	var floorsRight = function (x) {
-		return A2(
-			_elm_lang$core$List$map,
-			F2(
-				function (v0, v1) {
-					return {ctor: '_Tuple2', _0: v0, _1: v1};
-				})(x),
-			_elm_lang$core$Native_List.range(
-				topToRight(x),
-				bottomToRight(x)));
-	};
-	var zeroToMidX = _elm_lang$core$Native_List.range(0, model.mid - 1);
-	var midToMaxX = _elm_lang$core$Native_List.range(model.mid + 1, model.max);
-	return _elm_lang$core$List$concat(
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$core$List$concat(
-				A2(_elm_lang$core$List$map, floorsLeft, zeroToMidX)),
-				_elm_lang$core$List$concat(
-				A2(_elm_lang$core$List$map, floorsRight, midToMaxX)),
-				A2(
-				_elm_lang$core$List$map,
-				F2(
-					function (v0, v1) {
-						return {ctor: '_Tuple2', _0: v0, _1: v1};
-					})(model.mid),
-				_elm_lang$core$Native_List.range(1, model.max - 1))
-			]));
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Diamond$walls = function (dimension) {
-	var model = _mordrax$cotwelm$Dungeon_Rooms_Diamond$info(dimension);
-	return _elm_lang$core$Native_List.fromArray(
-		[
-			_elm_lang$core$Native_List.fromArray(
-			[
-				{ctor: '_Tuple2', _0: 0, _1: model.mid}
-			]),
-			_elm_lang$core$Native_List.fromArray(
-			[
-				{ctor: '_Tuple2', _0: model.max, _1: model.mid}
-			]),
-			_elm_lang$core$Native_List.fromArray(
-			[
-				{ctor: '_Tuple2', _0: model.mid, _1: 0}
-			]),
-			_elm_lang$core$Native_List.fromArray(
-			[
-				{ctor: '_Tuple2', _0: model.mid, _1: model.max}
-			])
-		]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Diamond$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Diamond$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Diamond$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Diamond$floors};
-var _mordrax$cotwelm$Dungeon_Rooms_Diamond$Model = F3(
-	function (a, b, c) {
-		return {size: a, mid: b, max: c};
-	});
-
-var _mordrax$cotwelm$Dungeon_Rooms_Potion$walls = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Potion$floors = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Potion$corners = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Potion$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Potion$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Potion$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Potion$floors};
-
-var _mordrax$cotwelm$Dungeon_Rooms_Circular$walls = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Circular$floors = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Circular$corners = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_Circular$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Circular$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Circular$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Circular$floors};
-
-var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$walls = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$floors = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$corners = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$floors};
-
-var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$walls = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$floors = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$corners = function (dimension) {
-	return _elm_lang$core$Native_List.fromArray(
-		[]);
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$floors};
-
-var _mordrax$cotwelm$Dungeon_Room$templates = function (roomType) {
-	var _p0 = roomType;
-	switch (_p0.ctor) {
-		case 'Rectangular':
-			return _mordrax$cotwelm$Dungeon_Rooms_Rectangular$template;
-		case 'Cross':
-			return _mordrax$cotwelm$Dungeon_Rooms_Cross$template;
-		case 'Diamond':
-			return _mordrax$cotwelm$Dungeon_Rooms_Diamond$template;
-		case 'Potion':
-			return _mordrax$cotwelm$Dungeon_Rooms_Potion$template;
-		case 'Circular':
-			return _mordrax$cotwelm$Dungeon_Rooms_Circular$template;
-		case 'DiagonalSquares':
-			return _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$template;
-		default:
-			return _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$template;
-	}
-};
-var _mordrax$cotwelm$Dungeon_Room$cornersGenerator = function (_p1) {
-	var _p2 = _p1;
-	var makeCorners = _mordrax$cotwelm$Dungeon_Room$templates(_p2.roomType).makeCorners;
-	return _elm_community$random_extra$Random_Extra$constant(
-		_elm_lang$core$Native_Utils.update(
-			_p2,
-			{
-				corners: makeCorners(_p2.dimension)
-			}));
-};
-var _mordrax$cotwelm$Dungeon_Room$floorsGenerator = function (_p3) {
-	var _p4 = _p3;
-	var makeFloors = _mordrax$cotwelm$Dungeon_Room$templates(_p4.roomType).makeFloors;
-	return _elm_community$random_extra$Random_Extra$constant(
-		_elm_lang$core$Native_Utils.update(
-			_p4,
-			{
-				floors: makeFloors(_p4.dimension)
-			}));
-};
-var _mordrax$cotwelm$Dungeon_Room$wallsGenerator = function (_p5) {
-	var _p6 = _p5;
-	var makeWalls = _mordrax$cotwelm$Dungeon_Room$templates(_p6.roomType).makeWalls;
-	return _elm_community$random_extra$Random_Extra$constant(
-		_elm_lang$core$Native_Utils.update(
-			_p6,
-			{
-				walls: makeWalls(_p6.dimension)
-			}));
-};
-var _mordrax$cotwelm$Dungeon_Room$doorsGenerator = function (_p7) {
-	var _p8 = _p7;
-	var room$ = function (_p9) {
-		var _p10 = _p9;
-		return _elm_lang$core$Native_Utils.update(
-			_p8,
-			{walls: _p10._0, doors: _p10._1});
-	};
-	var wallsDoorsGen = A2(
-		_mordrax$cotwelm$Dungeon_Rooms_Config$addDoors,
-		4,
-		{
-			ctor: '_Tuple3',
-			_0: _p8.walls,
-			_1: _elm_lang$core$Native_List.fromArray(
-				[]),
-			_2: _elm_lang$core$Native_List.fromArray(
-				[])
-		});
-	return A2(_elm_lang$core$Random$map, room$, wallsDoorsGen);
-};
-var _mordrax$cotwelm$Dungeon_Room$shuffleWalls = function (_p11) {
-	var _p12 = _p11;
-	var _p13 = _p12;
-	var model$ = function (walls) {
-		return _elm_lang$core$Native_Utils.update(
-			_p13,
-			{walls: walls});
-	};
-	return A2(
-		_elm_lang$core$Random$map,
-		model$,
-		_mordrax$cotwelm$Dungeon_Rooms_Config$shuffle(_p13.walls));
-};
-var _mordrax$cotwelm$Dungeon_Room$roomSizeGenerator = F2(
-	function (config, _p14) {
-		var _p15 = _p14;
-		return A2(
-			_elm_lang$core$Random$andThen,
-			A2(_mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeGenerator, _p15.roomType, config),
-			function (roomSize) {
-				return _elm_community$random_extra$Random_Extra$constant(
-					_elm_lang$core$Native_Utils.update(
-						_p15,
-						{
-							dimension: {ctor: '_Tuple2', _0: roomSize, _1: roomSize}
-						}));
-			});
-	});
-var _mordrax$cotwelm$Dungeon_Room$generate = function (model) {
-	var roomTypeToRoom = function (roomType) {
-		return _elm_community$random_extra$Random_Extra$constant(
-			A6(
-				_mordrax$cotwelm$Dungeon_Rooms_Type$Room,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				roomType,
-				{ctor: '_Tuple2', _0: 0, _1: 0}));
-	};
-	return A2(
-		_elm_lang$core$Random$andThen,
-		A2(
-			_elm_lang$core$Random$andThen,
-			A2(
-				_elm_lang$core$Random$andThen,
-				A2(
-					_elm_lang$core$Random$andThen,
-					A2(
-						_elm_lang$core$Random$andThen,
-						A2(
-							_elm_lang$core$Random$andThen,
-							A2(
-								_elm_lang$core$Random$andThen,
-								_mordrax$cotwelm$Dungeon_Rooms_Config$roomTypeGenerator(model),
-								roomTypeToRoom),
-							_mordrax$cotwelm$Dungeon_Room$roomSizeGenerator(model)),
-						_mordrax$cotwelm$Dungeon_Room$wallsGenerator),
-					_mordrax$cotwelm$Dungeon_Room$shuffleWalls),
-				_mordrax$cotwelm$Dungeon_Room$doorsGenerator),
-			_mordrax$cotwelm$Dungeon_Room$floorsGenerator),
-		_mordrax$cotwelm$Dungeon_Room$cornersGenerator);
-};
-var _mordrax$cotwelm$Dungeon_Room$init = {
-	doors: _elm_lang$core$Native_List.fromArray(
-		[
-			{
-			ctor: '_Tuple2',
-			_0: _mordrax$cotwelm$Dungeon_Rooms_Type$Door,
-			_1: {ctor: '_Tuple2', _0: 0, _1: 0}
+var _mordrax$cotwelm$Utils_Vector$toDirection = function (vector) {
+	var _p34 = _mordrax$cotwelm$Utils_Vector$unit(vector);
+	_v15_8:
+	do {
+		if (_p34.ctor === '_Tuple2') {
+			switch (_p34._0) {
+				case 0:
+					switch (_p34._1) {
+						case 1:
+							return _mordrax$cotwelm$Utils_CompassDirection$N;
+						case -1:
+							return _mordrax$cotwelm$Utils_CompassDirection$E;
+						default:
+							break _v15_8;
+					}
+				case 1:
+					switch (_p34._1) {
+						case 0:
+							return _mordrax$cotwelm$Utils_CompassDirection$S;
+						case 1:
+							return _mordrax$cotwelm$Utils_CompassDirection$NE;
+						case -1:
+							return _mordrax$cotwelm$Utils_CompassDirection$SE;
+						default:
+							break _v15_8;
+					}
+				case -1:
+					switch (_p34._1) {
+						case 0:
+							return _mordrax$cotwelm$Utils_CompassDirection$W;
+						case 1:
+							return _mordrax$cotwelm$Utils_CompassDirection$NW;
+						case -1:
+							return _mordrax$cotwelm$Utils_CompassDirection$SW;
+						default:
+							break _v15_8;
+					}
+				default:
+					break _v15_8;
+			}
+		} else {
+			break _v15_8;
 		}
-		]),
-	walls: _elm_lang$core$Native_List.fromArray(
-		[]),
-	floors: _elm_lang$core$Native_List.fromArray(
-		[]),
-	corners: _elm_lang$core$Native_List.fromArray(
-		[
-			{ctor: '_Tuple2', _0: 0, _1: 0}
-		]),
-	roomType: _mordrax$cotwelm$Dungeon_Rooms_Type$DeadEnd,
-	dimension: {ctor: '_Tuple2', _0: 1, _1: 1}
+	} while(false);
+	return _mordrax$cotwelm$Utils_CompassDirection$W;
 };
+var _mordrax$cotwelm$Utils_Vector$zero = {ctor: '_Tuple2', _0: 0, _1: 0};
+var _mordrax$cotwelm$Utils_Vector$Right = {ctor: 'Right'};
+var _mordrax$cotwelm$Utils_Vector$Left = {ctor: 'Left'};
 
 var _mordrax$cotwelm$Utils_Lib$px = function (a) {
 	return A2(
@@ -13702,7 +12862,7 @@ var _mordrax$cotwelm$GameData_Building$isBuildingAtPosition = F2(
 			A2(_mordrax$cotwelm$Utils_Vector$add, _p4.pos, _p4.size),
 			{ctor: '_Tuple2', _0: 1, _1: 1});
 		return A2(
-			_mordrax$cotwelm$Utils_Vector$boxIntersect,
+			_mordrax$cotwelm$Utils_Vector$boxIntersectVector,
 			pos,
 			{ctor: '_Tuple2', _0: _p4.pos, _1: bottomLeft});
 	});
@@ -16753,285 +15913,1647 @@ var _mordrax$cotwelm$Tile$mapToTiles = function (asciiMap) {
 	return _elm_lang$core$List$concat(tiles);
 };
 
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$neighbours = F2(
-	function (map, position) {
-		var add = F2(
-			function (x, y) {
-				return A2(
-					_mordrax$cotwelm$Utils_Vector$add,
-					position,
-					{ctor: '_Tuple2', _0: x, _1: y});
-			});
-		var possibleNeighbours = function (vector) {
+var _mordrax$cotwelm$Dungeon_Entrance$toTile = function (_p0) {
+	var _p1 = _p0;
+	var tileType = function () {
+		var _p2 = _p1._0._0;
+		if (_p2.ctor === 'Door') {
+			return _mordrax$cotwelm$Tile$DoorClosed;
+		} else {
+			return _mordrax$cotwelm$Tile$DarkDgn;
+		}
+	}();
+	return A2(_mordrax$cotwelm$Tile$toTile, _p1._0._1, tileType);
+};
+var _mordrax$cotwelm$Dungeon_Entrance$position = function (_p3) {
+	var _p4 = _p3;
+	return _p4._0._1;
+};
+var _mordrax$cotwelm$Dungeon_Entrance$NoDoor = {ctor: 'NoDoor'};
+var _mordrax$cotwelm$Dungeon_Entrance$Door = {ctor: 'Door'};
+var _mordrax$cotwelm$Dungeon_Entrance$A = function (a) {
+	return {ctor: 'A', _0: a};
+};
+var _mordrax$cotwelm$Dungeon_Entrance$init = F2(
+	function (t, v) {
+		return _mordrax$cotwelm$Dungeon_Entrance$A(
+			{ctor: '_Tuple2', _0: t, _1: v});
+	});
+
+var _mordrax$cotwelm$Dungeon_Rooms_Type$RoomTemplate = F3(
+	function (a, b, c) {
+		return {makeWalls: a, makeCorners: b, makeFloors: c};
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Type$DeadEnd = {ctor: 'DeadEnd'};
+var _mordrax$cotwelm$Dungeon_Rooms_Type$DiagonalSquares = {ctor: 'DiagonalSquares'};
+var _mordrax$cotwelm$Dungeon_Rooms_Type$Circular = {ctor: 'Circular'};
+var _mordrax$cotwelm$Dungeon_Rooms_Type$Potion = {ctor: 'Potion'};
+var _mordrax$cotwelm$Dungeon_Rooms_Type$Diamond = {ctor: 'Diamond'};
+var _mordrax$cotwelm$Dungeon_Rooms_Type$Cross = {ctor: 'Cross'};
+var _mordrax$cotwelm$Dungeon_Rooms_Type$Rectangular = {ctor: 'Rectangular'};
+
+var _mordrax$cotwelm$Lodash$range = F2(
+	function (x, y) {
+		return (_elm_lang$core$Native_Utils.cmp(x, y) < 0) ? _elm_lang$core$Native_List.range(x, y) : _elm_lang$core$List$reverse(
+			_elm_lang$core$Native_List.range(y, x));
+	});
+var _mordrax$cotwelm$Lodash$without = F2(
+	function (x, xs) {
+		return A2(
+			_elm_lang$core$List$filter,
+			F2(
+				function (x, y) {
+					return !_elm_lang$core$Native_Utils.eq(x, y);
+				})(x),
+			xs);
+	});
+var _mordrax$cotwelm$Lodash$headWithDefault = F2(
+	function ($default, xs) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			$default,
+			_elm_lang$core$List$head(xs));
+	});
+var _mordrax$cotwelm$Lodash$shuffle = function (list) {
+	return A2(
+		_elm_lang$core$Random$map,
+		_elm_lang$core$Array$toList,
+		_elm_community$random_extra$Random_Array$shuffle(
+			_elm_lang$core$Array$fromList(list)));
+};
+
+var _mordrax$cotwelm$Dungeon_Corridor$path = F2(
+	function (_p1, _p0) {
+		var _p2 = _p1;
+		var _p7 = _p2._1;
+		var _p6 = _p2._0;
+		var _p3 = _p0;
+		var _p5 = _p3._1;
+		var _p4 = _p3._0;
+		var length = A2(
+			_elm_lang$core$Basics$max,
+			_elm_lang$core$Basics$abs(_p6 - _p4),
+			_elm_lang$core$Basics$abs(_p7 - _p5));
+		var rangeX = _elm_lang$core$Native_Utils.eq(_p6, _p4) ? A2(_elm_lang$core$List$repeat, length, _p6) : A2(_mordrax$cotwelm$Lodash$range, _p6, _p4);
+		var rangeY = _elm_lang$core$Native_Utils.eq(_p7, _p5) ? A2(_elm_lang$core$List$repeat, length, _p7) : A2(_mordrax$cotwelm$Lodash$range, _p7, _p5);
+		return A3(
+			_elm_lang$core$List$map2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			rangeX,
+			rangeY);
+	});
+var _mordrax$cotwelm$Dungeon_Corridor$constructPath = function (points) {
+	var _p8 = points;
+	if (_p8.ctor === '[]') {
+		return _elm_lang$core$Native_List.fromArray(
+			[]);
+	} else {
+		if (_p8._1.ctor === '[]') {
+			return _elm_lang$core$Native_List.fromArray(
+				[_p8._0]);
+		} else {
 			return A2(
 				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(add, -1, -1),
-						A2(add, 0, -1),
-						A2(add, 1, -1)
-					]),
-				A2(
-					_elm_lang$core$Basics_ops['++'],
+				A2(_mordrax$cotwelm$Dungeon_Corridor$path, _p8._0, _p8._1._0),
+				_mordrax$cotwelm$Dungeon_Corridor$constructPath(_p8._1));
+		}
+	}
+};
+var _mordrax$cotwelm$Dungeon_Corridor$toTiles = function (_p9) {
+	var _p10 = _p9;
+	var makeTiles = function (_p11) {
+		var _p12 = _p11;
+		return A2(
+			_elm_lang$core$List$map,
+			function (pos) {
+				return A2(_mordrax$cotwelm$Tile$toTile, pos, _p12._0);
+			},
+			_p12._1);
+	};
+	var paths = _mordrax$cotwelm$Dungeon_Corridor$constructPath(
+		A2(_elm_lang$core$List_ops['::'], _p10._0.start, _p10._0.points));
+	var _p13 = A2(_elm_lang$core$Debug$log, 'paths', paths);
+	var data = _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$DarkDgn, _1: paths},
+			{
+			ctor: '_Tuple2',
+			_0: _mordrax$cotwelm$Tile$Rock,
+			_1: _elm_lang$core$List$concat(_p10._0.walls)
+		}
+		]);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$List$concat(
+			A2(_elm_lang$core$List$map, makeTiles, data)),
+		A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Entrance$toTile, _p10._0.entrances));
+};
+var _mordrax$cotwelm$Dungeon_Corridor$facing = F2(
+	function (start, points) {
+		var _p14 = _elm_lang$core$List$reverse(
+			A2(_elm_lang$core$List_ops['::'], start, points));
+		if ((_p14.ctor === '::') && (_p14._1.ctor === '::')) {
+			return _mordrax$cotwelm$Utils_Vector$toDirection(
+				A2(_mordrax$cotwelm$Utils_Vector$sub, _p14._0, _p14._1._0));
+		} else {
+			return _mordrax$cotwelm$Utils_CompassDirection$W;
+		}
+	});
+var _mordrax$cotwelm$Dungeon_Corridor$Model = F4(
+	function (a, b, c, d) {
+		return {start: a, points: b, walls: c, entrances: d};
+	});
+var _mordrax$cotwelm$Dungeon_Corridor$A = function (a) {
+	return {ctor: 'A', _0: a};
+};
+var _mordrax$cotwelm$Dungeon_Corridor$new = function (start) {
+	return _mordrax$cotwelm$Dungeon_Corridor$A(
+		{
+			start: start,
+			points: _elm_lang$core$Native_List.fromArray(
+				[]),
+			walls: _elm_lang$core$Native_List.fromArray(
+				[]),
+			entrances: _elm_lang$core$Native_List.fromArray(
+				[])
+		});
+};
+var _mordrax$cotwelm$Dungeon_Corridor$allPossibleEndings = function (_p15) {
+	var _p16 = _p15;
+	var _p20 = _p16._0.start;
+	var _p19 = _p16._0.points;
+	var corridorWithEnd = function (point) {
+		return _mordrax$cotwelm$Dungeon_Corridor$A(
+			_elm_lang$core$Native_Utils.update(
+				_p16._0,
+				{
+					points: A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p19,
+						_elm_lang$core$Native_List.fromArray(
+							[point]))
+				}));
+	};
+	var straightAhead = A2(_mordrax$cotwelm$Dungeon_Corridor$facing, _p20, _p19);
+	var straightAheadVector = _mordrax$cotwelm$Utils_Vector$fromCompass(straightAhead);
+	var _p17 = {
+		ctor: '_Tuple2',
+		_0: A2(_mordrax$cotwelm$Utils_Vector$rotate, straightAheadVector, _mordrax$cotwelm$Utils_Vector$Left),
+		_1: A2(_mordrax$cotwelm$Utils_Vector$rotate, straightAheadVector, _mordrax$cotwelm$Utils_Vector$Right)
+	};
+	var left = _p17._0;
+	var right = _p17._1;
+	var lastPoint = A2(
+		_mordrax$cotwelm$Lodash$headWithDefault,
+		_p20,
+		_elm_lang$core$List$reverse(_p19));
+	var _p18 = {
+		ctor: '_Tuple2',
+		_0: A2(_mordrax$cotwelm$Utils_Vector$add, lastPoint, left),
+		_1: A2(_mordrax$cotwelm$Utils_Vector$add, lastPoint, right)
+	};
+	var leftEnd = _p18._0;
+	var rightEnd = _p18._1;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_mordrax$cotwelm$Utils_CompassDirection$isCardinal(straightAhead) ? _elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple3', _0: _p16, _1: lastPoint, _2: straightAhead}
+			]) : _elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple3',
+				_0: corridorWithEnd(leftEnd),
+				_1: leftEnd,
+				_2: _mordrax$cotwelm$Utils_Vector$toDirection(
+					A2(_mordrax$cotwelm$Utils_Vector$rotateUnlessCardinal, left, _mordrax$cotwelm$Utils_Vector$Left))
+			},
+				{
+				ctor: '_Tuple3',
+				_0: corridorWithEnd(rightEnd),
+				_1: rightEnd,
+				_2: _mordrax$cotwelm$Utils_Vector$toDirection(
+					A2(_mordrax$cotwelm$Utils_Vector$rotateUnlessCardinal, right, _mordrax$cotwelm$Utils_Vector$Right))
+			}
+			]));
+};
+var _mordrax$cotwelm$Dungeon_Corridor$add = F2(
+	function (point, _p21) {
+		var _p22 = _p21;
+		return _mordrax$cotwelm$Dungeon_Corridor$A(
+			_elm_lang$core$Native_Utils.update(
+				_p22._0,
+				{
+					points: A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p22._0.points,
+						_elm_lang$core$Native_List.fromArray(
+							[point]))
+				}));
+	});
+
+var _mordrax$cotwelm$UI$inputWithIncDec = F2(
+	function (val, msg) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$class('ui left action right action input')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html$button,
 					_elm_lang$core$Native_List.fromArray(
 						[
-							A2(add, -1, 0),
-							A2(add, 1, 0)
+							_elm_lang$html$Html_Attributes$class('ui icon button')
 						]),
 					_elm_lang$core$Native_List.fromArray(
 						[
-							A2(add, -1, 1),
-							A2(add, 0, 1),
-							A2(add, 1, 1)
-						])));
-		};
-		var dungeonSize = function (_) {
-			return _.dungeonSize;
-		}(_mordrax$cotwelm$Dungeon_Rooms_Config$init);
-		var isOutOfBounds = function (_p0) {
-			var _p1 = _p0;
-			var _p3 = _p1._1;
-			var _p2 = _p1._0;
-			return ((_elm_lang$core$Native_Utils.cmp(_p2, dungeonSize) > 0) || (_elm_lang$core$Native_Utils.cmp(_p3, dungeonSize) > 0)) ? true : (((_elm_lang$core$Native_Utils.cmp(_p2, 0) < 0) || (_elm_lang$core$Native_Utils.cmp(_p3, 0) < 0)) ? true : false);
-		};
-		var isObstructed = function (_p4) {
-			var _p5 = _p4;
-			var _p7 = _p5;
-			if (isOutOfBounds(_p7)) {
-				return true;
-			} else {
-				var _p6 = A2(_elm_lang$core$Dict$get, _p7, map);
-				if (_p6.ctor === 'Just') {
-					return _mordrax$cotwelm$Tile$isSolid(_p6._0);
-				} else {
-					return false;
-				}
-			}
-		};
-		return _elm_lang$core$Set$fromList(
-			A2(
-				_elm_lang$core$List$filter,
-				function (x) {
-					return _elm_lang$core$Basics$not(
-						isObstructed(x));
-				},
-				possibleNeighbours(position)));
+							A2(
+							_elm_lang$html$Html$i,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$class('minus icon')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						])),
+					A2(
+					_elm_lang$html$Html$input,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$type$('number'),
+							_elm_lang$html$Html_Attributes$value(
+							_elm_lang$core$Basics$toString(val))
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[])),
+					A2(
+					_elm_lang$html$Html$button,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('ui icon button')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$html$Html$i,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$class('plus icon')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[]))
+						]))
+				]));
 	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$heuristic = F2(
-	function (start, end) {
-		var _p8 = A2(_mordrax$cotwelm$Utils_Vector$sub, start, end);
-		var dx = _p8._0;
-		var dy = _p8._1;
-		return _elm_lang$core$Basics$toFloat(
-			A2(_elm_lang$core$Basics$max, dx, dy));
+var _mordrax$cotwelm$UI$labeledNumberWithStep = F5(
+	function (convert, label, number, inc, msg) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$class('ui labeled input')
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('ui label')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text(label)
+						])),
+					A2(
+					_elm_lang$html$Html$input,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$type$('number'),
+							_elm_lang$html$Html_Attributes$step(
+							_elm_lang$core$Basics$toString(inc)),
+							_elm_lang$html$Html_Events$onInput(
+							function (input) {
+								return msg(
+									A2(convert, input, 0));
+							}),
+							_elm_lang$html$Html_Attributes$value(
+							_elm_lang$core$Basics$toString(number))
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[]))
+				]));
 	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$connectRooms = F3(
-	function (_p10, _p9, map) {
-		var _p11 = _p10;
-		var _p12 = _p9;
-		var _p13 = {ctor: '_Tuple2', _0: _p11._0.doors, _1: _p12._0.doors};
-		if (_p13._0.ctor === '[]') {
-			return _elm_lang$core$Maybe$Nothing;
-		} else {
-			if (_p13._1.ctor === '[]') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				return A4(
-					_krisajenkins$elm_astar$AStar$findPath,
-					_mordrax$cotwelm$Dungeon_DungeonGenerator$heuristic,
-					_mordrax$cotwelm$Dungeon_DungeonGenerator$neighbours(map),
-					A2(_mordrax$cotwelm$Utils_Vector$add, _p13._0._0._1, _p11._1),
-					A2(_mordrax$cotwelm$Utils_Vector$add, _p13._1._0._1, _p12._1));
-			}
-		}
+var _mordrax$cotwelm$UI$labeledFloat = F3(
+	function (label, number, msg) {
+		var toFloatWithDefault = F2(
+			function (str, $default) {
+				return A2(
+					_elm_lang$core$Result$withDefault,
+					$default,
+					_elm_lang$core$String$toFloat(str));
+			});
+		return A5(_mordrax$cotwelm$UI$labeledNumberWithStep, toFloatWithDefault, label, number, 0.1, msg);
 	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$entranceToTileType = function (entrance) {
-	var _p14 = entrance;
-	if (_p14.ctor === 'Door') {
-		return _mordrax$cotwelm$Tile$DoorClosed;
+var _mordrax$cotwelm$UI$labeledNumber$ = F4(
+	function (convert, label, number, msg) {
+		return A5(_mordrax$cotwelm$UI$labeledNumberWithStep, convert, label, number, 1.0, msg);
+	});
+var _mordrax$cotwelm$UI$labeledNumber = F3(
+	function (label, number, msg) {
+		var toIntWithDefault = F2(
+			function (str, $default) {
+				return A2(
+					_elm_lang$core$Result$withDefault,
+					$default,
+					_elm_lang$core$String$toInt(str));
+			});
+		return A4(_mordrax$cotwelm$UI$labeledNumber$, toIntWithDefault, label, number, msg);
+	});
+var _mordrax$cotwelm$UI$labeled2TupleNumber = F4(
+	function (label, _p0, minMsg, maxMsg) {
+		var _p1 = _p0;
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html$h4,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text(label)
+						])),
+					A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A3(_mordrax$cotwelm$UI$labeledNumber, 'Min', _p1._0, minMsg),
+							A3(_mordrax$cotwelm$UI$labeledNumber, 'Max', _p1._1, maxMsg)
+						]))
+				]));
+	});
+
+var _mordrax$cotwelm$Dungeon_Rooms_Config$wallToEntrance = function (wallGen) {
+	return A2(
+		_elm_lang$core$Random$map,
+		_mordrax$cotwelm$Dungeon_Entrance$init(_mordrax$cotwelm$Dungeon_Entrance$Door),
+		wallGen);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Config$wallSampler = function (walls) {
+	var _p0 = walls;
+	if (_p0.ctor === '[]') {
+		return _elm_community$random_extra$Random_Extra$constant(
+			{ctor: '_Tuple2', _0: 0, _1: 0});
 	} else {
-		return _mordrax$cotwelm$Tile$DarkDgn;
+		return A2(
+			_elm_lang$core$Random$map,
+			_elm_lang$core$Maybe$withDefault(_p0._0),
+			_elm_community$random_extra$Random_Extra$sample(walls));
 	}
 };
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$overlapsRooms = F3(
-	function (newRoom, pos, rooms) {
-		overlapsRooms:
-		while (true) {
-			var _p15 = rooms;
-			if (_p15.ctor === '[]') {
-				return false;
-			} else {
-				var _p16 = _p15._0;
-				var roomBox = {
-					ctor: '_Tuple2',
-					_0: _p16.position,
-					_1: A2(_mordrax$cotwelm$Utils_Vector$add, _p16.position, _p16.room.dimension)
-				};
-				if (A2(
-					_elm_lang$core$List$any,
-					function (x) {
-						return A2(
-							_mordrax$cotwelm$Utils_Vector$boxIntersect,
-							A2(_mordrax$cotwelm$Utils_Vector$add, x, pos),
-							roomBox);
-					},
-					newRoom.corners)) {
-					return true;
+var _mordrax$cotwelm$Dungeon_Rooms_Config$addEntrances = F2(
+	function (nEntrances, _p1) {
+		var _p2 = _p1;
+		var _p7 = _p2._0;
+		var _p6 = _p2._1;
+		var _p5 = _p2._2;
+		var createGenerator = _elm_community$random_extra$Random_Extra$constant(
+			{
+				ctor: '_Tuple2',
+				_0: A2(_elm_lang$core$Basics_ops['++'], _p7, _p6),
+				_1: _p5
+			});
+		var _p3 = {ctor: '_Tuple2', _0: nEntrances, _1: _p7};
+		_v2_0:
+		do {
+			if (_p3._1.ctor === '[]') {
+				if (_p3._0 === 0) {
+					break _v2_0;
 				} else {
-					var _v8 = newRoom,
-						_v9 = pos,
-						_v10 = _p15._1;
-					newRoom = _v8;
-					pos = _v9;
-					rooms = _v10;
-					continue overlapsRooms;
+					return createGenerator;
+				}
+			} else {
+				if (_p3._0 === 0) {
+					break _v2_0;
+				} else {
+					if (_p3._1._0.ctor === '[]') {
+						return createGenerator;
+					} else {
+						var _p4 = _p3._1._0;
+						var wallWithoutEntrance = function (entrance) {
+							return A2(
+								_elm_lang$core$List$filter,
+								F2(
+									function (x, y) {
+										return !_elm_lang$core$Native_Utils.eq(x, y);
+									})(
+									_mordrax$cotwelm$Dungeon_Entrance$position(entrance)),
+								_p4);
+						};
+						var recurse = function (entrance) {
+							return A2(
+								_mordrax$cotwelm$Dungeon_Rooms_Config$addEntrances,
+								_p3._0 - 1,
+								{
+									ctor: '_Tuple3',
+									_0: A2(
+										_elm_lang$core$Basics_ops['++'],
+										_p3._1._1,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												wallWithoutEntrance(entrance)
+											])),
+									_1: _p6,
+									_2: A2(_elm_lang$core$List_ops['::'], entrance, _p5)
+								});
+						};
+						var generateWall = _mordrax$cotwelm$Dungeon_Rooms_Config$wallSampler(_p4);
+						return A2(
+							_elm_lang$core$Random$andThen,
+							_mordrax$cotwelm$Dungeon_Rooms_Config$wallToEntrance(generateWall),
+							recurse);
+					}
 				}
 			}
-		}
+		} while(false);
+		return createGenerator;
 	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$roomToTiles = F2(
-	function (room, startPos) {
-		var items = _elm_lang$core$Native_List.fromArray(
+var _mordrax$cotwelm$Dungeon_Rooms_Config$roomTypeGenerator = function (_p8) {
+	var _p9 = _p8;
+	var _p10 = _p9.roomsConfig;
+	return _elm_community$random_extra$Random_Extra$frequency(
+		_elm_lang$core$Native_List.fromArray(
 			[
-				{ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$DarkDgn, _1: room.floors},
 				{
 				ctor: '_Tuple2',
-				_0: _mordrax$cotwelm$Tile$Rock,
-				_1: _elm_lang$core$List$concat(room.walls)
+				_0: _elm_lang$core$Basics$toFloat(_p10.rectangular.frequency),
+				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Rectangular)
 			},
-				{ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Rock, _1: room.corners}
-			]);
-		var toWorldPos = function (localPos) {
-			return A2(_mordrax$cotwelm$Utils_Vector$add, startPos, localPos);
-		};
-		var makeTiles = function (_p17) {
-			var _p18 = _p17;
-			return A2(
-				_elm_lang$core$List$map,
-				function (pos) {
-					return A2(_mordrax$cotwelm$Tile$toTile, pos, _p18._0);
-				},
-				A2(_elm_lang$core$List$map, toWorldPos, _p18._1));
-		};
-		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			_elm_lang$core$List$concat(
-				A2(_elm_lang$core$List$map, makeTiles, items)),
-			A2(
-				_elm_lang$core$List$map,
-				function (_p19) {
-					var _p20 = _p19;
-					return A2(
-						_mordrax$cotwelm$Tile$toTile,
-						toWorldPos(_p20._1),
-						_mordrax$cotwelm$Dungeon_DungeonGenerator$entranceToTileType(_p20._0));
-				},
-				room.doors));
-	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$fillWithWall = function (partialMap) {
-	var dungeonSize = function (_) {
-		return _.dungeonSize;
-	}(_mordrax$cotwelm$Dungeon_Rooms_Config$init);
-	var addWallIfTileDoesNotExist = F2(
-		function (x, y) {
-			var _p21 = A2(
-				_elm_lang$core$Dict$get,
-				{ctor: '_Tuple2', _0: x, _1: y},
-				partialMap);
-			if (_p21.ctor === 'Nothing') {
-				return A2(
-					_mordrax$cotwelm$Tile$toTile,
-					{ctor: '_Tuple2', _0: x, _1: y},
-					_mordrax$cotwelm$Tile$Rock);
-			} else {
-				return _p21._0;
+				{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toFloat(_p10.cross.frequency),
+				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Cross)
+			},
+				{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toFloat(_p10.diamond.frequency),
+				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Diamond)
+			},
+				{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toFloat(_p10.potion.frequency),
+				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Potion)
+			},
+				{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toFloat(_p10.circular.frequency),
+				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$Circular)
+			},
+				{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toFloat(_p10.diagonalSquares.frequency),
+				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$DiagonalSquares)
+			},
+				{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toFloat(_p10.deadEnd.frequency),
+				_1: _elm_community$random_extra$Random_Extra$constant(_mordrax$cotwelm$Dungeon_Rooms_Type$DeadEnd)
 			}
-		});
-	return A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		addWallIfTileDoesNotExist,
-		_elm_lang$core$Native_List.range(0, dungeonSize),
-		_elm_lang$core$Native_List.range(0, dungeonSize));
+			]));
 };
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$roomsToTiles = function (dungeonRooms) {
-	var defaultPosition = function (x) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			{ctor: '_Tuple2', _0: 0, _1: 0},
-			x);
-	};
-	var tiles = _elm_lang$core$List$concat(
-		A2(
-			_elm_lang$core$List$map,
-			function (x) {
-				return A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$roomToTiles, x.room, x.position);
-			},
-			dungeonRooms));
-	return tiles;
-};
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$init = {config: _mordrax$cotwelm$Dungeon_Rooms_Config$init};
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$Model = function (a) {
-	return {config: a};
-};
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$DungeonRoom = F2(
-	function (a, b) {
-		return {position: a, room: b};
+var _mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeGenerator = F2(
+	function (roomType, _p11) {
+		var _p12 = _p11;
+		var _p16 = _p12;
+		var tupleToGen = function (_p13) {
+			var _p14 = _p13;
+			return A2(_elm_lang$core$Random$int, _p14._0, _p14._1);
+		};
+		var _p15 = roomType;
+		switch (_p15.ctor) {
+			case 'Rectangular':
+				return tupleToGen(_p16.roomsConfig.rectangular.sizeRange);
+			case 'Cross':
+				return tupleToGen(_p16.roomsConfig.cross.sizeRange);
+			case 'Diamond':
+				return tupleToGen(_p16.roomsConfig.diamond.sizeRange);
+			case 'Potion':
+				return tupleToGen(_p16.roomsConfig.potion.sizeRange);
+			case 'Circular':
+				return tupleToGen(_p16.roomsConfig.circular.sizeRange);
+			case 'DiagonalSquares':
+				return tupleToGen(_p16.roomsConfig.diagonalSquares.sizeRange);
+			default:
+				return tupleToGen(_p16.roomsConfig.deadEnd.sizeRange);
+		}
 	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$roomToDungeonRoom = F2(
-	function (room, _p22) {
-		var _p23 = _p22;
-		var _p24 = _p23.dungeonSize;
-		return A2(
-			_elm_lang$core$Random$andThen,
-			A2(_mordrax$cotwelm$Dice$d2d, _p24, _p24),
-			function (pos) {
-				return _elm_community$random_extra$Random_Extra$constant(
-					A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$DungeonRoom, pos, room));
+var _mordrax$cotwelm$Dungeon_Rooms_Config$updateRoomsConfig = F3(
+	function (roomType, updater, roomsConfig) {
+		var _p17 = roomType;
+		switch (_p17.ctor) {
+			case 'Rectangular':
+				return _elm_lang$core$Native_Utils.update(
+					roomsConfig,
+					{
+						rectangular: updater(roomsConfig.rectangular)
+					});
+			case 'Cross':
+				return _elm_lang$core$Native_Utils.update(
+					roomsConfig,
+					{
+						cross: updater(roomsConfig.cross)
+					});
+			case 'Diamond':
+				return _elm_lang$core$Native_Utils.update(
+					roomsConfig,
+					{
+						diamond: updater(roomsConfig.diamond)
+					});
+			case 'Potion':
+				return _elm_lang$core$Native_Utils.update(
+					roomsConfig,
+					{
+						potion: updater(roomsConfig.potion)
+					});
+			case 'Circular':
+				return _elm_lang$core$Native_Utils.update(
+					roomsConfig,
+					{
+						circular: updater(roomsConfig.circular)
+					});
+			case 'DiagonalSquares':
+				return _elm_lang$core$Native_Utils.update(
+					roomsConfig,
+					{
+						diagonalSquares: updater(roomsConfig.diagonalSquares)
+					});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					roomsConfig,
+					{
+						deadEnd: updater(roomsConfig.deadEnd)
+					});
+		}
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$update = F2(
+	function (msg, model) {
+		var _p18 = A2(_elm_lang$core$Debug$log, 'Config.update', msg);
+		var _p19 = msg;
+		switch (_p19.ctor) {
+			case 'DungeonSize':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{dungeonSize: _p19._0});
+			case 'RoomSize':
+				var updateSizeRange = F2(
+					function (sizeRange$, config) {
+						return _elm_lang$core$Native_Utils.update(
+							config,
+							{sizeRange: sizeRange$});
+					});
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						roomsConfig: A3(
+							_mordrax$cotwelm$Dungeon_Rooms_Config$updateRoomsConfig,
+							_p19._0,
+							updateSizeRange(_p19._1),
+							model.roomsConfig)
+					});
+			case 'ChangeFrequency':
+				var updateFrequency = F2(
+					function (freq, config) {
+						return _elm_lang$core$Native_Utils.update(
+							config,
+							{frequency: freq});
+					});
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						roomsConfig: A3(
+							_mordrax$cotwelm$Dungeon_Rooms_Config$updateRoomsConfig,
+							_p19._0,
+							updateFrequency(_p19._1),
+							model.roomsConfig)
+					});
+			case 'MapScale':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{mapScale: _p19._0});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{nRooms: _p19._0});
+		}
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {dungeonSize: a, roomsConfig: b, nRooms: c, mapScale: d, maxEntrances: e, corridor: f};
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$CorridorConfig = F2(
+	function (a, b) {
+		return {minLength: a, maxLength: b};
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$RoomsConfig = F7(
+	function (a, b, c, d, e, f, g) {
+		return {rectangular: a, cross: b, diamond: c, potion: d, circular: e, diagonalSquares: f, deadEnd: g};
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig = F2(
+	function (a, b) {
+		return {sizeRange: a, frequency: b};
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$init = {
+	dungeonSize: 50,
+	corridor: {minLength: 5, maxLength: 100},
+	roomsConfig: {
+		rectangular: A2(
+			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
+			{ctor: '_Tuple2', _0: 4, _1: 10},
+			1),
+		cross: A2(
+			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
+			{ctor: '_Tuple2', _0: 7, _1: 11},
+			1),
+		diamond: A2(
+			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
+			{ctor: '_Tuple2', _0: 5, _1: 11},
+			1),
+		potion: A2(
+			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
+			{ctor: '_Tuple2', _0: 4, _1: 10},
+			0),
+		circular: A2(
+			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
+			{ctor: '_Tuple2', _0: 4, _1: 10},
+			0),
+		diagonalSquares: A2(
+			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
+			{ctor: '_Tuple2', _0: 4, _1: 10},
+			0),
+		deadEnd: A2(
+			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
+			{ctor: '_Tuple2', _0: 1, _1: 1},
+			0)
+	},
+	nRooms: 50,
+	mapScale: 0.2,
+	maxEntrances: 4
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Config$NumberOfRooms = function (a) {
+	return {ctor: 'NumberOfRooms', _0: a};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Config$MapScale = function (a) {
+	return {ctor: 'MapScale', _0: a};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Config$ChangeFrequency = F2(
+	function (a, b) {
+		return {ctor: 'ChangeFrequency', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$roomFrequencyView = F2(
+	function (roomType, freq) {
+		return A3(
+			_mordrax$cotwelm$UI$labeledNumber,
+			'Freq',
+			freq,
+			_mordrax$cotwelm$Dungeon_Rooms_Config$ChangeFrequency(roomType));
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$RoomSize = F2(
+	function (a, b) {
+		return {ctor: 'RoomSize', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeView = F2(
+	function (roomType, _p20) {
+		var _p21 = _p20;
+		var _p23 = _p21._0;
+		var _p22 = _p21._1;
+		var lbl = A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Basics$toString(roomType),
+			' size: ');
+		return A4(
+			_mordrax$cotwelm$UI$labeled2TupleNumber,
+			lbl,
+			{ctor: '_Tuple2', _0: _p23, _1: _p22},
+			function (min$) {
+				return A2(
+					_mordrax$cotwelm$Dungeon_Rooms_Config$RoomSize,
+					roomType,
+					{ctor: '_Tuple2', _0: min$, _1: _p22});
+			},
+			function (max$) {
+				return A2(
+					_mordrax$cotwelm$Dungeon_Rooms_Config$RoomSize,
+					roomType,
+					{ctor: '_Tuple2', _0: _p23, _1: max$});
 			});
 	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$generateDungeonRooms = F3(
-	function (config, num, dungeonRooms) {
-		var recurse = function (dungeonRoom) {
-			return A3(
-				_mordrax$cotwelm$Dungeon_DungeonGenerator$generateDungeonRooms,
-				config,
-				num - 1,
-				A2(_elm_lang$core$List_ops['::'], dungeonRoom, dungeonRooms));
-		};
-		return _elm_lang$core$Native_Utils.eq(num, 0) ? _elm_community$random_extra$Random_Extra$constant(dungeonRooms) : A2(
-			_elm_lang$core$Random$andThen,
+var _mordrax$cotwelm$Dungeon_Rooms_Config$roomsConfigView = function (model) {
+	var rooms = _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Rectangular, _1: model.roomsConfig.rectangular},
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Cross, _1: model.roomsConfig.cross},
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Diamond, _1: model.roomsConfig.diamond},
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Potion, _1: model.roomsConfig.potion},
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$Circular, _1: model.roomsConfig.circular},
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Dungeon_Rooms_Type$DiagonalSquares, _1: model.roomsConfig.diagonalSquares}
+		]);
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$List$concat(
 			A2(
-				_elm_lang$core$Random$andThen,
-				_mordrax$cotwelm$Dungeon_Room$generate(config),
-				function (room) {
-					return A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$roomToDungeonRoom, room, config);
-				}),
-			recurse);
+				_elm_lang$core$List$map,
+				function (_p24) {
+					var _p25 = _p24;
+					var _p27 = _p25._0;
+					var _p26 = _p25._1;
+					return _elm_lang$core$Native_List.fromArray(
+						[
+							A2(_mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeView, _p27, _p26.sizeRange),
+							A2(_mordrax$cotwelm$Dungeon_Rooms_Config$roomFrequencyView, _p27, _p26.frequency)
+						]);
+				},
+				rooms)));
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Config$DungeonSize = function (a) {
+	return {ctor: 'DungeonSize', _0: a};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Config$dungeonSizeView = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A3(_mordrax$cotwelm$UI$labeledNumber, 'Dungeon size', model.dungeonSize, _mordrax$cotwelm$Dungeon_Rooms_Config$DungeonSize),
+				A3(_mordrax$cotwelm$UI$labeledFloat, 'Map scale', model.mapScale, _mordrax$cotwelm$Dungeon_Rooms_Config$MapScale),
+				A3(_mordrax$cotwelm$UI$labeledNumber, 'Number of Rooms', model.nRooms, _mordrax$cotwelm$Dungeon_Rooms_Config$NumberOfRooms)
+			]));
+};
+
+var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$walls = function (_p0) {
+	var _p1 = _p0;
+	var _p2 = {ctor: '_Tuple2', _0: _p1._0 - 1, _1: _p1._1 - 1};
+	var xMax = _p2._0;
+	var yMax = _p2._1;
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			A2(
+			_elm_lang$core$List$map,
+			function (y) {
+				return {ctor: '_Tuple2', _0: 0, _1: y};
+			},
+			_elm_lang$core$Native_List.range(1, yMax - 1)),
+			A2(
+			_elm_lang$core$List$map,
+			function (y) {
+				return {ctor: '_Tuple2', _0: xMax, _1: y};
+			},
+			_elm_lang$core$Native_List.range(1, yMax - 1)),
+			A2(
+			_elm_lang$core$List$map,
+			function (x) {
+				return {ctor: '_Tuple2', _0: x, _1: 0};
+			},
+			_elm_lang$core$Native_List.range(1, xMax - 1)),
+			A2(
+			_elm_lang$core$List$map,
+			function (x) {
+				return {ctor: '_Tuple2', _0: x, _1: yMax};
+			},
+			_elm_lang$core$Native_List.range(1, xMax - 1))
+		]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$floors = function (_p3) {
+	var _p4 = _p3;
+	var _p5 = {ctor: '_Tuple2', _0: _p4._0 - 1, _1: _p4._1 - 1};
+	var xMax = _p5._0;
+	var yMax = _p5._1;
+	return A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		_elm_lang$core$Native_List.range(1, xMax - 1),
+		_elm_lang$core$Native_List.range(1, yMax - 1));
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$corners = function (_p6) {
+	var _p7 = _p6;
+	var _p8 = {ctor: '_Tuple2', _0: _p7._0 - 1, _1: _p7._1 - 1};
+	var xMax = _p8._0;
+	var yMax = _p8._1;
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 0, _1: 0},
+			{ctor: '_Tuple2', _0: xMax, _1: 0},
+			{ctor: '_Tuple2', _0: 0, _1: yMax},
+			{ctor: '_Tuple2', _0: xMax, _1: yMax}
+		]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$floors};
+
+var _mordrax$cotwelm$Dungeon_Rooms_Cross$dot = F2(
+	function (wallSize, axis) {
+		return (wallSize + 1) * axis;
 	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$generate = function (config) {
-	var toKVPair = function (tile) {
-		return {ctor: '_Tuple2', _0: tile.position, _1: tile};
+var _mordrax$cotwelm$Dungeon_Rooms_Cross$betweenDots = F3(
+	function (wallSize, dot1, dot2) {
+		return _elm_lang$core$Native_List.range(
+			A2(_mordrax$cotwelm$Dungeon_Rooms_Cross$dot, wallSize, dot1) + 1,
+			A2(_mordrax$cotwelm$Dungeon_Rooms_Cross$dot, wallSize, dot2) - 1);
+	});
+var _mordrax$cotwelm$Dungeon_Rooms_Cross$dots = function (wallSize) {
+	return A2(
+		_elm_lang$core$List$map,
+		_mordrax$cotwelm$Dungeon_Rooms_Cross$dot(wallSize),
+		_elm_lang$core$Native_List.range(0, 3));
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Cross$toWallSize = function (roomSize) {
+	return roomSize - 6;
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Cross$corners = function (_p0) {
+	var _p1 = _p0;
+	var wallSize = _mordrax$cotwelm$Dungeon_Rooms_Cross$toWallSize(_p1._0);
+	var axis = _mordrax$cotwelm$Dungeon_Rooms_Cross$dot(wallSize);
+	var corners = A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				0,
+				axis(3)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				0,
+				axis(3)
+			]));
+	var isNotCorner = function (_p2) {
+		return _elm_lang$core$Basics$not(
+			A3(_elm_lang$core$Basics$flip, _elm_lang$core$List$member, corners, _p2));
 	};
+	var allDots = _mordrax$cotwelm$Dungeon_Rooms_Cross$dots(wallSize);
+	var grid = A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		allDots,
+		allDots);
+	return A2(_elm_lang$core$List$filter, isNotCorner, grid);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Cross$floors = function (_p3) {
+	var _p4 = _p3;
+	var wallSize = _mordrax$cotwelm$Dungeon_Rooms_Cross$toWallSize(_p4._0);
+	var axis = _mordrax$cotwelm$Dungeon_Rooms_Cross$dot(wallSize);
+	var floorMiddles = _elm_lang$core$Native_List.range(
+		axis(1) + 1,
+		axis(2) - 1);
+	var vertical = A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		floorMiddles,
+		_elm_lang$core$Native_List.range(
+			axis(0) + 1,
+			axis(3) - 1));
+	var horizontal = A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		_elm_lang$core$Native_List.range(
+			axis(0) + 1,
+			axis(3) - 1),
+		floorMiddles);
+	return _elm_lang$core$Set$toList(
+		_elm_lang$core$Set$fromList(
+			A2(_elm_lang$core$Basics_ops['++'], vertical, horizontal)));
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Cross$walls = function (_p5) {
+	var _p6 = _p5;
+	var wallSize = _mordrax$cotwelm$Dungeon_Rooms_Cross$toWallSize(_p6._0);
+	var between = _mordrax$cotwelm$Dungeon_Rooms_Cross$betweenDots(wallSize);
+	var left = A2(between, 0, 1);
+	var middle = A2(between, 1, 2);
+	var right = A2(between, 2, 3);
+	var axis = _mordrax$cotwelm$Dungeon_Rooms_Cross$dot(wallSize);
+	var topAxis = axis(0);
+	var horizontalTop = A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		middle,
+		_elm_lang$core$Native_List.fromArray(
+			[topAxis]));
+	var verticalTop = A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		_elm_lang$core$Native_List.fromArray(
+			[topAxis]),
+		middle);
+	var bottomAxis = axis(3);
+	var horizontalBottom = A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		middle,
+		_elm_lang$core$Native_List.fromArray(
+			[bottomAxis]));
+	var verticalBottom = A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		_elm_lang$core$Native_List.fromArray(
+			[bottomAxis]),
+		middle);
+	var horizontalMiddles = A2(
+		_elm_lang$core$Basics_ops['++'],
+		A3(
+			_elm_community$list_extra$List_Extra$lift2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			left,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					axis(1),
+					axis(2)
+				])),
+		A3(
+			_elm_community$list_extra$List_Extra$lift2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			right,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					axis(1),
+					axis(2)
+				])));
+	var verticalMiddles = A2(
+		_elm_lang$core$Basics_ops['++'],
+		A3(
+			_elm_community$list_extra$List_Extra$lift2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					axis(1),
+					axis(2)
+				]),
+			left),
+		A3(
+			_elm_community$list_extra$List_Extra$lift2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					axis(1),
+					axis(2)
+				]),
+			right));
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[horizontalTop]),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_List.fromArray(
+				[horizontalBottom]),
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Native_List.fromArray(
+					[verticalTop]),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Native_List.fromArray(
+						[verticalBottom]),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Native_List.fromArray(
+							[horizontalMiddles]),
+						_elm_lang$core$Native_List.fromArray(
+							[verticalMiddles]))))));
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Cross$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Cross$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Cross$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Cross$floors};
+
+var _mordrax$cotwelm$Dungeon_Rooms_Diamond$largestEquilaterialDimension = function (_p0) {
+	var _p1 = _p0;
+	var _p4 = _p1._1;
+	var _p3 = _p1._0;
+	var _p2 = {
+		ctor: '_Tuple2',
+		_0: _p3 - A2(_elm_lang$core$Basics_ops['%'], _p3 + 1, 2),
+		_1: _p4 - A2(_elm_lang$core$Basics_ops['%'], _p4 + 1, 2)
+	};
+	var x$ = _p2._0;
+	var y$ = _p2._1;
+	var smallestSide = A2(_elm_lang$core$Basics$min, x$, y$);
+	return smallestSide;
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Diamond$info = function (dimension) {
+	var size = _mordrax$cotwelm$Dungeon_Rooms_Diamond$largestEquilaterialDimension(dimension);
+	var mid = (size / 2) | 0;
+	var max = size - 1;
+	return {size: size, mid: mid, max: max};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Diamond$corners = function (dimension) {
+	var model = _mordrax$cotwelm$Dungeon_Rooms_Diamond$info(dimension);
+	var leftToTop = function (x) {
+		return {ctor: '_Tuple2', _0: x, _1: (model.mid + 1) + x};
+	};
+	var leftToBottom = function (x) {
+		return {ctor: '_Tuple2', _0: x, _1: (model.mid - 1) - x};
+	};
+	var topToRight = function (x) {
+		return {ctor: '_Tuple2', _0: x, _1: (-1 - model.mid) + x};
+	};
+	var bottomToRight = function (x) {
+		return {ctor: '_Tuple2', _0: x, _1: ((model.max + 1) + model.mid) - x};
+	};
+	var zeroToMidX = _elm_lang$core$Native_List.range(0, model.mid - 1);
+	var midToMaxX = _elm_lang$core$Native_List.range(model.mid + 1, model.max);
+	return _elm_lang$core$List$concat(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(_elm_lang$core$List$map, leftToTop, zeroToMidX),
+				A2(_elm_lang$core$List$map, leftToBottom, zeroToMidX),
+				A2(_elm_lang$core$List$map, topToRight, midToMaxX),
+				A2(_elm_lang$core$List$map, bottomToRight, midToMaxX)
+			]));
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Diamond$floors = function (dimension) {
+	var model = _mordrax$cotwelm$Dungeon_Rooms_Diamond$info(dimension);
+	var leftToTop = function (x) {
+		return (model.mid + 1) + x;
+	};
+	var leftToBottom = function (x) {
+		return (model.mid - 1) - x;
+	};
+	var floorsLeft = function (x) {
+		return A2(
+			_elm_lang$core$List$map,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				})(x),
+			_elm_lang$core$Native_List.range(
+				leftToBottom(x),
+				leftToTop(x)));
+	};
+	var topToRight = function (x) {
+		return (-1 - model.mid) + x;
+	};
+	var bottomToRight = function (x) {
+		return ((model.max + 1) + model.mid) - x;
+	};
+	var floorsRight = function (x) {
+		return A2(
+			_elm_lang$core$List$map,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				})(x),
+			_elm_lang$core$Native_List.range(
+				topToRight(x),
+				bottomToRight(x)));
+	};
+	var zeroToMidX = _elm_lang$core$Native_List.range(0, model.mid - 1);
+	var midToMaxX = _elm_lang$core$Native_List.range(model.mid + 1, model.max);
+	return _elm_lang$core$List$concat(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$core$List$concat(
+				A2(_elm_lang$core$List$map, floorsLeft, zeroToMidX)),
+				_elm_lang$core$List$concat(
+				A2(_elm_lang$core$List$map, floorsRight, midToMaxX)),
+				A2(
+				_elm_lang$core$List$map,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					})(model.mid),
+				_elm_lang$core$Native_List.range(1, model.max - 1))
+			]));
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Diamond$walls = function (dimension) {
+	var model = _mordrax$cotwelm$Dungeon_Rooms_Diamond$info(dimension);
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 0, _1: model.mid}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: model.max, _1: model.mid}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: model.mid, _1: 0}
+			]),
+			_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: model.mid, _1: model.max}
+			])
+		]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Diamond$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Diamond$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Diamond$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Diamond$floors};
+var _mordrax$cotwelm$Dungeon_Rooms_Diamond$Model = F3(
+	function (a, b, c) {
+		return {size: a, mid: b, max: c};
+	});
+
+var _mordrax$cotwelm$Dungeon_Rooms_Potion$walls = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Potion$floors = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Potion$corners = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Potion$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Potion$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Potion$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Potion$floors};
+
+var _mordrax$cotwelm$Dungeon_Rooms_Circular$walls = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Circular$floors = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Circular$corners = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_Circular$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Circular$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Circular$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Circular$floors};
+
+var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$walls = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$floors = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$corners = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$floors};
+
+var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$walls = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$floors = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$corners = function (dimension) {
+	return _elm_lang$core$Native_List.fromArray(
+		[]);
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$floors};
+
+var _mordrax$cotwelm$Dungeon_Room$templates = function (roomType) {
+	var _p0 = roomType;
+	switch (_p0.ctor) {
+		case 'Rectangular':
+			return _mordrax$cotwelm$Dungeon_Rooms_Rectangular$template;
+		case 'Cross':
+			return _mordrax$cotwelm$Dungeon_Rooms_Cross$template;
+		case 'Diamond':
+			return _mordrax$cotwelm$Dungeon_Rooms_Diamond$template;
+		case 'Potion':
+			return _mordrax$cotwelm$Dungeon_Rooms_Potion$template;
+		case 'Circular':
+			return _mordrax$cotwelm$Dungeon_Rooms_Circular$template;
+		case 'DiagonalSquares':
+			return _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$template;
+		default:
+			return _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$template;
+	}
+};
+var _mordrax$cotwelm$Dungeon_Room$cornersGenerator = function (_p1) {
+	var _p2 = _p1;
+	var makeCorners = _mordrax$cotwelm$Dungeon_Room$templates(_p2.roomType).makeCorners;
+	return _elm_community$random_extra$Random_Extra$constant(
+		_elm_lang$core$Native_Utils.update(
+			_p2,
+			{
+				corners: makeCorners(_p2.dimension)
+			}));
+};
+var _mordrax$cotwelm$Dungeon_Room$floorsGenerator = function (_p3) {
+	var _p4 = _p3;
+	var makeFloors = _mordrax$cotwelm$Dungeon_Room$templates(_p4.roomType).makeFloors;
+	return _elm_community$random_extra$Random_Extra$constant(
+		_elm_lang$core$Native_Utils.update(
+			_p4,
+			{
+				floors: makeFloors(_p4.dimension)
+			}));
+};
+var _mordrax$cotwelm$Dungeon_Room$wallsGenerator = function (_p5) {
+	var _p6 = _p5;
+	var makeWalls = _mordrax$cotwelm$Dungeon_Room$templates(_p6.roomType).makeWalls;
+	return _elm_community$random_extra$Random_Extra$constant(
+		_elm_lang$core$Native_Utils.update(
+			_p6,
+			{
+				walls: makeWalls(_p6.dimension)
+			}));
+};
+var _mordrax$cotwelm$Dungeon_Room$doorsGenerator = function (_p7) {
+	var _p8 = _p7;
+	var model$ = function (_p9) {
+		var _p10 = _p9;
+		return _elm_lang$core$Native_Utils.update(
+			_p8,
+			{walls: _p10._0, entrances: _p10._1});
+	};
+	var wallsDoorsGen = A2(
+		_mordrax$cotwelm$Dungeon_Rooms_Config$addEntrances,
+		4,
+		{
+			ctor: '_Tuple3',
+			_0: _p8.walls,
+			_1: _elm_lang$core$Native_List.fromArray(
+				[]),
+			_2: _elm_lang$core$Native_List.fromArray(
+				[])
+		});
+	return A2(_elm_lang$core$Random$map, model$, wallsDoorsGen);
+};
+var _mordrax$cotwelm$Dungeon_Room$headOfWalls = function (walls) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		{ctor: '_Tuple2', _0: 0, _1: 0},
+		_elm_lang$core$List$head(
+			_elm_lang$core$List$concat(walls)));
+};
+var _mordrax$cotwelm$Dungeon_Room$generateEntranceHelper = F2(
+	function (topLeft, walls) {
+		var newEntrance = function (pos) {
+			return A2(
+				_mordrax$cotwelm$Dungeon_Entrance$init,
+				_mordrax$cotwelm$Dungeon_Entrance$Door,
+				A2(_mordrax$cotwelm$Utils_Vector$add, pos, topLeft));
+		};
+		var makeHeadADoor = function (walls) {
+			return function (x) {
+				return {
+					ctor: '_Tuple2',
+					_0: newEntrance(x),
+					_1: A2(
+						_elm_lang$core$List$map,
+						_mordrax$cotwelm$Lodash$without(x),
+						walls)
+				};
+			}(
+				_mordrax$cotwelm$Dungeon_Room$headOfWalls(walls));
+		};
+		return A2(
+			_elm_lang$core$Random$andThen,
+			_mordrax$cotwelm$Lodash$shuffle(walls),
+			function (_p11) {
+				return _elm_community$random_extra$Random_Extra$constant(
+					makeHeadADoor(_p11));
+			});
+	});
+var _mordrax$cotwelm$Dungeon_Room$roomSizeGenerator = F2(
+	function (config, _p12) {
+		var _p13 = _p12;
+		return A2(
+			_elm_lang$core$Random$andThen,
+			A2(_mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeGenerator, _p13.roomType, config),
+			function (roomSize) {
+				return _elm_community$random_extra$Random_Extra$constant(
+					_elm_lang$core$Native_Utils.update(
+						_p13,
+						{
+							dimension: {ctor: '_Tuple2', _0: roomSize, _1: roomSize}
+						}));
+			});
+	});
+var _mordrax$cotwelm$Dungeon_Room$positionGenerator = F2(
+	function (_p14, model) {
+		var _p15 = _p14;
+		var _p16 = _p15.dungeonSize;
+		return A2(
+			_elm_lang$core$Random$andThen,
+			A2(_mordrax$cotwelm$Dice$d2d, _p16, _p16),
+			function (worldPos$) {
+				return _elm_community$random_extra$Random_Extra$constant(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{worldPos: worldPos$}));
+			});
+	});
+var _mordrax$cotwelm$Dungeon_Room$roomTypeGenerator = F2(
+	function (config, model) {
+		return A2(
+			_elm_lang$core$Random$andThen,
+			_mordrax$cotwelm$Dungeon_Rooms_Config$roomTypeGenerator(config),
+			function (roomType$) {
+				return _elm_community$random_extra$Random_Extra$constant(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{roomType: roomType$}));
+			});
+	});
+var _mordrax$cotwelm$Dungeon_Room$isPositionWithinRoom = F2(
+	function (_p17, position) {
+		var _p18 = _p17;
+		var isPositionAWallFloorOrCorner = A2(
+			_elm_lang$core$List$any,
+			function (x) {
+				return _elm_lang$core$Native_Utils.eq(x, position);
+			},
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$List$concat(_p18._0.walls),
+				A2(_elm_lang$core$Basics_ops['++'], _p18._0.floors, _p18._0.corners)));
+		var isPositionAEntrance = A2(
+			_elm_lang$core$List$any,
+			function (x) {
+				return _elm_lang$core$Native_Utils.eq(x, position);
+			},
+			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Entrance$position, _p18._0.entrances));
+		return isPositionAEntrance || isPositionAWallFloorOrCorner;
+	});
+var _mordrax$cotwelm$Dungeon_Room$wallsFacingDirection = F3(
+	function (compassDirection, walls, _p19) {
+		var _p20 = _p19;
+		var xEqualsMaxX = function (_p21) {
+			var _p22 = _p21;
+			return _elm_lang$core$Native_Utils.eq(_p22._0, _p20._0 - 1);
+		};
+		var xEqualsZero = function (_p23) {
+			var _p24 = _p23;
+			return _elm_lang$core$Native_Utils.eq(_p24._0, 0);
+		};
+		var yEqualsMaxY = function (_p25) {
+			var _p26 = _p25;
+			return _elm_lang$core$Native_Utils.eq(_p26._1, _p20._1 - 1);
+		};
+		var yEqualsZero = function (_p27) {
+			var _p28 = _p27;
+			return _elm_lang$core$Native_Utils.eq(_p28._1, 0);
+		};
+		var _p29 = compassDirection;
+		switch (_p29.ctor) {
+			case 'N':
+				return A2(_elm_lang$core$List$filter, yEqualsZero, walls);
+			case 'E':
+				return A2(_elm_lang$core$List$filter, xEqualsMaxX, walls);
+			case 'S':
+				return A2(_elm_lang$core$List$filter, yEqualsMaxY, walls);
+			case 'W':
+				return A2(_elm_lang$core$List$filter, xEqualsZero, walls);
+			default:
+				return _elm_lang$core$Native_List.fromArray(
+					[]);
+		}
+	});
+var _mordrax$cotwelm$Dungeon_Room$entranceFacing = F2(
+	function (_p30, entrance) {
+		var _p31 = _p30;
+		var _p32 = _p31._0.floors;
+		var west = {ctor: '_Tuple2', _0: -1, _1: 0};
+		var south = {ctor: '_Tuple2', _0: 0, _1: -1};
+		var east = {ctor: '_Tuple2', _0: 1, _1: 0};
+		var north = {ctor: '_Tuple2', _0: 0, _1: 1};
+		var entrancePos = A3(
+			_elm_lang$core$Basics$flip,
+			_mordrax$cotwelm$Utils_Vector$sub,
+			_p31._0.worldPos,
+			_mordrax$cotwelm$Dungeon_Entrance$position(entrance));
+		return A2(
+			_elm_lang$core$List$member,
+			A2(_mordrax$cotwelm$Utils_Vector$add, entrancePos, north),
+			_p32) ? south : (A2(
+			_elm_lang$core$List$member,
+			A2(_mordrax$cotwelm$Utils_Vector$add, entrancePos, south),
+			_p32) ? north : (A2(
+			_elm_lang$core$List$member,
+			A2(_mordrax$cotwelm$Utils_Vector$add, entrancePos, east),
+			_p32) ? west : (A2(
+			_elm_lang$core$List$member,
+			A2(_mordrax$cotwelm$Utils_Vector$add, entrancePos, west),
+			_p32) ? east : north)));
+	});
+var _mordrax$cotwelm$Dungeon_Room$entrances = function (_p33) {
+	var _p34 = _p33;
+	return _p34._0.entrances;
+};
+var _mordrax$cotwelm$Dungeon_Room$toTiles = function (_p35) {
+	var _p36 = _p35;
+	var _p40 = _p36._0.entrances;
+	var roomTileTypes = _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$DarkDgn, _1: _p36._0.floors},
+			{
+			ctor: '_Tuple2',
+			_0: _mordrax$cotwelm$Tile$Rock,
+			_1: _elm_lang$core$List$concat(_p36._0.walls)
+		},
+			{ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$Rock, _1: _p36._0.corners}
+		]);
+	var toWorldPos = function (localPos) {
+		return A2(_mordrax$cotwelm$Utils_Vector$add, _p36._0.worldPos, localPos);
+	};
+	var makeTiles = function (_p37) {
+		var _p38 = _p37;
+		return A2(
+			_elm_lang$core$List$map,
+			function (pos) {
+				return A2(_mordrax$cotwelm$Tile$toTile, pos, _p38._0);
+			},
+			A2(_elm_lang$core$List$map, toWorldPos, _p38._1));
+	};
+	var _p39 = A2(_elm_lang$core$Debug$log, 'Room.toTiles', _p40);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Entrance$toTile, _p40),
+		_elm_lang$core$List$concat(
+			A2(_elm_lang$core$List$map, makeTiles, roomTileTypes)));
+};
+var _mordrax$cotwelm$Dungeon_Room$Model = F7(
+	function (a, b, c, d, e, f, g) {
+		return {entrances: a, walls: b, floors: c, corners: d, roomType: e, dimension: f, worldPos: g};
+	});
+var _mordrax$cotwelm$Dungeon_Room$A = function (a) {
+	return {ctor: 'A', _0: a};
+};
+var _mordrax$cotwelm$Dungeon_Room$init = _mordrax$cotwelm$Dungeon_Room$A(
+	{
+		entrances: _elm_lang$core$Native_List.fromArray(
+			[]),
+		walls: _elm_lang$core$Native_List.fromArray(
+			[]),
+		floors: _elm_lang$core$Native_List.fromArray(
+			[]),
+		corners: _elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 0, _1: 0}
+			]),
+		roomType: _mordrax$cotwelm$Dungeon_Rooms_Type$DeadEnd,
+		dimension: {ctor: '_Tuple2', _0: 1, _1: 1},
+		worldPos: _mordrax$cotwelm$Utils_Vector$zero
+	});
+var _mordrax$cotwelm$Dungeon_Room$new = F7(
+	function (entrances, walls, floors, corners, roomType, dimension, worldPos) {
+		return _mordrax$cotwelm$Dungeon_Room$A(
+			{entrances: entrances, walls: walls, floors: floors, corners: corners, roomType: roomType, dimension: dimension, worldPos: worldPos});
+	});
+var _mordrax$cotwelm$Dungeon_Room$generate = function (config) {
+	var toRoomGenerator = function (model) {
+		return _elm_community$random_extra$Random_Extra$constant(
+			_mordrax$cotwelm$Dungeon_Room$A(model));
+	};
+	var _p41 = _mordrax$cotwelm$Dungeon_Room$init;
+	var model = _p41._0;
 	return A2(
 		_elm_lang$core$Random$andThen,
 		A2(
 			_elm_lang$core$Random$andThen,
-			A3(
-				_mordrax$cotwelm$Dungeon_DungeonGenerator$generateDungeonRooms,
-				config,
-				config.nRooms,
-				_elm_lang$core$Native_List.fromArray(
-					[])),
-			function (rooms) {
-				return _elm_community$random_extra$Random_Extra$constant(
-					_mordrax$cotwelm$Dungeon_DungeonGenerator$roomsToTiles(rooms));
-			}),
-		function (tiles) {
-			return _elm_community$random_extra$Random_Extra$constant(
-				_elm_lang$core$Dict$fromList(
-					A2(_elm_lang$core$List$map, toKVPair, tiles)));
-		});
+			A2(
+				_elm_lang$core$Random$andThen,
+				A2(
+					_elm_lang$core$Random$andThen,
+					A2(
+						_elm_lang$core$Random$andThen,
+						A2(
+							_elm_lang$core$Random$andThen,
+							A2(_mordrax$cotwelm$Dungeon_Room$roomTypeGenerator, config, model),
+							_mordrax$cotwelm$Dungeon_Room$roomSizeGenerator(config)),
+						_mordrax$cotwelm$Dungeon_Room$positionGenerator(config)),
+					_mordrax$cotwelm$Dungeon_Room$wallsGenerator),
+				_mordrax$cotwelm$Dungeon_Room$floorsGenerator),
+			_mordrax$cotwelm$Dungeon_Room$cornersGenerator),
+		toRoomGenerator);
 };
+var _mordrax$cotwelm$Dungeon_Room$generateEntrance = function (_p42) {
+	var _p43 = _p42;
+	var toReturn = function (_p44) {
+		var _p45 = _p44;
+		var _p46 = _p45._0;
+		return {
+			ctor: '_Tuple2',
+			_0: _mordrax$cotwelm$Dungeon_Room$A(
+				_elm_lang$core$Native_Utils.update(
+					_p43._0,
+					{
+						entrances: A2(_elm_lang$core$List_ops['::'], _p46, _p43._0.entrances),
+						walls: _p45._1
+					})),
+			_1: _p46
+		};
+	};
+	return A2(
+		_elm_lang$core$Random$map,
+		toReturn,
+		A2(_mordrax$cotwelm$Dungeon_Room$generateEntranceHelper, _p43._0.worldPos, _p43._0.walls));
+};
+var _mordrax$cotwelm$Dungeon_Room$placeRoom = F2(
+	function (_p48, _p47) {
+		var _p49 = _p48;
+		var _p55 = _p49._2;
+		var _p54 = _p49._1;
+		var _p50 = _p47;
+		var _p53 = _p50._0.walls;
+		var _p52 = _p50._0.dimension;
+		var makeADoor = function (wall) {
+			var entrancePosition = A2(
+				_mordrax$cotwelm$Utils_Vector$add,
+				_p54,
+				_mordrax$cotwelm$Utils_Vector$fromCompass(_p55));
+			var entrance = A2(_mordrax$cotwelm$Dungeon_Entrance$init, _mordrax$cotwelm$Dungeon_Entrance$Door, entrancePosition);
+			var roomWorldPosition = A2(_mordrax$cotwelm$Utils_Vector$sub, entrancePosition, wall);
+			var _p51 = A2(
+				_elm_lang$core$Debug$log,
+				'placeRoom',
+				{
+					entrance: entrance,
+					wall: wall,
+					roomWorldPosition: roomWorldPosition,
+					corridor: {ctor: '_Tuple3', _0: _p49._0, _1: _p54, _2: _p55},
+					dim: _p52
+				});
+			return _elm_community$random_extra$Random_Extra$constant(
+				_mordrax$cotwelm$Dungeon_Room$A(
+					_elm_lang$core$Native_Utils.update(
+						_p50._0,
+						{
+							walls: A2(
+								_elm_lang$core$List$map,
+								_mordrax$cotwelm$Lodash$without(wall),
+								_p53),
+							worldPos: roomWorldPosition
+						})));
+		};
+		var pickAWall = function (walls) {
+			return A2(
+				_elm_lang$core$Random$map,
+				_mordrax$cotwelm$Lodash$headWithDefault(
+					{ctor: '_Tuple2', _0: 0, _1: 0}),
+				_mordrax$cotwelm$Lodash$shuffle(walls));
+		};
+		var validWalls = A3(
+			_mordrax$cotwelm$Dungeon_Room$wallsFacingDirection,
+			_p55,
+			_elm_lang$core$List$concat(_p53),
+			_p52);
+		return A2(
+			_elm_lang$core$Random$andThen,
+			pickAWall(validWalls),
+			makeADoor);
+	});
 
 var _mordrax$cotwelm$GameData_ASCIIMaps$dungeonLevelOneMap = _elm_lang$core$Native_List.fromArray(
 	['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^dooo^^ood^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^doooooddooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^doddoooooooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^dod^^oooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^od^^^oooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^o^^^^dooo^ooo^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^o^^^^^dod^dod^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^dood^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^ooood^^^^^o^^^^^^^^^^doood^^^', '^^^^^^^^^^^^oooooo^^^^o^^^^^^^^^^ooooo^^^', '^^^^^^^^^^^^dooooo^^^^o^^^^^^^^^^ooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^^^^^^dooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^^dooooooooo^^^', '^^^^^^^^^^^^^o^^^^^^^^o^^^^dod^^^doooo^^^', '^^^^^^^^^^^^^od^^^^^^^od^^dod^^^^^^^oo^^^', '^^^^^^^^^^^^^dod^^^^^^doddod^^^^^^^ood^^^', '^^^^^^^^^^^^^^dod^^^^^^dood^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^do^^^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^od^^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^dod^^^^^o^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^dod^^^do^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^dod^^od^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^doddo^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^dood^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^o^^^^^^^^^^^^^^^^^^', '^^^^^^^^^^^^^^^^^^^^^^.^^^^^^^^^^^^^^^^^^']);
@@ -17041,13 +17563,12 @@ var _mordrax$cotwelm$GameData_ASCIIMaps$villageMap = _elm_lang$core$Native_List.
 	['========,,###,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '========,,,.,,,,========', '===,,,,,;...,,,!###=====', '===###!;.;,.,,;.###=====', '===###..;,,.,;.;###=====', '===###,,,,,...;,,,,,,===', '===,,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,!###,,,,===', '====,,,##.....###,,,,===', '====,,,##!,.,,###,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,,,,,,.,,,,,,,,,===', '====,,###!...!###,======', '====,,###..e..###,======', '====,,###,...,###,======', '====,,,,,,,.,,,,,,======', '====,,,,,,,.!,,,,,======', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '======,,,#####,=========', '========================']);
 
 var _mordrax$cotwelm$Game_Maps$tileNeighbours = F2(
-	function (map, _p0) {
-		var _p1 = _p0;
+	function (map, center) {
 		var getTile = A2(_elm_lang$core$Basics$flip, _elm_lang$core$Dict$get, map);
-		var addTilePosition = _mordrax$cotwelm$Utils_Vector$add(_p1.position);
-		var getNeighbour = function (_p2) {
+		var addTilePosition = _mordrax$cotwelm$Utils_Vector$add(center);
+		var getNeighbour = function (_p0) {
 			return getTile(
-				addTilePosition(_p2));
+				addTilePosition(_p0));
 		};
 		return {
 			ctor: '_Tuple4',
@@ -17165,8 +17686,8 @@ var _mordrax$cotwelm$Game_Maps$villageBuildings = function () {
 		]);
 }();
 var _mordrax$cotwelm$Game_Maps$getASCIIMap = function (area) {
-	var _p3 = area;
-	switch (_p3.ctor) {
+	var _p1 = area;
+	switch (_p1.ctor) {
 		case 'Village':
 			return _mordrax$cotwelm$GameData_ASCIIMaps$villageMap;
 		case 'Farm':
@@ -17178,40 +17699,44 @@ var _mordrax$cotwelm$Game_Maps$getASCIIMap = function (area) {
 				[]);
 	}
 };
-var _mordrax$cotwelm$Game_Maps$getBuildings = function (_p4) {
-	var _p5 = _p4;
-	var _p7 = _p5._0;
+var _mordrax$cotwelm$Game_Maps$getBuildings = function (_p2) {
+	var _p3 = _p2;
+	var _p5 = _p3._0;
 	var maybeBuildings = A2(
 		_elm_lang$core$Dict$get,
-		_elm_lang$core$Basics$toString(_p7.currentArea),
-		_p7.buildings);
-	var _p6 = maybeBuildings;
-	if (_p6.ctor === 'Just') {
-		return _p6._0;
+		_elm_lang$core$Basics$toString(_p5.currentArea),
+		_p5.buildings);
+	var _p4 = maybeBuildings;
+	if (_p4.ctor === 'Just') {
+		return _p4._0;
 	} else {
 		return _elm_lang$core$Native_List.fromArray(
 			[]);
 	}
 };
-var _mordrax$cotwelm$Game_Maps$currentAreaMap = function (_p8) {
-	var _p9 = _p8;
-	var _p11 = _p9._0;
+var _mordrax$cotwelm$Game_Maps$currentAreaMap = function (_p6) {
+	var _p7 = _p6;
+	var _p9 = _p7._0;
 	var maybeMap = A2(
 		_elm_lang$core$Dict$get,
-		_elm_lang$core$Basics$toString(_p11.currentArea),
-		_p11.maps);
-	var _p10 = maybeMap;
-	if (_p10.ctor === 'Just') {
-		return _p10._0;
+		_elm_lang$core$Basics$toString(_p9.currentArea),
+		_p9.maps);
+	var _p8 = maybeMap;
+	if (_p8.ctor === 'Just') {
+		return _p8._0;
 	} else {
 		return _elm_lang$core$Dict$empty;
 	}
 };
-var _mordrax$cotwelm$Game_Maps$toTiles = function (_p12) {
+var _mordrax$cotwelm$Game_Maps$getTile = F2(
+	function (map, pos) {
+		return A2(_elm_lang$core$Dict$get, pos, map);
+	});
+var _mordrax$cotwelm$Game_Maps$toTiles = function (_p10) {
 	return A2(
 		_elm_lang$core$List$map,
 		_elm_lang$core$Basics$snd,
-		_elm_lang$core$Dict$toList(_p12));
+		_elm_lang$core$Dict$toList(_p10));
 };
 var _mordrax$cotwelm$Game_Maps$draw = F2(
 	function (map, scale) {
@@ -17222,19 +17747,17 @@ var _mordrax$cotwelm$Game_Maps$draw = F2(
 				_mordrax$cotwelm$Tile$scaledView,
 				tile,
 				scale,
-				neighbours(tile));
+				neighbours(tile.position));
 		};
 		return A2(_elm_lang$core$List$map, toHtml, mapTiles);
 	});
-var _mordrax$cotwelm$Game_Maps$toMap = function (tiles) {
+var _mordrax$cotwelm$Game_Maps$fromTiles = function (tiles) {
+	var toKVPair = function (_p11) {
+		var _p12 = _p11;
+		return {ctor: '_Tuple2', _0: _p12.position, _1: _p12};
+	};
 	return _elm_lang$core$Dict$fromList(
-		A2(
-			_elm_lang$core$List$map,
-			function (_p13) {
-				var _p14 = _p13;
-				return {ctor: '_Tuple2', _0: _p14.position, _1: _p14};
-			},
-			tiles));
+		A2(_elm_lang$core$List$map, toKVPair, tiles));
 };
 var _mordrax$cotwelm$Game_Maps$view = function (maps) {
 	var buildingsHtml = A2(
@@ -17259,12 +17782,6 @@ var _mordrax$cotwelm$Game_Maps$A = function (a) {
 	return {ctor: 'A', _0: a};
 };
 var _mordrax$cotwelm$Game_Maps$init = function (seed) {
-	var _p15 = A2(
-		_elm_lang$core$Random$step,
-		_mordrax$cotwelm$Dungeon_DungeonGenerator$generate(_mordrax$cotwelm$Dungeon_Rooms_Config$init),
-		seed);
-	var level = _p15._0;
-	var seed$ = _p15._1;
 	var toKVPair = function (tile) {
 		return {ctor: '_Tuple2', _0: tile.position, _1: tile};
 	};
@@ -17303,12 +17820,6 @@ var _mordrax$cotwelm$Game_Maps$init = function (seed) {
 							_0: _elm_lang$core$Basics$toString(_mordrax$cotwelm$GameData_Types$DungeonLevelOne),
 							_1: _elm_lang$core$Dict$fromList(
 								tilesToTuples(_mordrax$cotwelm$GameData_Types$DungeonLevelOne))
-						},
-							{
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Basics$toString(
-								_mordrax$cotwelm$GameData_Types$DungeonLevel(2)),
-							_1: level
 						}
 						])),
 				buildings: _elm_lang$core$Dict$fromList(
@@ -17332,42 +17843,461 @@ var _mordrax$cotwelm$Game_Maps$init = function (seed) {
 						]))
 			}),
 		_1: _elm_lang$core$Platform_Cmd$none,
-		_2: seed$
+		_2: seed
 	};
 };
 var _mordrax$cotwelm$Game_Maps$update = F2(
-	function (msg, _p16) {
-		var _p17 = _p16;
-		var _p18 = A2(_elm_lang$core$Debug$log, 'maps update', 1);
+	function (msg, _p13) {
+		var _p14 = _p13;
+		var _p15 = A2(_elm_lang$core$Debug$log, 'maps update', 1);
 		return _mordrax$cotwelm$Game_Maps$A(
 			_elm_lang$core$Native_Utils.update(
-				_p17._0,
+				_p14._0,
 				{currentArea: _mordrax$cotwelm$GameData_Types$Village}));
 	});
 var _mordrax$cotwelm$Game_Maps$updateArea = F2(
-	function (area, _p19) {
-		var _p20 = _p19;
+	function (area, _p16) {
+		var _p17 = _p16;
 		return _mordrax$cotwelm$Game_Maps$A(
 			_elm_lang$core$Native_Utils.update(
-				_p20._0,
+				_p17._0,
 				{currentArea: area}));
 	});
 var _mordrax$cotwelm$Game_Maps$GenerateDungeonLevel = function (a) {
 	return {ctor: 'GenerateDungeonLevel', _0: a};
 };
 
-var _mordrax$cotwelm$Dungeon_Editor$toIntWithDefault = F2(
-	function (str, $default) {
-		return A2(
-			_elm_lang$core$Result$withDefault,
-			$default,
-			_elm_lang$core$String$toInt(str));
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$roomsAndCorridorsFromActivePoint = F2(
+	function (point, _p0) {
+		var _p1 = _p0;
+		var _p4 = _p1._0;
+		var _p3 = _p1._1;
+		var _p2 = point;
+		if (_p2.ctor === 'ActiveRoom') {
+			return {
+				ctor: '_Tuple2',
+				_0: A2(_elm_lang$core$List_ops['::'], _p2._0, _p4),
+				_1: _p3
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: _p4,
+				_1: A2(_elm_lang$core$List_ops['::'], _p2._0, _p3)
+			};
+		}
 	});
-var _mordrax$cotwelm$Dungeon_Editor$init = {map: _elm_lang$core$Dict$empty, config: _mordrax$cotwelm$Dungeon_Rooms_Config$init};
-var _mordrax$cotwelm$Dungeon_Editor$Model = F2(
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$toTiles = function (_p5) {
+	var _p6 = _p5;
+	var _p7 = A3(
+		_elm_lang$core$List$foldl,
+		_mordrax$cotwelm$Dungeon_DungeonGenerator$roomsAndCorridorsFromActivePoint,
+		{
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_List.fromArray(
+				[]),
+			_1: _elm_lang$core$Native_List.fromArray(
+				[])
+		},
+		_p6.activePoints);
+	var activeRooms = _p7._0;
+	var activeCorridors = _p7._1;
+	var roomTiles = _elm_lang$core$List$concat(
+		A2(
+			_elm_lang$core$List$map,
+			_mordrax$cotwelm$Dungeon_Room$toTiles,
+			A2(_elm_lang$core$Basics_ops['++'], _p6.rooms, activeRooms)));
+	var corridorTiles = _elm_lang$core$List$concat(
+		A2(
+			_elm_lang$core$List$map,
+			_mordrax$cotwelm$Dungeon_Corridor$toTiles,
+			A2(_elm_lang$core$Basics_ops['++'], _p6.corridors, activeCorridors)));
+	return A2(_elm_lang$core$Basics_ops['++'], roomTiles, corridorTiles);
+};
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$toMap = function (model) {
+	return _mordrax$cotwelm$Game_Maps$fromTiles(
+		_mordrax$cotwelm$Dungeon_DungeonGenerator$toTiles(model));
+};
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$stepCorridor = F2(
+	function (corridor, model) {
+		return _elm_community$random_extra$Random_Extra$constant(model);
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$corridorAtPosition = F2(
+	function (corridor, position) {
+		return _elm_lang$core$Maybe$Nothing;
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$roomAtPosition = F2(
+	function (_p8, position) {
+		var _p9 = _p8;
+		var isInRoom = function (room) {
+			return A2(_mordrax$cotwelm$Dungeon_Room$isPositionWithinRoom, room, position);
+		};
+		return _elm_lang$core$List$head(
+			A2(_elm_lang$core$List$filter, isInRoom, _p9.rooms));
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$isWithinDungeonBounds = F2(
+	function (_p11, _p10) {
+		var _p12 = _p11;
+		var _p16 = _p12;
+		var _p13 = _p10;
+		var _p15 = _p13._1;
+		var _p14 = _p13._0;
+		return (_elm_lang$core$Native_Utils.cmp(_p14, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p15, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p14, _p16.config.dungeonSize) < 1) && (_elm_lang$core$Native_Utils.cmp(_p15, _p16.config.dungeonSize) < 1)));
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$canFitRoom = F3(
+	function (room, _p17, model) {
+		var _p18 = _p17;
+		return true;
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$Model = F4(
+	function (a, b, c, d) {
+		return {config: a, rooms: b, corridors: c, activePoints: d};
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$DigInstruction = F3(
+	function (a, b, c) {
+		return {start: a, direction: b, length: c};
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$ProspectResult = F2(
 	function (a, b) {
-		return {map: a, config: b};
+		return {position: a, found: b};
 	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveCorridor = F2(
+	function (a, b) {
+		return {ctor: 'ActiveCorridor', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveRoom = F2(
+	function (a, b) {
+		return {ctor: 'ActiveRoom', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$init = function (config) {
+	var borderWalls = _elm_lang$core$Native_List.fromArray(
+		[
+			A3(
+			_elm_community$list_extra$List_Extra$lift2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			_elm_lang$core$Native_List.fromArray(
+				[0, config.dungeonSize]),
+			_elm_lang$core$Native_List.range(0, config.dungeonSize)),
+			A3(
+			_elm_community$list_extra$List_Extra$lift2,
+			F2(
+				function (v0, v1) {
+					return {ctor: '_Tuple2', _0: v0, _1: v1};
+				}),
+			_elm_lang$core$Native_List.range(0, config.dungeonSize),
+			_elm_lang$core$Native_List.fromArray(
+				[0, config.dungeonSize]))
+		]);
+	var borderRoom = A7(
+		_mordrax$cotwelm$Dungeon_Room$new,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		borderWalls,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_mordrax$cotwelm$Dungeon_Rooms_Type$Rectangular,
+		{ctor: '_Tuple2', _0: 0, _1: 0},
+		{ctor: '_Tuple2', _0: 0, _1: 0});
+	var model = A4(
+		_mordrax$cotwelm$Dungeon_DungeonGenerator$Model,
+		config,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+	var addRoomToModel = function (room) {
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				activePoints: _elm_lang$core$Native_List.fromArray(
+					[
+						A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveRoom, room, _elm_lang$core$Maybe$Nothing)
+					]),
+				rooms: _elm_lang$core$Native_List.fromArray(
+					[borderRoom])
+			});
+	};
+	return A2(
+		_elm_lang$core$Random$map,
+		addRoomToModel,
+		_mordrax$cotwelm$Dungeon_Room$generate(config));
+};
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$generateEntrance = F2(
+	function (room, _p19) {
+		var _p20 = _p19;
+		var _p23 = _p20;
+		var mapEntranceToModel = function (_p21) {
+			var _p22 = _p21;
+			return _elm_lang$core$Native_Utils.update(
+				_p23,
+				{
+					activePoints: A2(
+						_elm_lang$core$List_ops['::'],
+						A2(
+							_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveRoom,
+							_p22._0,
+							_elm_lang$core$Maybe$Just(_p22._1)),
+						_p23.activePoints)
+				});
+		};
+		var modelWithActiveRoomRemoved = _p23;
+		var isRoomAtMaxEntrances = _elm_lang$core$Native_Utils.cmp(
+			_elm_lang$core$List$length(
+				_mordrax$cotwelm$Dungeon_Room$entrances(room)),
+			_p20.config.maxEntrances) > -1;
+		return isRoomAtMaxEntrances ? _elm_community$random_extra$Random_Extra$constant(modelWithActiveRoomRemoved) : A2(
+			_elm_lang$core$Random$map,
+			mapEntranceToModel,
+			_mordrax$cotwelm$Dungeon_Room$generateEntrance(room));
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$generateRoomOffCorridor = F2(
+	function (corridor, _p24) {
+		var _p25 = _p24;
+		var _p28 = _p25;
+		var addToModel = function (options) {
+			var _p26 = options;
+			if (_p26.ctor === '::') {
+				return _elm_community$random_extra$Random_Extra$constant(
+					_elm_lang$core$Native_Utils.update(
+						_p28,
+						{
+							activePoints: A2(
+								_elm_lang$core$List_ops['::'],
+								A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveRoom, _p26._0, _elm_lang$core$Maybe$Nothing),
+								_p25.activePoints)
+						}));
+			} else {
+				return _elm_community$random_extra$Random_Extra$constant(_p28);
+			}
+		};
+		var roomGen = _mordrax$cotwelm$Dungeon_Room$generate(_p25.config);
+		var corridorEndingOptions = _mordrax$cotwelm$Dungeon_Corridor$allPossibleEndings(corridor);
+		var placeRoomWithOptions = function (room) {
+			return _elm_community$random_extra$Random_Extra$together(
+				A2(
+					_elm_lang$core$List$map,
+					A2(_elm_lang$core$Basics$flip, _mordrax$cotwelm$Dungeon_Room$placeRoom, room),
+					corridorEndingOptions));
+		};
+		var _p27 = A2(_elm_lang$core$Debug$log, 'generateRoomOffCorridor', corridorEndingOptions);
+		return A2(
+			_elm_lang$core$Random$andThen,
+			A2(_elm_lang$core$Random$andThen, roomGen, placeRoomWithOptions),
+			addToModel);
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$Nothing = {ctor: 'Nothing'};
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$EdgeOfMap = {ctor: 'EdgeOfMap'};
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$Corridor = function (a) {
+	return {ctor: 'Corridor', _0: a};
+};
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$Room = function (a) {
+	return {ctor: 'Room', _0: a};
+};
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$dungeonConstructAtPos = F2(
+	function (pos, _p29) {
+		var _p30 = _p29;
+		var _p32 = _p30;
+		var inBounds = A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$isWithinDungeonBounds, _p32, pos);
+		var constructsAtPosition = function (pos) {
+			return {
+				ctor: '_Tuple2',
+				_0: A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$roomAtPosition, _p32, pos),
+				_1: A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$corridorAtPosition, _p32, pos)
+			};
+		};
+		var map = _mordrax$cotwelm$Dungeon_DungeonGenerator$toMap(_p32);
+		var mapTile = A2(_mordrax$cotwelm$Game_Maps$getTile, map, pos);
+		var _p31 = {
+			ctor: '_Tuple3',
+			_0: mapTile,
+			_1: inBounds,
+			_2: constructsAtPosition(pos)
+		};
+		_v12_4:
+		do {
+			_v12_0:
+			do {
+				if (_p31.ctor === '_Tuple3') {
+					if (_p31._0.ctor === 'Nothing') {
+						if (_p31._1 === false) {
+							break _v12_0;
+						} else {
+							return _mordrax$cotwelm$Dungeon_DungeonGenerator$Nothing;
+						}
+					} else {
+						if (_p31._2.ctor === '_Tuple2') {
+							if (_p31._1 === false) {
+								break _v12_0;
+							} else {
+								if (_p31._2._0.ctor === 'Just') {
+									return _mordrax$cotwelm$Dungeon_DungeonGenerator$Room(_p31._2._0._0);
+								} else {
+									if (_p31._2._1.ctor === 'Just') {
+										return _mordrax$cotwelm$Dungeon_DungeonGenerator$Corridor(_p31._2._1._0);
+									} else {
+										break _v12_4;
+									}
+								}
+							}
+						} else {
+							if (_p31._1 === false) {
+								break _v12_0;
+							} else {
+								break _v12_4;
+							}
+						}
+					}
+				} else {
+					break _v12_4;
+				}
+			} while(false);
+			return _mordrax$cotwelm$Dungeon_DungeonGenerator$EdgeOfMap;
+		} while(false);
+		return _mordrax$cotwelm$Dungeon_DungeonGenerator$Nothing;
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$digger = F2(
+	function (_p33, model) {
+		var _p34 = _p33;
+		var _p38 = _p34.start;
+		var corridor = _mordrax$cotwelm$Dungeon_Corridor$new(_p38);
+		var finish = A2(
+			_mordrax$cotwelm$Utils_Vector$add,
+			_p38,
+			A2(_mordrax$cotwelm$Utils_Vector$scaleInt, _p34.length, _p34.direction));
+		var digPath = A2(_mordrax$cotwelm$Dungeon_Corridor$path, _p38, finish);
+		var emptyAtPosition = function (pos) {
+			return _elm_lang$core$Native_Utils.eq(
+				A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$dungeonConstructAtPos, pos, model),
+				_mordrax$cotwelm$Dungeon_DungeonGenerator$Nothing);
+		};
+		var dugPath = _elm_lang$core$List$reverse(
+			A2(_elm_community$list_extra$List_Extra$takeWhile, emptyAtPosition, digPath));
+		var _p35 = A2(
+			_elm_lang$core$Debug$log,
+			'digger',
+			{finish: finish, digPath: digPath, dugPath: dugPath, corridor: corridor, instruction: _p34});
+		var _p36 = dugPath;
+		if (_p36.ctor === '::') {
+			var _p37 = _p36._0;
+			var activeCorridor = A2(
+				_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveCorridor,
+				A2(_mordrax$cotwelm$Dungeon_Corridor$add, _p37, corridor),
+				_p37);
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{
+					activePoints: A2(_elm_lang$core$List_ops['::'], activeCorridor, model.activePoints)
+				});
+		} else {
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{
+					corridors: A2(_elm_lang$core$List_ops['::'], corridor, model.corridors)
+				});
+		}
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$generateCorridor = F3(
+	function (room, entrance, _p39) {
+		var _p40 = _p39;
+		var _p44 = _p40.config;
+		var randomCorridorLength = A2(_mordrax$cotwelm$Dice$range, _p44.corridor.minLength, _p44.corridor.maxLength);
+		var straightAhead = A2(_mordrax$cotwelm$Dungeon_Room$entranceFacing, room, entrance);
+		var corridorStart = A2(
+			_mordrax$cotwelm$Utils_Vector$add,
+			_mordrax$cotwelm$Dungeon_Entrance$position(entrance),
+			straightAhead);
+		var leftDirection = A2(_mordrax$cotwelm$Utils_Vector$rotate, straightAhead, _mordrax$cotwelm$Utils_Vector$Left);
+		var rightDirection = A2(_mordrax$cotwelm$Utils_Vector$rotate, straightAhead, _mordrax$cotwelm$Utils_Vector$Right);
+		var randomDirection = A2(
+			_elm_lang$core$Random$map,
+			_mordrax$cotwelm$Lodash$headWithDefault(straightAhead),
+			_mordrax$cotwelm$Lodash$shuffle(
+				_elm_lang$core$Native_List.fromArray(
+					[leftDirection, rightDirection, straightAhead])));
+		var _p41 = A2(
+			_elm_lang$core$Debug$log,
+			'generateCorridor',
+			{straightAhead: straightAhead, corridorStart: corridorStart, leftDirection: leftDirection, rightDirection: rightDirection});
+		return A2(
+			_elm_lang$core$Random$andThen,
+			A3(
+				_elm_lang$core$Random$map2,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				randomCorridorLength,
+				randomDirection),
+			function (_p42) {
+				var _p43 = _p42;
+				return _elm_community$random_extra$Random_Extra$constant(
+					A2(
+						_mordrax$cotwelm$Dungeon_DungeonGenerator$digger,
+						A3(_mordrax$cotwelm$Dungeon_DungeonGenerator$DigInstruction, corridorStart, _p43._1, _p43._0),
+						_p40));
+			});
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$step = function (_p45) {
+	var _p46 = _p45;
+	var _p51 = _p46;
+	var _p47 = A2(_elm_lang$core$Debug$log, 'Taking a step', _p51);
+	var _p48 = _p46.activePoints;
+	if (_p48.ctor === '[]') {
+		return _elm_community$random_extra$Random_Extra$constant(_p51);
+	} else {
+		if (_p48._0.ctor === 'ActiveRoom') {
+			if (_p48._0._1.ctor === 'Nothing') {
+				return A2(
+					_mordrax$cotwelm$Dungeon_DungeonGenerator$generateEntrance,
+					_p48._0._0,
+					_elm_lang$core$Native_Utils.update(
+						_p51,
+						{activePoints: _p48._1}));
+			} else {
+				var _p49 = _p48._0._0;
+				return A3(
+					_mordrax$cotwelm$Dungeon_DungeonGenerator$generateCorridor,
+					_p49,
+					_p48._0._1._0,
+					_elm_lang$core$Native_Utils.update(
+						_p51,
+						{
+							activePoints: _p48._1,
+							rooms: A2(_elm_lang$core$List_ops['::'], _p49, _p51.rooms)
+						}));
+			}
+		} else {
+			var _p50 = _p48._0._0;
+			return A2(
+				_mordrax$cotwelm$Dungeon_DungeonGenerator$generateRoomOffCorridor,
+				_p50,
+				_elm_lang$core$Native_Utils.update(
+					_p51,
+					{
+						corridors: A2(_elm_lang$core$List_ops['::'], _p50, _p51.corridors)
+					}));
+		}
+	}
+};
+
+var _mordrax$cotwelm$Dungeon_Editor$init = {
+	map: _elm_lang$core$Dict$empty,
+	config: _mordrax$cotwelm$Dungeon_Rooms_Config$init,
+	dungeonSteps: _elm_lang$core$Native_List.fromArray(
+		[])
+};
+var _mordrax$cotwelm$Dungeon_Editor$Model = F3(
+	function (a, b, c) {
+		return {map: a, config: b, dungeonSteps: c};
+	});
+var _mordrax$cotwelm$Dungeon_Editor$ResetMap = {ctor: 'ResetMap'};
 var _mordrax$cotwelm$Dungeon_Editor$ConfigMsg = function (a) {
 	return {ctor: 'ConfigMsg', _0: a};
 };
@@ -17399,23 +18329,53 @@ var _mordrax$cotwelm$Dungeon_Editor$Dungeon = function (a) {
 };
 var _mordrax$cotwelm$Dungeon_Editor$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		switch (_p0.ctor) {
+		var _p0 = A2(_elm_lang$core$Debug$log, 'Editor.update', msg);
+		var _p1 = msg;
+		switch (_p1.ctor) {
 			case 'GenerateMap':
+				var latestDungeonModel = _elm_lang$core$List$head(model.dungeonSteps);
+				var dungeonGenerator = function () {
+					var _p2 = latestDungeonModel;
+					if (_p2.ctor === 'Just') {
+						return _mordrax$cotwelm$Dungeon_DungeonGenerator$step(
+							_elm_lang$core$Native_Utils.update(
+								_p2._0,
+								{config: model.config}));
+					} else {
+						return _mordrax$cotwelm$Dungeon_DungeonGenerator$init(model.config);
+					}
+				}();
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: A2(
-						_elm_lang$core$Random$generate,
-						_mordrax$cotwelm$Dungeon_Editor$Dungeon,
-						_mordrax$cotwelm$Dungeon_DungeonGenerator$generate(model.config))
+					_1: A2(_elm_lang$core$Random$generate, _mordrax$cotwelm$Dungeon_Editor$Dungeon, dungeonGenerator)
 				};
 			case 'Dungeon':
+				var _p3 = _p1._0;
+				var map = _mordrax$cotwelm$Game_Maps$fromTiles(
+					_mordrax$cotwelm$Dungeon_DungeonGenerator$toTiles(_p3));
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{map: _p0._0}),
+						{
+							dungeonSteps: A2(
+								_elm_lang$core$List_ops['::'],
+								_p3,
+								_elm_lang$core$Native_List.fromArray(
+									[])),
+							map: map
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ConfigMsg':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							config: A2(_mordrax$cotwelm$Dungeon_Rooms_Config$update, _p1._0, model.config)
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
@@ -17424,7 +18384,9 @@ var _mordrax$cotwelm$Dungeon_Editor$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							config: A2(_mordrax$cotwelm$Dungeon_Rooms_Config$update, _p0._0, model.config)
+							map: _elm_lang$core$Dict$empty,
+							dungeonSteps: _elm_lang$core$Native_List.fromArray(
+								[])
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -17454,14 +18416,33 @@ var _mordrax$cotwelm$Dungeon_Editor$view = function (model) {
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html$text('Generate Dungeon')
+								_elm_lang$html$Html$text('Step')
+							])),
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui button'),
+								_elm_lang$html$Html_Events$onClick(_mordrax$cotwelm$Dungeon_Editor$ResetMap)
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Reset')
 							])),
 						_mordrax$cotwelm$Dungeon_Editor$mapSizeView(model)
 					])),
 				A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
-					[]),
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+								{ctor: '_Tuple2', _0: 'left', _1: '300px'},
+								{ctor: '_Tuple2', _0: 'top', _1: '0px'}
+							]))
+					]),
 				A2(_mordrax$cotwelm$Game_Maps$draw, model.map, model.config.mapScale))
 			]));
 };
@@ -18956,11 +19937,12 @@ var _mordrax$cotwelm$Game_Keyboard$subscriptions = _elm_lang$core$Native_List.fr
 
 var _mordrax$cotwelm$Game_Collision$isMonsterObstruction = F2(
 	function (monster, monsters) {
+		var atMonsterPosition = function (pos) {
+			return _elm_lang$core$Native_Utils.eq(pos, monster.position);
+		};
 		return A2(
 			_elm_lang$core$List$any,
-			function (x) {
-				return _elm_lang$core$Native_Utils.eq(x, monster.position);
-			},
+			atMonsterPosition,
 			A2(
 				_elm_lang$core$List$map,
 				function (_) {
@@ -19345,9 +20327,9 @@ var _mordrax$cotwelm$Game_Collision$tryMoveHero = F2(
 
 var _mordrax$cotwelm$Game_Inventory$viewPurse = function (_p0) {
 	var _p1 = _p0;
-	var maybeCoins = function (x) {
+	var maybeCoins = function (coins) {
 		return _elm_lang$core$Maybe$Just(
-			_mordrax$cotwelm$Item_Purse$getCoins(x));
+			_mordrax$cotwelm$Item_Purse$getCoins(coins));
 	};
 	var maybePurseContents = A2(
 		_elm_lang$core$Maybe$andThen,
