@@ -130,8 +130,8 @@ generateEntrance (A ({ walls, entrances, worldPos } as model)) =
 toTiles : Room -> Tiles
 toTiles (A { floors, walls, entrances, corners, worldPos }) =
     let
-        _ =
-            Debug.log "Room.toTiles" entrances
+--        _ =
+--            Debug.log "Room.toTiles" entrances
 
         toWorldPos localPos =
             Vector.add worldPos localPos
@@ -210,14 +210,14 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
                 roomWorldPosition =
                     Vector.sub entrancePosition wall
 
-                _ =
-                    Debug.log "placeRoom"
-                        { entrance = entrance
-                        , wall = wall
-                        , roomWorldPosition = roomWorldPosition
-                        , corridor = ( corridor, endPoint, facing )
-                        , dim = dimension
-                        }
+--                _ =
+--                    Debug.log "placeRoom"
+--                        { entrance = entrance
+--                        , wall = wall
+--                        , roomWorldPosition = roomWorldPosition
+--                        , corridor = ( corridor, endPoint, facing )
+--                        , dim = dimension
+--                        }
             in
                 constant
                     <| A

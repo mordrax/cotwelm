@@ -43,10 +43,10 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        _ =
-            Debug.log "Editor.update" msg
-    in
+--    let
+--        _ =
+--            Debug.log "Editor.update" msg
+--    in
         case msg of
             GenerateMap ->
                 let

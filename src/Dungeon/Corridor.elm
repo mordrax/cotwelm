@@ -113,8 +113,8 @@ toTiles (A { start, points, walls, entrances }) =
         paths =
             constructPath (start :: points)
 
-        _ =
-            Debug.log "paths" paths
+--        _ =
+--            Debug.log "paths" paths
 
         data =
             [ ( Tile.DarkDgn, paths )
