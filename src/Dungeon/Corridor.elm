@@ -89,6 +89,14 @@ allPossibleEndings ((A ({ start, points } as model)) as corridor) =
 
         corridorWithEnd point =
             A { model | points = points ++ [ point ] }
+
+        _ =
+            Debug.log "allPossibleEndings"
+                { directions = ( left, right, straightAhead, straightAheadVector )
+                , leftDir = Vector.rotateUnlessCardinal left Left |> Vector.toDirection
+                , rightDir = Vector.rotateUnlessCardinal right Right |> Vector.toDirection
+                , corridor = corridor
+                }
     in
         (if CompassDirection.isCardinal straightAhead then
             [ ( corridor, lastPoint, straightAhead ) ]
@@ -113,9 +121,8 @@ toTiles (A { start, points, walls, entrances }) =
         paths =
             constructPath (start :: points)
 
---        _ =
---            Debug.log "paths" paths
-
+        --        _ =
+        --            Debug.log "paths" paths
         data =
             [ ( Tile.DarkDgn, paths )
             , ( Tile.Rock, List.concat walls )
