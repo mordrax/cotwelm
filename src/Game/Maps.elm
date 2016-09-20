@@ -14,6 +14,7 @@ module Game.Maps
         , getBuildings
         , getTile
         , tileNeighbours
+        , toScreenCoords
         )
 
 {-| Handles rendering of all the static/dynamic game areas
@@ -156,6 +157,18 @@ toTiles =
 getTile : Map -> Vector -> Maybe Tile
 getTile map pos =
     Dict.get pos map
+
+
+toScreenCoords : Map -> Int -> Map
+toScreenCoords map mapSize =
+    let
+        invertY ( ( x, y ), val ) =
+            ( ( x, mapSize - y ), { val | position = ( x, mapSize - y ) } )
+    in
+        map
+            |> Dict.toList
+            |> List.map invertY
+            |> Dict.fromList
 
 
 {-| Get the map for the current area

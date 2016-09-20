@@ -71,10 +71,10 @@ type Msg
 
 init : Model
 init =
-    { dungeonSize = 50
+    { dungeonSize = 150
     , corridor =
-        { minLength = 5
-        , maxLength = 100
+        { minLength = 10
+        , maxLength = 20
         }
     , roomsConfig =
         { rectangular = RoomConfig ( 4, 10 ) 1

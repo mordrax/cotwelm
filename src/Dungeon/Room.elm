@@ -191,7 +191,7 @@ entranceFacing (A { walls, floors, worldPos }) entrance =
 placeRoom : CorridorEnding -> Room -> Generator Room
 placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
     let
-        validWalls =
+        candidateWalls =
             wallsFacingDirection facing (List.concat walls) dimension
 
         pickAWall walls =
@@ -202,7 +202,7 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
         makeADoor wall =
             let
                 entrancePosition =
-                    Vector.add endPoint (Vector.fromCompass facing)
+                        Vector.sub endPoint (Vector.fromCompass facing)
 
                 entrance =
                     Entrance.init Door entrancePosition
@@ -210,23 +210,25 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
                 roomWorldPosition =
                     Vector.sub entrancePosition wall
 
---                _ =
---                    Debug.log "placeRoom"
---                        { entrance = entrance
---                        , wall = wall
---                        , roomWorldPosition = roomWorldPosition
---                        , corridor = ( corridor, endPoint, facing )
---                        , dim = dimension
---                        }
+                _ =
+                    Debug.log "placeRoom"
+                        { entrancePosition = entrancePosition
+                        , wall = wall
+                        , roomWorldPosition = roomWorldPosition
+                        , endPoint = endPoint
+                        , facing = facing
+                        , dim = dimension
+                        }
             in
                 constant
                     <| A
                         { model
                             | walls = List.map (without wall) walls
+                            , entrances = [entrance]
                             , worldPos = roomWorldPosition
                         }
     in
-        pickAWall validWalls `andThen` makeADoor
+        pickAWall candidateWalls `andThen` makeADoor
 
 
 wallsFacingDirection : CompassDirection -> Walls -> Dimension -> Walls

@@ -88,17 +88,16 @@ rotate ( xInt, yInt ) dir =
         ( round x', round y' )
 
 
-
 toDirection : Vector -> CompassDirection
 toDirection vector =
     case unit vector of
         ( 0, 1 ) ->
             N
 
-        ( 1, 0 ) ->
+        ( 0, -1 ) ->
             S
 
-        ( 0, -1 ) ->
+        ( 1, 0 ) ->
             E
 
         ( -1, 0 ) ->
@@ -117,6 +116,7 @@ toDirection vector =
             SW
 
         _ ->
+            -- if all else fails Journey to the West
             W
 
 
@@ -127,10 +127,10 @@ fromCompass dir =
             ( 0, 1 )
 
         S ->
-            ( 1, 0 )
+            ( 0, -1 )
 
         E ->
-            ( 0, -1 )
+            ( 1, 0 )
 
         W ->
             ( -1, 0 )

@@ -43,42 +43,38 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
---    let
---        _ =
---            Debug.log "Editor.update" msg
---    in
-        case msg of
-            GenerateMap ->
-                let
-                    latestDungeonModel =
-                        List.head model.dungeonSteps
+    case msg of
+        GenerateMap ->
+            let
+                latestDungeonModel =
+                    List.head model.dungeonSteps
 
-                    dungeonGenerator =
-                        case latestDungeonModel of
-                            Just dungeonModel ->
-                                DungeonGenerator.step { dungeonModel | config = model.config }
+                dungeonGenerator =
+                    case latestDungeonModel of
+                        Just dungeonModel ->
+                            DungeonGenerator.step { dungeonModel | config = model.config }
 
-                            Nothing ->
-                                DungeonGenerator.init model.config
-                in
-                    ( model, Random.generate Dungeon dungeonGenerator )
+                        Nothing ->
+                            DungeonGenerator.init model.config
+            in
+                ( model, Random.generate Dungeon dungeonGenerator )
 
-            Dungeon dungeonModel ->
-                let
-                    map =
-                        dungeonModel
-                            |> DungeonGenerator.toTiles
-                            |> Maps.fromTiles
-                in
-                    ( { model | dungeonSteps = dungeonModel :: [], map = map }
-                    , Cmd.none
-                    )
+        Dungeon dungeonModel ->
+            let
+                map =
+                    dungeonModel
+                        |> DungeonGenerator.toTiles
+                        |> Maps.fromTiles
+            in
+                ( { model | dungeonSteps = dungeonModel :: [], map = map }
+                , Cmd.none
+                )
 
-            ConfigMsg msg ->
-                ( { model | config = Config.update msg model.config }, Cmd.none )
+        ConfigMsg msg ->
+            ( { model | config = Config.update msg model.config }, Cmd.none )
 
-            ResetMap ->
-                ( { model | map = Dict.empty, dungeonSteps = [] }, Cmd.none )
+        ResetMap ->
+            ( { model | map = Dict.empty, dungeonSteps = [] }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -86,6 +82,9 @@ view model =
     let
         border =
             ( "border", "1px solid black" )
+
+        screenMap =
+            Maps.toScreenCoords model.map model.config.dungeonSize
     in
         div []
             [ div []
@@ -95,7 +94,7 @@ view model =
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-                (Maps.draw model.map model.config.mapScale)
+                (Maps.draw screenMap model.config.mapScale)
             ]
 
 
