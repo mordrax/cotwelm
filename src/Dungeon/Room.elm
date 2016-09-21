@@ -130,9 +130,8 @@ generateEntrance (A ({ walls, entrances, worldPos } as model)) =
 toTiles : Room -> Tiles
 toTiles (A { floors, walls, entrances, corners, worldPos }) =
     let
-        _ =
-            Debug.log "Room.toTiles" entrances
-
+        --        _ =
+        --            Debug.log "Room.toTiles" entrances
         toWorldPos localPos =
             Vector.add worldPos localPos
 
@@ -191,8 +190,14 @@ entranceFacing (A { walls, floors, worldPos }) entrance =
 placeRoom : CorridorEnding -> Room -> Generator Room
 placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
     let
-        validWalls =
-            wallsFacingDirection facing (List.concat walls) dimension
+        wallFacing =
+            facing
+                |> Vector.fromCompass
+                |> Vector.scale -1
+                |> Vector.toDirection
+
+        candidateWalls =
+            wallsFacingDirection wallFacing (List.concat walls) dimension
 
         pickAWall walls =
             walls
@@ -202,7 +207,7 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
         makeADoor wall =
             let
                 entrancePosition =
-                    Vector.add endPoint (Vector.fromCompass facing)
+                    Vector.sub endPoint (Vector.fromCompass wallFacing)
 
                 entrance =
                     Entrance.init Door entrancePosition
@@ -211,11 +216,12 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
                     Vector.sub entrancePosition wall
 
                 _ =
-                    Debug.log "placeRoom"
-                        { entrance = entrance
+                    Debug.log "Room.placeRoom"
+                        { entrancePosition = entrancePosition
                         , wall = wall
                         , roomWorldPosition = roomWorldPosition
-                        , corridor = ( corridor, endPoint, facing )
+                        , endPoint = endPoint
+                        , facing = facing
                         , dim = dimension
                         }
             in
@@ -223,10 +229,11 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
                     <| A
                         { model
                             | walls = List.map (without wall) walls
+                            , entrances = [ entrance ]
                             , worldPos = roomWorldPosition
                         }
     in
-        pickAWall validWalls `andThen` makeADoor
+        pickAWall candidateWalls `andThen` makeADoor
 
 
 wallsFacingDirection : CompassDirection -> Walls -> Dimension -> Walls
@@ -246,13 +253,13 @@ wallsFacingDirection compassDirection walls ( maxX, maxY ) =
     in
         case compassDirection of
             N ->
-                List.filter yEqualsZero walls
+                List.filter yEqualsMaxY walls
 
             E ->
                 List.filter xEqualsMaxX walls
 
             S ->
-                List.filter yEqualsMaxY walls
+                List.filter yEqualsZero walls
 
             W ->
                 List.filter xEqualsZero walls
