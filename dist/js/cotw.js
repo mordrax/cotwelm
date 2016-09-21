@@ -17368,11 +17368,11 @@ var _mordrax$cotwelm$Dungeon_Room$wallsFacingDirection = F3(
 		var _p29 = compassDirection;
 		switch (_p29.ctor) {
 			case 'N':
-				return A2(_elm_lang$core$List$filter, yEqualsZero, walls);
+				return A2(_elm_lang$core$List$filter, yEqualsMaxY, walls);
 			case 'E':
 				return A2(_elm_lang$core$List$filter, xEqualsMaxX, walls);
 			case 'S':
-				return A2(_elm_lang$core$List$filter, yEqualsMaxY, walls);
+				return A2(_elm_lang$core$List$filter, yEqualsZero, walls);
 			case 'W':
 				return A2(_elm_lang$core$List$filter, xEqualsZero, walls);
 			default:
