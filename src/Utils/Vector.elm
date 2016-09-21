@@ -11,6 +11,10 @@ type alias Vector =
     ( Int, Int )
 
 
+type alias DirectedVector =
+    ( Vector, CompassDirection )
+
+
 type RotationDirection
     = Left
     | Right
@@ -86,7 +90,6 @@ rotate ( xInt, yInt ) dir =
             x * sin angle + y * cos angle
     in
         ( round x', round y' )
-
 
 
 toDirection : Vector -> CompassDirection
