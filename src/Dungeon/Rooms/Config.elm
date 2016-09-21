@@ -71,15 +71,15 @@ type Msg
 
 init : Model
 init =
-    { dungeonSize = 50
+    { dungeonSize = 150
     , corridor =
-        { minLength = 5
-        , maxLength = 100
+        { minLength = 10
+        , maxLength = 20
         }
     , roomsConfig =
         { rectangular = RoomConfig ( 4, 10 ) 1
-        , cross = RoomConfig ( 7, 11 ) 1
-        , diamond = RoomConfig ( 5, 11 ) 1
+        , cross = RoomConfig ( 7, 11 ) 0
+        , diamond = RoomConfig ( 5, 11 ) 0
         , potion = RoomConfig ( 4, 10 ) 0
         , circular = RoomConfig ( 4, 10 ) 0
         , diagonalSquares = RoomConfig ( 4, 10 ) 0

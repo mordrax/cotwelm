@@ -94,31 +94,27 @@ this could be create a dead end, link up to a room etc.
 -}
 step : Model -> Generator Model
 step ({ activePoints } as model) =
-    let
-        _ =
-            Debug.log "Taking a step" model
-    in
-        case activePoints of
-            -- when nothing's active, no more exploration
-            [] ->
-                constant model
+    case activePoints of
+        -- when nothing's active, no more exploration
+        [] ->
+            constant model
 
-            (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
-                generateEntrance room { model | activePoints = remainingPoints }
+        (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
+            generateEntrance room { model | activePoints = remainingPoints }
 
-            -- pick a active room and either make a new entrance or
-            -- make a corridor from a existing entrance
-            (ActiveRoom room (Just entrance)) :: remainingPoints ->
-                generateCorridor room
-                    entrance
-                    { model
-                        | activePoints = remainingPoints
-                        , rooms = room :: model.rooms
-                    }
+        -- pick a active room and either make a new entrance or
+        -- make a corridor from a existing entrance
+        (ActiveRoom room (Just entrance)) :: remainingPoints ->
+            generateCorridor room
+                entrance
+                { model
+                    | activePoints = remainingPoints
+                    , rooms = room :: model.rooms
+                }
 
-            -- pick a active corridor and keep digging!
-            (ActiveCorridor corridor exit) :: remainingPoints ->
-                generateRoomOffCorridor corridor { model | corridors = corridor :: model.corridors }
+        -- pick a active corridor and keep digging!
+        (ActiveCorridor corridor exit) :: remainingPoints ->
+            generateRoomOffCorridor corridor { model | corridors = corridor :: model.corridors }
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -180,7 +176,7 @@ generateCorridor room entrance ({ config } as model) =
     in
         Random.map2 (,) randomCorridorLength randomDirection
             `andThen` \( len, dir ) ->
-                        constant <| digger (DigInstruction corridorStart dir len) model
+                        constant <| digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len) model
 
 
 generateRoomOffCorridor : Corridor -> Model -> Generator Model
@@ -216,23 +212,25 @@ generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
 
 
 type alias DigInstruction =
-    { start : Vector
-    , direction : Vector
+    { start : DirectedVector
     , length : Int
     }
 
 
 digger : DigInstruction -> Model -> Model
-digger ({ start, direction, length } as instruction) model =
+digger ({ start, length } as instruction) model =
     let
+        ( startVector, startDirection ) =
+            start
+
         emptyAtPosition pos =
             dungeonConstructAtPos pos model == Nothing
 
         finish =
-            Vector.add start (Vector.scaleInt length direction)
+            Vector.add startVector (Vector.scaleInt length (Vector.fromCompass startDirection))
 
         digPath =
-            Corridor.path start finish
+            Corridor.path startVector finish
 
         dugPath =
             List.Extra.takeWhile emptyAtPosition digPath

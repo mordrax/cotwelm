@@ -239,16 +239,16 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
 wallsFacingDirection : CompassDirection -> Walls -> Dimension -> Walls
 wallsFacingDirection compassDirection walls ( maxX, maxY ) =
     let
-        yEqualsZero ( x, y ) =
+        yEqualsZero ( _, y ) =
             y == 0
 
-        yEqualsMaxY ( x, y ) =
+        yEqualsMaxY ( _, y ) =
             y == maxY - 1
 
-        xEqualsZero ( x, y ) =
+        xEqualsZero ( x, _ ) =
             x == 0
 
-        xEqualsMaxX ( x, y ) =
+        xEqualsMaxX ( x, _ ) =
             x == maxX - 1
     in
         case compassDirection of
