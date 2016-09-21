@@ -130,9 +130,8 @@ generateEntrance (A ({ walls, entrances, worldPos } as model)) =
 toTiles : Room -> Tiles
 toTiles (A { floors, walls, entrances, corners, worldPos }) =
     let
---        _ =
---            Debug.log "Room.toTiles" entrances
-
+        --        _ =
+        --            Debug.log "Room.toTiles" entrances
         toWorldPos localPos =
             Vector.add worldPos localPos
 
@@ -191,8 +190,14 @@ entranceFacing (A { walls, floors, worldPos }) entrance =
 placeRoom : CorridorEnding -> Room -> Generator Room
 placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
     let
+        wallFacing =
+            facing
+                |> Vector.fromCompass
+                |> Vector.scale -1
+                |> Vector.toDirection
+
         candidateWalls =
-            wallsFacingDirection facing (List.concat walls) dimension
+            wallsFacingDirection wallFacing (List.concat walls) dimension
 
         pickAWall walls =
             walls
@@ -202,7 +207,7 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
         makeADoor wall =
             let
                 entrancePosition =
-                        Vector.sub endPoint (Vector.fromCompass facing)
+                    Vector.sub endPoint (Vector.fromCompass wallFacing)
 
                 entrance =
                     Entrance.init Door entrancePosition
@@ -211,7 +216,7 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
                     Vector.sub entrancePosition wall
 
                 _ =
-                    Debug.log "placeRoom"
+                    Debug.log "Room.placeRoom"
                         { entrancePosition = entrancePosition
                         , wall = wall
                         , roomWorldPosition = roomWorldPosition
@@ -224,7 +229,7 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
                     <| A
                         { model
                             | walls = List.map (without wall) walls
-                            , entrances = [entrance]
+                            , entrances = [ entrance ]
                             , worldPos = roomWorldPosition
                         }
     in
