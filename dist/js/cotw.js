@@ -12652,9 +12652,9 @@ var _mordrax$cotwelm$Utils_Vector$fromCompass = function (dir) {
 		case 'N':
 			return {ctor: '_Tuple2', _0: 0, _1: 1};
 		case 'S':
-			return {ctor: '_Tuple2', _0: 1, _1: 0};
-		case 'E':
 			return {ctor: '_Tuple2', _0: 0, _1: -1};
+		case 'E':
+			return {ctor: '_Tuple2', _0: 1, _1: 0};
 		case 'W':
 			return {ctor: '_Tuple2', _0: -1, _1: 0};
 		case 'NE':
@@ -12760,14 +12760,14 @@ var _mordrax$cotwelm$Utils_Vector$toDirection = function (vector) {
 						case 1:
 							return _mordrax$cotwelm$Utils_CompassDirection$N;
 						case -1:
-							return _mordrax$cotwelm$Utils_CompassDirection$E;
+							return _mordrax$cotwelm$Utils_CompassDirection$S;
 						default:
 							break _v15_8;
 					}
 				case 1:
 					switch (_p34._1) {
 						case 0:
-							return _mordrax$cotwelm$Utils_CompassDirection$S;
+							return _mordrax$cotwelm$Utils_CompassDirection$E;
 						case 1:
 							return _mordrax$cotwelm$Utils_CompassDirection$NE;
 						case -1:
@@ -15635,6 +15635,7 @@ var _mordrax$cotwelm$Tile$Rock = {ctor: 'Rock'};
 var _mordrax$cotwelm$Tile$scaledView = F3(
 	function (_p5, scale, neighbours) {
 		var _p6 = _p5;
+		var _p15 = _p6.position;
 		var scaleStyle = {
 			ctor: '_Tuple2',
 			_0: 'transform',
@@ -15685,6 +15686,12 @@ var _mordrax$cotwelm$Tile$scaledView = F3(
 				{ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$WallDarkDgn, _1: _mordrax$cotwelm$Tile$Rock},
 				{ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$WallLitDgn, _1: _mordrax$cotwelm$Tile$Rock}
 			]);
+		var positionAsClass = A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Basics$toString(
+				_elm_lang$core$Basics$fst(_p15)),
+			_elm_lang$core$Basics$toString(
+				_elm_lang$core$Basics$snd(_p15)));
 		var _p9 = _p6.base;
 		var model = _p9._0;
 		var halfTile = A2(
@@ -15761,14 +15768,17 @@ var _mordrax$cotwelm$Tile$scaledView = F3(
 					A2(
 						_elm_lang$core$Basics_ops['++'],
 						'tile ',
-						_elm_lang$core$Basics$toString(model.tile))),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(model.tile),
+							A2(_elm_lang$core$Basics_ops['++'], ' ', positionAsClass)))),
 					_elm_lang$html$Html_Attributes$style(
 					_elm_lang$core$Native_List.fromArray(
 						[
 							rotate(rotation),
 							scaleStyle
 						])),
-					A2(_mordrax$cotwelm$Utils_Lib$toScaledTilePosition, _p6.position, scale)
+					A2(_mordrax$cotwelm$Utils_Lib$toScaledTilePosition, _p15, scale)
 				]),
 			_elm_lang$core$Native_List.fromArray(
 				[]));
@@ -15880,8 +15890,8 @@ var _mordrax$cotwelm$Tile$asciiToTileType = function ($char) {
 var _mordrax$cotwelm$Tile$solidTiles = _elm_lang$core$Native_List.fromArray(
 	[_mordrax$cotwelm$Tile$Rock, _mordrax$cotwelm$Tile$Grass10Cave90, _mordrax$cotwelm$Tile$White50Cave50, _mordrax$cotwelm$Tile$Crop, _mordrax$cotwelm$Tile$Well, _mordrax$cotwelm$Tile$PathRock, _mordrax$cotwelm$Tile$WallDarkDgn, _mordrax$cotwelm$Tile$WallLitDgn]);
 var _mordrax$cotwelm$Tile$toTile = F2(
-	function (_p15, tileType) {
-		var _p16 = _p15;
+	function (_p16, tileType) {
+		var _p17 = _p16;
 		var solid = A2(_elm_lang$core$List$member, tileType, _mordrax$cotwelm$Tile$solidTiles);
 		return A2(
 			_mordrax$cotwelm$Tile$Tile,
@@ -15893,7 +15903,7 @@ var _mordrax$cotwelm$Tile$toTile = F2(
 					_elm_lang$core$Native_List.fromArray(
 						[]),
 					_mordrax$cotwelm$Tile$Empty)),
-			{ctor: '_Tuple2', _0: _p16._0, _1: _p16._1});
+			{ctor: '_Tuple2', _0: _p17._0, _1: _p17._1});
 	});
 var _mordrax$cotwelm$Tile$mapToTiles = function (asciiMap) {
 	var rowToTiles = F2(
@@ -16082,8 +16092,9 @@ var _mordrax$cotwelm$Dungeon_Corridor$new = function (start) {
 };
 var _mordrax$cotwelm$Dungeon_Corridor$allPossibleEndings = function (_p14) {
 	var _p15 = _p14;
-	var _p19 = _p15._0.start;
-	var _p18 = _p15._0.points;
+	var _p21 = _p15._0.start;
+	var _p20 = _p15._0.points;
+	var _p19 = _p15;
 	var corridorWithEnd = function (point) {
 		return _mordrax$cotwelm$Dungeon_Corridor$A(
 			_elm_lang$core$Native_Utils.update(
@@ -16091,12 +16102,12 @@ var _mordrax$cotwelm$Dungeon_Corridor$allPossibleEndings = function (_p14) {
 				{
 					points: A2(
 						_elm_lang$core$Basics_ops['++'],
-						_p18,
+						_p20,
 						_elm_lang$core$Native_List.fromArray(
 							[point]))
 				}));
 	};
-	var straightAhead = A2(_mordrax$cotwelm$Dungeon_Corridor$facing, _p19, _p18);
+	var straightAhead = A2(_mordrax$cotwelm$Dungeon_Corridor$facing, _p21, _p20);
 	var straightAheadVector = _mordrax$cotwelm$Utils_Vector$fromCompass(straightAhead);
 	var _p16 = {
 		ctor: '_Tuple2',
@@ -16105,22 +16116,33 @@ var _mordrax$cotwelm$Dungeon_Corridor$allPossibleEndings = function (_p14) {
 	};
 	var left = _p16._0;
 	var right = _p16._1;
+	var _p17 = A2(
+		_elm_lang$core$Debug$log,
+		'Corridor.allPossibleEndings',
+		{
+			directions: {ctor: '_Tuple4', _0: left, _1: right, _2: straightAhead, _3: straightAheadVector},
+			leftDir: _mordrax$cotwelm$Utils_Vector$toDirection(
+				A2(_mordrax$cotwelm$Utils_Vector$rotateUnlessCardinal, left, _mordrax$cotwelm$Utils_Vector$Left)),
+			rightDir: _mordrax$cotwelm$Utils_Vector$toDirection(
+				A2(_mordrax$cotwelm$Utils_Vector$rotateUnlessCardinal, right, _mordrax$cotwelm$Utils_Vector$Right)),
+			corridor: _p19
+		});
 	var lastPoint = A2(
 		_mordrax$cotwelm$Lodash$headWithDefault,
-		_p19,
-		_elm_lang$core$List$reverse(_p18));
-	var _p17 = {
+		_p21,
+		_elm_lang$core$List$reverse(_p20));
+	var _p18 = {
 		ctor: '_Tuple2',
 		_0: A2(_mordrax$cotwelm$Utils_Vector$add, lastPoint, left),
 		_1: A2(_mordrax$cotwelm$Utils_Vector$add, lastPoint, right)
 	};
-	var leftEnd = _p17._0;
-	var rightEnd = _p17._1;
+	var leftEnd = _p18._0;
+	var rightEnd = _p18._1;
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
 		_mordrax$cotwelm$Utils_CompassDirection$isCardinal(straightAhead) ? _elm_lang$core$Native_List.fromArray(
 			[
-				{ctor: '_Tuple3', _0: _p15, _1: lastPoint, _2: straightAhead}
+				{ctor: '_Tuple3', _0: _p19, _1: lastPoint, _2: straightAhead}
 			]) : _elm_lang$core$Native_List.fromArray(
 			[]),
 		_elm_lang$core$Native_List.fromArray(
@@ -16142,15 +16164,15 @@ var _mordrax$cotwelm$Dungeon_Corridor$allPossibleEndings = function (_p14) {
 			]));
 };
 var _mordrax$cotwelm$Dungeon_Corridor$add = F2(
-	function (point, _p20) {
-		var _p21 = _p20;
+	function (point, _p22) {
+		var _p23 = _p22;
 		return _mordrax$cotwelm$Dungeon_Corridor$A(
 			_elm_lang$core$Native_Utils.update(
-				_p21._0,
+				_p23._0,
 				{
 					points: A2(
 						_elm_lang$core$Basics_ops['++'],
-						_p21._0.points,
+						_p23._0.points,
 						_elm_lang$core$Native_List.fromArray(
 							[point]))
 				}));
@@ -16575,21 +16597,21 @@ var _mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig = F2(
 		return {sizeRange: a, frequency: b};
 	});
 var _mordrax$cotwelm$Dungeon_Rooms_Config$init = {
-	dungeonSize: 50,
-	corridor: {minLength: 5, maxLength: 100},
+	dungeonSize: 150,
+	corridor: {minLength: 10, maxLength: 20},
 	roomsConfig: {
 		rectangular: A2(
 			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
-			{ctor: '_Tuple2', _0: 4, _1: 10},
+			{ctor: '_Tuple2', _0: 4, _1: 6},
 			1),
 		cross: A2(
 			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
 			{ctor: '_Tuple2', _0: 7, _1: 11},
-			1),
+			0),
 		diamond: A2(
 			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
 			{ctor: '_Tuple2', _0: 5, _1: 11},
-			1),
+			0),
 		potion: A2(
 			_mordrax$cotwelm$Dungeon_Rooms_Config$RoomConfig,
 			{ctor: '_Tuple2', _0: 4, _1: 10},
@@ -17499,16 +17521,39 @@ var _mordrax$cotwelm$Dungeon_Room$generateEntrance = function (_p40) {
 var _mordrax$cotwelm$Dungeon_Room$placeRoom = F2(
 	function (_p46, _p45) {
 		var _p47 = _p46;
-		var _p50 = _p47._2;
+		var _p53 = _p47._2;
+		var _p52 = _p47._1;
 		var _p48 = _p45;
-		var _p49 = _p48._0.walls;
+		var _p51 = _p48._0.walls;
+		var _p50 = _p48._0.dimension;
+		var pickAWall = function (walls) {
+			return A2(
+				_elm_lang$core$Random$map,
+				_mordrax$cotwelm$Lodash$headWithDefault(
+					{ctor: '_Tuple2', _0: 0, _1: 0}),
+				_mordrax$cotwelm$Lodash$shuffle(walls));
+		};
+		var wallFacing = _mordrax$cotwelm$Utils_Vector$toDirection(
+			A2(
+				_mordrax$cotwelm$Utils_Vector$scale,
+				-1,
+				_mordrax$cotwelm$Utils_Vector$fromCompass(_p53)));
+		var candidateWalls = A3(
+			_mordrax$cotwelm$Dungeon_Room$wallsFacingDirection,
+			wallFacing,
+			_elm_lang$core$List$concat(_p51),
+			_p50);
 		var makeADoor = function (wall) {
 			var entrancePosition = A2(
-				_mordrax$cotwelm$Utils_Vector$add,
-				_p47._1,
-				_mordrax$cotwelm$Utils_Vector$fromCompass(_p50));
+				_mordrax$cotwelm$Utils_Vector$sub,
+				_p52,
+				_mordrax$cotwelm$Utils_Vector$fromCompass(wallFacing));
 			var entrance = A2(_mordrax$cotwelm$Dungeon_Entrance$init, _mordrax$cotwelm$Dungeon_Entrance$Door, entrancePosition);
 			var roomWorldPosition = A2(_mordrax$cotwelm$Utils_Vector$sub, entrancePosition, wall);
+			var _p49 = A2(
+				_elm_lang$core$Debug$log,
+				'Room.placeRoom',
+				{entrancePosition: entrancePosition, wall: wall, roomWorldPosition: roomWorldPosition, endPoint: _p52, facing: _p53, dim: _p50});
 			return _elm_community$random_extra$Random_Extra$constant(
 				_mordrax$cotwelm$Dungeon_Room$A(
 					_elm_lang$core$Native_Utils.update(
@@ -17517,25 +17562,15 @@ var _mordrax$cotwelm$Dungeon_Room$placeRoom = F2(
 							walls: A2(
 								_elm_lang$core$List$map,
 								_mordrax$cotwelm$Lodash$without(wall),
-								_p49),
+								_p51),
+							entrances: _elm_lang$core$Native_List.fromArray(
+								[entrance]),
 							worldPos: roomWorldPosition
 						})));
 		};
-		var pickAWall = function (walls) {
-			return A2(
-				_elm_lang$core$Random$map,
-				_mordrax$cotwelm$Lodash$headWithDefault(
-					{ctor: '_Tuple2', _0: 0, _1: 0}),
-				_mordrax$cotwelm$Lodash$shuffle(walls));
-		};
-		var validWalls = A3(
-			_mordrax$cotwelm$Dungeon_Room$wallsFacingDirection,
-			_p50,
-			_elm_lang$core$List$concat(_p49),
-			_p48._0.dimension);
 		return A2(
 			_elm_lang$core$Random$andThen,
-			pickAWall(validWalls),
+			pickAWall(candidateWalls),
 			makeADoor);
 	});
 
@@ -17712,15 +17747,37 @@ var _mordrax$cotwelm$Game_Maps$currentAreaMap = function (_p6) {
 		return _elm_lang$core$Dict$empty;
 	}
 };
+var _mordrax$cotwelm$Game_Maps$toScreenCoords = F2(
+	function (map, mapSize) {
+		var invertY = function (_p10) {
+			var _p11 = _p10;
+			var _p13 = _p11._0._1;
+			var _p12 = _p11._0._0;
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '_Tuple2', _0: _p12, _1: mapSize - _p13},
+				_1: _elm_lang$core$Native_Utils.update(
+					_p11._1,
+					{
+						position: {ctor: '_Tuple2', _0: _p12, _1: mapSize - _p13}
+					})
+			};
+		};
+		return _elm_lang$core$Dict$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				invertY,
+				_elm_lang$core$Dict$toList(map)));
+	});
 var _mordrax$cotwelm$Game_Maps$getTile = F2(
 	function (map, pos) {
 		return A2(_elm_lang$core$Dict$get, pos, map);
 	});
-var _mordrax$cotwelm$Game_Maps$toTiles = function (_p10) {
+var _mordrax$cotwelm$Game_Maps$toTiles = function (_p14) {
 	return A2(
 		_elm_lang$core$List$map,
 		_elm_lang$core$Basics$snd,
-		_elm_lang$core$Dict$toList(_p10));
+		_elm_lang$core$Dict$toList(_p14));
 };
 var _mordrax$cotwelm$Game_Maps$draw = F2(
 	function (map, scale) {
@@ -17736,9 +17793,9 @@ var _mordrax$cotwelm$Game_Maps$draw = F2(
 		return A2(_elm_lang$core$List$map, toHtml, mapTiles);
 	});
 var _mordrax$cotwelm$Game_Maps$fromTiles = function (tiles) {
-	var toKVPair = function (_p11) {
-		var _p12 = _p11;
-		return {ctor: '_Tuple2', _0: _p12.position, _1: _p12};
+	var toKVPair = function (_p15) {
+		var _p16 = _p15;
+		return {ctor: '_Tuple2', _0: _p16.position, _1: _p16};
 	};
 	return _elm_lang$core$Dict$fromList(
 		A2(_elm_lang$core$List$map, toKVPair, tiles));
@@ -17831,20 +17888,20 @@ var _mordrax$cotwelm$Game_Maps$init = function (seed) {
 	};
 };
 var _mordrax$cotwelm$Game_Maps$update = F2(
-	function (msg, _p13) {
-		var _p14 = _p13;
-		var _p15 = A2(_elm_lang$core$Debug$log, 'maps update', 1);
+	function (msg, _p17) {
+		var _p18 = _p17;
+		var _p19 = A2(_elm_lang$core$Debug$log, 'maps update', 1);
 		return _mordrax$cotwelm$Game_Maps$A(
 			_elm_lang$core$Native_Utils.update(
-				_p14._0,
+				_p18._0,
 				{currentArea: _mordrax$cotwelm$GameData_Types$Village}));
 	});
 var _mordrax$cotwelm$Game_Maps$updateArea = F2(
-	function (area, _p16) {
-		var _p17 = _p16;
+	function (area, _p20) {
+		var _p21 = _p20;
 		return _mordrax$cotwelm$Game_Maps$A(
 			_elm_lang$core$Native_Utils.update(
-				_p17._0,
+				_p21._0,
 				{currentArea: area}));
 	});
 var _mordrax$cotwelm$Game_Maps$GenerateDungeonLevel = function (a) {
@@ -18367,6 +18424,7 @@ var _mordrax$cotwelm$Dungeon_Editor$update = F2(
 	});
 var _mordrax$cotwelm$Dungeon_Editor$GenerateMap = {ctor: 'GenerateMap'};
 var _mordrax$cotwelm$Dungeon_Editor$view = function (model) {
+	var screenMap = A2(_mordrax$cotwelm$Game_Maps$toScreenCoords, model.map, model.config.dungeonSize);
 	var border = {ctor: '_Tuple2', _0: 'border', _1: '1px solid black'};
 	return A2(
 		_elm_lang$html$Html$div,
@@ -18416,7 +18474,7 @@ var _mordrax$cotwelm$Dungeon_Editor$view = function (model) {
 								{ctor: '_Tuple2', _0: 'top', _1: '0px'}
 							]))
 					]),
-				A2(_mordrax$cotwelm$Game_Maps$draw, model.map, model.config.mapScale))
+				A2(_mordrax$cotwelm$Game_Maps$draw, screenMap, model.config.mapScale))
 			]));
 };
 
