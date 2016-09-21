@@ -123,6 +123,9 @@ scaledView ({ base, position } as tile) scale neighbours =
         (A model) =
             base
 
+        positionAsClass =
+            toString (fst position) ++ toString (snd position)
+
         halfTiles =
             [ ( PathRock, Path )
             , ( PathGrass, Path )
@@ -193,7 +196,7 @@ scaledView ({ base, position } as tile) scale neighbours =
                                 0
     in
         div
-            [ class ("tile " ++ toString model.tile)
+            [ class ("tile " ++ toString model.tile ++ " " ++ positionAsClass)
             , style [ rotate rotation, scaleStyle ]
             , Lib.toScaledTilePosition position scale
             ]

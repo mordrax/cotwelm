@@ -91,7 +91,7 @@ allPossibleEndings ((A ({ start, points } as model)) as corridor) =
             A { model | points = points ++ [ point ] }
 
         _ =
-            Debug.log "allPossibleEndings"
+            Debug.log "Corridor.allPossibleEndings"
                 { directions = ( left, right, straightAhead, straightAheadVector )
                 , leftDir = Vector.rotateUnlessCardinal left Left |> Vector.toDirection
                 , rightDir = Vector.rotateUnlessCardinal right Right |> Vector.toDirection
