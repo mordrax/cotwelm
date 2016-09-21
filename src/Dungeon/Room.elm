@@ -253,13 +253,13 @@ wallsFacingDirection compassDirection walls ( maxX, maxY ) =
     in
         case compassDirection of
             N ->
-                List.filter yEqualsZero walls
+                List.filter yEqualsMaxY walls
 
             E ->
                 List.filter xEqualsMaxX walls
 
             S ->
-                List.filter yEqualsMaxY walls
+                List.filter yEqualsZero walls
 
             W ->
                 List.filter xEqualsZero walls
