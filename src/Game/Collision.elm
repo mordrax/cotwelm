@@ -16,7 +16,7 @@ import Hero exposing (..)
 import Combat exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
 import Stats exposing (..)
-import AStar exposing (..)
+import Utils.AStar as AStar exposing (..)
 import Set exposing (..)
 
 
