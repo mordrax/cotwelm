@@ -20,15 +20,5 @@
         "elm-lang/window": "1.0.0 <= v < 2.0.0",
         "krisajenkins/elm-astar": "2.0.3 <= v < 3.0.0"
     },
-    "sublime-build": {
-        "output": {
-            "path": "dist/js/cotw.js",
-            "components": {
-                "ext": "js",
-                "dir": "dist/js"
-            }
-        },
-        "main": "src/main.elm"
-    },
     "elm-version": "0.17.0 <= v < 0.18.0"
 }
