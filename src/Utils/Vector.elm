@@ -11,6 +11,10 @@ type alias Vector =
     ( Int, Int )
 
 
+type alias DirectedVector =
+    ( Vector, CompassDirection )
+
+
 type RotationDirection
     = Left
     | Right
