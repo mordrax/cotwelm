@@ -25,11 +25,14 @@ all =
 
 
 tilesContains : TileType -> Vectors -> Tiles -> Bool
-tilesContains tileType positions tiles =
+tilesContains matchingTileType positions tiles =
     let
+        sameAsMatchingTileType =
+            Tile.tileType >> (==) matchingTileType
+
         paths =
             tiles
-                |> List.filter (\x -> Tile.tileType x == tileType)
+                |> List.filter sameAsMatchingTileType
                 |> List.map .position
 
         isPath pos =
