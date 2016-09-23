@@ -94,10 +94,6 @@ this could be create a dead end, link up to a room etc.
 -}
 step : Model -> Generator Model
 step ({ activePoints } as model) =
-    --    let
-    --        _ =
-    --            Debug.log "Taking a step" model
-    --    in
     case activePoints of
         -- when nothing's active, no more exploration
         [] ->
@@ -167,26 +163,28 @@ generateCorridor room entrance ({ config } as model) =
                 |> shuffle
                 |> Random.map (headWithDefault straightAhead)
 
-        --        _ =
-        --            Debug.log "generateCorridor"
-        --                { straightAhead = straightAhead
-        --                , corridorStart = corridorStart
-        --                , leftDirection = leftDirection
-        --                , rightDirection = rightDirection
-        --                }
+        _ =
+            Debug.log "generateCorridor"
+                { straightAhead = straightAhead
+                , corridorStart = corridorStart
+                , leftDirection = leftDirection
+                , rightDirection = rightDirection
+                }
+
         randomCorridorLength =
             Dice.range config.corridor.minLength config.corridor.maxLength
     in
         Random.map2 (,) randomCorridorLength randomDirection
             `andThen` \( len, dir ) ->
-                        constant <| digger (DigInstruction corridorStart dir len) model
+                        constant <| digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len) model
 
 
 generateRoomOffCorridor : Corridor -> Model -> Generator Model
 generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
     let
-        --        _ =
-        --            Debug.log "generateRoomOffCorridor" corridorEndingOptions
+        _ =
+            Debug.log "generateRoomOffCorridor" corridorEndingOptions
+
         corridorEndingOptions =
             Corridor.allPossibleEndings corridor
 
@@ -214,23 +212,25 @@ generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
 
 
 type alias DigInstruction =
-    { start : Vector
-    , direction : Vector
+    { start : DirectedVector
     , length : Int
     }
 
 
 digger : DigInstruction -> Model -> Model
-digger ({ start, direction, length } as instruction) model =
+digger ({ start, length } as instruction) model =
     let
+        ( startVector, startDirection ) =
+            start
+
         emptyAtPosition pos =
             dungeonConstructAtPos pos model == Nothing
 
         finish =
-            Vector.add start (Vector.scaleInt length direction)
+            Vector.add startVector (Vector.scaleInt length (Vector.fromCompass startDirection))
 
         digPath =
-            Corridor.path start finish
+            Corridor.path startVector finish
 
         dugPath =
             List.Extra.takeWhile emptyAtPosition digPath
@@ -239,14 +239,14 @@ digger ({ start, direction, length } as instruction) model =
         corridor =
             Corridor.new start
 
-        --        _ =
-        --            Debug.log "digger"
-        --                { finish = finish
-        --                , digPath = digPath
-        --                , dugPath = dugPath
-        --                , corridor = corridor
-        --                , instruction = instruction
-        --                }
+        _ =
+            Debug.log "digger"
+                { finish = finish
+                , digPath = digPath
+                , dugPath = dugPath
+                , corridor = corridor
+                , instruction = instruction
+                }
     in
         case dugPath of
             actualFinish :: _ ->
@@ -298,38 +298,6 @@ type alias ProspectResult =
     }
 
 
-
---prospecting : Vector -> Model -> Vector -> Int -> ProspectResult
---prospecting currentSquare ({ config } as model) direction length =
---    let
---        nextSquare =
---            Vector.add currentSquare direction
---
---        previousSquare =
---            Vector.sub currentSquare direction
---
---        continueProspecting nextSquare =
---            prospecting nextSquare model direction
---    in
---        if isWithinDungeonBounds model currentSquare then
---            case (dungeonConstructAtPos currentSquare model) of
---                Nothing ->
---                    continueProspecting nextSquare
---
---                something ->
---                    ProspectResult previousSquare something
---        else
---            ProspectResult previousSquare EdgeOfMap
-
-
-isWithinDungeonBounds : Model -> Vector -> Bool
-isWithinDungeonBounds ({ config } as model) ( x, y ) =
-    (x >= 0)
-        && (y >= 0)
-        && (x <= model.config.dungeonSize)
-        && (y <= model.config.dungeonSize)
-
-
 dungeonConstructAtPos : Vector -> Model -> Finding
 dungeonConstructAtPos pos ({ rooms, corridors } as model) =
     let
@@ -343,7 +311,7 @@ dungeonConstructAtPos pos ({ rooms, corridors } as model) =
             Maps.getTile map pos
 
         inBounds =
-            isWithinDungeonBounds model pos
+            Config.withinDungeonBounds pos model.config
     in
         case ( mapTile, inBounds, constructsAtPosition pos ) of
             ( _, False, _ ) ->

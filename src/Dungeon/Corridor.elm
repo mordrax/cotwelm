@@ -33,20 +33,22 @@ type alias Corridors =
 
 
 type alias Model =
-    { start : Vector
+    { start : DirectedVector
     , points : Vectors
+    , end : Maybe DirectedVector
     , walls : List Walls
     , entrances : Entrances
     }
 
 
-new : Vector -> Corridor
+new : DirectedVector -> Corridor
 new start =
     A
         { start = start
         , points = []
         , walls = []
         , entrances = []
+        , end = Nothing
         }
 
 
@@ -68,11 +70,14 @@ type alias CorridorEnding =
 allPossibleEndings : Corridor -> List CorridorEnding
 allPossibleEndings ((A ({ start, points } as model)) as corridor) =
     let
+        ( startVector, startDirection ) =
+            start
+
         lastPoint =
-            points |> reverse |> headWithDefault start
+            points |> reverse |> headWithDefault startVector
 
         straightAhead =
-            facing start points
+            facing startVector points
 
         straightAheadVector =
             straightAhead |> Vector.fromCompass
@@ -89,14 +94,6 @@ allPossibleEndings ((A ({ start, points } as model)) as corridor) =
 
         corridorWithEnd point =
             A { model | points = points ++ [ point ] }
-
-        _ =
-            Debug.log "Corridor.allPossibleEndings"
-                { directions = ( left, right, straightAhead, straightAheadVector )
-                , leftDir = Vector.rotateUnlessCardinal left Left |> Vector.toDirection
-                , rightDir = Vector.rotateUnlessCardinal right Right |> Vector.toDirection
-                , corridor = corridor
-                }
     in
         (if CompassDirection.isCardinal straightAhead then
             [ ( corridor, lastPoint, straightAhead ) ]
@@ -116,13 +113,12 @@ add point (A ({ points } as model)) =
 toTiles : Corridor -> Tiles
 toTiles (A { start, points, walls, entrances }) =
     let
-        --        toWorldPos localPos =
-        --            Vector.add worldPos localPos
-        paths =
-            constructPath (start :: points)
+        ( startVector, startDirection ) =
+            start
 
-        --        _ =
-        --            Debug.log "paths" paths
+        paths =
+            constructPath (startVector :: points)
+
         data =
             [ ( Tile.DarkDgn, paths )
             , ( Tile.Rock, List.concat walls )
@@ -130,9 +126,7 @@ toTiles (A { start, points, walls, entrances }) =
 
         makeTiles ( tileType, positions ) =
             positions
-                --                |> List.map toWorldPos
-                |>
-                    List.map (\pos -> Tile.toTile pos tileType)
+                |> List.map (\pos -> Tile.toTile pos tileType)
     in
         List.concat (List.map makeTiles data)
             ++ List.map Entrance.toTile entrances

@@ -10,6 +10,7 @@ module Tile
         , view
         , scaledView
         , toTile
+        , tileType
         )
 
 import Utils.Vector exposing (..)
@@ -64,6 +65,15 @@ type alias Tiles =
 -----------------------------------------------------------------------------------
 -- Turn a list of strings which represents ascii encoded tiles into actual Tiles --
 -----------------------------------------------------------------------------------
+
+
+tileType : Tile -> TileType
+tileType { base } =
+    let
+        (A { tile }) =
+            base
+    in
+        tile
 
 
 isSolid : Tile -> Bool
