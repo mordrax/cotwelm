@@ -10,7 +10,7 @@ import String
 -- Dungeon tests
 
 import Dungeon.CorridorTest
-
+import Dungeon.ConfigTest
 
 main : Program Value
 main =
@@ -23,4 +23,4 @@ port emit : ( String, Value ) -> Cmd msg
 suite : Test
 suite =
     describe "Castle of the Winds Test Suite"
-        [ Dungeon.CorridorTest.all ]
+        [ Dungeon.CorridorTest.all, Dungeon.ConfigTest.all ]
