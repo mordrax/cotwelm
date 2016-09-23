@@ -82,6 +82,9 @@ view model =
     let
         border =
             ( "border", "1px solid black" )
+
+        screenMap =
+            Maps.toScreenCoords model.map model.config.dungeonSize
     in
         div []
             [ div []
@@ -91,7 +94,7 @@ view model =
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-                (Maps.draw model.map model.config.mapScale)
+                (Maps.draw screenMap model.config.mapScale)
             ]
 
 

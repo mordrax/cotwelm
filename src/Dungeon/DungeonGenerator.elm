@@ -298,38 +298,6 @@ type alias ProspectResult =
     }
 
 
-
---prospecting : Vector -> Model -> Vector -> Int -> ProspectResult
---prospecting currentSquare ({ config } as model) direction length =
---    let
---        nextSquare =
---            Vector.add currentSquare direction
---
---        previousSquare =
---            Vector.sub currentSquare direction
---
---        continueProspecting nextSquare =
---            prospecting nextSquare model direction
---    in
---        if isWithinDungeonBounds model currentSquare then
---            case (dungeonConstructAtPos currentSquare model) of
---                Nothing ->
---                    continueProspecting nextSquare
---
---                something ->
---                    ProspectResult previousSquare something
---        else
---            ProspectResult previousSquare EdgeOfMap
-
-
-isWithinDungeonBounds : Model -> Vector -> Bool
-isWithinDungeonBounds ({ config } as model) ( x, y ) =
-    (x >= 0)
-        && (y >= 0)
-        && (x <= model.config.dungeonSize)
-        && (y <= model.config.dungeonSize)
-
-
 dungeonConstructAtPos : Vector -> Model -> Finding
 dungeonConstructAtPos pos ({ rooms, corridors } as model) =
     let
@@ -343,7 +311,7 @@ dungeonConstructAtPos pos ({ rooms, corridors } as model) =
             Maps.getTile map pos
 
         inBounds =
-            isWithinDungeonBounds model pos
+            Config.withinDungeonBounds pos model.config
     in
         case ( mapTile, inBounds, constructsAtPosition pos ) of
             ( _, False, _ ) ->
