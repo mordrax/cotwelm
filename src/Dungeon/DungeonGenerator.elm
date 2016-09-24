@@ -114,7 +114,7 @@ step ({ activePoints } as model) =
 
         -- pick a active corridor and keep digging!
         (ActiveCorridor corridor exit) :: remainingPoints ->
-            generateRoomOffCorridor corridor { model | corridors = corridor :: model.corridors }
+            generateRoomOffCorridor corridor { model | corridors = model.corridors }
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -182,22 +182,28 @@ generateCorridor room entrance ({ config } as model) =
 generateRoomOffCorridor : Corridor -> Model -> Generator Model
 generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
     let
-        _ =
-            Debug.log "generateRoomOffCorridor" corridorEndingOptions
-
-        corridorEndingOptions =
+        endings =
             Corridor.allPossibleEndings corridor
 
         roomGen =
             Room.generate config
 
+        generateRoomAndCorridor room ending =
+            Room.placeRoom ending room `andThen` (\room -> constant (room, Corridor.addEnd ending corridor))
+
         placeRoomWithOptions room =
-            Random.Extra.together <| List.map (flip Room.placeRoom room) corridorEndingOptions
+            endings
+                |> List.map (generateRoomAndCorridor room)
+                |> Random.Extra.together
 
         addToModel options =
             case options of
-                room :: _ ->
-                    constant { model | activePoints = ActiveRoom room Maybe.Nothing :: activePoints }
+                ( room, corridor' ) :: _ ->
+                    constant
+                        { model
+                            | activePoints = ActiveRoom room Maybe.Nothing :: activePoints
+                            , corridors = corridor' :: model.corridors
+                        }
 
                 [] ->
                     constant model
