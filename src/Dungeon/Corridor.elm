@@ -109,6 +109,9 @@ add : Vector -> Corridor -> Corridor
 add point (A ({ points } as model)) =
     A { model | points = points ++ [ point ] }
 
+addEnd: DirectedVector -> Corridor -> Corridor
+addEnd end (A model) =
+    A { model | end = Just end}
 
 toTiles : Corridor -> Tiles
 toTiles (A { start, points, walls, entrances }) =

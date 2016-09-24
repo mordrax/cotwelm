@@ -2,6 +2,7 @@ module Dungeon.CorridorTest exposing (all)
 
 import Test exposing (..)
 import Expect exposing (Expectation)
+import Should exposing (..)
 import Dungeon.Corridor as Corridor exposing (..)
 import Tile exposing (..)
 import Utils.Vector exposing (..)
@@ -13,6 +14,7 @@ all : Test
 all =
     describe "Dungeon.Corridors"
         [ create_corridor
+        , start_and_end_points_are_drawn
         , add_points_to_corridor_draws_correct_path
         , horizontal_corridors_have_walls
         , diagonal_corridors_have_walls_too
@@ -48,11 +50,9 @@ tilesContains matchingTileType positions tiles =
 create_corridor : Test
 create_corridor =
     let
-        corridor =
-            Corridor.new ( ( 5, 5 ), N )
-
         tiles =
-            Corridor.toTiles corridor
+            Corridor.new ( ( 5, 5 ), N )
+                |> Corridor.toTiles
 
         floorTile =
             tileAtPosition Tile.DarkDgn ( 5, 5 ) tiles
@@ -60,10 +60,29 @@ create_corridor =
         doorTile =
             tileAtPosition Tile.DoorClosed ( 5, 5 ) tiles
     in
-        test "create a new corridor with a single entry point"
-            (\_ ->
-                Expect.true "Expected a floor or door at the start point." (floorTile || doorTile)
-            )
+        describe "creating a new corridor"
+            [ it_should "have a single entry point that is a floor or a door" (floorTile || doorTile)
+            ]
+
+
+start_and_end_points_are_drawn : Test
+start_and_end_points_are_drawn =
+    let
+        tiles =
+            Corridor.new ( ( 3, 3 ), N )
+                |> Corridor.addEnd ( ( 10, 3 ), S )
+                |> Corridor.toTiles
+
+        expectedBeginFloorTiles =
+            [ ( 3, 3 ) ]
+
+        expectedEndFloorTiles =
+            [ ( 10, 3 ) ]
+    in
+        describe "start and end tiles are being drawn"
+            [ it_should "have a start floor tile" (tilesContains Tile.DarkDgn expectedBeginFloorTiles tiles)
+            , it_should "have a end floot tile" (tilesContains Tile.DarkDgn expectedEndFloorTiles tiles)
+            ]
 
 
 add_points_to_corridor_draws_correct_path : Test
@@ -75,14 +94,12 @@ add_points_to_corridor_draws_correct_path =
         corridor7 =
             Corridor.add ( 7, 7 ) corridor
 
-        corridor10 =
+        tiles10 =
             Corridor.add ( 7, 10 ) corridor7
+                |> Corridor.toTiles
 
         tiles7 =
             Corridor.toTiles corridor7
-
-        tiles10 =
-            Corridor.toTiles corridor10
 
         -- we leave out the start/end as they may not be paths
         expectedTiles7 =
@@ -95,18 +112,9 @@ add_points_to_corridor_draws_correct_path =
             [ ( 1, 10 ), ( 50, 50 ) ]
     in
         describe "adding points to path"
-            [ test "add a diagonal point to (7, 7)"
-                (\_ ->
-                    Expect.true "Expected a path between (5, 5) to (7, 7)" (tilesContains Tile.DarkDgn expectedTiles7 tiles7)
-                )
-            , test "add a second, vertical point to (7, 10)"
-                (\_ ->
-                    Expect.true "Expected a path between (5, 5) to (7, 7) to (7, 10)" (tilesContains Tile.DarkDgn expectedTiles10 tiles10)
-                )
-            , test "make sure invalid tiles are not paths"
-                (\_ ->
-                    Expect.false "Expected no paths for other tiles" (tilesContains Tile.DarkDgn invalidTiles tiles10)
-                )
+            [ it_should "create a path between (5, 5) and (7, 7)" (tilesContains Tile.DarkDgn expectedTiles7 tiles7)
+            , it_should "create a path between (5, 5), (7, 7) and (7, 10)" (tilesContains Tile.DarkDgn expectedTiles10 tiles10)
+            , it_should_not "contain paths for invalid tiles" (tilesContains Tile.DarkDgn invalidTiles tiles10)
             ]
 
 
@@ -127,10 +135,9 @@ horizontal_corridors_have_walls =
             , ( 8, 11 )
             ]
     in
-        test "horizontal corridors have walls"
-            (\_ ->
-                Expect.true "Expected horizontal walls wrap the corridor" (tilesContains Tile.Rock walls tiles)
-            )
+        describe "a horizontal length corridor"
+            [ it_should "be lined with walls on the top/bottom" (tilesContains Tile.Rock walls tiles)
+            ]
 
 
 {-|
@@ -165,18 +172,14 @@ diagonal_corridors_have_walls_too =
         pathWalls =
             [ ( 2, 1 ), ( 4, 1 ) ]
                 ++ [ ( 3, 2 ), ( 5, 2 ) ]
-    in
-        test "diagonal corridors have walls"
-            (\_ ->
-                let
-                    diagonalRocks =
-                        tilesContains Tile.Rock walls tiles
 
-                    diagonalHalfRocks =
-                        tilesContains Tile.PathRock pathWalls tiles
-                in
-                    Expect.true "Expected full and half walls wrap diagonal corridor" (diagonalRocks && diagonalHalfRocks)
-            )
+        diagonalRocks =
+            tilesContains Tile.Rock walls tiles
+
+        diagonalHalfRocks =
+            tilesContains Tile.PathRock pathWalls tiles
+    in
+        it_should "have walls" (diagonalRocks && diagonalHalfRocks)
 
 
 {-|
@@ -217,17 +220,11 @@ diagonal_corridors_have_walls_that_bend_around_corners =
         expectedHalfWalls =
             [ ( 3, 1 ), ( 2, 2 ), ( 4, 2 ) ]
     in
-        describe "Diagonal corridors meeting rooms"
-            [ test "full walls"
-                (\_ ->
-                    Expect.true "Expected to wrap around corridors"
-                        <| tilesContains Tile.Rock expectedWalls corridorTilesEndingAt1_1
-                )
-            , test "half walls"
-                (\_ ->
-                    Expect.true "Expected to line the points on either side"
-                        <| tilesContains Tile.PathRock expectedHalfWalls corridorTilesEndingAt1_1
-                )
+        describe "when diagonal corridors meeting rooms"
+            [ it_should "have full walls that wrap around corridors"
+                <| tilesContains Tile.Rock expectedWalls corridorTilesEndingAt1_1
+            , it_should "have half walls that follow the corridor"
+                <| tilesContains Tile.PathRock expectedHalfWalls corridorTilesEndingAt1_1
             ]
 
 
