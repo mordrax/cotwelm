@@ -67,7 +67,7 @@ type alias CorridorEnding =
     ( Corridor, Vector, CompassDirection )
 
 
-allPossibleEndings : Corridor -> List CorridorEnding
+allPossibleEndings : Corridor -> DirectedVectors
 allPossibleEndings ((A ({ start, points } as model)) as corridor) =
     let
         ( startVector, startDirection ) =
@@ -92,35 +92,50 @@ allPossibleEndings ((A ({ start, points } as model)) as corridor) =
             , Vector.add lastPoint right
             )
 
-        corridorWithEnd point =
-            A { model | points = points ++ [ point ] }
+        ( leftEndFacing, rightEndFacing ) =
+            ( Vector.rotateUnlessCardinal left Left |> Vector.toDirection
+            , Vector.rotateUnlessCardinal right Right |> Vector.toDirection
+            )
+
+        corridorWithEnd point facing =
+            addEnd ( point, facing ) corridor
     in
         (if CompassDirection.isCardinal straightAhead then
-            [ ( corridor, lastPoint, straightAhead ) ]
+            [ ( lastPoint, straightAhead ) ]
          else
             []
         )
-            ++ [ ( corridorWithEnd leftEnd, leftEnd, Vector.rotateUnlessCardinal left Left |> Vector.toDirection )
-               , ( corridorWithEnd rightEnd, rightEnd, Vector.rotateUnlessCardinal right Right |> Vector.toDirection )
-               ]
+            ++ [ ( leftEnd, leftEndFacing ), ( rightEnd, rightEndFacing ) ]
 
 
 add : Vector -> Corridor -> Corridor
 add point (A ({ points } as model)) =
     A { model | points = points ++ [ point ] }
 
-addEnd: DirectedVector -> Corridor -> Corridor
+
+addEnd : DirectedVector -> Corridor -> Corridor
 addEnd end (A model) =
-    A { model | end = Just end}
+    A { model | end = Just end }
+
+
+end : Corridor -> Maybe DirectedVector
+end (A { end }) =
+    end
+
 
 toTiles : Corridor -> Tiles
-toTiles (A { start, points, walls, entrances }) =
+toTiles (A { start, points, walls, entrances, end }) =
     let
         ( startVector, startDirection ) =
             start
 
         paths =
-            constructPath (startVector :: points)
+            case end of
+                Just ( endTile, _ ) ->
+                    constructPath (startVector :: points ++ [ endTile ])
+
+                Nothing ->
+                    constructPath (startVector :: points)
 
         data =
             [ ( Tile.DarkDgn, paths )
