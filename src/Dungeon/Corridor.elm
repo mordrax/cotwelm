@@ -99,15 +99,6 @@ possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
             |> List.map makeDirectedVector
 
 
-
---
---possibleEndings: DirectedVector -> RotationDirection -> DirectedVector
---possibleEndings (point, facing) dir =
---    let
---
---    in
-
-
 add : DirectedVector -> Corridor -> Corridor
 add point (A ({ points } as model)) =
     A { model | points = point :: points }
@@ -123,17 +114,20 @@ end (A { points }) =
             Nothing
 
 
+allPoints : Model -> Vectors
+allPoints { points, start } =
+    (points ++ [ start ])
+        |> List.map fst
+
+
 toTiles : Corridor -> Tiles
-toTiles (A { start, points, walls, entrances }) =
+toTiles (A ({ start, points, walls, entrances } as model)) =
     let
-        paths =
-            points ++ [start]
-            |> List.map fst
-            |> constructPath
+        ( paths, walls ) =
+            ( constructPath (allPoints model), constructWalls (allPoints model) [] )
 
         data =
             [ ( Tile.DarkDgn, paths )
-            , ( Tile.Rock, List.concat walls )
             ]
 
         makeTiles ( tileType, positions ) =
@@ -142,10 +136,72 @@ toTiles (A { start, points, walls, entrances }) =
     in
         List.concat (List.map makeTiles data)
             ++ List.map Entrance.toTile entrances
+            ++ walls
 
 
 
 -- Privates
+
+
+constructWalls : Vectors -> Tiles -> Tiles
+constructWalls points walls =
+    case points of
+        [] ->
+            walls
+
+        _ :: [] ->
+            walls
+
+        a :: b :: rest ->
+            constructWalls (b :: rest) (constructWall a b) ++ walls
+
+
+constructWall : Vector -> Vector -> Tiles
+constructWall (( x1, y1 ) as a) (( x2, y2 ) as b) =
+    let
+        bMinusOne =
+            Vector.sub a b
+                |> Vector.sub ( 1, 1 )
+                |> Vector.add a
+
+        diagonalDirection =
+            Vector.sub a b
+                |> Vector.unit
+
+        ( left, right ) =
+            ( Left, Right )
+                |> Vector.map (Vector.rotate diagonalDirection)
+
+        getLeftRight point =
+            List.map (Vector.add point) [ left, right ]
+
+        _ =
+            Debug.log "Corridor.constructWall"
+                { a = a
+                , b = b
+                , bMinusOne = bMinusOne
+                , diagonalDirection = diagonalDirection
+                , left = left
+                , right = right
+                }
+
+        xMinusOne ( x, y ) =
+            ( x - 1, y )
+
+        xPlusOne ( x, y ) =
+            ( x + 1, y )
+    in
+        if x1 == x2 then
+            (path ( x1 - 1, y1 ) ( x2 - 1, y2 ) ++ path ( x1 + 1, y1 ) ( x2 + 1, y2 ))
+                |> List.map (flip Tile.toTile Tile.Rock)
+        else if y1 == y2 then
+            (path ( x1, y1 - 1 ) ( x2, y2 - 1 ) ++ path ( x1, y1 + 1 ) ( x2, y2 + 1 ))
+                |> List.map (flip Tile.toTile Tile.Rock)
+        else
+            (path a bMinusOne)
+                |> List.map getLeftRight
+                |> List.concat
+                |> List.map (flip Tile.toTile Tile.WallDarkDgn)
 
 
 {-| Give a list of points that denote the start, end and each turn of a corridor

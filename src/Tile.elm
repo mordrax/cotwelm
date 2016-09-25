@@ -127,6 +127,18 @@ view tile neighbours =
     scaledView tile 1.0 neighbours
 
 
+getType : Tile -> TileType
+getType tile =
+    let
+        { base } =
+            tile
+
+        (A model) =
+            base
+    in
+        model.tile
+
+
 scaledView : Tile -> Float -> TileNeighbours -> Html a
 scaledView ({ base, position } as tile) scale neighbours =
     let
@@ -137,28 +149,19 @@ scaledView ({ base, position } as tile) scale neighbours =
             toString (fst position) ++ toString (snd position)
 
         halfTiles =
-            [ ( PathRock, Path )
-            , ( PathGrass, Path )
-            , ( WaterGrass, Water )
-            , ( WaterPath, Water )
-              --, (Grass50Cave50, Grass)
-              --, (White50Cave50, White)
-            , ( WallDarkDgn, Rock )
-            , ( WallLitDgn, Rock )
+            [ ( PathRock, Path, False )
+            , ( PathGrass, Path, False )
+            , ( WaterGrass, Water, False )
+            , ( WaterPath, Water, False )
+              --, (Grass50Cave50, Grass, False)
+              --, (White50Cave50, White, False)
+            , ( WallDarkDgn, Rock, False )
+            , ( WallDarkDgn, DarkDgn, True )
+            , ( WallLitDgn, Rock, False )
             ]
 
         halfTile =
-            List.Extra.find (\x -> model.tile == (fst x)) halfTiles
-
-        getType tile =
-            let
-                { base } =
-                    tile
-
-                (A model) =
-                    base
-            in
-                model.tile
+            List.Extra.find (\( tile, _, _ ) -> model.tile == tile) halfTiles
 
         aOrb x a b =
             x == a || x == b
@@ -174,7 +177,7 @@ scaledView ({ base, position } as tile) scale neighbours =
                 Nothing ->
                     0
 
-                Just ( _, tileType ) ->
+                Just ( _, tileType, isFlip ) ->
                     let
                         checkUpLeft =
                             \up left ->

@@ -231,21 +231,13 @@ digger ({ start, length } as instruction) =
 
         finishDirectionGen finish =
             (Corridor.possibleEnds finish corridor |> shuffle)
-                `andThen` (\ends -> constant (List.head ends))
+                `andThen` (List.head >> constant)
 
         digPath =
             Corridor.path startVector finish
 
         corridor =
             Corridor.init start
-
-        _ =
-            Debug.log "digger"
-                { finish = finish
-                , digPath = digPath
-                , corridor = corridor
-                , instruction = instruction
-                }
     in
         finishDirectionGen finish
             `andThen` (\maybeEnd ->
