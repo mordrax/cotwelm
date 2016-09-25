@@ -107,12 +107,17 @@ step ({ activePoints } as model) =
         -- make a corridor from a existing entrance
         (ActiveRoom room (Just entrance)) :: remainingPoints ->
             generateCorridor room entrance model.config
-                `andThen` (\corridor ->
-                            constant
-                                { model
-                                    | rooms = room :: model.rooms
-                                    , activePoints = ActiveCorridor corridor :: remainingPoints
-                                }
+                `andThen` (\maybeCorridor ->
+                            case maybeCorridor of
+                                Just corridor ->
+                                    constant
+                                        { model
+                                            | rooms = room :: model.rooms
+                                            , activePoints = ActiveCorridor corridor :: remainingPoints
+                                        }
+
+                                Maybe.Nothing ->
+                                    constant { model | rooms = room :: model.rooms }
                           )
 
         -- pick a active corridor and keep digging!
@@ -158,7 +163,7 @@ generateEntrance room ({ config } as model) =
 {-| Generate a new corridor given a room and a entrance of the room.
     The corridor will go in a random direction and be of random length.
 -}
-generateCorridor : Room -> Entrance -> Config.Model -> Generator Corridor
+generateCorridor : Room -> Entrance -> Config.Model -> Generator (Maybe Corridor)
 generateCorridor room entrance config =
     let
         entranceFacing =
@@ -215,7 +220,7 @@ type alias DigInstruction =
     }
 
 
-digger : DigInstruction -> Generator Corridor
+digger : DigInstruction -> Generator (Maybe Corridor)
 digger ({ start, length } as instruction) =
     let
         ( startVector, startDirection ) =
@@ -246,10 +251,10 @@ digger ({ start, length } as instruction) =
             `andThen` (\maybeEnd ->
                         case maybeEnd of
                             Just end ->
-                                constant <| Corridor.add end corridor
+                                constant (Just <| Corridor.add end corridor)
 
                             Maybe.Nothing ->
-                                constant corridor
+                                constant Maybe.Nothing
                       )
 
 
