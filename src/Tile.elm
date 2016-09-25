@@ -148,72 +148,97 @@ scaledView ({ base, position } as tile) scale neighbours =
         positionAsClass =
             toString (fst position) ++ toString (snd position)
 
-        halfTiles =
-            [ ( PathRock, Path, False )
-            , ( PathGrass, Path, False )
-            , ( WaterGrass, Water, False )
-            , ( WaterPath, Water, False )
-              --, (Grass50Cave50, Grass, False)
-              --, (White50Cave50, White, False)
-            , ( WallDarkDgn, Rock, False )
-            , ( WallDarkDgn, DarkDgn, True )
-            , ( WallLitDgn, Rock, False )
-            ]
+        transform rotation scale =
+            ( "transform", "rotate(" ++ toString rotation ++ "deg) scale" ++ toString ( scale, scale ) )
 
-        halfTile =
-            List.Extra.find (\( tile, _, _ ) -> model.tile == tile) halfTiles
+        rotation =
+            case List.Extra.find (\( tile, _, _ ) -> model.tile == tile) halfTiles of
+                Nothing ->
+                    0
+
+                Just data ->
+                    rotateHalfTiles tile data neighbours
+    in
+        div
+            [ class ("tile " ++ toString model.tile ++ " " ++ positionAsClass)
+            , style [ transform rotation scale ]
+            , Lib.toScaledTilePosition position scale
+            ]
+            []
+
+
+type alias HalfTileData =
+    ( TileType, TileType, Int )
+
+
+halfTiles : List HalfTileData
+halfTiles =
+    [ ( PathRock, Path, 0 )
+    , ( PathGrass, Path, 0 )
+    , ( WaterGrass, Water, 0 )
+    , ( WaterPath, Path, 180 )
+      --, (Grass50Cave50, Grass, False)
+      --, (White50Cave50, White, False)
+    , ( WallDarkDgn, DarkDgn, 180 )
+    , ( WallLitDgn, LitDgn, 180 )
+    ]
+
+
+rotateHalfTiles : Tile -> HalfTileData -> TileNeighbours -> Int
+rotateHalfTiles ({ base, position } as halfTile) ( _, targetTileType, rotationOffset ) neighbours =
+    let
+        (A model) =
+            base
+
+        tileType =
+            getType halfTile
 
         aOrb x a b =
             x == a || x == b
 
-        rotate deg =
-            ( "transform", "rotate(" ++ (toString deg) ++ "deg)" )
+        checkUpLeft maybeUp maybeLeft =
+            case ( maybeUp, maybeLeft ) of
+                ( Just up, Just left ) ->
+                    if (isSameType up left && getType up == targetTileType) then
+                        90
+                    else
+                        0
 
-        scaleStyle =
-            ( "transform", "scale(" ++ (toString scale) ++ "," ++ (toString scale) ++ ")" )
-
-        rotation =
-            case halfTile of
-                Nothing ->
+                _ ->
                     0
 
-                Just ( _, tileType, isFlip ) ->
-                    let
-                        checkUpLeft =
-                            \up left ->
-                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ up, left ] then
-                                    90
-                                else
-                                    0
+        checkUpRight maybeUp maybeRight =
+            case ( maybeUp, maybeRight ) of
+                ( Just up, Just right ) ->
+                    if (isSameType up right && getType up == targetTileType) then
+                        180
+                    else
+                        0
 
-                        checkUpRight =
-                            \up right ->
-                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ up, right ] then
-                                    180
-                                else
-                                    0
+                _ ->
+                    0
 
-                        -- no down left check as this is default tile direction
-                        checkDownRight =
-                            \down right ->
-                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ right, down ] then
-                                    -90
-                                else
-                                    0
-                    in
-                        case neighbours of
-                            ( Just up, Just right, Just down, Just left ) ->
-                                (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right)
+        -- no down left check as this is default tile direction
+        checkDownRight maybeDown maybeRight =
+            case ( maybeDown, maybeRight ) of
+                ( Just down, Just right ) ->
+                    if (isSameType down right && getType down == targetTileType) then
+                        -90
+                    else
+                        0
 
-                            _ ->
-                                0
+                _ ->
+                    0
     in
-        div
-            [ class ("tile " ++ toString model.tile ++ " " ++ positionAsClass)
-            , style [ rotate rotation, scaleStyle ]
-            , Lib.toScaledTilePosition position scale
-            ]
-            []
+        case neighbours of
+            ( Nothing, _, Nothing, _ ) ->
+                0
+
+            ( _, Nothing, _, Nothing ) ->
+                0
+
+            ( up, right, down, left ) ->
+                (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right) + rotationOffset
 
 
 asciiToTileType : Char -> TileType
