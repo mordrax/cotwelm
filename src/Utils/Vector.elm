@@ -76,7 +76,6 @@ distance ( v1x, v1y ) ( v2x, v2y ) =
             |> toFloat
             |> sqrt
 
-
 {-| Rotates a 2d vector by 45 degrees either to the left or right of the
 original vector. Original vector can take the form of (+-x, +-y) where
 x and y can only have a magnitude of 1
