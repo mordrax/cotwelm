@@ -20,6 +20,7 @@ module Dungeon.Room exposing (..)
 --        )
 
 import Dungeon.Rooms.Config as Config exposing (..)
+import Dungeon.Corridor as Corridor exposing (..)
 import Random exposing (andThen, Generator)
 import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
@@ -187,8 +188,8 @@ entranceFacing (A { walls, floors, worldPos }) entrance =
             north
 
 
-placeRoom : CorridorEnding -> Room -> Generator Room
-placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
+placeRoom : DirectedVector -> Room -> Generator Room
+placeRoom ( endPoint, facing ) (A ({ walls, dimension } as model)) =
     let
         wallFacing =
             facing
@@ -296,9 +297,17 @@ roomTypeGenerator config model =
 
 
 positionGenerator : Config.Model -> Model -> Generator Model
-positionGenerator { dungeonSize } model =
-    (Dice.d2d dungeonSize dungeonSize)
-        `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
+positionGenerator { dungeonSize } ({ dimension } as model) =
+    let
+        ( dimX, dimY ) =
+            dimension
+
+        ( maxX, maxY ) =
+            ( dungeonSize - dimX - 1, dungeonSize - dimY - 1 )
+            |> Vector.map (max 0)
+    in
+        (Dice.d2d maxX maxY)
+            `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
 
 
 roomSizeGenerator : Config.Model -> Model -> Generator Model
