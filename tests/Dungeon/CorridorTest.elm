@@ -51,7 +51,7 @@ create_corridor : Test
 create_corridor =
     let
         tiles =
-            Corridor.new ( ( 5, 5 ), N )
+            Corridor.init ( ( 5, 5 ), N )
                 |> Corridor.toTiles
 
         floorTile =
@@ -69,8 +69,8 @@ start_and_end_points_are_drawn : Test
 start_and_end_points_are_drawn =
     let
         tiles =
-            Corridor.new ( ( 3, 3 ), N )
-                |> Corridor.addEnd ( ( 10, 3 ), S )
+            Corridor.init ( ( 3, 3 ), N )
+                |> Corridor.add ( ( 10, 3 ), S )
                 |> Corridor.toTiles
 
         expectedBeginFloorTiles =
@@ -89,13 +89,13 @@ add_points_to_corridor_draws_correct_path : Test
 add_points_to_corridor_draws_correct_path =
     let
         corridor =
-            Corridor.new ( ( 5, 5 ), N )
+            Corridor.init ( ( 5, 5 ), N )
 
         corridor7 =
-            Corridor.add ( 7, 7 ) corridor
+            Corridor.add ( ( 7, 7 ), S ) corridor
 
         tiles10 =
-            Corridor.add ( 7, 10 ) corridor7
+            Corridor.add ( ( 7, 10 ), S ) corridor7
                 |> Corridor.toTiles
 
         tiles7 =
@@ -122,8 +122,8 @@ horizontal_corridors_have_walls : Test
 horizontal_corridors_have_walls =
     let
         tiles =
-            Corridor.new ( ( 10, 10 ), E )
-                |> Corridor.add ( 8, 10 )
+            Corridor.init ( ( 10, 10 ), E )
+                |> Corridor.add (( 8, 10 ), S)
                 |> Corridor.toTiles
 
         walls =
@@ -161,8 +161,8 @@ diagonal_corridors_have_walls_too : Test
 diagonal_corridors_have_walls_too =
     let
         tiles =
-            Corridor.new ( ( 5, 3 ), N )
-                |> Corridor.add ( 2, 0 )
+            Corridor.init ( ( 5, 3 ), N )
+                |> Corridor.add (( 2, 0 ), W)
                 |> Corridor.toTiles
 
         walls =
@@ -203,15 +203,15 @@ diagonal_corridors_have_walls_that_bend_around_corners : Test
 diagonal_corridors_have_walls_that_bend_around_corners =
     let
         corridorTilesEndingAt1_1 =
-            Corridor.new ( ( 5, 4 ), N )
-                |> Corridor.add ( 2, 1 )
-                |> Corridor.add ( 1, 1 )
+            Corridor.init ( ( 5, 4 ), N )
+                |> Corridor.add (( 2, 1 ), W)
+                |> Corridor.add (( 1, 1 ), W)
                 |> Corridor.toTiles
 
         corridorTilesStartingAt1_1 =
-            Corridor.new ( ( 1, 1 ), W )
-                |> Corridor.add ( 2, 1 )
-                |> Corridor.add ( 5, 4 )
+            Corridor.init ( ( 1, 1 ), W )
+                |> Corridor.add (( 2, 1 ), W)
+                |> Corridor.add (( 5, 4 ), W)
                 |> Corridor.toTiles
 
         expectedWalls =

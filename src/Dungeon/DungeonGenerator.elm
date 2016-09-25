@@ -19,6 +19,7 @@ import Utils.Vector as Vector exposing (..)
 import Game.Maps as Maps exposing (..)
 import Lodash exposing (..)
 import List.Extra exposing (dropWhile)
+import Utils.CompassDirection exposing (..)
 
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
@@ -65,7 +66,7 @@ type alias ActivePoints =
 
 type ActivePoint
     = ActiveRoom Room (Maybe Entrance)
-    | ActiveCorridor Corridor Vector
+    | ActiveCorridor Corridor
 
 
 init : Config.Model -> Generator Model
@@ -105,16 +106,30 @@ step ({ activePoints } as model) =
         -- pick a active room and either make a new entrance or
         -- make a corridor from a existing entrance
         (ActiveRoom room (Just entrance)) :: remainingPoints ->
-            generateCorridor room
-                entrance
-                { model
-                    | activePoints = remainingPoints
-                    , rooms = room :: model.rooms
-                }
+            generateCorridor room entrance model.config
+                `andThen` (\corridor ->
+                            constant
+                                { model
+                                    | rooms = room :: model.rooms
+                                    , activePoints = ActiveCorridor corridor :: remainingPoints
+                                }
+                          )
 
         -- pick a active corridor and keep digging!
-        (ActiveCorridor corridor exit) :: remainingPoints ->
-            generateRoomOffCorridor corridor { model | corridors = model.corridors }
+        (ActiveCorridor corridor) :: remainingPoints ->
+            case Corridor.end corridor of
+                Just corridorEnding ->
+                    generateRoom corridorEnding model.config
+                        `andThen` (\room ->
+                                    constant
+                                        { model
+                                            | corridors = corridor :: model.corridors
+                                            , activePoints = ActiveRoom room Maybe.Nothing :: model.activePoints
+                                        }
+                                  )
+
+                Maybe.Nothing ->
+                    constant { model | corridors = corridor :: model.corridors }
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -143,29 +158,32 @@ generateEntrance room ({ config } as model) =
 {-| Generate a new corridor given a room and a entrance of the room.
     The corridor will go in a random direction and be of random length.
 -}
-generateCorridor : Room -> Entrance -> Model -> Generator Model
-generateCorridor room entrance ({ config } as model) =
+generateCorridor : Room -> Entrance -> Config.Model -> Generator Corridor
+generateCorridor room entrance config =
     let
-        straightAhead =
+        entranceFacing =
             Room.entranceFacing room entrance
 
+        entrancePosition =
+            Entrance.position entrance
+
         corridorStart =
-            Vector.add (Entrance.position entrance) straightAhead
+            Vector.add entrancePosition entranceFacing
 
         leftDirection =
-            Vector.rotate straightAhead Left
+            Vector.rotate entranceFacing Left
 
         rightDirection =
-            Vector.rotate straightAhead Right
+            Vector.rotate entranceFacing Right
 
         randomDirection =
-            [ leftDirection, rightDirection, straightAhead ]
+            [ leftDirection, rightDirection, entranceFacing ]
                 |> shuffle
-                |> Random.map (headWithDefault straightAhead)
+                |> Random.map (headWithDefault entranceFacing)
 
         _ =
             Debug.log "generateCorridor"
-                { straightAhead = straightAhead
+                { entranceFacing = entranceFacing
                 , corridorStart = corridorStart
                 , leftDirection = leftDirection
                 , rightDirection = rightDirection
@@ -176,40 +194,13 @@ generateCorridor room entrance ({ config } as model) =
     in
         Random.map2 (,) randomCorridorLength randomDirection
             `andThen` \( len, dir ) ->
-                        constant <| digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len) model
+                        digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len)
 
 
-generateRoomOffCorridor : Corridor -> Model -> Generator Model
-generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
-    let
-        endings =
-            Corridor.allPossibleEndings corridor
-
-        roomGen =
-            Room.generate config
-
-        generateRoomAndCorridor room ending =
-            Room.placeRoom ending room
-                `andThen` (\room -> constant ( room, Corridor.addEnd ending corridor ))
-
-        placeRoomWithOptions room =
-            endings
-                |> List.map (generateRoomAndCorridor room)
-                |> Random.Extra.together
-
-        addToModel options =
-            case options of
-                ( room, corridor' ) :: _ ->
-                    constant
-                        { model
-                            | activePoints = ActiveRoom room Maybe.Nothing :: activePoints
-                            , corridors = corridor' :: model.corridors
-                        }
-
-                [] ->
-                    constant model
-    in
-        roomGen `andThen` placeRoomWithOptions `andThen` addToModel
+generateRoom : DirectedVector -> Config.Model -> Generator Room
+generateRoom corridorEnding config =
+    Room.generate config
+        `andThen` Room.placeRoom corridorEnding
 
 
 
@@ -224,58 +215,42 @@ type alias DigInstruction =
     }
 
 
-digger : DigInstruction -> Model -> Model
-digger ({ start, length } as instruction) model =
+digger : DigInstruction -> Generator Corridor
+digger ({ start, length } as instruction) =
     let
         ( startVector, startDirection ) =
             start
 
-        emptyAtPosition pos =
-            dungeonConstructAtPos pos model == Nothing
-
         finish =
             Vector.add startVector (Vector.scaleInt length (Vector.fromCompass startDirection))
+
+        finishDirectionGen finish =
+            (Corridor.possibleEnds finish corridor |> shuffle)
+                `andThen` (\ends -> constant (List.head ends))
 
         digPath =
             Corridor.path startVector finish
 
-        dugPath =
-            List.Extra.takeWhile emptyAtPosition digPath
-                |> List.reverse
-
         corridor =
-            Corridor.new start
+            Corridor.init start
 
         _ =
             Debug.log "digger"
                 { finish = finish
                 , digPath = digPath
-                , dugPath = dugPath
                 , corridor = corridor
                 , instruction = instruction
                 }
     in
-        case dugPath of
-            actualFinish :: _ ->
-                let
-                    activeCorridor =
-                        ActiveCorridor (Corridor.add actualFinish corridor) actualFinish
-                in
-                    { model | activePoints = activeCorridor :: model.activePoints }
+        finishDirectionGen finish
+            `andThen` (\maybeEnd ->
+                        case maybeEnd of
+                            Just end ->
+                                constant <| Corridor.add end corridor
 
-            [] ->
-                { model | corridors = corridor :: model.corridors }
-
-
-
---------------------
--- Room placement --
---------------------
-
-
-canFitRoom : Room -> CorridorEnding -> Model -> Bool
-canFitRoom room ( corridor, corridorEnd, facing ) model =
-    True
+                            Maybe.Nothing ->
+                                constant corridor
+                      )
 
 
 
@@ -397,5 +372,5 @@ roomsAndCorridorsFromActivePoint point ( rooms, corridors ) =
         ActiveRoom room _ ->
             ( room :: rooms, corridors )
 
-        ActiveCorridor corridor _ ->
+        ActiveCorridor corridor ->
             ( rooms, corridor :: corridors )

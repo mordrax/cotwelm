@@ -5,6 +5,7 @@ module Utils.Vector exposing (..)
 -}
 
 import Utils.CompassDirection exposing (..)
+import Dict exposing (..)
 
 
 type alias Vector =
@@ -28,7 +29,7 @@ type alias Vectors =
     List Vector
 
 
-map : (Int -> Int) -> Vector -> Vector
+map : (a -> b) -> (a, a) -> (b, b)
 map f ( x, y ) =
     ( f x, f y )
 
@@ -48,6 +49,8 @@ add ( v1x, v1y ) ( v2x, v2y ) =
     ( v1x + v2x, v1y + v2y )
 
 
+{-| a -> b -> (a - b)
+-}
 sub : Vector -> Vector -> Vector
 sub ( v1x, v1y ) ( v2x, v2y ) =
     ( v1x - v2x, v1y - v2y )
@@ -101,35 +104,46 @@ rotate ( xInt, yInt ) dir =
         ( round x', round y' )
 
 
+rotateCompass : CompassDirection -> RotationDirection -> CompassDirection
+rotateCompass compass rotation =
+    fromCompass compass
+        |> flip rotate rotation
+        |> toDirection
+
+
+facing : Vector -> Vector -> CompassDirection
+facing start end =
+    (sub end start)
+        |> unit
+        |> toDirection
+
+
+directions : Dict Vector CompassDirection
+directions =
+    Dict.fromList
+        [ ( ( 0, 1 ), N )
+        , ( ( 0, -1 ), S )
+        , ( ( 1, 0 ), E )
+        , ( ( -1, 0 ), W )
+        , ( ( 1, 1 ), NE )
+        , ( ( -1, 1 ), NW )
+        , ( ( 1, -1 ), SE )
+        , ( ( -1, -1 ), SW )
+        ]
+
+
 toDirection : Vector -> CompassDirection
 toDirection vector =
-    case unit vector of
-        ( 0, 1 ) ->
-            N
+    case Dict.get (unit vector) directions of
+        Just dir ->
+            dir
 
-        ( 0, -1 ) ->
-            S
-
-        ( 1, 0 ) ->
-            E
-
-        ( -1, 0 ) ->
-            W
-
-        ( 1, 1 ) ->
-            NE
-
-        ( -1, 1 ) ->
-            NW
-
-        ( 1, -1 ) ->
-            SE
-
-        ( -1, -1 ) ->
-            SW
-
-        _ ->
-            W
+        Nothing ->
+            let
+                _ =
+                    Debug.log "ERROR: Could not get a direction from the unit vector: " (unit vector)
+            in
+                W
 
 
 fromCompass : CompassDirection -> Vector
