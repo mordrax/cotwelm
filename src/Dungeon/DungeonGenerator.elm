@@ -189,7 +189,8 @@ generateRoomOffCorridor corridor ({ config, rooms, activePoints } as model) =
             Room.generate config
 
         generateRoomAndCorridor room ending =
-            Room.placeRoom ending room `andThen` (\room -> constant (room, Corridor.addEnd ending corridor))
+            Room.placeRoom ending room
+                `andThen` (\room -> constant ( room, Corridor.addEnd ending corridor ))
 
         placeRoomWithOptions room =
             endings
