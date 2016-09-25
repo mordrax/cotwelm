@@ -69,7 +69,7 @@ init seed =
             List.map toKVPair (getTiles area)
 
         toKVPair tile =
-            ( tile.position, tile )
+            ( Tile.position tile, tile )
 
         --( level, seed' ) =
         --    Random.step (DungeonGenerator.generate Config.init) seed
@@ -126,8 +126,8 @@ view maps =
 fromTiles : Tiles -> Map
 fromTiles tiles =
     let
-        toKVPair ({ position } as tile) =
-            ( position, tile )
+        toKVPair tile =
+            ( Tile.position tile, tile )
     in
         tiles
             |> List.map toKVPair
@@ -137,14 +137,14 @@ fromTiles tiles =
 draw : Map -> Float -> List (Html a)
 draw map scale =
     let
-        neighbours =
-            tileNeighbours map
+        neighbours center =
+            tileNeighbours map center
 
         mapTiles =
             toTiles map
 
         toHtml tile =
-            Tile.scaledView tile scale (neighbours tile.position)
+            Tile.scaledView tile scale (neighbours <| Tile.position tile)
     in
         List.map toHtml mapTiles
 
@@ -162,8 +162,8 @@ getTile map pos =
 toScreenCoords : Map -> Int -> Map
 toScreenCoords map mapSize =
     let
-        invertY ( ( x, y ), val ) =
-            ( ( x, mapSize - y ), { val | position = ( x, mapSize - y ) } )
+        invertY ( ( x, y ), tile ) =
+            ( ( x, mapSize - y ), Tile.setPosition ( x, mapSize - y ) tile )
     in
         map
             |> Dict.toList
