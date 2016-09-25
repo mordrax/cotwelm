@@ -28,6 +28,11 @@ type alias Vectors =
     List Vector
 
 
+map : (Int -> Int) -> Vector -> Vector
+map f ( x, y ) =
+    ( f x, f y )
+
+
 zero : Vector
 zero =
     ( 0, 0 )

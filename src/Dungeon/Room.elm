@@ -297,9 +297,17 @@ roomTypeGenerator config model =
 
 
 positionGenerator : Config.Model -> Model -> Generator Model
-positionGenerator { dungeonSize } model =
-    (Dice.d2d dungeonSize dungeonSize)
-        `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
+positionGenerator { dungeonSize } ({ dimension } as model) =
+    let
+        ( dimX, dimY ) =
+            dimension
+
+        ( maxX, maxY ) =
+            ( dungeonSize - dimX - 1, dungeonSize - dimY - 1 )
+            |> Vector.map (max 0)
+    in
+        (Dice.d2d maxX maxY)
+            `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
 
 
 roomSizeGenerator : Config.Model -> Model -> Generator Model
