@@ -199,7 +199,16 @@ generateCorridor room entrance config =
     in
         Random.map2 (,) randomCorridorLength randomDirection
             `andThen` \( len, dir ) ->
-                        digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len)
+                        let
+                            facingEntrance =
+                                entranceFacing
+                                    |> Vector.scaleInt -1
+                                    |> Vector.toDirection
+
+                            corridor =
+                                Corridor.init ( corridorStart, facingEntrance )
+                        in
+                            digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len) corridor
 
 
 generateRoom : DirectedVector -> Config.Model -> Generator Room
@@ -220,24 +229,21 @@ type alias DigInstruction =
     }
 
 
-digger : DigInstruction -> Generator (Maybe Corridor)
-digger ({ start, length } as instruction) =
+digger : DigInstruction -> Corridor -> Generator (Maybe Corridor)
+digger ({ start, length } as instruction) corridor =
     let
-        ( startVector, startDirection ) =
+        ( digStart, digDirection ) =
             start
 
         finish =
-            Vector.add startVector (Vector.scaleInt length (Vector.fromCompass startDirection))
+            Vector.add digStart (Vector.scaleInt length (Vector.fromCompass digDirection))
 
         finishDirectionGen finish =
             (Corridor.possibleEnds finish corridor |> shuffle)
                 `andThen` (List.head >> constant)
 
         digPath =
-            Corridor.path startVector finish
-
-        corridor =
-            Corridor.init start
+            Corridor.path digStart finish
     in
         finishDirectionGen finish
             `andThen` (\maybeEnd ->

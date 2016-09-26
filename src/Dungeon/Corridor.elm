@@ -32,8 +32,9 @@ type alias Corridors =
 type alias Model =
     { start : DirectedVector
     , points : DirectedVectors
-    , walls : List Walls
+    , walls : Tiles
     , entrances : Entrances
+    , paths : Tiles
     }
 
 
@@ -44,6 +45,7 @@ init start =
         , points = []
         , walls = []
         , entrances = []
+        , paths = []
         }
 
 
@@ -100,8 +102,24 @@ possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
 
 
 add : DirectedVector -> Corridor -> Corridor
-add point (A ({ points } as model)) =
-    A { model | points = point :: points }
+add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
+    let
+        lastPoint =
+            headWithDefault start points
+
+        newPath =
+            path (fst lastPoint) newVector
+                |> List.map (\x -> Tile.toTile x Tile.DarkDgn)
+
+        newWalls =
+            constructWall lastPoint newPoint
+    in
+        A
+            { model
+                | points = newPoint :: points
+                , walls = newWalls ++ model.walls
+                , paths = newPath ++ model.paths
+            }
 
 
 end : Corridor -> Maybe DirectedVector
@@ -114,104 +132,92 @@ end (A { points }) =
             Nothing
 
 
-allPoints : Model -> Vectors
-allPoints { points, start } =
-    (points)
-        |> List.map fst
-        |> reverse
-        |> (::) (fst start)
-
-
 toTiles : Corridor -> Tiles
-toTiles (A ({ start, points, walls, entrances } as model)) =
-    let
-        ( paths, walls ) =
-            ( constructPath (allPoints model), constructWalls (allPoints model) [] )
-
-        data =
-            [ ( Tile.DarkDgn, paths )
-            ]
-
-        makeTiles ( tileType, positions ) =
-            positions
-                |> List.map (\pos -> Tile.toTile pos tileType)
-    in
-        List.concat (List.map makeTiles data)
-            ++ List.map Entrance.toTile entrances
-            ++ walls
+toTiles (A ({ start, points, walls, entrances, paths } as model)) =
+    List.map Entrance.toTile entrances
+        ++ walls
+        ++ paths
 
 
 
 -- Privates
 
 
-constructWalls : Vectors -> Tiles -> Tiles
-constructWalls points walls =
-    case points of
-        [] ->
-            walls
-
-        _ :: [] ->
-            walls
-
-        a :: b :: rest ->
-            constructWalls (b :: rest) (constructWall a b) ++ walls
-
-
-constructWall : Vector -> Vector -> Tiles
-constructWall (( x1, y1 ) as a) (( x2, y2 ) as b) =
+constructWall : DirectedVector -> DirectedVector -> Tiles
+constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, endDir ) as db) =
     let
-        bMinusOne =
-            Vector.sub b diagonalDirection
+        endMinusOne =
+            Vector.sub end startToEndVector
 
         aPlusOne =
-            Vector.add a diagonalDirection
+            Vector.add start startToEndVector
 
-        diagonalDirection =
-            Vector.sub b a
+        startToEndVector =
+            Vector.sub end start
                 |> Vector.unit
+
+        startToEndDirection =
+            Vector.toDirection startToEndVector
 
         ( left, right ) =
             ( Left, Right )
-                |> Vector.map (Vector.rotate diagonalDirection)
+                |> Vector.map (Vector.rotate startToEndVector)
 
         getLeftRight point =
             List.map (Vector.add point) [ left, right ]
-    in
-        if x1 == x2 then
+
+        ( sameX, sameY ) =
+            ( x1 == x2, y1 == y2 )
+
+        horizontalWallTiles =
             (path ( x1 - 1, y1 ) ( x2 - 1, y2 ) ++ path ( x1 + 1, y1 ) ( x2 + 1, y2 ))
                 |> List.map (flip Tile.toTile Tile.Rock)
-        else if y1 == y2 then
+
+        verticalWallTiles =
             (path ( x1, y1 - 1 ) ( x2, y2 - 1 ) ++ path ( x1, y1 + 1 ) ( x2, y2 + 1 ))
                 |> List.map (flip Tile.toTile Tile.Rock)
+
+        endToStartDirection =
+            startToEndDirection
+                |> Vector.fromCompass
+                |> Vector.scaleInt -1
+                |> Vector.toDirection
+
+        ( leftEntrance, rightEntrance ) =
+            Vector.map (Vector.rotateCompass endToStartDirection) ( Left, Right )
+
+        turnTiles =
+            if startDir == startToEndDirection then
+                []
+            else if (startDir == leftEntrance) then
+                [ Tile.toTile (Vector.add start (Vector.fromCompass rightEntrance)) Tile.Rock ]
+            else if (startDir == rightEntrance) then
+                [ Tile.toTile (Vector.add start (Vector.fromCompass leftEntrance)) Tile.Rock ]
+            else
+                []
+
+        _ =
+            Debug.log "Corridor.constructWall"
+                { turnTiles = turnTiles
+                , startDir = startDir
+                , startToEndDirection = startToEndDirection
+                , leftEntrance = leftEntrance
+                , rightEntrance = rightEntrance
+                }
+    in
+        if sameX then
+            horizontalWallTiles
+        else if sameY then
+            verticalWallTiles
         else
             let
                 halfTiles =
-                    (path a bMinusOne)
+                    (path start endMinusOne)
                         |> List.map getLeftRight
                         |> List.concat
                         |> List.map (flip Tile.toTile Tile.WallDarkDgn)
-
-                fullTiles =
-                    []
             in
-                halfTiles ++ fullTiles
-
-
-{-| Give a list of points that denote the start, end and each turn of a corridor
-   generates all the points in between.
--}
-constructPath : Vectors -> Vectors
-constructPath points =
-    case points of
-        [] ->
-            []
-
-        pt :: [] ->
-            [ pt ]
-
-        p1 :: ((p2 :: _) as remainingPts) ->
-            (path p1 p2) ++ (constructPath remainingPts)
+                halfTiles ++ turnTiles
 
 
 {-| The path between any two vectors is the linear line that connects them.
