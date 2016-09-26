@@ -116,8 +116,10 @@ end (A { points }) =
 
 allPoints : Model -> Vectors
 allPoints { points, start } =
-    (points ++ [ start ])
+    (points)
         |> List.map fst
+        |> reverse
+        |> (::) (fst start)
 
 
 toTiles : Corridor -> Tiles
@@ -160,12 +162,13 @@ constructWall : Vector -> Vector -> Tiles
 constructWall (( x1, y1 ) as a) (( x2, y2 ) as b) =
     let
         bMinusOne =
-            Vector.sub a b
-                |> Vector.sub ( 1, 1 )
-                |> Vector.add a
+            Vector.sub b diagonalDirection
+
+        aPlusOne =
+            Vector.add a diagonalDirection
 
         diagonalDirection =
-            Vector.sub a b
+            Vector.sub b a
                 |> Vector.unit
 
         ( left, right ) =
@@ -174,22 +177,6 @@ constructWall (( x1, y1 ) as a) (( x2, y2 ) as b) =
 
         getLeftRight point =
             List.map (Vector.add point) [ left, right ]
-
-        _ =
-            Debug.log "Corridor.constructWall"
-                { a = a
-                , b = b
-                , bMinusOne = bMinusOne
-                , diagonalDirection = diagonalDirection
-                , left = left
-                , right = right
-                }
-
-        xMinusOne ( x, y ) =
-            ( x - 1, y )
-
-        xPlusOne ( x, y ) =
-            ( x + 1, y )
     in
         if x1 == x2 then
             (path ( x1 - 1, y1 ) ( x2 - 1, y2 ) ++ path ( x1 + 1, y1 ) ( x2 + 1, y2 ))
@@ -198,10 +185,17 @@ constructWall (( x1, y1 ) as a) (( x2, y2 ) as b) =
             (path ( x1, y1 - 1 ) ( x2, y2 - 1 ) ++ path ( x1, y1 + 1 ) ( x2, y2 + 1 ))
                 |> List.map (flip Tile.toTile Tile.Rock)
         else
-            (path a bMinusOne)
-                |> List.map getLeftRight
-                |> List.concat
-                |> List.map (flip Tile.toTile Tile.WallDarkDgn)
+            let
+                halfTiles =
+                    (path a bMinusOne)
+                        |> List.map getLeftRight
+                        |> List.concat
+                        |> List.map (flip Tile.toTile Tile.WallDarkDgn)
+
+                fullTiles =
+                    []
+            in
+                halfTiles ++ fullTiles
 
 
 {-| Give a list of points that denote the start, end and each turn of a corridor
