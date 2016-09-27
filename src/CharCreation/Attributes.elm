@@ -69,7 +69,7 @@ viewAttribute attr model buttons =
     in
         div [ class "ui segments" ]
             [ div [ class "ui segment left aligned" ]
-                [ h4 [ class "ui header" ] [ text (toString attr) ]
+                [ h4 [ class "ui header" ] [ text ((toString attr) ++ ": " ++ (toString val)) ]
                 , div [ class "ui indicating progress", getDataPercent val ]
                     [ div [ class "bar", (progressBarStyle val) ] []
                     , div [ class "label" ] [ text description ]
