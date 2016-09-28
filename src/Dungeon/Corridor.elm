@@ -215,10 +215,7 @@ constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, en
                 |> List.map (flip Tile.toTile Tile.Rock)
 
         endToStartDirection =
-            startToEndDirection
-                |> Vector.fromCompass
-                |> Vector.scaleInt -1
-                |> Vector.toDirection
+            Vector.oppositeDirection startToEndDirection
 
         ( leftEntrance, rightEntrance ) =
             Vector.map (Vector.rotateCompass endToStartDirection) ( Left, Right )

@@ -138,6 +138,14 @@ directions =
         ]
 
 
+oppositeDirection : CompassDirection -> CompassDirection
+oppositeDirection dir =
+    dir
+        |> fromCompass
+        |> scaleInt -1
+        |> toDirection
+
+
 toDirection : Vector -> CompassDirection
 toDirection vector =
     case Dict.get (unit vector) directions of
