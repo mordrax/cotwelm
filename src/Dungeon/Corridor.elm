@@ -8,6 +8,7 @@ module Dungeon.Corridor
         , possibleEnds
         , toTiles
         , path
+        , constructWall
         )
 
 import List exposing (..)
@@ -104,15 +105,15 @@ possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
 add : DirectedVector -> Corridor -> Corridor
 add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
     let
-        lastPoint =
+        lastCorridorPoint =
             headWithDefault start points
 
         newPath =
-            path (fst lastPoint) newVector
+            path (fst lastCorridorPoint) newVector
                 |> List.map (\x -> Tile.toTile x Tile.DarkDgn)
 
         newWalls =
-            constructWall lastPoint newPoint
+            constructWall lastCorridorPoint newPoint
     in
         A
             { model
@@ -147,21 +148,18 @@ constructWall : DirectedVector -> DirectedVector -> Tiles
 constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, endDir ) as db) =
     let
         endMinusOne =
-            Vector.sub end startToEndVector
+            Vector.sub end startToEndUnitVector
 
-        aPlusOne =
-            Vector.add start startToEndVector
-
-        startToEndVector =
+        startToEndUnitVector =
             Vector.sub end start
                 |> Vector.unit
 
         startToEndDirection =
-            Vector.toDirection startToEndVector
+            Vector.toDirection startToEndUnitVector
 
         ( left, right ) =
             ( Left, Right )
-                |> Vector.map (Vector.rotate startToEndVector)
+                |> Vector.map (Vector.rotate startToEndUnitVector)
 
         getLeftRight point =
             List.map (Vector.add point) [ left, right ]
@@ -169,11 +167,11 @@ constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, en
         ( sameX, sameY ) =
             ( x1 == x2, y1 == y2 )
 
-        horizontalWallTiles =
+        verticalWallTiles =
             (path ( x1 - 1, y1 ) ( x2 - 1, y2 ) ++ path ( x1 + 1, y1 ) ( x2 + 1, y2 ))
                 |> List.map (flip Tile.toTile Tile.Rock)
 
-        verticalWallTiles =
+        horizontalWallTiles =
             (path ( x1, y1 - 1 ) ( x2, y2 - 1 ) ++ path ( x1, y1 + 1 ) ( x2, y2 + 1 ))
                 |> List.map (flip Tile.toTile Tile.Rock)
 
@@ -206,9 +204,9 @@ constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, en
                 }
     in
         if sameX then
-            horizontalWallTiles
-        else if sameY then
             verticalWallTiles
+        else if sameY then
+            horizontalWallTiles
         else
             let
                 halfTiles =
@@ -227,7 +225,7 @@ path : Vector -> Vector -> Vectors
 path ( x1, y1 ) ( x2, y2 ) =
     let
         length =
-            max (abs (x1 - x2)) (abs (y1 - y2))
+            (max (abs (x1 - x2)) (abs (y1 - y2))) + 1
 
         rangeX =
             if x1 == x2 then
