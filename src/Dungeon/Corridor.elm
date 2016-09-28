@@ -8,7 +8,7 @@ module Dungeon.Corridor
         , possibleEnds
         , toTiles
         , path
-        , constructWall
+        , complete
         )
 
 import List exposing (..)
@@ -133,6 +133,28 @@ end (A { points }) =
             Nothing
 
 
+{-| Given a corridor, draws the wall that sounds the last turn (if any) in the corridor
+    returning a new corridor with the walls.
+    This is because when adding points to a corridor, there is no way of knowing if that
+    is the last point.
+-}
+complete : Corridor -> Corridor
+complete (A ({ start, points, walls } as model)) =
+    let
+        cornerTiles secondLastPoint lastPoint =
+            turnTiles (Vector.facing (fst secondLastPoint) (fst lastPoint)) lastPoint
+    in
+        case ( start, points ) of
+            ( start, lastPoint :: secondLastPoint :: _ ) ->
+                A { model | walls = walls ++ cornerTiles secondLastPoint lastPoint }
+
+            ( secondLastPoint, lastPoint :: _ ) ->
+                A { model | walls = walls ++ cornerTiles secondLastPoint lastPoint }
+
+            _ ->
+                A model
+
+
 toTiles : Corridor -> Tiles
 toTiles (A ({ start, points, walls, entrances, paths } as model)) =
     List.map Entrance.toTile entrances
@@ -142,6 +164,23 @@ toTiles (A ({ start, points, walls, entrances, paths } as model)) =
 
 
 -- Privates
+
+
+turnTiles : CompassDirection -> DirectedVector -> Tiles
+turnTiles corridorDirection ( endPointVector, endPointFacing ) =
+    let
+        ( leftFacing, rightFacing ) =
+            ( Left, Right )
+                |> Vector.map (Vector.rotateCompass corridorDirection)
+    in
+        if corridorDirection == endPointFacing then
+            []
+        else if (endPointFacing == leftFacing) then
+            [ Tile.toTile (Vector.add endPointVector (Vector.fromCompass rightFacing)) Tile.Rock ]
+        else if (endPointFacing == rightFacing) then
+            [ Tile.toTile (Vector.add endPointVector (Vector.fromCompass leftFacing)) Tile.Rock ]
+        else
+            []
 
 
 constructWall : DirectedVector -> DirectedVector -> Tiles
@@ -184,24 +223,8 @@ constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, en
         ( leftEntrance, rightEntrance ) =
             Vector.map (Vector.rotateCompass endToStartDirection) ( Left, Right )
 
-        turnTiles =
-            if startDir == startToEndDirection then
-                []
-            else if (startDir == leftEntrance) then
-                [ Tile.toTile (Vector.add start (Vector.fromCompass rightEntrance)) Tile.Rock ]
-            else if (startDir == rightEntrance) then
-                [ Tile.toTile (Vector.add start (Vector.fromCompass leftEntrance)) Tile.Rock ]
-            else
-                []
-
-        _ =
-            Debug.log "Corridor.constructWall"
-                { turnTiles = turnTiles
-                , startDir = startDir
-                , startToEndDirection = startToEndDirection
-                , leftEntrance = leftEntrance
-                , rightEntrance = rightEntrance
-                }
+        cornerTiles =
+            turnTiles endToStartDirection da
     in
         if sameX then
             verticalWallTiles
@@ -215,7 +238,7 @@ constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, en
                         |> List.concat
                         |> List.map (flip Tile.toTile Tile.WallDarkDgn)
             in
-                halfTiles ++ turnTiles
+                halfTiles ++ cornerTiles
 
 
 {-| The path between any two vectors is the linear line that connects them.

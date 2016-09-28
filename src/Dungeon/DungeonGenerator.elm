@@ -113,7 +113,7 @@ step ({ activePoints } as model) =
                                     constant
                                         { model
                                             | rooms = room :: model.rooms
-                                            , activePoints = ActiveCorridor corridor :: remainingPoints
+                                            , activePoints = ActiveCorridor (Corridor.complete corridor) :: remainingPoints
                                         }
 
                                 Maybe.Nothing ->
