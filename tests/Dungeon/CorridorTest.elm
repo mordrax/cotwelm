@@ -35,7 +35,7 @@ tilesContains matchingTileType positions tiles =
         paths =
             tiles
                 |> List.filter sameAsMatchingTileType
-                |> List.map .position
+                |> List.map Tile.position
 
         isPath pos =
             List.member pos paths
@@ -52,6 +52,7 @@ create_corridor =
     let
         tiles =
             Corridor.init ( ( 5, 5 ), N )
+                |> Corridor.add ( ( 5, 6 ), N )
                 |> Corridor.toTiles
 
         floorTile =
@@ -123,7 +124,7 @@ horizontal_corridors_have_walls =
     let
         tiles =
             Corridor.init ( ( 10, 10 ), E )
-                |> Corridor.add (( 8, 10 ), S)
+                |> Corridor.add ( ( 8, 10 ), S )
                 |> Corridor.toTiles
 
         walls =
@@ -146,12 +147,12 @@ A diagonal corridor should look something like this with points at (2, 0) and (5
 The facing and corners will affect walls neighbouring the two end points so only test for the middle two
 points.
 
- 0 2 4 6
-0#\ \##
- ##\ \##
-2 ##\ \##
-   ##\ \#
 
+  \ \
+2  \ \
+    \ \
+0    \ \
+ 0 2 4 6
 # - walls
 \ - half walls
 
@@ -161,38 +162,32 @@ diagonal_corridors_have_walls_too : Test
 diagonal_corridors_have_walls_too =
     let
         tiles =
-            Corridor.init ( ( 5, 3 ), N )
-                |> Corridor.add (( 2, 0 ), W)
+            Corridor.init ( ( 5, 0 ), S )
+                |> Corridor.add ( ( 2, 3 ), W )
+                |> Corridor.complete
                 |> Corridor.toTiles
 
-        walls =
-            [ ( 0, 1 ), ( 1, 1 ), ( 5, 1 ), ( 6, 1 ) ]
-                ++ [ ( 1, 2 ), ( 2, 2 ), ( 6, 2 ), ( 7, 2 ) ]
-
         pathWalls =
-            [ ( 2, 1 ), ( 4, 1 ) ]
-                ++ [ ( 3, 2 ), ( 5, 2 ) ]
-
-        diagonalRocks =
-            tilesContains Tile.Rock walls tiles
+            [ ( 3, 1 ), ( 5, 1 ) ]
+                ++ [ ( 2, 2 ), ( 4, 2 ) ]
 
         diagonalHalfRocks =
-            tilesContains Tile.PathRock pathWalls tiles
+            tilesContains Tile.WallDarkDgn pathWalls tiles
     in
-        it_should "have walls" (diagonalRocks && diagonalHalfRocks)
+        it_should ("have diagonal half rocks expected: " ++ toString pathWalls) diagonalHalfRocks
 
 
 {-|
 
 When a corridor turns at a corner, make sure there are walls that encircle around the turn.
 Disregard x=0 because that's part of the room
- 0 2 4 6
- #####
-1D<-\##
- ##\ \##
-3###\ \##
- # ##\ \#
 
+ ####
+3D \##
+ #\ \##
+1##\ \##
+ ###\ \#
+ 0 2 4 6
 # - walls
 \ - half walls
 D - door of a room, unrelated
@@ -202,29 +197,18 @@ D - door of a room, unrelated
 diagonal_corridors_have_walls_that_bend_around_corners : Test
 diagonal_corridors_have_walls_that_bend_around_corners =
     let
-        corridorTilesEndingAt1_1 =
-            Corridor.init ( ( 5, 4 ), N )
-                |> Corridor.add (( 2, 1 ), W)
-                |> Corridor.add (( 1, 1 ), W)
-                |> Corridor.toTiles
-
-        corridorTilesStartingAt1_1 =
-            Corridor.init ( ( 1, 1 ), W )
-                |> Corridor.add (( 2, 1 ), W)
-                |> Corridor.add (( 5, 4 ), W)
+        tiles =
+            Corridor.init ( ( 4, 0 ), S )
+                |> Corridor.add ( ( 1, 3 ), W )
+                |> Corridor.complete
                 |> Corridor.toTiles
 
         expectedWalls =
-            [ ( 1, 0 ), ( 2, 0 ), ( 3, 0 ), ( 4, 0 ), ( 4, 1 ), ( 5, 1 ), ( 1, 2 ), ( 5, 2 ), ( 6, 2 ) ]
-
-        expectedHalfWalls =
-            [ ( 3, 1 ), ( 2, 2 ), ( 4, 2 ) ]
+            [ ( 1, 4 ) ]
     in
-        describe "when diagonal corridors meeting rooms"
-            [ it_should "have full walls that wrap around corridors"
-                <| tilesContains Tile.Rock expectedWalls corridorTilesEndingAt1_1
-            , it_should "have half walls that follow the corridor"
-                <| tilesContains Tile.PathRock expectedHalfWalls corridorTilesEndingAt1_1
+        describe "when a NW diagonal corridors hits a W room"
+            [ it_should "have a full wall to the N, i.e at (1, 1)"
+                <| tilesContains Tile.Rock expectedWalls tiles
             ]
 
 
@@ -237,8 +221,8 @@ diagonal_corridors_have_walls_that_bend_around_corners =
 tileAtPosition : TileType -> Vector -> Tiles -> Bool
 tileAtPosition tileType pos tiles =
     let
-        atPosition { position } =
-            position == pos
+        atPosition tile =
+            Tile.position tile == pos
     in
         case find atPosition tiles of
             Nothing ->
