@@ -107,36 +107,44 @@ step ({ activePoints } as model) =
         -- make a corridor from a existing entrance
         (ActiveRoom room (Just entrance)) :: remainingPoints ->
             let
-                addedCorridorToRoom room maybeCorridor =
+                roomsWithActiveRoom =
+                    room :: model.rooms
+
+                modelWithActiveCorridor corridor =
+                    constant
+                        { model
+                            | rooms = roomsWithActiveRoom
+                            , activePoints = ActiveCorridor (Corridor.complete corridor) :: remainingPoints
+                        }
+
+                addCorridorToModel room maybeCorridor =
                     case maybeCorridor of
                         Just corridor ->
-                            constant
-                                { model
-                                    | rooms = room :: model.rooms
-                                    , activePoints = ActiveCorridor (Corridor.complete corridor) :: remainingPoints
-                                }
+                            modelWithActiveCorridor corridor
 
                         Maybe.Nothing ->
-                            constant { model | rooms = room :: model.rooms }
+                            constant { model | rooms = roomsWithActiveRoom }
             in
                 generateCorridor room entrance model.config
-                    `andThen` addedCorridorToRoom room
+                    `andThen` addCorridorToModel room
 
         -- pick a active corridor and keep digging!
         (ActiveCorridor corridor) :: remainingPoints ->
-            case Corridor.end corridor of
-                Just corridorEnding ->
-                    generateRoom corridorEnding model.config
-                        `andThen` (\room ->
-                                    constant
-                                        { model
-                                            | corridors = corridor :: model.corridors
-                                            , activePoints = ActiveRoom room Maybe.Nothing :: model.activePoints
-                                        }
-                                  )
+            let
+                modelWithActiveRoom room =
+                    constant
+                        { model
+                            | corridors = corridor :: model.corridors
+                            , activePoints = ActiveRoom room Maybe.Nothing :: model.activePoints
+                        }
+            in
+                case Corridor.end corridor of
+                    Just corridorEnding ->
+                        generateRoom corridorEnding model.config
+                            `andThen` modelWithActiveRoom
 
-                Maybe.Nothing ->
-                    constant { model | corridors = corridor :: model.corridors }
+                    Maybe.Nothing ->
+                        constant { model | corridors = corridor :: model.corridors }
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -214,6 +222,9 @@ generateRoom corridorEnding config =
 
 
 
+---------------
+-- Collision --
+---------------
 ------------
 -- Digger --
 ------------
@@ -251,27 +262,6 @@ digger ({ start, length } as instruction) corridor =
     in
         finishDirectionGen finish
             `andThen` dig
-
-
-roomAtPosition : Model -> Vector -> Maybe Room
-roomAtPosition { rooms } position =
-    let
-        isInRoom room =
-            Room.isPositionWithinRoom room position
-    in
-        rooms
-            |> List.filter isInRoom
-            |> List.head
-
-
-corridorAtPosition : Model -> Vector -> Maybe Corridor
-corridorAtPosition corridor position =
-    Maybe.Nothing
-
-
-stepCorridor : Corridor -> Model -> Generator Model
-stepCorridor corridor model =
-    constant model
 
 
 
