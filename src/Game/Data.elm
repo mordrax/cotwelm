@@ -49,4 +49,5 @@ type Screen
 
 type InventoryMsg source target
     = InventoryMsg
+    | ExitMsg
     | DnDMsg (DragDropMsg source target)

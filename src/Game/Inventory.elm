@@ -16,6 +16,7 @@ to know about hero equipment, items, containers etc...
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.App exposing (..)
+import Html.Events exposing (onClick)
 
 
 -- item
@@ -293,7 +294,8 @@ view ({ equipment, dnd } as model) =
             columnWidth "six" [ viewEquipment equipment dnd ]
     in
         div []
-            [ heading "Inventory screen"
+            [ div [ class "ui button", onClick ExitMsg ] [ text "Exit!" ]
+            , heading "Inventory screen"
             , div [ class "ui two column grid" ]
                 [ Html.App.map toInventoryMsg equipmentColumn
                 , viewShopPackPurse model

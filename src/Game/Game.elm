@@ -115,7 +115,10 @@ update msg model =
             ( { model | currentScreen = InventoryScreen }, Cmd.none )
 
         InvMsg msg ->
-            ( Inventory.update msg model, Cmd.none )
+            if msg == ExitMsg then
+                ( { model | currentScreen = MapScreen }, Cmd.none )
+            else
+                ( Inventory.update msg model, Cmd.none )
 
         ShopMsg msg ->
             let
