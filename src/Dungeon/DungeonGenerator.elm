@@ -107,26 +107,25 @@ step ({ activePoints } as model) =
         -- make a corridor from a existing entrance
         (ActiveRoom room (Just entrance)) :: remainingPoints ->
             let
-                roomsWithActiveRoom =
-                    room :: model.rooms
-
-                modelWithActiveCorridor corridor =
-                    constant
-                        { model
-                            | rooms = roomsWithActiveRoom
-                            , activePoints = ActiveCorridor (Corridor.complete corridor) :: remainingPoints
-                        }
+                modelWithActiveCorridorAndInactiveRoom corridor room =
+                    { model
+                        | rooms = room :: model.rooms
+                        , activePoints = ActiveCorridor (Corridor.complete corridor) :: remainingPoints
+                    }
 
                 addCorridorToModel room maybeCorridor =
                     case maybeCorridor of
                         Just corridor ->
-                            modelWithActiveCorridor corridor
+                            if canFitCorridor corridor model then
+                                modelWithActiveCorridorAndInactiveRoom corridor room
+                            else
+                                model
 
                         Maybe.Nothing ->
-                            constant { model | rooms = roomsWithActiveRoom }
+                            model
             in
                 generateCorridor room entrance model.config
-                    `andThen` addCorridorToModel room
+                    |> Random.map (addCorridorToModel room)
 
         -- pick a active corridor and keep digging!
         (ActiveCorridor corridor) :: remainingPoints ->
@@ -225,6 +224,26 @@ generateRoom corridorEnding config =
 ---------------
 -- Collision --
 ---------------
+
+
+canFitCorridor : Corridor -> Model -> Bool
+canFitCorridor corridor model =
+    let
+        modelTiles =
+            toTiles model
+
+        corridorTiles =
+            Corridor.toTiles corridor
+
+        inModelTiles tile =
+            List.any (Tile.isSamePosition tile) modelTiles
+    in
+        corridorTiles
+            |> List.any inModelTiles
+            |> not
+
+
+
 ------------
 -- Digger --
 ------------
