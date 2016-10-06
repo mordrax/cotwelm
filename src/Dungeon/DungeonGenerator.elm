@@ -20,6 +20,7 @@ import Game.Maps as Maps exposing (..)
 import Lodash exposing (..)
 import List.Extra exposing (dropWhile)
 import Utils.CompassDirection exposing (..)
+import Maybe.Extra exposing (..)
 
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
@@ -95,55 +96,56 @@ this could be create a dead end, link up to a room etc.
 -}
 step : Model -> Generator Model
 step ({ activePoints } as model) =
-    case activePoints of
-        -- when nothing's active, no more exploration
-        [] ->
-            constant model
+    shuffle activePoints
+        `andThen` \shuffledPoints ->
+                    case shuffledPoints of
+                        -- when nothing's active, no more exploration
+                        [] ->
+                            constant model
 
-        (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
-            generateEntrance room { model | activePoints = remainingPoints }
+                        (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
+                            generateEntrance room { model | activePoints = remainingPoints }
 
-        -- pick a active room and either make a new entrance or
-        -- make a corridor from a existing entrance
-        (ActiveRoom room (Just entrance)) :: remainingPoints ->
-            let
-                modelWithActiveCorridorAndInactiveRoom corridor room =
-                    { model
-                        | rooms = room :: model.rooms
-                        , activePoints = ActiveCorridor (Corridor.complete corridor) :: remainingPoints
-                    }
+                        -- pick a active room and either make a new entrance or
+                        -- make a corridor from a existing entrance
+                        (ActiveRoom room (Just entrance)) :: remainingPoints ->
+                            let
+                                modelWithActiveCorridorAndInactiveRoom corridor =
+                                    { model
+                                        | activePoints =
+                                            ActiveCorridor (Corridor.complete corridor)
+                                                :: ActiveRoom room (Maybe.Nothing)
+                                                :: remainingPoints
+                                    }
 
-                addCorridorToModel room maybeCorridor =
-                    case maybeCorridor of
-                        Just corridor ->
-                            if canFitCorridor corridor model then
-                                modelWithActiveCorridorAndInactiveRoom corridor room
-                            else
-                                model
+                                addCorridorToModel room maybeCorridor =
+                                    maybeCorridor
+                                        |> Maybe.Extra.filter (canFitCorridor model)
+                                        |> Maybe.map modelWithActiveCorridorAndInactiveRoom
+                                        |> Maybe.withDefault model
+                            in
+                                generateCorridor room entrance model.config
+                                    |> Random.map (addCorridorToModel room)
 
-                        Maybe.Nothing ->
-                            model
-            in
-                generateCorridor room entrance model.config
-                    |> Random.map (addCorridorToModel room)
+                        -- pick a active corridor and dig a room
+                        (ActiveCorridor corridor) :: remainingPoints ->
+                            let
+                                tryAddRoomToModel room =
+                                    if canFitRoom model room then
+                                        { model
+                                            | corridors = corridor :: model.corridors
+                                            , activePoints = ActiveRoom room Maybe.Nothing :: model.activePoints
+                                        }
+                                    else
+                                        model
+                            in
+                                case Corridor.end corridor of
+                                    Just corridorEnding ->
+                                        generateRoom corridorEnding model.config
+                                            |> Random.map tryAddRoomToModel
 
-        -- pick a active corridor and keep digging!
-        (ActiveCorridor corridor) :: remainingPoints ->
-            let
-                modelWithActiveRoom room =
-                    constant
-                        { model
-                            | corridors = corridor :: model.corridors
-                            , activePoints = ActiveRoom room Maybe.Nothing :: model.activePoints
-                        }
-            in
-                case Corridor.end corridor of
-                    Just corridorEnding ->
-                        generateRoom corridorEnding model.config
-                            `andThen` modelWithActiveRoom
-
-                    Maybe.Nothing ->
-                        constant { model | corridors = corridor :: model.corridors }
+                                    Maybe.Nothing ->
+                                        constant { model | corridors = corridor :: model.corridors }
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -226,8 +228,8 @@ generateRoom corridorEnding config =
 ---------------
 
 
-canFitCorridor : Corridor -> Model -> Bool
-canFitCorridor corridor model =
+canFitCorridor : Model -> Corridor -> Bool
+canFitCorridor model corridor =
     let
         modelTiles =
             toTiles model
@@ -239,6 +241,23 @@ canFitCorridor corridor model =
             List.any (Tile.isSamePosition tile) modelTiles
     in
         corridorTiles
+            |> List.any inModelTiles
+            |> not
+
+
+canFitRoom : Model -> Room -> Bool
+canFitRoom model room =
+    let
+        modelTiles =
+            toTiles model
+
+        roomTiles =
+            Room.toTiles room
+
+        inModelTiles tile =
+            List.any (Tile.isSamePosition tile) modelTiles
+    in
+        roomTiles
             |> List.any inModelTiles
             |> not
 
