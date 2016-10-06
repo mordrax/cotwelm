@@ -1,17 +1,15 @@
-module Dungeon.Corridor exposing (..)
-
---    exposing
---        ( Corridor
---        , Corridors
---        , init
---        , new
---        , add
---        , toTiles
---        , path
---          --    , addEntrance
---          --    , addPoint
---          --    , addPointAsEntrance
---        )
+module Dungeon.Corridor
+    exposing
+        ( Corridor
+        , Corridors
+        , init
+        , add
+        , end
+        , possibleEnds
+        , toTiles
+        , path
+        , complete
+        )
 
 import List exposing (..)
 import Dict exposing (..)
@@ -33,129 +31,211 @@ type alias Corridors =
 
 
 type alias Model =
-    { start : Vector
-    , points : Vectors
-    , walls : List Walls
+    { start : DirectedVector
+    , points : DirectedVectors
+    , walls : Tiles
     , entrances : Entrances
+    , paths : Tiles
     }
 
 
-new : Vector -> Corridor
-new start =
+init : DirectedVector -> Corridor
+init start =
     A
         { start = start
         , points = []
         , walls = []
         , entrances = []
+        , paths = []
         }
 
 
-facing : Vector -> Vectors -> CompassDirection
-facing start points =
-    case List.reverse (start :: points) of
-        last :: secondLast :: _ ->
-            Vector.sub last secondLast |> Vector.toDirection
+{-| A corridor can be vertical/horizontal or it can be diagonal. All the possible endings
+are returned as a point and direction.
+NOTE: We ignore the end of the corridor if there is one and use the start and existing points.
+
+Vertical/horizontal corridors can end with a 90deg turn or straight ahead. i.e in any of
+the 3 remaining cardinal directions
+
+#######
+###1###
+#2   3#
+### ###
+### ###
+
+Diagonal corridors must end facing a cardinal direction
+
+#######
+###1###
+### ###
+###  2#
+## ####
+# #####
+ ######
+-}
+possibleEnds : Vector -> Corridor -> DirectedVectors
+possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
+    let
+        ( startVector, _ ) =
+            start
+
+        secondLastPoint =
+            case ( start, points ) of
+                ( _, ( point, _ ) :: _ ) ->
+                    point
+
+                ( ( startVector, _ ), _ ) ->
+                    startVector
+
+        facing =
+            Vector.facing secondLastPoint lastPoint
+
+        ( facingLeft, facingRight ) =
+            ( Left, Right )
+                |> Vector.map (Vector.rotateCompass facing)
+
+        makeDirectedVector direction =
+            ( lastPoint, direction )
+    in
+        [ facing, facingLeft, facingRight ]
+            |> List.filter CompassDirection.isCardinal
+            |> List.map makeDirectedVector
+
+
+add : DirectedVector -> Corridor -> Corridor
+add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
+    let
+        lastCorridorPoint =
+            headWithDefault start points
+
+        newPath =
+            path (fst lastCorridorPoint) newVector
+                |> List.map (\x -> Tile.toTile x Tile.DarkDgn)
+
+        newWalls =
+            constructWall lastCorridorPoint newPoint
+    in
+        A
+            { model
+                | points = newPoint :: points
+                , walls = newWalls ++ model.walls
+                , paths = newPath ++ model.paths
+            }
+
+
+end : Corridor -> Maybe DirectedVector
+end (A { points }) =
+    case points of
+        point :: _ ->
+            Just point
 
         _ ->
-            -- if in doubt, journey to the west
-            W
+            Nothing
 
 
-type alias CorridorEnding =
-    ( Corridor, Vector, CompassDirection )
-
-
-allPossibleEndings : Corridor -> List CorridorEnding
-allPossibleEndings ((A ({ start, points } as model)) as corridor) =
+{-| Given a corridor, draws the wall that sounds the last turn (if any) in the corridor
+    returning a new corridor with the walls.
+    This is because when adding points to a corridor, there is no way of knowing if that
+    is the last point.
+-}
+complete : Corridor -> Corridor
+complete (A ({ start, points, walls } as model)) =
     let
-        lastPoint =
-            points |> reverse |> headWithDefault start
-
-        straightAhead =
-            facing start points
-
-        straightAheadVector =
-            straightAhead |> Vector.fromCompass
-
-        ( left, right ) =
-            ( Vector.rotate straightAheadVector Left
-            , Vector.rotate straightAheadVector Right
-            )
-
-        ( leftEnd, rightEnd ) =
-            ( Vector.add lastPoint left
-            , Vector.add lastPoint right
-            )
-
-        corridorWithEnd point =
-            A { model | points = points ++ [ point ] }
-
-        _ =
-            Debug.log "Corridor.allPossibleEndings"
-                { directions = ( left, right, straightAhead, straightAheadVector )
-                , leftDir = Vector.rotateUnlessCardinal left Left |> Vector.toDirection
-                , rightDir = Vector.rotateUnlessCardinal right Right |> Vector.toDirection
-                , corridor = corridor
-                }
+        cornerTiles secondLastPoint lastPoint =
+            turnTiles (Vector.facing (fst secondLastPoint) (fst lastPoint)) lastPoint
     in
-        (if CompassDirection.isCardinal straightAhead then
-            [ ( corridor, lastPoint, straightAhead ) ]
-         else
-            []
-        )
-            ++ [ ( corridorWithEnd leftEnd, leftEnd, Vector.rotateUnlessCardinal left Left |> Vector.toDirection )
-               , ( corridorWithEnd rightEnd, rightEnd, Vector.rotateUnlessCardinal right Right |> Vector.toDirection )
-               ]
+        case ( start, points ) of
+            ( start, lastPoint :: secondLastPoint :: _ ) ->
+                A { model | walls = walls ++ cornerTiles secondLastPoint lastPoint }
 
+            ( secondLastPoint, lastPoint :: _ ) ->
+                A { model | walls = walls ++ cornerTiles secondLastPoint lastPoint }
 
-add : Vector -> Corridor -> Corridor
-add point (A ({ points } as model)) =
-    A { model | points = points ++ [ point ] }
+            _ ->
+                A model
 
 
 toTiles : Corridor -> Tiles
-toTiles (A { start, points, walls, entrances }) =
-    let
-        --        toWorldPos localPos =
-        --            Vector.add worldPos localPos
-        paths =
-            constructPath (start :: points)
-
-        --        _ =
-        --            Debug.log "paths" paths
-        data =
-            [ ( Tile.DarkDgn, paths )
-            , ( Tile.Rock, List.concat walls )
-            ]
-
-        makeTiles ( tileType, positions ) =
-            positions
-                --                |> List.map toWorldPos
-                |>
-                    List.map (\pos -> Tile.toTile pos tileType)
-    in
-        List.concat (List.map makeTiles data)
-            ++ List.map Entrance.toTile entrances
+toTiles (A ({ start, points, walls, entrances, paths } as model)) =
+    List.map Entrance.toTile entrances
+        ++ walls
+        ++ paths
 
 
 
 -- Privates
 
 
-{-| Give a list of points that denote the start, end and each turn of a corridor
-   generates all the points in between.
--}
-constructPath : Vectors -> Vectors
-constructPath points =
-    case points of
-        [] ->
+turnTiles : CompassDirection -> DirectedVector -> Tiles
+turnTiles corridorDirection ( endPointVector, endPointFacing ) =
+    let
+        ( leftFacing, rightFacing ) =
+            ( Left, Right )
+                |> Vector.map (Vector.rotateCompass corridorDirection)
+    in
+        if corridorDirection == endPointFacing then
+            []
+        else if (endPointFacing == leftFacing) then
+            [ Tile.toTile (Vector.add endPointVector (Vector.fromCompass rightFacing)) Tile.Rock ]
+        else if (endPointFacing == rightFacing) then
+            [ Tile.toTile (Vector.add endPointVector (Vector.fromCompass leftFacing)) Tile.Rock ]
+        else
             []
 
-        pt :: [] ->
-            [ pt ]
 
-        p1 :: ((p2 :: _) as remainingPts) ->
-            (path p1 p2) ++ (constructPath remainingPts)
+constructWall : DirectedVector -> DirectedVector -> Tiles
+constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, endDir ) as db) =
+    let
+        endMinusOne =
+            Vector.sub end startToEndUnitVector
+
+        startToEndUnitVector =
+            Vector.sub end start
+                |> Vector.unit
+
+        startToEndDirection =
+            Vector.toDirection startToEndUnitVector
+
+        ( left, right ) =
+            ( Left, Right )
+                |> Vector.map (Vector.rotate startToEndUnitVector)
+
+        getLeftRight point =
+            List.map (Vector.add point) [ left, right ]
+
+        ( sameX, sameY ) =
+            ( x1 == x2, y1 == y2 )
+
+        verticalWallTiles =
+            (path ( x1 - 1, y1 ) ( x2 - 1, y2 ) ++ path ( x1 + 1, y1 ) ( x2 + 1, y2 ))
+                |> List.map (flip Tile.toTile Tile.Rock)
+
+        horizontalWallTiles =
+            (path ( x1, y1 - 1 ) ( x2, y2 - 1 ) ++ path ( x1, y1 + 1 ) ( x2, y2 + 1 ))
+                |> List.map (flip Tile.toTile Tile.Rock)
+
+        endToStartDirection =
+            Vector.oppositeDirection startToEndDirection
+
+        ( leftEntrance, rightEntrance ) =
+            Vector.map (Vector.rotateCompass endToStartDirection) ( Left, Right )
+
+        cornerTiles =
+            turnTiles endToStartDirection da
+    in
+        if sameX then
+            verticalWallTiles
+        else if sameY then
+            horizontalWallTiles
+        else
+            let
+                halfTiles =
+                    (path start endMinusOne)
+                        |> List.map getLeftRight
+                        |> List.concat
+                        |> List.map (flip Tile.toTile Tile.WallDarkDgn)
+            in
+                halfTiles ++ cornerTiles
 
 
 {-| The path between any two vectors is the linear line that connects them.
@@ -165,7 +245,7 @@ path : Vector -> Vector -> Vectors
 path ( x1, y1 ) ( x2, y2 ) =
     let
         length =
-            max (abs (x1 - x2)) (abs (y1 - y2))
+            (max (abs (x1 - x2)) (abs (y1 - y2))) + 1
 
         rangeX =
             if x1 == x2 then

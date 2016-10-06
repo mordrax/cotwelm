@@ -14,7 +14,7 @@ import Random.Array exposing (..)
 import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
-
+import Utils.Vector as Vector exposing (..)
 
 -- html
 
@@ -77,7 +77,7 @@ init =
         , maxLength = 20
         }
     , roomsConfig =
-        { rectangular = RoomConfig ( 4, 6 ) 1
+        { rectangular = RoomConfig ( 4, 10 ) 1
         , cross = RoomConfig ( 7, 11 ) 0
         , diamond = RoomConfig ( 5, 11 ) 0
         , potion = RoomConfig ( 4, 10 ) 0
@@ -93,30 +93,33 @@ init =
 
 update : Msg -> Model -> Model
 update msg model =
---    let _ = Debug.log "Config.update" msg in
-    case msg of
-        DungeonSize size ->
-            { model | dungeonSize = size }
+    let
+        _ =
+            Debug.log "Config.update" msg
+    in
+        case msg of
+            DungeonSize size ->
+                { model | dungeonSize = size }
 
-        RoomSize roomType val ->
-            let
-                updateSizeRange sizeRange' config =
-                    { config | sizeRange = sizeRange' }
-            in
-                { model | roomsConfig = updateRoomsConfig roomType (updateSizeRange val) model.roomsConfig }
+            RoomSize roomType val ->
+                let
+                    updateSizeRange sizeRange' config =
+                        { config | sizeRange = sizeRange' }
+                in
+                    { model | roomsConfig = updateRoomsConfig roomType (updateSizeRange val) model.roomsConfig }
 
-        ChangeFrequency roomType freq ->
-            let
-                updateFrequency freq config =
-                    { config | frequency = freq }
-            in
-                { model | roomsConfig = updateRoomsConfig roomType (updateFrequency freq) model.roomsConfig }
+            ChangeFrequency roomType freq ->
+                let
+                    updateFrequency freq config =
+                        { config | frequency = freq }
+                in
+                    { model | roomsConfig = updateRoomsConfig roomType (updateFrequency freq) model.roomsConfig }
 
-        MapScale scale ->
-            { model | mapScale = scale }
+            MapScale scale ->
+                { model | mapScale = scale }
 
-        NumberOfRooms rooms ->
-            { model | nRooms = rooms }
+            NumberOfRooms rooms ->
+                { model | nRooms = rooms }
 
 
 updateRoomsConfig : RoomType -> (RoomConfig -> RoomConfig) -> RoomsConfig -> RoomsConfig
@@ -238,6 +241,14 @@ addEntrances nEntrances ( walls, fullWalls, entrances ) =
 wallToEntrance : Generator Wall -> Generator Entrance
 wallToEntrance wallGen =
     Random.map (Entrance.init Door) wallGen
+
+
+withinDungeonBounds : Vector -> Model -> Bool
+withinDungeonBounds ( x, y ) { dungeonSize } =
+    (x >= 0)
+        && (y >= 0)
+        && (x <= dungeonSize)
+        && (y <= dungeonSize)
 
 
 

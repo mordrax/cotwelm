@@ -5,10 +5,19 @@ module Utils.Vector exposing (..)
 -}
 
 import Utils.CompassDirection exposing (..)
+import Dict exposing (..)
 
 
 type alias Vector =
     ( Int, Int )
+
+
+type alias DirectedVector =
+    ( Vector, CompassDirection )
+
+
+type alias DirectedVectors =
+    List DirectedVector
 
 
 type RotationDirection
@@ -35,6 +44,8 @@ add ( v1x, v1y ) ( v2x, v2y ) =
     ( v1x + v2x, v1y + v2y )
 
 
+{-| a -> b -> (a - b)
+-}
 sub : Vector -> Vector -> Vector
 sub ( v1x, v1y ) ( v2x, v2y ) =
     ( v1x - v2x, v1y - v2y )
@@ -59,6 +70,17 @@ distance ( v1x, v1y ) ( v2x, v2y ) =
         (dx ^ 2 + dy ^ 2)
             |> toFloat
             |> sqrt
+
+
+
+--------------------
+-- Vector helpers --
+--------------------
+
+
+map : (a -> b) -> ( a, a ) -> ( b, b )
+map f ( x, y ) =
+    ( f x, f y )
 
 
 {-| Rotates a 2d vector by 45 degrees either to the left or right of the
@@ -88,36 +110,54 @@ rotate ( xInt, yInt ) dir =
         ( round x', round y' )
 
 
+rotateCompass : CompassDirection -> RotationDirection -> CompassDirection
+rotateCompass compass rotation =
+    fromCompass compass
+        |> flip rotate rotation
+        |> toDirection
+
+
+facing : Vector -> Vector -> CompassDirection
+facing start end =
+    (sub end start)
+        |> unit
+        |> toDirection
+
+
+directions : Dict Vector CompassDirection
+directions =
+    Dict.fromList
+        [ ( ( 0, 1 ), N )
+        , ( ( 0, -1 ), S )
+        , ( ( 1, 0 ), E )
+        , ( ( -1, 0 ), W )
+        , ( ( 1, 1 ), NE )
+        , ( ( -1, 1 ), NW )
+        , ( ( 1, -1 ), SE )
+        , ( ( -1, -1 ), SW )
+        ]
+
+
+oppositeDirection : CompassDirection -> CompassDirection
+oppositeDirection dir =
+    dir
+        |> fromCompass
+        |> scaleInt -1
+        |> toDirection
+
+
 toDirection : Vector -> CompassDirection
 toDirection vector =
-    case unit vector of
-        ( 0, 1 ) ->
-            N
+    case Dict.get (unit vector) directions of
+        Just dir ->
+            dir
 
-        ( 0, -1 ) ->
-            S
-
-        ( 1, 0 ) ->
-            E
-
-        ( -1, 0 ) ->
-            W
-
-        ( 1, 1 ) ->
-            NE
-
-        ( -1, 1 ) ->
-            NW
-
-        ( 1, -1 ) ->
-            SE
-
-        ( -1, -1 ) ->
-            SW
-
-        _ ->
-            -- if all else fails Journey to the West
-            W
+        Nothing ->
+            let
+                _ =
+                    Debug.log "ERROR: Could not get a direction from the unit vector: " (unit vector)
+            in
+                W
 
 
 fromCompass : CompassDirection -> Vector

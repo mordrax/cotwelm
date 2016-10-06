@@ -20,6 +20,7 @@ module Dungeon.Room exposing (..)
 --        )
 
 import Dungeon.Rooms.Config as Config exposing (..)
+import Dungeon.Corridor as Corridor exposing (..)
 import Random exposing (andThen, Generator)
 import Random.Extra exposing (..)
 import Dungeon.Rooms.Type exposing (..)
@@ -187,8 +188,8 @@ entranceFacing (A { walls, floors, worldPos }) entrance =
             north
 
 
-placeRoom : CorridorEnding -> Room -> Generator Room
-placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
+placeRoom : DirectedVector -> Room -> Generator Room
+placeRoom ( endPoint, facing ) (A ({ walls, dimension } as model)) =
     let
         wallFacing =
             facing
@@ -215,15 +216,6 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
                 roomWorldPosition =
                     Vector.sub entrancePosition wall
 
-                _ =
-                    Debug.log "Room.placeRoom"
-                        { entrancePosition = entrancePosition
-                        , wall = wall
-                        , roomWorldPosition = roomWorldPosition
-                        , endPoint = endPoint
-                        , facing = facing
-                        , dim = dimension
-                        }
             in
                 constant
                     <| A
@@ -239,27 +231,27 @@ placeRoom ( corridor, endPoint, facing ) (A ({ walls, dimension } as model)) =
 wallsFacingDirection : CompassDirection -> Walls -> Dimension -> Walls
 wallsFacingDirection compassDirection walls ( maxX, maxY ) =
     let
-        yEqualsZero ( x, y ) =
+        yEqualsZero ( _, y ) =
             y == 0
 
-        yEqualsMaxY ( x, y ) =
+        yEqualsMaxY ( _, y ) =
             y == maxY - 1
 
-        xEqualsZero ( x, y ) =
+        xEqualsZero ( x, _ ) =
             x == 0
 
-        xEqualsMaxX ( x, y ) =
+        xEqualsMaxX ( x, _ ) =
             x == maxX - 1
     in
         case compassDirection of
             N ->
-                List.filter yEqualsZero walls
+                List.filter yEqualsMaxY walls
 
             E ->
                 List.filter xEqualsMaxX walls
 
             S ->
-                List.filter yEqualsMaxY walls
+                List.filter yEqualsZero walls
 
             W ->
                 List.filter xEqualsZero walls
@@ -296,9 +288,17 @@ roomTypeGenerator config model =
 
 
 positionGenerator : Config.Model -> Model -> Generator Model
-positionGenerator { dungeonSize } model =
-    (Dice.d2d dungeonSize dungeonSize)
-        `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
+positionGenerator { dungeonSize } ({ dimension } as model) =
+    let
+        ( dimX, dimY ) =
+            dimension
+
+        ( maxX, maxY ) =
+            ( dungeonSize - dimX - 1, dungeonSize - dimY - 1 )
+            |> Vector.map (max 0)
+    in
+        (Dice.d2d maxX maxY)
+            `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
 
 
 roomSizeGenerator : Config.Model -> Model -> Generator Model

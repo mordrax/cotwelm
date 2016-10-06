@@ -5,11 +5,15 @@ module Tile
         , TileType(..)
         , TileNeighbours
         , isSameType
+        , isSamePosition
         , isSolid
+        , position
+        , setPosition
         , mapToTiles
         , view
         , scaledView
         , toTile
+        , tileType
         )
 
 import Utils.Vector exposing (..)
@@ -28,10 +32,11 @@ import List.Extra exposing (..)
 
 
 type alias Model =
-    { tile : TileType
+    { type_ : TileType
     , solid : Bool
     , items : List Item
     , occupant : Occupant
+    , position : Vector
     }
 
 
@@ -46,14 +51,8 @@ type Occupant
     | Empty
 
 
-type BaseTile
+type Tile
     = A Model
-
-
-type alias Tile =
-    { base : BaseTile
-    , position : Vector
-    }
 
 
 type alias Tiles =
@@ -66,25 +65,34 @@ type alias Tiles =
 -----------------------------------------------------------------------------------
 
 
+tileType : Tile -> TileType
+tileType (A { type_ }) =
+    type_
+
+
 isSolid : Tile -> Bool
-isSolid { base } =
-    let
-        (A { solid }) =
-            base
-    in
-        solid
+isSolid (A { solid }) =
+    solid
 
 
 isSameType : Tile -> Tile -> Bool
-isSameType t1 t2 =
-    let
-        (A m1) =
-            t1.base
+isSameType (A t1) (A t2) =
+    t1.type_ == t2.type_
 
-        (A m2) =
-            t2.base
-    in
-        m1.tile == m2.tile
+
+isSamePosition : Tile -> Tile -> Bool
+isSamePosition (A t1) (A t2) =
+    t1.position == t2.position
+
+
+setPosition : Vector -> Tile -> Tile
+setPosition newPosition (A model) =
+    A <| { model | position = newPosition }
+
+
+position : Tile -> Vector
+position (A { position }) =
+    position
 
 
 {-| Given a ASCII list of strings representing tiles, output a list of tiles
@@ -109,7 +117,7 @@ toTile ( x, y ) tileType =
         solid =
             List.member tileType solidTiles
     in
-        Tile (A <| Model tileType solid [] Empty) ( x, y )
+        A <| Model tileType solid [] Empty ( x, y )
 
 
 view : Tile -> TileNeighbours -> Html a
@@ -118,89 +126,91 @@ view tile neighbours =
 
 
 scaledView : Tile -> Float -> TileNeighbours -> Html a
-scaledView ({ base, position } as tile) scale neighbours =
+scaledView (A ({ type_, position } as model)) scale neighbours =
     let
-        (A model) =
-            base
-
-        positionAsClass =
-            toString (fst position) ++ toString (snd position)
-
-        halfTiles =
-            [ ( PathRock, Path )
-            , ( PathGrass, Path )
-            , ( WaterGrass, Water )
-            , ( WaterPath, Water )
-              --, (Grass50Cave50, Grass)
-              --, (White50Cave50, White)
-            , ( WallDarkDgn, Rock )
-            , ( WallLitDgn, Rock )
-            ]
-
-        halfTile =
-            List.Extra.find (\x -> model.tile == (fst x)) halfTiles
-
-        getType tile =
-            let
-                { base } =
-                    tile
-
-                (A model) =
-                    base
-            in
-                model.tile
-
-        aOrb x a b =
-            x == a || x == b
-
-        rotate deg =
-            ( "transform", "rotate(" ++ (toString deg) ++ "deg)" )
-
-        scaleStyle =
-            ( "transform", "scale(" ++ (toString scale) ++ "," ++ (toString scale) ++ ")" )
+        transform rotation scale =
+            ( "transform", "rotate(" ++ toString rotation ++ "deg) scale" ++ toString ( scale, scale ) )
 
         rotation =
-            case halfTile of
+            case List.Extra.find (\( halfTileType, _, _ ) -> type_ == halfTileType) halfTiles of
                 Nothing ->
                     0
 
-                Just ( _, tileType ) ->
-                    let
-                        checkUpLeft =
-                            \up left ->
-                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ up, left ] then
-                                    90
-                                else
-                                    0
-
-                        checkUpRight =
-                            \up right ->
-                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ up, right ] then
-                                    180
-                                else
-                                    0
-
-                        -- no down left check as this is default tile direction
-                        checkDownRight =
-                            \down right ->
-                                if List.all (\x -> aOrb (getType x) tileType model.tile) [ right, down ] then
-                                    -90
-                                else
-                                    0
-                    in
-                        case neighbours of
-                            ( Just up, Just right, Just down, Just left ) ->
-                                (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right)
-
-                            _ ->
-                                0
+                Just data ->
+                    rotateHalfTiles model data neighbours
     in
         div
-            [ class ("tile " ++ toString model.tile ++ " " ++ positionAsClass)
-            , style [ rotate rotation, scaleStyle ]
+            [ class ("tile " ++ toString type_ ++ " " ++ toString position)
+            , style [ transform rotation scale ]
             , Lib.toScaledTilePosition position scale
             ]
             []
+
+
+type alias HalfTileData =
+    ( TileType, TileType, Int )
+
+
+halfTiles : List HalfTileData
+halfTiles =
+    [ ( PathRock, Path, 0 )
+    , ( PathGrass, Path, 0 )
+    , ( WaterGrass, Water, 0 )
+    , ( WaterPath, Path, 180 )
+    , ( WallDarkDgn, DarkDgn, 180 )
+    , ( WallLitDgn, LitDgn, 180 )
+    ]
+
+
+rotateHalfTiles : Model -> HalfTileData -> TileNeighbours -> Int
+rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighbours =
+    let
+        aOrb x a b =
+            x == a || x == b
+
+        checkUpLeft maybeUp maybeLeft =
+            case ( maybeUp, maybeLeft ) of
+                ( Just up, Just left ) ->
+                    if (isSameType up left && tileType up == targetTileType) then
+                        90
+                    else
+                        0
+
+                _ ->
+                    0
+
+        checkUpRight maybeUp maybeRight =
+            case ( maybeUp, maybeRight ) of
+                ( Just up, Just right ) ->
+                    if (isSameType up right && tileType up == targetTileType) then
+                        180
+                    else
+                        0
+
+                _ ->
+                    0
+
+        -- no down left check as this is default tile direction
+        checkDownRight maybeDown maybeRight =
+            case ( maybeDown, maybeRight ) of
+                ( Just down, Just right ) ->
+                    if (isSameType down right && tileType down == targetTileType) then
+                        -90
+                    else
+                        0
+
+                _ ->
+                    0
+    in
+        case neighbours of
+            ( Nothing, _, Nothing, _ ) ->
+                0
+
+            ( _, Nothing, _, Nothing ) ->
+                0
+
+            ( up, right, down, left ) ->
+                (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right) + rotationOffset
 
 
 asciiToTileType : Char -> TileType
