@@ -29,11 +29,6 @@ type alias Vectors =
     List Vector
 
 
-map : (a -> b) -> (a, a) -> (b, b)
-map f ( x, y ) =
-    ( f x, f y )
-
-
 zero : Vector
 zero =
     ( 0, 0 )
@@ -75,6 +70,18 @@ distance ( v1x, v1y ) ( v2x, v2y ) =
         (dx ^ 2 + dy ^ 2)
             |> toFloat
             |> sqrt
+
+
+
+--------------------
+-- Vector helpers --
+--------------------
+
+
+map : (a -> b) -> ( a, a ) -> ( b, b )
+map f ( x, y ) =
+    ( f x, f y )
+
 
 {-| Rotates a 2d vector by 45 degrees either to the left or right of the
 original vector. Original vector can take the form of (+-x, +-y) where
@@ -129,6 +136,14 @@ directions =
         , ( ( 1, -1 ), SE )
         , ( ( -1, -1 ), SW )
         ]
+
+
+oppositeDirection : CompassDirection -> CompassDirection
+oppositeDirection dir =
+    dir
+        |> fromCompass
+        |> scaleInt -1
+        |> toDirection
 
 
 toDirection : Vector -> CompassDirection

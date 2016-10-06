@@ -216,15 +216,6 @@ placeRoom ( endPoint, facing ) (A ({ walls, dimension } as model)) =
                 roomWorldPosition =
                     Vector.sub entrancePosition wall
 
-                _ =
-                    Debug.log "Room.placeRoom"
-                        { entrancePosition = entrancePosition
-                        , wall = wall
-                        , roomWorldPosition = roomWorldPosition
-                        , endPoint = endPoint
-                        , facing = facing
-                        , dim = dimension
-                        }
             in
                 constant
                     <| A

@@ -72,6 +72,9 @@ viewAttribute attr model buttons =
                 [ h4 [ class "ui header" ] [ text (toString attr) ]
                 , div [ class "ui indicating progress", getDataPercent val ]
                     [ div [ class "bar", (progressBarStyle val) ] []
+                    , div [ class "tick", (tickStyle 25) ] []
+                    , div [ class "tick", (tickStyle 50) ] []
+                    , div [ class "tick", (tickStyle 75) ] []
                     , div [ class "label" ] [ text description ]
                     ]
                 , if buttons then
@@ -89,6 +92,17 @@ progressBarStyle val =
         , ( "min-width", "0" )
         ]
 
+tickStyle: Int -> Html.Attribute Msg
+tickStyle val =
+    style
+        [ ( "width", (toString val) ++ "%" )
+        , ( "min-width", "0" )
+        , ( "border-right", "1px solid gray" )
+        , ( "height", "1.75em" )
+        , ( "position", "absolute" )
+        , ( "top", "0" )
+        , ( "left", "0" )
+        ]
 
 getAttributeValue : Data.Attribute -> AttributeModel -> Int
 getAttributeValue attr model =

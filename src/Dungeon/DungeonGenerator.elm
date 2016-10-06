@@ -20,6 +20,7 @@ import Game.Maps as Maps exposing (..)
 import Lodash exposing (..)
 import List.Extra exposing (dropWhile)
 import Utils.CompassDirection exposing (..)
+import Maybe.Extra exposing (..)
 
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
@@ -95,46 +96,59 @@ this could be create a dead end, link up to a room etc.
 -}
 step : Model -> Generator Model
 step ({ activePoints } as model) =
-    case activePoints of
-        -- when nothing's active, no more exploration
-        [] ->
-            constant model
+    let
+        generateNextModel shuffledPoints =
+            case shuffledPoints of
+                -- when nothing's active, no more exploration
+                [] ->
+                    constant model
 
-        (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
-            generateEntrance room { model | activePoints = remainingPoints }
+                (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
+                    generateEntrance room { model | activePoints = remainingPoints }
 
-        -- pick a active room and either make a new entrance or
-        -- make a corridor from a existing entrance
-        (ActiveRoom room (Just entrance)) :: remainingPoints ->
-            generateCorridor room entrance model.config
-                `andThen` (\maybeCorridor ->
-                            case maybeCorridor of
-                                Just corridor ->
-                                    constant
-                                        { model
-                                            | rooms = room :: model.rooms
-                                            , activePoints = ActiveCorridor corridor :: remainingPoints
-                                        }
+                -- pick a active room and either make a new entrance or
+                -- make a corridor from a existing entrance
+                (ActiveRoom room (Just entrance)) :: remainingPoints ->
+                    let
+                        modelWithActiveCorridorAndInactiveRoom corridor =
+                            { model
+                                | activePoints =
+                                    ActiveCorridor (Corridor.complete corridor)
+                                        :: ActiveRoom room (Maybe.Nothing)
+                                        :: remainingPoints
+                            }
 
-                                Maybe.Nothing ->
-                                    constant { model | rooms = room :: model.rooms }
-                          )
+                        addCorridorToModel room maybeCorridor =
+                            maybeCorridor
+                                |> Maybe.Extra.filter (canFitCorridor model)
+                                |> Maybe.map modelWithActiveCorridorAndInactiveRoom
+                                |> Maybe.withDefault model
+                    in
+                        generateCorridor room entrance model.config
+                            |> Random.map (addCorridorToModel room)
 
-        -- pick a active corridor and keep digging!
-        (ActiveCorridor corridor) :: remainingPoints ->
-            case Corridor.end corridor of
-                Just corridorEnding ->
-                    generateRoom corridorEnding model.config
-                        `andThen` (\room ->
-                                    constant
-                                        { model
-                                            | corridors = corridor :: model.corridors
-                                            , activePoints = ActiveRoom room Maybe.Nothing :: model.activePoints
-                                        }
-                                  )
+                -- pick a active corridor and dig a room
+                (ActiveCorridor corridor) :: remainingPoints ->
+                    let
+                        tryAddRoomToModel room =
+                            if canFitRoom model room then
+                                { model
+                                    | corridors = corridor :: model.corridors
+                                    , activePoints = ActiveRoom room Maybe.Nothing :: remainingPoints
+                                }
+                            else
+                                model
+                    in
+                        case Corridor.end corridor of
+                            Just corridorEnding ->
+                                generateRoom corridorEnding model.config
+                                    |> Random.map tryAddRoomToModel
 
-                Maybe.Nothing ->
-                    constant { model | corridors = corridor :: model.corridors }
+                            Maybe.Nothing ->
+                                constant { model | corridors = corridor :: model.corridors }
+    in
+        shuffle activePoints
+            `andThen` generateNextModel
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -147,7 +161,7 @@ generateEntrance room ({ config } as model) =
             (room |> Room.entrances |> List.length) >= config.maxEntrances
 
         modelWithActiveRoomRemoved =
-            model
+            { model | rooms = room :: model.rooms }
 
         mapEntranceToModel ( room', entrance ) =
             { model
@@ -186,26 +200,69 @@ generateCorridor room entrance config =
                 |> shuffle
                 |> Random.map (headWithDefault entranceFacing)
 
-        _ =
-            Debug.log "generateCorridor"
-                { entranceFacing = entranceFacing
-                , corridorStart = corridorStart
-                , leftDirection = leftDirection
-                , rightDirection = rightDirection
-                }
-
         randomCorridorLength =
             Dice.range config.corridor.minLength config.corridor.maxLength
+
+        makeCorridor ( len, dir ) =
+            let
+                facingEntrance =
+                    entranceFacing
+                        |> Vector.scaleInt -1
+                        |> Vector.toDirection
+
+                corridor =
+                    Corridor.init ( corridorStart, facingEntrance )
+            in
+                digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len) corridor
     in
         Random.map2 (,) randomCorridorLength randomDirection
-            `andThen` \( len, dir ) ->
-                        digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len)
+            `andThen` makeCorridor
 
 
 generateRoom : DirectedVector -> Config.Model -> Generator Room
 generateRoom corridorEnding config =
     Room.generate config
         `andThen` Room.placeRoom corridorEnding
+
+
+
+---------------
+-- Collision --
+---------------
+
+
+canFitCorridor : Model -> Corridor -> Bool
+canFitCorridor model corridor =
+    let
+        modelTiles =
+            toTiles model
+
+        corridorTiles =
+            Corridor.toTiles corridor
+
+        inModelTiles tile =
+            List.any (Tile.isSamePosition tile) modelTiles
+    in
+        corridorTiles
+            |> List.any inModelTiles
+            |> not
+
+
+canFitRoom : Model -> Room -> Bool
+canFitRoom model room =
+    let
+        modelTiles =
+            toTiles model
+
+        roomTiles =
+            Room.toTiles room
+
+        inModelTiles tile =
+            List.any (Tile.isSamePosition tile) modelTiles
+    in
+        roomTiles
+            |> List.any inModelTiles
+            |> not
 
 
 
@@ -220,115 +277,32 @@ type alias DigInstruction =
     }
 
 
-digger : DigInstruction -> Generator (Maybe Corridor)
-digger ({ start, length } as instruction) =
+digger : DigInstruction -> Corridor -> Generator (Maybe Corridor)
+digger ({ start, length } as instruction) corridor =
     let
-        ( startVector, startDirection ) =
+        ( digStart, digDirection ) =
             start
 
         finish =
-            Vector.add startVector (Vector.scaleInt length (Vector.fromCompass startDirection))
+            Vector.add digStart (Vector.scaleInt length (Vector.fromCompass digDirection))
 
         finishDirectionGen finish =
             (Corridor.possibleEnds finish corridor |> shuffle)
                 `andThen` (List.head >> constant)
 
         digPath =
-            Corridor.path startVector finish
+            Corridor.path digStart finish
 
-        corridor =
-            Corridor.init start
+        dig maybeEnd =
+            case maybeEnd of
+                Just end ->
+                    constant (Just <| Corridor.add end corridor)
+
+                Maybe.Nothing ->
+                    constant Maybe.Nothing
     in
         finishDirectionGen finish
-            `andThen` (\maybeEnd ->
-                        case maybeEnd of
-                            Just end ->
-                                constant (Just <| Corridor.add end corridor)
-
-                            Maybe.Nothing ->
-                                constant Maybe.Nothing
-                      )
-
-
-
------------------
--- Prospecting --
------------------
-
-
-type alias Direction =
-    Vector
-
-
-type Finding
-    = Room Room
-    | Corridor Corridor
-    | EdgeOfMap
-    | Nothing
-
-
-type alias ProspectResults =
-    List ProspectResult
-
-
-type alias ProspectResult =
-    { position : Vector
-    , found : Finding
-    }
-
-
-dungeonConstructAtPos : Vector -> Model -> Finding
-dungeonConstructAtPos pos ({ rooms, corridors } as model) =
-    let
-        map =
-            toMap model
-
-        constructsAtPosition pos =
-            ( roomAtPosition model pos, corridorAtPosition model pos )
-
-        mapTile =
-            Maps.getTile map pos
-
-        inBounds =
-            Config.withinDungeonBounds pos model.config
-    in
-        case ( mapTile, inBounds, constructsAtPosition pos ) of
-            ( _, False, _ ) ->
-                EdgeOfMap
-
-            ( Maybe.Nothing, _, _ ) ->
-                Nothing
-
-            ( Just _, _, ( Just room, _ ) ) ->
-                Room room
-
-            ( Just _, _, ( _, Just corridor ) ) ->
-                Corridor corridor
-
-            _ ->
-                -- should not hit this, caught by outer case
-                Nothing
-
-
-roomAtPosition : Model -> Vector -> Maybe Room
-roomAtPosition { rooms } position =
-    let
-        isInRoom room =
-            Room.isPositionWithinRoom room position
-    in
-        rooms
-            |> List.filter isInRoom
-            |> List.head
-
-
-corridorAtPosition : Model -> Vector -> Maybe Corridor
-corridorAtPosition corridor position =
-    Maybe.Nothing
-
-
-stepCorridor : Corridor -> Model -> Generator Model
-stepCorridor corridor model =
-    constant model
+            `andThen` dig
 
 
 

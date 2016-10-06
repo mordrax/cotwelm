@@ -5,6 +5,7 @@ module Tile
         , TileType(..)
         , TileNeighbours
         , isSameType
+        , isSamePosition
         , isSolid
         , position
         , setPosition
@@ -77,6 +78,11 @@ isSolid (A { solid }) =
 isSameType : Tile -> Tile -> Bool
 isSameType (A t1) (A t2) =
     t1.type_ == t2.type_
+
+
+isSamePosition : Tile -> Tile -> Bool
+isSamePosition (A t1) (A t2) =
+    t1.position == t2.position
 
 
 setPosition : Vector -> Tile -> Tile
