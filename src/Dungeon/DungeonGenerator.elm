@@ -98,54 +98,60 @@ step : Model -> Generator Model
 step ({ activePoints } as model) =
     shuffle activePoints
         `andThen` \shuffledPoints ->
-                    case shuffledPoints of
-                        -- when nothing's active, no more exploration
-                        [] ->
-                            constant model
+                    let
+                        _ =
+                            Debug.log "DungeonGenerator.step"
+                                { activePoint = headWithDefault (ActiveRoom Room.init Maybe.Nothing) shuffledPoints
+                                }
+                    in
+                        case shuffledPoints of
+                            -- when nothing's active, no more exploration
+                            [] ->
+                                constant model
 
-                        (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
-                            generateEntrance room { model | activePoints = remainingPoints }
+                            (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
+                                generateEntrance room { model | activePoints = remainingPoints }
 
-                        -- pick a active room and either make a new entrance or
-                        -- make a corridor from a existing entrance
-                        (ActiveRoom room (Just entrance)) :: remainingPoints ->
-                            let
-                                modelWithActiveCorridorAndInactiveRoom corridor =
-                                    { model
-                                        | activePoints =
-                                            ActiveCorridor (Corridor.complete corridor)
-                                                :: ActiveRoom room (Maybe.Nothing)
-                                                :: remainingPoints
-                                    }
-
-                                addCorridorToModel room maybeCorridor =
-                                    maybeCorridor
-                                        |> Maybe.Extra.filter (canFitCorridor model)
-                                        |> Maybe.map modelWithActiveCorridorAndInactiveRoom
-                                        |> Maybe.withDefault model
-                            in
-                                generateCorridor room entrance model.config
-                                    |> Random.map (addCorridorToModel room)
-
-                        -- pick a active corridor and dig a room
-                        (ActiveCorridor corridor) :: remainingPoints ->
-                            let
-                                tryAddRoomToModel room =
-                                    if canFitRoom model room then
+                            -- pick a active room and either make a new entrance or
+                            -- make a corridor from a existing entrance
+                            (ActiveRoom room (Just entrance)) :: remainingPoints ->
+                                let
+                                    modelWithActiveCorridorAndInactiveRoom corridor =
                                         { model
-                                            | corridors = corridor :: model.corridors
-                                            , activePoints = ActiveRoom room Maybe.Nothing :: model.activePoints
+                                            | activePoints =
+                                                ActiveCorridor (Corridor.complete corridor)
+                                                    :: ActiveRoom room (Maybe.Nothing)
+                                                    :: remainingPoints
                                         }
-                                    else
-                                        model
-                            in
-                                case Corridor.end corridor of
-                                    Just corridorEnding ->
-                                        generateRoom corridorEnding model.config
-                                            |> Random.map tryAddRoomToModel
 
-                                    Maybe.Nothing ->
-                                        constant { model | corridors = corridor :: model.corridors }
+                                    addCorridorToModel room maybeCorridor =
+                                        maybeCorridor
+                                            |> Maybe.Extra.filter (canFitCorridor model)
+                                            |> Maybe.map modelWithActiveCorridorAndInactiveRoom
+                                            |> Maybe.withDefault model
+                                in
+                                    generateCorridor room entrance model.config
+                                        |> Random.map (addCorridorToModel room)
+
+                            -- pick a active corridor and dig a room
+                            (ActiveCorridor corridor) :: remainingPoints ->
+                                let
+                                    tryAddRoomToModel room =
+                                        if canFitRoom model room then
+                                            { model
+                                                | corridors = corridor :: model.corridors
+                                                , activePoints = ActiveRoom room Maybe.Nothing :: remainingPoints
+                                            }
+                                        else
+                                            model
+                                in
+                                    case Corridor.end corridor of
+                                        Just corridorEnding ->
+                                            generateRoom corridorEnding model.config
+                                                |> Random.map tryAddRoomToModel
+
+                                        Maybe.Nothing ->
+                                            constant { model | corridors = corridor :: model.corridors }
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -158,7 +164,7 @@ generateEntrance room ({ config } as model) =
             (room |> Room.entrances |> List.length) >= config.maxEntrances
 
         modelWithActiveRoomRemoved =
-            model
+            { model | rooms = room :: model.rooms }
 
         mapEntranceToModel ( room', entrance ) =
             { model
