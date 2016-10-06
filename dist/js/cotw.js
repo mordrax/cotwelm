@@ -5910,742 +5910,6 @@ var _elm_lang$core$Random$cmdMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Random'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Random$init, onEffects: _elm_lang$core$Random$onEffects, onSelfMsg: _elm_lang$core$Random$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Random$cmdMap};
 
-//import Maybe, Native.Array, Native.List, Native.Utils, Result //
-
-var _elm_lang$core$Native_Json = function() {
-
-
-// CORE DECODERS
-
-function succeed(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'succeed',
-		msg: msg
-	};
-}
-
-function fail(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'fail',
-		msg: msg
-	};
-}
-
-function decodePrimitive(tag)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag
-	};
-}
-
-function decodeContainer(tag, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag,
-		decoder: decoder
-	};
-}
-
-function decodeNull(value)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'null',
-		value: value
-	};
-}
-
-function decodeField(field, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'field',
-		field: field,
-		decoder: decoder
-	};
-}
-
-function decodeKeyValuePairs(decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'key-value',
-		decoder: decoder
-	};
-}
-
-function decodeObject(f, decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'map-many',
-		func: f,
-		decoders: decoders
-	};
-}
-
-function decodeTuple(f, decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'tuple',
-		func: f,
-		decoders: decoders
-	};
-}
-
-function andThen(decoder, callback)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'andThen',
-		decoder: decoder,
-		callback: callback
-	};
-}
-
-function customAndThen(decoder, callback)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'customAndThen',
-		decoder: decoder,
-		callback: callback
-	};
-}
-
-function oneOf(decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'oneOf',
-		decoders: decoders
-	};
-}
-
-
-// DECODING OBJECTS
-
-function decodeObject1(f, d1)
-{
-	return decodeObject(f, [d1]);
-}
-
-function decodeObject2(f, d1, d2)
-{
-	return decodeObject(f, [d1, d2]);
-}
-
-function decodeObject3(f, d1, d2, d3)
-{
-	return decodeObject(f, [d1, d2, d3]);
-}
-
-function decodeObject4(f, d1, d2, d3, d4)
-{
-	return decodeObject(f, [d1, d2, d3, d4]);
-}
-
-function decodeObject5(f, d1, d2, d3, d4, d5)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5]);
-}
-
-function decodeObject6(f, d1, d2, d3, d4, d5, d6)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5, d6]);
-}
-
-function decodeObject7(f, d1, d2, d3, d4, d5, d6, d7)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5, d6, d7]);
-}
-
-function decodeObject8(f, d1, d2, d3, d4, d5, d6, d7, d8)
-{
-	return decodeObject(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
-}
-
-
-// DECODING TUPLES
-
-function decodeTuple1(f, d1)
-{
-	return decodeTuple(f, [d1]);
-}
-
-function decodeTuple2(f, d1, d2)
-{
-	return decodeTuple(f, [d1, d2]);
-}
-
-function decodeTuple3(f, d1, d2, d3)
-{
-	return decodeTuple(f, [d1, d2, d3]);
-}
-
-function decodeTuple4(f, d1, d2, d3, d4)
-{
-	return decodeTuple(f, [d1, d2, d3, d4]);
-}
-
-function decodeTuple5(f, d1, d2, d3, d4, d5)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5]);
-}
-
-function decodeTuple6(f, d1, d2, d3, d4, d5, d6)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5, d6]);
-}
-
-function decodeTuple7(f, d1, d2, d3, d4, d5, d6, d7)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5, d6, d7]);
-}
-
-function decodeTuple8(f, d1, d2, d3, d4, d5, d6, d7, d8)
-{
-	return decodeTuple(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
-}
-
-
-// DECODE HELPERS
-
-function ok(value)
-{
-	return { tag: 'ok', value: value };
-}
-
-function badPrimitive(type, value)
-{
-	return { tag: 'primitive', type: type, value: value };
-}
-
-function badIndex(index, nestedProblems)
-{
-	return { tag: 'index', index: index, rest: nestedProblems };
-}
-
-function badField(field, nestedProblems)
-{
-	return { tag: 'field', field: field, rest: nestedProblems };
-}
-
-function badOneOf(problems)
-{
-	return { tag: 'oneOf', problems: problems };
-}
-
-function badCustom(msg)
-{
-	return { tag: 'custom', msg: msg };
-}
-
-function bad(msg)
-{
-	return { tag: 'fail', msg: msg };
-}
-
-function badToString(problem)
-{
-	var context = '_';
-	while (problem)
-	{
-		switch (problem.tag)
-		{
-			case 'primitive':
-				return 'Expecting ' + problem.type
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ' but instead got: ' + jsToString(problem.value);
-
-			case 'index':
-				context += '[' + problem.index + ']';
-				problem = problem.rest;
-				break;
-
-			case 'field':
-				context += '.' + problem.field;
-				problem = problem.rest;
-				break;
-
-			case 'oneOf':
-				var problems = problem.problems;
-				for (var i = 0; i < problems.length; i++)
-				{
-					problems[i] = badToString(problems[i]);
-				}
-				return 'I ran into the following problems'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ':\n\n' + problems.join('\n');
-
-			case 'custom':
-				return 'A `customDecoder` failed'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ' with the message: ' + problem.msg;
-
-			case 'fail':
-				return 'I ran into a `fail` decoder'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ': ' + problem.msg;
-		}
-	}
-}
-
-function jsToString(value)
-{
-	return value === undefined
-		? 'undefined'
-		: JSON.stringify(value);
-}
-
-
-// DECODE
-
-function runOnString(decoder, string)
-{
-	var json;
-	try
-	{
-		json = JSON.parse(string);
-	}
-	catch (e)
-	{
-		return _elm_lang$core$Result$Err('Given an invalid JSON: ' + e.message);
-	}
-	return run(decoder, json);
-}
-
-function run(decoder, value)
-{
-	var result = runHelp(decoder, value);
-	return (result.tag === 'ok')
-		? _elm_lang$core$Result$Ok(result.value)
-		: _elm_lang$core$Result$Err(badToString(result));
-}
-
-function runHelp(decoder, value)
-{
-	switch (decoder.tag)
-	{
-		case 'bool':
-			return (typeof value === 'boolean')
-				? ok(value)
-				: badPrimitive('a Bool', value);
-
-		case 'int':
-			if (typeof value !== 'number') {
-				return badPrimitive('an Int', value);
-			}
-
-			if (-2147483647 < value && value < 2147483647 && (value | 0) === value) {
-				return ok(value);
-			}
-
-			if (isFinite(value) && !(value % 1)) {
-				return ok(value);
-			}
-
-			return badPrimitive('an Int', value);
-
-		case 'float':
-			return (typeof value === 'number')
-				? ok(value)
-				: badPrimitive('a Float', value);
-
-		case 'string':
-			return (typeof value === 'string')
-				? ok(value)
-				: (value instanceof String)
-					? ok(value + '')
-					: badPrimitive('a String', value);
-
-		case 'null':
-			return (value === null)
-				? ok(decoder.value)
-				: badPrimitive('null', value);
-
-		case 'value':
-			return ok(value);
-
-		case 'list':
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('a List', value);
-			}
-
-			var list = _elm_lang$core$Native_List.Nil;
-			for (var i = value.length; i--; )
-			{
-				var result = runHelp(decoder.decoder, value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result)
-				}
-				list = _elm_lang$core$Native_List.Cons(result.value, list);
-			}
-			return ok(list);
-
-		case 'array':
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('an Array', value);
-			}
-
-			var len = value.length;
-			var array = new Array(len);
-			for (var i = len; i--; )
-			{
-				var result = runHelp(decoder.decoder, value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result);
-				}
-				array[i] = result.value;
-			}
-			return ok(_elm_lang$core$Native_Array.fromJSArray(array));
-
-		case 'maybe':
-			var result = runHelp(decoder.decoder, value);
-			return (result.tag === 'ok')
-				? ok(_elm_lang$core$Maybe$Just(result.value))
-				: ok(_elm_lang$core$Maybe$Nothing);
-
-		case 'field':
-			var field = decoder.field;
-			if (typeof value !== 'object' || value === null || !(field in value))
-			{
-				return badPrimitive('an object with a field named `' + field + '`', value);
-			}
-
-			var result = runHelp(decoder.decoder, value[field]);
-			return (result.tag === 'ok')
-				? result
-				: badField(field, result);
-
-		case 'key-value':
-			if (typeof value !== 'object' || value === null || value instanceof Array)
-			{
-				return badPrimitive('an object', value);
-			}
-
-			var keyValuePairs = _elm_lang$core$Native_List.Nil;
-			for (var key in value)
-			{
-				var result = runHelp(decoder.decoder, value[key]);
-				if (result.tag !== 'ok')
-				{
-					return badField(key, result);
-				}
-				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
-				keyValuePairs = _elm_lang$core$Native_List.Cons(pair, keyValuePairs);
-			}
-			return ok(keyValuePairs);
-
-		case 'map-many':
-			var answer = decoder.func;
-			var decoders = decoder.decoders;
-			for (var i = 0; i < decoders.length; i++)
-			{
-				var result = runHelp(decoders[i], value);
-				if (result.tag !== 'ok')
-				{
-					return result;
-				}
-				answer = answer(result.value);
-			}
-			return ok(answer);
-
-		case 'tuple':
-			var decoders = decoder.decoders;
-			var len = decoders.length;
-
-			if ( !(value instanceof Array) || value.length !== len )
-			{
-				return badPrimitive('a Tuple with ' + len + ' entries', value);
-			}
-
-			var answer = decoder.func;
-			for (var i = 0; i < len; i++)
-			{
-				var result = runHelp(decoders[i], value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result);
-				}
-				answer = answer(result.value);
-			}
-			return ok(answer);
-
-		case 'customAndThen':
-			var result = runHelp(decoder.decoder, value);
-			if (result.tag !== 'ok')
-			{
-				return result;
-			}
-			var realResult = decoder.callback(result.value);
-			if (realResult.ctor === 'Err')
-			{
-				return badCustom(realResult._0);
-			}
-			return ok(realResult._0);
-
-		case 'andThen':
-			var result = runHelp(decoder.decoder, value);
-			return (result.tag !== 'ok')
-				? result
-				: runHelp(decoder.callback(result.value), value);
-
-		case 'oneOf':
-			var errors = [];
-			var temp = decoder.decoders;
-			while (temp.ctor !== '[]')
-			{
-				var result = runHelp(temp._0, value);
-
-				if (result.tag === 'ok')
-				{
-					return result;
-				}
-
-				errors.push(result);
-
-				temp = temp._1;
-			}
-			return badOneOf(errors);
-
-		case 'fail':
-			return bad(decoder.msg);
-
-		case 'succeed':
-			return ok(decoder.msg);
-	}
-}
-
-
-// EQUALITY
-
-function equality(a, b)
-{
-	if (a === b)
-	{
-		return true;
-	}
-
-	if (a.tag !== b.tag)
-	{
-		return false;
-	}
-
-	switch (a.tag)
-	{
-		case 'succeed':
-		case 'fail':
-			return a.msg === b.msg;
-
-		case 'bool':
-		case 'int':
-		case 'float':
-		case 'string':
-		case 'value':
-			return true;
-
-		case 'null':
-			return a.value === b.value;
-
-		case 'list':
-		case 'array':
-		case 'maybe':
-		case 'key-value':
-			return equality(a.decoder, b.decoder);
-
-		case 'field':
-			return a.field === b.field && equality(a.decoder, b.decoder);
-
-		case 'map-many':
-		case 'tuple':
-			if (a.func !== b.func)
-			{
-				return false;
-			}
-			return listEquality(a.decoders, b.decoders);
-
-		case 'andThen':
-		case 'customAndThen':
-			return a.callback === b.callback && equality(a.decoder, b.decoder);
-
-		case 'oneOf':
-			return listEquality(a.decoders, b.decoders);
-	}
-}
-
-function listEquality(aDecoders, bDecoders)
-{
-	var len = aDecoders.length;
-	if (len !== bDecoders.length)
-	{
-		return false;
-	}
-	for (var i = 0; i < len; i++)
-	{
-		if (!equality(aDecoders[i], bDecoders[i]))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-
-// ENCODE
-
-function encode(indentLevel, value)
-{
-	return JSON.stringify(value, null, indentLevel);
-}
-
-function identity(value)
-{
-	return value;
-}
-
-function encodeObject(keyValuePairs)
-{
-	var obj = {};
-	while (keyValuePairs.ctor !== '[]')
-	{
-		var pair = keyValuePairs._0;
-		obj[pair._0] = pair._1;
-		keyValuePairs = keyValuePairs._1;
-	}
-	return obj;
-}
-
-return {
-	encode: F2(encode),
-	runOnString: F2(runOnString),
-	run: F2(run),
-
-	decodeNull: decodeNull,
-	decodePrimitive: decodePrimitive,
-	decodeContainer: F2(decodeContainer),
-
-	decodeField: F2(decodeField),
-
-	decodeObject1: F2(decodeObject1),
-	decodeObject2: F3(decodeObject2),
-	decodeObject3: F4(decodeObject3),
-	decodeObject4: F5(decodeObject4),
-	decodeObject5: F6(decodeObject5),
-	decodeObject6: F7(decodeObject6),
-	decodeObject7: F8(decodeObject7),
-	decodeObject8: F9(decodeObject8),
-	decodeKeyValuePairs: decodeKeyValuePairs,
-
-	decodeTuple1: F2(decodeTuple1),
-	decodeTuple2: F3(decodeTuple2),
-	decodeTuple3: F4(decodeTuple3),
-	decodeTuple4: F5(decodeTuple4),
-	decodeTuple5: F6(decodeTuple5),
-	decodeTuple6: F7(decodeTuple6),
-	decodeTuple7: F8(decodeTuple7),
-	decodeTuple8: F9(decodeTuple8),
-
-	andThen: F2(andThen),
-	customAndThen: F2(customAndThen),
-	fail: fail,
-	succeed: succeed,
-	oneOf: oneOf,
-
-	identity: identity,
-	encodeNull: null,
-	encodeArray: _elm_lang$core$Native_Array.toJSArray,
-	encodeList: _elm_lang$core$Native_List.toArray,
-	encodeObject: encodeObject,
-
-	equality: equality
-};
-
-}();
-
-var _elm_lang$core$Json_Encode$list = _elm_lang$core$Native_Json.encodeList;
-var _elm_lang$core$Json_Encode$array = _elm_lang$core$Native_Json.encodeArray;
-var _elm_lang$core$Json_Encode$object = _elm_lang$core$Native_Json.encodeObject;
-var _elm_lang$core$Json_Encode$null = _elm_lang$core$Native_Json.encodeNull;
-var _elm_lang$core$Json_Encode$bool = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$float = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$int = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$string = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$encode = _elm_lang$core$Native_Json.encode;
-var _elm_lang$core$Json_Encode$Value = {ctor: 'Value'};
-
-var _elm_lang$core$Json_Decode$tuple8 = _elm_lang$core$Native_Json.decodeTuple8;
-var _elm_lang$core$Json_Decode$tuple7 = _elm_lang$core$Native_Json.decodeTuple7;
-var _elm_lang$core$Json_Decode$tuple6 = _elm_lang$core$Native_Json.decodeTuple6;
-var _elm_lang$core$Json_Decode$tuple5 = _elm_lang$core$Native_Json.decodeTuple5;
-var _elm_lang$core$Json_Decode$tuple4 = _elm_lang$core$Native_Json.decodeTuple4;
-var _elm_lang$core$Json_Decode$tuple3 = _elm_lang$core$Native_Json.decodeTuple3;
-var _elm_lang$core$Json_Decode$tuple2 = _elm_lang$core$Native_Json.decodeTuple2;
-var _elm_lang$core$Json_Decode$tuple1 = _elm_lang$core$Native_Json.decodeTuple1;
-var _elm_lang$core$Json_Decode$succeed = _elm_lang$core$Native_Json.succeed;
-var _elm_lang$core$Json_Decode$fail = _elm_lang$core$Native_Json.fail;
-var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
-var _elm_lang$core$Json_Decode$customDecoder = _elm_lang$core$Native_Json.customAndThen;
-var _elm_lang$core$Json_Decode$decodeValue = _elm_lang$core$Native_Json.run;
-var _elm_lang$core$Json_Decode$value = _elm_lang$core$Native_Json.decodePrimitive('value');
-var _elm_lang$core$Json_Decode$maybe = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'maybe', decoder);
-};
-var _elm_lang$core$Json_Decode$null = _elm_lang$core$Native_Json.decodeNull;
-var _elm_lang$core$Json_Decode$array = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'array', decoder);
-};
-var _elm_lang$core$Json_Decode$list = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'list', decoder);
-};
-var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive('bool');
-var _elm_lang$core$Json_Decode$int = _elm_lang$core$Native_Json.decodePrimitive('int');
-var _elm_lang$core$Json_Decode$float = _elm_lang$core$Native_Json.decodePrimitive('float');
-var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
-var _elm_lang$core$Json_Decode$oneOf = _elm_lang$core$Native_Json.oneOf;
-var _elm_lang$core$Json_Decode$keyValuePairs = _elm_lang$core$Native_Json.decodeKeyValuePairs;
-var _elm_lang$core$Json_Decode$object8 = _elm_lang$core$Native_Json.decodeObject8;
-var _elm_lang$core$Json_Decode$object7 = _elm_lang$core$Native_Json.decodeObject7;
-var _elm_lang$core$Json_Decode$object6 = _elm_lang$core$Native_Json.decodeObject6;
-var _elm_lang$core$Json_Decode$object5 = _elm_lang$core$Native_Json.decodeObject5;
-var _elm_lang$core$Json_Decode$object4 = _elm_lang$core$Native_Json.decodeObject4;
-var _elm_lang$core$Json_Decode$object3 = _elm_lang$core$Native_Json.decodeObject3;
-var _elm_lang$core$Json_Decode$object2 = _elm_lang$core$Native_Json.decodeObject2;
-var _elm_lang$core$Json_Decode$object1 = _elm_lang$core$Native_Json.decodeObject1;
-var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
-_elm_lang$core$Json_Decode_ops[':='] = _elm_lang$core$Native_Json.decodeField;
-var _elm_lang$core$Json_Decode$at = F2(
-	function (fields, decoder) {
-		return A3(
-			_elm_lang$core$List$foldr,
-			F2(
-				function (x, y) {
-					return A2(_elm_lang$core$Json_Decode_ops[':='], x, y);
-				}),
-			decoder,
-			fields);
-	});
-var _elm_lang$core$Json_Decode$decodeString = _elm_lang$core$Native_Json.runOnString;
-var _elm_lang$core$Json_Decode$map = _elm_lang$core$Native_Json.decodeObject1;
-var _elm_lang$core$Json_Decode$dict = function (decoder) {
-	return A2(
-		_elm_lang$core$Json_Decode$map,
-		_elm_lang$core$Dict$fromList,
-		_elm_lang$core$Json_Decode$keyValuePairs(decoder));
-};
-var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
-
 var _elm_lang$core$Set$foldr = F3(
 	function (f, b, _p0) {
 		var _p1 = _p0;
@@ -7840,6 +7104,181 @@ var _elm_community$list_extra$List_Extra$init = function () {
 var _elm_community$list_extra$List_Extra$last = _elm_community$list_extra$List_Extra$foldl1(
 	_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always));
 
+var _elm_community$maybe_extra$Maybe_Extra$filter = F2(
+	function (f, m) {
+		var _p0 = A2(_elm_lang$core$Maybe$map, f, m);
+		if ((_p0.ctor === 'Just') && (_p0._0 === true)) {
+			return m;
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
+var _elm_community$maybe_extra$Maybe_Extra$traverseArray = function (f) {
+	var step = F2(
+		function (e, acc) {
+			var _p1 = f(e);
+			if (_p1.ctor === 'Nothing') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				return A2(
+					_elm_lang$core$Maybe$map,
+					_elm_lang$core$Array$push(_p1._0),
+					acc);
+			}
+		});
+	return A2(
+		_elm_lang$core$Array$foldl,
+		step,
+		_elm_lang$core$Maybe$Just(_elm_lang$core$Array$empty));
+};
+var _elm_community$maybe_extra$Maybe_Extra$combineArray = _elm_community$maybe_extra$Maybe_Extra$traverseArray(_elm_lang$core$Basics$identity);
+var _elm_community$maybe_extra$Maybe_Extra$traverse = function (f) {
+	var step = F2(
+		function (e, acc) {
+			var _p2 = f(e);
+			if (_p2.ctor === 'Nothing') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				return A2(
+					_elm_lang$core$Maybe$map,
+					F2(
+						function (x, y) {
+							return A2(_elm_lang$core$List_ops['::'], x, y);
+						})(_p2._0),
+					acc);
+			}
+		});
+	return A2(
+		_elm_lang$core$List$foldr,
+		step,
+		_elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_List.fromArray(
+				[])));
+};
+var _elm_community$maybe_extra$Maybe_Extra$combine = _elm_community$maybe_extra$Maybe_Extra$traverse(_elm_lang$core$Basics$identity);
+var _elm_community$maybe_extra$Maybe_Extra$maybeToArray = function (m) {
+	var _p3 = m;
+	if (_p3.ctor === 'Nothing') {
+		return _elm_lang$core$Array$empty;
+	} else {
+		return A2(_elm_lang$core$Array$repeat, 1, _p3._0);
+	}
+};
+var _elm_community$maybe_extra$Maybe_Extra$maybeToList = function (m) {
+	var _p4 = m;
+	if (_p4.ctor === 'Nothing') {
+		return _elm_lang$core$Native_List.fromArray(
+			[]);
+	} else {
+		return _elm_lang$core$Native_List.fromArray(
+			[_p4._0]);
+	}
+};
+var _elm_community$maybe_extra$Maybe_Extra$orElse = F2(
+	function (ma, mb) {
+		var _p5 = mb;
+		if (_p5.ctor === 'Nothing') {
+			return ma;
+		} else {
+			return mb;
+		}
+	});
+var _elm_community$maybe_extra$Maybe_Extra$orElseLazy = F2(
+	function (fma, mb) {
+		var _p6 = mb;
+		if (_p6.ctor === 'Nothing') {
+			return fma(
+				{ctor: '_Tuple0'});
+		} else {
+			return mb;
+		}
+	});
+var _elm_community$maybe_extra$Maybe_Extra$orLazy = F2(
+	function (ma, fmb) {
+		var _p7 = ma;
+		if (_p7.ctor === 'Nothing') {
+			return fmb(
+				{ctor: '_Tuple0'});
+		} else {
+			return ma;
+		}
+	});
+var _elm_community$maybe_extra$Maybe_Extra$or = F2(
+	function (ma, mb) {
+		var _p8 = ma;
+		if (_p8.ctor === 'Nothing') {
+			return mb;
+		} else {
+			return ma;
+		}
+	});
+var _elm_community$maybe_extra$Maybe_Extra$prev = _elm_lang$core$Maybe$map2(_elm_lang$core$Basics$always);
+var _elm_community$maybe_extra$Maybe_Extra$next = _elm_lang$core$Maybe$map2(
+	_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always));
+var _elm_community$maybe_extra$Maybe_Extra$andMap = F2(
+	function (f, x) {
+		return A2(
+			_elm_lang$core$Maybe$andThen,
+			x,
+			function (x$) {
+				return A2(
+					_elm_lang$core$Maybe$andThen,
+					f,
+					function (f$) {
+						return _elm_lang$core$Maybe$Just(
+							f$(x$));
+					});
+			});
+	});
+var _elm_community$maybe_extra$Maybe_Extra$unpack = F3(
+	function (d, f, m) {
+		var _p9 = m;
+		if (_p9.ctor === 'Nothing') {
+			return d(
+				{ctor: '_Tuple0'});
+		} else {
+			return f(_p9._0);
+		}
+	});
+var _elm_community$maybe_extra$Maybe_Extra$unwrap = F3(
+	function (d, f, m) {
+		var _p10 = m;
+		if (_p10.ctor === 'Nothing') {
+			return d;
+		} else {
+			return f(_p10._0);
+		}
+	});
+var _elm_community$maybe_extra$Maybe_Extra$isJust = function (m) {
+	var _p11 = m;
+	if (_p11.ctor === 'Nothing') {
+		return false;
+	} else {
+		return true;
+	}
+};
+var _elm_community$maybe_extra$Maybe_Extra$isNothing = function (m) {
+	var _p12 = m;
+	if (_p12.ctor === 'Nothing') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var _elm_community$maybe_extra$Maybe_Extra$join = function (mx) {
+	var _p13 = mx;
+	if (_p13.ctor === 'Just') {
+		return _p13._0;
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _elm_community$maybe_extra$Maybe_Extra_ops = _elm_community$maybe_extra$Maybe_Extra_ops || {};
+_elm_community$maybe_extra$Maybe_Extra_ops['?'] = F2(
+	function (mx, x) {
+		return A2(_elm_lang$core$Maybe$withDefault, x, mx);
+	});
+
 var _elm_community$random_extra$Random_Extra$flatMap6 = F7(
 	function (constructor, generatorA, generatorB, generatorC, generatorD, generatorE, generatorF) {
 		return A2(
@@ -8240,6 +7679,742 @@ var _elm_community$random_extra$Random_Array$rangeLengthArray = F3(
 			},
 			A2(_elm_lang$core$Random$int, minLength, maxLength));
 	});
+
+//import Maybe, Native.Array, Native.List, Native.Utils, Result //
+
+var _elm_lang$core$Native_Json = function() {
+
+
+// CORE DECODERS
+
+function succeed(msg)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'succeed',
+		msg: msg
+	};
+}
+
+function fail(msg)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'fail',
+		msg: msg
+	};
+}
+
+function decodePrimitive(tag)
+{
+	return {
+		ctor: '<decoder>',
+		tag: tag
+	};
+}
+
+function decodeContainer(tag, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: tag,
+		decoder: decoder
+	};
+}
+
+function decodeNull(value)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'null',
+		value: value
+	};
+}
+
+function decodeField(field, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'field',
+		field: field,
+		decoder: decoder
+	};
+}
+
+function decodeKeyValuePairs(decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'key-value',
+		decoder: decoder
+	};
+}
+
+function decodeObject(f, decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'map-many',
+		func: f,
+		decoders: decoders
+	};
+}
+
+function decodeTuple(f, decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'tuple',
+		func: f,
+		decoders: decoders
+	};
+}
+
+function andThen(decoder, callback)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'andThen',
+		decoder: decoder,
+		callback: callback
+	};
+}
+
+function customAndThen(decoder, callback)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'customAndThen',
+		decoder: decoder,
+		callback: callback
+	};
+}
+
+function oneOf(decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'oneOf',
+		decoders: decoders
+	};
+}
+
+
+// DECODING OBJECTS
+
+function decodeObject1(f, d1)
+{
+	return decodeObject(f, [d1]);
+}
+
+function decodeObject2(f, d1, d2)
+{
+	return decodeObject(f, [d1, d2]);
+}
+
+function decodeObject3(f, d1, d2, d3)
+{
+	return decodeObject(f, [d1, d2, d3]);
+}
+
+function decodeObject4(f, d1, d2, d3, d4)
+{
+	return decodeObject(f, [d1, d2, d3, d4]);
+}
+
+function decodeObject5(f, d1, d2, d3, d4, d5)
+{
+	return decodeObject(f, [d1, d2, d3, d4, d5]);
+}
+
+function decodeObject6(f, d1, d2, d3, d4, d5, d6)
+{
+	return decodeObject(f, [d1, d2, d3, d4, d5, d6]);
+}
+
+function decodeObject7(f, d1, d2, d3, d4, d5, d6, d7)
+{
+	return decodeObject(f, [d1, d2, d3, d4, d5, d6, d7]);
+}
+
+function decodeObject8(f, d1, d2, d3, d4, d5, d6, d7, d8)
+{
+	return decodeObject(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
+}
+
+
+// DECODING TUPLES
+
+function decodeTuple1(f, d1)
+{
+	return decodeTuple(f, [d1]);
+}
+
+function decodeTuple2(f, d1, d2)
+{
+	return decodeTuple(f, [d1, d2]);
+}
+
+function decodeTuple3(f, d1, d2, d3)
+{
+	return decodeTuple(f, [d1, d2, d3]);
+}
+
+function decodeTuple4(f, d1, d2, d3, d4)
+{
+	return decodeTuple(f, [d1, d2, d3, d4]);
+}
+
+function decodeTuple5(f, d1, d2, d3, d4, d5)
+{
+	return decodeTuple(f, [d1, d2, d3, d4, d5]);
+}
+
+function decodeTuple6(f, d1, d2, d3, d4, d5, d6)
+{
+	return decodeTuple(f, [d1, d2, d3, d4, d5, d6]);
+}
+
+function decodeTuple7(f, d1, d2, d3, d4, d5, d6, d7)
+{
+	return decodeTuple(f, [d1, d2, d3, d4, d5, d6, d7]);
+}
+
+function decodeTuple8(f, d1, d2, d3, d4, d5, d6, d7, d8)
+{
+	return decodeTuple(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
+}
+
+
+// DECODE HELPERS
+
+function ok(value)
+{
+	return { tag: 'ok', value: value };
+}
+
+function badPrimitive(type, value)
+{
+	return { tag: 'primitive', type: type, value: value };
+}
+
+function badIndex(index, nestedProblems)
+{
+	return { tag: 'index', index: index, rest: nestedProblems };
+}
+
+function badField(field, nestedProblems)
+{
+	return { tag: 'field', field: field, rest: nestedProblems };
+}
+
+function badOneOf(problems)
+{
+	return { tag: 'oneOf', problems: problems };
+}
+
+function badCustom(msg)
+{
+	return { tag: 'custom', msg: msg };
+}
+
+function bad(msg)
+{
+	return { tag: 'fail', msg: msg };
+}
+
+function badToString(problem)
+{
+	var context = '_';
+	while (problem)
+	{
+		switch (problem.tag)
+		{
+			case 'primitive':
+				return 'Expecting ' + problem.type
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ' but instead got: ' + jsToString(problem.value);
+
+			case 'index':
+				context += '[' + problem.index + ']';
+				problem = problem.rest;
+				break;
+
+			case 'field':
+				context += '.' + problem.field;
+				problem = problem.rest;
+				break;
+
+			case 'oneOf':
+				var problems = problem.problems;
+				for (var i = 0; i < problems.length; i++)
+				{
+					problems[i] = badToString(problems[i]);
+				}
+				return 'I ran into the following problems'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ':\n\n' + problems.join('\n');
+
+			case 'custom':
+				return 'A `customDecoder` failed'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ' with the message: ' + problem.msg;
+
+			case 'fail':
+				return 'I ran into a `fail` decoder'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ': ' + problem.msg;
+		}
+	}
+}
+
+function jsToString(value)
+{
+	return value === undefined
+		? 'undefined'
+		: JSON.stringify(value);
+}
+
+
+// DECODE
+
+function runOnString(decoder, string)
+{
+	var json;
+	try
+	{
+		json = JSON.parse(string);
+	}
+	catch (e)
+	{
+		return _elm_lang$core$Result$Err('Given an invalid JSON: ' + e.message);
+	}
+	return run(decoder, json);
+}
+
+function run(decoder, value)
+{
+	var result = runHelp(decoder, value);
+	return (result.tag === 'ok')
+		? _elm_lang$core$Result$Ok(result.value)
+		: _elm_lang$core$Result$Err(badToString(result));
+}
+
+function runHelp(decoder, value)
+{
+	switch (decoder.tag)
+	{
+		case 'bool':
+			return (typeof value === 'boolean')
+				? ok(value)
+				: badPrimitive('a Bool', value);
+
+		case 'int':
+			if (typeof value !== 'number') {
+				return badPrimitive('an Int', value);
+			}
+
+			if (-2147483647 < value && value < 2147483647 && (value | 0) === value) {
+				return ok(value);
+			}
+
+			if (isFinite(value) && !(value % 1)) {
+				return ok(value);
+			}
+
+			return badPrimitive('an Int', value);
+
+		case 'float':
+			return (typeof value === 'number')
+				? ok(value)
+				: badPrimitive('a Float', value);
+
+		case 'string':
+			return (typeof value === 'string')
+				? ok(value)
+				: (value instanceof String)
+					? ok(value + '')
+					: badPrimitive('a String', value);
+
+		case 'null':
+			return (value === null)
+				? ok(decoder.value)
+				: badPrimitive('null', value);
+
+		case 'value':
+			return ok(value);
+
+		case 'list':
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('a List', value);
+			}
+
+			var list = _elm_lang$core$Native_List.Nil;
+			for (var i = value.length; i--; )
+			{
+				var result = runHelp(decoder.decoder, value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result)
+				}
+				list = _elm_lang$core$Native_List.Cons(result.value, list);
+			}
+			return ok(list);
+
+		case 'array':
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('an Array', value);
+			}
+
+			var len = value.length;
+			var array = new Array(len);
+			for (var i = len; i--; )
+			{
+				var result = runHelp(decoder.decoder, value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result);
+				}
+				array[i] = result.value;
+			}
+			return ok(_elm_lang$core$Native_Array.fromJSArray(array));
+
+		case 'maybe':
+			var result = runHelp(decoder.decoder, value);
+			return (result.tag === 'ok')
+				? ok(_elm_lang$core$Maybe$Just(result.value))
+				: ok(_elm_lang$core$Maybe$Nothing);
+
+		case 'field':
+			var field = decoder.field;
+			if (typeof value !== 'object' || value === null || !(field in value))
+			{
+				return badPrimitive('an object with a field named `' + field + '`', value);
+			}
+
+			var result = runHelp(decoder.decoder, value[field]);
+			return (result.tag === 'ok')
+				? result
+				: badField(field, result);
+
+		case 'key-value':
+			if (typeof value !== 'object' || value === null || value instanceof Array)
+			{
+				return badPrimitive('an object', value);
+			}
+
+			var keyValuePairs = _elm_lang$core$Native_List.Nil;
+			for (var key in value)
+			{
+				var result = runHelp(decoder.decoder, value[key]);
+				if (result.tag !== 'ok')
+				{
+					return badField(key, result);
+				}
+				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
+				keyValuePairs = _elm_lang$core$Native_List.Cons(pair, keyValuePairs);
+			}
+			return ok(keyValuePairs);
+
+		case 'map-many':
+			var answer = decoder.func;
+			var decoders = decoder.decoders;
+			for (var i = 0; i < decoders.length; i++)
+			{
+				var result = runHelp(decoders[i], value);
+				if (result.tag !== 'ok')
+				{
+					return result;
+				}
+				answer = answer(result.value);
+			}
+			return ok(answer);
+
+		case 'tuple':
+			var decoders = decoder.decoders;
+			var len = decoders.length;
+
+			if ( !(value instanceof Array) || value.length !== len )
+			{
+				return badPrimitive('a Tuple with ' + len + ' entries', value);
+			}
+
+			var answer = decoder.func;
+			for (var i = 0; i < len; i++)
+			{
+				var result = runHelp(decoders[i], value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result);
+				}
+				answer = answer(result.value);
+			}
+			return ok(answer);
+
+		case 'customAndThen':
+			var result = runHelp(decoder.decoder, value);
+			if (result.tag !== 'ok')
+			{
+				return result;
+			}
+			var realResult = decoder.callback(result.value);
+			if (realResult.ctor === 'Err')
+			{
+				return badCustom(realResult._0);
+			}
+			return ok(realResult._0);
+
+		case 'andThen':
+			var result = runHelp(decoder.decoder, value);
+			return (result.tag !== 'ok')
+				? result
+				: runHelp(decoder.callback(result.value), value);
+
+		case 'oneOf':
+			var errors = [];
+			var temp = decoder.decoders;
+			while (temp.ctor !== '[]')
+			{
+				var result = runHelp(temp._0, value);
+
+				if (result.tag === 'ok')
+				{
+					return result;
+				}
+
+				errors.push(result);
+
+				temp = temp._1;
+			}
+			return badOneOf(errors);
+
+		case 'fail':
+			return bad(decoder.msg);
+
+		case 'succeed':
+			return ok(decoder.msg);
+	}
+}
+
+
+// EQUALITY
+
+function equality(a, b)
+{
+	if (a === b)
+	{
+		return true;
+	}
+
+	if (a.tag !== b.tag)
+	{
+		return false;
+	}
+
+	switch (a.tag)
+	{
+		case 'succeed':
+		case 'fail':
+			return a.msg === b.msg;
+
+		case 'bool':
+		case 'int':
+		case 'float':
+		case 'string':
+		case 'value':
+			return true;
+
+		case 'null':
+			return a.value === b.value;
+
+		case 'list':
+		case 'array':
+		case 'maybe':
+		case 'key-value':
+			return equality(a.decoder, b.decoder);
+
+		case 'field':
+			return a.field === b.field && equality(a.decoder, b.decoder);
+
+		case 'map-many':
+		case 'tuple':
+			if (a.func !== b.func)
+			{
+				return false;
+			}
+			return listEquality(a.decoders, b.decoders);
+
+		case 'andThen':
+		case 'customAndThen':
+			return a.callback === b.callback && equality(a.decoder, b.decoder);
+
+		case 'oneOf':
+			return listEquality(a.decoders, b.decoders);
+	}
+}
+
+function listEquality(aDecoders, bDecoders)
+{
+	var len = aDecoders.length;
+	if (len !== bDecoders.length)
+	{
+		return false;
+	}
+	for (var i = 0; i < len; i++)
+	{
+		if (!equality(aDecoders[i], bDecoders[i]))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// ENCODE
+
+function encode(indentLevel, value)
+{
+	return JSON.stringify(value, null, indentLevel);
+}
+
+function identity(value)
+{
+	return value;
+}
+
+function encodeObject(keyValuePairs)
+{
+	var obj = {};
+	while (keyValuePairs.ctor !== '[]')
+	{
+		var pair = keyValuePairs._0;
+		obj[pair._0] = pair._1;
+		keyValuePairs = keyValuePairs._1;
+	}
+	return obj;
+}
+
+return {
+	encode: F2(encode),
+	runOnString: F2(runOnString),
+	run: F2(run),
+
+	decodeNull: decodeNull,
+	decodePrimitive: decodePrimitive,
+	decodeContainer: F2(decodeContainer),
+
+	decodeField: F2(decodeField),
+
+	decodeObject1: F2(decodeObject1),
+	decodeObject2: F3(decodeObject2),
+	decodeObject3: F4(decodeObject3),
+	decodeObject4: F5(decodeObject4),
+	decodeObject5: F6(decodeObject5),
+	decodeObject6: F7(decodeObject6),
+	decodeObject7: F8(decodeObject7),
+	decodeObject8: F9(decodeObject8),
+	decodeKeyValuePairs: decodeKeyValuePairs,
+
+	decodeTuple1: F2(decodeTuple1),
+	decodeTuple2: F3(decodeTuple2),
+	decodeTuple3: F4(decodeTuple3),
+	decodeTuple4: F5(decodeTuple4),
+	decodeTuple5: F6(decodeTuple5),
+	decodeTuple6: F7(decodeTuple6),
+	decodeTuple7: F8(decodeTuple7),
+	decodeTuple8: F9(decodeTuple8),
+
+	andThen: F2(andThen),
+	customAndThen: F2(customAndThen),
+	fail: fail,
+	succeed: succeed,
+	oneOf: oneOf,
+
+	identity: identity,
+	encodeNull: null,
+	encodeArray: _elm_lang$core$Native_Array.toJSArray,
+	encodeList: _elm_lang$core$Native_List.toArray,
+	encodeObject: encodeObject,
+
+	equality: equality
+};
+
+}();
+
+var _elm_lang$core$Json_Encode$list = _elm_lang$core$Native_Json.encodeList;
+var _elm_lang$core$Json_Encode$array = _elm_lang$core$Native_Json.encodeArray;
+var _elm_lang$core$Json_Encode$object = _elm_lang$core$Native_Json.encodeObject;
+var _elm_lang$core$Json_Encode$null = _elm_lang$core$Native_Json.encodeNull;
+var _elm_lang$core$Json_Encode$bool = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$float = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$int = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$string = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$encode = _elm_lang$core$Native_Json.encode;
+var _elm_lang$core$Json_Encode$Value = {ctor: 'Value'};
+
+var _elm_lang$core$Json_Decode$tuple8 = _elm_lang$core$Native_Json.decodeTuple8;
+var _elm_lang$core$Json_Decode$tuple7 = _elm_lang$core$Native_Json.decodeTuple7;
+var _elm_lang$core$Json_Decode$tuple6 = _elm_lang$core$Native_Json.decodeTuple6;
+var _elm_lang$core$Json_Decode$tuple5 = _elm_lang$core$Native_Json.decodeTuple5;
+var _elm_lang$core$Json_Decode$tuple4 = _elm_lang$core$Native_Json.decodeTuple4;
+var _elm_lang$core$Json_Decode$tuple3 = _elm_lang$core$Native_Json.decodeTuple3;
+var _elm_lang$core$Json_Decode$tuple2 = _elm_lang$core$Native_Json.decodeTuple2;
+var _elm_lang$core$Json_Decode$tuple1 = _elm_lang$core$Native_Json.decodeTuple1;
+var _elm_lang$core$Json_Decode$succeed = _elm_lang$core$Native_Json.succeed;
+var _elm_lang$core$Json_Decode$fail = _elm_lang$core$Native_Json.fail;
+var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
+var _elm_lang$core$Json_Decode$customDecoder = _elm_lang$core$Native_Json.customAndThen;
+var _elm_lang$core$Json_Decode$decodeValue = _elm_lang$core$Native_Json.run;
+var _elm_lang$core$Json_Decode$value = _elm_lang$core$Native_Json.decodePrimitive('value');
+var _elm_lang$core$Json_Decode$maybe = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'maybe', decoder);
+};
+var _elm_lang$core$Json_Decode$null = _elm_lang$core$Native_Json.decodeNull;
+var _elm_lang$core$Json_Decode$array = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'array', decoder);
+};
+var _elm_lang$core$Json_Decode$list = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'list', decoder);
+};
+var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive('bool');
+var _elm_lang$core$Json_Decode$int = _elm_lang$core$Native_Json.decodePrimitive('int');
+var _elm_lang$core$Json_Decode$float = _elm_lang$core$Native_Json.decodePrimitive('float');
+var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
+var _elm_lang$core$Json_Decode$oneOf = _elm_lang$core$Native_Json.oneOf;
+var _elm_lang$core$Json_Decode$keyValuePairs = _elm_lang$core$Native_Json.decodeKeyValuePairs;
+var _elm_lang$core$Json_Decode$object8 = _elm_lang$core$Native_Json.decodeObject8;
+var _elm_lang$core$Json_Decode$object7 = _elm_lang$core$Native_Json.decodeObject7;
+var _elm_lang$core$Json_Decode$object6 = _elm_lang$core$Native_Json.decodeObject6;
+var _elm_lang$core$Json_Decode$object5 = _elm_lang$core$Native_Json.decodeObject5;
+var _elm_lang$core$Json_Decode$object4 = _elm_lang$core$Native_Json.decodeObject4;
+var _elm_lang$core$Json_Decode$object3 = _elm_lang$core$Native_Json.decodeObject3;
+var _elm_lang$core$Json_Decode$object2 = _elm_lang$core$Native_Json.decodeObject2;
+var _elm_lang$core$Json_Decode$object1 = _elm_lang$core$Native_Json.decodeObject1;
+var _elm_lang$core$Json_Decode_ops = _elm_lang$core$Json_Decode_ops || {};
+_elm_lang$core$Json_Decode_ops[':='] = _elm_lang$core$Native_Json.decodeField;
+var _elm_lang$core$Json_Decode$at = F2(
+	function (fields, decoder) {
+		return A3(
+			_elm_lang$core$List$foldr,
+			F2(
+				function (x, y) {
+					return A2(_elm_lang$core$Json_Decode_ops[':='], x, y);
+				}),
+			decoder,
+			fields);
+	});
+var _elm_lang$core$Json_Decode$decodeString = _elm_lang$core$Native_Json.runOnString;
+var _elm_lang$core$Json_Decode$map = _elm_lang$core$Native_Json.decodeObject1;
+var _elm_lang$core$Json_Decode$dict = function (decoder) {
+	return A2(
+		_elm_lang$core$Json_Decode$map,
+		_elm_lang$core$Dict$fromList,
+		_elm_lang$core$Json_Decode$keyValuePairs(decoder));
+};
+var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
 
 var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
 var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
@@ -15643,57 +15818,63 @@ var _mordrax$cotwelm$Tile$position = function (_p0) {
 	var _p1 = _p0;
 	return _p1._0.position;
 };
-var _mordrax$cotwelm$Tile$isSameType = F2(
+var _mordrax$cotwelm$Tile$isSamePosition = F2(
 	function (_p3, _p2) {
 		var _p4 = _p3;
 		var _p5 = _p2;
-		return _elm_lang$core$Native_Utils.eq(_p4._0.type_, _p5._0.type_);
+		return _elm_lang$core$Native_Utils.eq(_p4._0.position, _p5._0.position);
 	});
-var _mordrax$cotwelm$Tile$isSolid = function (_p6) {
-	var _p7 = _p6;
-	return _p7._0.solid;
+var _mordrax$cotwelm$Tile$isSameType = F2(
+	function (_p7, _p6) {
+		var _p8 = _p7;
+		var _p9 = _p6;
+		return _elm_lang$core$Native_Utils.eq(_p8._0.type_, _p9._0.type_);
+	});
+var _mordrax$cotwelm$Tile$isSolid = function (_p10) {
+	var _p11 = _p10;
+	return _p11._0.solid;
 };
-var _mordrax$cotwelm$Tile$tileType = function (_p8) {
-	var _p9 = _p8;
-	return _p9._0.type_;
+var _mordrax$cotwelm$Tile$tileType = function (_p12) {
+	var _p13 = _p12;
+	return _p13._0.type_;
 };
 var _mordrax$cotwelm$Tile$rotateHalfTiles = F3(
-	function (_p11, _p10, neighbours) {
-		var _p12 = _p11;
-		var _p13 = _p10;
-		var _p23 = _p13._1;
+	function (_p15, _p14, neighbours) {
+		var _p16 = _p15;
+		var _p17 = _p14;
+		var _p27 = _p17._1;
 		var checkDownRight = F2(
 			function (maybeDown, maybeRight) {
-				var _p14 = {ctor: '_Tuple2', _0: maybeDown, _1: maybeRight};
-				if (((_p14.ctor === '_Tuple2') && (_p14._0.ctor === 'Just')) && (_p14._1.ctor === 'Just')) {
-					var _p15 = _p14._0._0;
-					return (A2(_mordrax$cotwelm$Tile$isSameType, _p15, _p14._1._0) && _elm_lang$core$Native_Utils.eq(
-						_mordrax$cotwelm$Tile$tileType(_p15),
-						_p23)) ? -90 : 0;
+				var _p18 = {ctor: '_Tuple2', _0: maybeDown, _1: maybeRight};
+				if (((_p18.ctor === '_Tuple2') && (_p18._0.ctor === 'Just')) && (_p18._1.ctor === 'Just')) {
+					var _p19 = _p18._0._0;
+					return (A2(_mordrax$cotwelm$Tile$isSameType, _p19, _p18._1._0) && _elm_lang$core$Native_Utils.eq(
+						_mordrax$cotwelm$Tile$tileType(_p19),
+						_p27)) ? -90 : 0;
 				} else {
 					return 0;
 				}
 			});
 		var checkUpRight = F2(
 			function (maybeUp, maybeRight) {
-				var _p16 = {ctor: '_Tuple2', _0: maybeUp, _1: maybeRight};
-				if (((_p16.ctor === '_Tuple2') && (_p16._0.ctor === 'Just')) && (_p16._1.ctor === 'Just')) {
-					var _p17 = _p16._0._0;
-					return (A2(_mordrax$cotwelm$Tile$isSameType, _p17, _p16._1._0) && _elm_lang$core$Native_Utils.eq(
-						_mordrax$cotwelm$Tile$tileType(_p17),
-						_p23)) ? 180 : 0;
+				var _p20 = {ctor: '_Tuple2', _0: maybeUp, _1: maybeRight};
+				if (((_p20.ctor === '_Tuple2') && (_p20._0.ctor === 'Just')) && (_p20._1.ctor === 'Just')) {
+					var _p21 = _p20._0._0;
+					return (A2(_mordrax$cotwelm$Tile$isSameType, _p21, _p20._1._0) && _elm_lang$core$Native_Utils.eq(
+						_mordrax$cotwelm$Tile$tileType(_p21),
+						_p27)) ? 180 : 0;
 				} else {
 					return 0;
 				}
 			});
 		var checkUpLeft = F2(
 			function (maybeUp, maybeLeft) {
-				var _p18 = {ctor: '_Tuple2', _0: maybeUp, _1: maybeLeft};
-				if (((_p18.ctor === '_Tuple2') && (_p18._0.ctor === 'Just')) && (_p18._1.ctor === 'Just')) {
-					var _p19 = _p18._0._0;
-					return (A2(_mordrax$cotwelm$Tile$isSameType, _p19, _p18._1._0) && _elm_lang$core$Native_Utils.eq(
-						_mordrax$cotwelm$Tile$tileType(_p19),
-						_p23)) ? 90 : 0;
+				var _p22 = {ctor: '_Tuple2', _0: maybeUp, _1: maybeLeft};
+				if (((_p22.ctor === '_Tuple2') && (_p22._0.ctor === 'Just')) && (_p22._1.ctor === 'Just')) {
+					var _p23 = _p22._0._0;
+					return (A2(_mordrax$cotwelm$Tile$isSameType, _p23, _p22._1._0) && _elm_lang$core$Native_Utils.eq(
+						_mordrax$cotwelm$Tile$tileType(_p23),
+						_p27)) ? 90 : 0;
 				} else {
 					return 0;
 				}
@@ -15702,16 +15883,16 @@ var _mordrax$cotwelm$Tile$rotateHalfTiles = F3(
 			function (x, a, b) {
 				return _elm_lang$core$Native_Utils.eq(x, a) || _elm_lang$core$Native_Utils.eq(x, b);
 			});
-		var _p20 = neighbours;
-		if ((_p20._0.ctor === 'Nothing') && (_p20._2.ctor === 'Nothing')) {
+		var _p24 = neighbours;
+		if ((_p24._0.ctor === 'Nothing') && (_p24._2.ctor === 'Nothing')) {
 			return 0;
 		} else {
-			if ((_p20._1.ctor === 'Nothing') && (_p20._3.ctor === 'Nothing')) {
+			if ((_p24._1.ctor === 'Nothing') && (_p24._3.ctor === 'Nothing')) {
 				return 0;
 			} else {
-				var _p22 = _p20._0;
-				var _p21 = _p20._1;
-				return ((A2(checkUpLeft, _p22, _p20._3) + A2(checkUpRight, _p22, _p21)) + A2(checkDownRight, _p20._2, _p21)) + _p13._2;
+				var _p26 = _p24._0;
+				var _p25 = _p24._1;
+				return ((A2(checkUpLeft, _p26, _p24._3) + A2(checkUpRight, _p26, _p25)) + A2(checkDownRight, _p24._2, _p25)) + _p17._2;
 			}
 		}
 	});
@@ -15733,11 +15914,11 @@ var _mordrax$cotwelm$Tile$A = function (a) {
 	return {ctor: 'A', _0: a};
 };
 var _mordrax$cotwelm$Tile$setPosition = F2(
-	function (newPosition, _p24) {
-		var _p25 = _p24;
+	function (newPosition, _p28) {
+		var _p29 = _p28;
 		return _mordrax$cotwelm$Tile$A(
 			_elm_lang$core$Native_Utils.update(
-				_p25._0,
+				_p29._0,
 				{position: newPosition}));
 	});
 var _mordrax$cotwelm$Tile$TreasurePile = {ctor: 'TreasurePile'};
@@ -15796,22 +15977,22 @@ var _mordrax$cotwelm$Tile$halfTiles = _elm_lang$core$Native_List.fromArray(
 		{ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile$WallLitDgn, _1: _mordrax$cotwelm$Tile$LitDgn, _2: 180}
 	]);
 var _mordrax$cotwelm$Tile$scaledView = F3(
-	function (_p26, scale, neighbours) {
-		var _p27 = _p26;
-		var _p32 = _p27._0.type_;
-		var _p31 = _p27._0.position;
+	function (_p30, scale, neighbours) {
+		var _p31 = _p30;
+		var _p36 = _p31._0.type_;
+		var _p35 = _p31._0.position;
 		var rotation = function () {
-			var _p30 = A2(
+			var _p34 = A2(
 				_elm_community$list_extra$List_Extra$find,
-				function (_p28) {
-					var _p29 = _p28;
-					return _elm_lang$core$Native_Utils.eq(_p32, _p29._0);
+				function (_p32) {
+					var _p33 = _p32;
+					return _elm_lang$core$Native_Utils.eq(_p36, _p33._0);
 				},
 				_mordrax$cotwelm$Tile$halfTiles);
-			if (_p30.ctor === 'Nothing') {
+			if (_p34.ctor === 'Nothing') {
 				return 0;
 			} else {
-				return A3(_mordrax$cotwelm$Tile$rotateHalfTiles, _p27._0, _p30._0, neighbours);
+				return A3(_mordrax$cotwelm$Tile$rotateHalfTiles, _p31._0, _p34._0, neighbours);
 			}
 		}();
 		var transform = F2(
@@ -15842,17 +16023,17 @@ var _mordrax$cotwelm$Tile$scaledView = F3(
 						'tile ',
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p32),
+							_elm_lang$core$Basics$toString(_p36),
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								' ',
-								_elm_lang$core$Basics$toString(_p31))))),
+								_elm_lang$core$Basics$toString(_p35))))),
 					_elm_lang$html$Html_Attributes$style(
 					_elm_lang$core$Native_List.fromArray(
 						[
 							A2(transform, rotation, scale)
 						])),
-					A2(_mordrax$cotwelm$Utils_Lib$toScaledTilePosition, _p31, scale)
+					A2(_mordrax$cotwelm$Utils_Lib$toScaledTilePosition, _p35, scale)
 				]),
 			_elm_lang$core$Native_List.fromArray(
 				[]));
@@ -15965,8 +16146,8 @@ var _mordrax$cotwelm$Tile$asciiToTileType = function ($char) {
 var _mordrax$cotwelm$Tile$solidTiles = _elm_lang$core$Native_List.fromArray(
 	[_mordrax$cotwelm$Tile$Rock, _mordrax$cotwelm$Tile$Grass10Cave90, _mordrax$cotwelm$Tile$White50Cave50, _mordrax$cotwelm$Tile$Crop, _mordrax$cotwelm$Tile$Well, _mordrax$cotwelm$Tile$PathRock, _mordrax$cotwelm$Tile$WallDarkDgn, _mordrax$cotwelm$Tile$WallLitDgn]);
 var _mordrax$cotwelm$Tile$toTile = F2(
-	function (_p33, tileType) {
-		var _p34 = _p33;
+	function (_p37, tileType) {
+		var _p38 = _p37;
 		var solid = A2(_elm_lang$core$List$member, tileType, _mordrax$cotwelm$Tile$solidTiles);
 		return _mordrax$cotwelm$Tile$A(
 			A5(
@@ -15976,7 +16157,7 @@ var _mordrax$cotwelm$Tile$toTile = F2(
 				_elm_lang$core$Native_List.fromArray(
 					[]),
 				_mordrax$cotwelm$Tile$Empty,
-				{ctor: '_Tuple2', _0: _p34._0, _1: _p34._1}));
+				{ctor: '_Tuple2', _0: _p38._0, _1: _p38._1}));
 	});
 var _mordrax$cotwelm$Tile$mapToTiles = function (asciiMap) {
 	var rowToTiles = F2(
@@ -17709,11 +17890,8 @@ var _mordrax$cotwelm$Dungeon_Room$generateEntrance = function (_p44) {
 var _mordrax$cotwelm$Dungeon_Room$placeRoom = F2(
 	function (_p50, _p49) {
 		var _p51 = _p50;
-		var _p57 = _p51._1;
-		var _p56 = _p51._0;
 		var _p52 = _p49;
-		var _p55 = _p52._0.walls;
-		var _p54 = _p52._0.dimension;
+		var _p53 = _p52._0.walls;
 		var pickAWall = function (walls) {
 			return A2(
 				_elm_lang$core$Random$map,
@@ -17725,23 +17903,19 @@ var _mordrax$cotwelm$Dungeon_Room$placeRoom = F2(
 			A2(
 				_mordrax$cotwelm$Utils_Vector$scale,
 				-1,
-				_mordrax$cotwelm$Utils_Vector$fromCompass(_p57)));
+				_mordrax$cotwelm$Utils_Vector$fromCompass(_p51._1)));
 		var candidateWalls = A3(
 			_mordrax$cotwelm$Dungeon_Room$wallsFacingDirection,
 			wallFacing,
-			_elm_lang$core$List$concat(_p55),
-			_p54);
+			_elm_lang$core$List$concat(_p53),
+			_p52._0.dimension);
 		var makeADoor = function (wall) {
 			var entrancePosition = A2(
 				_mordrax$cotwelm$Utils_Vector$sub,
-				_p56,
+				_p51._0,
 				_mordrax$cotwelm$Utils_Vector$fromCompass(wallFacing));
 			var entrance = A2(_mordrax$cotwelm$Dungeon_Entrance$init, _mordrax$cotwelm$Dungeon_Entrance$Door, entrancePosition);
 			var roomWorldPosition = A2(_mordrax$cotwelm$Utils_Vector$sub, entrancePosition, wall);
-			var _p53 = A2(
-				_elm_lang$core$Debug$log,
-				'Room.placeRoom',
-				{entrancePosition: entrancePosition, wall: wall, roomWorldPosition: roomWorldPosition, endPoint: _p56, facing: _p57, dim: _p54});
 			return _elm_community$random_extra$Random_Extra$constant(
 				_mordrax$cotwelm$Dungeon_Room$A(
 					_elm_lang$core$Native_Utils.update(
@@ -17750,7 +17924,7 @@ var _mordrax$cotwelm$Dungeon_Room$placeRoom = F2(
 							walls: A2(
 								_elm_lang$core$List$map,
 								_mordrax$cotwelm$Lodash$without(wall),
-								_p55),
+								_p53),
 							entrances: _elm_lang$core$Native_List.fromArray(
 								[entrance]),
 							worldPos: roomWorldPosition
@@ -18156,32 +18330,15 @@ var _mordrax$cotwelm$Dungeon_DungeonGenerator$toMap = function (model) {
 	return _mordrax$cotwelm$Game_Maps$fromTiles(
 		_mordrax$cotwelm$Dungeon_DungeonGenerator$toTiles(model));
 };
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$stepCorridor = F2(
-	function (corridor, model) {
-		return _elm_community$random_extra$Random_Extra$constant(model);
-	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$corridorAtPosition = F2(
-	function (corridor, position) {
-		return _elm_lang$core$Maybe$Nothing;
-	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$roomAtPosition = F2(
-	function (_p8, position) {
-		var _p9 = _p8;
-		var isInRoom = function (room) {
-			return A2(_mordrax$cotwelm$Dungeon_Room$isPositionWithinRoom, room, position);
-		};
-		return _elm_lang$core$List$head(
-			A2(_elm_lang$core$List$filter, isInRoom, _p9.rooms));
-	});
 var _mordrax$cotwelm$Dungeon_DungeonGenerator$digger = F2(
-	function (_p10, corridor) {
-		var _p11 = _p10;
+	function (_p8, corridor) {
+		var _p9 = _p8;
 		var dig = function (maybeEnd) {
-			var _p12 = maybeEnd;
-			if (_p12.ctor === 'Just') {
+			var _p10 = maybeEnd;
+			if (_p10.ctor === 'Just') {
 				return _elm_community$random_extra$Random_Extra$constant(
 					_elm_lang$core$Maybe$Just(
-						A2(_mordrax$cotwelm$Dungeon_Corridor$add, _p12._0, corridor)));
+						A2(_mordrax$cotwelm$Dungeon_Corridor$add, _p10._0, corridor)));
 			} else {
 				return _elm_community$random_extra$Random_Extra$constant(_elm_lang$core$Maybe$Nothing);
 			}
@@ -18191,26 +18348,52 @@ var _mordrax$cotwelm$Dungeon_DungeonGenerator$digger = F2(
 				_elm_lang$core$Random$andThen,
 				_mordrax$cotwelm$Lodash$shuffle(
 					A2(_mordrax$cotwelm$Dungeon_Corridor$possibleEnds, finish, corridor)),
-				function (_p13) {
+				function (_p11) {
 					return _elm_community$random_extra$Random_Extra$constant(
-						_elm_lang$core$List$head(_p13));
+						_elm_lang$core$List$head(_p11));
 				});
 		};
-		var _p14 = _p11.start;
-		var digStart = _p14._0;
-		var digDirection = _p14._1;
+		var _p12 = _p9.start;
+		var digStart = _p12._0;
+		var digDirection = _p12._1;
 		var finish = A2(
 			_mordrax$cotwelm$Utils_Vector$add,
 			digStart,
 			A2(
 				_mordrax$cotwelm$Utils_Vector$scaleInt,
-				_p11.length,
+				_p9.length,
 				_mordrax$cotwelm$Utils_Vector$fromCompass(digDirection)));
 		var digPath = A2(_mordrax$cotwelm$Dungeon_Corridor$path, digStart, finish);
 		return A2(
 			_elm_lang$core$Random$andThen,
 			finishDirectionGen(finish),
 			dig);
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$canFitRoom = F2(
+	function (model, room) {
+		var roomTiles = _mordrax$cotwelm$Dungeon_Room$toTiles(room);
+		var modelTiles = _mordrax$cotwelm$Dungeon_DungeonGenerator$toTiles(model);
+		var inModelTiles = function (tile) {
+			return A2(
+				_elm_lang$core$List$any,
+				_mordrax$cotwelm$Tile$isSamePosition(tile),
+				modelTiles);
+		};
+		return _elm_lang$core$Basics$not(
+			A2(_elm_lang$core$List$any, inModelTiles, roomTiles));
+	});
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$canFitCorridor = F2(
+	function (model, corridor) {
+		var corridorTiles = _mordrax$cotwelm$Dungeon_Corridor$toTiles(corridor);
+		var modelTiles = _mordrax$cotwelm$Dungeon_DungeonGenerator$toTiles(model);
+		var inModelTiles = function (tile) {
+			return A2(
+				_elm_lang$core$List$any,
+				_mordrax$cotwelm$Tile$isSamePosition(tile),
+				modelTiles);
+		};
+		return _elm_lang$core$Basics$not(
+			A2(_elm_lang$core$List$any, inModelTiles, corridorTiles));
 	});
 var _mordrax$cotwelm$Dungeon_DungeonGenerator$generateRoom = F2(
 	function (corridorEnding, config) {
@@ -18241,8 +18424,8 @@ var _mordrax$cotwelm$Dungeon_DungeonGenerator$generateCorridor = F3(
 			_mordrax$cotwelm$Lodash$shuffle(
 				_elm_lang$core$Native_List.fromArray(
 					[leftDirection, rightDirection, entranceFacing])));
-		var makeCorridor = function (_p15) {
-			var _p16 = _p15;
+		var makeCorridor = function (_p13) {
+			var _p14 = _p13;
 			var facingEntrance = _mordrax$cotwelm$Utils_Vector$toDirection(
 				A2(_mordrax$cotwelm$Utils_Vector$scaleInt, -1, entranceFacing));
 			var corridor = _mordrax$cotwelm$Dungeon_Corridor$init(
@@ -18254,9 +18437,9 @@ var _mordrax$cotwelm$Dungeon_DungeonGenerator$generateCorridor = F3(
 					{
 						ctor: '_Tuple2',
 						_0: corridorStart,
-						_1: _mordrax$cotwelm$Utils_Vector$toDirection(_p16._1)
+						_1: _mordrax$cotwelm$Utils_Vector$toDirection(_p14._1)
 					},
-					_p16._0),
+					_p14._0),
 				corridor);
 		};
 		return A2(
@@ -18339,108 +18522,121 @@ var _mordrax$cotwelm$Dungeon_DungeonGenerator$init = function (config) {
 		_mordrax$cotwelm$Dungeon_Room$generate(config));
 };
 var _mordrax$cotwelm$Dungeon_DungeonGenerator$generateEntrance = F2(
-	function (room, _p17) {
-		var _p18 = _p17;
-		var _p21 = _p18;
-		var mapEntranceToModel = function (_p19) {
-			var _p20 = _p19;
+	function (room, _p15) {
+		var _p16 = _p15;
+		var _p19 = _p16;
+		var mapEntranceToModel = function (_p17) {
+			var _p18 = _p17;
 			return _elm_lang$core$Native_Utils.update(
-				_p21,
+				_p19,
 				{
 					activePoints: A2(
 						_elm_lang$core$List_ops['::'],
 						A2(
 							_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveRoom,
-							_p20._0,
-							_elm_lang$core$Maybe$Just(_p20._1)),
-						_p21.activePoints)
+							_p18._0,
+							_elm_lang$core$Maybe$Just(_p18._1)),
+						_p19.activePoints)
 				});
 		};
-		var modelWithActiveRoomRemoved = _p21;
+		var modelWithActiveRoomRemoved = _elm_lang$core$Native_Utils.update(
+			_p19,
+			{
+				rooms: A2(_elm_lang$core$List_ops['::'], room, _p19.rooms)
+			});
 		var isRoomAtMaxEntrances = _elm_lang$core$Native_Utils.cmp(
 			_elm_lang$core$List$length(
 				_mordrax$cotwelm$Dungeon_Room$entrances(room)),
-			_p18.config.maxEntrances) > -1;
+			_p16.config.maxEntrances) > -1;
 		return isRoomAtMaxEntrances ? _elm_community$random_extra$Random_Extra$constant(modelWithActiveRoomRemoved) : A2(
 			_elm_lang$core$Random$map,
 			mapEntranceToModel,
 			_mordrax$cotwelm$Dungeon_Room$generateEntrance(room));
 	});
-var _mordrax$cotwelm$Dungeon_DungeonGenerator$step = function (_p22) {
-	var _p23 = _p22;
-	var _p29 = _p23;
-	var _p24 = _p23.activePoints;
-	if (_p24.ctor === '[]') {
-		return _elm_community$random_extra$Random_Extra$constant(_p29);
-	} else {
-		if (_p24._0.ctor === 'ActiveRoom') {
-			if (_p24._0._1.ctor === 'Nothing') {
-				return A2(
-					_mordrax$cotwelm$Dungeon_DungeonGenerator$generateEntrance,
-					_p24._0._0,
-					_elm_lang$core$Native_Utils.update(
-						_p29,
-						{activePoints: _p24._1}));
-			} else {
-				var _p26 = _p24._0._0;
-				var addedCorridorToRoom = F2(
-					function (room, maybeCorridor) {
-						var _p25 = maybeCorridor;
-						if (_p25.ctor === 'Just') {
-							return _elm_community$random_extra$Random_Extra$constant(
-								_elm_lang$core$Native_Utils.update(
-									_p29,
-									{
-										rooms: A2(_elm_lang$core$List_ops['::'], room, _p29.rooms),
-										activePoints: A2(
-											_elm_lang$core$List_ops['::'],
-											_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveCorridor(
-												_mordrax$cotwelm$Dungeon_Corridor$complete(_p25._0)),
-											_p24._1)
-									}));
-						} else {
-							return _elm_community$random_extra$Random_Extra$constant(
-								_elm_lang$core$Native_Utils.update(
-									_p29,
-									{
-										rooms: A2(_elm_lang$core$List_ops['::'], room, _p29.rooms)
-									}));
-						}
-					});
-				return A2(
-					_elm_lang$core$Random$andThen,
-					A3(_mordrax$cotwelm$Dungeon_DungeonGenerator$generateCorridor, _p26, _p24._0._1._0, _p29.config),
-					addedCorridorToRoom(_p26));
-			}
+var _mordrax$cotwelm$Dungeon_DungeonGenerator$step = function (_p20) {
+	var _p21 = _p20;
+	var _p26 = _p21;
+	var generateNextModel = function (shuffledPoints) {
+		var _p22 = shuffledPoints;
+		if (_p22.ctor === '[]') {
+			return _elm_community$random_extra$Random_Extra$constant(_p26);
 		} else {
-			var _p28 = _p24._0._0;
-			var _p27 = _mordrax$cotwelm$Dungeon_Corridor$end(_p28);
-			if (_p27.ctor === 'Just') {
-				return A2(
-					_elm_lang$core$Random$andThen,
-					A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$generateRoom, _p27._0, _p29.config),
-					function (room) {
-						return _elm_community$random_extra$Random_Extra$constant(
-							_elm_lang$core$Native_Utils.update(
-								_p29,
-								{
-									corridors: A2(_elm_lang$core$List_ops['::'], _p28, _p29.corridors),
-									activePoints: A2(
+			if (_p22._0.ctor === 'ActiveRoom') {
+				if (_p22._0._1.ctor === 'Nothing') {
+					return A2(
+						_mordrax$cotwelm$Dungeon_DungeonGenerator$generateEntrance,
+						_p22._0._0,
+						_elm_lang$core$Native_Utils.update(
+							_p26,
+							{activePoints: _p22._1}));
+				} else {
+					var _p23 = _p22._0._0;
+					var modelWithActiveCorridorAndInactiveRoom = function (corridor) {
+						return _elm_lang$core$Native_Utils.update(
+							_p26,
+							{
+								activePoints: A2(
+									_elm_lang$core$List_ops['::'],
+									_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveCorridor(
+										_mordrax$cotwelm$Dungeon_Corridor$complete(corridor)),
+									A2(
 										_elm_lang$core$List_ops['::'],
-										A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveRoom, room, _elm_lang$core$Maybe$Nothing),
-										_p29.activePoints)
-								}));
-					});
+										A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveRoom, _p23, _elm_lang$core$Maybe$Nothing),
+										_p22._1))
+							});
+					};
+					var addCorridorToModel = F2(
+						function (room, maybeCorridor) {
+							return A2(
+								_elm_lang$core$Maybe$withDefault,
+								_p26,
+								A2(
+									_elm_lang$core$Maybe$map,
+									modelWithActiveCorridorAndInactiveRoom,
+									A2(
+										_elm_community$maybe_extra$Maybe_Extra$filter,
+										_mordrax$cotwelm$Dungeon_DungeonGenerator$canFitCorridor(_p26),
+										maybeCorridor)));
+						});
+					return A2(
+						_elm_lang$core$Random$map,
+						addCorridorToModel(_p23),
+						A3(_mordrax$cotwelm$Dungeon_DungeonGenerator$generateCorridor, _p23, _p22._0._1._0, _p26.config));
+				}
 			} else {
-				return _elm_community$random_extra$Random_Extra$constant(
-					_elm_lang$core$Native_Utils.update(
-						_p29,
+				var _p25 = _p22._0._0;
+				var tryAddRoomToModel = function (room) {
+					return A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$canFitRoom, _p26, room) ? _elm_lang$core$Native_Utils.update(
+						_p26,
 						{
-							corridors: A2(_elm_lang$core$List_ops['::'], _p28, _p29.corridors)
-						}));
+							corridors: A2(_elm_lang$core$List_ops['::'], _p25, _p26.corridors),
+							activePoints: A2(
+								_elm_lang$core$List_ops['::'],
+								A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$ActiveRoom, room, _elm_lang$core$Maybe$Nothing),
+								_p22._1)
+						}) : _p26;
+				};
+				var _p24 = _mordrax$cotwelm$Dungeon_Corridor$end(_p25);
+				if (_p24.ctor === 'Just') {
+					return A2(
+						_elm_lang$core$Random$map,
+						tryAddRoomToModel,
+						A2(_mordrax$cotwelm$Dungeon_DungeonGenerator$generateRoom, _p24._0, _p26.config));
+				} else {
+					return _elm_community$random_extra$Random_Extra$constant(
+						_elm_lang$core$Native_Utils.update(
+							_p26,
+							{
+								corridors: A2(_elm_lang$core$List_ops['::'], _p25, _p26.corridors)
+							}));
+				}
 			}
 		}
-	}
+	};
+	return A2(
+		_elm_lang$core$Random$andThen,
+		_mordrax$cotwelm$Lodash$shuffle(_p21.activePoints),
+		generateNextModel);
 };
 
 var _mordrax$cotwelm$Dungeon_Editor$init = {
