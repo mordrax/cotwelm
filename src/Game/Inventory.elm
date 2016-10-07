@@ -278,8 +278,8 @@ handleDrop drop item model =
 ----------
 
 
-view : Model -> Html (InventoryMsg Drag Drop)
-view ({ equipment, dnd } as model) =
+view : (InventoryMsg Drag Drop -> Game.Data.Msg) -> Game.Data.Msg -> Model -> Html Game.Data.Msg
+view wrapMsg returnToMapMsg ({ equipment, dnd } as model) =
     let
         header title =
             div [ class "ui block header" ] [ text title ]
@@ -292,15 +292,18 @@ view ({ equipment, dnd } as model) =
 
         equipmentColumn =
             columnWidth "six" [ viewEquipment equipment dnd ]
+
+        wrapDragDropMsg msg =
+            wrapMsg (toInventoryMsg msg)
     in
         div []
-            [ div [ class "ui button", onClick ExitMsg ] [ text "Exit!" ]
+            [ div [ class "ui button", onClick returnToMapMsg ] [ text "Exit!" ]
             , heading "Inventory screen"
             , div [ class "ui two column grid" ]
-                [ Html.App.map toInventoryMsg equipmentColumn
-                , viewShopPackPurse model
+                [ Html.App.map wrapDragDropMsg equipmentColumn
+                , Html.App.map wrapMsg (viewShopPackPurse model)
                 ]
-            , Html.App.map toInventoryMsg (DragDrop.view dnd)
+            , Html.App.map wrapDragDropMsg (DragDrop.view dnd)
             ]
 
 

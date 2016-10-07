@@ -3,6 +3,7 @@ module Game.Data exposing (..)
 import Hero exposing (..)
 import GameData.Building as Building exposing (..)
 import Game.Maps as Maps exposing (..)
+import Game.Keyboard as Keyboard
 import Item.Item as Item exposing (..)
 import Equipment exposing (..)
 import Shop.Shop as Shop exposing (..)
@@ -11,6 +12,15 @@ import Utils.IdGenerator exposing (..)
 import Monster.Monster exposing (..)
 import Random exposing (..)
 import Window exposing (Size)
+
+
+type Msg
+    = Keyboard (Keyboard.Msg)
+    | InvMsg (InventoryMsg Drag Drop)
+    | ShopMsg Shop.Msg
+    | MapsMsg Maps.Msg
+    | WindowSize Window.Size
+    | ReturnToMapMsg
 
 
 type alias Model =
@@ -49,5 +59,4 @@ type Screen
 
 type InventoryMsg source target
     = InventoryMsg
-    | ExitMsg
     | DnDMsg (DragDropMsg source target)

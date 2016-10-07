@@ -2,7 +2,7 @@ module Game.Game exposing (..)
 
 -- Game
 
-import Game.Data exposing (..)
+import Game.Data as Data exposing (..)
 import Game.Maps as Maps exposing (..)
 import Game.Collision exposing (..)
 import Game.Inventory as Inventory exposing (..)
@@ -42,15 +42,8 @@ import Window exposing (..)
 import Task exposing (perform)
 
 
-type Msg
-    = Keyboard (Keyboard.Msg)
-    | InvMsg (InventoryMsg Drag Drop)
-    | ShopMsg Shop.Msg
-    | MapsMsg Maps.Msg
-    | WindowSize Window.Size
 
-
-initGame : Random.Seed -> ( Model, Cmd Msg )
+initGame : Random.Seed -> ( Model, Cmd Data.Msg )
 initGame seed =
     let
         idGenerator =
@@ -95,7 +88,7 @@ initGame seed =
         )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Data.Msg -> Model -> ( Model, Cmd Data.Msg )
 update msg model =
     case msg of
         Keyboard (KeyDir dir) ->
@@ -114,11 +107,11 @@ update msg model =
         Keyboard Inventory ->
             ( { model | currentScreen = InventoryScreen }, Cmd.none )
 
+        ReturnToMapMsg ->
+            ( { model | currentScreen = MapScreen }, Cmd.none )
+
         InvMsg msg ->
-            if msg == ExitMsg then
-                ( { model | currentScreen = MapScreen }, Cmd.none )
-            else
-                ( Inventory.update msg model, Cmd.none )
+            ( Inventory.update msg model, Cmd.none )
 
         ShopMsg msg ->
             let
@@ -137,7 +130,7 @@ update msg model =
             ( { model | windowSize = size }, Cmd.none )
 
 
-view : Model -> Html Msg
+view : Model -> Html Data.Msg
 view model =
     case model.currentScreen of
         MapScreen ->
@@ -146,16 +139,20 @@ view model =
         BuildingScreen building ->
             case Building.buildingType building of
                 ShopType shopType ->
-                    Html.App.map InvMsg (Inventory.view model)
+                    Inventory.view wrapInventoryMsg Data.ReturnToMapMsg model
 
                 _ ->
                     viewBuilding building
 
         InventoryScreen ->
-            Html.App.map InvMsg (Inventory.view model)
+            Inventory.view wrapInventoryMsg Data.ReturnToMapMsg model
 
 
-viewMonsters : Model -> Html Msg
+wrapInventoryMsg : InventoryMsg Data.Drag Data.Drop -> Data.Msg
+wrapInventoryMsg invMsg = Data.InvMsg invMsg
+
+
+viewMonsters : Model -> Html Data.Msg
 viewMonsters ({ monsters } as model) =
     let
         monsterHtml monster =
@@ -164,7 +161,7 @@ viewMonsters ({ monsters } as model) =
         div [] (List.map monsterHtml monsters)
 
 
-viewMap : Model -> Html Msg
+viewMap : Model -> Html Data.Msg
 viewMap ({ windowSize } as model) =
     let
         title =
@@ -210,7 +207,7 @@ viewMap ({ windowSize } as model) =
             ]
 
 
-viewStatus : Model -> Html Msg
+viewStatus : Model -> Html Data.Msg
 viewStatus model =
     div []
         [ div [ class "ui padded grid" ]
@@ -222,7 +219,7 @@ viewStatus model =
         ]
 
 
-viewMessages : Model -> Html Msg
+viewMessages : Model -> Html Data.Msg
 viewMessages model =
     let
         msg txt =
@@ -231,7 +228,7 @@ viewMessages model =
         div [] (List.map msg model.messages)
 
 
-viewStats : Model -> Html Msg
+viewStats : Model -> Html Data.Msg
 viewStats ({ hero } as model) =
     div []
         [ div [] [ text "Stats:" ]
@@ -240,7 +237,7 @@ viewStats ({ hero } as model) =
         ]
 
 
-viewMenu : Html Msg
+viewMenu : Html Data.Msg
 viewMenu =
     div [ class "ui buttons" ]
         (List.map simpleBtn
@@ -258,7 +255,7 @@ viewMenu =
         )
 
 
-viewQuickMenu : Html Msg
+viewQuickMenu : Html Data.Msg
 viewQuickMenu =
     div []
         (List.map simpleBtn
@@ -272,22 +269,22 @@ viewQuickMenu =
         )
 
 
-viewHUD : Model -> Html Msg
+viewHUD : Model -> Html Data.Msg
 viewHUD model =
     div [] [ text "messages" ]
 
 
-viewBuilding : Building -> Html Msg
+viewBuilding : Building -> Html Data.Msg
 viewBuilding building =
     div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
 
 
-viewHero : Hero -> Html Msg
+viewHero : Hero -> Html Data.Msg
 viewHero hero =
     div [ class "tile maleHero", vectorToHtmlStyle <| hero.position ] []
 
 
-subscriptions : Model -> List (Sub Msg)
+subscriptions : Model -> List (Sub Data.Msg)
 subscriptions model =
     let
         toInvMsg x =
@@ -314,7 +311,7 @@ subscriptions model =
 --------------
 
 
-initialWindowSizeCmd : Cmd Msg
+initialWindowSizeCmd : Cmd Data.Msg
 initialWindowSizeCmd =
     Task.perform (\x -> Debug.log "Getting window size failed: " x)
         (\x -> WindowSize x)
@@ -327,6 +324,6 @@ initialWindowSizeCmd =
 --------
 
 
-simpleBtn : String -> Html Msg
+simpleBtn : String -> Html Data.Msg
 simpleBtn txt =
     div [ class "ui button" ] [ text txt ]

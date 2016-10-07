@@ -39,7 +39,7 @@ import Dungeon.Editor as Editor exposing (..)
 type Msg
     = SplashMsg SplashView.Msg
     | CharCreationMsg CharCreation.Data.Msg
-    | GameMsg (Game.Msg)
+    | GameMsg (Game.Data.Msg)
     | InitSeed Random.Seed
     | EditorMsg Editor.Msg
 
