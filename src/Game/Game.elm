@@ -232,7 +232,7 @@ viewStats : Model -> Html Msg
 viewStats ({ hero } as model) =
     div []
         [ div [] [ text "Stats:" ]
-        , div [] [ text <| "HP: " ++ (Stats.printHP hero.stats) ]
+        , div [ class (Stats.getHPClass hero.stats) ] [ text <| "HP: " ++ (Stats.printHP hero.stats) ]
         , div [] [ text <| "SP: " ++ (Stats.printSP hero.stats) ]
         ]
 

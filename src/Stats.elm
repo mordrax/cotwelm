@@ -8,6 +8,7 @@ module Stats
         , isDead
         , printHP
         , printSP
+        , getHPClass
         )
 
 
@@ -70,6 +71,13 @@ printSP : Stats -> String
 printSP (A model) =
     printAOverB model.currentSP model.maxSP
 
+
+getHPClass : Stats -> String
+getHPClass (A model) =
+    if model.currentHP <= floor (toFloat model.maxHP * 0.25) then
+        "hp-injured"
+    else
+        ""
 
 printAOverB : a -> b -> String
 printAOverB a b =
