@@ -118,14 +118,53 @@ It also reports the door that just got added)
 generateEntrance : Room -> Generator ( Room, Entrance )
 generateEntrance (A ({ walls, entrances, worldPos } as model)) =
     let
-        toReturn ( entrance, walls ) =
-            ( A { model | entrances = entrance :: entrances, walls = walls }
+        withoutEntrance entrance =
+            let
+                localEntrancePosition =
+                    Vector.sub (Entrance.position entrance) worldPos
+            in
+                List.map (without localEntrancePosition) walls
+
+        toReturn entrance =
+            ( A { model | entrances = entrance :: entrances, walls = withoutEntrance entrance }
             , entrance
             )
     in
         walls
+            |> List.filter (wallsCloseToEntrances worldPos entrances >> not)
             |> generateEntranceHelper worldPos
             |> Random.map toReturn
+
+
+{-| A wall is close to an entrance if one of their axis is the same and the other is within 2 tiles.
+    This is because if two entrances are too close, a corridor cannot be formed.
+-}
+wallsCloseToEntrances : Vector -> Entrances -> Walls -> Bool
+wallsCloseToEntrances worldPos entrances walls =
+    let
+        closeToEntrances entrances wall =
+            List.any (closeToEntrance worldPos wall) entrances
+    in
+        walls
+            |> List.any (closeToEntrances entrances)
+
+
+closeToEntrance : Vector -> Wall -> Entrance -> Bool
+closeToEntrance worldPos wall entrance =
+    let
+        ( ex, ey ) =
+            Entrance.position entrance
+
+        ( wx, wy ) =
+            Vector.add wall worldPos
+
+        dx =
+            abs (ex - wx)
+
+        dy =
+            abs (ey - wy)
+    in
+        (dx == 0 && dy <= 2) || (dy == 0 && dx <= 2)
 
 
 toTiles : Room -> Tiles
@@ -215,7 +254,6 @@ placeRoom ( endPoint, facing ) (A ({ walls, dimension } as model)) =
 
                 roomWorldPosition =
                     Vector.sub entrancePosition wall
-
             in
                 constant
                     <| A
@@ -295,7 +333,7 @@ positionGenerator { dungeonSize } ({ dimension } as model) =
 
         ( maxX, maxY ) =
             ( dungeonSize - dimX - 1, dungeonSize - dimY - 1 )
-            |> Vector.map (max 0)
+                |> Vector.map (max 0)
     in
         (Dice.d2d maxX maxY)
             `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
@@ -315,7 +353,7 @@ headOfWalls walls =
         |> Maybe.withDefault ( 0, 0 )
 
 
-generateEntranceHelper : Vector -> List Walls -> Generator ( Entrance, List Walls )
+generateEntranceHelper : Vector -> List Walls -> Generator Entrance
 generateEntranceHelper topLeft walls =
     let
         newEntrance pos =
@@ -324,11 +362,10 @@ generateEntranceHelper topLeft walls =
         makeHeadADoor walls =
             walls
                 |> headOfWalls
-                |> \x ->
-                    ( newEntrance x, List.map (without x) walls )
+                |> newEntrance
     in
         shuffle walls
-            `andThen` (makeHeadADoor >> constant)
+            |> Random.map makeHeadADoor
 
 
 doorsGenerator : Model -> Generator Model
