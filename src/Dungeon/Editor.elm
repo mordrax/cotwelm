@@ -15,6 +15,7 @@ import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 
 -- libs
 
+import Lodash exposing (..)
 import Dict exposing (..)
 import Random exposing (..)
 
@@ -27,7 +28,7 @@ type alias Model =
 
 
 type Msg
-    = GenerateMap
+    = GenerateMap Int
     | Dungeon DungeonGenerator.Model
     | ConfigMsg Config.Msg
     | ResetMap
@@ -44,18 +45,21 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GenerateMap ->
+        GenerateMap nSteps ->
             let
-                latestDungeonModel =
-                    List.head model.dungeonSteps
-
-                dungeonGenerator =
-                    case latestDungeonModel of
+                firstStep =
+                    case List.head model.dungeonSteps of
                         Just dungeonModel ->
                             DungeonGenerator.step { dungeonModel | config = model.config }
 
                         Nothing ->
                             DungeonGenerator.init model.config
+
+                oneStep _ gen =
+                    gen `andThen` DungeonGenerator.step
+
+                dungeonGenerator =
+                    List.foldl oneStep firstStep [1..nSteps]
             in
                 ( model, Random.generate Dungeon dungeonGenerator )
 
@@ -89,8 +93,9 @@ view model =
         div []
             [ div []
                 [ --roomSizeView model,
-                  button [ class "ui button", onClick GenerateMap ] [ text "Step" ]
-                , button [ class "ui button", onClick ResetMap ] [ text "Reset" ]
+                  button [ class "ui button", onClick <| GenerateMap 1 ] [ text "Step" ]
+                , button [ class "ui button", onClick <| GenerateMap 50 ] [ text "Step x50" ]
+                , button [ class "ui button", onClick <| ResetMap ] [ text "Reset" ]
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
