@@ -18684,27 +18684,35 @@ var _mordrax$cotwelm$Dungeon_Editor$update = F2(
 		var _p0 = msg;
 		switch (_p0.ctor) {
 			case 'GenerateMap':
-				var latestDungeonModel = _elm_lang$core$List$head(model.dungeonSteps);
-				var dungeonGenerator = function () {
-					var _p1 = latestDungeonModel;
-					if (_p1.ctor === 'Just') {
+				var oneStep = F2(
+					function (_p1, gen) {
+						return A2(_elm_lang$core$Random$andThen, gen, _mordrax$cotwelm$Dungeon_DungeonGenerator$step);
+					});
+				var firstStep = function () {
+					var _p2 = _elm_lang$core$List$head(model.dungeonSteps);
+					if (_p2.ctor === 'Just') {
 						return _mordrax$cotwelm$Dungeon_DungeonGenerator$step(
 							_elm_lang$core$Native_Utils.update(
-								_p1._0,
+								_p2._0,
 								{config: model.config}));
 					} else {
 						return _mordrax$cotwelm$Dungeon_DungeonGenerator$init(model.config);
 					}
 				}();
+				var dungeonGenerator = A3(
+					_elm_lang$core$List$foldl,
+					oneStep,
+					firstStep,
+					_elm_lang$core$Native_List.range(1, _p0._0));
 				return {
 					ctor: '_Tuple2',
 					_0: model,
 					_1: A2(_elm_lang$core$Random$generate, _mordrax$cotwelm$Dungeon_Editor$Dungeon, dungeonGenerator)
 				};
 			case 'Dungeon':
-				var _p2 = _p0._0;
+				var _p3 = _p0._0;
 				var map = _mordrax$cotwelm$Game_Maps$fromTiles(
-					_mordrax$cotwelm$Dungeon_DungeonGenerator$toTiles(_p2));
+					_mordrax$cotwelm$Dungeon_DungeonGenerator$toTiles(_p3));
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -18712,7 +18720,7 @@ var _mordrax$cotwelm$Dungeon_Editor$update = F2(
 						{
 							dungeonSteps: A2(
 								_elm_lang$core$List_ops['::'],
-								_p2,
+								_p3,
 								_elm_lang$core$Native_List.fromArray(
 									[])),
 							map: map
@@ -18743,7 +18751,9 @@ var _mordrax$cotwelm$Dungeon_Editor$update = F2(
 				};
 		}
 	});
-var _mordrax$cotwelm$Dungeon_Editor$GenerateMap = {ctor: 'GenerateMap'};
+var _mordrax$cotwelm$Dungeon_Editor$GenerateMap = function (a) {
+	return {ctor: 'GenerateMap', _0: a};
+};
 var _mordrax$cotwelm$Dungeon_Editor$view = function (model) {
 	var screenMap = A2(_mordrax$cotwelm$Game_Maps$toScreenCoords, model.map, model.config.dungeonSize);
 	var border = {ctor: '_Tuple2', _0: 'border', _1: '1px solid black'};
@@ -18764,11 +18774,24 @@ var _mordrax$cotwelm$Dungeon_Editor$view = function (model) {
 						_elm_lang$core$Native_List.fromArray(
 							[
 								_elm_lang$html$Html_Attributes$class('ui button'),
-								_elm_lang$html$Html_Events$onClick(_mordrax$cotwelm$Dungeon_Editor$GenerateMap)
+								_elm_lang$html$Html_Events$onClick(
+								_mordrax$cotwelm$Dungeon_Editor$GenerateMap(1))
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[
 								_elm_lang$html$Html$text('Step')
+							])),
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('ui button'),
+								_elm_lang$html$Html_Events$onClick(
+								_mordrax$cotwelm$Dungeon_Editor$GenerateMap(50))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Step x50')
 							])),
 						A2(
 						_elm_lang$html$Html$button,
