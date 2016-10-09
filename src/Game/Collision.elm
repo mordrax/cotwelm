@@ -130,7 +130,7 @@ attack monster ({ hero, seed, monsters } as model) =
                 monster' :: monstersWithoutMonster
 
         newMsg =
-            newHitMessage "You" (Monster.name monster) (toString damage)
+            newHitMessage "You" ("the " ++ Monster.name monster) (toString damage)
     in
         { model | monsters = monsters', messages = newMsg :: model.messages }
 
@@ -145,14 +145,14 @@ defend monster ({ hero, seed } as model) =
             { hero | stats = heroStats' }
 
         newMsg =
-            newHitMessage (Monster.name monster) "you" (toString damage)
+            newHitMessage ("The " ++ Monster.name monster) "you" (toString damage)
     in
         { model | hero = hero', seed = seed', messages = newMsg :: model.messages }
 
 
 newHitMessage : String -> String -> String -> String
 newHitMessage attacker defender damage =
-    attacker ++ " hit the " ++ defender ++ " for " ++ damage ++ " damage!"
+    attacker ++ " hit " ++ defender ++ " for " ++ damage ++ " damage!"
 
 
 
