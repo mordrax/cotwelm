@@ -73,8 +73,8 @@ printSP (A model) =
 
 
 getHPClass : Stats -> String
-getHPClass (A model) =
-    if model.currentHP <= floor (toFloat model.maxHP * 0.25) then
+getHPClass (A {currentHP, maxHP}) =
+    if currentHP <= floor (toFloat maxHP * 0.25) then
         "hp-injured"
     else
         ""

@@ -21,7 +21,7 @@ import GameData.Building as Building exposing (..)
 import Hero as Hero exposing (..)
 import Monster.Monster as Monster exposing (..)
 import Monster.Monsters as Monsters exposing (..)
-import Stats exposing (..)
+import Stats exposing (printHP, printSP, getHPClass)
 
 
 -- Common
@@ -230,11 +230,14 @@ viewMessages model =
 
 viewStats : Model -> Html Msg
 viewStats ({ hero } as model) =
-    div []
-        [ div [] [ text "Stats:" ]
-        , div [ class (Stats.getHPClass hero.stats) ] [ text <| "HP: " ++ (Stats.printHP hero.stats) ]
-        , div [] [ text <| "SP: " ++ (Stats.printSP hero.stats) ]
-        ]
+    let
+        stats = hero.stats
+    in
+        div []
+            [ div [] [ text "Stats:" ]
+            , div [ class (getHPClass stats) ] [ text <| "HP: " ++ (printHP stats) ]
+            , div [] [ text <| "SP: " ++ (printSP stats) ]
+            ]
 
 
 viewMenu : Html Msg
