@@ -16,6 +16,7 @@ import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Utils.Vector as Vector exposing (..)
 
+
 -- html
 
 import Html exposing (..)
@@ -27,6 +28,7 @@ type alias Model =
     { -- Width and height dimensions of the dungeon level
       dungeonSize : Int
     , roomsConfig : RoomsConfig
+    , snapRange : Int
     , nRooms : Int
     , mapScale : Float
     , maxEntrances : Int
@@ -85,6 +87,7 @@ init =
         , diagonalSquares = RoomConfig ( 4, 10 ) 0
         , deadEnd = RoomConfig ( 1, 1 ) 0
         }
+    , snapRange = 5
     , nRooms = 50
     , mapScale = 0.2
     , maxEntrances = 4
