@@ -123,8 +123,17 @@ step ({ activePoints } as model) =
                                 |> Maybe.Extra.filter (canFitCorridor model)
                                 |> Maybe.map modelWithActiveCorridorAndInactiveRoom
                                 |> Maybe.withDefault model
+
+                        entrancePosition =
+                            Entrance.position entrance
+
+                        entranceFacing =
+                            Room.entranceFacing room entrance
+
+                        corridorStart =
+                            ( Vector.add entrancePosition entranceFacing, entranceFacing |> Vector.toDirection |> Vector.oppositeDirection )
                     in
-                        generateCorridor room entrance model.config
+                        generateCorridor corridorStart model.config
                             |> Random.map (addCorridorToModel room)
 
                 -- pick a active corridor and dig a room
@@ -177,43 +186,34 @@ generateEntrance room ({ config } as model) =
 {-| Generate a new corridor given a room and a entrance of the room.
     The corridor will go in a random direction and be of random length.
 -}
-generateCorridor : Room -> Entrance -> Config.Model -> Generator (Maybe Corridor)
-generateCorridor room entrance config =
+generateCorridor : DirectedVector -> Config.Model -> Generator (Maybe Corridor)
+generateCorridor (( entrancePosition, entranceFacing ) as corridorStart) config =
     let
-        entranceFacing =
-            Room.entranceFacing room entrance
-
-        entrancePosition =
-            Entrance.position entrance
-
-        corridorStart =
-            Vector.add entrancePosition entranceFacing
+        facingEntrance =
+            entranceFacing
+                |> Vector.oppositeDirection
+                |> Vector.fromCompass
 
         leftDirection =
-            Vector.rotate entranceFacing Left
+            Vector.rotate facingEntrance Left
 
         rightDirection =
-            Vector.rotate entranceFacing Right
+            Vector.rotate facingEntrance Right
 
         randomDirection =
-            [ leftDirection, rightDirection, entranceFacing ]
+            [ leftDirection, rightDirection, facingEntrance ]
                 |> shuffle
-                |> Random.map (headWithDefault entranceFacing)
+                |> Random.map (headWithDefault facingEntrance)
 
         randomCorridorLength =
             Dice.range config.corridor.minLength config.corridor.maxLength
 
         makeCorridor ( len, dir ) =
             let
-                facingEntrance =
-                    entranceFacing
-                        |> Vector.scaleInt -1
-                        |> Vector.toDirection
-
                 corridor =
-                    Corridor.init ( corridorStart, facingEntrance )
+                    Corridor.init corridorStart
             in
-                digger (DigInstruction ( corridorStart, Vector.toDirection dir ) len) corridor
+                digger (DigInstruction ( entrancePosition, Vector.toDirection dir ) len) corridor
     in
         Random.map2 (,) randomCorridorLength randomDirection
             `andThen` makeCorridor
