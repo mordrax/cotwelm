@@ -19,6 +19,25 @@ module Dungeon.Corridor
     Corridors can also intersect with other corridors forming 'entrances' where another
     corridor intersects with this one.
 
+    A corridor has one entrance and one exit with 0 to many points in between.
+    The entrance, exit and all points are DirectedVectors that points to the next point.
+    The exit's direction points at where the exit faces but the entrance points to the next
+    point so we need a entranceFacing to point backwards to where the entrance comes from.
+
+    ###############
+    ########^######
+    ######<-X->####
+    ########|######
+    ########|######
+    ########P######
+    #######/#######
+    ##^###/########
+    <-E--P#########
+    ##v############
+
+    The above is a corridor with a (E)ntrance facing West and a e(X)it facing North with
+    two internal (P)oints.
+
     Corridors are made up of dungeon floor tiles and wall tiles with entrances on either end.
 
     At each 'point' in the corridor, a DirectedVector will denote where the corridor is
@@ -44,6 +63,7 @@ import Random.Pcg as Random exposing (..)
 
 
 --import Random.Extra exposing (..)
+
 import Dice exposing (..)
 
 
@@ -56,7 +76,8 @@ type alias Corridors =
 
 
 type alias Model =
-    { start : DirectedVector
+    { entranceFacing : CompassDirection
+    , start : DirectedVector
     , points : DirectedVectors
     , walls : Tiles
     , entrances : Entrances
@@ -64,10 +85,11 @@ type alias Model =
     }
 
 
-init : DirectedVector -> Corridor
-init start =
+init : DirectedVector -> CompassDirection -> Corridor
+init start entranceFacing =
     A
         { start = start
+        , entranceFacing = entranceFacing
         , points = []
         , walls = []
         , entrances = []
@@ -77,38 +99,60 @@ init start =
 
 {-| Generate a new corridor given a directed vector.
     The corridor will go in a random direction and be of random length.
+
+    entranceFacing is the direction the entrance of the corridor is facing.
+    i.e if the corridor starts at E(ntrance) and travels north-east, the entranceFacing
+    here is West. It can also be South.
+
+    Entrances can only face canonical directions (N, E, S, W)
+
+    #######
+    RRRR## #
+    R  R# ##
+    R <-E###
+    RRRR####
+    ########
 -}
-generate : DirectedVector -> Config.Model -> Generator (Maybe Corridor)
-generate (( startVector, entranceFacing ) as start) config =
+generate : DirectedVector -> Config.Model -> Generator Corridor
+generate ( startPosition, entranceFacing ) config =
     let
         facingEntrance =
-            entranceFacing
-                |> Vector.oppositeDirection
-                |> Vector.fromDirection
+            Vector.oppositeDirection entranceFacing
 
-        leftDirection =
-            Vector.rotate facingEntrance Left
+        directionGen =
+            onePossibleFacing facingEntrance
 
-        rightDirection =
-            Vector.rotate facingEntrance Right
-
-        randomDirection =
-            [ leftDirection, rightDirection, facingEntrance ]
-                |> shuffle
-                |> Random.map (headWithDefault facingEntrance)
-
-        randomCorridorLength =
+        lengthGen =
             Dice.range config.corridor.minLength config.corridor.maxLength
 
-        makeCorridor ( len, dir ) =
+        makeCorridor ( length, startDirection ) =
             let
+                start =
+                    ( startPosition, startDirection )
+
                 corridor =
-                    init start
+                    init start entranceFacing
             in
-                digger (DigInstruction ( startVector, Vector.toDirection dir ) len) corridor
+                digger (DigInstruction ( startPosition, startDirection ) length) corridor
     in
-        Random.map2 (,) randomCorridorLength randomDirection
+        Random.map2 (,) lengthGen directionGen
             `andThen` makeCorridor
+
+
+allPossibleFacings : CompassDirection -> CompassDirections
+allPossibleFacings facing =
+    [ Vector.rotateCompass facing Left
+    , Vector.rotateCompass facing Right
+    , facing
+    ]
+
+
+onePossibleFacing : CompassDirection -> Generator CompassDirection
+onePossibleFacing direction =
+    direction
+        |> allPossibleFacings
+        |> shuffle
+        |> Random.map (headWithDefault direction)
 
 
 {-| A corridor can be vertical/horizontal or it can be diagonal. All the possible endings
@@ -137,9 +181,6 @@ Diagonal corridors must end facing a cardinal direction
 possibleEnds : Vector -> Corridor -> DirectedVectors
 possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
     let
-        ( startVector, _ ) =
-            start
-
         secondLastPoint =
             case ( start, points ) of
                 ( _, ( point, _ ) :: _ ) ->
@@ -236,32 +277,25 @@ type alias DigInstruction =
     }
 
 
-digger : DigInstruction -> Corridor -> Generator (Maybe Corridor)
+digger : DigInstruction -> Corridor -> Generator Corridor
 digger ({ start, length } as instruction) corridor =
     let
-        ( digStart, digDirection ) =
+        ( startPosition, startDirection ) =
             start
 
-        finish =
-            Vector.add digStart (Vector.scaleInt length (Vector.fromDirection digDirection))
+        finishPosition =
+            startDirection
+                |> Vector.fromDirection
+                |> Vector.scaleInt length
+                |> Vector.add startPosition
 
-        finishDirectionGen finish =
-            (possibleEnds finish corridor |> shuffle)
-                `andThen` (List.head >> constant)
-
-        digPath =
-            path digStart finish
-
-        dig maybeEnd =
-            case maybeEnd of
-                Just end ->
-                    constant (Just <| add end corridor)
-
-                Maybe.Nothing ->
-                    constant Maybe.Nothing
+        finishDirectionGen finishPosition =
+            possibleEnds finishPosition corridor
+                |> shuffle
+                |> Random.map (Lodash.headWithDefault ( finishPosition, startDirection ))
     in
-        finishDirectionGen finish
-            `andThen` dig
+        finishDirectionGen finishPosition
+            |> Random.map (\end -> add end corridor)
 
 
 turnTiles : CompassDirection -> DirectedVector -> Tiles

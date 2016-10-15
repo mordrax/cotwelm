@@ -12,6 +12,10 @@ type CompassDirection
     | SW
 
 
+type alias CompassDirections =
+    List CompassDirection
+
+
 isCardinal : CompassDirection -> Bool
 isCardinal dir =
     List.member dir cardinalDirections

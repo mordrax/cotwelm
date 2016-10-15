@@ -120,11 +120,11 @@ step' ({ activePoints } as model) =
                                 :: remainingPoints
                     }
 
-                addCorridorToModel room maybeCorridor =
-                    maybeCorridor
-                        |> Maybe.Extra.filter (canFitCorridor model)
-                        |> Maybe.map modelWithActiveCorridor
-                        |> Maybe.withDefault model
+                addCorridorToModel room corridor =
+                    if canFitCorridor model corridor then
+                        modelWithActiveCorridor corridor
+                    else
+                        model
 
                 entrancePosition =
                     Entrance.position entrance
