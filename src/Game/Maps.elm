@@ -10,6 +10,7 @@ module Game.Maps
         , draw
         , fromTiles
         , currentAreaMap
+        , currentAreaSize
         , getASCIIMap
         , getBuildings
         , getTile
@@ -38,6 +39,7 @@ import Html exposing (..)
 import Dict exposing (..)
 import Random exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
+import Window exposing (Size)
 
 
 type Maps
@@ -185,6 +187,18 @@ currentAreaMap (A model) =
 
             Nothing ->
                 Dict.empty
+
+
+{-| Get the width and height of the map for the current area
+-}
+currentAreaSize: Maps -> Size
+currentAreaSize (A model) =
+    let
+        map = currentAreaMap (A model)
+        positions = Dict.keys map
+        (maxX, maxY) = List.foldr (\(a,b) (c,d) -> (max a c, max b d)) (0,0) positions
+    in
+        { width = maxX + 1, height = maxY + 1 }
 
 
 {-| Get the buildings in the current area
