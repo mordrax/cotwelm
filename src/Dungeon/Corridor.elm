@@ -131,7 +131,8 @@ generate startPosition entranceFacing config =
                 extend corridor config
     in
         (startDirectionGen
-            |> Random.map (\dir -> (startPosition, dir)))
+            |> Random.map (\dir -> ( startPosition, dir ))
+        )
             `andThen` makeCorridor
 
 
@@ -146,17 +147,18 @@ extend corridor config =
 
         directionGen =
             onePossibleFacing lastFacing
-
     in
         Random.map2 (,) lengthGen directionGen
-            |> Random.map (\( len, dir ) -> add (stepsFromPoint lastPoint len, dir) corridor)
+            |> Random.map (\( len, dir ) -> add ( stepsFromPoint lastPoint len, dir ) corridor)
 
-stepsFromPoint: DirectedVector -> Int -> Vector
-stepsFromPoint (startPosition, startDirection) steps =
-            startDirection
-                |> Vector.fromDirection
-                |> Vector.scaleInt steps
-                |> Vector.add startPosition
+
+stepsFromPoint : DirectedVector -> Int -> Vector
+stepsFromPoint ( startPosition, startDirection ) steps =
+    startDirection
+        |> Vector.fromDirection
+        |> Vector.scaleInt steps
+        |> Vector.add startPosition
+
 
 allPossibleFacings : CompassDirection -> CompassDirections
 allPossibleFacings facing =
@@ -164,6 +166,7 @@ allPossibleFacings facing =
     , Vector.rotateCompass facing Right
     , facing
     ]
+        |> List.filter CompassDirection.isCardinal
 
 
 onePossibleFacing : CompassDirection -> Generator CompassDirection
@@ -222,6 +225,7 @@ possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
             |> List.filter CompassDirection.isCardinal
             |> List.map makeDirectedVector
 
+
 add : DirectedVector -> Corridor -> Corridor
 add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
     let
@@ -268,7 +272,7 @@ complete (A ({ start, points, walls } as model)) =
             ( start, lastPoint :: secondLastPoint :: _ ) ->
                 A { model | walls = walls ++ cornerTiles secondLastPoint lastPoint }
 
-            ( secondLastPoint, lastPoint :: _ ) ->
+            ( secondLastPoint, lastPoint :: [] ) ->
                 A { model | walls = walls ++ cornerTiles secondLastPoint lastPoint }
 
             _ ->
@@ -284,7 +288,6 @@ toTiles (A ({ start, points, walls, entrances, paths } as model)) =
 
 
 -- Privates
-
 
 
 turnTiles : CompassDirection -> DirectedVector -> Tiles
