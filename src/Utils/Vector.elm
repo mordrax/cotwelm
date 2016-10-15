@@ -112,7 +112,7 @@ rotate ( xInt, yInt ) dir =
 
 rotateCompass : CompassDirection -> RotationDirection -> CompassDirection
 rotateCompass compass rotation =
-    fromCompass compass
+    fromDirection compass
         |> flip rotate rotation
         |> toDirection
 
@@ -141,7 +141,7 @@ directions =
 oppositeDirection : CompassDirection -> CompassDirection
 oppositeDirection dir =
     dir
-        |> fromCompass
+        |> fromDirection
         |> scaleInt -1
         |> toDirection
 
@@ -160,8 +160,8 @@ toDirection vector =
                 W
 
 
-fromCompass : CompassDirection -> Vector
-fromCompass dir =
+fromDirection : CompassDirection -> Vector
+fromDirection dir =
     case dir of
         N ->
             ( 0, 1 )
@@ -192,7 +192,7 @@ rotateUnlessCardinal : Vector -> RotationDirection -> Vector
 rotateUnlessCardinal currentDirection rotation =
     let
         cardinalVectors =
-            List.map fromCompass cardinalDirections
+            List.map fromDirection cardinalDirections
     in
         if List.member currentDirection cardinalVectors then
             currentDirection

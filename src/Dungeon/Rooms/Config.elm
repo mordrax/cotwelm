@@ -9,9 +9,8 @@ dungeon generator to create random dungeon levels.
 
 import UI exposing (..)
 import Array exposing (..)
-import Random exposing (..)
-import Random.Array exposing (..)
-import Random.Extra exposing (..)
+import Random.Pcg as Random exposing (..)
+import Lodash exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Utils.Vector as Vector exposing (..)
@@ -181,7 +180,7 @@ roomSizeGenerator roomType ({ roomsConfig } as model) =
 
 roomTypeGenerator : Model -> Generator RoomType
 roomTypeGenerator { roomsConfig } =
-    Random.Extra.frequency
+    frequency
         [ ( toFloat roomsConfig.rectangular.frequency, constant Rectangular )
         , ( toFloat roomsConfig.cross.frequency, constant Cross )
         , ( toFloat roomsConfig.diamond.frequency, constant Diamond )
@@ -199,7 +198,7 @@ wallSampler walls =
             constant ( 0, 0 )
 
         wall :: restOfWalls ->
-            Random.Extra.sample walls
+            sample walls
                 |> Random.map (Maybe.withDefault wall)
 
 

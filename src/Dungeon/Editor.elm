@@ -17,7 +17,7 @@ import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 
 import Lodash exposing (..)
 import Dict exposing (..)
-import Random exposing (..)
+import Random.Pcg as Random exposing (..)
 
 
 type alias Model =
