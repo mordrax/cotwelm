@@ -105,7 +105,7 @@ update msg model =
                 model' =
                     Game.Collision.tryMoveHero dir model
 
-                (viewportX, viewportY) = updateViewportOffset model model'
+                (viewportX, viewportY) = updateViewportOffset model.hero.position model'
 
                 model'' = { model' | viewportX = viewportX, viewportY = viewportY }
 
@@ -140,19 +140,19 @@ update msg model =
             ( { model | windowSize = size }, Cmd.none )
 
 
-updateViewportOffset : Model -> Model -> Vector
-updateViewportOffset prevModel ({ windowSize, viewportX, viewportY, maps } as model) =
+updateViewportOffset : Vector -> Model -> Vector
+updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as model) =
     let
         tileSize = 32
 
         ( prevX, prevY ) =
-            Vector.scale tileSize prevModel.hero.position
+            Vector.scale tileSize prevPosition
 
         ( x, y ) =
             Vector.scale tileSize model.hero.position
 
         ( xOff, yOff ) =
-            ( windowSize.width // tileSize * 16, windowSize.height // tileSize * 16 )
+            ( windowSize.width // 2, windowSize.height // 2 )
 
         tolerance = tileSize * 4
 
