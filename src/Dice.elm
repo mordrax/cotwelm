@@ -3,7 +3,7 @@ module Dice exposing (..)
 {-| Simple dice system that will generate a random int between 1 and the max passed in.
 -}
 
-import Random exposing (..)
+import Random.Pcg as Random exposing (..)
 
 
 d : Int -> Generator Int

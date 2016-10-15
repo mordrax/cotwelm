@@ -21,8 +21,7 @@ module Dungeon.Room exposing (..)
 
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.Corridor as Corridor exposing (..)
-import Random exposing (andThen, Generator)
-import Random.Extra exposing (..)
+import Random.Pcg as Random exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Lodash exposing (..)
 import Tile exposing (..)
@@ -232,7 +231,7 @@ placeRoom ( endPoint, facing ) (A ({ walls, dimension } as model)) =
     let
         wallFacing =
             facing
-                |> Vector.fromCompass
+                |> Vector.fromDirection
                 |> Vector.scale -1
                 |> Vector.toDirection
 
@@ -247,7 +246,7 @@ placeRoom ( endPoint, facing ) (A ({ walls, dimension } as model)) =
         makeADoor wall =
             let
                 entrancePosition =
-                    Vector.sub endPoint (Vector.fromCompass wallFacing)
+                    Vector.sub endPoint (Vector.fromDirection wallFacing)
 
                 entrance =
                     Entrance.init Door entrancePosition
