@@ -4,6 +4,7 @@ module Dungeon.Corridor
         , Corridors
         , init
         , generate
+        , extend
         , add
         , end
         , possibleEnds
@@ -113,31 +114,49 @@ init start entranceFacing =
     RRRR####
     ########
 -}
-generate : DirectedVector -> Config.Model -> Generator Corridor
-generate ( startPosition, entranceFacing ) config =
+generate : Vector -> CompassDirection -> Config.Model -> Generator Corridor
+generate startPosition entranceFacing config =
     let
         facingEntrance =
             Vector.oppositeDirection entranceFacing
 
-        directionGen =
+        startDirectionGen =
             onePossibleFacing facingEntrance
+
+        makeCorridor start =
+            let
+                corridor =
+                    init start entranceFacing
+            in
+                extend corridor config
+    in
+        (startDirectionGen
+            |> Random.map (\dir -> (startPosition, dir)))
+            `andThen` makeCorridor
+
+
+extend : Corridor -> Config.Model -> Generator Corridor
+extend corridor config =
+    let
+        (( _, lastFacing ) as lastPoint) =
+            end corridor
 
         lengthGen =
             Dice.range config.corridor.minLength config.corridor.maxLength
 
-        makeCorridor ( length, startDirection ) =
-            let
-                start =
-                    ( startPosition, startDirection )
+        directionGen =
+            onePossibleFacing lastFacing
 
-                corridor =
-                    init start entranceFacing
-            in
-                digger (DigInstruction ( startPosition, startDirection ) length) corridor
     in
         Random.map2 (,) lengthGen directionGen
-            `andThen` makeCorridor
+            |> Random.map (\( len, dir ) -> add (stepsFromPoint lastPoint len, dir) corridor)
 
+stepsFromPoint: DirectedVector -> Int -> Vector
+stepsFromPoint (startPosition, startDirection) steps =
+            startDirection
+                |> Vector.fromDirection
+                |> Vector.scaleInt steps
+                |> Vector.add startPosition
 
 allPossibleFacings : CompassDirection -> CompassDirections
 allPossibleFacings facing =
@@ -203,7 +222,6 @@ possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
             |> List.filter CompassDirection.isCardinal
             |> List.map makeDirectedVector
 
-
 add : DirectedVector -> Corridor -> Corridor
 add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
     let
@@ -266,36 +284,7 @@ toTiles (A ({ start, points, walls, entrances, paths } as model)) =
 
 
 -- Privates
-------------
--- Digger --
-------------
 
-
-type alias DigInstruction =
-    { start : DirectedVector
-    , length : Int
-    }
-
-
-digger : DigInstruction -> Corridor -> Generator Corridor
-digger ({ start, length } as instruction) corridor =
-    let
-        ( startPosition, startDirection ) =
-            start
-
-        finishPosition =
-            startDirection
-                |> Vector.fromDirection
-                |> Vector.scaleInt length
-                |> Vector.add startPosition
-
-        finishDirectionGen finishPosition =
-            possibleEnds finishPosition corridor
-                |> shuffle
-                |> Random.map (Lodash.headWithDefault ( finishPosition, startDirection ))
-    in
-        finishDirectionGen finishPosition
-            |> Random.map (\end -> add end corridor)
 
 
 turnTiles : CompassDirection -> DirectedVector -> Tiles

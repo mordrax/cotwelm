@@ -126,20 +126,10 @@ step' ({ activePoints } as model) =
                     else
                         model
 
-                entrancePosition =
-                    Entrance.position entrance
-
-                entranceFacing =
-                    Room.entranceFacing room entrance
-
-                corridorStart =
-                    ( Vector.add entrancePosition entranceFacing
-                    , entranceFacing
-                        |> Vector.toDirection
-                        |> Vector.oppositeDirection
-                    )
+                ( startPosition, entranceFacing ) =
+                    corridorStartFromRoomEntrance room entrance
             in
-                Corridor.generate corridorStart model.config
+                Corridor.generate startPosition entranceFacing model.config
                     |> Random.map (addCorridorToModel room)
 
         -- pick a active corridor and dig a room
@@ -149,62 +139,63 @@ step' ({ activePoints } as model) =
                     { model | corridors = corridor :: model.corridors }
             in
                 generateActivePointFromCorridor corridor model
-                    `andThen` \x ->
-                                case x of
-                                    (ActiveCorridor corridor) as activePoint ->
-                                        if canFitCorridor model corridor then
-                                            constant
-                                                { model
-                                                    | activePoints = activePoint :: remainingPoints
-                                                }
-                                        else
-                                            constant modelWithCorridorInactivated
+                    |> Random.map
+                        (\activePoint ->
+                            case activePoint of
+                                (ActiveCorridor corridor) as activePoint ->
+                                    if canFitCorridor model corridor then
+                                        { model
+                                            | activePoints = activePoint :: remainingPoints
+                                        }
+                                    else
+                                        modelWithCorridorInactivated
 
-                                    (ActiveRoom room _) as activePoint ->
-                                        if canFitRoom model room then
-                                            constant
-                                                { modelWithCorridorInactivated
-                                                    | activePoints = activePoint :: remainingPoints
-                                                }
-                                        else
-                                            constant modelWithCorridorInactivated
+                                (ActiveRoom room _) as activePoint ->
+                                    if canFitRoom model room then
+                                        { modelWithCorridorInactivated
+                                            | activePoints = activePoint :: remainingPoints
+                                        }
+                                    else
+                                        modelWithCorridorInactivated
+                        )
 
 
+corridorStartFromRoomEntrance : Room -> Entrance -> ( Vector, CompassDirection )
+corridorStartFromRoomEntrance room entrance =
+    let
+        roomEntrancePosition =
+            Entrance.position entrance
 
---                                    Nothing ->
---                                        constant modelWithCorridorInactivated
+        roomEntranceFacing =
+            Room.entranceFacing room entrance
+                |> Vector.toDirection
+
+        corridorEntranceFacing =
+            Vector.oppositeDirection roomEntranceFacing
+
+        corridorStartPosition =
+            roomEntranceFacing
+                |> Vector.fromDirection
+                |> Vector.add roomEntrancePosition
+    in
+        ( corridorStartPosition, corridorEntranceFacing )
 
 
 generateActivePointFromCorridor : Corridor -> Model -> Generator ActivePoint
 generateActivePointFromCorridor corridor model =
     let
-        makeActivePoint room =
-            ActiveRoom room (Maybe.Nothing)
-
-        activeRoom : Generator ActivePoint
         activeRoom =
             generateRoom corridorEnd model.config
-                |> Random.map makeActivePoint
+                |> Random.map (\room -> ActiveRoom room (Maybe.Nothing))
 
-        --        corridorActivePoint =
-        --            extendCorridor corridor model.config
-        --                |> Random.map (\x -> ActiveCorridor x)
+        activeCorridor =
+            Corridor.extend corridor model.config
+                |> Random.map (\corridor -> ActiveCorridor corridor)
+
         corridorEnd =
             Corridor.end corridor
     in
-        Dice.d 2
-            `andThen` (\x ->
-                        if x == 1 then
-                            activeRoom
-                        else
-                            activeRoom
-                      )
-
-
-
---corridorActivePoint
---
---             Maybe.map (canFitRoom model)
+        choices [ activeRoom, activeCorridor ]
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -228,26 +219,6 @@ generateEntrance room ({ config } as model) =
             constant modelWithActiveRoomRemoved
         else
             Random.map mapEntranceToModel (Room.generateEntrance room)
-
-
-
---extendCorridor : Corridor -> Config.Model -> Generator Corridor
---extendCorridor corridor config =
---    let
---        ( lastPoint, lastFacing ) =
---            Corridor.end corridor
---
---        randomCorridorLength =
---            Dice.range config.corridor.minLength config.corridor.maxLength
---
---        randomCorridorDirection =
---            [ Vector.rotate lastFacing Left
---            , Vector.rotate lastFacing Right
---            , lastFacing
---            ]
---    in
---        Random.map2 (,) randomCorridorLength randomCorridorDirection
---            |> Random.map (\( len, dir ) -> digger (DigInstruction ( lastPoint, dir ) len) corridor)
 
 
 generateRoom : DirectedVector -> Config.Model -> Generator Room
