@@ -97,9 +97,13 @@ init config =
 clean : Model -> Model
 clean ({ rooms, corridors, activePoints } as model) =
     case activePoints of
-        (ActiveRoom room Maybe.Nothing) :: remainingPoints ->
-            clean { model | rooms = room::rooms,
-            activePoints = remainingPoints }
+        (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
+            clean
+                { model
+                    | rooms = room :: rooms
+                    , activePoints = remainingPoints
+                }
+
         (ActiveRoom room (Just entrance)) :: remainingPoints ->
             let
                 cleanedRoom =
@@ -111,7 +115,7 @@ clean ({ rooms, corridors, activePoints } as model) =
                 clean modelWithCleanedRoom
 
         (ActiveCorridor corridor) :: remainingPoints ->
-            clean { model | corridors = corridor :: corridors , activePoints = remainingPoints }
+            clean { model | corridors = corridor :: corridors, activePoints = remainingPoints }
 
         [] ->
             model
