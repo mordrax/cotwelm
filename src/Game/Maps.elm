@@ -10,6 +10,7 @@ module Game.Maps
         , draw
         , fromTiles
         , currentAreaMap
+        , mapSize
         , getASCIIMap
         , getBuildings
         , getTile
@@ -53,6 +54,10 @@ type alias Model =
 
 type alias Map =
     Dict Vector Tile
+
+
+type alias Dimension =
+    Vector
 
 
 type Msg
@@ -185,6 +190,17 @@ currentAreaMap (A model) =
 
             Nothing ->
                 Dict.empty
+
+
+{-| Get the width and height of a map
+-}
+mapSize: Map -> Dimension
+mapSize map =
+    let
+        positions = Dict.keys map
+        (maxX, maxY) = List.foldr (\(a,b) (c,d) -> (max a c, max b d)) (0,0) positions
+    in
+        ( maxX + 1, maxY + 1 )
 
 
 {-| Get the buildings in the current area

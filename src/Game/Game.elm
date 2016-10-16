@@ -35,7 +35,7 @@ import Utils.Vector as Vector exposing (..)
 -- Core
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (class, style)
 import Html.App exposing (map)
 import Random exposing (..)
 import Window exposing (..)
@@ -90,6 +90,8 @@ initGame seed =
           , seed = seed'
           , windowSize = { width = 640, height = 640 }
           , messages = [ "Welcome to castle of the winds!" ]
+          , viewportX = 0
+          , viewportY = 0
           }
         , cmd
         )
@@ -101,7 +103,9 @@ update msg model =
         Keyboard (KeyDir dir) ->
             let
                 model' =
-                    Game.Collision.tryMoveHero dir model
+                    model
+                        |> Game.Collision.tryMoveHero dir
+                        |> updateViewportOffset model.hero.position
 
                 movedMovedMonsters =
                     Game.Collision.moveMonsters model'.monsters [] model'
@@ -134,6 +138,47 @@ update msg model =
             ( { model | windowSize = size }, Cmd.none )
 
 
+updateViewportOffset : Vector -> Model -> Model
+updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as model) =
+    let
+        tileSize = 32
+
+        ( prevX, prevY ) =
+            Vector.scale tileSize prevPosition
+
+        ( x, y ) =
+            Vector.scale tileSize model.hero.position
+
+        ( xOff, yOff ) =
+            ( windowSize.width // 2, windowSize.height // 2 )
+
+        tolerance = tileSize * 4
+
+        scroll =
+            { up = viewportY + y <= tolerance
+            , down = viewportY + y >= (windowSize.height * 4 // 5) - tolerance
+            , left = viewportX + x <= tolerance
+            , right = viewportX + x >= windowSize.width - tolerance
+            }
+
+        (mapWidth, mapHeight) =
+            Maps.mapSize (Maps.currentAreaMap maps)
+
+        newX =
+            if prevX /= x && (scroll.left || scroll.right) then
+                clamp (windowSize.width - mapWidth * tileSize) 0 (xOff - x)
+            else
+                viewportX
+
+        newY =
+            if prevY /= y && (scroll.up || scroll.down) then
+                clamp (windowSize.height * 4 // 5 - mapHeight * tileSize) 0 (yOff - y)
+            else
+                viewportY
+    in
+        { model | viewportX = newX, viewportY = newY }
+
+
 view : Model -> Html Msg
 view model =
     case model.currentScreen of
@@ -162,16 +207,10 @@ viewMonsters ({ monsters } as model) =
 
 
 viewMap : Model -> Html Msg
-viewMap ({ windowSize } as model) =
+viewMap ({ windowSize, viewportX, viewportY } as model) =
     let
         title =
             h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
-
-        ( x, y ) =
-            Vector.scale 32 model.hero.position
-
-        ( xOff, yOff ) =
-            ( windowSize.width // 32 * 16, windowSize.height // 32 * 16 )
 
         px x =
             (toString x) ++ "px"
@@ -188,8 +227,8 @@ viewMap ({ windowSize } as model) =
                 [ div
                     [ style
                         [ ( "position", "relative" )
-                        , ( "top", px (yOff - y) )
-                        , ( "left", px (xOff - x) )
+                        , ( "top", px viewportY )
+                        , ( "left", px viewportX )
                         ]
                     ]
                     html

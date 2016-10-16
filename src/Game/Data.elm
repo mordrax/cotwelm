@@ -26,6 +26,8 @@ type alias Model =
     , seed : Random.Seed
     , windowSize : Window.Size
     , messages : List String
+    , viewportX: Int
+    , viewportY: Int
     }
 
 
