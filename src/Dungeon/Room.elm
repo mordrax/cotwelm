@@ -135,6 +135,20 @@ generateEntrance (A ({ walls, entrances, worldPos } as model)) =
             |> Random.map toReturn
 
 
+removeEntrance : Entrance -> Room -> Room
+removeEntrance entrance (A ({ entrances, walls, worldPos } as model)) =
+    let
+        entrances' =
+            entrances
+                |> List.filter (Entrance.equal entrance >> not)
+    in
+        A
+            { model
+                | entrances = entrances'
+                , walls = [ Vector.sub (Entrance.position entrance) worldPos] :: walls
+            }
+
+
 {-| A wall is close to an entrance if one of their axis is the same and the other is within 2 tiles.
     This is because if two entrances are too close, a corridor cannot be formed.
 -}

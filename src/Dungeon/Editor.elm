@@ -32,6 +32,7 @@ type Msg
     | Dungeon DungeonGenerator.Model
     | ConfigMsg Config.Msg
     | ResetMap
+    | Clean
 
 
 init : Model
@@ -45,6 +46,23 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Clean ->
+            case List.head model.dungeonSteps of
+                Just dungeonModel ->
+                    let
+                        cleanedModel =
+                            DungeonGenerator.clean dungeonModel
+                    in
+                        ( { model
+                            | dungeonSteps = cleanedModel :: model.dungeonSteps
+                            , map = updateMap cleanedModel
+                          }
+                        , Cmd.none
+                        )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         GenerateMap nSteps ->
             let
                 firstStep =
@@ -67,21 +85,22 @@ update msg model =
                 ( model, Random.generate Dungeon dungeonGenerator )
 
         Dungeon dungeonModel ->
-            let
-                map =
-                    dungeonModel
-                        |> DungeonGenerator.toTiles
-                        |> Maps.fromTiles
-            in
-                ( { model | dungeonSteps = dungeonModel :: [], map = map }
-                , Cmd.none
-                )
+            ( { model | dungeonSteps = dungeonModel :: [], map = updateMap dungeonModel }
+            , Cmd.none
+            )
 
         ConfigMsg msg ->
             ( { model | config = Config.update msg model.config }, Cmd.none )
 
         ResetMap ->
             ( { model | map = Dict.empty, dungeonSteps = [] }, Cmd.none )
+
+
+updateMap : DungeonGenerator.Model -> Map
+updateMap dungeonModel =
+    dungeonModel
+        |> DungeonGenerator.toTiles
+        |> Maps.fromTiles
 
 
 view : Model -> Html Msg
@@ -98,7 +117,8 @@ view model =
                 [ --roomSizeView model,
                   button [ class "ui button", onClick <| GenerateMap 1 ] [ text "Step" ]
                 , button [ class "ui button", onClick <| GenerateMap 50 ] [ text "Step x50" ]
-                , button [ class "ui button", onClick <| ResetMap ] [ text "Reset" ]
+                , button [ class "ui button", onClick <| Clean ] [ text "Clean" ]
+                , button [ class "ui button", onClick <| ResetMap ] [ text "Destroy!" ]
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
