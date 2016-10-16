@@ -103,14 +103,12 @@ update msg model =
         Keyboard (KeyDir dir) ->
             let
                 model' =
-                    Game.Collision.tryMoveHero dir model
-
-                (viewportX, viewportY) = updateViewportOffset model.hero.position model'
-
-                model'' = { model' | viewportX = viewportX, viewportY = viewportY }
+                    model
+                        |> Game.Collision.tryMoveHero dir
+                        |> updateViewportOffset model.hero.position
 
                 movedMovedMonsters =
-                    Game.Collision.moveMonsters model''.monsters [] model''
+                    Game.Collision.moveMonsters model'.monsters [] model'
             in
                 ( movedMovedMonsters, Cmd.none )
 
@@ -140,7 +138,7 @@ update msg model =
             ( { model | windowSize = size }, Cmd.none )
 
 
-updateViewportOffset : Vector -> Model -> Vector
+updateViewportOffset : Vector -> Model -> Model
 updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as model) =
     let
         tileSize = 32
@@ -156,38 +154,29 @@ updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as
 
         tolerance = tileSize * 4
 
-        scrollUp =
-            viewportY + y <= tolerance
+        scroll =
+            { up = viewportY + y <= tolerance
+            , down = viewportY + y >= (windowSize.height * 4 // 5) - tolerance
+            , left = viewportX + x <= tolerance
+            , right = viewportX + x >= windowSize.width - tolerance
+            }
 
-        scrollDown =
-            viewportY + y >= (windowSize.height * 4 // 5) - tolerance
-
-        scrollLeft =
-            viewportX + x <= tolerance
-
-        scrollRight =
-            viewportX + x >= windowSize.width - tolerance
-
-        areaSize =
-            Maps.currentAreaSize maps
+        (mapWidth, mapHeight) =
+            Maps.mapSize (Maps.currentAreaMap maps)
 
         newX =
-            if prevX /= x && (scrollLeft || scrollRight) then
-                xOff - x
-                    |> max (windowSize.width - areaSize.width * tileSize)
-                    |> min 0
+            if prevX /= x && (scroll.left || scroll.right) then
+                clamp (windowSize.width - mapWidth * tileSize) 0 (xOff - x)
             else
                 viewportX
 
         newY =
-            if prevY /= y && (scrollUp || scrollDown) then
-                yOff - y
-                    |> max (windowSize.height * 4 // 5 - areaSize.height * tileSize)
-                    |> min 0
+            if prevY /= y && (scroll.up || scroll.down) then
+                clamp (windowSize.height * 4 // 5 - mapHeight * tileSize) 0 (yOff - y)
             else
                 viewportY
     in
-        (newX, newY)
+        { model | viewportX = newX, viewportY = newY }
 
 
 view : Model -> Html Msg
