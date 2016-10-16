@@ -93,6 +93,11 @@ new entrances walls floors corners roomType dimension worldPos =
         }
 
 
+newDeadEnd : Vector -> Room
+newDeadEnd worldPos =
+    new [ Entrance.init Door worldPos ] [] [] [] DeadEnd ( 1, 1 ) worldPos
+
+
 generate : Config.Model -> Generator Room
 generate config =
     let
@@ -135,6 +140,18 @@ generateEntrance (A ({ walls, entrances, worldPos } as model)) =
             |> Random.map toReturn
 
 
+addEntrance : Entrance -> Room -> Room
+addEntrance entrance (A ({ worldPos, walls, entrances } as model)) =
+    let
+        entrancePosition =
+            Vector.sub (Entrance.position entrance) worldPos
+
+        walls' =
+            List.map (without entrancePosition) walls
+    in
+        A { model | walls = walls', entrances = entrance :: entrances }
+
+
 removeEntrance : Entrance -> Room -> Room
 removeEntrance entrance (A ({ entrances, walls, worldPos } as model)) =
     let
@@ -145,7 +162,7 @@ removeEntrance entrance (A ({ entrances, walls, worldPos } as model)) =
         A
             { model
                 | entrances = entrances'
-                , walls = [ Vector.sub (Entrance.position entrance) worldPos] :: walls
+                , walls = [ Vector.sub (Entrance.position entrance) worldPos ] :: walls
             }
 
 
@@ -201,6 +218,15 @@ toTiles (A { floors, walls, entrances, corners, worldPos }) =
     in
         List.map Entrance.toTile entrances
             ++ List.concat (List.map makeTiles roomTileTypes)
+
+
+overlaps : Vector -> Room -> Bool
+overlaps position (A { floors, walls, entrances, corners, worldPos }) =
+    let
+        localPosition =
+            Vector.sub position worldPos
+    in
+        List.any ((==) localPosition) (floors ++ (List.concat walls) ++ (List.map Entrance.position entrances) ++ corners)
 
 
 entrances : Room -> Entrances
