@@ -58,7 +58,6 @@ type alias Model =
     , rooms : Rooms
     , corridors : Corridors
     , activePoints : ActivePoints
-    , orphanPoints : ActivePoints
     }
 
 
@@ -75,7 +74,7 @@ init : Config.Model -> Generator Model
 init config =
     let
         model =
-            Model config [] [] [] []
+            Model config [] [] []
 
         borderWalls =
             [ (List.Extra.lift2 (,) [ 0, config.dungeonSize ] [0..config.dungeonSize])
