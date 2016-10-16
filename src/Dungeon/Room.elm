@@ -360,10 +360,12 @@ generateEntranceHelper topLeft walls =
 
         makeHeadADoor walls =
             walls
-                |> headOfWalls
+                |> Lodash.headWithDefault (0,0)
                 |> newEntrance
     in
-        shuffle walls
+        walls
+            |> List.concat
+            |> shuffle
             |> Random.map makeHeadADoor
 
 
