@@ -10,7 +10,7 @@ module Game.Maps
         , draw
         , fromTiles
         , currentAreaMap
-        , currentAreaSize
+        , mapSize
         , getASCIIMap
         , getBuildings
         , getTile
@@ -39,7 +39,6 @@ import Html exposing (..)
 import Dict exposing (..)
 import Random exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
-import Window exposing (Size)
 
 
 type Maps
@@ -55,6 +54,10 @@ type alias Model =
 
 type alias Map =
     Dict Vector Tile
+
+
+type alias Dimension =
+    Vector
 
 
 type Msg
@@ -189,16 +192,15 @@ currentAreaMap (A model) =
                 Dict.empty
 
 
-{-| Get the width and height of the map for the current area
+{-| Get the width and height of a map
 -}
-currentAreaSize: Maps -> Size
-currentAreaSize (A model) =
+mapSize: Map -> Dimension
+mapSize map =
     let
-        map = currentAreaMap (A model)
         positions = Dict.keys map
         (maxX, maxY) = List.foldr (\(a,b) (c,d) -> (max a c, max b d)) (0,0) positions
     in
-        { width = maxX + 1, height = maxY + 1 }
+        ( maxX + 1, maxY + 1 )
 
 
 {-| Get the buildings in the current area
