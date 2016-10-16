@@ -59,7 +59,10 @@ update msg model =
                     gen `andThen` DungeonGenerator.step
 
                 dungeonGenerator =
-                    List.foldl oneStep firstStep [1..nSteps]
+                    if nSteps == 1 then
+                        firstStep
+                    else
+                        List.foldl oneStep firstStep [0..nSteps - 1]
             in
                 ( model, Random.generate Dungeon dungeonGenerator )
 

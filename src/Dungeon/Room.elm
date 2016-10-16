@@ -314,6 +314,11 @@ isPositionWithinRoom (A { entrances, walls, floors, corners }) position =
         isPositionAEntrance || isPositionAWallFloorOrCorner
 
 
+pp : Room -> String
+pp (A { worldPos }) =
+    "Room at (" ++ toString worldPos ++ ")"
+
+
 
 -- Privates
 
@@ -360,7 +365,7 @@ generateEntranceHelper topLeft walls =
 
         makeHeadADoor walls =
             walls
-                |> Lodash.headWithDefault (0,0)
+                |> Lodash.headWithDefault ( 0, 0 )
                 |> newEntrance
     in
         walls
