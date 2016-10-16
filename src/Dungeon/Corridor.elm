@@ -6,12 +6,14 @@ module Dungeon.Corridor
         , generate
         , extend
         , add
+        , addEntrance
         , end
         , possibleEnds
         , toTiles
         , path
         , complete
         , pp
+        , overlaps
         )
 
 {-| A corridor is a single width line of tiles that can be either horizontal/vertical or
@@ -256,6 +258,11 @@ add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
             }
 
 
+addEntrance : Vector -> Corridor -> Corridor
+addEntrance position (A ({ paths } as model)) =
+    A { model | paths = Tile.toTile position Tile.WallDarkDgn :: paths }
+
+
 end : Corridor -> DirectedVector
 end (A { points, start }) =
     case points of
@@ -295,9 +302,16 @@ toTiles (A ({ start, points, walls, entrances, paths } as model)) =
         ++ paths
 
 
+overlaps : Vector -> Corridor -> Bool
+overlaps position (A { start, points, walls, entrances, paths }) =
+    List.any ((==) position) (List.map Tile.position paths)
+
+
 pp : Corridor -> String
 pp (A { start }) =
     "Corridor at (" ++ (toString start) ++ ")"
+
+
 
 -- Privates
 

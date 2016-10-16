@@ -114,10 +114,141 @@ clean ({ rooms, corridors, activePoints } as model) =
                 clean modelWithCleanedRoom
 
         (ActiveCorridor corridor) :: remainingPoints ->
-            clean { model | corridors = corridor :: corridors, activePoints = remainingPoints }
+            let
+                modelWithRemainingPoints =
+                    { model
+                        | activePoints = remainingPoints
+                    }
+
+                modelWithInactiveCorridorRemainingPoints =
+                    { modelWithRemainingPoints
+                        | corridors = corridor :: corridors
+                    }
+
+                ( startPosition, startDirection ) =
+                    Corridor.end corridor
+
+                startDirectionVector =
+                    Vector.fromDirection startDirection
+            in
+                case firstObstacle startDirectionVector startPosition modelWithRemainingPoints of
+                    ( Maybe.Nothing, Maybe.Nothing, _, _ ) ->
+                        let
+                            _ =
+                                Debug.log "Clean - hitting edge, create dead end"
+                                    { deadEndPosition = (Vector.add startPosition startDirectionVector)
+                                    }
+                        in
+                            clean
+                                { modelWithInactiveCorridorRemainingPoints
+                                    | rooms = Room.newDeadEnd (Vector.add startPosition startDirectionVector) :: rooms
+                                }
+
+                    ( Just room, _, newCorridorEndPosition, newEntrancePosition ) ->
+                        let
+                            corridor' =
+                                Corridor.add ( newCorridorEndPosition, startDirection ) corridor
+
+                            room' =
+                                Room.addEntrance (Entrance.init Door newEntrancePosition) room
+
+                            _ =
+                                Debug.log "Clean - join room"
+                                    { corridor = Corridor.pp corridor
+                                    , newEndPoint = ( newCorridorEndPosition, startDirection )
+                                    , room = Room.pp room
+                                    , newEntrance = (Entrance.init Door newEntrancePosition)
+                                    }
+                        in
+                            clean
+                                { modelWithRemainingPoints
+                                    | corridors = corridor' :: corridors
+                                    , rooms = room' :: rooms
+                                }
+
+                    ( _, Just joinedCorridor, newCorridorEndPosition, joinedCorridorNewFloor ) ->
+                        let
+                            corridor' =
+                                Corridor.add ( newCorridorEndPosition, startDirection ) corridor
+
+                            joinedCorridor' =
+                                Corridor.addEntrance joinedCorridorNewFloor joinedCorridor
+
+                            _ =
+                                Debug.log "DungeonGenerator join corridor"
+                                    { corridor = Corridor.pp corridor
+                                    , corridorNewEnd = ( newCorridorEndPosition, startDirection )
+                                    , joinedCorridorNewFloor = joinedCorridorNewFloor
+                                    }
+                        in
+                            clean
+                                { modelWithRemainingPoints
+                                    | corridors = corridor' :: joinedCorridor' :: corridors
+                                }
 
         [] ->
             model
+
+
+{-| Returns the first room or corridor encountered and the point prior just before hitting
+    the obstacle as well as the point where it hits the obstacle.
+-}
+firstObstacle : Vector -> Vector -> Model -> ( Maybe Room, Maybe Corridor, Vector, Vector )
+firstObstacle digDirectionVector (( x, y ) as currentPosition) ({ rooms, corridors, activePoints, config } as model) =
+    let
+        _ =
+            Debug.log "firstObstacle"
+                { currentPosition = currentPosition
+                , digDirectionVector = digDirectionVector
+                }
+    in
+        if not <| Config.withinDungeonBounds currentPosition config then
+            ( Maybe.Nothing, Maybe.Nothing, ( 0, 0 ), ( 0, 0 ) )
+        else
+            case query currentPosition model of
+                ( Maybe.Nothing, Maybe.Nothing ) ->
+                    firstObstacle digDirectionVector (Vector.add digDirectionVector currentPosition) model
+
+                ( r, c ) ->
+                    ( r, c, Vector.sub currentPosition digDirectionVector, currentPosition )
+
+
+query : Vector -> Model -> ( Maybe Room, Maybe Corridor )
+query position { rooms, corridors, activePoints } =
+    let
+        maybeRoom =
+            rooms
+                ++ (List.filterMap activePointToRoom activePoints)
+                |> List.filter (Room.overlaps position)
+                |> List.head
+
+        maybeCorridor =
+            corridors
+                ++ (List.filterMap activePointToCorridor activePoints)
+                |> List.filter (Corridor.overlaps position)
+                |> List.head
+    in
+        ( maybeRoom, maybeCorridor )
+
+
+activePointToRoom : ActivePoint -> Maybe Room
+activePointToRoom activePoint =
+    case activePoint of
+        ActiveRoom room _ ->
+            Just room
+
+        _ ->
+            Nothing
+
+
+activePointToCorridor : ActivePoint -> Maybe Corridor
+activePointToCorridor activePoint =
+    case activePoint of
+        ActiveCorridor corridor ->
+            Just corridor
+
+        _ ->
+            Nothing
 
 
 {-| For each of the active rooms and corridors, generate another 'step'.
