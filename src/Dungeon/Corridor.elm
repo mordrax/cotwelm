@@ -11,6 +11,7 @@ module Dungeon.Corridor
         , toTiles
         , path
         , complete
+        , pp
         )
 
 {-| A corridor is a single width line of tiles that can be either horizontal/vertical or
@@ -146,7 +147,7 @@ extend corridor config =
             Dice.range config.corridor.minLength config.corridor.maxLength
 
         directionGen =
-            onePossibleFacing lastFacing
+            onePossibleCardinalFacing lastFacing
     in
         Random.map2 (,) lengthGen directionGen
             |> Random.map (\( len, dir ) -> add ( stepsFromPoint lastPoint len, dir ) corridor)
@@ -166,13 +167,21 @@ allPossibleFacings facing =
     , Vector.rotateCompass facing Right
     , facing
     ]
-        |> List.filter CompassDirection.isCardinal
 
 
 onePossibleFacing : CompassDirection -> Generator CompassDirection
 onePossibleFacing direction =
     direction
         |> allPossibleFacings
+        |> shuffle
+        |> Random.map (headWithDefault direction)
+
+
+onePossibleCardinalFacing : CompassDirection -> Generator CompassDirection
+onePossibleCardinalFacing direction =
+    direction
+        |> allPossibleFacings
+        |> List.filter CompassDirection.isCardinal
         |> shuffle
         |> Random.map (headWithDefault direction)
 
@@ -286,6 +295,9 @@ toTiles (A ({ start, points, walls, entrances, paths } as model)) =
         ++ paths
 
 
+pp : Corridor -> String
+pp (A { start }) =
+    "Corridor at (" ++ (toString start) ++ ")"
 
 -- Privates
 

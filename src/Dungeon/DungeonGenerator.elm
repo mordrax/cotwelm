@@ -95,8 +95,31 @@ this could be create a dead end, link up to a room etc.
 -}
 step : Model -> Generator Model
 step model =
-    shuffle model.activePoints
-        `andThen` \x -> step' { model | activePoints = x }
+    let
+        printPoint point =
+            case point of
+                ActiveRoom room _ ->
+                    Room.pp room
+
+                ActiveCorridor corridor ->
+                    Corridor.pp corridor
+
+        print steppedModel =
+            Debug.log "DungeonGenerator.step"
+                { rooms = List.map Room.pp steppedModel.rooms
+                , corridors = List.map Corridor.pp steppedModel.corridors
+                , activePoints = List.map printPoint steppedModel.activePoints
+                }
+    in
+        shuffle model.activePoints
+            `andThen` \x ->
+                        step' { model | activePoints = x }
+                            `andThen` \model ->
+                                        let
+                                            _ =
+                                                print model
+                                        in
+                                            constant model
 
 
 step' : Model -> Generator Model
@@ -135,16 +158,19 @@ step' ({ activePoints } as model) =
         -- pick a active corridor and dig a room
         (ActiveCorridor corridor) :: remainingPoints ->
             let
+                modelWithoutActiveCorridor =
+                    { model | activePoints = remainingPoints }
+
                 modelWithCorridorInactivated =
-                    { model | corridors = corridor :: model.corridors }
+                    { modelWithoutActiveCorridor | corridors = corridor :: model.corridors }
             in
                 generateActivePointFromCorridor corridor model
                     |> Random.map
                         (\activePoint ->
                             case activePoint of
                                 (ActiveCorridor corridor) as activePoint ->
-                                    if canFitCorridor model corridor then
-                                        { model
+                                    if canFitCorridor modelWithoutActiveCorridor corridor then
+                                        { modelWithoutActiveCorridor
                                             | activePoints = activePoint :: remainingPoints
                                         }
                                     else
@@ -244,10 +270,21 @@ canFitCorridor model corridor =
 
         inModelTiles tile =
             List.any (Tile.isSamePosition tile) modelTiles
+
+        overlappingTiles =
+            corridorTiles
+                |> List.filter inModelTiles
+
+        canFit =
+            List.isEmpty overlappingTiles
+
+        _ =
+            Debug.log "DungeonGenerator.canFitCorridor"
+                { canFit = canFit
+                , corridor = Corridor.pp corridor
+                }
     in
-        corridorTiles
-            |> List.any inModelTiles
-            |> not
+        canFit
 
 
 canFitRoom : Model -> Room -> Bool
