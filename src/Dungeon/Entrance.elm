@@ -6,6 +6,7 @@ module Dungeon.Entrance
         , init
         , toTile
         , position
+        , equal
         )
 
 import Utils.Vector exposing (..)
@@ -53,3 +54,7 @@ toTile (A ( entranceType, pos )) =
                     Tile.DarkDgn
     in
         Tile.toTile pos tileType
+
+equal: Entrance -> Entrance -> Bool
+equal (A e1) (A e2) =
+    snd e1 == snd e2

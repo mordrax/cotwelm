@@ -4,6 +4,7 @@ module Dungeon.DungeonGenerator
         , toTiles
         , init
         , Model
+        , clean
         )
 
 import Dungeon.Rooms.Config as Config exposing (..)
@@ -57,6 +58,7 @@ type alias Model =
     , rooms : Rooms
     , corridors : Corridors
     , activePoints : ActivePoints
+    , orphanPoints : ActivePoints
     }
 
 
@@ -73,7 +75,7 @@ init : Config.Model -> Generator Model
 init config =
     let
         model =
-            Model config [] [] []
+            Model config [] [] [] []
 
         borderWalls =
             [ (List.Extra.lift2 (,) [ 0, config.dungeonSize ] [0..config.dungeonSize])
@@ -87,6 +89,32 @@ init config =
             { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [ borderRoom ] }
     in
         Random.map addRoomToModel (Room.generate config)
+
+
+{-| Removes active entrances from rooms and
+    end corridors that will hit walls with a single door room.
+-}
+clean : Model -> Model
+clean ({ rooms, corridors, activePoints } as model) =
+    case activePoints of
+        (ActiveRoom room Maybe.Nothing) :: remainingPoints ->
+            clean { model | rooms = room::rooms,
+            activePoints = remainingPoints }
+        (ActiveRoom room (Just entrance)) :: remainingPoints ->
+            let
+                cleanedRoom =
+                    Room.removeEntrance entrance room
+
+                modelWithCleanedRoom =
+                    { model | rooms = cleanedRoom :: rooms, activePoints = remainingPoints }
+            in
+                clean modelWithCleanedRoom
+
+        (ActiveCorridor corridor) :: remainingPoints ->
+            clean { model | corridors = corridor :: corridors , activePoints = remainingPoints }
+
+        [] ->
+            model
 
 
 {-| For each of the active rooms and corridors, generate another 'step'.
@@ -135,7 +163,7 @@ step' ({ activePoints } as model) =
         -- make a corridor from a existing entrance
         (ActiveRoom room (Just entrance)) :: remainingPoints ->
             let
-                modelWithActiveCorridor corridor =
+                modelWithActiveRoom corridor =
                     { model
                         | activePoints =
                             ActiveCorridor (Corridor.complete corridor)
@@ -143,9 +171,9 @@ step' ({ activePoints } as model) =
                                 :: remainingPoints
                     }
 
-                addCorridorToModel room corridor =
+                updateModel corridor =
                     if canFitCorridor model corridor then
-                        modelWithActiveCorridor corridor
+                        modelWithActiveRoom corridor
                     else
                         model
 
@@ -153,7 +181,7 @@ step' ({ activePoints } as model) =
                     corridorStartFromRoomEntrance room entrance
             in
                 Corridor.generate startPosition entranceFacing model.config
-                    |> Random.map (addCorridorToModel room)
+                    |> Random.map updateModel
 
         -- pick a active corridor and dig a room
         (ActiveCorridor corridor) :: remainingPoints ->
@@ -161,7 +189,7 @@ step' ({ activePoints } as model) =
                 modelWithoutActiveCorridor =
                     { model | activePoints = remainingPoints }
 
-                modelWithCorridorInactivated =
+                modelWithInactiveCorridor =
                     { modelWithoutActiveCorridor | corridors = corridor :: model.corridors }
             in
                 generateActivePointFromCorridor corridor model
@@ -174,15 +202,15 @@ step' ({ activePoints } as model) =
                                             | activePoints = activePoint :: remainingPoints
                                         }
                                     else
-                                        modelWithCorridorInactivated
+                                        model
 
                                 (ActiveRoom room _) as activePoint ->
                                     if canFitRoom model room then
-                                        { modelWithCorridorInactivated
+                                        { modelWithInactiveCorridor
                                             | activePoints = activePoint :: remainingPoints
                                         }
                                     else
-                                        modelWithCorridorInactivated
+                                        model
                         )
 
 
