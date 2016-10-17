@@ -8,10 +8,7 @@ module Dungeon.Corridor
         , add
         , addEntrance
         , end
-        , possibleEnds
         , toTiles
-        , path
-        , complete
         , pp
         , overlaps
         )
@@ -83,7 +80,6 @@ type alias Model =
     { entranceFacing : CompassDirection
     , start : DirectedVector
     , points : DirectedVectors
-    , walls : Tiles
     , entrances : Entrances
     , paths : Tiles
     }
@@ -95,7 +91,6 @@ init start entranceFacing =
         { start = start
         , entranceFacing = entranceFacing
         , points = []
-        , walls = []
         , entrances = []
         , paths = []
         }
@@ -247,13 +242,10 @@ add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
             path (fst lastCorridorPoint) newVector
                 |> List.map (\x -> Tile.toTile x Tile.DarkDgn)
 
-        newWalls =
-            constructWall lastCorridorPoint newPoint
     in
         A
             { model
                 | points = newPoint :: points
-                , walls = newWalls ++ model.walls
                 , paths = newPath ++ model.paths
             }
 
@@ -273,37 +265,15 @@ end (A { points, start }) =
             start
 
 
-{-| Given a corridor, draws the wall that sounds the last turn (if any) in the corridor
-    returning a new corridor with the walls.
-    This is because when adding points to a corridor, there is no way of knowing if that
-    is the last point.
--}
-complete : Corridor -> Corridor
-complete (A ({ start, points, walls } as model)) =
-    let
-        cornerTiles secondLastPoint lastPoint =
-            turnTiles (Vector.facing (fst secondLastPoint) (fst lastPoint)) lastPoint
-    in
-        case ( start, points ) of
-            ( start, lastPoint :: secondLastPoint :: _ ) ->
-                A { model | walls = walls ++ cornerTiles secondLastPoint lastPoint }
-
-            ( secondLastPoint, lastPoint :: [] ) ->
-                A { model | walls = walls ++ cornerTiles secondLastPoint lastPoint }
-
-            _ ->
-                A model
-
 
 toTiles : Corridor -> Tiles
-toTiles (A ({ start, points, walls, entrances, paths } as model)) =
+toTiles (A ({ start, points, entrances, paths } as model)) =
     List.map Entrance.toTile entrances
-        ++ walls
         ++ paths
 
 
 overlaps : Vector -> Corridor -> Bool
-overlaps position (A { start, points, walls, entrances, paths }) =
+overlaps position (A { start, points, entrances, paths }) =
     List.any ((==) position) (List.map Tile.position paths)
 
 
@@ -314,78 +284,6 @@ pp (A { start }) =
 
 
 -- Privates
-
-
-turnTiles : CompassDirection -> DirectedVector -> Tiles
-turnTiles corridorDirection ( endPointVector, endPointFacing ) =
-    let
-        ( leftFacing, rightFacing ) =
-            ( Left, Right )
-                |> Vector.map (Vector.rotateCompass corridorDirection)
-    in
-        if corridorDirection == endPointFacing then
-            []
-        else if (endPointFacing == leftFacing) then
-            [ Tile.toTile (Vector.add endPointVector (Vector.fromDirection rightFacing)) Tile.Rock ]
-        else if (endPointFacing == rightFacing) then
-            [ Tile.toTile (Vector.add endPointVector (Vector.fromDirection leftFacing)) Tile.Rock ]
-        else
-            []
-
-
-constructWall : DirectedVector -> DirectedVector -> Tiles
-constructWall (( ( x1, y1 ) as start, startDir ) as da) (( ( x2, y2 ) as end, endDir ) as db) =
-    let
-        endMinusOne =
-            Vector.sub end startToEndUnitVector
-
-        startToEndUnitVector =
-            Vector.sub end start
-                |> Vector.unit
-
-        startToEndDirection =
-            Vector.toDirection startToEndUnitVector
-
-        ( left, right ) =
-            ( Left, Right )
-                |> Vector.map (Vector.rotate startToEndUnitVector)
-
-        getLeftRight point =
-            List.map (Vector.add point) [ left, right ]
-
-        ( sameX, sameY ) =
-            ( x1 == x2, y1 == y2 )
-
-        verticalWallTiles =
-            (path ( x1 - 1, y1 ) ( x2 - 1, y2 ) ++ path ( x1 + 1, y1 ) ( x2 + 1, y2 ))
-                |> List.map (flip Tile.toTile Tile.Rock)
-
-        horizontalWallTiles =
-            (path ( x1, y1 - 1 ) ( x2, y2 - 1 ) ++ path ( x1, y1 + 1 ) ( x2, y2 + 1 ))
-                |> List.map (flip Tile.toTile Tile.Rock)
-
-        endToStartDirection =
-            Vector.oppositeDirection startToEndDirection
-
-        ( leftEntrance, rightEntrance ) =
-            Vector.map (Vector.rotateCompass endToStartDirection) ( Left, Right )
-
-        cornerTiles =
-            turnTiles endToStartDirection da
-    in
-        if sameX then
-            verticalWallTiles
-        else if sameY then
-            horizontalWallTiles
-        else
-            let
-                halfTiles =
-                    (path start endMinusOne)
-                        |> List.map getLeftRight
-                        |> List.concat
-                        |> List.map (flip Tile.toTile Tile.WallDarkDgn)
-            in
-                halfTiles ++ cornerTiles
 
 
 {-| The path between any two vectors is the linear line that connects them.
