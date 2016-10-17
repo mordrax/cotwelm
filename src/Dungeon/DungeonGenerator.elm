@@ -132,6 +132,7 @@ clean ({ rooms, corridors, activePoints } as model) =
                     Vector.fromDirection startDirection
             in
                 case firstObstacle startDirectionVector startPosition modelWithRemainingPoints of
+                    -- hits map edge, no obstacles
                     ( Maybe.Nothing, Maybe.Nothing, _, _ ) ->
                         let
                             _ =
@@ -144,6 +145,7 @@ clean ({ rooms, corridors, activePoints } as model) =
                                     | rooms = Room.newDeadEnd (Vector.add startPosition startDirectionVector) :: rooms
                                 }
 
+                    -- hits a room, join to the room with a door
                     ( Just room, _, newCorridorEndPosition, newEntrancePosition ) ->
                         let
                             corridor' =
@@ -151,6 +153,9 @@ clean ({ rooms, corridors, activePoints } as model) =
 
                             room' =
                                 Room.addEntrance (Entrance.init Door newEntrancePosition) room
+
+                            addACorridor c m =
+                                { m | corridors = c :: m.corridors }
 
                             _ =
                                 Debug.log "Clean - join room"
@@ -160,12 +165,12 @@ clean ({ rooms, corridors, activePoints } as model) =
                                     , newEntrance = (Entrance.init Door newEntrancePosition)
                                     }
                         in
-                            clean
-                                { modelWithRemainingPoints
-                                    | corridors = corridor' :: corridors
-                                    , rooms = room' :: rooms
-                                }
+                            modelWithRemainingPoints
+                                |> addACorridor corridor'
+                                |> findAndUpdateRoomByWorldPosition room'
+                                |> clean
 
+                    -- hits another corridor, join to the corridor with dungeon floor
                     ( _, Just joinedCorridor, newCorridorEndPosition, joinedCorridorNewFloor ) ->
                         let
                             corridor' =
@@ -188,6 +193,38 @@ clean ({ rooms, corridors, activePoints } as model) =
 
         [] ->
             model
+
+
+findAndUpdateRoomByWorldPosition : Room -> Model -> Model
+findAndUpdateRoomByWorldPosition targetRoom ({ rooms, activePoints } as model) =
+    let
+        targetRoomPosition =
+            Room.position targetRoom
+
+        update room updatedRooms =
+            if targetRoomPosition == Room.position room then
+                targetRoom :: updatedRooms
+            else
+                room :: updatedRooms
+
+        rooms' =
+            List.foldl update [] rooms
+
+        updateActivePoints pt updatedPoints =
+            case pt of
+                ActiveRoom room entrances ->
+                    if targetRoomPosition == Room.position room then
+                        ActiveRoom targetRoom entrances :: updatedPoints
+                    else
+                        ActiveRoom room entrances :: updatedPoints
+
+                someOtherPoint ->
+                    someOtherPoint :: updatedPoints
+
+        activePoints' =
+            List.foldl updateActivePoints [] activePoints
+    in
+        { model | rooms = rooms', activePoints = activePoints' }
 
 
 {-| Returns the first room or corridor encountered and the point prior just before hitting
@@ -428,8 +465,8 @@ canFitCorridor model corridor =
 
         withinBounds =
             corridorTiles
-            |> List.map Tile.position
-            |> List.all (flip Config.withinDungeonBounds model.config)
+                |> List.map Tile.position
+                |> List.all (flip Config.withinDungeonBounds model.config)
 
         overlappingTiles =
             corridorTiles
@@ -458,8 +495,8 @@ canFitRoom model room =
 
         withinBounds =
             roomTiles
-            |> List.map Tile.position
-            |> List.all (flip Config.withinDungeonBounds model.config)
+                |> List.map Tile.position
+                |> List.all (flip Config.withinDungeonBounds model.config)
 
         inModelTiles tile =
             List.any (Tile.isSamePosition tile) modelTiles
@@ -470,6 +507,7 @@ canFitRoom model room =
                 |> not
     in
         canFit && withinBounds
+
 
 
 ------------------
