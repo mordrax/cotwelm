@@ -362,7 +362,7 @@ step' ({ activePoints } as model) =
                 modelWithActiveRoom corridor =
                     { model
                         | activePoints =
-                            ActiveCorridor (Corridor.complete corridor)
+                            ActiveCorridor corridor
                                 :: ActiveRoom room (Maybe.Nothing)
                                 :: remainingPoints
                     }
