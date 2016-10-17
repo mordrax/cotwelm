@@ -9,7 +9,7 @@ import Shop.Shop as Shop exposing (..)
 import Utils.DragDrop exposing (..)
 import Utils.IdGenerator exposing (..)
 import Monster.Monster exposing (..)
-import Random exposing (..)
+import Random.Pcg as Random exposing (..)
 import Window exposing (Size)
 
 

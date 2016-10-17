@@ -27,8 +27,7 @@ import Utils.IdGenerator as IdGenerator exposing (..)
 
 -- 3rd party
 
-import Random.Extra exposing (sample)
-import Random exposing (step, initialSeed, list, Seed)
+import Random.Pcg as Random exposing (step, initialSeed, list, Seed)
 import Time exposing (now)
 import Task exposing (perform)
 
@@ -142,7 +141,7 @@ replenish itemFactories idGenerator seed =
             Maybe.withDefault (Item.new (Item.Weapon BrokenSword)) maybe
 
         itemGenerator =
-            sample itemFactories |> (Random.map defaultProduct)
+            Random.sample itemFactories |> (Random.map defaultProduct)
 
         itemsGenerator n =
             Random.list n itemGenerator

@@ -24,7 +24,7 @@ import Html.App exposing (map)
 import Navigation
 import String exposing (..)
 import Task exposing (perform)
-import Random exposing (initialSeed)
+import Random.Pcg as Random exposing (initialSeed)
 import Time exposing (inSeconds, now)
 
 
