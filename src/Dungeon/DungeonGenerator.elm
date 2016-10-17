@@ -130,6 +130,9 @@ clean ({ rooms, corridors, activePoints } as model) =
 
                 startDirectionVector =
                     Vector.fromDirection startDirection
+
+                addCorridor c m =
+                    { m | corridors = c :: m.corridors }
             in
                 case firstObstacle startDirectionVector startPosition modelWithRemainingPoints of
                     -- hits map edge, no obstacles
@@ -154,9 +157,6 @@ clean ({ rooms, corridors, activePoints } as model) =
                             room' =
                                 Room.addEntrance (Entrance.init Door newEntrancePosition) room
 
-                            addACorridor c m =
-                                { m | corridors = c :: m.corridors }
-
                             _ =
                                 Debug.log "Clean - join room"
                                     { corridor = Corridor.pp corridor
@@ -166,8 +166,8 @@ clean ({ rooms, corridors, activePoints } as model) =
                                     }
                         in
                             modelWithRemainingPoints
-                                |> addACorridor corridor'
-                                |> findAndUpdateRoomByWorldPosition room'
+                                |> addCorridor corridor'
+                                |> findAndUpdateRoom room'
                                 |> clean
 
                     -- hits another corridor, join to the corridor with dungeon floor
@@ -186,17 +186,17 @@ clean ({ rooms, corridors, activePoints } as model) =
                                     , joinedCorridorNewFloor = joinedCorridorNewFloor
                                     }
                         in
-                            clean
-                                { modelWithRemainingPoints
-                                    | corridors = corridor' :: joinedCorridor' :: corridors
-                                }
+                            modelWithRemainingPoints
+                                |> addCorridor corridor'
+                                |> findAndUpdateCorridor joinedCorridor'
+                                |> clean
 
         [] ->
             model
 
 
-findAndUpdateRoomByWorldPosition : Room -> Model -> Model
-findAndUpdateRoomByWorldPosition targetRoom ({ rooms, activePoints } as model) =
+findAndUpdateRoom : Room -> Model -> Model
+findAndUpdateRoom targetRoom ({ rooms, activePoints } as model) =
     let
         targetRoomPosition =
             Room.position targetRoom
@@ -225,6 +225,38 @@ findAndUpdateRoomByWorldPosition targetRoom ({ rooms, activePoints } as model) =
             List.foldl updateActivePoints [] activePoints
     in
         { model | rooms = rooms', activePoints = activePoints' }
+
+
+findAndUpdateCorridor : Corridor -> Model -> Model
+findAndUpdateCorridor targetCorridor ({ corridors, activePoints } as model) =
+    let
+        ( targetCorridorPosition, _ ) =
+            Corridor.end targetCorridor
+
+        update corridor updatedCorridors =
+            if targetCorridorPosition == (fst <| Corridor.end corridor) then
+                targetCorridor :: updatedCorridors
+            else
+                corridor :: updatedCorridors
+
+        corridors' =
+            List.foldl update [] corridors
+
+        updateActivePoints pt updatedPoints =
+            case pt of
+                ActiveCorridor corridor ->
+                    if targetCorridorPosition == (fst <| Corridor.end corridor) then
+                        ActiveCorridor targetCorridor :: updatedPoints
+                    else
+                        ActiveCorridor corridor :: updatedPoints
+
+                someOtherPoint ->
+                    someOtherPoint :: updatedPoints
+
+        activePoints' =
+            List.foldl updateActivePoints [] activePoints
+    in
+        { model | corridors = corridors', activePoints = activePoints' }
 
 
 {-| Returns the first room or corridor encountered and the point prior just before hitting
