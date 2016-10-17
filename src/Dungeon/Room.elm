@@ -141,13 +141,23 @@ generateEntrance (A ({ walls, entrances, worldPos } as model)) =
 
 
 addEntrance : Entrance -> Room -> Room
-addEntrance entrance (A ({ worldPos, walls, entrances } as model)) =
+addEntrance entrance (A ({ worldPos, walls, entrances, corners } as model)) =
     let
         entrancePosition =
             Vector.sub (Entrance.position entrance) worldPos
 
         walls' =
             List.map (without entrancePosition) walls
+
+        corners' =
+            without entrancePosition corners
+
+        _ =
+            Debug.log "addEntrance"
+                { walls = walls
+                , walls' = walls'
+                , entrancePosition = entrancePosition
+                }
     in
         A { model | walls = walls', entrances = entrance :: entrances }
 
@@ -335,6 +345,11 @@ wallsFacingDirection compassDirection walls ( maxX, maxY ) =
 
             _ ->
                 []
+
+
+position : Room -> Vector
+position (A { worldPos }) =
+    worldPos
 
 
 isPositionWithinRoom : Room -> Vector -> Bool
