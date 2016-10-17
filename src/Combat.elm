@@ -7,7 +7,7 @@ Here, we simply calculate the result of a toHit% and then add damage and report 
 
 import Stats exposing (..)
 import Dice exposing (..)
-import Random exposing (..)
+import Random.Pcg as Random exposing (..)
 
 
 attack : Stats -> Stats -> Seed -> ( Stats, Seed, Int )

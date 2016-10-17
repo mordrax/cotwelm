@@ -37,7 +37,7 @@ import Utils.Vector as Vector exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.App exposing (map)
-import Random exposing (..)
+import Random.Pcg as Random exposing (..)
 import Window exposing (..)
 import Task exposing (perform)
 

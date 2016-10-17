@@ -37,7 +37,7 @@ import GameData.Types exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Html exposing (..)
 import Dict exposing (..)
-import Random exposing (..)
+import Random.Pcg as Random exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 
 

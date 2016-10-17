@@ -85,7 +85,7 @@ init config =
             Room.new [] borderWalls [] [] Rectangular ( 0, 0 ) ( 0, 0 )
 
         addRoomToModel room =
-            { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [ borderRoom ] }
+            { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [] }
     in
         Random.map addRoomToModel (Room.generate config)
 
@@ -195,22 +195,15 @@ clean ({ rooms, corridors, activePoints } as model) =
 -}
 firstObstacle : Vector -> Vector -> Model -> ( Maybe Room, Maybe Corridor, Vector, Vector )
 firstObstacle digDirectionVector (( x, y ) as currentPosition) ({ rooms, corridors, activePoints, config } as model) =
-    let
-        _ =
-            Debug.log "firstObstacle"
-                { currentPosition = currentPosition
-                , digDirectionVector = digDirectionVector
-                }
-    in
-        if not <| Config.withinDungeonBounds currentPosition config then
-            ( Maybe.Nothing, Maybe.Nothing, ( 0, 0 ), ( 0, 0 ) )
-        else
-            case query currentPosition model of
-                ( Maybe.Nothing, Maybe.Nothing ) ->
-                    firstObstacle digDirectionVector (Vector.add digDirectionVector currentPosition) model
+    if not <| Config.withinDungeonBounds currentPosition config then
+        ( Maybe.Nothing, Maybe.Nothing, ( 0, 0 ), ( 0, 0 ) )
+    else
+        case query currentPosition model of
+            ( Maybe.Nothing, Maybe.Nothing ) ->
+                firstObstacle digDirectionVector (Vector.add digDirectionVector currentPosition) model
 
-                ( r, c ) ->
-                    ( r, c, Vector.sub currentPosition digDirectionVector, currentPosition )
+            ( r, c ) ->
+                ( r, c, Vector.sub currentPosition digDirectionVector, currentPosition )
 
 
 query : Vector -> Model -> ( Maybe Room, Maybe Corridor )
@@ -433,6 +426,11 @@ canFitCorridor model corridor =
         inModelTiles tile =
             List.any (Tile.isSamePosition tile) modelTiles
 
+        withinBounds =
+            corridorTiles
+            |> List.map Tile.position
+            |> List.all (flip Config.withinDungeonBounds model.config)
+
         overlappingTiles =
             corridorTiles
                 |> List.filter inModelTiles
@@ -446,7 +444,7 @@ canFitCorridor model corridor =
                 , corridor = Corridor.pp corridor
                 }
     in
-        canFit
+        canFit && withinBounds
 
 
 canFitRoom : Model -> Room -> Bool
@@ -458,13 +456,20 @@ canFitRoom model room =
         roomTiles =
             Room.toTiles room
 
+        withinBounds =
+            roomTiles
+            |> List.map Tile.position
+            |> List.all (flip Config.withinDungeonBounds model.config)
+
         inModelTiles tile =
             List.any (Tile.isSamePosition tile) modelTiles
-    in
-        roomTiles
-            |> List.any inModelTiles
-            |> not
 
+        canFit =
+            roomTiles
+                |> List.any inModelTiles
+                |> not
+    in
+        canFit && withinBounds
 
 
 ------------------

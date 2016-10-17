@@ -5,6 +5,7 @@ import Random.Pcg as Random exposing (..)
 import Maybe exposing (withDefault)
 import List exposing (reverse)
 
+
 shuffle : List a -> Generator (List a)
 shuffle list =
     list
@@ -94,3 +95,31 @@ shuffle' arr =
                                      )
         in
             Random.map (fst >> Array.fromList) (helper ( [], arr ))
+
+
+{-| Given a list, choose an element uniformly at random. `Nothing` is only
+produced if the list is empty.
+
+    type Direction = North | South | East | West
+
+    direction : Generator Direction
+    direction =
+      sample [North, South, East, West]
+        |> map (Maybe.withDefault North)
+
+-}
+sample2 : List a -> Generator (Maybe a)
+sample2 =
+    let
+        find k ys =
+            case ys of
+                [] ->
+                    Nothing
+
+                z :: zs ->
+                    if k == 0 then
+                        Just z
+                    else
+                        find (k - 1) zs
+    in
+        \xs -> Random.map (\i -> find i xs) (int 0 (List.length xs - 1))
