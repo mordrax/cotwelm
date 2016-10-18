@@ -51,7 +51,7 @@ create_corridor : Test
 create_corridor =
     let
         tiles =
-            Corridor.init ( ( 5, 5 ), N )
+            Corridor.init ( ( 5, 5 ), S ) N
                 |> Corridor.add ( ( 5, 6 ), N )
                 |> Corridor.toTiles
 
@@ -70,7 +70,7 @@ start_and_end_points_are_drawn : Test
 start_and_end_points_are_drawn =
     let
         tiles =
-            Corridor.init ( ( 3, 3 ), N )
+            Corridor.init ( ( 3, 3 ), S ) N
                 |> Corridor.add ( ( 10, 3 ), S )
                 |> Corridor.toTiles
 
@@ -90,7 +90,7 @@ add_points_to_corridor_draws_correct_path : Test
 add_points_to_corridor_draws_correct_path =
     let
         corridor =
-            Corridor.init ( ( 5, 5 ), N )
+            Corridor.init ( ( 5, 5 ), S ) N
 
         corridor7 =
             Corridor.add ( ( 7, 7 ), S ) corridor
@@ -123,7 +123,7 @@ horizontal_corridors_have_walls : Test
 horizontal_corridors_have_walls =
     let
         tiles =
-            Corridor.init ( ( 10, 10 ), E )
+            Corridor.init ( ( 10, 10 ), W ) E
                 |> Corridor.add ( ( 8, 10 ), S )
                 |> Corridor.toTiles
 
@@ -162,9 +162,8 @@ diagonal_corridors_have_walls_too : Test
 diagonal_corridors_have_walls_too =
     let
         tiles =
-            Corridor.init ( ( 5, 0 ), S )
+            Corridor.init ( ( 5, 0 ), N ) S
                 |> Corridor.add ( ( 2, 3 ), W )
-                |> Corridor.complete
                 |> Corridor.toTiles
 
         pathWalls =
@@ -198,9 +197,8 @@ diagonal_corridors_have_walls_that_bend_around_corners : Test
 diagonal_corridors_have_walls_that_bend_around_corners =
     let
         tiles =
-            Corridor.init ( ( 4, 0 ), S )
+            Corridor.init ( ( 4, 0 ), N ) S
                 |> Corridor.add ( ( 1, 3 ), W )
-                |> Corridor.complete
                 |> Corridor.toTiles
 
         expectedWalls =
