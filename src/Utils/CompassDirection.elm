@@ -24,3 +24,8 @@ isCardinal dir =
 cardinalDirections : List CompassDirection
 cardinalDirections =
     [ N, E, S, W ]
+
+
+directions : List CompassDirection
+directions =
+    [ N, E, S, W, NE, NW, SE, SW ]

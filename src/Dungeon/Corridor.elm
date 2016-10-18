@@ -119,7 +119,7 @@ generate startPosition entranceFacing config =
             Vector.oppositeDirection entranceFacing
 
         startDirectionGen =
-            onePossibleFacing facingEntrance
+            onePossibleDirection facingEntrance
 
         makeCorridor start =
             let
@@ -133,7 +133,8 @@ generate startPosition entranceFacing config =
         )
             `andThen` makeCorridor
 
-
+{-| Generate another point in the corridor by digging a random length from
+    the last point's direction and picking a new random direction. -}
 extend : Corridor -> Config.Model -> Generator Corridor
 extend corridor config =
     let
@@ -144,7 +145,7 @@ extend corridor config =
             Dice.range config.corridor.minLength config.corridor.maxLength
 
         directionGen =
-            onePossibleCardinalFacing lastFacing
+            onePossibleCardinalDirection lastFacing
     in
         Random.map2 (,) lengthGen directionGen
             |> Random.map (\( len, dir ) -> add ( stepsFromPoint lastPoint len, dir ) corridor)
@@ -158,26 +159,26 @@ stepsFromPoint ( startPosition, startDirection ) steps =
         |> Vector.add startPosition
 
 
-allPossibleFacings : CompassDirection -> CompassDirections
-allPossibleFacings facing =
+allPossibleDirections : CompassDirection -> CompassDirections
+allPossibleDirections facing =
     [ Vector.rotateCompass facing Left
     , Vector.rotateCompass facing Right
     , facing
     ]
 
 
-onePossibleFacing : CompassDirection -> Generator CompassDirection
-onePossibleFacing direction =
+onePossibleDirection : CompassDirection -> Generator CompassDirection
+onePossibleDirection direction =
     direction
-        |> allPossibleFacings
+        |> allPossibleDirections
         |> shuffle
         |> Random.map (headWithDefault direction)
 
 
-onePossibleCardinalFacing : CompassDirection -> Generator CompassDirection
-onePossibleCardinalFacing direction =
+onePossibleCardinalDirection : CompassDirection -> Generator CompassDirection
+onePossibleCardinalDirection direction =
     direction
-        |> allPossibleFacings
+        |> allPossibleDirections
         |> List.filter CompassDirection.isCardinal
         |> shuffle
         |> Random.map (headWithDefault direction)
