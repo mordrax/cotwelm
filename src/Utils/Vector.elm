@@ -160,6 +160,13 @@ toDirection vector =
                 W
 
 
+neighbours : Vector -> Vectors
+neighbours ( x, y ) =
+    List.map (add (x, y)) [ ( -1, -1 ), ( 0, -1 ), ( 1, -1 ) ]
+        ++ [ ( -1, 0 ), ( 1, 0 ) ]
+        ++ [ ( -1, 1 ), ( 0, 1 ), ( 1, 1 ) ]
+
+
 fromDirection : CompassDirection -> Vector
 fromDirection dir =
     case dir of

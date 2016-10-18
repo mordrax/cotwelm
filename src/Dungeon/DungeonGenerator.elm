@@ -76,14 +76,6 @@ init config =
         model =
             Model config [] [] []
 
-        borderWalls =
-            [ (List.Extra.lift2 (,) [ 0, config.dungeonSize ] [0..config.dungeonSize])
-            , (List.Extra.lift2 (,) [0..config.dungeonSize] [ 0, config.dungeonSize ])
-            ]
-
-        borderRoom =
-            Room.new [] borderWalls [] [] Rectangular ( 0, 0 ) ( 0, 0 )
-
         addRoomToModel room =
             { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [] }
     in
