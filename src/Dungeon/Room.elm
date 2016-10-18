@@ -257,7 +257,7 @@ placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
             Vector.oppositeDirection endDirection
 
         candidateWalls =
-            adjacentToFloorsWithNeighbourInDirection floors wallFacing
+            adjacentToFloorsWithEmptynessInDirection floors wallFacing
 
         pickAWall walls =
             walls
@@ -348,8 +348,8 @@ pp (A { worldPos }) =
 -- Privates
 
 
-adjacentToFloorsWithNeighbourInDirection : Floors -> CompassDirection -> Vectors
-adjacentToFloorsWithNeighbourInDirection floors direction =
+adjacentToFloorsWithEmptynessInDirection : Floors -> CompassDirection -> Vectors
+adjacentToFloorsWithEmptynessInDirection floors direction =
     let
         floorLookup =
             Dict.fromList (List.map2 (,) floors floors)
@@ -364,7 +364,7 @@ adjacentToFloorsWithNeighbourInDirection floors direction =
 
 adjacentToFloors : Floors -> Vectors
 adjacentToFloors floors =
-    List.map (adjacentToFloorsWithNeighbourInDirection floors) CompassDirection.directions
+    List.map (adjacentToFloorsWithEmptynessInDirection floors) CompassDirection.directions
         |> List.concat
 
 
