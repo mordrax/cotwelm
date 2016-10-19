@@ -21,6 +21,7 @@ import Lodash exposing (..)
 import List.Extra exposing (dropWhile)
 import Utils.CompassDirection exposing (..)
 import Maybe.Extra exposing (..)
+import Dict
 
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
@@ -184,7 +185,67 @@ clean ({ rooms, corridors, activePoints } as model) =
                                 |> clean
 
         [] ->
-            model
+            addWalls model
+
+
+addWalls : Model -> Model
+addWalls model =
+    let
+        map =
+            toMap model
+
+        mapPoints =
+            Dict.keys map
+
+        isNotAMapPoint point =
+            List.any ((/=) point) mapPoints
+
+        allPoints =
+            List.Extra.lift2 (,) [0..model.config.dungeonSize - 1] [0..model.config.dungeonSize - 1]
+
+        walls =
+            allPoints
+                |> List.filter isNotAMapPoint
+                |> List.map (calculateTypeOfWall map)
+    in
+        model
+
+
+calculateTypeOfWall : Map -> Vector -> Tile
+calculateTypeOfWall map position =
+    let
+        toNeighbours directions =
+            directions
+                |> List.map Vector.fromDirection
+                |> List.map (Vector.add position)
+                |> List.map (flip Dict.get map)
+
+        isFloorTiles maybeTiles =
+            maybeTiles
+                |> List.map (Maybe.Extra.filter (\x -> Tile.tileType x == Tile.DarkDgn))
+                |> List.all ((/=) Nothing)
+
+        getTile direction =
+            direction
+                |> Vector.fromDirection
+                |> flip Dict.get map
+
+        adjacentNeighbourPairs =
+            [ [ N, E ]
+            , [ E, S ]
+            , [ S, W ]
+            , [ W, N ]
+            ]
+
+        hasAdjacentFloors =
+            adjacentNeighbourPairs
+                |> List.map toNeighbours
+                |> List.any isFloorTiles
+
+        neighbours =
+            ( getTile N, getTile E, getTile S, getTile W )
+    in
+        Tile.toTile position Tile.Rock
 
 
 findAndUpdateRoom : Room -> Model -> Model
