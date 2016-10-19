@@ -11,6 +11,8 @@ import String
 
 import Dungeon.CorridorTest
 import Dungeon.ConfigTest
+import Dungeon.RoomTest
+
 
 main : Program Value
 main =
@@ -22,5 +24,8 @@ port emit : ( String, Value ) -> Cmd msg
 
 suite : Test
 suite =
-    describe "Castle of the Winds Test Suite" []
---        [ Dungeon.CorridorTest.all, Dungeon.ConfigTest.all ]
+    describe "Castle of the Winds Test Suite"
+        [ --Dungeon.CorridorTest.all
+          --, Dungeon.ConfigTest.all
+          Dungeon.RoomTest.all
+        ]
