@@ -246,16 +246,11 @@ neighbours model position =
         add x y =
             Vector.add position ( x, y )
 
-        possibleNeighbours vector =
-            [ add -1 -1, add 0 -1, add 1 -1 ]
-                ++ [ add -1 0, add 1 0 ]
-                ++ [ add -1 1, add 0 1, add 1 1 ]
-
         notObstructed vector =
             not (isObstructed vector model)
     in
         position
-            |> possibleNeighbours
+            |> Vector.neighbours
             |> List.filter notObstructed
             |> Set.fromList
 
