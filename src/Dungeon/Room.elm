@@ -110,14 +110,32 @@ generate config =
             `andThen` toRoomGenerator
 
 
-removeIfTooCloseToExistingEntrances : Vector -> Model -> Maybe Vector
-removeIfTooCloseToExistingEntrances position ({ entrances, worldPos } as model) =
+notTooClose : Entrances -> Vector -> Maybe Vector
+notTooClose entrances position =
     if List.any ((==) position) (List.map Entrance.position entrances) then
         Nothing
     else if tooCloseToEntrances position entrances then
         Nothing
     else
         Just position
+
+
+tooCloseToEntrances : Vector -> Entrances -> Bool
+tooCloseToEntrances ( x, y ) entrances =
+    let
+        tooCloseToEntrance entrance =
+            let
+                ( ex, ey ) =
+                    Entrance.position entrance
+
+                ( dx, dy ) =
+                    ( abs (ex - x)
+                    , abs (ey - y)
+                    )
+            in
+                (dx == 0 && dy <= 2) || (dy == 0 && dx <= 2)
+    in
+        List.any tooCloseToEntrance entrances
 
 
 {-| Add a door to the room using one of the room's remaining walls.
@@ -129,7 +147,7 @@ generateEntrance (A ({ entrances, worldPos, floors } as model)) =
         possibleEntrancePositions =
             adjacentToFloors floors
                 |> List.map (Vector.add worldPos)
-                |> List.filterMap (flip removeIfTooCloseToExistingEntrances model)
+                |> List.filterMap (notTooClose entrances)
 
         toReturn entrance =
             ( A { model | entrances = entrance :: entrances }
@@ -137,7 +155,7 @@ generateEntrance (A ({ entrances, worldPos, floors } as model)) =
             )
     in
         possibleEntrancePositions
-            |> generateEntranceHelper worldPos
+            |> generateEntranceHelper
             |> Random.map toReturn
 
 
@@ -162,24 +180,6 @@ removeEntrance entrance (A ({ entrances, worldPos } as model)) =
             List.filter (Entrance.equal entrance >> not) entrances
     in
         A { model | entrances = entrances' }
-
-
-tooCloseToEntrances : Vector -> Entrances -> Bool
-tooCloseToEntrances ( x, y ) entrances =
-    let
-        tooCloseToEntrance entrance =
-            let
-                ( ex, ey ) =
-                    Entrance.position entrance
-
-                ( dx, dy ) =
-                    ( abs (ex - x)
-                    , abs (ey - y)
-                    )
-            in
-                (dx == 0 && dy <= 2) || (dy == 0 && dx <= 2)
-    in
-        List.any tooCloseToEntrance entrances
 
 
 toTiles : Room -> Tiles
@@ -402,11 +402,11 @@ headOfWalls walls =
         |> Maybe.withDefault ( 0, 0 )
 
 
-generateEntranceHelper : Vector -> Vectors -> Generator Entrance
-generateEntranceHelper topLeft possibleEntrancePositions =
+generateEntranceHelper : Vectors -> Generator Entrance
+generateEntranceHelper possibleEntrancePositions =
     let
         newEntrance pos =
-            Entrance.init Door (Vector.add pos topLeft)
+            Entrance.init Door pos
 
         makeADoor positions =
             positions
