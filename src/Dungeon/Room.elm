@@ -15,7 +15,7 @@ module Dungeon.Room exposing (..)
 --        , toTiles
 --        , entranceFacing
 --        , entrances
---        , isPositionWithinRoom
+--        , isCollision
 --        , placeRoom
 --        )
 
@@ -159,6 +159,22 @@ generateEntrance (A ({ entrances, worldPos, floors } as model)) =
             |> Random.map toReturn
 
 
+adjacentToFloors : Floors -> Vectors
+adjacentToFloors floors =
+    let
+        lessFloors floorSet =
+            Set.diff floorSet (Set.fromList floors)
+    in
+        floors
+            |> List.map (Vector.neighbours)
+            |> List.concat
+            |> Set.fromList
+            |> lessFloors
+            |> Set.toList
+
+boundary: Room -> Vectors
+boundary (A model) = adjacentToFloors model.floors
+
 addEntrance : Entrance -> Room -> Room
 addEntrance entrance (A ({ worldPos, entrances } as model)) =
     let
@@ -201,16 +217,6 @@ toTiles (A { floors, entrances, worldPos }) =
     in
         List.map Entrance.toTile entrances
             ++ List.concat (List.map makeTiles roomTileTypes)
-
-
-overlaps : Vector -> Room -> Bool
-overlaps position (A { floors, entrances, worldPos }) =
-    let
-        localPosition =
-            Vector.sub position worldPos
-    in
-        List.any ((==) localPosition)
-            (floors ++ (List.map Entrance.position entrances))
 
 
 entrances : Room -> Entrances
@@ -257,7 +263,17 @@ placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
             Vector.oppositeDirection endDirection
 
         candidateWalls =
-            adjacentToFloorsWithEmptynessInDirection floors wallFacing
+            floors
+                |> List.map (\floor -> Vector.neighbourInDirection floor wallFacing)
+                |> Set.fromList
+                |> flip Set.diff (Set.fromList floors)
+                |> Set.toList
+
+        _ =
+            Debug.log "Room.placeRoom"
+                { floors = floors
+                , candidateWalls = candidateWalls
+                }
 
         pickAWall walls =
             walls
@@ -322,21 +338,22 @@ position (A { worldPos }) =
     worldPos
 
 
-isPositionWithinRoom : Room -> Vector -> Bool
-isPositionWithinRoom (A { entrances, floors }) position =
+isCollision : Room -> Vector -> Bool
+isCollision (A { entrances, floors, worldPos }) position =
     let
+        localPosition =
+            Vector.sub position worldPos
+
         isPositionAEntrance =
             entrances
                 |> List.map Entrance.position
                 |> List.any ((==) position)
 
-        isPositionAWallFloorOrCorner =
-            List.any ((==) position) floors
-
         isPositionAdjacent =
-            List.any ((==) position) (adjacentToFloors floors)
+            List.any ((==) localPosition) (adjacentToFloors floors)
     in
-        isPositionAEntrance || isPositionAWallFloorOrCorner || isPositionAdjacent
+        isPositionAEntrance || isPositionAdjacent
+
 
 
 pp : Room -> String
@@ -346,26 +363,6 @@ pp (A { worldPos }) =
 
 
 -- Privates
-
-
-adjacentToFloorsWithEmptynessInDirection : Floors -> CompassDirection -> Vectors
-adjacentToFloorsWithEmptynessInDirection floors direction =
-    let
-        floorLookup =
-            Dict.fromList (List.map2 (,) floors floors)
-
-        neighbourInDirection floor =
-            Vector.add (Vector.fromDirection direction) floor
-    in
-        floors
-            |> List.map neighbourInDirection
-            |> List.filter (not << flip Dict.member floorLookup)
-
-
-adjacentToFloors : Floors -> Vectors
-adjacentToFloors floors =
-    List.map (adjacentToFloorsWithEmptynessInDirection floors) CompassDirection.directions
-        |> List.concat
 
 
 roomTypeGenerator : Config.Model -> Model -> Generator Model
