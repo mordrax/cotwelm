@@ -214,15 +214,6 @@ addWalls model =
             allPoints
                 |> List.filter isNotAMapPoint
                 |> List.map (calculateTypeOfWall map)
-
-        _ =
-            Debug.log "DungeonGenerator.addWalls"
-                { mapPoints = mapPoints
-                , allPoints = allPoints
-                , possibleWallPoints =
-                    allPoints
-                        |> List.filter isNotAMapPoint
-                }
     in
         { model | walls = walls }
 
@@ -389,15 +380,17 @@ query : Vector -> Model -> ( Maybe Room, Maybe Corridor )
 query position { rooms, corridors, activePoints } =
     let
         maybeRoom =
-            rooms
+            (rooms
                 ++ (List.filterMap activePointToRoom activePoints)
-                |> List.filter (Room.overlaps position)
+            )
+                |> List.filter (\room -> Room.isCollision room position)
                 |> List.head
 
         maybeCorridor =
-            corridors
+            (corridors
                 ++ (List.filterMap activePointToCorridor activePoints)
-                |> List.filter (Corridor.overlaps position)
+            )
+                |> List.filter (Corridor.isCollision position)
                 |> List.head
     in
         ( maybeRoom, maybeCorridor )
@@ -598,20 +591,21 @@ canFitCorridor model corridor =
     let
         modelTiles =
             toTiles model
+                |> List.map Tile.position
 
-        corridorTiles =
-            Corridor.toTiles corridor
+        corridorPositions =
+            (List.map Tile.position (Corridor.toTiles corridor))
+                ++ (Corridor.boundary corridor)
 
         inModelTiles tile =
-            List.any (Tile.isSamePosition tile) modelTiles
+            List.any ((==) tile) modelTiles
 
         withinBounds =
-            corridorTiles
-                |> List.map Tile.position
+            corridorPositions
                 |> List.all (flip Config.withinDungeonBounds model.config)
 
         overlappingTiles =
-            corridorTiles
+            corridorPositions
                 |> List.filter inModelTiles
 
         canFit =
@@ -631,20 +625,21 @@ canFitRoom model room =
     let
         modelTiles =
             toTiles model
+                |> List.map Tile.position
 
-        roomTiles =
-            Room.toTiles room
+        roomPositions =
+            (List.map Tile.position (Room.toTiles room))
+                ++ (Room.boundary room)
 
         withinBounds =
-            roomTiles
-                |> List.map Tile.position
+            roomPositions
                 |> List.all (flip Config.withinDungeonBounds model.config)
 
         inModelTiles tile =
-            List.any (Tile.isSamePosition tile) modelTiles
+            List.any ((==) tile) modelTiles
 
         canFit =
-            roomTiles
+            roomPositions
                 |> List.any inModelTiles
                 |> not
     in

@@ -161,10 +161,14 @@ toDirection vector =
 
 
 neighbours : Vector -> Vectors
-neighbours ( x, y ) =
+neighbours position =
     CompassDirection.directions
-        |> List.map fromDirection
-        |> List.map (add ( x, y ))
+        |> List.map (neighbourInDirection position)
+
+
+neighbourInDirection : Vector -> CompassDirection -> Vector
+neighbourInDirection vector direction =
+    add vector (fromDirection direction)
 
 
 cardinalNeighbours : Vector -> Vectors

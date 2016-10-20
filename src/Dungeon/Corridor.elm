@@ -7,10 +7,11 @@ module Dungeon.Corridor
         , extend
         , add
         , addEntrance
+        , boundary
         , end
         , toTiles
         , pp
-        , overlaps
+        , isCollision
         )
 
 {-| A corridor is a single width line of tiles that can be either horizontal/vertical or
@@ -133,8 +134,10 @@ generate startPosition entranceFacing config =
         )
             `andThen` makeCorridor
 
+
 {-| Generate another point in the corridor by digging a random length from
-    the last point's direction and picking a new random direction. -}
+    the last point's direction and picking a new random direction.
+-}
 extend : Corridor -> Config.Model -> Generator Corridor
 extend corridor config =
     let
@@ -242,7 +245,6 @@ add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
         newPath =
             path (fst lastCorridorPoint) newVector
                 |> List.map (\x -> Tile.toTile x Tile.DarkDgn)
-
     in
         A
             { model
@@ -266,16 +268,51 @@ end (A { points, start }) =
             start
 
 
-
 toTiles : Corridor -> Tiles
 toTiles (A ({ start, points, entrances, paths } as model)) =
     List.map Entrance.toTile entrances
         ++ paths
 
 
-overlaps : Vector -> Corridor -> Bool
-overlaps position (A { start, points, entrances, paths }) =
-    List.any ((==) position) (List.map Tile.position paths)
+isCollision : Vector -> Corridor -> Bool
+isCollision position corridor =
+    List.any ((==) position) (boundary corridor)
+
+
+boundary : Corridor -> Vectors
+boundary (A model) =
+    boundaryHelper model
+
+
+boundaryHelper : Model -> Vectors
+boundaryHelper ({ start, points, paths, entranceFacing } as model) =
+    let
+        ( endPosition, endFacing ) =
+            end (A model)
+
+        pathPositions =
+            List.map Tile.position paths
+
+        entrancePosition =
+            Vector.add (fst start) (Vector.fromDirection entranceFacing)
+
+        exitPosition =
+            Vector.add endPosition (Vector.fromDirection endFacing)
+
+        lessPaths positionSet =
+            pathPositions
+                |> Set.fromList
+                |> Set.diff positionSet
+    in
+        paths
+            |> List.map Tile.position
+            |> List.map Vector.neighbours
+            |> List.concat
+            |> Set.fromList
+            |> lessPaths
+            |> Set.toList
+            |> List.filter ((/=) entrancePosition)
+            |> List.filter ((/=) exitPosition)
 
 
 pp : Corridor -> String
