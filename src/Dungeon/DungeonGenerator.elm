@@ -21,6 +21,7 @@ import Lodash exposing (..)
 import List.Extra exposing (dropWhile)
 import Utils.CompassDirection exposing (..)
 import Maybe.Extra exposing (..)
+import Dict
 
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
@@ -58,6 +59,7 @@ type alias Model =
     , rooms : Rooms
     , corridors : Corridors
     , activePoints : ActivePoints
+    , walls : Tiles
     }
 
 
@@ -74,7 +76,7 @@ init : Config.Model -> Generator Model
 init config =
     let
         model =
-            Model config [] [] []
+            Model config [] [] [] []
 
         addRoomToModel room =
             { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [] }
@@ -184,7 +186,123 @@ clean ({ rooms, corridors, activePoints } as model) =
                                 |> clean
 
         [] ->
-            model
+            addWalls model
+
+
+
+---------------
+-- Add walls --
+---------------
+
+
+addWalls : Model -> Model
+addWalls model =
+    let
+        map =
+            toMap model
+
+        mapPoints =
+            Dict.keys map
+
+        isNotAMapPoint point =
+            List.all ((/=) point) mapPoints
+
+        allPoints =
+            List.Extra.lift2 (,) [1..model.config.dungeonSize] [1..model.config.dungeonSize]
+
+        walls =
+            allPoints
+                |> List.filter isNotAMapPoint
+                |> List.map (calculateTypeOfWall map)
+
+        _ =
+            Debug.log "DungeonGenerator.addWalls"
+                { mapPoints = mapPoints
+                , allPoints = allPoints
+                , possibleWallPoints =
+                    allPoints
+                        |> List.filter isNotAMapPoint
+                }
+    in
+        { model | walls = walls }
+
+
+calculateTypeOfWall : Map -> Vector -> Tile
+calculateTypeOfWall map position =
+    case ( hasAdjacentFloors position map, hasThreeOrMoreNeighbourFloors position map ) of
+        ( True, True ) ->
+            Tile.toTile position Tile.DarkDgn
+
+        ( True, False ) ->
+            Tile.toTile position Tile.WallDarkDgn
+
+        _ ->
+            Tile.toTile position Tile.Rock
+
+
+adjacentNeighbourPairs : List CompassDirections
+adjacentNeighbourPairs =
+    [ [ N, E ]
+    , [ E, S ]
+    , [ S, W ]
+    , [ W, N ]
+    ]
+
+
+adjacentNeighbourTriplets : List CompassDirections
+adjacentNeighbourTriplets =
+    [ [ N, E, S ]
+    , [ E, S, W ]
+    , [ S, W, N ]
+    , [ W, N, E ]
+    ]
+
+
+hasThreeOrMoreNeighbourFloors : Vector -> Map -> Bool
+hasThreeOrMoreNeighbourFloors position map =
+    allDirectionsAreFloors adjacentNeighbourTriplets position map
+
+
+hasAdjacentFloors : Vector -> Map -> Bool
+hasAdjacentFloors position map =
+    allDirectionsAreFloors adjacentNeighbourPairs position map
+
+
+allDirectionsAreFloors : List CompassDirections -> Vector -> Map -> Bool
+allDirectionsAreFloors neighbourDirections position map =
+    let
+        toNeighbours directions =
+            directions
+                |> List.map Vector.fromDirection
+                |> List.map (Vector.add position)
+                |> List.map (flip Dict.get map)
+
+        isFloorTiles maybeTiles =
+            maybeTiles
+                |> List.map (Maybe.Extra.filter (\x -> Tile.tileType x == Tile.DarkDgn))
+                |> List.all ((/=) Nothing)
+    in
+        neighbourDirections
+            |> List.map toNeighbours
+            |> List.any isFloorTiles
+
+
+neighbours : Vector -> Map -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
+neighbours position map =
+    let
+        getTile direction =
+            direction
+                |> Vector.fromDirection
+                |> Vector.add position
+                |> flip Dict.get map
+    in
+        ( getTile N, getTile E, getTile S, getTile W )
+
+
+
+---------------------------------------------------------
+-- Update room/corridor in model via world coordinates --
+---------------------------------------------------------
 
 
 findAndUpdateRoom : Room -> Model -> Model
@@ -547,7 +665,7 @@ toMap model =
 
 
 toTiles : Model -> Tiles
-toTiles { rooms, corridors, activePoints } =
+toTiles { rooms, corridors, activePoints, walls } =
     let
         ( activeRooms, activeCorridors ) =
             List.foldl roomsAndCorridorsFromActivePoint ( [], [] ) activePoints
@@ -562,7 +680,7 @@ toTiles { rooms, corridors, activePoints } =
                 |> List.map Corridor.toTiles
                 |> List.concat
     in
-        roomTiles ++ corridorTiles
+        roomTiles ++ corridorTiles ++ walls
 
 
 roomsAndCorridorsFromActivePoint : ActivePoint -> ( Rooms, Corridors ) -> ( Rooms, Corridors )

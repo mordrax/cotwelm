@@ -4,7 +4,7 @@ module Utils.Vector exposing (..)
 
 -}
 
-import Utils.CompassDirection exposing (..)
+import Utils.CompassDirection as CompassDirection exposing (..)
 import Dict exposing (..)
 
 
@@ -162,9 +162,16 @@ toDirection vector =
 
 neighbours : Vector -> Vectors
 neighbours ( x, y ) =
-    List.map (add (x, y)) [ ( -1, -1 ), ( 0, -1 ), ( 1, -1 ) ]
-        ++ [ ( -1, 0 ), ( 1, 0 ) ]
-        ++ [ ( -1, 1 ), ( 0, 1 ), ( 1, 1 ) ]
+    CompassDirection.directions
+        |> List.map fromDirection
+        |> List.map (add ( x, y ))
+
+
+cardinalNeighbours : Vector -> Vectors
+cardinalNeighbours ( x, y ) =
+    CompassDirection.cardinalDirections
+        |> List.map fromDirection
+        |> List.map (add ( x, y ))
 
 
 fromDirection : CompassDirection -> Vector
