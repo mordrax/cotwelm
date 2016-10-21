@@ -22,6 +22,7 @@ import List.Extra exposing (dropWhile)
 import Utils.CompassDirection exposing (..)
 import Maybe.Extra exposing (..)
 import Dict
+import Set
 
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
@@ -521,7 +522,6 @@ corridorStartFromRoomEntrance room entrance =
 
         roomEntranceFacing =
             Room.entranceFacing room entrance
-                |> Vector.toDirection
 
         corridorEntranceFacing =
             Vector.oppositeDirection roomEntranceFacing
@@ -600,8 +600,7 @@ canFitCorridor model corridor =
             List.any ((==) tile) occupiedPositions
 
         withinBounds =
-            corridorPositions
-                |> List.all (flip Config.withinDungeonBounds model.config)
+            List.all (\x -> Config.withinDungeonBounds x model.config) corridorPositions
 
         overlappingTiles =
             corridorPositions
@@ -622,26 +621,33 @@ canFitCorridor model corridor =
 canFitRoom : Model -> Room -> Bool
 canFitRoom model room =
     let
-        occupiedPositions =
+        modelPositions =
             toOccupied model
+                |> Set.fromList
 
         roomPositions =
-            (List.map Tile.position (Room.toTiles room))
---                ++ (Room.boundary room)
+            (room
+                |> Room.toTiles
+                |> List.map Tile.position
+            )
+                ++ (Room.boundary room)
+
+        roomPositionSet =
+            Set.fromList roomPositions
 
         withinBounds =
-            roomPositions
-                |> List.all (flip Config.withinDungeonBounds model.config)
+            List.all (\x -> Config.withinDungeonBounds x model.config) roomPositions
 
-        inModelTiles tile =
-            List.any ((==) tile) occupiedPositions
+        collisions =
+            Set.toList <| Set.intersect roomPositionSet modelPositions
 
-        canFit =
-            roomPositions
-                |> List.any inModelTiles
-                |> not
+        _ =
+            Debug.log "DungeonGenerator.canFitRoom"
+                { collisions = collisions
+                , roomPosition = roomPositions
+                }
     in
-        canFit && withinBounds
+        withinBounds && List.isEmpty collisions
 
 
 
