@@ -27,8 +27,6 @@ type alias Model =
     { -- Width and height dimensions of the dungeon level
       dungeonSize : Int
     , roomsConfig : RoomsConfig
-    , snapRange : Int
-    , nRooms : Int
     , mapScale : Float
     , maxEntrances : Int
     , corridor : CorridorConfig
@@ -67,18 +65,17 @@ type Msg
     | RoomSize RoomType MinMax
     | ChangeFrequency RoomType Int
     | MapScale Float
-    | NumberOfRooms Int
 
 
 init : Model
 init =
-    { dungeonSize = 150
+    { dungeonSize = 100
     , corridor =
         { minLength = 10
         , maxLength = 20
         }
     , roomsConfig =
-        { rectangular = RoomConfig ( 4, 10 ) 1
+        { rectangular = RoomConfig ( 6, 12 ) 1
         , cross = RoomConfig ( 7, 11 ) 0
         , diamond = RoomConfig ( 5, 11 ) 0
         , potion = RoomConfig ( 4, 10 ) 0
@@ -86,8 +83,6 @@ init =
         , diagonalSquares = RoomConfig ( 4, 10 ) 0
         , deadEnd = RoomConfig ( 1, 1 ) 0
         }
-    , snapRange = 5
-    , nRooms = 50
     , mapScale = 0.2
     , maxEntrances = 4
     }
@@ -119,9 +114,6 @@ update msg model =
 
             MapScale scale ->
                 { model | mapScale = scale }
-
-            NumberOfRooms rooms ->
-                { model | nRooms = rooms }
 
 
 updateRoomsConfig : RoomType -> (RoomConfig -> RoomConfig) -> RoomsConfig -> RoomsConfig
@@ -264,7 +256,6 @@ dungeonSizeView model =
     div []
         [ UI.labeledNumber "Dungeon size" model.dungeonSize DungeonSize
         , UI.labeledFloat "Map scale" model.mapScale MapScale
-        , UI.labeledNumber "Number of Rooms" model.nRooms NumberOfRooms
         ]
 
 

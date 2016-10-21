@@ -33,6 +33,7 @@ type Msg
     | ConfigMsg Config.Msg
     | ResetMap
     | Clean
+    | NewCandidate
 
 
 init : Model
@@ -43,9 +44,65 @@ init =
     }
 
 
+firstStep : Model -> Generator DungeonGenerator.Model
+firstStep model =
+    case List.head model.dungeonSteps of
+        Just dungeonModel ->
+            DungeonGenerator.step { dungeonModel | config = model.config }
+
+        Nothing ->
+            DungeonGenerator.init model.config
+
+
+generateSteps : Int -> Model -> Generator DungeonGenerator.Model
+generateSteps steps model =
+    let
+        oneStep _ gen =
+            gen `andThen` DungeonGenerator.step
+    in
+        case steps of
+            0 ->
+                firstStep model
+
+            1 ->
+                firstStep model
+
+            n ->
+                List.foldl oneStep (firstStep model) [0..n - 1]
+
+
+generateCandidate : Model -> Generator DungeonGenerator.Model
+generateCandidate model =
+    let
+        newCandidate model =
+            generateSteps 200 model
+
+        fitness dungeonModel =
+            List.length dungeonModel.rooms > 8
+    in
+        (newCandidate model
+            |> Random.map DungeonGenerator.clean
+        )
+            `andThen` (\dungeonModel ->
+                        let
+                            _ =
+                                Debug.log "Editor.generateCandidate"
+                                    { length = List.length dungeonModel.rooms
+                                    }
+                        in
+                            if fitness dungeonModel then
+                                constant dungeonModel
+                            else
+                                generateCandidate model
+                      )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NewCandidate ->
+            ( model, Random.generate Dungeon (generateCandidate model) )
+
         Clean ->
             case List.head model.dungeonSteps of
                 Just dungeonModel ->
@@ -64,25 +121,7 @@ update msg model =
                     ( model, Cmd.none )
 
         GenerateMap nSteps ->
-            let
-                firstStep =
-                    case List.head model.dungeonSteps of
-                        Just dungeonModel ->
-                            DungeonGenerator.step { dungeonModel | config = model.config }
-
-                        Nothing ->
-                            DungeonGenerator.init model.config
-
-                oneStep _ gen =
-                    gen `andThen` DungeonGenerator.step
-
-                dungeonGenerator =
-                    if nSteps == 1 then
-                        firstStep
-                    else
-                        List.foldl oneStep firstStep [0..nSteps - 1]
-            in
-                ( model, Random.generate Dungeon dungeonGenerator )
+            ( model, Random.generate Dungeon (generateSteps nSteps model) )
 
         Dungeon dungeonModel ->
             ( { model | dungeonSteps = dungeonModel :: [], map = updateMap dungeonModel }
@@ -119,6 +158,7 @@ view model =
                 , button [ class "ui button", onClick <| GenerateMap 50 ] [ text "Step x50" ]
                 , button [ class "ui button", onClick <| Clean ] [ text "Clean" ]
                 , button [ class "ui button", onClick <| ResetMap ] [ text "Destroy!" ]
+                , button [ class "ui button", onClick <| NewCandidate ] [ text "NewCandidate" ]
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
