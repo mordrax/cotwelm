@@ -145,7 +145,7 @@ generateEntrance : Room -> Generator ( Room, Entrance )
 generateEntrance (A ({ entrances, worldPos, floors } as model)) =
     let
         possibleEntrancePositions =
-            adjacentToFloors floors
+            adjacentToFloorsWithoutDiagonals floors
                 |> List.map (Vector.add worldPos)
                 |> List.filterMap (notTooClose entrances)
 
@@ -157,6 +157,20 @@ generateEntrance (A ({ entrances, worldPos, floors } as model)) =
         possibleEntrancePositions
             |> generateEntranceHelper
             |> Random.map toReturn
+
+
+adjacentToFloorsWithoutDiagonals : Floors -> Vectors
+adjacentToFloorsWithoutDiagonals floors =
+    let
+        lessFloors floorSet =
+            Set.diff floorSet (Set.fromList floors)
+    in
+        floors
+            |> List.map (Vector.cardinalNeighbours)
+            |> List.concat
+            |> Set.fromList
+            |> lessFloors
+            |> Set.toList
 
 
 adjacentToFloors : Floors -> Vectors
@@ -172,8 +186,13 @@ adjacentToFloors floors =
             |> lessFloors
             |> Set.toList
 
-boundary: Room -> Vectors
-boundary (A model) = adjacentToFloors model.floors
+
+boundary : Room -> Vectors
+boundary (A model) =
+     model.floors
+    |> adjacentToFloors
+    |> List.map (Vector.add model.worldPos)
+
 
 addEntrance : Entrance -> Room -> Room
 addEntrance entrance (A ({ worldPos, entrances } as model)) =
@@ -224,7 +243,7 @@ entrances (A { entrances }) =
     entrances
 
 
-entranceFacing : Room -> Entrance -> Vector
+entranceFacing : Room -> Entrance -> CompassDirection
 entranceFacing (A { floors, worldPos }) entrance =
     let
         entrancePos =
@@ -232,28 +251,22 @@ entranceFacing (A { floors, worldPos }) entrance =
                 |> Entrance.position
                 |> flip Vector.sub worldPos
 
-        north =
-            ( 0, 1 )
-
-        east =
-            ( 1, 0 )
-
-        south =
-            ( 0, -1 )
-
-        west =
-            ( -1, 0 )
+        isFloor direction =
+            direction
+                |> Vector.fromDirection
+                |> Vector.add entrancePos
+                |> (\x -> List.member x floors)
     in
-        if List.member (Vector.add entrancePos north) floors then
-            south
-        else if List.member (Vector.add entrancePos south) floors then
-            north
-        else if List.member (Vector.add entrancePos east) floors then
-            west
-        else if List.member (Vector.add entrancePos west) floors then
-            east
+        if isFloor N then
+            S
+        else if isFloor S then
+            N
+        else if isFloor E then
+            W
+        else if isFloor W then
+            E
         else
-            north
+            N
 
 
 placeRoom : DirectedVector -> Room -> Generator Room
@@ -353,7 +366,6 @@ isCollision (A { entrances, floors, worldPos }) position =
             List.any ((==) localPosition) (adjacentToFloors floors)
     in
         isPositionAEntrance || isPositionAdjacent
-
 
 
 pp : Room -> String
