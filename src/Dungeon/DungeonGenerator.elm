@@ -589,16 +589,15 @@ generateRoom corridorEnding config =
 canFitCorridor : Model -> Corridor -> Bool
 canFitCorridor model corridor =
     let
-        modelTiles =
-            toTiles model
-                |> List.map Tile.position
+        occupiedPositions =
+            toOccupied model
 
         corridorPositions =
             (List.map Tile.position (Corridor.toTiles corridor))
                 ++ (Corridor.boundary corridor)
 
         inModelTiles tile =
-            List.any ((==) tile) modelTiles
+            List.any ((==) tile) occupiedPositions
 
         withinBounds =
             corridorPositions
@@ -623,20 +622,19 @@ canFitCorridor model corridor =
 canFitRoom : Model -> Room -> Bool
 canFitRoom model room =
     let
-        modelTiles =
-            toTiles model
-                |> List.map Tile.position
+        occupiedPositions =
+            toOccupied model
 
         roomPositions =
             (List.map Tile.position (Room.toTiles room))
-                ++ (Room.boundary room)
+--                ++ (Room.boundary room)
 
         withinBounds =
             roomPositions
                 |> List.all (flip Config.withinDungeonBounds model.config)
 
         inModelTiles tile =
-            List.any ((==) tile) modelTiles
+            List.any ((==) tile) occupiedPositions
 
         canFit =
             roomPositions
@@ -657,6 +655,25 @@ toMap model =
     model
         |> toTiles
         |> Maps.fromTiles
+
+
+toOccupied : Model -> Vectors
+toOccupied { rooms, corridors, activePoints } =
+    let
+        ( activeRooms, activeCorridors ) =
+            List.foldl roomsAndCorridorsFromActivePoint ( [], [] ) activePoints
+
+        roomVectors =
+            (rooms ++ activeRooms)
+                |> List.map Room.boundary
+                |> List.concat
+
+        corridorVectors =
+            (corridors ++ activeCorridors)
+                |> List.map Corridor.boundary
+                |> List.concat
+    in
+        roomVectors ++ corridorVectors
 
 
 toTiles : Model -> Tiles

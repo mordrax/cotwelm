@@ -255,7 +255,7 @@ add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
 
 addEntrance : Vector -> Corridor -> Corridor
 addEntrance position (A ({ paths } as model)) =
-    A { model | paths = Tile.toTile position Tile.WallDarkDgn :: paths }
+    A { model | paths = Tile.toTile position Tile.DarkDgn :: paths }
 
 
 end : Corridor -> DirectedVector
@@ -293,11 +293,19 @@ boundaryHelper ({ start, points, paths, entranceFacing } as model) =
         pathPositions =
             List.map Tile.position paths
 
-        entrancePosition =
-            Vector.add (fst start) (Vector.fromDirection entranceFacing)
+        entranceExceptions =
+            Set.fromList
+                [ Vector.add (fst start) (Vector.fromDirection entranceFacing)
+                , Vector.add (fst start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Left)
+                , Vector.add (fst start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Right)
+                ]
 
-        exitPosition =
-            Vector.add endPosition (Vector.fromDirection endFacing)
+        exitExceptions =
+            Set.fromList
+                [ Vector.add endPosition (Vector.fromDirection endFacing)
+                , Vector.add endPosition (Vector.fromDirection <| Vector.rotateCompass endFacing Left)
+                , Vector.add endPosition (Vector.fromDirection <| Vector.rotateCompass endFacing Right)
+                ]
 
         lessPaths positionSet =
             pathPositions
@@ -310,9 +318,9 @@ boundaryHelper ({ start, points, paths, entranceFacing } as model) =
             |> List.concat
             |> Set.fromList
             |> lessPaths
+            |> flip Set.diff entranceExceptions
+            |> flip Set.diff exitExceptions
             |> Set.toList
-            |> List.filter ((/=) entrancePosition)
-            |> List.filter ((/=) exitPosition)
 
 
 pp : Corridor -> String
