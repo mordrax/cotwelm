@@ -1,4 +1,12 @@
-module CharCreation.CharCreation exposing (CharCreation, Msg, view, init, update)
+module CharCreation.CharCreation
+    exposing
+        ( CharCreation
+        , Msg
+        , view
+        , init
+        , update
+        , info
+        )
 
 -- where
 
@@ -6,7 +14,8 @@ import Html exposing (..)
 import Html.App
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
-import CharCreation.Attributes as Attributes exposing (Attributes)
+import Hero.Attributes as Attributes exposing (Attributes)
+import GameData.Types as GDT exposing (Gender(..), Difficulty(..))
 
 
 type CharCreation
@@ -20,6 +29,7 @@ type alias Model =
     , difficulty : Difficulty
     }
 
+type alias Name = String
 
 type Msg
     = Name String
@@ -29,25 +39,14 @@ type Msg
     | StartGame
 
 
-type Gender
-    = Male
-    | Female
-
-
-type Difficulty
-    = Easy
-    | Intermediate
-    | Hard
-    | Impossible
-
-
 init : CharCreation
 init =
-    A { name = "testing"
-    , attributes = Attributes.init
-    , gender = Female
-    , difficulty = Hard
-    }
+    A
+        { name = "testing"
+        , attributes = Attributes.init
+        , gender = Female
+        , difficulty = Hard
+        }
 
 
 update : Msg -> CharCreation -> ( CharCreation, Bool )
@@ -67,6 +66,15 @@ update msg (A model) =
 
         StartGame ->
             ( (A model), True )
+
+
+info : CharCreation -> ( Name, Gender, Difficulty, Attributes )
+info (A model) =
+    ( model.name, model.gender, model.difficulty, model.attributes )
+
+
+
+-- View
 
 
 view : CharCreation -> Html Msg

@@ -5,6 +5,7 @@ module Game.Collision exposing (..)
 
 import Dict exposing (..)
 import Utils.Vector as Vector exposing (..)
+import Utils.CompassDirection as CompassDirection exposing (CompassDirection)
 import Game.Data exposing (..)
 import Game.Keyboard exposing (..)
 import Game.Maps as Maps exposing (..)
@@ -12,7 +13,7 @@ import Tile exposing (..)
 import GameData.Building as Building exposing (..)
 import Monster.Monster as Monster exposing (..)
 import Shop.Shop as Shop exposing (..)
-import Hero exposing (..)
+import Hero.Hero as Hero exposing (Hero)
 import Combat exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
 import Stats exposing (..)
@@ -20,14 +21,16 @@ import AStar exposing (..)
 import Set exposing (..)
 
 
-tryMoveHero : Direction -> Model -> Model
+tryMoveHero : CompassDirection -> Model -> Model
 tryMoveHero dir ({ hero } as model) =
     let
         movedHero =
-            { hero | position = Vector.add hero.position (dirToVector dir) }
+            Hero.move dir hero
 
         obstructions =
-            queryPosition movedHero.position model
+            movedHero
+                |> Hero.position
+                |> \x -> queryPosition x model
     in
         case obstructions of
             ( _, _, Just monster, _ ) ->
@@ -50,10 +53,7 @@ enterBuilding : Building -> Model -> Model
 enterBuilding building ({ hero, maps } as model) =
     case Building.buildingType building of
         LinkType link ->
-            { model
-                | maps = Maps.updateArea link.area maps
-                , hero = { hero | position = link.pos }
-            }
+            { model | maps = Maps.updateArea link.area maps }
 
         ShopType shopType ->
             { model
@@ -81,8 +81,8 @@ queryPosition pos ({ hero, maps, monsters } as model) =
                 |> List.filter (\x -> pos == x.position)
                 |> List.head
 
-        isHero =
-            hero.position == pos
+        hasHero =
+            (Hero.position hero) == pos
 
         tileObstruction =
             case maybeTile of
@@ -92,7 +92,7 @@ queryPosition pos ({ hero, maps, monsters } as model) =
                 Nothing ->
                     True
     in
-        ( tileObstruction, maybeBuilding, maybeMonster, isHero )
+        ( tileObstruction, maybeBuilding, maybeMonster, hasHero )
 
 
 {-| Given a point and a list of buildings, return the building that the point is within or nothing
@@ -115,7 +115,7 @@ attack : Monster -> Model -> Model
 attack monster ({ hero, seed, monsters } as model) =
     let
         ( stats', seed', damage ) =
-            Combat.attack hero.stats monster.stats seed
+            Combat.attack (Hero.stats hero) monster.stats seed
 
         monster' =
             { monster | stats = stats' }
@@ -139,10 +139,9 @@ defend : Monster -> Model -> Model
 defend monster ({ hero, seed } as model) =
     let
         ( heroStats', seed', damage ) =
-            Combat.attack monster.stats hero.stats seed
+            Combat.attack monster.stats (Hero.stats hero) seed
 
-        hero' =
-            { hero | stats = heroStats' }
+        hero' = Hero.setStats heroStats' hero
 
         newMsg =
             newHitMessage ("The " ++ Monster.name monster) "you" (toString damage)
@@ -216,7 +215,7 @@ pathMonster monster hero model =
             AStar.findPath heuristic
                 (neighbours model)
                 monster.position
-                hero.position
+                (Hero.position hero)
     in
         case path of
             Nothing ->

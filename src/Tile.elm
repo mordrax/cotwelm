@@ -26,7 +26,7 @@ import Utils.Lib as Lib exposing (..)
 import List exposing (..)
 import Dict exposing (..)
 import String exposing (..)
-import Hero exposing (..)
+import Hero.Hero as Hero exposing (Hero)
 import Monster.Monster as Monster exposing (..)
 import List.Extra exposing (..)
 

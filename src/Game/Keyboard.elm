@@ -1,14 +1,9 @@
-module Game.Keyboard
-    exposing
-        ( Msg(..)
-        , Direction
-        , subscriptions
-        , dirToVector
-        )
+module Game.Keyboard exposing (Msg(..), subscriptions)
 
 import Keyboard exposing (..)
 import Dict exposing (..)
 import Utils.Vector as Vector exposing (..)
+import Utils.CompassDirection as CompassDirection exposing (CompassDirection(..))
 
 
 subscriptions : List (Sub Msg)
@@ -20,21 +15,10 @@ subscriptions =
 
 
 type Msg
-    = KeyDir Direction
+    = KeyDir CompassDirection
     | Map
     | Inventory
     | NoOp
-
-
-type Direction
-    = Up
-    | Down
-    | Left
-    | Right
-    | UpLeft
-    | UpRight
-    | DownLeft
-    | DownRight
 
 
 type alias KeyMap =
@@ -44,56 +28,28 @@ type alias KeyMap =
 playerKeymap : KeyMap
 playerKeymap =
     Dict.fromList
-        [ ( 87, KeyDir Up )
-        , ( 119, KeyDir Up )
-        , ( 83, KeyDir Down )
-        , ( 115, KeyDir Down )
-        , ( 65, KeyDir Left )
-        , ( 97, KeyDir Left )
-        , ( 68, KeyDir Right )
-        , ( 100, KeyDir Right )
+        [ ( 87, KeyDir N )
+        , ( 119, KeyDir N )
+        , ( 83, KeyDir S )
+        , ( 115, KeyDir S )
+        , ( 65, KeyDir W )
+        , ( 97, KeyDir W )
+        , ( 68, KeyDir E )
+        , ( 100, KeyDir E )
           --numpad
-        , ( 38, KeyDir Up )
-        , ( 40, KeyDir Down )
-        , ( 37, KeyDir Left )
-        , ( 39, KeyDir Right )
-        , ( 36, KeyDir UpLeft )
-        , ( 33, KeyDir UpRight )
-        , ( 35, KeyDir DownLeft )
-        , ( 34, KeyDir DownRight )
+        , ( 38, KeyDir N )
+        , ( 40, KeyDir S )
+        , ( 37, KeyDir W )
+        , ( 39, KeyDir E )
+        , ( 36, KeyDir NW )
+        , ( 33, KeyDir NE )
+        , ( 35, KeyDir SW )
+        , ( 34, KeyDir SE )
           -- Esc
         , ( 27, Map )
           -- i
         , ( 73, Inventory )
         ]
-
-
-dirToVector : Direction -> Vector
-dirToVector dir =
-    case dir of
-        Up ->
-            ( 0, -1 )
-
-        Down ->
-            ( 0, 1 )
-
-        Left ->
-            ( -1, 0 )
-
-        Right ->
-            ( 1, 0 )
-
-        UpLeft ->
-            ( -1, -1 )
-
-        UpRight ->
-            ( 1, -1 )
-
-        DownLeft ->
-            ( -1, 1 )
-
-        DownRight ->
-            ( 1, 1 )
 
 
 keycodeToMsg : KeyMap -> Keyboard.KeyCode -> Msg
