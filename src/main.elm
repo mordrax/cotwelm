@@ -8,6 +8,7 @@ import SplashView exposing (..)
 -- Character creation
 
 import CharCreation.CharCreation as CharCreation exposing (..)
+import Hero.Hero as Hero exposing (Hero)
 
 
 -- Main game screen
@@ -36,7 +37,7 @@ type Msg
     = SplashMsg SplashView.Msg
     | CharCreationMsg CharCreation.Msg
     | GameMsg (Game.Msg)
-    | InitSeed Random.Seed
+    | GenerateGame Random.Seed CharCreation
     | EditorMsg Editor.Msg
 
 
@@ -63,7 +64,7 @@ init url =
         ( modelWithUrl, urlCmds ) =
             urlUpdate url model
     in
-        ( modelWithUrl, Cmd.batch [ urlCmds, getSeed ] )
+        ( modelWithUrl, urlCmds )
 
 
 type alias Model =
@@ -121,7 +122,12 @@ update msg model =
                         ( { model | charCreation = charCreation_ }, Cmd.none )
 
                     True ->
-                        ( { model | charCreation = charCreation_ }, Navigation.newUrl "#/game" )
+                        ( { model | charCreation = charCreation_ }
+                        , Cmd.batch
+                            [ Navigation.newUrl "#/game"
+                            , startNewGame charCreation_
+                            ]
+                        )
 
         GameMsg msg ->
             case model.game of
@@ -141,17 +147,23 @@ update msg model =
                     Editor.update msg model.editor
 
                 gameCmds =
-                    Cmd.map (\x -> EditorMsg x) cmds
+                    Cmd.map EditorMsg cmds
             in
                 ( { model | editor = editor' }, gameCmds )
 
-        InitSeed seed ->
+        GenerateGame seed charCreation ->
             let
+                ( name, gender, difficulty, attributes ) =
+                    CharCreation.info charCreation
+
+                hero =
+                    Hero.init name attributes gender
+
                 ( game, gameCmds ) =
-                    Game.initGame seed
+                    Game.init seed hero difficulty
 
                 mainCmds =
-                    Cmd.map (\x -> GameMsg x) gameCmds
+                    Cmd.map GameMsg gameCmds
             in
                 ( { model | game = Just game }, mainCmds )
 
@@ -177,9 +189,7 @@ view model =
 
                 Just game ->
                     div []
-                        [ Html.App.map GameMsg
-                            (Game.view game)
-                        ]
+                        [ Html.App.map GameMsg (Game.view game) ]
 
         EditorPage ->
             Html.App.map EditorMsg (Editor.view model.editor)
@@ -220,21 +230,21 @@ urlParser =
 
 {-| Random number seed
 -}
-getSeed : Cmd Msg
-getSeed =
+startNewGame : CharCreation -> Cmd Msg
+startNewGame charCreation =
     let
         success timeNow =
             timeNow
                 |> Time.inSeconds
                 |> round
                 |> Random.initialSeed
-                |> InitSeed
+                |> \seed -> GenerateGame seed charCreation
 
         fail msg =
             let
                 _ =
                     Debug.log "FATAL: Unable to get a random seed, using 92374093709223 instead." msg
             in
-                InitSeed (Random.initialSeed 92374093709223)
+                GenerateGame (Random.initialSeed 92374093709223) charCreation
     in
         Task.perform fail success Time.now

@@ -9,7 +9,7 @@ import Game.Inventory as Inventory exposing (..)
 import Equipment as Equipment exposing (..)
 import Shop.Shop as Shop exposing (..)
 import Game.Keyboard as Keyboard exposing (..)
-
+import GameData.Types as GDT exposing (Difficulty)
 
 -- Data
 
@@ -18,7 +18,7 @@ import GameData.Building as Building exposing (..)
 
 --Hero
 
-import Hero as Hero exposing (..)
+import Hero.Hero as Hero exposing (Hero)
 import Monster.Monster as Monster exposing (..)
 import Monster.Monsters as Monsters exposing (..)
 import Stats exposing (..)
@@ -50,8 +50,8 @@ type Msg
     | WindowSize Window.Size
 
 
-initGame : Random.Seed -> ( Model, Cmd Msg )
-initGame seed =
+init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
+init seed hero difficulty =
     let
         idGenerator =
             IdGenerator.new
@@ -79,7 +79,7 @@ initGame seed =
                 ]
     in
         ( { name = "A new game"
-          , hero = Hero.init
+          , hero = hero
           , maps = maps
           , currentScreen = MapScreen
           , dnd = DragDrop.new
@@ -92,6 +92,7 @@ initGame seed =
           , messages = [ "Welcome to castle of the winds!" ]
           , viewportX = 0
           , viewportY = 0
+          , difficulty = difficulty
           }
         , cmd
         )
@@ -105,7 +106,7 @@ update msg model =
                 model' =
                     model
                         |> Game.Collision.tryMoveHero dir
-                        |> updateViewportOffset model.hero.position
+                        |> updateViewportOffset (Hero.position model.hero)
 
                 movedMovedMonsters =
                     Game.Collision.moveMonsters model'.monsters [] model'
@@ -141,18 +142,20 @@ update msg model =
 updateViewportOffset : Vector -> Model -> Model
 updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as model) =
     let
-        tileSize = 32
+        tileSize =
+            32
 
         ( prevX, prevY ) =
             Vector.scale tileSize prevPosition
 
         ( x, y ) =
-            Vector.scale tileSize model.hero.position
+            Vector.scale tileSize (Hero.position model.hero)
 
         ( xOff, yOff ) =
             ( windowSize.width // 2, windowSize.height // 2 )
 
-        tolerance = tileSize * 4
+        tolerance =
+            tileSize * 4
 
         scroll =
             { up = viewportY + y <= tolerance
@@ -161,7 +164,7 @@ updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as
             , right = viewportX + x >= windowSize.width - tolerance
             }
 
-        (mapWidth, mapHeight) =
+        ( mapWidth, mapHeight ) =
             Maps.mapSize (Maps.currentAreaMap maps)
 
         newX =
@@ -239,7 +242,7 @@ viewMap ({ windowSize, viewportX, viewportY } as model) =
             , viewQuickMenu
             , viewport
                 [ Maps.view model.maps
-                , viewHero model.hero
+                , Hero.view model.hero
                 , viewMonsters model
                 ]
             , viewStatus model
@@ -253,7 +256,7 @@ viewStatus model =
             [ div [ style [ ( "overflow", "auto" ), ( "height", "100px" ) ], class "ui twelve wide column" ]
                 [ viewMessages model ]
             , div [ class "ui four wide column" ]
-                [ viewStats model ]
+                [ Hero.viewStats model.hero ]
             ]
         ]
 
@@ -265,15 +268,6 @@ viewMessages model =
             div [] [ text txt ]
     in
         div [] (List.map msg model.messages)
-
-
-viewStats : Model -> Html Msg
-viewStats ({ hero } as model) =
-    div []
-        [ div [] [ text "Stats:" ]
-        , div [] [ text <| "HP: " ++ (Stats.printHP hero.stats) ]
-        , div [] [ text <| "SP: " ++ (Stats.printSP hero.stats) ]
-        ]
 
 
 viewMenu : Html Msg
@@ -316,11 +310,6 @@ viewHUD model =
 viewBuilding : Building -> Html Msg
 viewBuilding building =
     div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
-
-
-viewHero : Hero -> Html Msg
-viewHero hero =
-    div [ class "tile maleHero", vectorToHtmlStyle <| hero.position ] []
 
 
 subscriptions : Model -> List (Sub Msg)

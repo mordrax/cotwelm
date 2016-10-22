@@ -1,6 +1,6 @@
 module Game.Data exposing (..)
 
-import Hero exposing (..)
+import Hero.Hero as Hero exposing (Hero)
 import GameData.Building as Building exposing (..)
 import Game.Maps as Maps exposing (..)
 import Item.Item as Item exposing (..)
@@ -11,7 +11,7 @@ import Utils.IdGenerator exposing (..)
 import Monster.Monster exposing (..)
 import Random.Pcg as Random exposing (..)
 import Window exposing (Size)
-
+import GameData.Types as GDT exposing (Difficulty)
 
 type alias Model =
     { name : String
@@ -28,6 +28,7 @@ type alias Model =
     , messages : List String
     , viewportX: Int
     , viewportY: Int
+    , difficulty: Difficulty
     }
 
 

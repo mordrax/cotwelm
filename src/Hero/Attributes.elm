@@ -1,4 +1,4 @@
-module CharCreation.Attributes exposing (Attributes, Msg, view, init, update)
+module Hero.Attributes exposing (Attributes, Msg, view, init, update)
 
 --where
 
