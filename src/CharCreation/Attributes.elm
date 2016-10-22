@@ -1,4 +1,4 @@
-module CharCreation.Attributes exposing (..)
+module CharCreation.Attributes exposing (Attributes, Msg, view, init, update)
 
 --where
 
@@ -6,41 +6,67 @@ import Html exposing (..)
 import Html.App exposing (map)
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
-import CharCreation.Data as Data exposing (..)
-import CharCreation.AttributeDescriptions exposing (getDescription)
 
 
-initModel : AttributeModel
-initModel =
-    { ava = 100
-    , str = 20
-    , dex = 30
-    , con = 40
-    , int = 60
+type Attributes
+    = A Model
+
+
+type Msg
+    = Update Attribute Int
+
+
+type Attribute
+    = Available
+    | Strength
+    | Intelligence
+    | Constitution
+    | Dexterity
+
+
+type alias Model =
+    { ava : Int
+    , str : Int
+    , dex : Int
+    , con : Int
+    , int : Int
     }
 
 
-update : Data.Attribute -> Int -> AttributeModel -> AttributeModel
-update attr val model =
-    case attr of
-        Available ->
-            { model | ava = model.ava + val }
-
-        Strength ->
-            { model | str = model.str + val, ava = model.ava - val }
-
-        Intelligence ->
-            { model | int = model.int + val, ava = model.ava - val }
-
-        Constitution ->
-            { model | con = model.con + val, ava = model.ava - val }
-
-        Dexterity ->
-            { model | dex = model.dex + val, ava = model.ava - val }
+init : Attributes
+init =
+    A
+        { ava = 100
+        , str = 20
+        , dex = 30
+        , con = 40
+        , int = 60
+        }
 
 
-view : AttributeModel -> Html Msg
-view model =
+update : Msg -> Attributes -> Attributes
+update msg (A model) =
+    case msg of
+        Update attribute value ->
+            case attribute of
+                Available ->
+                    A { model | ava = model.ava + value }
+
+                Strength ->
+                    A { model | str = model.str + value, ava = model.ava - value }
+
+                Intelligence ->
+                    A { model | int = model.int + value, ava = model.ava - value }
+
+                Constitution ->
+                    A { model | con = model.con + value, ava = model.ava - value }
+
+                Dexterity ->
+                    A { model | dex = model.dex + value, ava = model.ava - value }
+
+
+view : Attributes -> Html Msg
+view (A model) =
     div []
         [ viewAttribute Available model False
         , viewAttribute Strength model True
@@ -50,28 +76,28 @@ view model =
         ]
 
 
-viewButtons : Data.Attribute -> Html Msg
-viewButtons attr =
+viewButtons : Attribute -> Html Msg
+viewButtons attribute =
     div [ class "ui buttons" ]
-        [ button [ class "ui icon button", onClick (Attributes attr -5) ] [ i [ class "ui icon minus" ] [] ]
-        , button [ class "ui icon button", onClick (Attributes attr 5) ] [ i [ class "ui icon plus" ] [] ]
+        [ button [ class "ui icon button", onClick (Update attribute -5) ] [ i [ class "ui icon minus" ] [] ]
+        , button [ class "ui icon button", onClick (Update attribute 5) ] [ i [ class "ui icon plus" ] [] ]
         ]
 
 
-viewAttribute : Data.Attribute -> Data.AttributeModel -> Bool -> Html Msg
+viewAttribute : Attribute -> Model -> Bool -> Html Msg
 viewAttribute attr model buttons =
     let
-        val =
+        value =
             getAttributeValue attr model
 
         description =
-            getAttributeDescription attr val
+            getDescription attr value
     in
         div [ class "ui segments" ]
             [ div [ class "ui segment left aligned" ]
                 [ h4 [ class "ui header" ] [ text (toString attr) ]
-                , div [ class "ui indicating progress", getDataPercent val ]
-                    [ div [ class "bar", (progressBarStyle val) ] []
+                , div [ class "ui indicating progress", getDataPercent value ]
+                    [ div [ class "bar", (progressBarStyle value) ] []
                     , div [ class "tick", (tickStyle 25) ] []
                     , div [ class "tick", (tickStyle 50) ] []
                     , div [ class "tick", (tickStyle 75) ] []
@@ -92,7 +118,8 @@ progressBarStyle val =
         , ( "min-width", "0" )
         ]
 
-tickStyle: Int -> Html.Attribute Msg
+
+tickStyle : Int -> Html.Attribute Msg
 tickStyle val =
     style
         [ ( "width", (toString val) ++ "%" )
@@ -104,7 +131,8 @@ tickStyle val =
         , ( "left", "0" )
         ]
 
-getAttributeValue : Data.Attribute -> AttributeModel -> Int
+
+getAttributeValue : Attribute -> Model -> Int
 getAttributeValue attr model =
     case attr of
         Available ->
@@ -128,6 +156,100 @@ getDataPercent val =
     attribute "data-percent" (toString val)
 
 
-getAttributeDescription : Data.Attribute -> Int -> String
-getAttributeDescription attr val =
-    getDescription attr val
+
+-- Attribute descriptions
+
+
+type alias Description =
+    ( Int, String )
+
+
+isLessThanAttribute : Int -> Description -> Bool
+isLessThanAttribute val ( maxVal, _ ) =
+    val < maxVal
+
+
+getDescription : Attribute -> Int -> String
+getDescription attribute value =
+    let
+        attributeDescriptions =
+            descriptions attribute
+    in
+        (List.filter (isLessThanAttribute value) attributeDescriptions)
+            |> List.head
+            |> Maybe.map snd
+            |> Maybe.withDefault ("No description matches the value " ++ toString value)
+
+
+descriptions : Attribute -> List Description
+descriptions attribute =
+    case attribute of
+        Available ->
+            [ ( 0, "You are at your maximum potential! Go get'em tiger!" )
+            , ( 10, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 20, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 30, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 40, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 50, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 60, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 70, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 80, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 90, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 100, "Training is for wimps, you like pain, you like it alot!" )
+            ]
+
+        Strength ->
+            [ ( 0, "Unable to push open a unlocked door whos hinges has recently been serviced with WD40." )
+            , ( 10, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 20, "Stunted by a career in software engineering, the mind is strong but muscle atrophy is high." )
+            , ( 30, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 40, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 50, "Of average strength!!!" )
+            , ( 60, "Likes to gym during lunch.." )
+            , ( 70, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 80, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 90, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 100, "Hammers are for wimps!! You hit with your FISTS!" )
+            ]
+
+        Intelligence ->
+            [ ( 0, "Dumb" )
+            , ( 10, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 20, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 30, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 40, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 50, "Smart enough to be at the peak of the standard distribution curve." )
+            , ( 60, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 70, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 80, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 90, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 100, "Smart" )
+            ]
+
+        Constitution ->
+            [ ( 0, "You're having a BAD day, everyday! It's like you've got two kids that keep waking you up at night, EVERY night!" )
+            , ( 10, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 20, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 30, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 40, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 50, "Able to outrun a hungry hippo!" )
+            , ( 60, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 70, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 80, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 90, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 100, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            ]
+
+        Dexterity ->
+            [ ( 0, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 10, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 20, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 30, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 40, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 50, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 60, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 70, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 80, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 90, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            , ( 100, "TODO: Write something funny and informative about this level of attribute. PRs welcome!" )
+            ]

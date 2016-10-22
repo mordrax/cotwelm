@@ -8,7 +8,6 @@ import SplashView exposing (..)
 -- Character creation
 
 import CharCreation.CharCreation as CharCreation exposing (..)
-import CharCreation.Data exposing (..)
 
 
 -- Main game screen
@@ -33,12 +32,9 @@ import Time exposing (inSeconds, now)
 import Dungeon.Editor as Editor exposing (..)
 
 
---import TimeTravel.Navigation as TimeTravel
-
-
 type Msg
     = SplashMsg SplashView.Msg
-    | CharCreationMsg CharCreation.Data.Msg
+    | CharCreationMsg CharCreation.Msg
     | GameMsg (Game.Msg)
     | InitSeed Random.Seed
     | EditorMsg Editor.Msg
@@ -54,41 +50,12 @@ type Page
     | NotImplementedPage
 
 
-main : Program Never
-main =
-    Navigation.program urlParser
---        TimeTravel.program urlParser
-        { init = initModel
-        , update = update
-        , view = view
-        , urlUpdate = urlUpdate
-        , subscriptions = subscriptions
-        }
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    let
-        toMsg =
-            \x -> Sub.map GameMsg x
-
-        gameSubs =
-            \game -> List.map toMsg (Game.subscriptions game)
-    in
-        case model.game of
-            Nothing ->
-                Sub.none
-
-            Just game ->
-                Sub.batch (gameSubs game)
-
-
-initModel : String -> ( Model, Cmd Msg )
-initModel url =
+init : String -> ( Model, Cmd Msg )
+init url =
     let
         model =
             { currentPage = GamePage
-            , character = CharCreation.initChar
+            , charCreation = CharCreation.init
             , game = Nothing
             , editor = Editor.init
             }
@@ -101,10 +68,38 @@ initModel url =
 
 type alias Model =
     { currentPage : Page
-    , character : CharCreation.Data.Model
+    , charCreation : CharCreation
     , game : Maybe Game.Data.Model
     , editor : Editor.Model
     }
+
+
+main : Program Never
+main =
+    Navigation.program urlParser
+        { init = init
+        , update = update
+        , view = view
+        , urlUpdate = urlUpdate
+        , subscriptions = subscriptions
+        }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    let
+        toMsg x =
+            Sub.map GameMsg x
+
+        gameSubs game =
+            List.map toMsg (Game.subscriptions game)
+    in
+        case model.game of
+            Nothing ->
+                Sub.none
+
+            Just game ->
+                Sub.batch (gameSubs game)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -116,11 +111,17 @@ update msg model =
         SplashMsg _ ->
             ( { model | currentPage = NotImplementedPage }, Cmd.none )
 
-        CharCreationMsg StartGame ->
-            ( model, Navigation.newUrl "#/game" )
-
         CharCreationMsg msg ->
-            ( { model | character = CharCreation.update msg model.character }, Cmd.none )
+            let
+                ( charCreation_, isComplete ) =
+                    CharCreation.update msg model.charCreation
+            in
+                case isComplete of
+                    False ->
+                        ( { model | charCreation = charCreation_ }, Cmd.none )
+
+                    True ->
+                        ( { model | charCreation = charCreation_ }, Navigation.newUrl "#/game" )
 
         GameMsg msg ->
             case model.game of
@@ -161,7 +162,7 @@ view model =
         CharCreationPage ->
             div []
                 [ Html.App.map CharCreationMsg
-                    (CharCreation.view model.character)
+                    (CharCreation.view model.charCreation)
                 ]
 
         SplashPage ->
@@ -222,21 +223,18 @@ urlParser =
 getSeed : Cmd Msg
 getSeed =
     let
-        generateSeed =
-            \timeNow ->
-                timeNow
-                    |> Time.inSeconds
-                    |> round
-                    |> Random.initialSeed
+        success timeNow =
+            timeNow
+                |> Time.inSeconds
+                |> round
+                |> Random.initialSeed
+                |> InitSeed
 
-        fail =
-            \x ->
-                let
-                    _ =
-                        Debug.log "FATAL: Unable to get a random seed." x
-                in
-                    InitSeed (Random.initialSeed 92374093709223)
+        fail msg =
+            let
+                _ =
+                    Debug.log "FATAL: Unable to get a random seed, using 92374093709223 instead." msg
+            in
+                InitSeed (Random.initialSeed 92374093709223)
     in
-        Task.perform (\x -> fail x)
-            (\timeNow -> InitSeed (generateSeed timeNow))
-            Time.now
+        Task.perform fail success Time.now
