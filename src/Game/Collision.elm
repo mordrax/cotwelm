@@ -5,7 +5,7 @@ module Game.Collision exposing (..)
 
 import Dict exposing (..)
 import Utils.Vector as Vector exposing (..)
-import Utils.CompassDirection as CompassDirection exposing (CompassDirection)
+import Utils.Direction as Direction exposing (Direction)
 import Game.Data exposing (..)
 import Game.Keyboard exposing (..)
 import Game.Maps as Maps exposing (..)
@@ -21,7 +21,7 @@ import AStar exposing (..)
 import Set exposing (..)
 
 
-tryMoveHero : CompassDirection -> Model -> Model
+tryMoveHero : Direction -> Model -> Model
 tryMoveHero dir ({ hero } as model) =
     let
         movedHero =

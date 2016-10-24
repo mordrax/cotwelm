@@ -4,7 +4,7 @@ module Utils.Vector exposing (..)
 
 -}
 
-import Utils.CompassDirection as CompassDirection exposing (..)
+import Utils.Direction as Direction exposing (..)
 import Dict exposing (..)
 
 
@@ -13,7 +13,7 @@ type alias Vector =
 
 
 type alias DirectedVector =
-    ( Vector, CompassDirection )
+    ( Vector, Direction )
 
 
 type alias DirectedVectors =
@@ -110,21 +110,21 @@ rotate ( xInt, yInt ) dir =
         ( round x', round y' )
 
 
-rotateCompass : CompassDirection -> RotationDirection -> CompassDirection
+rotateCompass : Direction -> RotationDirection -> Direction
 rotateCompass compass rotation =
     fromDirection compass
         |> flip rotate rotation
         |> toDirection
 
 
-facing : Vector -> Vector -> CompassDirection
+facing : Vector -> Vector -> Direction
 facing start end =
     (sub end start)
         |> unit
         |> toDirection
 
 
-directions : Dict Vector CompassDirection
+directions : Dict Vector Direction
 directions =
     Dict.fromList
         [ ( ( 0, 1 ), N )
@@ -138,7 +138,7 @@ directions =
         ]
 
 
-oppositeDirection : CompassDirection -> CompassDirection
+oppositeDirection : Direction -> Direction
 oppositeDirection dir =
     dir
         |> fromDirection
@@ -146,7 +146,7 @@ oppositeDirection dir =
         |> toDirection
 
 
-toDirection : Vector -> CompassDirection
+toDirection : Vector -> Direction
 toDirection vector =
     case Dict.get (unit vector) directions of
         Just dir ->
@@ -162,23 +162,23 @@ toDirection vector =
 
 neighbours : Vector -> Vectors
 neighbours position =
-    CompassDirection.directions
+    Direction.directions
         |> List.map (neighbourInDirection position)
 
 
-neighbourInDirection : Vector -> CompassDirection -> Vector
+neighbourInDirection : Vector -> Direction -> Vector
 neighbourInDirection vector direction =
     add vector (fromDirection direction)
 
 
 cardinalNeighbours : Vector -> Vectors
 cardinalNeighbours ( x, y ) =
-    CompassDirection.cardinalDirections
+    Direction.cardinalDirections
         |> List.map fromDirection
         |> List.map (add ( x, y ))
 
 
-fromDirection : CompassDirection -> Vector
+fromDirection : Direction -> Vector
 fromDirection dir =
     case dir of
         N ->

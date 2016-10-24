@@ -60,7 +60,7 @@ import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Tile exposing (..)
 import Lodash exposing (..)
-import Utils.CompassDirection as CompassDirection exposing (..)
+import Utils.Direction as Direction exposing (..)
 import Random.Pcg as Random exposing (..)
 
 
@@ -78,7 +78,7 @@ type alias Corridors =
 
 
 type alias Model =
-    { entranceFacing : CompassDirection
+    { entranceFacing : Direction
     , start : DirectedVector
     , points : DirectedVectors
     , entrances : Entrances
@@ -86,7 +86,7 @@ type alias Model =
     }
 
 
-init : DirectedVector -> CompassDirection -> Corridor
+init : DirectedVector -> Direction -> Corridor
 init start entranceFacing =
     A
         { start = start
@@ -113,7 +113,7 @@ init start entranceFacing =
     RRRR####
     ########
 -}
-generate : Vector -> CompassDirection -> Config.Model -> Generator Corridor
+generate : Vector -> Direction -> Config.Model -> Generator Corridor
 generate startPosition entranceFacing config =
     let
         facingEntrance =
@@ -162,7 +162,7 @@ stepsFromPoint ( startPosition, startDirection ) steps =
         |> Vector.add startPosition
 
 
-allPossibleDirections : CompassDirection -> CompassDirections
+allPossibleDirections : Direction -> Directions
 allPossibleDirections facing =
     [ Vector.rotateCompass facing Left
     , Vector.rotateCompass facing Right
@@ -170,7 +170,7 @@ allPossibleDirections facing =
     ]
 
 
-onePossibleDirection : CompassDirection -> Generator CompassDirection
+onePossibleDirection : Direction -> Generator Direction
 onePossibleDirection direction =
     direction
         |> allPossibleDirections
@@ -178,11 +178,11 @@ onePossibleDirection direction =
         |> Random.map (headWithDefault direction)
 
 
-onePossibleCardinalDirection : CompassDirection -> Generator CompassDirection
+onePossibleCardinalDirection : Direction -> Generator Direction
 onePossibleCardinalDirection direction =
     direction
         |> allPossibleDirections
-        |> List.filter CompassDirection.isCardinal
+        |> List.filter Direction.isCardinal
         |> shuffle
         |> Random.map (headWithDefault direction)
 
@@ -232,7 +232,7 @@ possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
             ( lastPoint, direction )
     in
         [ facing, facingLeft, facingRight ]
-            |> List.filter CompassDirection.isCardinal
+            |> List.filter Direction.isCardinal
             |> List.map makeDirectedVector
 
 
