@@ -31,7 +31,7 @@ import Dice exposing (..)
 import Dict exposing (..)
 import List exposing (..)
 import Dungeon.Corridor exposing (..)
-import Utils.CompassDirection as CompassDirection exposing (..)
+import Utils.Direction as Direction exposing (..)
 import Set exposing (..)
 
 
@@ -243,7 +243,7 @@ entrances (A { entrances }) =
     entrances
 
 
-entranceFacing : Room -> Entrance -> CompassDirection
+entranceFacing : Room -> Entrance -> Direction
 entranceFacing (A { floors, worldPos }) entrance =
     let
         entrancePos =
@@ -314,8 +314,8 @@ placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
         pickAWall candidateWalls `andThen` makeADoor
 
 
-wallsFacingDirection : CompassDirection -> Walls -> Dimension -> Walls
-wallsFacingDirection compassDirection walls ( maxX, maxY ) =
+wallsFacingDirection : Direction -> Walls -> Dimension -> Walls
+wallsFacingDirection direction walls ( maxX, maxY ) =
     let
         yEqualsZero ( _, y ) =
             y == 0
@@ -329,7 +329,7 @@ wallsFacingDirection compassDirection walls ( maxX, maxY ) =
         xEqualsMaxX ( x, _ ) =
             x == maxX - 1
     in
-        case compassDirection of
+        case direction of
             N ->
                 List.filter yEqualsMaxY walls
 

@@ -3,7 +3,7 @@ module Game.Keyboard exposing (Msg(..), subscriptions)
 import Keyboard exposing (..)
 import Dict exposing (..)
 import Utils.Vector as Vector exposing (..)
-import Utils.CompassDirection as CompassDirection exposing (CompassDirection(..))
+import Utils.Direction as Direction exposing (Direction(..))
 
 
 subscriptions : List (Sub Msg)
@@ -15,7 +15,7 @@ subscriptions =
 
 
 type Msg
-    = KeyDir CompassDirection
+    = KeyDir Direction
     | Map
     | Inventory
     | NoOp
@@ -28,10 +28,10 @@ type alias KeyMap =
 playerKeymap : KeyMap
 playerKeymap =
     Dict.fromList
-        [ ( 87, KeyDir N )
-        , ( 119, KeyDir N )
-        , ( 83, KeyDir S )
-        , ( 115, KeyDir S )
+        [ ( 87, KeyDir S )
+        , ( 119, KeyDir S )
+        , ( 83, KeyDir N )
+        , ( 115, KeyDir N )
         , ( 65, KeyDir W )
         , ( 97, KeyDir W )
         , ( 68, KeyDir E )
@@ -53,14 +53,7 @@ playerKeymap =
 
 
 keycodeToMsg : KeyMap -> Keyboard.KeyCode -> Msg
-keycodeToMsg map code =
-    let
-        maybeMsg =
-            Dict.get code map
-    in
-        case maybeMsg of
-            Just msg ->
-                msg
-
-            Nothing ->
-                NoOp
+keycodeToMsg keymap code =
+    code
+        |> (\x -> Dict.get x keymap)
+        |> Maybe.withDefault NoOp

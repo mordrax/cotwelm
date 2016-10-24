@@ -13,11 +13,12 @@ module Hero.Hero
 import Html.Attributes exposing (..)
 import Html exposing (..)
 import Utils.Vector as Vector exposing (..)
-import Utils.CompassDirection as CompassDirection exposing (CompassDirection)
+import Utils.Direction as Direction exposing (Direction)
 import Stats exposing (..)
 import Hero.Attributes as Attributes exposing (Attributes)
 import GameData.Types as GDT exposing (Gender(..), Difficulty(..))
 import Utils.Lib as Lib
+
 
 type Hero
     = A Model
@@ -47,7 +48,7 @@ init name attributes gender =
         }
 
 
-move : CompassDirection -> Hero -> Hero
+move : Direction -> Hero -> Hero
 move direction (A model) =
     A { model | position = Vector.add model.position (Vector.fromDirection direction) }
 
@@ -73,7 +74,14 @@ setStats stats (A model) =
 
 view : Hero -> Html a
 view (A model) =
-    div [ class "tile maleHero", Lib.vectorToHtmlStyle <| model.position ] []
+    let
+        heroCss =
+            if model.gender == Male then
+                "maleHero"
+            else
+                "femaleHero"
+    in
+        div [ class ("tile " ++ heroCss), Lib.vectorToHtmlStyle <| model.position ] []
 
 
 viewStats : Hero -> Html a

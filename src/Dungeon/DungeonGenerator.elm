@@ -19,7 +19,7 @@ import Utils.Vector as Vector exposing (..)
 import Game.Maps as Maps exposing (..)
 import Lodash exposing (..)
 import List.Extra exposing (dropWhile)
-import Utils.CompassDirection exposing (..)
+import Utils.Direction exposing (..)
 import Maybe.Extra exposing (..)
 import Dict
 import Set
@@ -232,7 +232,7 @@ calculateTypeOfWall map position =
             Tile.toTile position Tile.Rock
 
 
-adjacentNeighbourPairs : List CompassDirections
+adjacentNeighbourPairs : List Directions
 adjacentNeighbourPairs =
     [ [ N, E ]
     , [ E, S ]
@@ -241,7 +241,7 @@ adjacentNeighbourPairs =
     ]
 
 
-adjacentNeighbourTriplets : List CompassDirections
+adjacentNeighbourTriplets : List Directions
 adjacentNeighbourTriplets =
     [ [ N, E, S ]
     , [ E, S, W ]
@@ -260,7 +260,7 @@ hasAdjacentFloors position map =
     allDirectionsAreFloors adjacentNeighbourPairs position map
 
 
-allDirectionsAreFloors : List CompassDirections -> Vector -> Map -> Bool
+allDirectionsAreFloors : List Directions -> Vector -> Map -> Bool
 allDirectionsAreFloors neighbourDirections position map =
     let
         toNeighbours directions =
@@ -514,7 +514,7 @@ step' ({ activePoints } as model) =
                         )
 
 
-corridorStartFromRoomEntrance : Room -> Entrance -> ( Vector, CompassDirection )
+corridorStartFromRoomEntrance : Room -> Entrance -> ( Vector, Direction )
 corridorStartFromRoomEntrance room entrance =
     let
         roomEntrancePosition =
