@@ -41,10 +41,10 @@ playerKeymap =
         , ( 40, KeyDir S )
         , ( 37, KeyDir W )
         , ( 39, KeyDir E )
-        , ( 36, KeyDir NW )
-        , ( 33, KeyDir NE )
-        , ( 35, KeyDir SW )
-        , ( 34, KeyDir SE )
+        , ( 36, KeyDir SW )
+        , ( 33, KeyDir SE )
+        , ( 35, KeyDir NW )
+        , ( 34, KeyDir NE )
           -- Esc
         , ( 27, Map )
           -- i

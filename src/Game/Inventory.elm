@@ -29,7 +29,7 @@ import Item.TypeDef exposing (..)
 import Game.Data exposing (..)
 import Equipment exposing (..)
 import Utils.Mass as Mass exposing (..)
-import Utils.DragDrop as DragDrop exposing (..)
+import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Item.Purse as Purse exposing (..)
 import Shop.Shop as Shop exposing (..)
 
@@ -51,11 +51,29 @@ type alias Drop =
 update : InventoryMsg Drag Drop -> Model -> Model
 update msg model =
     case msg of
-        DnDMsg (End _) ->
-            handleMouseUp model
-
         DnDMsg dragDropMsg ->
-            { model | dnd = DragDrop.update dragDropMsg model.dnd }
+            let
+                ( dnd_, end ) =
+                    DragDrop.update dragDropMsg model.dnd
+
+                modelNewDnD =
+                    { model | dnd = DragDrop.init }
+            in
+                case end of
+                    Nothing ->
+                        { model | dnd = dnd_ }
+
+                    Just ( Nothing, _ ) ->
+                        modelNewDnD
+
+                    Just ( _, Nothing ) ->
+                        modelNewDnD
+
+                    {- On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
+                       then call a function to handle the transaction, otherwise just clear the dndModel and return.
+                    -}
+                    Just ( Just drag, Just drop ) ->
+                        handleDragDrop drag drop modelNewDnD
 
         _ ->
             Debug.log "Update: No other messages implemented" model
@@ -65,29 +83,6 @@ update msg model =
 ---------------------
 -- Drag drop logic --
 ---------------------
-
-
-{-| On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
-then call a function to handle the transaction, otherwise just clear the dndModel and return.
--}
-handleMouseUp : Model -> Model
-handleMouseUp ({ dnd } as model) =
-    let
-        modelDnDReinit =
-            { model | dnd = DragDrop.new }
-
-        noChange =
-            modelDnDReinit
-    in
-        case (DragDrop.getDragSourceDropTarget model.dnd) of
-            ( NoDrag, _ ) ->
-                noChange
-
-            ( _, NoDrop ) ->
-                noChange
-
-            ( DragSource dragSource, DropTarget dropTarget ) ->
-                handleDragDrop dragSource dropTarget modelDnDReinit
 
 
 {-| Top level of drag/drop transaction.
@@ -357,7 +352,7 @@ viewShopPackPurse ({ equipment, dnd, currentScreen } as model) =
             )
 
 
-viewGround : Model -> Html (DragDropMsg Drag Drop)
+viewGround : Model -> Html (DragDrop.Msg Drag Drop)
 viewGround model =
     div [] []
 
@@ -385,7 +380,7 @@ viewPackInfo maybeItem =
             ""
 
 
-toInventoryMsg : DragDropMsg s t -> InventoryMsg s t
+toInventoryMsg : DragDrop.Msg s t -> InventoryMsg s t
 toInventoryMsg dragDropMsg =
     DnDMsg dragDropMsg
 
@@ -396,7 +391,7 @@ toInventoryMsg dragDropMsg =
 ---------------
 
 
-viewPack : Maybe (Pack Item) -> Model -> Html (DragDropMsg Drag Drop)
+viewPack : Maybe (Pack Item) -> Model -> Html (DragDrop.Msg Drag Drop)
 viewPack maybePack ({ dnd } as model) =
     let
         packStyle =
@@ -413,7 +408,7 @@ viewPack maybePack ({ dnd } as model) =
                 div [] [ text "You have no pack! Equip a pack to use this space." ]
 
 
-viewShop : Model -> Html (DragDropMsg Drag Drop)
+viewShop : Model -> Html (DragDrop.Msg Drag Drop)
 viewShop ({ shop, dnd } as model) =
     let
         items =
@@ -433,7 +428,7 @@ viewShop ({ shop, dnd } as model) =
         droppableShop
 
 
-viewContainer : Item -> Model -> Html (DragDropMsg Drag Drop)
+viewContainer : Item -> Model -> Html (DragDrop.Msg Drag Drop)
 viewContainer containerItem ({ equipment, dnd } as model) =
     let
         items =
@@ -457,7 +452,7 @@ viewContainer containerItem ({ equipment, dnd } as model) =
 --------------------
 
 
-viewEquipment : Equipment -> DragDrop Drag Drop -> Html (DragDropMsg Drag Drop)
+viewEquipment : Equipment -> DragDrop Drag Drop -> Html (DragDrop.Msg Drag Drop)
 viewEquipment equipment dnd =
     let
         getEquipment slot =
@@ -506,7 +501,7 @@ viewEquipment equipment dnd =
 ----------------
 
 
-viewPurse : Model -> Html (DragDropMsg Drag Drop)
+viewPurse : Model -> Html (DragDrop.Msg Drag Drop)
 viewPurse ({ equipment } as model) =
     let
         maybePurseContents =

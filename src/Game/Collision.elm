@@ -112,7 +112,7 @@ buildingAtPosition pos buildings =
 
 
 attack : Monster -> Model -> Model
-attack monster ({ hero, seed, monsters } as model) =
+attack monster ({ hero, seed, monsters, equipment } as model) =
     let
         ( stats', seed', damage ) =
             Combat.attack (Hero.stats hero) monster.stats seed

@@ -1,15 +1,12 @@
 module Utils.DragDrop
     exposing
         ( DragDrop
-        , Drag(..)
-        , Drop(..)
-        , DragDropMsg(..)
-        , new
+        , Msg
+        , init
         , view
         , update
         , draggable
         , droppable
-        , getDragSourceDropTarget
         , subscriptions
         )
 
@@ -19,62 +16,48 @@ import Html.App exposing (map)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as JD exposing (..)
+import Maybe exposing (Maybe(Just, Nothing))
 
 
 type DragDrop source target
-    = DragDropModel (Model source target)
+    = A (Model source target)
 
 
 type alias Model source target =
-    { dragSource : Drag source
-    , dropTarget : Drop target
+    { dragSource : Maybe source
+    , dropTarget : Maybe target
     , position : Position
     , dragging : Maybe (Dragging source target)
     }
 
 
-type Drag a
-    = DragSource a
-    | NoDrag
-
-
-type Drop a
-    = DropTarget a
-    | NoDrop
-
-
 type alias Dragging source target =
     { start : Position
     , current : Position
-    , html : Html (DragDropMsg source target)
+    , html : Html (Msg source target)
     }
 
 
-type DragDropMsg source target
-    = Start (Drag source) (Html (DragDropMsg source target)) Position
-    | At (Drag source) (Html (DragDropMsg source target)) Position
-    | End Position
-    | MouseOver (Drop target)
+type Msg source target
+    = Start (Maybe source) (Html (Msg source target)) Position
+    | At (Maybe source) (Html (Msg source target)) Position
+    | End (Maybe source) (Maybe target) Position
+    | MouseOver (Maybe target)
     | MouseLeave
 
 
-new : DragDrop s t
-new =
-    DragDropModel
-        { dragSource = NoDrag
-        , dropTarget = NoDrop
+init : DragDrop s t
+init =
+    A
+        { dragSource = Nothing
+        , dropTarget = Nothing
         , position = Position 0 0
         , dragging = Nothing
         }
 
 
-getDragSourceDropTarget : DragDrop a b -> ( Drag a, Drop b )
-getDragSourceDropTarget (DragDropModel model) =
-    ( model.dragSource, model.dropTarget )
-
-
-update : DragDropMsg s t -> DragDrop s t -> DragDrop s t
-update msg (DragDropModel model) =
+update : Msg s t -> DragDrop s t -> ( DragDrop s t, Maybe ( Maybe s, Maybe t ) )
+update msg (A model) =
     let
         startDrag source html pos =
             Model source model.dropTarget pos (Just (Dragging pos pos html))
@@ -84,25 +67,25 @@ update msg (DragDropModel model) =
     in
         case msg of
             Start source html pos ->
-                (DragDropModel (startDrag source html pos))
+                ( A (startDrag source html pos), Nothing )
 
             At source html pos ->
-                DragDropModel <| atDrag source html pos
+                ( A <| atDrag source html pos, Nothing )
 
             -- on drag end, check if it's over a droppable container
-            End _ ->
-                Debug.crash "This needs to be handled higher up, DragDrop currently does not know how to tell the parent how to handle the End event"
+            End s t _ ->
+                ( A model, Just ( s, t ) )
 
             --(handleMouseUp model)
             MouseOver dropTarget ->
-                DragDropModel { model | dropTarget = dropTarget }
+                ( A { model | dropTarget = dropTarget }, Nothing )
 
             MouseLeave ->
-                DragDropModel { model | dropTarget = NoDrop }
+                ( A { model | dropTarget = Nothing }, Nothing )
 
 
-view : DragDrop s t -> Html (DragDropMsg s t)
-view (DragDropModel ({ dragSource, position, dragging } as model)) =
+view : DragDrop s t -> Html (Msg s t)
+view (A ({ dragSource, position, dragging } as model)) =
     let
         px x =
             toString x ++ "px"
@@ -146,11 +129,11 @@ getDisplacement { dragSource, dropTarget, position, dragging } =
 {-| Takes a html snippet that can be dragged and drag it around the screen.
 The snippet is attached to a arbitrary Drag source which is given to the Drop target when dropped.
 -}
-draggable : Html (DragDropMsg a b) -> a -> DragDrop c d -> Html (DragDropMsg a b)
-draggable draggableHtml source (DragDropModel model) =
+draggable : Html (Msg a b) -> a -> DragDrop c d -> Html (Msg a b)
+draggable draggableHtml source (A model) =
     let
         dragSource =
-            DragSource source
+            Just source
 
         onMouseDown =
             onWithOptions "mousedown"
@@ -168,11 +151,11 @@ draggable draggableHtml source (DragDropModel model) =
         div [ onMouseDown, pointerEventStyle ] [ draggableHtml ]
 
 
-droppable : t -> DragDrop s t -> Html (DragDropMsg s t) -> Html (DragDropMsg s t)
-droppable target (DragDropModel model) html =
+droppable : t -> DragDrop s t -> Html (Msg s t) -> Html (Msg s t)
+droppable target (A model) html =
     let
         dropTarget =
-            DropTarget target
+            Just target
 
         borderStyle =
             if model.dropTarget == dropTarget then
@@ -189,16 +172,18 @@ droppable target (DragDropModel model) html =
         div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
 
 
-subscriptions : DragDrop s t -> List (Sub (DragDropMsg s t))
-subscriptions (DragDropModel model) =
+subscriptions : DragDrop s t -> List (Sub (Msg s t))
+subscriptions (A model) =
     case model.dragSource of
-        NoDrag ->
+        Nothing ->
             [ Sub.none ]
 
         source ->
             case model.dragging of
-                Just { start, current, html } ->
-                    [ Mouse.moves (At source html), Mouse.ups End ]
+                Just { html } ->
+                    [ Mouse.moves (At source html)
+                    , Mouse.ups (End model.dragSource model.dropTarget)
+                    ]
 
                 _ ->
                     [ Sub.none ]
