@@ -14,9 +14,9 @@ import Html.Attributes exposing (..)
 import Html exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Utils.Direction as Direction exposing (Direction)
-import Stats exposing (..)
+import Stats exposing (Stats)
 import Hero.Attributes as Attributes exposing (Attributes)
-import GameData.Types as GDT exposing (Gender(..), Difficulty(..))
+import GameData.Types as Data
 import Utils.Lib as Lib
 
 
@@ -28,7 +28,7 @@ type alias Model =
     { name : Name
     , position : Vector
     , stats : Stats
-    , gender : Gender
+    , gender : Data.Gender
     , attributes : Attributes
     }
 
@@ -37,7 +37,7 @@ type alias Name =
     String
 
 
-init : Name -> Attributes -> Gender -> Hero
+init : Name -> Attributes -> Data.Gender -> Hero
 init name attributes gender =
     A
         { name = name
@@ -76,7 +76,7 @@ view : Hero -> Html a
 view (A model) =
     let
         heroCss =
-            if model.gender == Male then
+            if model.gender == Data.Male then
                 "maleHero"
             else
                 "femaleHero"

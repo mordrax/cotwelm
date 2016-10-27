@@ -12,6 +12,7 @@ import Monster.Monster exposing (..)
 import Random.Pcg as Random exposing (..)
 import Window exposing (Size)
 import GameData.Types as GDT exposing (Difficulty)
+import Utils.DragDrop as DragDrop exposing (DragDrop)
 
 type alias Model =
     { name : String
@@ -52,4 +53,4 @@ type Screen
 
 type InventoryMsg source target
     = InventoryMsg
-    | DnDMsg (DragDropMsg source target)
+    | DnDMsg (DragDrop.Msg source target)

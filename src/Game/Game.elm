@@ -26,7 +26,7 @@ import Stats exposing (..)
 
 -- Common
 
-import Utils.DragDrop as DragDrop exposing (new)
+import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Utils.Lib exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
 import Utils.Vector as Vector exposing (..)
@@ -82,7 +82,7 @@ init seed hero difficulty =
           , hero = hero
           , maps = maps
           , currentScreen = MapScreen
-          , dnd = DragDrop.new
+          , dnd = DragDrop.init
           , equipment = equipment
           , shop = newShop
           , idGen = idGenerator''
