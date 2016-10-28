@@ -28,3 +28,17 @@ toScaledTilePosition ( x, y ) scale =
             [ ( "top", px (y * size) )
             , ( "left", px (x * size) )
             ]
+
+
+foldResult : (a -> b -> Result x b) -> Result x b -> List a -> Result x b
+foldResult f acc list =
+    case list of
+        [] ->
+            acc
+
+        x :: xs ->
+            let
+                nextAcc =
+                    Result.andThen acc (f x)
+            in
+                foldResult f nextAcc xs
