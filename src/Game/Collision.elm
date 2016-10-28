@@ -12,13 +12,14 @@ import Game.Maps as Maps exposing (..)
 import Tile exposing (..)
 import GameData.Building as Building exposing (..)
 import Monster.Monster as Monster exposing (..)
-import Shop.Shop as Shop exposing (..)
+import Shop exposing (..)
 import Hero.Hero as Hero exposing (Hero)
 import Combat exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
 import Stats exposing (..)
 import AStar exposing (..)
 import Set exposing (..)
+import Pages.Inventory as Inventory
 
 
 tryMoveHero : Direction -> Model -> Model
@@ -50,16 +51,21 @@ tryMoveHero dir ({ hero } as model) =
 
 
 enterBuilding : Building -> Model -> Model
-enterBuilding building ({ hero, maps } as model) =
+enterBuilding building ({ hero, maps, equipment } as model) =
     case Building.buildingType building of
         LinkType link ->
             { model | maps = Maps.updateArea link.area maps }
 
         ShopType shopType ->
-            { model
-                | currentScreen = BuildingScreen building
-                , shop = Shop.setCurrentShopType shopType model.shop
-            }
+            let
+                shop =
+                    Shop.setCurrentShopType shopType model.shop
+            in
+                { model
+                    | currentScreen = BuildingScreen building
+                    , shop = shop
+                    , inventory = Inventory.init shop equipment
+                }
 
         Ordinary ->
             { model | currentScreen = BuildingScreen building }
@@ -141,7 +147,8 @@ defend monster ({ hero, seed } as model) =
         ( heroStats', seed', damage ) =
             Combat.attack monster.stats (Hero.stats hero) seed
 
-        hero' = Hero.setStats heroStats' hero
+        hero' =
+            Hero.setStats heroStats' hero
 
         newMsg =
             newHitMessage ("The " ++ Monster.name monster) "you" (toString damage)
