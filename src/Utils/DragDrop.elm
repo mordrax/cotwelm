@@ -7,14 +7,14 @@ module Utils.DragDrop
         , update
         , draggable
         , droppable
-        , subscriptions
+        , subscription
         )
 
 import Mouse exposing (..)
 import Html exposing (..)
 import Html.App exposing (map)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html.Attributes as HA
+import Html.Events as HE
 import Json.Decode as JD exposing (..)
 import Maybe exposing (Maybe(Just, Nothing))
 
@@ -24,8 +24,8 @@ type DragDrop source target
 
 
 type alias Model source target =
-    { dragSource : Maybe source
-    , dropTarget : Maybe target
+    { source : Maybe source
+    , target : Maybe target
     , position : Position
     , dragging : Maybe (Dragging source target)
     }
@@ -49,8 +49,8 @@ type Msg source target
 init : DragDrop s t
 init =
     A
-        { dragSource = Nothing
-        , dropTarget = Nothing
+        { source = Nothing
+        , target = Nothing
         , position = Position 0 0
         , dragging = Nothing
         }
@@ -60,10 +60,10 @@ update : Msg s t -> DragDrop s t -> ( DragDrop s t, Maybe ( Maybe s, Maybe t ) )
 update msg (A model) =
     let
         startDrag source html pos =
-            Model source model.dropTarget pos (Just (Dragging pos pos html))
+            Model source model.target pos (Just (Dragging pos pos html))
 
         atDrag source html pos =
-            Model source model.dropTarget model.position (Maybe.map (\{ start } -> (Dragging start pos html)) model.dragging)
+            Model source model.target model.position (Maybe.map (\{ start } -> (Dragging start pos html)) model.dragging)
     in
         case msg of
             Start source html pos ->
@@ -77,15 +77,15 @@ update msg (A model) =
                 ( A model, Just ( s, t ) )
 
             --(handleMouseUp model)
-            MouseOver dropTarget ->
-                ( A { model | dropTarget = dropTarget }, Nothing )
+            MouseOver target ->
+                ( A { model | target = target }, Nothing )
 
             MouseLeave ->
-                ( A { model | dropTarget = Nothing }, Nothing )
+                ( A { model | target = Nothing }, Nothing )
 
 
 view : DragDrop s t -> Html (Msg s t)
-view (A ({ dragSource, position, dragging } as model)) =
+view (A ({ source, position, dragging } as model)) =
     let
         px x =
             toString x ++ "px"
@@ -94,7 +94,7 @@ view (A ({ dragSource, position, dragging } as model)) =
             getDisplacement model
 
         positionStyle =
-            style
+            HA.style
                 [ ( "top", px newPos.y )
                 , ( "left", px newPos.x )
                 , ( "position", "absolute" )
@@ -102,7 +102,7 @@ view (A ({ dragSource, position, dragging } as model)) =
                 ]
 
         pointerEventStyle =
-            style [ ( "pointer-events", "none" ) ]
+            HA.style [ ( "pointer-events", "none" ) ]
     in
         case model.dragging of
             Just { start, current, html } ->
@@ -116,7 +116,7 @@ view (A ({ dragSource, position, dragging } as model)) =
 movement from when mouse down happens. This is the actual drag distance.
 -}
 getDisplacement : Model s t -> Position
-getDisplacement { dragSource, dropTarget, position, dragging } =
+getDisplacement { source, target, position, dragging } =
     case dragging of
         Nothing ->
             position
@@ -132,58 +132,56 @@ The snippet is attached to a arbitrary Drag source which is given to the Drop ta
 draggable : Html (Msg a b) -> a -> DragDrop c d -> Html (Msg a b)
 draggable draggableHtml source (A model) =
     let
-        dragSource =
-            Just source
-
         onMouseDown =
-            onWithOptions "mousedown"
+            HE.onWithOptions "mousedown"
                 { stopPropagation = True, preventDefault = True }
-                (JD.map (Start dragSource draggableHtml) Mouse.position)
+                (JD.map (Start (Just source) draggableHtml) Mouse.position)
 
         pointerEventStyle =
             case model.dragging of
                 Just _ ->
-                    style [ ( "pointer-events", "none" ) ]
+                    HA.style [ ( "pointer-events", "none" ) ]
 
                 Nothing ->
-                    style [ ( "pointer-events", "inherit" ) ]
+                    HA.style [ ( "pointer-events", "inherit" ) ]
     in
         div [ onMouseDown, pointerEventStyle ] [ draggableHtml ]
 
 
 droppable : t -> DragDrop s t -> Html (Msg s t) -> Html (Msg s t)
-droppable target (A model) html =
+droppable dropTarget (A model) html =
     let
-        dropTarget =
-            Just target
+        target =
+            Just dropTarget
 
         borderStyle =
-            if model.dropTarget == dropTarget then
-                style [ ( "border", "1px solid" ) ]
+            if model.target == target then
+                HA.style [ ( "border", "1px solid" ) ]
             else
-                style [ ( "border", "none" ) ]
+                HA.style [ ( "border", "none" ) ]
 
         mouseOverStyle =
-            on "mouseover" (JD.succeed <| MouseOver dropTarget)
+            HE.on "mouseover" (JD.succeed <| MouseOver target)
 
         mouseLeaveStyle =
-            onMouseLeave MouseLeave
+            HE.onMouseLeave MouseLeave
     in
         div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
 
 
-subscriptions : DragDrop s t -> List (Sub (Msg s t))
-subscriptions (A model) =
-    case model.dragSource of
+subscription : DragDrop s t -> Sub (Msg s t)
+subscription (A model) =
+    case model.source of
         Nothing ->
-            [ Sub.none ]
+            Sub.none
 
         source ->
             case model.dragging of
                 Just { html } ->
-                    [ Mouse.moves (At source html)
-                    , Mouse.ups (End model.dragSource model.dropTarget)
-                    ]
+                    Sub.batch
+                        [ Mouse.moves (At source html)
+                        , Mouse.ups (End model.source model.target)
+                        ]
 
                 _ ->
-                    [ Sub.none ]
+                    Sub.none

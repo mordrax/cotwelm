@@ -5,11 +5,12 @@ module Game.Game exposing (..)
 import Game.Data exposing (..)
 import Game.Maps as Maps exposing (..)
 import Game.Collision exposing (..)
-import Game.Inventory as Inventory exposing (..)
+import Pages.Inventory as Inventory exposing (Inventory)
 import Equipment as Equipment exposing (..)
-import Shop.Shop as Shop exposing (..)
+import Shop exposing (..)
 import Game.Keyboard as Keyboard exposing (..)
 import GameData.Types as GDT exposing (Difficulty)
+
 
 -- Data
 
@@ -44,7 +45,7 @@ import Task exposing (perform)
 
 type Msg
     = Keyboard (Keyboard.Msg)
-    | InvMsg (InventoryMsg Drag Drop)
+    | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
     | ShopMsg Shop.Msg
     | MapsMsg Maps.Msg
     | WindowSize Window.Size
@@ -82,7 +83,6 @@ init seed hero difficulty =
           , hero = hero
           , maps = maps
           , currentScreen = MapScreen
-          , dnd = DragDrop.init
           , equipment = equipment
           , shop = newShop
           , idGen = idGenerator''
@@ -93,6 +93,7 @@ init seed hero difficulty =
           , viewportX = 0
           , viewportY = 0
           , difficulty = difficulty
+          , inventory = Inventory.init newShop equipment
           }
         , cmd
         )
@@ -102,16 +103,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Keyboard (KeyDir dir) ->
-            let
-                model' =
-                    model
-                        |> Game.Collision.tryMoveHero dir
-                        |> updateViewportOffset (Hero.position model.hero)
-
-                movedMovedMonsters =
-                    Game.Collision.moveMonsters model'.monsters [] model'
-            in
-                ( movedMovedMonsters, Cmd.none )
+            ( model
+                |> Game.Collision.tryMoveHero dir
+                |> updateViewportOffset (Hero.position model.hero)
+                |> (\model -> Game.Collision.moveMonsters model.monsters [] model)
+            , Cmd.none
+            )
 
         Keyboard Map ->
             ( { model | currentScreen = MapScreen }, Cmd.none )
@@ -119,8 +116,8 @@ update msg model =
         Keyboard Inventory ->
             ( { model | currentScreen = InventoryScreen }, Cmd.none )
 
-        InvMsg msg ->
-            ( Inventory.update msg model, Cmd.none )
+        InventoryMsg msg ->
+            ( { model | inventory = Inventory.update msg model.inventory }, Cmd.none )
 
         ShopMsg msg ->
             let
@@ -191,13 +188,13 @@ view model =
         BuildingScreen building ->
             case Building.buildingType building of
                 ShopType shopType ->
-                    Html.App.map InvMsg (Inventory.view model)
+                    Html.App.map InventoryMsg (Inventory.view model.inventory)
 
                 _ ->
                     viewBuilding building
 
         InventoryScreen ->
-            Html.App.map InvMsg (Inventory.view model)
+            Html.App.map InventoryMsg (Inventory.view model.inventory)
 
 
 viewMonsters : Model -> Html Msg
@@ -312,25 +309,13 @@ viewBuilding building =
     div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
 
 
-subscriptions : Model -> List (Sub Msg)
-subscriptions model =
-    let
-        toInvMsg x =
-            Sub.map InvMsg x
-
-        toKeyboardMsg x =
-            Sub.map Keyboard x
-
-        inventorySubs =
-            List.map toInvMsg (Inventory.subscriptions model)
-
-        keyboardSubs =
-            List.map toKeyboardMsg (Keyboard.subscriptions)
-
-        windowSubs =
-            Window.resizes (\x -> WindowSize x)
-    in
-        windowSubs :: inventorySubs ++ keyboardSubs
+subscription : Model -> Sub Msg
+subscription model =
+    Sub.batch
+        [ Window.resizes (\x -> WindowSize x)
+        , Sub.map InventoryMsg (Inventory.subscription model.inventory)
+        , Sub.map Keyboard (Keyboard.subscription)
+        ]
 
 
 

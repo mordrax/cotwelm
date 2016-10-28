@@ -88,19 +88,12 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    let
-        toMsg x =
-            Sub.map GameMsg x
+    case model.game of
+        Nothing ->
+            Sub.none
 
-        gameSubs game =
-            List.map toMsg (Game.subscriptions game)
-    in
-        case model.game of
-            Nothing ->
-                Sub.none
-
-            Just game ->
-                Sub.batch (gameSubs game)
+        Just game ->
+            Sub.map GameMsg (Game.subscription game)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

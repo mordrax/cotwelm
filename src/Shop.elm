@@ -1,4 +1,4 @@
-module Shop.Shop
+module Shop
     exposing
         ( Shop
         , Msg

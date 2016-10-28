@@ -1,4 +1,4 @@
-module Game.Keyboard exposing (Msg(..), subscriptions)
+module Game.Keyboard exposing (Msg(..), subscription)
 
 import Keyboard exposing (..)
 import Dict exposing (..)
@@ -6,9 +6,9 @@ import Utils.Vector as Vector exposing (..)
 import Utils.Direction as Direction exposing (Direction(..))
 
 
-subscriptions : List (Sub Msg)
-subscriptions =
-    [ --ups (keycodeToMsg playerKeymapUps)
+subscription : Sub Msg
+subscription =
+    Sub.batch [ --ups (keycodeToMsg playerKeymapUps)
       --, presses (keycodeToMsg playerKeymap)
       downs (keycodeToMsg playerKeymap)
     ]
