@@ -21,7 +21,6 @@ import AStar exposing (..)
 import Set exposing (..)
 import Pages.Inventory as Inventory
 
-
 tryMoveHero : Direction -> Model -> Model
 tryMoveHero dir ({ hero } as model) =
     let
@@ -51,7 +50,7 @@ tryMoveHero dir ({ hero } as model) =
 
 
 enterBuilding : Building -> Model -> Model
-enterBuilding building ({ hero, maps, equipment } as model) =
+enterBuilding building ({ hero, maps  } as model) =
     case Building.buildingType building of
         LinkType link ->
             { model | maps = Maps.updateArea link.area maps }
@@ -64,7 +63,7 @@ enterBuilding building ({ hero, maps, equipment } as model) =
                 { model
                     | currentScreen = BuildingScreen building
                     , shop = shop
-                    , inventory = Inventory.init shop equipment
+                    , inventory = Inventory.init shop (Hero.equipment hero)
                 }
 
         Ordinary ->
@@ -118,7 +117,7 @@ buildingAtPosition pos buildings =
 
 
 attack : Monster -> Model -> Model
-attack monster ({ hero, seed, monsters, equipment } as model) =
+attack monster ({ hero, seed, monsters } as model) =
     let
         ( stats', seed', damage ) =
             Combat.attack (Hero.stats hero) monster.stats seed

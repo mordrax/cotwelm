@@ -2,7 +2,7 @@ module Utils.IdGenerator
     exposing
         ( IdGenerator
         , ID
-        , new
+        , init
         , getUniqueId
         , equals
         , assignId
@@ -24,8 +24,8 @@ type alias Model =
     Int
 
 
-new : IdGenerator
-new =
+init : IdGenerator
+init =
     IDModel 0
 
 

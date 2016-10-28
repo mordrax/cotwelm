@@ -6,10 +6,13 @@ import Game.Data exposing (..)
 import Game.Maps as Maps exposing (..)
 import Game.Collision exposing (..)
 import Pages.Inventory as Inventory exposing (Inventory)
-import Equipment as Equipment exposing (..)
+import Equipment
 import Shop exposing (..)
 import Game.Keyboard as Keyboard exposing (..)
 import GameData.Types as GDT exposing (Difficulty)
+import Item.Factory as ItemFactory exposing (ItemFactory)
+import Item.Item as Item
+import Item.TypeDef exposing (..)
 
 
 -- Data
@@ -28,7 +31,7 @@ import Stats exposing (..)
 -- Common
 
 import Utils.DragDrop as DragDrop exposing (DragDrop)
-import Utils.Lib exposing (..)
+import Utils.Lib as Lib
 import Utils.IdGenerator as IdGenerator exposing (..)
 import Utils.Vector as Vector exposing (..)
 
@@ -51,17 +54,59 @@ type Msg
     | WindowSize Window.Size
 
 
+donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
+donDefaultGarb itemFactory hero =
+    let
+        equipmentToMake =
+            [ ( Equipment.Weapon, Item.Weapon Dagger )
+            , ( Equipment.Armour, Item.Armour ScaleMail )
+            , ( Equipment.Shield, Item.Shield LargeIronShield )
+            , ( Equipment.Helmet, Item.Helmet LeatherHelmet )
+            , ( Equipment.Gauntlets, Item.Gauntlets NormalGauntlets )
+            , ( Equipment.Belt, Item.Belt ThreeSlotBelt )
+            , ( Equipment.Purse, Item.Purse )
+            , ( Equipment.Pack, Item.Pack MediumPack )
+            ]
+
+        makeEquipment ( equipmentSlot, itemType ) ( accEquipment, itemFactory ) =
+            let
+                ( item, itemFactory_ ) =
+                    ItemFactory.make itemType itemFactory
+            in
+                ( ( equipmentSlot, item ) :: accEquipment, itemFactory_ )
+
+        ( defaultEquipment, factoryAfterProduction ) =
+            List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
+
+        heroWithEquipmentResult =
+            Lib.foldResult (\( slot, item ) -> Hero.equip slot item) (Result.Ok hero) defaultEquipment
+    in
+        case heroWithEquipmentResult of
+            Result.Ok heroWithEquipment ->
+                ( heroWithEquipment, factoryAfterProduction )
+
+            err ->
+                let
+                    _ =
+                        Debug.log "Game.dondefaultGarb" (toString err)
+                in
+                    ( hero, itemFactory )
+
+
 init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
 init seed hero difficulty =
     let
         idGenerator =
-            IdGenerator.new
+            IdGenerator.init
 
-        ( idGenerator', equipment ) =
-            Equipment.init idGenerator
+        itemFactory =
+            ItemFactory.init
 
-        ( monsters, idGenerator'' ) =
-            Monsters.init idGenerator'
+        ( heroWithDefaultEquipment, itemFactoryAfterHeroEquipment ) =
+            donDefaultGarb itemFactory hero
+
+        ( monsters, idGenerator' ) =
+            Monsters.init idGenerator
 
         ( newShop, shopCmd ) =
             Shop.new
@@ -80,20 +125,18 @@ init seed hero difficulty =
                 ]
     in
         ( { name = "A new game"
-          , hero = hero
+          , hero = heroWithDefaultEquipment
           , maps = maps
           , currentScreen = MapScreen
-          , equipment = equipment
           , shop = newShop
-          , idGen = idGenerator''
+          , idGen = idGenerator'
+          , inventory = Inventory.init newShop (Hero.equipment heroWithDefaultEquipment)
           , monsters = monsters
           , seed = seed'
-          , windowSize = { width = 640, height = 640 }
           , messages = [ "Welcome to castle of the winds!" ]
-          , viewportX = 0
-          , viewportY = 0
           , difficulty = difficulty
-          , inventory = Inventory.init newShop equipment
+          , windowSize = { width = 640, height = 640 }
+          , viewport = { x = 0, y = 0 }
           }
         , cmd
         )
@@ -137,7 +180,7 @@ update msg model =
 
 
 updateViewportOffset : Vector -> Model -> Model
-updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as model) =
+updateViewportOffset prevPosition ({ windowSize, viewport, maps } as model) =
     let
         tileSize =
             32
@@ -155,10 +198,10 @@ updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as
             tileSize * 4
 
         scroll =
-            { up = viewportY + y <= tolerance
-            , down = viewportY + y >= (windowSize.height * 4 // 5) - tolerance
-            , left = viewportX + x <= tolerance
-            , right = viewportX + x >= windowSize.width - tolerance
+            { up = viewport.y + y <= tolerance
+            , down = viewport.y + y >= (windowSize.height * 4 // 5) - tolerance
+            , left = viewport.x + x <= tolerance
+            , right = viewport.x + x >= windowSize.width - tolerance
             }
 
         ( mapWidth, mapHeight ) =
@@ -168,15 +211,15 @@ updateViewportOffset prevPosition ({ windowSize, viewportX, viewportY, maps } as
             if prevX /= x && (scroll.left || scroll.right) then
                 clamp (windowSize.width - mapWidth * tileSize) 0 (xOff - x)
             else
-                viewportX
+                viewport.x
 
         newY =
             if prevY /= y && (scroll.up || scroll.down) then
                 clamp (windowSize.height * 4 // 5 - mapHeight * tileSize) 0 (yOff - y)
             else
-                viewportY
+                viewport.y
     in
-        { model | viewportX = newX, viewportY = newY }
+        { model | viewport = { x = newX, y = newY } }
 
 
 view : Model -> Html Msg
@@ -207,7 +250,7 @@ viewMonsters ({ monsters } as model) =
 
 
 viewMap : Model -> Html Msg
-viewMap ({ windowSize, viewportX, viewportY } as model) =
+viewMap ({ windowSize, viewport } as model) =
     let
         title =
             h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
@@ -215,7 +258,7 @@ viewMap ({ windowSize, viewportX, viewportY } as model) =
         px x =
             (toString x) ++ "px"
 
-        viewport html =
+        adjustViewport html =
             div
                 [ style
                     [ ( "position", "relative" )
@@ -227,8 +270,8 @@ viewMap ({ windowSize, viewportX, viewportY } as model) =
                 [ div
                     [ style
                         [ ( "position", "relative" )
-                        , ( "top", px viewportY )
-                        , ( "left", px viewportX )
+                        , ( "top", px viewport.x )
+                        , ( "left", px viewport.y )
                         ]
                     ]
                     html
@@ -237,7 +280,7 @@ viewMap ({ windowSize, viewportX, viewportY } as model) =
         div []
             [ viewMenu
             , viewQuickMenu
-            , viewport
+            , adjustViewport
                 [ Maps.view model.maps
                 , Hero.view model.hero
                 , viewMonsters model

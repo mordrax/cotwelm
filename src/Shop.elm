@@ -76,7 +76,12 @@ sell item purse (SM model) =
     in
         case Purse.remove price purse of
             Result.Ok purse' ->
-                Result.Ok ( SM (removeFrom item model), purse' )
+                Result.Ok
+                    ( model
+                        |> removeFrom item
+                        |> SM
+                    , purse'
+                    )
 
             Result.Err msg ->
                 Result.Err "Cannot afford item!"
@@ -113,11 +118,8 @@ addTo item model =
 removeFrom : Item -> Model -> Model
 removeFrom item model =
     let
-        equals =
-            Item.equals
-
         removeFromShop shop =
-            List.filter (\x -> (not (equals item x))) shop
+            List.filter (\x -> (not (Item.equals item x))) shop
     in
         case model.currentShop of
             WeaponSmith ->

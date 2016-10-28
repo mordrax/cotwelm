@@ -21,15 +21,13 @@ type alias Model =
     , hero : Hero
     , maps : Maps.Maps
     , currentScreen : Screen
-    , equipment : Equipment
     , shop : Shop
     , idGen : IdGenerator
     , monsters : List Monster
     , seed : Random.Seed
     , windowSize : Window.Size
     , messages : List String
-    , viewportX : Int
-    , viewportY : Int
+    , viewport : { x : Int, y : Int }
     , difficulty : Difficulty
     , inventory : Inventory
     }

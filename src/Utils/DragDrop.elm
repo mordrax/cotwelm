@@ -10,12 +10,11 @@ module Utils.DragDrop
         , subscription
         )
 
-import Mouse exposing (..)
-import Html exposing (..)
-import Html.App exposing (map)
+import Mouse
+import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
-import Json.Decode as JD exposing (..)
+import Json.Decode as JD
 import Maybe exposing (Maybe(Just, Nothing))
 
 
@@ -26,22 +25,22 @@ type DragDrop source target
 type alias Model source target =
     { source : Maybe source
     , target : Maybe target
-    , position : Position
+    , position : Mouse.Position
     , dragging : Maybe (Dragging source target)
     }
 
 
 type alias Dragging source target =
-    { start : Position
-    , current : Position
+    { start : Mouse.Position
+    , current : Mouse.Position
     , html : Html (Msg source target)
     }
 
 
 type Msg source target
-    = Start (Maybe source) (Html (Msg source target)) Position
-    | At (Maybe source) (Html (Msg source target)) Position
-    | End (Maybe source) (Maybe target) Position
+    = Start (Maybe source) (Html (Msg source target)) Mouse.Position
+    | At (Maybe source) (Html (Msg source target)) Mouse.Position
+    | End (Maybe source) (Maybe target) Mouse.Position
     | MouseOver (Maybe target)
     | MouseLeave
 
@@ -51,7 +50,7 @@ init =
     A
         { source = Nothing
         , target = Nothing
-        , position = Position 0 0
+        , position = Mouse.Position 0 0
         , dragging = Nothing
         }
 
@@ -106,23 +105,23 @@ view (A ({ source, position, dragging } as model)) =
     in
         case model.dragging of
             Just { start, current, html } ->
-                div [ positionStyle, pointerEventStyle ] [ html ]
+                H.div [ positionStyle, pointerEventStyle ] [ html ]
 
             _ ->
-                div [] []
+                H.div [] []
 
 
 {-| DnDModel tracks where the mouse starts and where it currently is to get the absolute
 movement from when mouse down happens. This is the actual drag distance.
 -}
-getDisplacement : Model s t -> Position
+getDisplacement : Model s t -> Mouse.Position
 getDisplacement { source, target, position, dragging } =
     case dragging of
         Nothing ->
             position
 
         Just { start, current } ->
-            Position (position.x + current.x - start.x)
+            Mouse.Position (position.x + current.x - start.x)
                 (position.y + current.y - start.y)
 
 
@@ -145,7 +144,7 @@ draggable draggableHtml source (A model) =
                 Nothing ->
                     HA.style [ ( "pointer-events", "inherit" ) ]
     in
-        div [ onMouseDown, pointerEventStyle ] [ draggableHtml ]
+        H.div [ onMouseDown, pointerEventStyle ] [ draggableHtml ]
 
 
 droppable : t -> DragDrop s t -> Html (Msg s t) -> Html (Msg s t)
@@ -166,7 +165,7 @@ droppable dropTarget (A model) html =
         mouseLeaveStyle =
             HE.onMouseLeave MouseLeave
     in
-        div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
+        H.div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
 
 
 subscription : DragDrop s t -> Sub (Msg s t)

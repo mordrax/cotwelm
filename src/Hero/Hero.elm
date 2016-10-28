@@ -8,6 +8,8 @@ module Hero.Hero
         , stats
         , setStats
         , viewStats
+        , equipment
+        , equip
         )
 
 import Html.Attributes exposing (..)
@@ -16,8 +18,10 @@ import Utils.Vector as Vector exposing (..)
 import Utils.Direction as Direction exposing (Direction)
 import Stats exposing (Stats)
 import Hero.Attributes as Attributes exposing (Attributes)
+import Equipment exposing (Equipment)
 import GameData.Types as Data
 import Utils.Lib as Lib
+import Item.Item as Item exposing (Item)
 
 
 type Hero
@@ -30,6 +34,7 @@ type alias Model =
     , stats : Stats
     , gender : Data.Gender
     , attributes : Attributes
+    , equipment : Equipment
     }
 
 
@@ -45,7 +50,13 @@ init name attributes gender =
         , stats = Stats.new 20 10
         , gender = gender
         , attributes = attributes
+        , equipment = Equipment.init
         }
+
+
+equipment : Hero -> Equipment
+equipment (A model) =
+    model.equipment
 
 
 move : Direction -> Hero -> Hero
@@ -66,6 +77,16 @@ stats (A model) =
 setStats : Stats -> Hero -> Hero
 setStats stats (A model) =
     A { model | stats = stats }
+
+
+
+-- Equipment
+
+
+equip : Equipment.EquipmentSlot -> Item -> Hero -> Result Equipment.Msg Hero
+equip slot item (A model) =
+    Equipment.equip ( slot, item ) model.equipment
+        `Result.andThen` \equipment -> Result.Ok (A { model | equipment = equipment })
 
 
 

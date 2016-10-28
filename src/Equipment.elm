@@ -58,7 +58,7 @@ type alias Model =
 
 
 type Equipment
-    = EM Model
+    = A Model
 
 
 type EquipmentSlot
@@ -87,9 +87,9 @@ type Msg
     | WrongSlotForItemType
 
 
-new : Equipment
-new =
-    EM
+init : Equipment
+init =
+    A
         { weapon = Nothing
         , freehand = Nothing
         , armour = Nothing
@@ -108,158 +108,106 @@ new =
         }
 
 
-init : IdGenerator -> ( IdGenerator, Equipment )
-init idGenerator =
-    let
-        preFoldedItems =
-            List.map newFoldableItem
-                [ ( Weapon, (Item.new (Item.Weapon Dagger)) )
-                , ( Armour, (Item.new (Item.Armour ScaleMail)) )
-                , ( Shield, (Item.new (Item.Shield LargeIronShield)) )
-                , ( Helmet, (Item.new (Item.Helmet LeatherHelmet)) )
-                , ( Gauntlets, (Item.new (Item.Gauntlets NormalGauntlets)) )
-                , ( Belt, (Item.new (Item.Belt TwoSlotBelt)) )
-                , ( Purse, (Item.new (Item.Purse)) )
-                , ( Pack, (Item.new (Item.Pack MediumPack)) )
-                ]
-
-        ( itemsWithSlots, idGenerator' ) =
-            List.foldl IdGenerator.assignId ( [], idGenerator ) preFoldedItems
-
-        ( id, idGenerator'' ) =
-            IdGenerator.getUniqueId idGenerator'
-
-        ths =
-            Item.new (Item.Weapon TwoHandedSword) id
-
-        equipment' =
-            case fold equip (Result.Ok new) itemsWithSlots of
-                Result.Ok a ->
-                    a
-
-                Result.Err _ ->
-                    Debug.crash "Failed to initialise equipment!"
-
-        ( equipmentWithTHS, _ ) =
-            putInPack ths equipment'
-    in
-        ( idGenerator'', equipmentWithTHS )
-
-
-fold : (a -> b -> Result x b) -> Result x b -> List a -> Result x b
-fold f acc list =
-    case list of
-        [] ->
-            acc
-
-        x :: xs ->
-            let
-                nextAcc =
-                    Result.andThen acc (f x)
-            in
-                fold f nextAcc xs
-
-
 equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
-equip ( slot, item ) (EM model) =
+equip ( slot, item ) (A model) =
     case ( slot, item ) of
         ( Weapon, ItemWeapon weapon ) ->
-            Result.Ok (EM { model | weapon = Just weapon })
+            Result.Ok (A { model | weapon = Just weapon })
 
         ( Freehand, item ) ->
-            Result.Ok (EM { model | freehand = Just item })
+            Result.Ok (A { model | freehand = Just item })
 
         ( Armour, ItemArmour armour ) ->
-            Result.Ok (EM { model | armour = Just armour })
+            Result.Ok (A { model | armour = Just armour })
 
         ( Shield, ItemShield shield ) ->
-            Result.Ok (EM { model | shield = Just shield })
+            Result.Ok (A { model | shield = Just shield })
 
         ( Helmet, ItemHelmet helmet ) ->
-            Result.Ok (EM { model | helmet = Just helmet })
+            Result.Ok (A { model | helmet = Just helmet })
 
         ( Bracers, ItemBracers bracers ) ->
-            Result.Ok (EM { model | bracers = Just bracers })
+            Result.Ok (A { model | bracers = Just bracers })
 
         ( Gauntlets, ItemGauntlets gauntlets ) ->
-            Result.Ok (EM { model | gauntlets = Just gauntlets })
+            Result.Ok (A { model | gauntlets = Just gauntlets })
 
         ( Belt, ItemBelt belt ) ->
-            Result.Ok (EM { model | belt = Just belt })
+            Result.Ok (A { model | belt = Just belt })
 
         ( Purse, ItemPurse purse ) ->
-            Result.Ok (EM { model | purse = Just purse })
+            Result.Ok (A { model | purse = Just purse })
 
         ( Pack, ItemPack pack ) ->
-            Result.Ok (EM { model | pack = Just pack })
+            Result.Ok (A { model | pack = Just pack })
 
         --         ( Neckwear, ItemNeckwear neckwear ) ->
-        --             Result.Ok (EM { model | neckwear = Just neckwear })
+        --             Result.Ok (A { model | neckwear = Just neckwear })
         --         ( Overgarment, ItemOvergarment overgarment ) ->
-        --             Result.Ok (EM { model | overgarment = Just overgarment })
+        --             Result.Ok (A { model | overgarment = Just overgarment })
         --         ( LeftRing, ItemRing leftRing ) ->
-        --             Result.Ok (EM { model | leftRing = Just leftRing })
+        --             Result.Ok (A { model | leftRing = Just leftRing })
         --         ( RightRing, ItemRing rightRing ) ->
-        --             Result.Ok (EM { model | rightRing = Just rightRing })
+        --             Result.Ok (A { model | rightRing = Just rightRing })
         --         ( Boots, ItemBoots boots ) ->
-        --             Result.Ok (EM { model | boots = Just boots })
+        --             Result.Ok (A { model | boots = Just boots })
         _ ->
             Result.Err WrongSlotForItemType
 
 
 unequip : EquipmentSlot -> Equipment -> Result String Equipment
-unequip slot (EM model) =
+unequip slot (A model) =
     let
         maybeItem =
-            get slot (EM model)
+            get slot (A model)
     in
         case maybeItem of
             Just item ->
                 if (Item.isCursed item) then
                     Result.Err "You cannot remove a cursed item!"
                 else
-                    Result.Ok (EM <| (setSlot ( slot, Nothing ) model))
+                    Result.Ok (A <| (setSlot ( slot, Nothing ) model))
 
             Nothing ->
-                Result.Ok (EM model)
+                Result.Ok (A model)
 
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
 -}
 putInPack : Item -> Equipment -> ( Equipment, Msg )
-putInPack item (EM model) =
+putInPack item (A model) =
     let
         noChange =
-            ( EM model, Ok )
+            ( A model, Ok )
     in
         case model.pack of
             Nothing ->
-                ( EM model, NoPackEquipped )
+                ( A model, NoPackEquipped )
 
             Just pack ->
                 let
                     ( pack', msg ) =
                         Item.addToPack item pack
                 in
-                    ( EM { model | pack = Just pack' }, ItemMsg msg )
+                    ( A { model | pack = Just pack' }, ItemMsg msg )
 
 
 removeFromPack : Item -> Equipment -> Equipment
-removeFromPack item (EM model) =
+removeFromPack item (A model) =
     let
         noChange =
-            (EM model)
+            (A model)
     in
         case model.pack of
             Nothing ->
                 noChange
 
             Just pack ->
-                EM { model | pack = Just (Item.removeFromPack item pack) }
+                A { model | pack = Just (Item.removeFromPack item pack) }
 
 
 getPackContent : Equipment -> List Item
-getPackContent (EM model) =
+getPackContent (A model) =
     case model.pack of
         Just pack ->
             Item.packContents pack
@@ -269,8 +217,8 @@ getPackContent (EM model) =
 
 
 updatePurseContents : Item.Purse -> Equipment -> Equipment
-updatePurseContents purse (EM model) =
-    EM { model | purse = Just purse }
+updatePurseContents purse (A model) =
+    A { model | purse = Just purse }
 
 
 
@@ -280,7 +228,7 @@ updatePurseContents purse (EM model) =
 
 
 get : EquipmentSlot -> Equipment -> Maybe Item
-get slot (EM model) =
+get slot (A model) =
     case slot of
         Weapon ->
             Maybe.map ItemWeapon model.weapon

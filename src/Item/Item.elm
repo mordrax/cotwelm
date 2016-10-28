@@ -284,7 +284,7 @@ getModel item =
         ItemWeapon (WM _ { baseItem }) ->
             baseItem
 
-        ItemArmour (ArmourM _ { baseItem }) ->
+        ItemArmour (A _ { baseItem }) ->
             baseItem
 
         ItemShield (ShieldM _ { baseItem }) ->
@@ -381,8 +381,8 @@ newContainer mass =
 
 
 newFoldableItem : ( key, ID -> Item ) -> ID -> ( key, Item )
-newFoldableItem ( key, itemFactory ) =
-    \id -> ( key, itemFactory id )
+newFoldableItem ( key, itemFactory ) id =
+     ( key, itemFactory id )
 
 
 new : ItemType -> ID -> Item
