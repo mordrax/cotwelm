@@ -13,8 +13,7 @@ import Hero.Hero as Hero exposing (Hero)
 
 -- Main game screen
 
-import Game.Game as Game exposing (..)
-import Game.Data exposing (..)
+import Game.Game as Game exposing (Game)
 
 
 -- Core/Elm imports
@@ -70,7 +69,7 @@ init url =
 type alias Model =
     { currentPage : Page
     , charCreation : CharCreation
-    , game : Maybe Game.Data.Model
+    , game : Maybe Game
     , editor : Editor.Model
     }
 

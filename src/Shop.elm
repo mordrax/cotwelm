@@ -2,7 +2,7 @@ module Shop
     exposing
         ( Shop
         , Msg
-        , new
+        , init
         , setCurrentShopType
         , replenish
         , list
@@ -50,8 +50,8 @@ type alias Model =
     }
 
 
-new : ( Shop, Cmd Msg )
-new =
+init : ( Shop, Cmd Msg )
+init =
     ( SM (Model WeaponSmith [] [] [] []), getSeed )
 
 
