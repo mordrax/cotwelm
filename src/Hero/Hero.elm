@@ -61,7 +61,10 @@ equipment (A model) =
 
 move : Direction -> Hero -> Hero
 move direction (A model) =
-    A { model | position = Vector.add model.position (Vector.fromDirection direction) }
+    direction
+        |> Vector.fromDirection
+        |> Vector.add model.position
+        |> \x -> A { model | position = x }
 
 
 position : Hero -> Vector

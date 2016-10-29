@@ -1,49 +1,69 @@
-module Game.Game exposing (..)
+module Game.Game
+    exposing
+        ( Game
+        , Msg
+        , init
+        , update
+        , view
+        , subscription
+        )
 
--- Game
-
-import Game.Data exposing (..)
-import Game.Maps as Maps exposing (..)
-import Game.Collision exposing (..)
-import Pages.Inventory as Inventory exposing (Inventory)
-import Equipment
-import Shop exposing (..)
+import AStar
+import Combat
+import Dict
+import Equipment exposing (Equipment)
 import Game.Keyboard as Keyboard exposing (..)
+import Game.Maps as Maps exposing (Maps)
+import GameData.Building as Building exposing (Building)
 import GameData.Types as GDT exposing (Difficulty)
+import Hero.Hero as Hero exposing (Hero)
+import Html exposing (..)
+import Html.App exposing (map)
+import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item
 import Item.TypeDef exposing (..)
-
-
--- Data
-
-import GameData.Building as Building exposing (..)
-
-
---Hero
-
-import Hero.Hero as Hero exposing (Hero)
-import Monster.Monster as Monster exposing (..)
+import Monster.Monster as Monster exposing (Monster)
 import Monster.Monsters as Monsters exposing (..)
-import Stats exposing (..)
-
-
--- Common
-
-import Utils.DragDrop as DragDrop exposing (DragDrop)
-import Utils.Lib as Lib
-import Utils.IdGenerator as IdGenerator exposing (..)
-import Utils.Vector as Vector exposing (..)
-
-
--- Core
-
-import Html exposing (..)
-import Html.Attributes exposing (class, style)
-import Html.App exposing (map)
+import Pages.Inventory as Inventory exposing (Inventory)
 import Random.Pcg as Random exposing (..)
-import Window exposing (..)
+import Set exposing (Set)
+import Shop exposing (Shop)
+import Stats exposing (..)
 import Task exposing (perform)
+import Tile exposing (Tile)
+import Utils.Direction as Direction exposing (Direction)
+import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
+import Utils.Lib as Lib
+import Utils.Vector as Vector exposing (Vector)
+import Window exposing (Size)
+
+
+type Game
+    = A Model
+
+
+type alias Model =
+    { name : String
+    , hero : Hero
+    , maps : Maps
+    , currentScreen : Screen
+    , shop : Shop
+    , idGen : IdGenerator
+    , monsters : List Monster
+    , seed : Random.Seed
+    , windowSize : Window.Size
+    , messages : List String
+    , viewport : { x : Int, y : Int }
+    , difficulty : Difficulty
+    , inventory : Inventory
+    }
+
+
+type Screen
+    = MapScreen
+    | InventoryScreen
+    | BuildingScreen Building
 
 
 type Msg
@@ -54,46 +74,7 @@ type Msg
     | WindowSize Window.Size
 
 
-donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
-donDefaultGarb itemFactory hero =
-    let
-        equipmentToMake =
-            [ ( Equipment.Weapon, Item.Weapon Dagger )
-            , ( Equipment.Armour, Item.Armour ScaleMail )
-            , ( Equipment.Shield, Item.Shield LargeIronShield )
-            , ( Equipment.Helmet, Item.Helmet LeatherHelmet )
-            , ( Equipment.Gauntlets, Item.Gauntlets NormalGauntlets )
-            , ( Equipment.Belt, Item.Belt ThreeSlotBelt )
-            , ( Equipment.Purse, Item.Purse )
-            , ( Equipment.Pack, Item.Pack MediumPack )
-            ]
-
-        makeEquipment ( equipmentSlot, itemType ) ( accEquipment, itemFactory ) =
-            let
-                ( item, itemFactory_ ) =
-                    ItemFactory.make itemType itemFactory
-            in
-                ( ( equipmentSlot, item ) :: accEquipment, itemFactory_ )
-
-        ( defaultEquipment, factoryAfterProduction ) =
-            List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
-
-        heroWithEquipmentResult =
-            Lib.foldResult (\( slot, item ) -> Hero.equip slot item) (Result.Ok hero) defaultEquipment
-    in
-        case heroWithEquipmentResult of
-            Result.Ok heroWithEquipment ->
-                ( heroWithEquipment, factoryAfterProduction )
-
-            err ->
-                let
-                    _ =
-                        Debug.log "Game.dondefaultGarb" (toString err)
-                in
-                    ( hero, itemFactory )
-
-
-init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
+init : Random.Seed -> Hero -> Difficulty -> ( Game, Cmd Msg )
 init seed hero difficulty =
     let
         idGenerator =
@@ -109,74 +90,317 @@ init seed hero difficulty =
             Monsters.init idGenerator
 
         ( newShop, shopCmd ) =
-            Shop.new
+            Shop.init
 
         ( maps, mapCmd, seed' ) =
             Maps.init seed
 
-        gameCmds =
-            initialWindowSizeCmd
-
         cmd =
             Cmd.batch
-                [ Cmd.map (\x -> ShopMsg x) shopCmd
-                , Cmd.map (\x -> MapsMsg x) mapCmd
-                , gameCmds
+                [ Cmd.map ShopMsg shopCmd
+                , Cmd.map MapsMsg mapCmd
+                , initialWindowSizeCmd
                 ]
     in
-        ( { name = "A new game"
-          , hero = heroWithDefaultEquipment
-          , maps = maps
-          , currentScreen = MapScreen
-          , shop = newShop
-          , idGen = idGenerator'
-          , inventory = Inventory.init newShop (Hero.equipment heroWithDefaultEquipment)
-          , monsters = monsters
-          , seed = seed'
-          , messages = [ "Welcome to castle of the winds!" ]
-          , difficulty = difficulty
-          , windowSize = { width = 640, height = 640 }
-          , viewport = { x = 0, y = 0 }
-          }
+        ( A
+            { name = "A new game"
+            , hero = heroWithDefaultEquipment
+            , maps = maps
+            , currentScreen = MapScreen
+            , shop = newShop
+            , idGen = idGenerator'
+            , inventory = Inventory.init newShop (Hero.equipment heroWithDefaultEquipment)
+            , monsters = monsters
+            , seed = seed'
+            , messages = [ "Welcome to castle of the winds!" ]
+            , difficulty = difficulty
+            , windowSize = { width = 640, height = 640 }
+            , viewport = { x = 0, y = 0 }
+            }
         , cmd
         )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> Game -> ( Game, Cmd Msg )
+update msg (A model) =
     case msg of
         Keyboard (KeyDir dir) ->
             ( model
-                |> Game.Collision.tryMoveHero dir
+                |> moveHero dir
                 |> updateViewportOffset (Hero.position model.hero)
-                |> (\model -> Game.Collision.moveMonsters model.monsters [] model)
+                |> (\model -> moveMonsters model.monsters [] model)
+                |> A
             , Cmd.none
             )
 
         Keyboard Map ->
-            ( { model | currentScreen = MapScreen }, Cmd.none )
+            ( A { model | currentScreen = MapScreen }, Cmd.none )
 
         Keyboard Inventory ->
-            ( { model | currentScreen = InventoryScreen }, Cmd.none )
+            ( A { model | currentScreen = InventoryScreen }, Cmd.none )
 
         InventoryMsg msg ->
-            ( { model | inventory = Inventory.update msg model.inventory }, Cmd.none )
+            ( A { model | inventory = Inventory.update msg model.inventory }, Cmd.none )
 
         ShopMsg msg ->
             let
-                ( shop', idGen' ) =
+                ( shop_, idGen_ ) =
                     Shop.update msg model.idGen model.shop
             in
-                ( { model | shop = shop', idGen = idGen' }, Cmd.none )
+                ( A { model | shop = shop_, idGen = idGen_ }, Cmd.none )
 
         MapsMsg msg ->
-            ( { model | maps = Maps.update msg model.maps }, Cmd.none )
+            ( A { model | maps = Maps.update msg model.maps }, Cmd.none )
 
         Keyboard (Keyboard.NoOp) ->
-            ( model, Cmd.none )
+            ( A model, Cmd.none )
 
         WindowSize size ->
-            ( { model | windowSize = size }, Cmd.none )
+            ( A { model | windowSize = size }, Cmd.none )
+
+
+
+--------------
+-- Privates --
+--------------
+-- Collision
+
+
+moveHero : Direction -> Model -> Model
+moveHero dir ({ hero, monsters, seed } as model) =
+    let
+        heroMoved =
+            Hero.move dir hero
+
+        obstructions =
+            heroMoved
+                |> Hero.position
+                |> \newHeroPosition -> queryPosition newHeroPosition model
+    in
+        case obstructions of
+            ( _, _, Just monster, _ ) ->
+                let
+                    ( monster_, seed_ ) =
+                        Combat.attack hero monster seed
+
+                    monsters_ =
+                        if Stats.isDead monster_.stats then
+                            Monsters.removeOne monster monsters
+                        else
+                            Monsters.updateOne monster monsters
+                in
+                    { model
+                        | seed = seed_
+                        , monsters = monsters_
+                    }
+
+            -- entering a building
+            ( _, Just building, _, _ ) ->
+                enterBuilding building model
+
+            -- path blocked
+            ( True, _, _, _ ) ->
+                model
+
+            -- path free, moved
+            ( False, _, _, _ ) ->
+                { model | hero = heroMoved }
+
+
+moveMonsters : List Monster -> List Monster -> Model -> Model
+moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
+    case monsters of
+        [] ->
+            { model | monsters = movedMonsters }
+
+        monster :: restOfMonsters ->
+            let
+                movedMonster =
+                    pathMonster monster hero model
+
+                obstructions =
+                    queryPosition movedMonster.position model
+
+                isObstructedByMovedMonsters =
+                    isMonsterObstruction movedMonster movedMonsters
+            in
+                case obstructions of
+                    -- hit hero
+                    ( _, _, _, True ) ->
+                        let
+                            ( hero_, seed_ ) =
+                                Combat.defend monster hero seed
+                        in
+                            moveMonsters restOfMonsters
+                                (monster :: movedMonsters)
+                                { model
+                                    | hero = hero_
+                                    , seed = seed_
+                                }
+
+                    ( True, _, _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( _, Just _, _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( _, _, Just _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    _ ->
+                        if isObstructedByMovedMonsters then
+                            moveMonsters restOfMonsters (monster :: movedMonsters) model
+                        else
+                            moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
+
+
+enterBuilding : Building -> Model -> Model
+enterBuilding building ({ hero, maps } as model) =
+    case Building.buildingType building of
+        Building.LinkType link ->
+            { model | maps = Maps.updateArea link.area maps }
+
+        Building.ShopType shopType ->
+            let
+                shop =
+                    Shop.setCurrentShopType shopType model.shop
+            in
+                { model
+                    | currentScreen = BuildingScreen building
+                    , shop = shop
+                    , inventory = Inventory.init shop (Hero.equipment hero)
+                }
+
+        Building.Ordinary ->
+            { model | currentScreen = BuildingScreen building }
+
+
+{-| Given a position and a map, work out everything on the square
+-}
+queryPosition : Vector -> Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
+queryPosition pos ({ hero, maps, monsters } as model) =
+    let
+        maybeTile =
+            Dict.get pos (Maps.currentAreaMap maps)
+
+        maybeBuilding =
+            buildingAtPosition pos (Maps.getBuildings maps)
+
+        maybeMonster =
+            monsters
+                |> List.filter (\x -> pos == x.position)
+                |> List.head
+
+        hasHero =
+            (Hero.position hero) == pos
+
+        tileObstruction =
+            case maybeTile of
+                Just tile ->
+                    Tile.isSolid tile
+
+                Nothing ->
+                    True
+    in
+        ( tileObstruction, maybeBuilding, maybeMonster, hasHero )
+
+
+{-| Given a point and a list of buildings, return the building that the point is within or nothing
+-}
+buildingAtPosition : Vector -> List Building -> Maybe Building
+buildingAtPosition pos buildings =
+    let
+        buildingsAtTile =
+            List.filter (Building.isBuildingAtPosition pos) buildings
+    in
+        case buildingsAtTile of
+            b :: rest ->
+                Just b
+
+            _ ->
+                Nothing
+
+
+
+-----------------
+-- Pathfinding --
+-----------------
+
+
+pathMonster : Monster -> Hero -> Model -> Monster
+pathMonster monster hero model =
+    let
+        path =
+            AStar.findPath heuristic
+                (neighbours model)
+                monster.position
+                (Hero.position hero)
+    in
+        case path of
+            Nothing ->
+                monster
+
+            Just [] ->
+                monster
+
+            Just (( x, y ) :: _) ->
+                { monster | position = ( x, y ) }
+
+
+{-| Manhattan but counts diagonal cost as one (since you can move diagonally)
+-}
+heuristic : Vector -> Vector -> Float
+heuristic start end =
+    let
+        ( dx, dy ) =
+            Vector.sub start end
+    in
+        toFloat (max dx dy)
+
+
+neighbours : Model -> Vector -> Set Vector
+neighbours model position =
+    let
+        add x y =
+            Vector.add position ( x, y )
+
+        notObstructed vector =
+            not (isObstructed vector model)
+    in
+        position
+            |> Vector.neighbours
+            |> List.filter notObstructed
+            |> Set.fromList
+
+
+isObstructed : Vector -> Model -> Bool
+isObstructed position model =
+    case queryPosition position model of
+        ( _, _, _, True ) ->
+            False
+
+        ( False, Nothing, Nothing, _ ) ->
+            False
+
+        _ ->
+            True
+
+
+isMonsterObstruction : Monster -> List Monster -> Bool
+isMonsterObstruction monster monsters =
+    let
+        atMonsterPosition pos =
+            pos == monster.position
+    in
+        monsters
+            |> List.map .position
+            |> List.any atMonsterPosition
+
+
+
+-----------
+-- Adhoc --
+-----------
 
 
 updateViewportOffset : Vector -> Model -> Model
@@ -222,15 +446,60 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps } as model) =
         { model | viewport = { x = newX, y = newY } }
 
 
-view : Model -> Html Msg
-view model =
+donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
+donDefaultGarb itemFactory hero =
+    let
+        equipmentToMake =
+            [ ( Equipment.Weapon, Item.Weapon Dagger )
+            , ( Equipment.Armour, Item.Armour ScaleMail )
+            , ( Equipment.Shield, Item.Shield LargeIronShield )
+            , ( Equipment.Helmet, Item.Helmet LeatherHelmet )
+            , ( Equipment.Gauntlets, Item.Gauntlets NormalGauntlets )
+            , ( Equipment.Belt, Item.Belt ThreeSlotBelt )
+            , ( Equipment.Purse, Item.Purse )
+            , ( Equipment.Pack, Item.Pack MediumPack )
+            ]
+
+        makeEquipment ( equipmentSlot, itemType ) ( accEquipment, itemFactory ) =
+            let
+                ( item, itemFactory_ ) =
+                    ItemFactory.make itemType itemFactory
+            in
+                ( ( equipmentSlot, item ) :: accEquipment, itemFactory_ )
+
+        ( defaultEquipment, factoryAfterProduction ) =
+            List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
+
+        equippingHero =
+            Lib.foldResult (\( slot, item ) -> Hero.equip slot item) (Result.Ok hero) defaultEquipment
+    in
+        case equippingHero of
+            Result.Ok heroEquipped ->
+                ( heroEquipped, factoryAfterProduction )
+
+            err ->
+                let
+                    _ =
+                        Debug.log "Game.donDefaultGarb" (toString err)
+                in
+                    ( hero, itemFactory )
+
+
+
+----------
+-- View --
+----------
+
+
+view : Game -> Html Msg
+view (A model) =
     case model.currentScreen of
         MapScreen ->
             viewMap model
 
         BuildingScreen building ->
             case Building.buildingType building of
-                ShopType shopType ->
+                Building.ShopType shopType ->
                     Html.App.map InventoryMsg (Inventory.view model.inventory)
 
                 _ ->
@@ -352,8 +621,8 @@ viewBuilding building =
     div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
 
 
-subscription : Model -> Sub Msg
-subscription model =
+subscription : Game -> Sub Msg
+subscription (A model) =
     Sub.batch
         [ Window.resizes (\x -> WindowSize x)
         , Sub.map InventoryMsg (Inventory.subscription model.inventory)

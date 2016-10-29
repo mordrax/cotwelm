@@ -1,4 +1,9 @@
-module Monster.Monsters exposing (init)
+module Monster.Monsters
+    exposing
+        ( init
+        , updateOne
+        , removeOne
+        )
 
 import Monster.Monster as Monster exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
@@ -15,3 +20,12 @@ init gen =
             ]
     in
         List.foldl IdGenerator.assignId ( [], gen ) monsterFactory
+
+
+updateOne : Monster -> List Monster -> List Monster
+updateOne monster monsters =
+        monster :: removeOne monster monsters
+
+removeOne: Monster -> List Monster -> List Monster
+removeOne monster monsters =
+    List.filter (\x -> not (IdGenerator.equals monster.id x.id)) monsters
