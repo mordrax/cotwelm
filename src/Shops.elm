@@ -10,6 +10,7 @@ module Shops
         , shop
         , wares
         , replenish
+        , updateShop
         )
 
 -- items
@@ -175,6 +176,11 @@ list shopType stores =
     stores
         |> Dict.get shopType
         |> Maybe.withDefault []
+
+
+updateShop : Shop -> Shops -> Shops
+updateShop (B items shopType) (A model) =
+    A { model | stores = Dict.insert shopType items model.stores }
 
 
 type alias ProductName =

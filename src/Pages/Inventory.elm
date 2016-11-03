@@ -4,6 +4,7 @@ module Pages.Inventory
         , Msg
         , Draggable
         , Droppable
+        , keyboardMsg
         , init
         , view
         , update
@@ -36,6 +37,8 @@ import Utils.Mass as Mass exposing (..)
 import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Item.Purse as Purse exposing (..)
 import Shops exposing (Shops, Shop)
+import Game.Keyboard as Keyboard
+import Task
 
 
 type Inventory
@@ -68,15 +71,25 @@ type Droppable
 
 type Msg source target
     = DnDMsg (DragDrop.Msg source target)
+    | Keyboard Keyboard.Msg
 
 
-init : Shop -> Equipment -> Inventory
-init shop equipment =
-    A
-        { dnd = DragDrop.init
-        , merchant = Shop shop
-        , equipment = equipment
-        }
+init : Maybe Shop -> Equipment -> Inventory
+init maybeShop equipment =
+    let
+        merchant =
+            case maybeShop of
+                Just shop ->
+                    Shop shop
+
+                Nothing ->
+                    Ground
+    in
+        A
+            { dnd = DragDrop.init
+            , merchant = merchant
+            , equipment = equipment
+            }
 
 
 
@@ -85,7 +98,7 @@ init shop equipment =
 ------------
 
 
-update : Msg Draggable Droppable -> Inventory -> Inventory
+update : Msg Draggable Droppable -> Inventory -> ( Inventory, Maybe ( Equipment, Maybe Shop ) )
 update msg (A ({ dnd } as model)) =
     case msg of
         DnDMsg dragDropMsg ->
@@ -98,19 +111,43 @@ update msg (A ({ dnd } as model)) =
             in
                 case end of
                     Nothing ->
-                        A { model | dnd = dnd_ }
+                        ( A { model | dnd = dnd_ }, Nothing )
 
                     Just ( Nothing, _ ) ->
-                        A modelNewDnD
+                        ( A modelNewDnD, Nothing )
 
                     Just ( _, Nothing ) ->
-                        A modelNewDnD
+                        ( A modelNewDnD, Nothing )
 
                     {- On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
                        then call a function to handle the transaction, otherwise just clear the dndModel and return.
                     -}
                     Just ( Just drag, Just drop ) ->
-                        A <| handleDragDrop drag drop modelNewDnD
+                        ( A <| handleDragDrop drag drop modelNewDnD, Nothing )
+
+        Keyboard Keyboard.Esc ->
+            let
+                _ = Debug.log "Inventory.update.keyboard.esc" 1
+            in
+            case model.merchant of
+                Shop shop ->
+                    ( A model, Just ( model.equipment, Just shop ) )
+                Ground ->
+                    ( A model, Just ( model.equipment, Nothing ) )
+
+
+        Keyboard msg ->
+            let
+                _ = Debug.log "Inventory.update.keyboard.msg" msg
+            in
+            (A model, Nothing)
+
+keyboardMsg : Keyboard.Msg -> Cmd (Msg s t)
+keyboardMsg msg =
+    let
+        _ = Debug.log "Inveotry.keyboardMsg" msg
+    in
+    Task.perform (\_ -> Debug.crash "unfallable failed" 1) Keyboard (Task.succeed msg)
 
 
 

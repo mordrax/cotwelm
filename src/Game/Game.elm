@@ -107,7 +107,7 @@ init seed hero difficulty =
             , currentScreen = MapScreen
             , shops = shops
             , idGen = idGenerator'
-            , inventory = Inventory.init (Shops.shop Shops.WeaponSmith shops) (Hero.equipment heroWithDefaultEquipment)
+            , inventory = Inventory.init Nothing (Hero.equipment heroWithDefaultEquipment)
             , monsters = monsters
             , seed = seed__
             , messages = [ "Welcome to castle of the winds!" ]
@@ -131,14 +131,64 @@ update msg (A model) =
             , Cmd.none
             )
 
-        Keyboard Map ->
-            ( A { model | currentScreen = MapScreen }, Cmd.none )
+        Keyboard Esc ->
+            let
+                _ =
+                    Debug.log "Esc pressed" 1
+            in
+                case model.currentScreen of
+                    MapScreen ->
+                        ( A model, Cmd.none )
+
+                    BuildingScreen _ ->
+                        ( A model, Cmd.map InventoryMsg (Inventory.keyboardMsg (Keyboard.Esc)) )
+
+                    _ ->
+                        ( A model, Cmd.none )
 
         Keyboard Inventory ->
-            ( A { model | currentScreen = InventoryScreen }, Cmd.none )
+            ( A
+                { model
+                    | currentScreen = InventoryScreen
+                    , inventory = Inventory.init Nothing (Hero.equipment model.hero)
+                }
+            , Cmd.none
+            )
 
         InventoryMsg msg ->
-            ( A { model | inventory = Inventory.update msg model.inventory }, Cmd.none )
+            let
+                ( inventory_, maybeExitValues ) =
+                    Inventory.update msg model.inventory
+
+                _ =
+                    Debug.log "Game.update.inventoryMsg" msg
+            in
+                case maybeExitValues of
+                    Nothing ->
+                        ( A { model | inventory = inventory_ }, Cmd.none )
+
+                    Just ( equipment, maybeShop ) ->
+                        let
+                            modelWithHeroAndInventory =
+                                { model
+                                    | inventory = inventory_
+                                    , hero = Hero.updateEquipment equipment model.hero
+                                    , currentScreen = MapScreen
+                                }
+                        in
+                            case maybeShop of
+                                Nothing ->
+                                    ( A modelWithHeroAndInventory
+                                    , Cmd.none
+                                    )
+
+                                Just shop ->
+                                    ( A
+                                        { modelWithHeroAndInventory
+                                            | shops = Shops.updateShop shop model.shops
+                                        }
+                                    , Cmd.none
+                                    )
 
         MapsMsg msg ->
             ( A { model | maps = Maps.update msg model.maps }, Cmd.none )
@@ -252,10 +302,10 @@ enterBuilding building ({ hero, maps } as model) =
             { model | maps = Maps.updateArea link.area maps }
 
         Building.Shop shopType ->
-                { model
-                    | currentScreen = BuildingScreen building
-                    , inventory = Inventory.init (Shops.shop shopType model.shops) (Hero.equipment hero)
-                }
+            { model
+                | currentScreen = BuildingScreen building
+                , inventory = Inventory.init (Just <| Shops.shop shopType model.shops) (Hero.equipment hero)
+            }
 
         Building.Ordinary ->
             { model | currentScreen = BuildingScreen building }

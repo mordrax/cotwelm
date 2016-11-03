@@ -9,6 +9,7 @@ module Hero.Hero
         , setStats
         , viewStats
         , equipment
+        , updateEquipment
         , equip
         )
 
@@ -57,6 +58,11 @@ init name attributes gender =
 equipment : Hero -> Equipment
 equipment (A model) =
     model.equipment
+
+
+updateEquipment : Equipment -> Hero -> Hero
+updateEquipment equipment (A model) =
+    A { model | equipment = equipment }
 
 
 move : Direction -> Hero -> Hero
