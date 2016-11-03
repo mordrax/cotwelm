@@ -126,9 +126,6 @@ update msg (A ({ dnd } as model)) =
                         ( A <| handleDragDrop drag drop modelNewDnD, Nothing )
 
         Keyboard Keyboard.Esc ->
-            let
-                _ = Debug.log "Inventory.update.keyboard.esc" 1
-            in
             case model.merchant of
                 Shop shop ->
                     ( A model, Just ( model.equipment, Just shop ) )
@@ -137,17 +134,11 @@ update msg (A ({ dnd } as model)) =
 
 
         Keyboard msg ->
-            let
-                _ = Debug.log "Inventory.update.keyboard.msg" msg
-            in
             (A model, Nothing)
 
 keyboardMsg : Keyboard.Msg -> Cmd (Msg s t)
 keyboardMsg msg =
-    let
-        _ = Debug.log "Inveotry.keyboardMsg" msg
-    in
-    Task.perform (\_ -> Debug.crash "unfallable failed" 1) Keyboard (Task.succeed msg)
+    Task.perform Keyboard Keyboard (Task.succeed msg)
 
 
 
