@@ -131,7 +131,7 @@ update msg model =
                         ( game', cmd ) =
                             Game.update msg game
                     in
-                        ( { model | game = Just game' }, Cmd.none )
+                        ( { model | game = Just game' }, Cmd.map GameMsg cmd )
 
         EditorMsg msg ->
             let

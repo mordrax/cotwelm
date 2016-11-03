@@ -16,7 +16,7 @@ subscription =
 
 type Msg
     = KeyDir Direction
-    | Map
+    | Esc
     | Inventory
     | NoOp
 
@@ -46,7 +46,7 @@ playerKeymap =
         , ( 35, KeyDir NW )
         , ( 34, KeyDir NE )
           -- Esc
-        , ( 27, Map )
+        , ( 27, Esc )
           -- i
         , ( 73, Inventory )
         ]
