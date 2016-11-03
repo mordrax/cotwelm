@@ -3,6 +3,7 @@ module Item.Factory
         ( ItemFactory
         , init
         , make
+        , makeReducer
         )
 
 import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
@@ -33,3 +34,11 @@ make itemType (A model) =
     in
         ( Item.new itemType id, A { model | idGenerator = idGenerator_ } )
 
+
+makeReducer : Item.ItemType -> ( List Item, ItemFactory ) -> ( List Item, ItemFactory )
+makeReducer itemType ( currentItems, itemFactory ) =
+    let
+        ( newItem, newItemFactory ) =
+            make itemType itemFactory
+    in
+        ( newItem :: currentItems, newItemFactory )

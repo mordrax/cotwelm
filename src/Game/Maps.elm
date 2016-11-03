@@ -27,7 +27,6 @@ Mines lvl 0
 
 Dynamic lvls are:
 Mines lvl 1 - 8
-
 -}
 
 import GameData.ASCIIMaps exposing (..)
@@ -39,7 +38,7 @@ import Html exposing (..)
 import Dict exposing (..)
 import Random.Pcg as Random exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
-
+import Shops
 
 type Maps
     = A Model
@@ -254,10 +253,10 @@ villageBuildings =
         [ Building.new Gate_NS ( 10, 0 ) "Village Gate" farmGate
         , Building.new StrawHouse_EF ( 3, 6 ) "Junk Shop" Ordinary
         , Building.new StrawHouse_WF ( 16, 5 ) "Private House" Ordinary
-        , Building.new Hut_EF ( 7, 13 ) "Potion Store" (ShopType PotionStore)
+        , Building.new Hut_EF ( 7, 13 ) "Potion Store" (Shop Shops.PotionStore)
         , Building.new StrawHouse_WF ( 14, 12 ) "Private House 2" Ordinary
-        , Building.new StrawHouse_EF ( 6, 17 ) "Weapon Shop" (ShopType WeaponSmith)
-        , Building.new StrawHouse_WF ( 14, 17 ) "General Store" (ShopType GeneralStore)
+        , Building.new StrawHouse_EF ( 6, 17 ) "Weapon Shop" (Shop Shops.WeaponSmith)
+        , Building.new StrawHouse_WF ( 14, 17 ) "General Store" (Shop Shops.GeneralStore)
         , Building.new HutTemple_NF ( 9, 22 ) "Odin's Temple" Ordinary
         ]
 

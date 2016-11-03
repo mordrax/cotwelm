@@ -1,7 +1,6 @@
 module GameData.Building
     exposing
         ( Building
-        , ShopType(..)
         , BuildingType(..)
         , BuildingTile(..)
         , new
@@ -24,7 +23,7 @@ import Html.Attributes exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Utils.Lib as Lib exposing (..)
 import GameData.Types exposing (..)
-
+import Shops exposing (ShopType)
 
 type Building
     = BM Model
@@ -46,16 +45,9 @@ type alias Link =
     }
 
 
-type ShopType
-    = WeaponSmith
-    | GeneralStore
-    | PotionStore
-    | JunkShop
-
-
 type BuildingType
     = LinkType Link
-    | ShopType ShopType
+    | Shop ShopType
     | Ordinary
 
 
