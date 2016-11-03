@@ -35,7 +35,7 @@ import Equipment exposing (..)
 import Utils.Mass as Mass exposing (..)
 import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Item.Purse as Purse exposing (..)
-import Shop exposing (..)
+import Shops exposing (Shops, Shop)
 
 
 type Inventory
@@ -216,7 +216,7 @@ transactWithMerchant item ({ merchant, equipment } as model) =
         buyFrom shop =
             case maybePurse of
                 Just purse ->
-                    Shop.sell item purse shop
+                    Shops.sell item purse shop
 
                 Nothing ->
                     Result.Err "No purse to buy anything with!"
@@ -298,7 +298,7 @@ handleDrop droppable item model =
                 sellTo shop purse =
                     let
                         ( shopAfterBought, purseAfterPaid ) =
-                            Shop.buy item purse shop
+                            Shops.buy item purse shop
                     in
                         Result.Ok
                             { model
@@ -456,7 +456,7 @@ viewShop : Shop -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable 
 viewShop shop dnd =
     let
         wares =
-            Shop.list shop
+            Shops.wares shop
 
         makeDraggable : Shop -> Item -> Html (DragDrop.Msg Draggable a)
         makeDraggable shop item =

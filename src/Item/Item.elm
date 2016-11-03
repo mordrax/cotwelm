@@ -122,6 +122,10 @@ type alias Purse =
 -}
 
 
+type alias ItemTypes =
+    List ItemType
+
+
 type ItemType
     = Weapon WeaponType
     | Armour ArmourType
@@ -382,7 +386,7 @@ newContainer mass =
 
 newFoldableItem : ( key, ID -> Item ) -> ID -> ( key, Item )
 newFoldableItem ( key, itemFactory ) id =
-     ( key, itemFactory id )
+    ( key, itemFactory id )
 
 
 new : ItemType -> ID -> Item

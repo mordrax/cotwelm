@@ -28,7 +28,7 @@ import Monster.Monsters as Monsters exposing (..)
 import Pages.Inventory as Inventory exposing (Inventory)
 import Random.Pcg as Random exposing (..)
 import Set exposing (Set)
-import Shop exposing (Shop)
+import Shops exposing (Shops)
 import Stats exposing (..)
 import Task exposing (perform)
 import Tile exposing (Tile)
@@ -48,7 +48,7 @@ type alias Model =
     , hero : Hero
     , maps : Maps
     , currentScreen : Screen
-    , shop : Shop
+    , shops : Shops
     , idGen : IdGenerator
     , monsters : List Monster
     , seed : Random.Seed
@@ -69,7 +69,6 @@ type Screen
 type Msg
     = Keyboard (Keyboard.Msg)
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
-    | ShopMsg Shop.Msg
     | MapsMsg Maps.Msg
     | WindowSize Window.Size
 
@@ -86,19 +85,18 @@ init seed hero difficulty =
         ( heroWithDefaultEquipment, itemFactoryAfterHeroEquipment ) =
             donDefaultGarb itemFactory hero
 
+        ( shops, itemFactory__, seed_ ) =
+            Shops.init seed itemFactoryAfterHeroEquipment
+
         ( monsters, idGenerator' ) =
             Monsters.init idGenerator
 
-        ( newShop, shopCmd ) =
-            Shop.init
-
-        ( maps, mapCmd, seed' ) =
-            Maps.init seed
+        ( maps, mapCmd, seed__ ) =
+            Maps.init seed_
 
         cmd =
             Cmd.batch
-                [ Cmd.map ShopMsg shopCmd
-                , Cmd.map MapsMsg mapCmd
+                [ Cmd.map MapsMsg mapCmd
                 , initialWindowSizeCmd
                 ]
     in
@@ -107,11 +105,11 @@ init seed hero difficulty =
             , hero = heroWithDefaultEquipment
             , maps = maps
             , currentScreen = MapScreen
-            , shop = newShop
+            , shops = shops
             , idGen = idGenerator'
-            , inventory = Inventory.init newShop (Hero.equipment heroWithDefaultEquipment)
+            , inventory = Inventory.init (Shops.shop Shops.WeaponSmith shops) (Hero.equipment heroWithDefaultEquipment)
             , monsters = monsters
-            , seed = seed'
+            , seed = seed__
             , messages = [ "Welcome to castle of the winds!" ]
             , difficulty = difficulty
             , windowSize = { width = 640, height = 640 }
@@ -141,13 +139,6 @@ update msg (A model) =
 
         InventoryMsg msg ->
             ( A { model | inventory = Inventory.update msg model.inventory }, Cmd.none )
-
-        ShopMsg msg ->
-            let
-                ( shop_, idGen_ ) =
-                    Shop.update msg model.idGen model.shop
-            in
-                ( A { model | shop = shop_, idGen = idGen_ }, Cmd.none )
 
         MapsMsg msg ->
             ( A { model | maps = Maps.update msg model.maps }, Cmd.none )
@@ -260,15 +251,10 @@ enterBuilding building ({ hero, maps } as model) =
         Building.LinkType link ->
             { model | maps = Maps.updateArea link.area maps }
 
-        Building.ShopType shopType ->
-            let
-                shop =
-                    Shop.setCurrentShopType shopType model.shop
-            in
+        Building.Shop shopType ->
                 { model
                     | currentScreen = BuildingScreen building
-                    , shop = shop
-                    , inventory = Inventory.init shop (Hero.equipment hero)
+                    , inventory = Inventory.init (Shops.shop shopType model.shops) (Hero.equipment hero)
                 }
 
         Building.Ordinary ->
@@ -499,7 +485,7 @@ view (A model) =
 
         BuildingScreen building ->
             case Building.buildingType building of
-                Building.ShopType shopType ->
+                Building.Shop shopType ->
                     Html.App.map InventoryMsg (Inventory.view model.inventory)
 
                 _ ->
