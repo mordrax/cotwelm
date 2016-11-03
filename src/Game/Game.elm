@@ -132,19 +132,15 @@ update msg (A model) =
             )
 
         Keyboard Esc ->
-            let
-                _ =
-                    Debug.log "Esc pressed" 1
-            in
-                case model.currentScreen of
-                    MapScreen ->
-                        ( A model, Cmd.none )
+            case model.currentScreen of
+                MapScreen ->
+                    ( A model, Cmd.none )
 
-                    BuildingScreen _ ->
-                        ( A model, Cmd.map InventoryMsg (Inventory.keyboardMsg (Keyboard.Esc)) )
+                BuildingScreen _ ->
+                    ( A model, Cmd.map InventoryMsg (Inventory.keyboardMsg (Keyboard.Esc)) )
 
-                    _ ->
-                        ( A model, Cmd.none )
+                _ ->
+                    ( A model, Cmd.none )
 
         Keyboard Inventory ->
             ( A
@@ -159,9 +155,6 @@ update msg (A model) =
             let
                 ( inventory_, maybeExitValues ) =
                     Inventory.update msg model.inventory
-
-                _ =
-                    Debug.log "Game.update.inventoryMsg" msg
             in
                 case maybeExitValues of
                     Nothing ->
