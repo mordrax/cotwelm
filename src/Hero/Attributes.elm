@@ -1,4 +1,12 @@
-module Hero.Attributes exposing (Attributes, Msg, view, init, update)
+module Hero.Attributes
+    exposing
+        ( Attributes
+        , Msg
+        , view
+        , get
+        , init
+        , update
+        )
 
 --where
 
@@ -30,6 +38,15 @@ type alias Model =
     , dex : Int
     , con : Int
     , int : Int
+    }
+
+
+get : Attributes -> { str : Int, dex : Int, int : Int, con : Int }
+get (A model) =
+    { str = model.str
+    , dex = model.dex
+    , int = model.int
+    , con = model.con
     }
 
 

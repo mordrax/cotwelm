@@ -13,7 +13,9 @@ import Stats exposing (..)
 import Dice exposing (..)
 import Random.Pcg as Random exposing (..)
 import Hero.Hero as Hero exposing (Hero)
+import Hero.Attributes as Attributes exposing (Attributes)
 import Monster.Monster as Monster exposing (Monster)
+import Item.Weapon as Weapon exposing (Weapon)
 
 
 attack : Hero -> Monster -> Seed -> ( Monster, Seed )
@@ -44,6 +46,36 @@ defend monster hero seed =
             newHitMessage ("The " ++ Monster.name monster) "you" (toString damage)
     in
         ( hero_, seed_ )
+
+
+attackSpeed : Weapon -> Attributes -> Float
+attackSpeed weapon attributes =
+    let
+        { str, dex, int, con } =
+            Attributes.get attributes
+    in
+        1
+
+
+type alias Die =
+    Int
+
+
+type alias Bonus =
+    Int
+
+
+type DamageRange
+    = DamageRange Die Bonus
+
+
+damage : Weapon -> Attributes -> DamageRange
+damage weapon attributes =
+    let
+        { str, dex, int, con } =
+            Attributes.get attributes
+    in
+        DamageRange 1 1
 
 
 

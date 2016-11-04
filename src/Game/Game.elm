@@ -120,7 +120,7 @@ init seed hero difficulty =
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
-update msg (A model) =
+update msg ((A model) as game) =
     case msg of
         Keyboard (KeyDir dir) ->
             ( model
@@ -137,10 +137,10 @@ update msg (A model) =
                     ( A model, Cmd.none )
 
                 BuildingScreen _ ->
-                    ( A model, Cmd.map InventoryMsg (Inventory.keyboardMsg (Keyboard.Esc)) )
+                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
 
-                _ ->
-                    ( A model, Cmd.none )
+                InventoryScreen ->
+                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
 
         Keyboard Inventory ->
             ( A
@@ -186,7 +186,7 @@ update msg (A model) =
         MapsMsg msg ->
             ( A { model | maps = Maps.update msg model.maps }, Cmd.none )
 
-        Keyboard (Keyboard.NoOp) ->
+        Keyboard _ ->
             ( A model, Cmd.none )
 
         WindowSize size ->
