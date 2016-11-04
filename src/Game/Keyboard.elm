@@ -18,6 +18,17 @@ type Msg
     = KeyDir Direction
     | Esc
     | Inventory
+    | Open
+    | Close
+    | Search
+    | DisarmTrap
+    | ViewMap
+    | RestHp
+    | RestMP
+    | Examine
+    | Get
+    | GoDownstairs
+    | GoUpstairs
     | NoOp
 
 
@@ -37,8 +48,8 @@ playerKeymap =
         , ( 68, KeyDir E )
         , ( 100, KeyDir E )
           --numpad
-        , ( 38, KeyDir N )
-        , ( 40, KeyDir S )
+        , ( 38, KeyDir S )
+        , ( 40, KeyDir N )
         , ( 37, KeyDir W )
         , ( 39, KeyDir E )
         , ( 36, KeyDir SW )
@@ -49,6 +60,17 @@ playerKeymap =
         , ( 27, Esc )
           -- i
         , ( 73, Inventory )
+        , ( 79 ,Open)
+        , ( 67 ,Close)
+        , ( 83 ,Search)
+        , ( 68 ,DisarmTrap)
+        , ( 77 ,ViewMap)
+        , ( 82 ,RestHp)
+        , ( 82 ,RestMP)
+        , ( 88 ,Examine)
+        , ( 71 ,Get)
+        , ( 190 ,GoDownstairs)
+        , ( 188 ,GoUpstairs)
         ]
 
 

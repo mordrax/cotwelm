@@ -30,6 +30,19 @@ type alias Model =
     , hitChance : Int
     }
 
+{-| Attack Speed
+    The attack speed depends on the following:
+    - The weapon has a innate speed which should depend on it's weight and bulk. Both weight and bulk negatively affects attack speed.
+    - The strength of the attacker will offset the weight of the weapon capped to reducing the weight used in the calculation to 0.
+    - The dexterity of the attacker will offset the bulk much like the strength offsets the weight.
+    - The encumberance of the attacker will affect the overall attack speed
+
+    Attack speeds should be capped such that the weakest possible attacker using the heaviest most bulky weapon will not be so ridiculously slow as to render him useless.
+    Something like the slowest attack at speed 50% and the fastest possible attack at 200%. At this speed, an attack by the slow person could be followed by 4 attacks from
+    the fast person. This should probably be the rule for movements as well.
+-}
+
+
 
 new : Int -> Int -> Stats
 new hp sp =

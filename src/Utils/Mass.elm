@@ -6,7 +6,7 @@ module Utils.Mass
         , ltOrEqTo
         , add
         , subtract
-        , info
+        , get
         )
 
 
@@ -64,9 +64,9 @@ ltOrEqTo (Mass a) (Mass b) =
                 Ok
 
 
-info : Mass -> ( Int, Int )
-info (Mass model) =
-    ( model.bulk, model.weight )
+get : Mass -> { bulk : Int, weight : Int }
+get (Mass model) =
+    { bulk = model.bulk, weight = model.weight }
 
 
 

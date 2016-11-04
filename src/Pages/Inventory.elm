@@ -4,7 +4,7 @@ module Pages.Inventory
         , Msg
         , Draggable
         , Droppable
-        , keyboardMsg
+        , keyboardToInventoryMsg
         , init
         , view
         , update
@@ -55,6 +55,7 @@ type alias Model =
     , merchant : Merchant
     , equipment : Equipment
     }
+
 
 
 type Draggable
@@ -136,9 +137,9 @@ update msg (A ({ dnd } as model)) =
         Keyboard msg ->
             (A model, Nothing)
 
-keyboardMsg : Keyboard.Msg -> Cmd (Msg s t)
-keyboardMsg msg =
-    Task.perform Keyboard Keyboard (Task.succeed msg)
+keyboardToInventoryMsg : Keyboard.Msg -> Msg s t
+keyboardToInventoryMsg msg =
+    Keyboard msg
 
 
 
@@ -442,16 +443,16 @@ viewPackInfo maybeItem =
                 ( curMass, capMass ) =
                     Item.packInfo pack
 
-                ( curBulk, curWeight ) =
-                    Mass.info curMass
+                cur =
+                    Mass.get curMass
 
-                ( capBulk, capWeight ) =
-                    Mass.info capMass
+                cap =
+                    Mass.get capMass
 
                 print name a b =
                     name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
             in
-                (print "Bulk" curBulk capBulk) ++ ", " ++ (print "Weight" curWeight capWeight)
+                (print "Bulk" cur.bulk cap.bulk) ++ ", " ++ (print "Weight" cur.weight cap.weight)
 
         _ ->
             ""
