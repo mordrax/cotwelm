@@ -22,7 +22,7 @@ import Html.App exposing (map)
 import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item
-import Item.TypeDef exposing (..)
+import Item.Data exposing (..)
 import Monster.Monster as Monster exposing (Monster)
 import Monster.Monsters as Monsters exposing (..)
 import Pages.Inventory as Inventory exposing (Inventory)
@@ -479,14 +479,14 @@ donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
 donDefaultGarb itemFactory hero =
     let
         equipmentToMake =
-            [ ( Equipment.Weapon, Item.Weapon Dagger )
-            , ( Equipment.Armour, Item.Armour ScaleMail )
-            , ( Equipment.Shield, Item.Shield LargeIronShield )
-            , ( Equipment.Helmet, Item.Helmet LeatherHelmet )
-            , ( Equipment.Gauntlets, Item.Gauntlets NormalGauntlets )
-            , ( Equipment.Belt, Item.Belt ThreeSlotBelt )
-            , ( Equipment.Purse, Item.Purse )
-            , ( Equipment.Pack, Item.Pack MediumPack )
+            [ ( Equipment.WeaponSlot, Item.Weapon Dagger )
+            , ( Equipment.ArmourSlot, Item.Armour ScaleMail )
+            , ( Equipment.ShieldSlot, Item.Shield LargeIronShield )
+            , ( Equipment.HelmetSlot, Item.Helmet LeatherHelmet )
+            , ( Equipment.GauntletsSlot, Item.Gauntlets NormalGauntlets )
+            , ( Equipment.BeltSlot, Item.Belt ThreeSlotBelt )
+            , ( Equipment.PurseSlot, Item.Purse )
+            , ( Equipment.PackSlot, Item.Pack MediumPack )
             ]
 
         makeEquipment ( equipmentSlot, itemType ) ( accEquipment, itemFactory ) =

@@ -2,11 +2,11 @@ module Container
     exposing
         ( Container
         , Msg(..)
-        , new
+        , init
         , list
         , add
-        , take
-        , getMass
+        , remove
+        , mass
         , capacity
         )
 
@@ -18,7 +18,6 @@ Items can also be containers, so containers can hold containers.
 
 import Utils.Mass as Mass exposing (..)
 
-
 type alias ID =
     Int
 
@@ -29,7 +28,7 @@ type Msg
 
 
 type alias Model a =
-    { capacity : Mass
+    { capacity : Capacity
     , currentMass : Mass
     , items : List a
     , getMass : a -> Mass
@@ -41,19 +40,19 @@ type Container a
     = ContainerModel (Model a)
 
 
-capacity : Container a -> Mass
+capacity : Container a -> Capacity
 capacity (ContainerModel model) =
     model.capacity
 
 
-getMass : Container a -> Mass
-getMass (ContainerModel model) =
+mass : Container a -> Mass
+mass (ContainerModel model) =
     model.currentMass
 
 
-new : Mass -> (a -> Mass) -> (a -> a -> Bool) -> Container a
-new capacity getMass equals =
-    ContainerModel <| Model capacity (Mass.new 0 0) [] getMass equals
+init : Capacity -> (a -> Mass) -> (a -> a -> Bool) -> Container a
+init capacity getMass equals =
+    ContainerModel <| Model capacity (Mass 0 0) [] getMass equals
 
 
 {-| Get all the things in the container as a list
@@ -74,7 +73,7 @@ add item (ContainerModel model) =
         mass' =
             Mass.add mass model.currentMass
     in
-        case (Mass.ltOrEqTo mass' model.capacity) of
+        case (Mass.withinCapacity mass' model.capacity) of
             Mass.Ok ->
                 ( ContainerModel { model | currentMass = mass', items = item :: model.items }, Ok )
 
@@ -84,8 +83,8 @@ add item (ContainerModel model) =
 
 {-| Takes an item out of the container if it exists.
 -}
-take : a -> Container a -> Container a
-take item (ContainerModel model) =
+remove : a -> Container a -> Container a
+remove item (ContainerModel model) =
     let
         notEquals x =
             not <| model.equals item x
