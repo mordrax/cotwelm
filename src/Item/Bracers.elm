@@ -3,36 +3,39 @@ module Item.Bracers exposing (..)
 import Utils.Mass as Mass exposing (..)
 import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
-import Item.TypeDef exposing (..)
 
 
 type Bracers
-    = BracersM BracersType ArmourModel
+    = Bracers BracersType AC
 
 
-newBracers : BracersType -> ID -> ItemStatus -> IdentificationStatus -> Bracers
-newBracers bracersType id status idStatus =
+init : BracersType -> Bracers
+init bracersType =
     case bracersType of
         NormalBracers ->
-            BracersM NormalBracers
-                { ac = 3
-                , baseItem = (Model id "Bracers" 500 2000 "Bracers" status idStatus <| Mass.new 108 60)
-                }
+            Bracers NormalBracers (AC 3)
 
         BracersOfDefenseNormal ->
-            BracersM BracersOfDefenseNormal
-                { ac = 8
-                , baseItem = (Model id "Bracers Of Defense Normal" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 1836 1020)
-                }
+            Bracers BracersOfDefenseNormal (AC 8)
 
         BracersOfDefenseS ->
-            BracersM BracersOfDefenseS
-                { ac = 13
-                , baseItem = (Model id "Bracers Of Defense Strong" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 5616 3120)
-                }
+            Bracers BracersOfDefenseS (AC 13)
 
         BracersOfDefenseVS ->
-            BracersM BracersOfDefenseVS
-                { ac = 18
-                , baseItem = (Model id "Bracers Of Defense Very Strong" 500 2000 "BracersEnchanted" status idStatus <| Mass.new 11556 6420)
-                }
+            Bracers BracersOfDefenseVS (AC 18)
+
+
+blueprint : BracersType -> BaseItemData
+blueprint bracersType =
+    case bracersType of
+        NormalBracers ->
+            BaseItemData "Bracers" 500 2000 "Bracers" 108 60
+
+        BracersOfDefenseNormal ->
+            BaseItemData "Bracers Of Defense Normal" 500 2000 "BracersEnchanted" 1836 1020
+
+        BracersOfDefenseS ->
+            BaseItemData "Bracers Of Defense Strong" 500 2000 "BracersEnchanted" 5616 3120
+
+        BracersOfDefenseVS ->
+            BaseItemData "Bracers Of Defense Very Strong" 500 2000 "BracersEnchanted" 11556 6420

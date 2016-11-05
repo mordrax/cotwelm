@@ -1,23 +1,32 @@
 module Utils.Mass
     exposing
-        ( Mass
+        ( Mass(..)
+        , Capacity(..)
         , Msg(..)
-        , new
-        , ltOrEqTo
+        , withinCapacity
         , add
         , subtract
-        , get
         )
 
-
-type alias Model =
-    { bulk : Int
-    , weight : Int
-    }
+{-| A mass is anything with a bulk and a weight.
+    Capacity defines the limit of mass that a container of some sort can hold.
+-}
 
 
 type Mass
-    = Mass Model
+    = Mass Bulk Weight
+
+
+type alias Bulk =
+    Int
+
+
+type alias Weight =
+    Int
+
+
+type Capacity
+    = Capacity Bulk Weight
 
 
 type Msg
@@ -26,47 +35,27 @@ type Msg
     | TooBulky
 
 
-new : Int -> Int -> Mass
-new bulk weight =
-    Mass <| Model bulk weight
-
-
 add : Mass -> Mass -> Mass
-add (Mass a) (Mass b) =
-    Mass
-        { bulk = a.bulk + b.bulk
-        , weight = a.weight + b.weight
-        }
+add (Mass aBulk aWeight) (Mass bBulk bWeight) =
+    Mass (aBulk + bBulk) (aWeight + bWeight)
 
 
 subtract : Mass -> Mass -> Mass
-subtract (Mass a) (Mass b) =
-    Mass
-        { bulk = a.bulk - b.bulk
-        , weight = a.weight - b.weight
-        }
+subtract (Mass aBulk aWeight) (Mass bBulk bWeight) =
+    Mass (aBulk - bBulk) (aWeight - bWeight)
 
 
-ltOrEqTo : Mass -> Mass -> Msg
-ltOrEqTo (Mass a) (Mass b) =
-    let
-        bulkWeight =
-            ( a.bulk > b.bulk, a.weight > b.weight )
-    in
-        case bulkWeight of
-            ( True, _ ) ->
-                TooBulky
+withinCapacity : Mass -> Capacity -> Msg
+withinCapacity (Mass bulk weight) (Capacity capBulk capWeight) =
+    case ( bulk > capBulk, weight > capWeight ) of
+        ( True, _ ) ->
+            TooBulky
 
-            ( _, True ) ->
-                TooHeavy
+        ( _, True ) ->
+            TooHeavy
 
-            _ ->
-                Ok
-
-
-get : Mass -> { bulk : Int, weight : Int }
-get (Mass model) =
-    { bulk = model.bulk, weight = model.weight }
+        _ ->
+            Ok
 
 
 

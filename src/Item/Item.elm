@@ -1,6 +1,7 @@
 module Item.Item
     exposing
-        ( Item(..)
+        ( AnyItem(..)
+        , Item
         , Weapon
         , Armour
         , Shield
@@ -16,12 +17,10 @@ module Item.Item
         , Boots
         , new
         , newFoldableItem
-        , ItemType(..)
         , view
         , viewSlot
           -- item functions
         , isCursed
-        , toPurse
         , priceOf
         , costOf
           -- pack functions
@@ -47,16 +46,15 @@ import Utils.IdGenerator as IdGenerator exposing (..)
 -- sub items
 
 import Item.Data exposing (..)
-import Item.TypeDef exposing (..)
-import Item.Weapon exposing (..)
-import Item.Armour exposing (..)
-import Item.Shield exposing (..)
-import Item.Helmet exposing (..)
-import Item.Bracers exposing (..)
-import Item.Gauntlets exposing (..)
-import Item.Belt exposing (..)
-import Item.Pack exposing (..)
-import Item.Purse exposing (..)
+import Item.Weapon as Weapon exposing (Weapon)
+import Item.Armour as Armour exposing (Armour)
+import Item.Shield as Shield exposing (Shield)
+import Item.Helmet as Helmet exposing (Helmet)
+import Item.Bracers as Bracers exposing (Bracers)
+import Item.Gauntlets as Gauntlets exposing (Gauntlets)
+import Item.Belt as Belt exposing (Belt)
+import Item.Pack as Pack exposing (Pack)
+import Item.Purse as Purse exposing (Purse)
 
 
 {-
@@ -66,96 +64,86 @@ import Item.Purse exposing (..)
       import Item.Ring exposing (..)
       import Item.Boots exposing (..)
 -}
+-- for exporting
 
 
 type alias Weapon =
-    Item.Weapon.Weapon
+    Weapon.Weapon
 
 
 type alias Armour =
-    Item.Armour.Armour
+    Armour.Armour
 
 
 type alias Shield =
-    Item.Shield.Shield
+    Shield.Shield
 
 
 type alias Helmet =
-    Item.Helmet.Helmet
+    Helmet.Helmet
 
 
 type alias Bracers =
-    Item.Bracers.Bracers
+    Bracers.Bracers
 
 
 type alias Gauntlets =
-    Item.Gauntlets.Gauntlets
+    Gauntlets.Gauntlets
 
 
 type alias Belt a =
-    Item.Belt.Belt a
+    Belt.Belt a
 
 
 type alias Pack a =
-    Item.Pack.Pack a
+    Pack.Pack a
 
 
 type alias Purse =
-    Item.Purse.Purse
+    Purse.Purse
 
 
-
-{- type alias Neckwear =
-       Item.Neckwear.Neckwear
-
-
-   type alias Overgarment =
-       Item.Overgarment.Overgarment
-
-
-   type alias Ring =
-       Item.Ring.Ring
+type alias Model =
+    { id : ID
+    , name : String
+    , prices : Prices
+    , css : String
+    , status : ItemStatus
+    , isIdentified : IdentificationStatus
+    , mass : Mass
+    }
 
 
-   type alias Boots =
-       Item.Boots.Boots
--}
+type alias Buy =
+    Int
 
 
-type alias ItemTypes =
-    List ItemType
+type alias Sell =
+    Int
 
 
-type ItemType
-    = Weapon WeaponType
-    | Armour ArmourType
-    | Shield ShieldType
-    | Helmet HelmetType
-    | Bracers BracersType
-    | Gauntlets GauntletsType
-    | Belt BeltType
-    | Pack PackType
-    | Purse
-    | Neckwear NeckwearType
-    | Overgarment OvergarmentType
-    | Ring RingType
-    | Boots BootsType
+type Prices
+    = Prices Buy Sell
 
 
-type Item
-    = ItemWeapon Weapon
-    | ItemArmour Armour
-    | ItemShield Shield
-    | ItemHelmet Helmet
-    | ItemBracers Bracers
-    | ItemGauntlets Gauntlets
-    | ItemBelt (Belt Item)
-    | ItemPack (Pack Item)
-    | ItemPurse Purse
-    | ItemNeckwear Neckwear
-    | ItemOvergarment Overgarment
-    | ItemRing Ring
-    | ItemBoots Boots
+type AnyItem
+    = AnyItemWeapon (Item Weapon)
+    | AnyItemArmour (Item Armour)
+    | AnyItemShield (Item Shield)
+    | AnyItemHelmet (Item Helmet)
+    | AnyItemBracers (Item Bracers)
+    | AnyItemGauntlets (Item Gauntlets)
+    | AnyItemBelt (Item (Belt AnyItem))
+    | AnyItemPack (Item (Pack AnyItem))
+    | AnyItemPurse (Item Purse)
+    | AnyItemNeckwear (Item Neckwear)
+    | AnyItemOvergarment (Item Overgarment)
+    | AnyItemRing (Item Ring)
+    | AnyItemBoots (Item Boots)
+
+
+type Item a
+    = Item Model a
 
 
 type Neckwear
@@ -180,77 +168,60 @@ type Boots
 --------------------
 
 
-addToPack : Item -> Pack Item -> ( Pack Item, Item.TypeDef.Msg )
-addToPack item pack =
+addToPack : AnyItem -> Item (Pack AnyItem) -> ( Item (Pack AnyItem), Item.Data.Msg )
+addToPack item (Item model packOfAnyItem) =
     let
-        isItemThePack =
-            equals item (ItemPack pack)
-
-        ( container', msg ) =
-            Container.add item packModel.container
-
-        (PM packType model packModel) =
-            pack
-
-        _ =
-            Debug.log "is item the pack: " isItemThePack
+        ( newPack, msg ) =
+            Pack.add item packOfAnyItem
     in
-        if isItemThePack == True then
-            ( pack, NestedItem )
+        if equals item (AnyItemPack <| Item model packOfAnyItem) then
+            ( Item model newPack, NestedItem )
         else
             case msg of
                 Container.Ok ->
-                    ( PM packType model { packModel | container = container' }, Item.TypeDef.Ok )
+                    ( Item model newPack, Item.Data.Ok )
 
                 Container.MassMsg massMsg ->
-                    ( pack, Item.TypeDef.MassMsg massMsg )
+                    ( Item model packOfAnyItem, Item.Data.MassMsg massMsg )
 
 
-removeFromPack : a -> Pack a -> Pack a
-removeFromPack item (PM packType model packModel) =
-    PM packType model { packModel | container = Container.take item packModel.container }
+removeFromPack : a -> Item (Pack a) -> Item (Pack a)
+removeFromPack item (Item model pack) =
+    Item model (Pack.remove item pack)
 
 
 {-| Get the current mass and mass capacity for the given pack
 -}
-packInfo : Pack a -> ( Mass, Mass )
-packInfo (PM _ _ packModel) =
-    ( Container.getMass packModel.container, Container.capacity packModel.container )
+packInfo : Item (Pack a) -> ( Mass, Capacity )
+packInfo (Item _ pack) =
+    ( Pack.mass pack, Pack.capacity pack )
 
 
-packContents : Pack a -> List a
-packContents (PM _ _ packModel) =
-    Container.list packModel.container
-
-
-
------------
--- Purse --
------------
-
-
-toPurse : Item -> Maybe Purse
-toPurse item =
-    case item of
-        ItemPurse purse ->
-            Just purse
-
-        _ ->
-            Nothing
+packContents : Item (Pack a) -> List a
+packContents (Item _ pack) =
+    Pack.list pack
 
 
 {-| The price that shops are willing to sell an Item for, the buy field
 -}
-priceOf : Item -> Int
+priceOf : AnyItem -> Int
 priceOf item =
-    .sell (getModel item)
+    let
+        (Prices buy sell) =
+            getModel item |> .prices
+    in
+        sell
 
 
 {-| The price that shops are willing to buy an Item for, the sell field
 -}
-costOf : Item -> Int
+costOf : AnyItem -> Int
 costOf item =
-    .buy (getModel item)
+    let
+        (Prices buy sell) =
+            getModel item |> .prices
+    in
+        buy
 
 
 
@@ -259,129 +230,116 @@ costOf item =
 ----------------------------------------------------------------------
 
 
-getMass : Item -> Mass
-getMass item =
+getMass : AnyItem -> Mass
+getMass =
+    getModel >> .mass
+
+
+isCursed : AnyItem -> Bool
+isCursed =
     let
-        model =
-            getModel item
+        isCursed status =
+            status == Cursed
     in
-        model.mass
+        getModel >> .status >> isCursed
 
 
-isCursed : Item -> Bool
-isCursed item =
-    let
-        { status } =
-            getModel item
-    in
-        case status of
-            Cursed ->
-                True
-
-            _ ->
-                False
-
-
-getModel : Item -> Model
-getModel item =
-    case item of
-        ItemWeapon (WM _ { baseItem }) ->
-            baseItem
-
-        ItemArmour (A _ { baseItem }) ->
-            baseItem
-
-        ItemShield (ShieldM _ { baseItem }) ->
-            baseItem
-
-        ItemHelmet (HelmetM _ { baseItem }) ->
-            baseItem
-
-        ItemBracers (BracersM _ { baseItem }) ->
-            baseItem
-
-        ItemGauntlets (GauntletsM _ { baseItem }) ->
-            baseItem
-
-        ItemBelt (BeltModelTag _ model _) ->
-            model
-
-        ItemPack (PM _ model _) ->
-            model
-
-        ItemPurse (PurseM { baseItem }) ->
-            baseItem
-
-        ItemNeckwear (NeckwearModelTag _ model) ->
-            model
-
-        ItemOvergarment (OvergarmentModelTag _ model) ->
-            model
-
-        ItemRing (RingModelTag _ model) ->
-            model
-
-        ItemBoots (BootsModelTag _ model) ->
-            model
-
-
-equals : Item -> Item -> Bool
-equals a b =
+equals : AnyItem -> AnyItem -> Bool
+equals anItemA anItemB =
     let
         modelA =
-            getModel a
+            getModel anItemA
 
         modelB =
-            getModel b
+            getModel anItemB
     in
         IdGenerator.equals modelA.id modelB.id
 
 
-view : Item -> Html msg
+getModel : AnyItem -> Model
+getModel anItem =
+    case anItem of
+        AnyItemWeapon (Item model _) ->
+            model
+
+        AnyItemArmour (Item model _) ->
+            model
+
+        AnyItemShield (Item model _) ->
+            model
+
+        AnyItemHelmet (Item model _) ->
+            model
+
+        AnyItemBracers (Item model _) ->
+            model
+
+        AnyItemGauntlets (Item model _) ->
+            model
+
+        AnyItemBelt (Item model _) ->
+            model
+
+        AnyItemPack (Item model _) ->
+            model
+
+        AnyItemPurse (Item model _) ->
+            model
+
+        AnyItemNeckwear (Item model _) ->
+            model
+
+        AnyItemOvergarment (Item model _) ->
+            model
+
+        AnyItemRing (Item model _) ->
+            model
+
+        AnyItemBoots (Item model _) ->
+            model
+
+
+view : Item a -> Html msg
 view item =
     viewSlot item ""
 
 
-viewSlot : Item -> String -> Html msg
-viewSlot item extraContent =
-    let
-        model =
-            getModel item
-    in
-        div [ class "card" ]
-            [ div
-                {- [ class "ui item"
-                   , style
-                       [ ( "opacity", "1" )
-                       , ( "cursor", "move" )
-                       , ( "width", "32px" )
-                       , ( "height", "64px" )
-                       ]
+viewSlot : Item a -> String -> Html msg
+viewSlot (Item model _) extraContent =
+    div [ class "card" ]
+        [ div
+            {- [ class "ui item"
+               , style
+                   [ ( "opacity", "1" )
+                   , ( "cursor", "move" )
+                   , ( "width", "32px" )
+                   , ( "height", "64px" )
                    ]
-                -}
-                []
-                [ div [ class "image" ]
-                    [ i [ class ("cotwItem " ++ model.css) ] []
-                    ]
-                , div [ class "content" ]
-                    [ a [ class "header" ]
-                        [ text model.name
-                        ]
-                    , div [ class "meta" ]
-                        [ span [ class "date" ] [ text "" ]
-                        ]
-                    , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
-                        [ text ""
-                        ]
-                    ]
-                , div [ class "extra content" ] [ text extraContent ]
+               ]
+            -}
+            []
+            [ div [ class "image" ]
+                [ i [ class ("cotwItem " ++ model.css) ] []
                 ]
+            , div [ class "content" ]
+                [ a [ class "header" ]
+                    [ text model.name
+                    ]
+                , div [ class "meta" ]
+                    [ span [ class "date" ] [ text "" ]
+                    ]
+                , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
+                    [ text ""
+                    ]
+                ]
+            , div [ class "extra content" ] [ text extraContent ]
             ]
+        ]
 
 
-newContainer : Mass -> Container Item
-newContainer mass =
-    Container.new mass getMass equals
+newContainer : Capacity -> Container AnyItem
+newContainer capacity =
+    Container.init capacity getMass equals
 
 
 newFoldableItem : ( key, ID -> Item ) -> ID -> ( key, Item )
@@ -389,44 +347,63 @@ newFoldableItem ( key, itemFactory ) id =
     ( key, itemFactory id )
 
 
-new : ItemType -> ID -> Item
+new : ItemType -> ID -> AnyItem
 new itemType id =
     newWithOptions itemType id Normal Identified
 
 
-newWithOptions : ItemType -> ID -> ItemStatus -> IdentificationStatus -> Item
+init : BaseItemData -> ItemStatus -> IdentificationStatus -> ID -> Model
+init { name, weight, bulk, css, buy, sell } status idStatus id =
+    { id = id
+    , name = name
+    , prices = Prices buy sell
+    , css = css
+    , status = Normal
+    , isIdentified = Identified
+    , mass = Mass bulk weight
+    }
+
+
+newWithOptions : ItemType -> ID -> ItemStatus -> IdentificationStatus -> AnyItem
 newWithOptions itemType id status idStatus =
-    case itemType of
-        Weapon weaponType ->
-            ItemWeapon (newWeapon weaponType id status idStatus)
+    let
+        forge bid =
+            init bid status idStatus id
 
-        Armour armourType ->
-            ItemArmour (newArmour armourType id status idStatus)
+        containerBuilder capacity =
+            Container.init capacity getMass equals
+    in
+        case itemType of
+            Weapon weaponType ->
+                AnyItemWeapon <| Item (forge (Weapon.blueprint weaponType)) (Weapon.init weaponType)
 
-        Shield shieldType ->
-            ItemShield (newShield shieldType id status idStatus)
+            Armour armourType ->
+                AnyItemArmour <| Item (forge (Armour.blueprint armourType)) (Armour.init armourType)
 
-        Helmet helmetType ->
-            ItemHelmet (newHelmet helmetType id status idStatus)
+            Shield shieldType ->
+                AnyItemShield <| Item (forge (Shield.blueprint shieldType)) (Shield.init shieldType)
 
-        Bracers bracersType ->
-            ItemBracers (newBracers bracersType id status idStatus)
+            Helmet helmetType ->
+                AnyItemHelmet <| Item (forge (Helmet.blueprint helmetType)) (Helmet.init helmetType)
 
-        Gauntlets gauntletsType ->
-            ItemGauntlets (newGauntlets gauntletsType id status idStatus)
+            Bracers bracersType ->
+                AnyItemBracers <| Item (forge (Bracers.blueprint bracersType)) (Bracers.init bracersType)
 
-        Belt beltType ->
-            ItemBelt (newBelt beltType id status idStatus newContainer)
+            Gauntlets gauntletsType ->
+                AnyItemGauntlets <| Item (forge (Gauntlets.blueprint gauntletsType)) (Gauntlets.init gauntletsType)
 
-        Pack packType ->
-            ItemPack (newPack packType id status idStatus newContainer)
+            Belt beltType ->
+                AnyItemBelt <| Item (forge (Belt.blueprint beltType)) (Belt.init beltType containerBuilder)
 
-        Purse ->
-            ItemPurse (newPurse id status idStatus)
+            Pack packType ->
+                AnyItemPack <| Item (forge (Pack.blueprint packType)) (Pack.init packType containerBuilder)
 
-        -- Neckwear
-        --        Overgarment
-        --        Ring
-        --        Boots
-        _ ->
-            ItemWeapon (newWeapon Dagger id status idStatus)
+            Purse ->
+                AnyItemPurse <| Item (forge Purse.blueprint) Purse.init
+
+            -- Neckwear
+            --        Overgarment
+            --        Ring
+            --        Boots
+            _ ->
+                AnyItemWeapon <| Item (forge (Weapon.blueprint Dagger)) (Weapon.init Dagger)
