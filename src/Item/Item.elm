@@ -23,6 +23,8 @@ module Item.Item
         , isCursed
         , priceOf
         , costOf
+        , fromPurse
+        , toPurse
           -- pack functions
         , addToPack
         , removeFromPack
@@ -256,6 +258,16 @@ equals anItemA anItemB =
         IdGenerator.equals modelA.id modelB.id
 
 
+fromPurse : Purse.Purse -> Item Purse -> Item Purse
+fromPurse purse (Item model _) =
+    Item model purse
+
+
+toPurse : Item Purse -> Purse.Purse
+toPurse (Item model purse) =
+    purse
+
+
 getModel : AnyItem -> Model
 getModel anItem =
     case anItem of
@@ -299,13 +311,16 @@ getModel anItem =
             model
 
 
-view : Item a -> Html msg
+view : AnyItem -> Html msg
 view item =
     viewSlot item ""
 
 
-viewSlot : Item a -> String -> Html msg
-viewSlot (Item model _) extraContent =
+viewSlot : AnyItem -> String -> Html msg
+viewSlot item extraContent =
+    let
+        model = getModel item
+    in
     div [ class "card" ]
         [ div
             {- [ class "ui item"

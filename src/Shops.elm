@@ -91,11 +91,18 @@ init seed itemFactory =
 
 {-| The shop sells to the customer.
 -}
-sell : AnyItem -> Purse.Purse -> Shop -> Result String ( Shop, Purse.Purse )
-sell item purse (B items shopType) =
+sell : AnyItem -> Item Item.Purse -> Shop -> Result String ( Shop, Item Item.Purse )
+sell item itemPurse (B items shopType) =
     let
         price =
             Item.priceOf item
+
+        purse =
+            Item.toPurse itemPurse
+
+        backToItemPurse purse =
+            Item.fromPurse purse itemPurse
+
 
         itemsWithout item =
             List.filter (\x -> (not (Item.equals item x))) items
@@ -104,8 +111,8 @@ sell item purse (B items shopType) =
             Debug.log "Item purchase price:" price
     in
         case Purse.remove price purse of
-            Result.Ok purse' ->
-                Result.Ok ( B (itemsWithout item) shopType, purse' )
+            Result.Ok purse_ ->
+                Result.Ok ( B (itemsWithout item) shopType, backToItemPurse purse_ )
 
             Result.Err msg ->
                 Result.Err "Cannot afford item!"
@@ -113,16 +120,22 @@ sell item purse (B items shopType) =
 
 {-| The shop buys from the customer.
 -}
-buy : AnyItem -> Purse.Purse -> Shop -> ( Shop, Purse.Purse )
-buy item purse (B items shopType) =
+buy : AnyItem -> Item Item.Purse -> Shop -> ( Shop, Item Item.Purse )
+buy item itemPurse (B items shopType) =
     let
         _ =
             Debug.log "Item sell price:" cost
 
+        purse =
+            Item.toPurse itemPurse
+
+        backToItemPurse purse =
+            Item.fromPurse purse itemPurse
+
         cost =
             Item.costOf item
     in
-        ( B (item :: items) shopType, Purse.add cost purse )
+        ( B (item :: items) shopType, Purse.add cost purse |> backToItemPurse )
 
 
 replenishReducer : ShopType -> ( EveryDict ShopType AnyItems, ItemFactory, Seed ) -> ( EveryDict ShopType AnyItems, ItemFactory, Seed )

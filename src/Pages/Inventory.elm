@@ -59,13 +59,13 @@ type alias Model =
 
 
 type Draggable
-    = DragSlot Item EquipmentSlot
-    | DragPack Item (Item.Pack AnyItem)
-    | DragMerchant Item Merchant
+    = DragSlot AnyItem EquipmentSlot
+    | DragPack AnyItem (Item (Item.Pack AnyItem))
+    | DragMerchant AnyItem Merchant
 
 
 type Droppable
-    = DropPack (Item.Pack AnyItem)
+    = DropPack (Item (Item.Pack AnyItem))
     | DropEquipment EquipmentSlot
     | DropMerchant Merchant
 
@@ -207,7 +207,7 @@ handleDragDrop dragSource dropTarget model =
 - Pack:
   - Nothing
 -}
-handleDrag : Draggable -> Model -> Result String ( Model, Item )
+handleDrag : Draggable -> Model -> Result String ( Model, AnyItem )
 handleDrag draggable model =
     case draggable of
         DragSlot item slot ->
@@ -236,8 +236,8 @@ handleDrag draggable model =
             transactWithMerchant item model
 
 
-transactWithMerchant : Item Item.Purse -> Model -> Result String ( Model, Item Item.Purse)
-transactWithMerchant purse ({ merchant, equipment } as model) =
+transactWithMerchant : AnyItem -> Model -> Result String ( Model, AnyItem)
+transactWithMerchant item ({ merchant, equipment } as model) =
     let
         maybePurse =
             Equipment.getPurse equipment
@@ -245,7 +245,8 @@ transactWithMerchant purse ({ merchant, equipment } as model) =
         buyFrom shop =
             case maybePurse of
                 Just purse ->
-                    Shops.sell purse purse shop
+                    Shops.sell item purse shop
+
 
                 Nothing ->
                     Result.Err "No purse to buy anything with!"
@@ -256,7 +257,7 @@ transactWithMerchant purse ({ merchant, equipment } as model) =
                     | merchant = Shop shop
                     , equipment = Equipment.updatePurseContents purse equipment
                   }
-                , purse
+                , item
                 )
 
         pickup =
@@ -281,7 +282,7 @@ transactWithMerchant purse ({ merchant, equipment } as model) =
 - Pack
   - Check pack capacity
 -}
-handleDrop : Droppable -> Item -> Model -> Result String Model
+handleDrop : Droppable -> AnyItem -> Model -> Result String Model
 handleDrop droppable item model =
     case droppable of
         DropPack pack ->
@@ -309,7 +310,7 @@ handleDrop droppable item model =
                         Result.Err ("Dropping into pack failed with unhanded msg: " ++ (toString msg))
 
         DropEquipment slot ->
-            case Equipment.equip ( slot, item ) model.equipment of
+            case Equipment.equip item model.equipment of
                 Result.Ok equipment' ->
                     Result.Ok { model | equipment = equipment' }
 
@@ -327,6 +328,7 @@ handleDrop droppable item model =
                     let
                         ( shopAfterBought, purseAfterPaid ) =
                             Shops.buy item purse shop
+
                     in
                         Result.Ok
                             { model
@@ -429,7 +431,7 @@ viewGround model =
     div [] []
 
 
-viewPackInfo : Maybe (Pack AnyItem) -> String
+viewPackInfo : Maybe (Item (Pack AnyItem)) -> String
 viewPackInfo maybeItem =
     case maybeItem of
         Just pack ->
@@ -452,7 +454,7 @@ viewPackInfo maybeItem =
 ---------------
 
 
-viewPack : Maybe (Pack AnyItem) -> Model -> Html (DragDrop.Msg Draggable Droppable)
+viewPack : Maybe (Item (Pack AnyItem)) -> Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPack maybePack ({ dnd } as model) =
     let
         packStyle =
@@ -475,7 +477,7 @@ viewShop shop dnd =
         wares =
             Shops.wares shop
 
-        makeDraggable : Shop -> Item -> Html (DragDrop.Msg Draggable a)
+        makeDraggable : Shop -> AnyItem -> Html (DragDrop.Msg Draggable a)
         makeDraggable shop item =
             DragDrop.draggable (Item.view item) (DragMerchant item (Shop shop)) dnd
 
@@ -563,7 +565,8 @@ viewPurse : Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPurse ({ equipment } as model) =
     let
         maybePurseContents =
-            (Equipment.getPurse equipment)
+            ((Equipment.getPurse equipment)
+            |> Maybe.map Item.toPurse)
                 `Maybe.andThen` maybeCoins
 
         maybeCoins coins =
