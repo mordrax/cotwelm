@@ -1,56 +1,57 @@
 module Item.Helmet exposing (..)
 
-import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
-import Item.TypeDef exposing (..)
 
 
 type Helmet
-    = HelmetM HelmetType ArmourModel
+    = Helmet HelmetType AC
 
 
-newHelmet : HelmetType -> ID -> ItemStatus -> IdentificationStatus -> Helmet
-newHelmet helmetType id status idStatus =
+init : HelmetType -> Helmet
+init helmetType =
     case helmetType of
         BrokenHelmet ->
-            HelmetM BrokenHelmet
-                { ac = 0
-                , baseItem = (Model id "Broken Helmet" 1000 1000 "BrokenHelmet" status idStatus <| Mass.new 0 25)
-                }
+            Helmet BrokenHelmet (AC 0)
 
         LeatherHelmet ->
-            HelmetM LeatherHelmet
-                { ac = 3
-                , baseItem = (Model id "Leather Helmet" 500 500 "LeatherHelmet" status idStatus <| Mass.new 525 300)
-                }
+            Helmet LeatherHelmet (AC 3)
 
         IronHelmet ->
-            HelmetM IronHelmet
-                { ac = 6
-                , baseItem = (Model id "Iron Helmet" 2000 2000 "MetalHelmet" status idStatus <| Mass.new 1050 600)
-                }
+            Helmet IronHelmet (AC 6)
 
         SteelHelmet ->
-            HelmetM SteelHelmet
-                { ac = 9
-                , baseItem = (Model id "Steel Helmet" 2500 2000 "MetalHelmet" status idStatus <| Mass.new 3150 1800)
-                }
+            Helmet SteelHelmet (AC 9)
 
         MeteoricSteelHelmet ->
-            HelmetM MeteoricSteelHelmet
-                { ac = 15
-                , baseItem = (Model id "Meteoric Steel Helmet" 1000 2000 "MetalHelmet" status idStatus <| Mass.new 10500 6000)
-                }
+            Helmet MeteoricSteelHelmet (AC 15)
 
         HelmetOfDetectMonsters ->
-            HelmetM HelmetOfDetectMonsters
-                { ac = 9
-                , baseItem = (Model id "Helmet Of Detect Monsters" 2500 2000 "HelmetOfDetectMonsters" status idStatus <| Mass.new 42000 24000)
-                }
+            Helmet HelmetOfDetectMonsters (AC 9)
 
         EnchantedHelmOfStorms ->
-            HelmetM EnchantedHelmOfStorms
-                { ac = 25
-                , baseItem = (Model id "Enchanted Helm Of Storms" 1000 2000 "EnchantedHelmOfStorms" status idStatus <| Mass.new 1050000 600000)
-                }
+            Helmet EnchantedHelmOfStorms (AC 25)
+
+
+blueprint : HelmetType -> BaseItemData
+blueprint helmetType =
+    case helmetType of
+        BrokenHelmet ->
+            BaseItemData "Broken Helmet" 1000 1000 "BrokenHelmet" 0 25
+
+        LeatherHelmet ->
+            BaseItemData "Leather Helmet" 500 500 "LeatherHelmet" 525 300
+
+        IronHelmet ->
+            BaseItemData "Iron Helmet" 2000 2000 "MetalHelmet" 1050 600
+
+        SteelHelmet ->
+            BaseItemData "Steel Helmet" 2500 2000 "MetalHelmet" 3150 1800
+
+        MeteoricSteelHelmet ->
+            BaseItemData "Meteoric Steel Helmet" 1000 2000 "MetalHelmet" 10500 6000
+
+        HelmetOfDetectMonsters ->
+            BaseItemData "Helmet Of Detect Monsters" 2500 2000 "HelmetOfDetectMonsters" 42000 24000
+
+        EnchantedHelmOfStorms ->
+            BaseItemData "Enchanted Helm Of Storms" 1000 2000 "EnchantedHelmOfStorms" 1050000 600000

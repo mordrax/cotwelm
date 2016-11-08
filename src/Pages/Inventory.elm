@@ -27,7 +27,7 @@ import Html.App exposing (..)
 -- item
 
 import Item.Item as Item exposing (..)
-import Item.TypeDef exposing (..)
+import Item.Data exposing (..)
 
 
 -- game
@@ -59,13 +59,13 @@ type alias Model =
 
 
 type Draggable
-    = DragSlot Item EquipmentSlot
-    | DragPack Item (Item.Pack Item)
-    | DragMerchant Item Merchant
+    = DragSlot AnyItem EquipmentSlot
+    | DragPack AnyItem (Item (Item.Pack AnyItem))
+    | DragMerchant AnyItem Merchant
 
 
 type Droppable
-    = DropPack (Item.Pack Item)
+    = DropPack (Item (Item.Pack AnyItem))
     | DropEquipment EquipmentSlot
     | DropMerchant Merchant
 
@@ -207,7 +207,7 @@ handleDragDrop dragSource dropTarget model =
 - Pack:
   - Nothing
 -}
-handleDrag : Draggable -> Model -> Result String ( Model, Item )
+handleDrag : Draggable -> Model -> Result String ( Model, AnyItem )
 handleDrag draggable model =
     case draggable of
         DragSlot item slot ->
@@ -236,16 +236,17 @@ handleDrag draggable model =
             transactWithMerchant item model
 
 
-transactWithMerchant : Item -> Model -> Result String ( Model, Item )
+transactWithMerchant : AnyItem -> Model -> Result String ( Model, AnyItem)
 transactWithMerchant item ({ merchant, equipment } as model) =
     let
         maybePurse =
-            Equipment.get Equipment.Purse equipment `Maybe.andThen` toPurse
+            Equipment.getPurse equipment
 
         buyFrom shop =
             case maybePurse of
                 Just purse ->
                     Shops.sell item purse shop
+
 
                 Nothing ->
                     Result.Err "No purse to buy anything with!"
@@ -281,7 +282,7 @@ transactWithMerchant item ({ merchant, equipment } as model) =
 - Pack
   - Check pack capacity
 -}
-handleDrop : Droppable -> Item -> Model -> Result String Model
+handleDrop : Droppable -> AnyItem -> Model -> Result String Model
 handleDrop droppable item model =
     case droppable of
         DropPack pack ->
@@ -299,7 +300,7 @@ handleDrop droppable item model =
                     Equipment.NoPackEquipped ->
                         Result.Err "Can't add to the pack. No packed equipped!"
 
-                    Equipment.ItemMsg (Item.TypeDef.Ok) ->
+                    Equipment.ItemMsg (Item.Data.Ok) ->
                         success
 
                     Equipment.ItemMsg msg ->
@@ -309,7 +310,7 @@ handleDrop droppable item model =
                         Result.Err ("Dropping into pack failed with unhanded msg: " ++ (toString msg))
 
         DropEquipment slot ->
-            case Equipment.equip ( slot, item ) model.equipment of
+            case Equipment.equip item model.equipment of
                 Result.Ok equipment' ->
                     Result.Ok { model | equipment = equipment' }
 
@@ -318,16 +319,16 @@ handleDrop droppable item model =
 
         DropMerchant merchant ->
             let
-                getPurse =
+                getPurseResult =
                     model.equipment
-                        |> Equipment.get Equipment.Purse
-                        |> (\x -> Maybe.andThen x toPurse)
+                        |> Equipment.getPurse
                         |> Result.fromMaybe "No purse to hold coins!"
 
                 sellTo shop purse =
                     let
                         ( shopAfterBought, purseAfterPaid ) =
                             Shops.buy item purse shop
+
                     in
                         Result.Ok
                             { model
@@ -337,7 +338,7 @@ handleDrop droppable item model =
             in
                 case merchant of
                     Shop shop ->
-                        getPurse
+                        getPurseResult
                             `Result.andThen` sellTo shop
 
                     Ground ->
@@ -394,12 +395,7 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
                 ]
 
         maybePack =
-            case Equipment.get Equipment.Pack equipment of
-                Just (ItemPack pack) ->
-                    Just pack
-
-                _ ->
-                    Nothing
+            Equipment.getPack equipment
 
         shopGroundHtml =
             case merchant of
@@ -435,24 +431,18 @@ viewGround model =
     div [] []
 
 
-viewPackInfo : Maybe (Pack Item) -> String
+viewPackInfo : Maybe (Item (Pack AnyItem)) -> String
 viewPackInfo maybeItem =
     case maybeItem of
         Just pack ->
             let
-                ( curMass, capMass ) =
+                ( Mass curBulk curWeight, Capacity capBulk capWeight ) =
                     Item.packInfo pack
-
-                cur =
-                    Mass.get curMass
-
-                cap =
-                    Mass.get capMass
 
                 print name a b =
                     name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
             in
-                (print "Bulk" cur.bulk cap.bulk) ++ ", " ++ (print "Weight" cur.weight cap.weight)
+                (print "Bulk" curBulk capBulk) ++ ", " ++ (print "Weight" curWeight capWeight)
 
         _ ->
             ""
@@ -464,14 +454,14 @@ viewPackInfo maybeItem =
 ---------------
 
 
-viewPack : Maybe (Pack Item) -> Model -> Html (DragDrop.Msg Draggable Droppable)
+viewPack : Maybe (Item (Pack AnyItem)) -> Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPack maybePack ({ dnd } as model) =
     let
         packStyle =
             style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
 
         droppableHtml pack =
-            (div [ packStyle ] [ viewContainer (ItemPack pack) model ])
+            (div [ packStyle ] [ viewContainer pack model ])
     in
         case maybePack of
             Just pack ->
@@ -487,7 +477,7 @@ viewShop shop dnd =
         wares =
             Shops.wares shop
 
-        makeDraggable : Shop -> Item -> Html (DragDrop.Msg Draggable a)
+        makeDraggable : Shop -> AnyItem -> Html (DragDrop.Msg Draggable a)
         makeDraggable shop item =
             DragDrop.draggable (Item.view item) (DragMerchant item (Shop shop)) dnd
 
@@ -502,8 +492,8 @@ viewShop shop dnd =
         droppableShop
 
 
-viewContainer : Item -> Model -> Html (DragDrop.Msg Draggable Droppable)
-viewContainer containerItem ({ equipment, dnd } as model) =
+viewContainer : Item (Pack AnyItem) -> Model -> Html (DragDrop.Msg Draggable Droppable)
+viewContainer pack ({ equipment, dnd } as model) =
     let
         items =
             Equipment.getPackContent equipment
@@ -511,13 +501,9 @@ viewContainer containerItem ({ equipment, dnd } as model) =
         makeDraggable pack item =
             DragDrop.draggable (Item.view item) (DragPack item pack) dnd
     in
-        case (containerItem) of
-            ItemPack pack ->
                 div [ class "ui cards" ]
                     (List.map (makeDraggable pack) items)
 
-            _ ->
-                div [] [ text "Item in pack equipment slot is not a pack, how did it get there?!" ]
 
 
 
@@ -551,21 +537,21 @@ viewEquipment equipment dnd =
                             ]
     in
         div [ class "ui grid" ]
-            [ drawSlot Equipment.Weapon
-            , drawSlot Equipment.Freehand
-            , drawSlot Equipment.Armour
-            , drawSlot Equipment.Shield
-            , drawSlot Equipment.Helmet
-            , drawSlot Equipment.Bracers
-            , drawSlot Equipment.Gauntlets
-            , drawSlot Equipment.Belt
-            , drawSlot Equipment.Purse
-            , drawSlot Equipment.Pack
-            , drawSlot Equipment.Neckwear
-            , drawSlot Equipment.Overgarment
-            , drawSlot Equipment.LeftRing
-            , drawSlot Equipment.RightRing
-            , drawSlot Equipment.Boots
+            [ drawSlot Equipment.WeaponSlot
+            , drawSlot Equipment.FreehandSlot
+            , drawSlot Equipment.ArmourSlot
+            , drawSlot Equipment.ShieldSlot
+            , drawSlot Equipment.HelmetSlot
+            , drawSlot Equipment.BracersSlot
+            , drawSlot Equipment.GauntletsSlot
+            , drawSlot Equipment.BeltSlot
+            , drawSlot Equipment.PurseSlot
+            , drawSlot Equipment.PackSlot
+            , drawSlot Equipment.NeckwearSlot
+            , drawSlot Equipment.OvergarmentSlot
+            , drawSlot Equipment.LeftRingSlot
+            , drawSlot Equipment.RightRingSlot
+            , drawSlot Equipment.BootsSlot
             ]
 
 
@@ -579,8 +565,8 @@ viewPurse : Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPurse ({ equipment } as model) =
     let
         maybePurseContents =
-            (Equipment.get Equipment.Purse equipment)
-                `Maybe.andThen` Item.toPurse
+            ((Equipment.getPurse equipment)
+            |> Maybe.map Item.toPurse)
                 `Maybe.andThen` maybeCoins
 
         maybeCoins coins =

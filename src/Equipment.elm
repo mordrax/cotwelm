@@ -4,6 +4,8 @@ module Equipment
         , Equipment
         , Msg(..)
         , get
+        , getPurse
+        , getPack
         , init
         , equip
         , unequip
@@ -26,7 +28,7 @@ Does not render equipment but will provide a API to retrieve them.
 --items
 
 import Item.Item as Item exposing (..)
-import Item.TypeDef exposing (..)
+import Item.Data
 
 
 -- utils
@@ -39,21 +41,21 @@ import Utils.IdGenerator as IdGenerator exposing (..)
 
 
 type alias Model =
-    { weapon : Maybe Weapon
-    , freehand : Maybe Item
-    , armour : Maybe Armour
-    , shield : Maybe Shield
-    , helmet : Maybe Helmet
-    , bracers : Maybe Bracers
-    , gauntlets : Maybe Gauntlets
-    , belt : Maybe (Belt Item)
-    , purse : Maybe Item.Purse
-    , pack : Maybe (Pack Item)
-    , neckwear : Maybe Neckwear
-    , overgarment : Maybe Overgarment
-    , leftRing : Maybe Ring
-    , rightRing : Maybe Ring
-    , boots : Maybe Boots
+    { weapon : Maybe (Item Weapon)
+    , freehand : Maybe AnyItem
+    , armour : Maybe (Item Armour)
+    , shield : Maybe (Item Shield)
+    , helmet : Maybe (Item Helmet)
+    , bracers : Maybe (Item Bracers)
+    , gauntlets : Maybe (Item Gauntlets)
+    , belt : Maybe (Item (Belt AnyItem))
+    , purse : Maybe (Item Purse)
+    , pack : Maybe (Item (Pack AnyItem))
+    , neckwear : Maybe (Item Neckwear)
+    , overgarment : Maybe (Item Overgarment)
+    , leftRing : Maybe (Item Ring)
+    , rightRing : Maybe (Item Ring)
+    , boots : Maybe (Item Boots)
     }
 
 
@@ -62,27 +64,27 @@ type Equipment
 
 
 type EquipmentSlot
-    = Weapon
-    | Freehand
-    | Armour
-    | Shield
-    | Helmet
-    | Bracers
-    | Gauntlets
-    | Belt
-    | Purse
-    | Pack
-    | Neckwear
-    | Overgarment
-    | LeftRing
-    | RightRing
-    | Boots
+    = WeaponSlot
+    | FreehandSlot
+    | ArmourSlot
+    | ShieldSlot
+    | HelmetSlot
+    | BracersSlot
+    | GauntletsSlot
+    | BeltSlot
+    | PurseSlot
+    | PackSlot
+    | NeckwearSlot
+    | OvergarmentSlot
+    | LeftRingSlot
+    | RightRingSlot
+    | BootsSlot
 
 
 type Msg
     = Ok
     | MassResult Mass.Msg
-    | ItemMsg Item.TypeDef.Msg
+    | ItemMsg Item.Data.Msg
     | NoPackEquipped
     | WrongSlotForItemType
 
@@ -108,37 +110,34 @@ init =
         }
 
 
-equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
-equip ( slot, item ) (A model) =
-    case ( slot, item ) of
-        ( Weapon, ItemWeapon weapon ) ->
+equip : AnyItem -> Equipment -> Result Msg Equipment
+equip item (A model) =
+    case item of
+        AnyItemWeapon weapon ->
             Result.Ok (A { model | weapon = Just weapon })
 
-        ( Freehand, item ) ->
-            Result.Ok (A { model | freehand = Just item })
-
-        ( Armour, ItemArmour armour ) ->
+        AnyItemArmour armour ->
             Result.Ok (A { model | armour = Just armour })
 
-        ( Shield, ItemShield shield ) ->
+        AnyItemShield shield ->
             Result.Ok (A { model | shield = Just shield })
 
-        ( Helmet, ItemHelmet helmet ) ->
+        AnyItemHelmet helmet ->
             Result.Ok (A { model | helmet = Just helmet })
 
-        ( Bracers, ItemBracers bracers ) ->
+        AnyItemBracers bracers ->
             Result.Ok (A { model | bracers = Just bracers })
 
-        ( Gauntlets, ItemGauntlets gauntlets ) ->
+        AnyItemGauntlets gauntlets ->
             Result.Ok (A { model | gauntlets = Just gauntlets })
 
-        ( Belt, ItemBelt belt ) ->
+        AnyItemBelt belt ->
             Result.Ok (A { model | belt = Just belt })
 
-        ( Purse, ItemPurse purse ) ->
+        AnyItemPurse purse ->
             Result.Ok (A { model | purse = Just purse })
 
-        ( Pack, ItemPack pack ) ->
+        AnyItemPack pack ->
             Result.Ok (A { model | pack = Just pack })
 
         --         ( Neckwear, ItemNeckwear neckwear ) ->
@@ -166,7 +165,7 @@ unequip slot (A model) =
                 if (Item.isCursed item) then
                     Result.Err "You cannot remove a cursed item!"
                 else
-                    Result.Ok (A <| (setSlot ( slot, Nothing ) model))
+                    Result.Ok (A <| unequip_ slot model)
 
             Nothing ->
                 Result.Ok (A model)
@@ -174,7 +173,7 @@ unequip slot (A model) =
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
 -}
-putInPack : Item -> Equipment -> ( Equipment, Msg )
+putInPack : AnyItem -> Equipment -> ( Equipment, Msg )
 putInPack item (A model) =
     let
         noChange =
@@ -192,7 +191,7 @@ putInPack item (A model) =
                     ( A { model | pack = Just pack' }, ItemMsg msg )
 
 
-removeFromPack : Item -> Equipment -> Equipment
+removeFromPack : AnyItem -> Equipment -> Equipment
 removeFromPack item (A model) =
     let
         noChange =
@@ -206,7 +205,7 @@ removeFromPack item (A model) =
                 A { model | pack = Just (Item.removeFromPack item pack) }
 
 
-getPackContent : Equipment -> List Item
+getPackContent : Equipment -> List AnyItem
 getPackContent (A model) =
     case model.pack of
         Just pack ->
@@ -216,7 +215,7 @@ getPackContent (A model) =
             []
 
 
-updatePurseContents : Item.Purse -> Equipment -> Equipment
+updatePurseContents : Item Purse -> Equipment -> Equipment
 updatePurseContents purse (A model) =
     A { model | purse = Just purse }
 
@@ -227,176 +226,111 @@ updatePurseContents purse (A model) =
 --------------------------
 
 
-get : EquipmentSlot -> Equipment -> Maybe Item
+getPurse : Equipment -> Maybe (Item Purse)
+getPurse (A model) =
+    model.purse
+
+
+getPack : Equipment -> Maybe (Item (Pack AnyItem))
+getPack (A model) =
+    model.pack
+
+
+get : EquipmentSlot -> Equipment -> Maybe AnyItem
 get slot (A model) =
     case slot of
-        Weapon ->
-            Maybe.map ItemWeapon model.weapon
+        WeaponSlot ->
+            model.weapon |> Maybe.map AnyItemWeapon
 
-        Freehand ->
+        FreehandSlot ->
             model.freehand
 
-        Armour ->
-            Maybe.map ItemArmour model.armour
+        ArmourSlot ->
+            model.armour |> Maybe.map AnyItemArmour
 
-        Shield ->
-            Maybe.map ItemShield model.shield
+        ShieldSlot ->
+            model.shield |> Maybe.map AnyItemShield
 
-        Helmet ->
-            Maybe.map ItemHelmet model.helmet
+        HelmetSlot ->
+            model.helmet |> Maybe.map AnyItemHelmet
 
-        Bracers ->
-            Maybe.map ItemBracers model.bracers
+        BracersSlot ->
+            model.bracers |> Maybe.map AnyItemBracers
 
-        Gauntlets ->
-            Maybe.map ItemGauntlets model.gauntlets
+        GauntletsSlot ->
+            model.gauntlets |> Maybe.map AnyItemGauntlets
 
-        Belt ->
-            Maybe.map ItemBelt model.belt
+        BeltSlot ->
+            model.belt |> Maybe.map AnyItemBelt
 
-        Purse ->
-            Maybe.map ItemPurse model.purse
+        PurseSlot ->
+            model.purse |> Maybe.map AnyItemPurse
 
-        Pack ->
-            Maybe.map ItemPack model.pack
+        PackSlot ->
+            model.pack |> Maybe.map AnyItemPack
 
-        Neckwear ->
-            Maybe.map ItemNeckwear model.neckwear
+        NeckwearSlot ->
+            model.neckwear |> Maybe.map AnyItemNeckwear
 
-        Overgarment ->
-            Maybe.map ItemOvergarment model.overgarment
+        OvergarmentSlot ->
+            model.overgarment |> Maybe.map AnyItemOvergarment
 
-        LeftRing ->
-            Maybe.map ItemRing model.leftRing
+        LeftRingSlot ->
+            model.leftRing |> Maybe.map AnyItemRing
 
-        RightRing ->
-            Maybe.map ItemRing model.rightRing
+        RightRingSlot ->
+            model.rightRing |> Maybe.map AnyItemRing
 
-        Boots ->
-            Maybe.map ItemBoots model.boots
+        BootsSlot ->
+            model.boots |> Maybe.map AnyItemBoots
 
 
 {-| Sets the equipment slot to either an item or nothing
 -}
-setSlot : ( EquipmentSlot, Maybe Item ) -> Model -> Model
-setSlot ( slot, item ) model =
+unequip_ : EquipmentSlot -> Model -> Model
+unequip_ slot model =
     case slot of
-        Weapon ->
-            case item of
-                Just (ItemWeapon weapon) ->
-                    { model | weapon = Just weapon }
+        WeaponSlot ->
+            { model | weapon = Nothing }
 
-                _ ->
-                    { model | weapon = Nothing }
+        FreehandSlot ->
+            { model | freehand = Nothing }
 
-        Freehand ->
-            case item of
-                Just item ->
-                    { model | freehand = Just item }
+        ArmourSlot ->
+            { model | armour = Nothing }
 
-                _ ->
-                    { model | freehand = Nothing }
+        ShieldSlot ->
+            { model | shield = Nothing }
 
-        Armour ->
-            case item of
-                Just (ItemArmour armour) ->
-                    { model | armour = Just armour }
+        HelmetSlot ->
+            { model | helmet = Nothing }
 
-                _ ->
-                    { model | armour = Nothing }
+        BracersSlot ->
+            { model | bracers = Nothing }
 
-        Shield ->
-            case item of
-                Just (ItemShield shield) ->
-                    { model | shield = Just shield }
+        GauntletsSlot ->
+            { model | gauntlets = Nothing }
 
-                _ ->
-                    { model | shield = Nothing }
+        BeltSlot ->
+            { model | belt = Nothing }
 
-        Helmet ->
-            case item of
-                Just (ItemHelmet helmet) ->
-                    { model | helmet = Just helmet }
+        PurseSlot ->
+            { model | purse = Nothing }
 
-                _ ->
-                    { model | helmet = Nothing }
+        PackSlot ->
+            { model | pack = Nothing }
 
-        Bracers ->
-            case item of
-                Just (ItemBracers bracers) ->
-                    { model | bracers = Just bracers }
+        NeckwearSlot ->
+            { model | neckwear = Nothing }
 
-                _ ->
-                    { model | bracers = Nothing }
+        OvergarmentSlot ->
+            { model | overgarment = Nothing }
 
-        Gauntlets ->
-            case item of
-                Just (ItemGauntlets gauntlets) ->
-                    { model | gauntlets = Just gauntlets }
+        LeftRingSlot ->
+            { model | leftRing = Nothing }
 
-                _ ->
-                    { model | gauntlets = Nothing }
+        RightRingSlot ->
+            { model | rightRing = Nothing }
 
-        Belt ->
-            case item of
-                Just (ItemBelt belt) ->
-                    { model | belt = Just belt }
-
-                _ ->
-                    { model | belt = Nothing }
-
-        Purse ->
-            case item of
-                Just (ItemPurse purse) ->
-                    { model | purse = Just purse }
-
-                _ ->
-                    { model | purse = Nothing }
-
-        Pack ->
-            case item of
-                Just (ItemPack pack) ->
-                    { model | pack = Just pack }
-
-                _ ->
-                    { model | pack = Nothing }
-
-        Neckwear ->
-            case item of
-                Just (ItemNeckwear neckwear) ->
-                    { model | neckwear = Just neckwear }
-
-                _ ->
-                    { model | neckwear = Nothing }
-
-        Overgarment ->
-            case item of
-                Just (ItemOvergarment overgarment) ->
-                    { model | overgarment = Just overgarment }
-
-                _ ->
-                    { model | overgarment = Nothing }
-
-        LeftRing ->
-            case item of
-                Just (ItemRing leftRing) ->
-                    { model | leftRing = Just leftRing }
-
-                _ ->
-                    { model | leftRing = Nothing }
-
-        RightRing ->
-            case item of
-                Just (ItemRing rightRing) ->
-                    { model | rightRing = Just rightRing }
-
-                _ ->
-                    { model | rightRing = Nothing }
-
-        Boots ->
-            case item of
-                Just (ItemBoots boots) ->
-                    { model | boots = Just boots }
-
-                _ ->
-                    { model | boots = Nothing }
+        BootsSlot ->
+            { model | boots = Nothing }
