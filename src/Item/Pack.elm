@@ -1,75 +1,129 @@
-module Item.Pack exposing (..)
+module Item.Pack
+    exposing
+        ( Pack
+        , init
+        , blueprint
+        , add
+        , remove
+        , mass
+        , capacity
+        , list
+        )
 
 import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
-import Item.TypeDef exposing (..)
 import Container exposing (..)
 
 
 type Pack a
-    = PM PackType Model (PackModel a)
+    = Pack PackType (Container a)
 
 
-newPack : PackType -> ID -> ItemStatus -> IdentificationStatus -> (Mass -> Container a) -> Pack a
-newPack packType id status idStatus newContainer =
+add : a -> Pack a -> ( Pack a, Container.Msg )
+add item (Pack packType container) =
+    let
+        ( newContainer, msgs ) =
+            Container.add item container
+    in
+        ( Pack packType newContainer, msgs )
+
+
+remove : a -> Pack a -> Pack a
+remove item (Pack packType container) =
+    let
+        newContainer =
+            Container.remove item container
+    in
+        Pack packType newContainer
+
+
+mass : Pack a -> Mass
+mass (Pack _ container) =
+    Container.mass container
+
+
+capacity : Pack a -> Capacity
+capacity (Pack _ container) =
+    Container.capacity container
+
+list: Pack a -> List a
+list (Pack _ container) = Container.list container
+
+init : PackType -> (Capacity -> Container a) -> Pack a
+init packType makeContainer =
     case packType of
         SmallBag ->
-            PM SmallBag
-                (Model id "Small Bag" 300 500 "Bag" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 5000 6000))
+            Pack SmallBag <| makeContainer <| Capacity 5000 6000
 
         MediumBag ->
-            PM MediumBag
-                (Model id "Medium Bag" 500 700 "Bag" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 10000 12000))
+            Pack MediumBag <| makeContainer <| Capacity 10000 12000
 
         LargeBag ->
-            PM LargeBag
-                (Model id "Large Bag" 900 900 "Bag" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 15000 18000))
+            Pack LargeBag <| makeContainer <| Capacity 15000 18000
 
         SmallPack ->
-            PM SmallPack
-                (Model id "Small Pack" 1000 1000 "Pack" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 12000 50000))
+            Pack SmallPack <| makeContainer <| Capacity 12000 50000
 
         MediumPack ->
-            PM MediumPack
-                (Model id "Medium Pack" 2000 1500 "Pack" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 22000 75000))
+            Pack MediumPack <| makeContainer <| Capacity 22000 75000
 
         LargePack ->
-            PM LargePack
-                (Model id "Large Pack" 4000 100000 "Pack" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 35000 100000))
+            Pack LargePack <| makeContainer <| Capacity 35000 100000
 
         SmallChest ->
-            PM SmallChest
-                (Model id "Small Chest" 5000 100000 "Chest" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 100000 50000))
+            Pack SmallChest <| makeContainer <| Capacity 100000 50000
 
         MediumChest ->
-            PM MediumChest
-                (Model id "Medium Chest" 15000 150000 "Chest" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 100000 150000))
+            Pack MediumChest <| makeContainer <| Capacity 100000 150000
 
         LargeChest ->
-            PM LargeChest
-                (Model id "Large Chest" 25000 250000 "Chest" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 100000 250000))
+            Pack LargeChest <| makeContainer <| Capacity 100000 250000
 
         EnchantedSmallPackOfHolding ->
-            PM EnchantedSmallPackOfHolding
-                (Model id "Enchanted Small Pack Of Holding" 5000 75000 "EnchantedPack" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 50000 150000))
+            Pack EnchantedSmallPackOfHolding <| makeContainer <| Capacity 50000 150000
 
         EnchantedMediumPackOfHolding ->
-            PM EnchantedMediumPackOfHolding
-                (Model id "Enchanted Medium Pack Of Holding" 7500 100000 "EnchantedPack" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 75000 200000))
+            Pack EnchantedMediumPackOfHolding <| makeContainer <| Capacity 75000 200000
 
         EnchantedLargePackOfHolding ->
-            PM EnchantedLargePackOfHolding
-                (Model id "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" status idStatus <| Mass.new 0 0)
-                (PackModel <| newContainer (Mass.new 100000 250000))
+            Pack EnchantedLargePackOfHolding <| makeContainer <| Capacity 100000 250000
+
+
+blueprint : PackType -> BaseItemData
+blueprint packType =
+    case packType of
+        SmallBag ->
+            BaseItemData "Small Bag" 300 500 "Bag" 0 0
+
+        MediumBag ->
+            BaseItemData "Medium Bag" 500 700 "Bag" 0 0
+
+        LargeBag ->
+            BaseItemData "Large Bag" 900 900 "Bag" 0 0
+
+        SmallPack ->
+            BaseItemData "Small Pack" 1000 1000 "Pack" 0 0
+
+        MediumPack ->
+            BaseItemData "Medium Pack" 2000 1500 "Pack" 0 0
+
+        LargePack ->
+            BaseItemData "Large Pack" 4000 100000 "Pack" 0 0
+
+        SmallChest ->
+            BaseItemData "Small Chest" 5000 100000 "Chest" 0 0
+
+        MediumChest ->
+            BaseItemData "Medium Chest" 15000 150000 "Chest" 0 0
+
+        LargeChest ->
+            BaseItemData "Large Chest" 25000 250000 "Chest" 0 0
+
+        EnchantedSmallPackOfHolding ->
+            BaseItemData "Enchanted Small Pack Of Holding" 5000 75000 "EnchantedPack" 0 0
+
+        EnchantedMediumPackOfHolding ->
+            BaseItemData "Enchanted Medium Pack Of Holding" 7500 100000 "EnchantedPack" 0 0
+
+        EnchantedLargePackOfHolding ->
+            BaseItemData "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" 0 0

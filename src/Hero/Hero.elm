@@ -22,7 +22,7 @@ import Hero.Attributes as Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
 import GameData.Types as Data
 import Utils.Lib as Lib
-import Item.Item as Item exposing (Item)
+import Item.Item as Item exposing (AnyItem)
 
 
 type Hero
@@ -92,10 +92,10 @@ setStats stats (A model) =
 -- Equipment
 
 
-equip : Equipment.EquipmentSlot -> Item -> Hero -> Result Equipment.Msg Hero
-equip slot item (A model) =
-    Equipment.equip ( slot, item ) model.equipment
-        `Result.andThen` \equipment -> Result.Ok (A { model | equipment = equipment })
+equip : AnyItem -> Hero -> Result Equipment.Msg Hero
+equip item (A model) =
+    Equipment.equip item model.equipment
+    |> Result.map (\equipment -> A { model | equipment = equipment })
 
 
 

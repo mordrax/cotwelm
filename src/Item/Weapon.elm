@@ -1,128 +1,132 @@
-module Item.Weapon exposing (Weapon(..), newWeapon)
+module Item.Weapon
+    exposing
+        ( Weapon
+        , init
+        , blueprint
+        )
 
-import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
-import Item.TypeDef exposing (..)
 
 
 type Weapon
-    = WM WeaponType WeaponModel
+    = Weapon WeaponType Class
 
 
-type alias WeaponModel =
-    { class : Int
-    , baseItem : Model
-    }
+type Class
+    = Class Int
 
 
-newWeapon : WeaponType -> ID -> ItemStatus -> IdentificationStatus -> Weapon
-newWeapon weaponType id status idStatus =
+init : WeaponType -> Weapon
+init weaponType =
     case weaponType of
         BrokenSword ->
-            WM BrokenSword
-                { class = 0
-                , baseItem = (Model id "Broken Sword" 0 25 "BrokenSword" status idStatus <| Mass.new 1000 5000)
-                }
+            Weapon BrokenSword (Class 0)
 
         Club ->
-            WM Club
-                { class = 1
-                , baseItem = (Model id "Club" 105 60 "Club" status idStatus <| Mass.new 1500 3000)
-                }
+            Weapon Club (Class 1)
 
         Dagger ->
-            WM Dagger
-                { class = 2
-                , baseItem = (Model id "Dagger" 420 240 "Sword" status idStatus <| Mass.new 500 500)
-                }
+            Weapon Dagger (Class 2)
 
         Hammer ->
-            WM Hammer
-                { class = 2
-                , baseItem = (Model id "Hammer" 420 240 "Hammer" status idStatus <| Mass.new 2000 3000)
-                }
+            Weapon Hammer (Class 2)
 
         HandAxe ->
-            WM HandAxe
-                { class = 3
-                , baseItem = (Model id "Hand Axe" 472 270 "Axe" status idStatus <| Mass.new 1000 3000)
-                }
+            Weapon HandAxe (Class 3)
 
         Quarterstaff ->
-            WM Quarterstaff
-                { class = 3
-                , baseItem = (Model id "Quarterstaff" 648 360 "Spear" status idStatus <| Mass.new 750 5000)
-                }
+            Weapon Quarterstaff (Class 3)
 
         Spear ->
-            WM Spear
-                { class = 4
-                , baseItem = (Model id "Spear" 840 480 "Spear" status idStatus <| Mass.new 1500 5000)
-                }
+            Weapon Spear (Class 4)
 
         ShortSword ->
-            WM ShortSword
-                { class = 5
-                , baseItem = (Model id "Short Sword" 1470 840 "Sword" status idStatus <| Mass.new 1000 5000)
-                }
+            Weapon ShortSword (Class 5)
 
         Mace ->
-            WM Mace
-                { class = 5
-                , baseItem = (Model id "Mace" 1728 960 "Mace" status idStatus <| Mass.new 2500 4375)
-                }
+            Weapon Mace (Class 5)
 
         Flail ->
-            WM Flail
-                { class = 6
-                , baseItem = (Model id "Flail" 1512 840 "Flail" status idStatus <| Mass.new 2000 3250)
-                }
+            Weapon Flail (Class 6)
 
         Axe ->
-            WM Axe
-                { class = 6
-                , baseItem = (Model id "Axe" 1944 1080 "Axe" status idStatus <| Mass.new 2000 5000)
-                }
+            Weapon Axe (Class 6)
 
         WarHammer ->
-            WM WarHammer
-                { class = 7
-                , baseItem = (Model id "War Hammer" 2160 1200 "Hammer" status idStatus <| Mass.new 1400 7500)
-                }
+            Weapon WarHammer (Class 7)
 
         LongSword ->
-            WM LongSword
-                { class = 8
-                , baseItem = (Model id "Long Sword" 3240 1800 "Sword" status idStatus <| Mass.new 1500 8000)
-                }
+            Weapon LongSword (Class 8)
 
         BattleAxe ->
-            WM BattleAxe
-                { class = 8
-                , baseItem = (Model id "Battle Axe" 2160 1200 "Axe" status idStatus <| Mass.new 3000 6000)
-                }
+            Weapon BattleAxe (Class 8)
 
         BroadSword ->
-            WM BroadSword
-                { class = 9
-                , baseItem = (Model id "Broad Sword" 3240 1800 "Sword" status idStatus <| Mass.new 1600 9000)
-                }
+            Weapon BroadSword (Class 9)
 
         MorningStar ->
-            WM MorningStar
-                { class = 10
-                , baseItem = (Model id "Morning Star" 2160 1200 "MorningStar" status idStatus <| Mass.new 3000 9000)
-                }
+            Weapon MorningStar (Class 10)
 
         BastardSword ->
-            WM BastardSword
-                { class = 11
-                , baseItem = (Model id "Bastard Sword" 4320 2400 "Sword" status idStatus <| Mass.new 3000 10000)
-                }
+            Weapon BastardSword (Class 11)
 
         TwoHandedSword ->
-            WM TwoHandedSword
-                { class = 12
-                , baseItem = (Model id "Two Handed Sword" 6360 3600 "Sword" status idStatus <| Mass.new 5000 12000)
-                }
+            Weapon TwoHandedSword (Class 12)
+
+
+blueprint : WeaponType -> BaseItemData
+blueprint weaponType =
+    case weaponType of
+        BrokenSword ->
+            BaseItemData "Broken Sword" 1000 5000 "BrokenSword" 0 25
+
+        Club ->
+            BaseItemData "Club" 1500 3000 "Club" 105 60
+
+        Dagger ->
+            BaseItemData "Dagger" 500 500 "Sword" 420 240
+
+        Hammer ->
+            BaseItemData "Hammer" 2000 3000 "Hammer" 420 240
+
+        HandAxe ->
+            BaseItemData "Hand Axe" 1000 3000 "Axe" 472 270
+
+        Quarterstaff ->
+            BaseItemData "Quarterstaff" 750 5000 "Spear" 648 360
+
+        Spear ->
+            BaseItemData "Spear" 1500 5000 "Spear" 840 480
+
+        ShortSword ->
+            BaseItemData "Short Sword" 1000 5000 "Sword" 1470 840
+
+        Mace ->
+            BaseItemData "Mace" 2500 4375 "Mace" 1728 960
+
+        Flail ->
+            BaseItemData "Flail" 2000 3250 "Flail" 1512 840
+
+        Axe ->
+            BaseItemData "Axe" 2000 5000 "Axe" 1944 1080
+
+        WarHammer ->
+            BaseItemData "War Hammer" 1400 7500 "Hammer" 2160 1200
+
+        LongSword ->
+            BaseItemData "Long Sword" 1500 8000 "Sword" 3240 1800
+
+        BattleAxe ->
+            BaseItemData "Battle Axe" 3000 6000 "Axe" 2160 1200
+
+        BroadSword ->
+            BaseItemData "Broad Sword" 1600 9000 "Sword" 3240 1800
+
+        MorningStar ->
+            BaseItemData "Morning Star" 3000 9000 "MorningStar" 2160 1200
+
+        BastardSword ->
+            BaseItemData "Bastard Sword" 3000 10000 "Sword" 4320 2400
+
+        TwoHandedSword ->
+            BaseItemData "Two Handed Sword" 5000 12000 "Sword" 6360 3600
