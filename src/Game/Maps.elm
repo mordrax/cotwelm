@@ -40,6 +40,7 @@ import Random.Pcg as Random exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Shops
 
+
 type Maps
     = A Model
 
@@ -193,11 +194,14 @@ currentAreaMap (A model) =
 
 {-| Get the width and height of a map
 -}
-mapSize: Map -> Dimension
+mapSize : Map -> Dimension
 mapSize map =
     let
-        positions = Dict.keys map
-        (maxX, maxY) = List.foldr (\(a,b) (c,d) -> (max a c, max b d)) (0,0) positions
+        positions =
+            Dict.keys map
+
+        ( maxX, maxY ) =
+            List.foldr (\( a, b ) ( c, d ) -> ( max a c, max b d )) ( 0, 0 ) positions
     in
         ( maxX + 1, maxY + 1 )
 

@@ -4,6 +4,7 @@ module Hero.Hero
         , init
         , view
         , move
+        , teleport
         , position
         , stats
         , setStats
@@ -73,6 +74,11 @@ move direction (A model) =
         |> \x -> A { model | position = x }
 
 
+teleport : Vector -> Hero -> Hero
+teleport newPosition (A model) =
+    A { model | position = newPosition }
+
+
 position : Hero -> Vector
 position (A model) =
     model.position
@@ -95,7 +101,7 @@ setStats stats (A model) =
 equip : AnyItem -> Hero -> Result Equipment.Msg Hero
 equip item (A model) =
     Equipment.equip item model.equipment
-    |> Result.map (\equipment -> A { model | equipment = equipment })
+        |> Result.map (\equipment -> A { model | equipment = equipment })
 
 
 
