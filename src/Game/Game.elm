@@ -292,7 +292,10 @@ enterBuilding : Building -> Model -> Model
 enterBuilding building ({ hero, maps } as model) =
     case Building.buildingType building of
         Building.LinkType link ->
-            { model | maps = Maps.updateArea link.area maps }
+            { model
+                | maps = Maps.updateArea link.area maps
+                , hero = Hero.teleport link.pos hero
+            }
 
         Building.Shop shopType ->
             { model
@@ -433,16 +436,16 @@ isMonsterObstruction monster monsters =
 
 
 updateViewportOffset : Vector -> Model -> Model
-updateViewportOffset prevPosition ({ windowSize, viewport, maps } as model) =
+updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model) =
     let
         tileSize =
             32
 
         ( prevX, prevY ) =
-            Vector.scale tileSize prevPosition
+            Debug.log "prev position" (Vector.scale tileSize prevPosition)
 
-        ( x, y ) =
-            Vector.scale tileSize (Hero.position model.hero)
+        ( curX, curY ) =
+            Debug.log "cur positition" (Vector.scale tileSize (Hero.position hero))
 
         ( xOff, yOff ) =
             ( windowSize.width // 2, windowSize.height // 2 )
@@ -451,28 +454,30 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps } as model) =
             tileSize * 4
 
         scroll =
-            { up = viewport.y + y <= tolerance
-            , down = viewport.y + y >= (windowSize.height * 4 // 5) - tolerance
-            , left = viewport.x + x <= tolerance
-            , right = viewport.x + x >= windowSize.width - tolerance
-            }
+            Debug.log "scroll"
+                { up = viewport.y + curY <= tolerance
+                , down = viewport.y + curY >= (windowSize.height * 4 // 5) - tolerance
+                , left = viewport.x + curX <= tolerance
+                , right = viewport.x + curX >= windowSize.width - tolerance
+                }
 
         ( mapWidth, mapHeight ) =
-            Maps.mapSize (Maps.currentAreaMap maps)
+            Debug.log "mapsize"
+                (Maps.mapSize (Maps.currentAreaMap maps))
 
         newX =
-            if prevX /= x && (scroll.left || scroll.right) then
-                clamp (windowSize.width - mapWidth * tileSize) 0 (xOff - x)
+            if prevX /= curX && (scroll.left || scroll.right) then
+                clamp (windowSize.width - mapWidth * tileSize) 0 (xOff - curX)
             else
                 viewport.x
 
         newY =
-            if prevY /= y && (scroll.up || scroll.down) then
-                clamp (windowSize.height * 4 // 5 - mapHeight * tileSize) 0 (yOff - y)
+            if prevY /= curY && (scroll.up || scroll.down) then
+                clamp (windowSize.height * 4 // 5 - mapHeight * tileSize) 0 (yOff - curY)
             else
                 viewport.y
     in
-        { model | viewport = { x = newX, y = newY } }
+        { model | viewport = Debug.log "new pos" { x = newX, y = newY } }
 
 
 donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
@@ -568,8 +573,8 @@ viewMap ({ windowSize, viewport } as model) =
                 [ div
                     [ style
                         [ ( "position", "relative" )
-                        , ( "top", px viewport.x )
-                        , ( "left", px viewport.y )
+                        , ( "top", px viewport.y )
+                        , ( "left", px viewport.x )
                         ]
                     ]
                     html

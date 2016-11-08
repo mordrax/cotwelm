@@ -8,10 +8,11 @@ import Utils.Direction as Direction exposing (Direction(..))
 
 subscription : Sub Msg
 subscription =
-    Sub.batch [ --ups (keycodeToMsg playerKeymapUps)
-      --, presses (keycodeToMsg playerKeymap)
-      downs (keycodeToMsg playerKeymap)
-    ]
+    Sub.batch
+        [ --ups (keycodeToMsg playerKeymapUps)
+          --, presses (keycodeToMsg playerKeymap)
+          downs (keycodeToMsg playerKeymap)
+        ]
 
 
 type Msg
@@ -39,16 +40,8 @@ type alias KeyMap =
 playerKeymap : KeyMap
 playerKeymap =
     Dict.fromList
-        [ ( 87, KeyDir S )
-        , ( 119, KeyDir S )
-        , ( 83, KeyDir N )
-        , ( 115, KeyDir N )
-        , ( 65, KeyDir W )
-        , ( 97, KeyDir W )
-        , ( 68, KeyDir E )
-        , ( 100, KeyDir E )
-          --numpad
-        , ( 38, KeyDir S )
+        --numpad
+        [ ( 38, KeyDir S )
         , ( 40, KeyDir N )
         , ( 37, KeyDir W )
         , ( 39, KeyDir E )
@@ -60,17 +53,17 @@ playerKeymap =
         , ( 27, Esc )
           -- i
         , ( 73, Inventory )
-        , ( 79 ,Open)
-        , ( 67 ,Close)
-        , ( 83 ,Search)
-        , ( 68 ,DisarmTrap)
-        , ( 77 ,ViewMap)
-        , ( 82 ,RestHp)
-        , ( 82 ,RestMP)
-        , ( 88 ,Examine)
-        , ( 71 ,Get)
-        , ( 190 ,GoDownstairs)
-        , ( 188 ,GoUpstairs)
+        , ( 79, Open )
+        , ( 67, Close )
+        , ( 83, Search )
+        , ( 68, DisarmTrap )
+        , ( 77, ViewMap )
+        , ( 82, RestHp )
+        , ( 82, RestMP )
+        , ( 88, Examine )
+        , ( 71, Get )
+        , ( 190, GoDownstairs )
+        , ( 188, GoUpstairs )
         ]
 
 
