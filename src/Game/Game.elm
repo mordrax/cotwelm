@@ -484,28 +484,28 @@ donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
 donDefaultGarb itemFactory hero =
     let
         equipmentToMake =
-            [ Item.Data.ItemTypeWeapon Dagger
-            , Item.Data.ItemTypeArmour ScaleMail
-            , Item.Data.ItemTypeShield LargeIronShield
-            , Item.Data.ItemTypeHelmet LeatherHelmet
-            , Item.Data.ItemTypeGauntlets NormalGauntlets
-            , Item.Data.ItemTypeBelt ThreeSlotBelt
-            , Item.Data.ItemTypePurse
-            , Item.Data.ItemTypePack MediumPack
+            [ ( Equipment.WeaponSlot, Item.Data.ItemTypeWeapon Dagger )
+            , ( Equipment.ArmourSlot, Item.Data.ItemTypeArmour ScaleMail )
+            , ( Equipment.ShieldSlot, Item.Data.ItemTypeShield LargeIronShield )
+            , ( Equipment.HelmetSlot, Item.Data.ItemTypeHelmet LeatherHelmet )
+            , ( Equipment.GauntletsSlot, Item.Data.ItemTypeGauntlets NormalGauntlets )
+            , ( Equipment.BeltSlot, Item.Data.ItemTypeBelt ThreeSlotBelt )
+            , ( Equipment.PurseSlot, Item.Data.ItemTypePurse )
+            , ( Equipment.PackSlot, Item.Data.ItemTypePack MediumPack )
             ]
 
-        makeEquipment itemType ( accEquipment, itemFactory ) =
+        makeEquipment (slot, itemType) ( accEquipment, itemFactory ) =
             let
                 ( item, itemFactory_ ) =
                     ItemFactory.make itemType itemFactory
             in
-                ( item :: accEquipment, itemFactory_ )
+                ( (slot, item) :: accEquipment, itemFactory_ )
 
         ( defaultEquipment, factoryAfterProduction ) =
             List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
 
         equippingHero =
-            Lib.foldResult (\item -> Hero.equip item) (Result.Ok hero) defaultEquipment
+            Lib.foldResult (\item -> Hero.equip item) (Ok hero) defaultEquipment
     in
         case equippingHero of
             Result.Ok heroEquipped ->

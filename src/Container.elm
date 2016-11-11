@@ -82,7 +82,7 @@ add item (ContainerModel model) =
             Mass.withinCapacity containerMassWithItem model.capacity
     in
         case ( isWithinCapacity, isNested ) of
-            ( Mass.Ok, False ) ->
+            ( Mass.Success, False ) ->
                 ( ContainerModel
                     { model
                         | currentMass = containerMassWithItem

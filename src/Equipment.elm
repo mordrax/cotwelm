@@ -87,11 +87,12 @@ type EquipmentSlot
 
 
 type Msg
-    = Ok
+    = Success
     | MassResult Mass.Msg
     | ContainerMsg Container.Msg
     | NoPackEquipped
     | WrongSlotForItemType
+    | ItemAlreadyEquipped
 
 
 init : Equipment
@@ -115,46 +116,129 @@ init =
         }
 
 
-equip : Item -> Equipment -> Result Msg Equipment
-equip item (A model) =
-    case item of
-        ItemWeapon weapon ->
-            Result.Ok (A { model | weapon = Just weapon })
+equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
+equip ( slot, item ) (A model) =
+    case ( slot, item ) of
+        ( WeaponSlot, ItemWeapon weapon ) ->
+            case model.weapon of
+                Nothing ->
+                    Ok (A { model | weapon = Just weapon })
 
-        ItemArmour armour ->
-            Result.Ok (A { model | armour = Just armour })
+                _ ->
+                    Err ItemAlreadyEquipped
 
-        ItemShield shield ->
-            Result.Ok (A { model | shield = Just shield })
+        ( FreehandSlot, item ) ->
+            case model.freehand of
+                Nothing ->
+                    Result.Ok (A { model | freehand = Just item })
 
-        ItemHelmet helmet ->
-            Result.Ok (A { model | helmet = Just helmet })
+                _ ->
+                    Err ItemAlreadyEquipped
 
-        ItemBracers bracers ->
-            Result.Ok (A { model | bracers = Just bracers })
+        ( ArmourSlot, ItemArmour armour ) ->
+            case model.armour of
+                Nothing ->
+                    Result.Ok (A { model | armour = Just armour })
 
-        ItemGauntlets gauntlets ->
-            Result.Ok (A { model | gauntlets = Just gauntlets })
+                _ ->
+                    Err ItemAlreadyEquipped
 
-        ItemBelt belt ->
-            Result.Ok (A { model | belt = Just belt })
+        ( ShieldSlot, ItemShield shield ) ->
+            case model.shield of
+                Nothing ->
+                    Result.Ok (A { model | shield = Just shield })
 
-        ItemPurse purse ->
-            Result.Ok (A { model | purse = Just purse })
+                _ ->
+                    Err ItemAlreadyEquipped
 
-        ItemPack pack ->
-            Result.Ok (A { model | pack = Just pack })
+        ( HelmetSlot, ItemHelmet helmet ) ->
+            case model.helmet of
+                Nothing ->
+                    Result.Ok (A { model | helmet = Just helmet })
 
-        --         ( Neckwear, ItemNeckwear neckwear ) ->
-        --             Result.Ok (A { model | neckwear = Just neckwear })
-        --         ( Overgarment, ItemOvergarment overgarment ) ->
-        --             Result.Ok (A { model | overgarment = Just overgarment })
-        --         ( LeftRing, ItemRing leftRing ) ->
-        --             Result.Ok (A { model | leftRing = Just leftRing })
-        --         ( RightRing, ItemRing rightRing ) ->
-        --             Result.Ok (A { model | rightRing = Just rightRing })
-        --         ( Boots, ItemBoots boots ) ->
-        --             Result.Ok (A { model | boots = Just boots })
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( BracersSlot, ItemBracers bracers ) ->
+            case model.bracers of
+                Nothing ->
+                    Result.Ok (A { model | bracers = Just bracers })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( GauntletsSlot, ItemGauntlets gauntlets ) ->
+            case model.gauntlets of
+                Nothing ->
+                    Result.Ok (A { model | gauntlets = Just gauntlets })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( BeltSlot, ItemBelt belt ) ->
+            case model.belt of
+                Nothing ->
+                    Result.Ok (A { model | belt = Just belt })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( PurseSlot, ItemPurse purse ) ->
+            case model.purse of
+                Nothing ->
+                    Result.Ok (A { model | purse = Just purse })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( PackSlot, ItemPack pack ) ->
+            case model.pack of
+                Nothing ->
+                    Result.Ok (A { model | pack = Just pack })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( NeckwearSlot, ItemNeckwear neckwear ) ->
+            case model.neckwear of
+                Nothing ->
+                    Result.Ok (A { model | neckwear = Just neckwear })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( OvergarmentSlot, ItemOvergarment overgarment ) ->
+            case model.overgarment of
+                Nothing ->
+                    Result.Ok (A { model | overgarment = Just overgarment })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( LeftRingSlot, ItemRing leftRing ) ->
+            case model.leftRing of
+                Nothing ->
+                    Result.Ok (A { model | leftRing = Just leftRing })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( RightRingSlot, ItemRing rightRing ) ->
+            case model.rightRing of
+                Nothing ->
+                    Result.Ok (A { model | rightRing = Just rightRing })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
+        ( BootsSlot, ItemBoots boots ) ->
+            case model.boots of
+                Nothing ->
+                    Result.Ok (A { model | boots = Just boots })
+
+                _ ->
+                    Err ItemAlreadyEquipped
+
         _ ->
             Result.Err WrongSlotForItemType
 
@@ -182,7 +266,7 @@ putInPack : Item -> Equipment -> ( Equipment, Msg )
 putInPack item (A model) =
     let
         noChange =
-            ( A model, Ok )
+            ( A model, Success )
     in
         case model.pack of
             Nothing ->
