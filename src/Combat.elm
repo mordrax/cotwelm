@@ -15,7 +15,8 @@ import Random.Pcg as Random exposing (..)
 import Hero.Hero as Hero exposing (Hero)
 import Hero.Attributes as Attributes exposing (Attributes)
 import Monster.Monster as Monster exposing (Monster)
-import Item.Weapon as Weapon exposing (Weapon)
+import Item.Weapon as Weapon
+import Item.Data
 
 
 attack : Hero -> Monster -> Seed -> ( Monster, Seed )
@@ -48,7 +49,7 @@ defend monster hero seed =
         ( hero_, seed_ )
 
 
-attackSpeed : Weapon -> Attributes -> Float
+attackSpeed : Item.Data.Weapon -> Attributes -> Float
 attackSpeed weapon attributes =
     let
         { str, dex, int, con } =
@@ -69,7 +70,7 @@ type DamageRange
     = DamageRange Die Bonus
 
 
-damage : Weapon -> Attributes -> DamageRange
+damage : Item.Data.Weapon -> Attributes -> DamageRange
 damage weapon attributes =
     let
         { str, dex, int, con } =

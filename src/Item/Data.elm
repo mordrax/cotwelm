@@ -30,31 +30,106 @@ type alias ItemTypes =
 
 
 type ItemType
-    = Weapon WeaponType
-    | Armour ArmourType
-    | Shield ShieldType
-    | Helmet HelmetType
-    | Bracers BracersType
-    | Gauntlets GauntletsType
-    | Belt BeltType
-    | Pack PackType
-    | Purse
-    | Neckwear NeckwearType
-    | Overgarment OvergarmentType
-    | Ring RingType
-    | Boots BootsType
+    = ItemTypeWeapon WeaponType
+    | ItemTypeArmour ArmourType
+    | ItemTypeShield ShieldType
+    | ItemTypeHelmet HelmetType
+    | ItemTypeBracers BracersType
+    | ItemTypeGauntlets GauntletsType
+    | ItemTypeBelt BeltType
+    | ItemTypePack PackType
+    | ItemTypePurse
+    | ItemTypeNeckwear NeckwearType
+    | ItemTypeOvergarment OvergarmentType
+    | ItemTypeRing RingType
+    | ItemTypeBoots BootsType
+
+
+type alias Buy =
+    Int
+
+
+type alias Sell =
+    Int
+
+
+type Prices
+    = Prices Buy Sell
 
 
 {-| The common set of data for all items.
 -}
-type alias BaseItemData =
+type alias BaseItem =
     { name : String
-    , weight : Int
-    , bulk : Int
+    , prices : Prices
     , css : String
-    , buy : Int
-    , sell : Int
+    , mass : Mass
+    , status : ItemStatus
+    , isIdentified : IdentificationStatus
+    , id : ID
     }
+
+
+type alias Weapon =
+    { base : BaseItem
+    , weaponType : WeaponType
+    , wc : WC
+    }
+
+
+type WC
+    = WC Int
+
+
+type alias Armour =
+    { base : BaseItem
+    , armourType : ArmourType
+    , ac : AC
+    }
+
+
+type alias Gauntlets =
+    { base : BaseItem
+    , gauntletsType : GauntletsType
+    , ac : AC
+    }
+
+
+type alias Helmet =
+    { base : BaseItem
+    , helmetType : HelmetType
+    , ac : AC
+    }
+
+
+type alias Bracers =
+    { base : BaseItem
+    , bracersType : BracersType
+    , ac : AC
+    }
+
+
+type alias Shield =
+    { base : BaseItem
+    , shieldType : ShieldType
+    , ac : AC
+    }
+
+
+type alias Boots =
+    { base : BaseItem, bootsType : BootsType }
+
+
+type alias Neckwear =
+    { base : BaseItem, neckwearType : NeckwearType }
+
+
+type alias Overgarment =
+    { base : BaseItem, overgarmentType : OvergarmentType }
+
+
+type alias Ring =
+    { base : BaseItem, ringType : RingType }
 
 
 
