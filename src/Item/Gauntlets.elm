@@ -1,95 +1,55 @@
 module Item.Gauntlets exposing (..)
 
-import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
+import Utils.IdGenerator as IdGenerator
+import Utils.Mass as Mass exposing (Mass)
 
 
-type Gauntlets
-    = Gauntlets GauntletsType AC
+init : GauntletsType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Gauntlets
+init gauntletsType status idStatus id =
+    let
+        make name mass css prices ac =
+            { base = BaseItem name prices css mass status idStatus id
+            , gauntletsType = gauntletsType
+            , ac = ac
+            }
+    in
+        case gauntletsType of
+            NormalGauntlets ->
+                make "Gauntlet" (Mass.Mass 500 2000) "Gauntlet" (Prices 105 60) (AC 5)
 
+            GauntletOfProtection ->
+                make "Gauntlet Of Protection" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 2625 1500) (AC 10)
 
-init : GauntletsType -> Gauntlets
-init gauntletsType =
-    case gauntletsType of
-        NormalGauntlets ->
-            Gauntlets NormalGauntlets (AC 5)
+            GauntletOfProtectionS ->
+                make "Gauntlet Of Protection Strong" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 6300 3600) (AC 15)
 
-        GauntletOfProtection ->
-            Gauntlets GauntletOfProtection (AC 10)
+            GauntletOfProtectionVS ->
+                make "Gauntlet Of Protection Very Strong" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 12420 6900) (AC 20)
 
-        GauntletOfProtectionS ->
-            Gauntlets GauntletOfProtectionS (AC 15)
+            GauntletOfSlaying ->
+                make "Gauntlet Of Slaying" (Mass.Mass 500 2000) "GauntletOfSlaying" (Prices 3780 2100) (AC 0)
 
-        GauntletOfProtectionVS ->
-            Gauntlets GauntletOfProtectionVS (AC 20)
+            GauntletOfSlayingS_S ->
+                make "Gauntlet Of Slaying Strong" (Mass.Mass 500 2000) "GauntletOfSlaying" (Prices 7560 4200) (AC 0)
 
-        GauntletOfSlaying ->
-            Gauntlets GauntletOfSlaying (AC 0)
+            GauntletOfSlayingVS_VS ->
+                make "Gauntlet Of Slaying Very Strong" (Mass.Mass 500 2000) "GauntletOfSlaying" (Prices 13125 7500) (AC 0)
 
-        GauntletOfSlayingS_S ->
-            Gauntlets GauntletOfSlayingS_S (AC 0)
+            GauntletOfDexterity ->
+                make "Gauntlet Of Dexterity" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 3240 1800) (AC 5)
 
-        GauntletOfSlayingVS_VS ->
-            Gauntlets GauntletOfSlayingVS_VS (AC 0)
+            GauntletOfDexterityS ->
+                make "Gauntlet Of Dexterity Strong" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 7020 3900) (AC 5)
 
-        GauntletOfDexterity ->
-            Gauntlets GauntletOfDexterity (AC 5)
+            GauntletOfDexterityVS ->
+                make "Gauntlet Of Dexterity Very Strong" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 12960 7200) (AC 5)
 
-        GauntletOfDexterityS ->
-            Gauntlets GauntletOfDexterityS (AC 5)
+            GauntletOfStrength ->
+                make "Gauntlet Of Strength" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 3240 1800) (AC 5)
 
-        GauntletOfDexterityVS ->
-            Gauntlets GauntletOfDexterityVS (AC 5)
+            GauntletOfStrengthS ->
+                make "Gauntlet Of Strength Strong" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 0 0) (AC 5)
 
-        GauntletOfStrength ->
-            Gauntlets GauntletOfStrength (AC 5)
-
-        GauntletOfStrengthS ->
-            Gauntlets GauntletOfStrengthS (AC 5)
-
-        GauntletOfStrengthVS ->
-            Gauntlets GauntletOfStrengthVS (AC 5)
-
-
-blueprint : GauntletsType -> BaseItemData
-blueprint gauntletsType =
-    case gauntletsType of
-        NormalGauntlets ->
-            BaseItemData "Gauntlet" 500 2000 "Gauntlet" 105 60
-
-        GauntletOfProtection ->
-            BaseItemData "Gauntlet Of Protection" 500 2000 "GauntletEnchanted" 2625 1500
-
-        GauntletOfProtectionS ->
-            BaseItemData "Gauntlet Of Protection Strong" 500 2000 "GauntletEnchanted" 6300 3600
-
-        GauntletOfProtectionVS ->
-            BaseItemData "Gauntlet Of Protection Very Strong" 500 2000 "GauntletEnchanted" 12420 6900
-
-        GauntletOfSlaying ->
-            BaseItemData "Gauntlet Of Slaying" 500 2000 "GauntletOfSlaying" 3780 2100
-
-        GauntletOfSlayingS_S ->
-            BaseItemData "Gauntlet Of Slaying Strong" 500 2000 "GauntletOfSlaying" 7560 4200
-
-        GauntletOfSlayingVS_VS ->
-            BaseItemData "Gauntlet Of Slaying Very Strong" 500 2000 "GauntletOfSlaying" 13125 7500
-
-        GauntletOfDexterity ->
-            BaseItemData "Gauntlet Of Dexterity" 500 2000 "GauntletEnchanted" 3240 1800
-
-        GauntletOfDexterityS ->
-            BaseItemData "Gauntlet Of Dexterity Strong" 500 2000 "GauntletEnchanted" 7020 3900
-
-        GauntletOfDexterityVS ->
-            BaseItemData "Gauntlet Of Dexterity Very Strong" 500 2000 "GauntletEnchanted" 12960 7200
-
-        GauntletOfStrength ->
-            BaseItemData "Gauntlet Of Strength" 500 2000 "GauntletEnchanted" 3240 1800
-
-        GauntletOfStrengthS ->
-            BaseItemData "Gauntlet Of Strength Strong" 500 2000 "GauntletEnchanted" 0 0
-
-        GauntletOfStrengthVS ->
-            BaseItemData "Gauntlet Of Strength Very Strong" 500 2000 "GauntletEnchanted" 12960 7200
+            GauntletOfStrengthVS ->
+                make "Gauntlet Of Strength Very Strong" (Mass.Mass 500 2000) "GauntletEnchanted" (Prices 12960 7200) (AC 5)
