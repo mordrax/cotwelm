@@ -5,7 +5,7 @@ import Utils.IdGenerator exposing (..)
 
 
 type Msg
-    = Ok
+    = ItemOk
     | NestedItem
     | MassMsg Utils.Mass.Msg
 

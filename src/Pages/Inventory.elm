@@ -295,7 +295,7 @@ handleDrop droppable item model =
                     Result.Ok { model | equipment = equipment' }
             in
                 case equipMsg of
-                    Equipment.Ok ->
+                    Equipment.Success ->
                         success
 
                     Equipment.NoPackEquipped ->
@@ -311,7 +311,7 @@ handleDrop droppable item model =
                         Result.Err ("Dropping into pack failed with unhanded msg: " ++ (toString msg))
 
         DropEquipment slot ->
-            case Equipment.equip item model.equipment of
+            case Equipment.equip (slot, item) model.equipment of
                 Result.Ok equipment' ->
                     Result.Ok { model | equipment = equipment' }
 

@@ -30,7 +30,7 @@ type Capacity
 
 
 type Msg
-    = Ok
+    = Success
     | TooHeavy
     | TooBulky
 
@@ -55,7 +55,7 @@ withinCapacity (Mass bulk weight) (Capacity capBulk capWeight) =
             TooHeavy
 
         _ ->
-            Ok
+            Success
 
 
 
