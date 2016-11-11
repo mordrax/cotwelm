@@ -1,57 +1,65 @@
 module Item.Belt exposing (..)
 
-import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
-import Container exposing (..)
+import Utils.IdGenerator as IdGenerator
+import Utils.Mass as Mass exposing (Mass)
 
 
-type Belt a
-    = Belt BeltType (Model a)
+type BeltContainer a
+    = TwoSlot ( Maybe a, Maybe a )
+    | ThreeSlot ( Maybe a, Maybe a, Maybe a )
+    | FourSlot ( Maybe a, Maybe a, Maybe a, Maybe a )
 
 
-type alias Model a =
-    { slot : Int
-    , scroll : Int
-    , wand : Int
-    , potion : Int
-    , container : Container a
+type alias Belt a =
+    { base : BaseItem
+    , beltType : BeltType
+    , beltContainer : BeltContainer a
     }
 
 
-init : BeltType -> (Capacity -> Container a) -> Belt a
-init beltType makeContainer =
+init : BeltType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Belt a
+init beltType status idStatus id =
+    let
+        make name mass css prices container =
+            { base = BaseItem name prices css mass status idStatus id
+            , beltType = beltType
+            , beltContainer = initBeltContainer beltType
+            }
+    in
+        case beltType of
+            TwoSlotBelt ->
+                make "Two Slot Belt" (Mass.Mass 0 0) "SlotBelt" (Prices 300 300) (initBeltContainer TwoSlotBelt)
+
+            ThreeSlotBelt ->
+                make "Three Slot Belt" (Mass.Mass 0 0) "SlotBelt" (Prices 300 300) (initBeltContainer ThreeSlotBelt)
+
+            FourSlotBelt ->
+                make "Four Slot Belt" (Mass.Mass 0 0) "SlotBelt" (Prices 300 300) (initBeltContainer FourSlotBelt)
+
+            UtilityBelt ->
+                make "Utility Belt" (Mass.Mass 0 0) "UtilityBelt" (Prices 1350 1800) (initBeltContainer UtilityBelt)
+
+            WandQuiverBelt ->
+                make "Wand Quiver Belt" (Mass.Mass 0 0) "WandQuiverBelt" (Prices 300 300) (initBeltContainer WandQuiverBelt)
+
+
+initBeltContainer : BeltType -> BeltContainer a
+initBeltContainer beltType =
     case beltType of
         TwoSlotBelt ->
-            Belt TwoSlotBelt <| Model 2 0 0 0 <| makeContainer (Capacity 2100 3100)
+            TwoSlot ( Nothing, Nothing )
 
         ThreeSlotBelt ->
-            Belt ThreeSlotBelt <| Model 3 0 0 0 <| makeContainer (Capacity 2600 3600)
+            ThreeSlot ( Nothing, Nothing, Nothing )
 
         FourSlotBelt ->
-            Belt FourSlotBelt <| Model 4 0 0 0 <| makeContainer (Capacity 3100 4100)
+            FourSlot ( Nothing, Nothing, Nothing, Nothing )
 
+        -- 2 slot, 4 scrolls, 4 potions
         UtilityBelt ->
-            Belt UtilityBelt <| Model 2 4 4 0 <| makeContainer (Capacity 3100 4100)
+            TwoSlot ( Nothing, Nothing )
 
+        -- 2 slot, 4 wands
         WandQuiverBelt ->
-            Belt WandQuiverBelt <| Model 2 0 0 4 <| makeContainer (Capacity 3100 4100)
-
-
-blueprint : BeltType -> BaseItemData
-blueprint beltType =
-    case beltType of
-        TwoSlotBelt ->
-            BaseItemData "Two Slot Belt" 0 0 "SlotBelt" 300 300
-
-        ThreeSlotBelt ->
-            BaseItemData "Three Slot Belt" 0 0 "SlotBelt" 300 300
-
-        FourSlotBelt ->
-            BaseItemData "Four Slot Belt" 0 0 "SlotBelt" 300 300
-
-        UtilityBelt ->
-            BaseItemData "Utility Belt" 0 0 "UtilityBelt" 1350 1800
-
-        WandQuiverBelt ->
-            BaseItemData "Wand Quiver Belt" 0 0 "WandQuiverBelt" 300 300
+            TwoSlot ( Nothing, Nothing )

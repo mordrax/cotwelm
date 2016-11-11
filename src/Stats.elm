@@ -16,7 +16,7 @@ type Stats
 
 
 type Msg
-    = Ok
+    = Alive
     | Dead
 
 
@@ -62,7 +62,7 @@ takeHit damage (A model) =
 
         msg =
             if hp' > 0 then
-                Ok
+                Alive
             else
                 Dead
     in

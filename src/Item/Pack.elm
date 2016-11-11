@@ -2,128 +2,101 @@ module Item.Pack
     exposing
         ( Pack
         , init
-        , blueprint
         , add
         , remove
-        , mass
-        , capacity
-        , list
+        , contents
+        , info
         )
 
 import Utils.Mass as Mass exposing (..)
 import Item.Data exposing (..)
 import Container exposing (..)
+import Utils.IdGenerator as IdGenerator
 
 
-type Pack a
-    = Pack PackType (Container a)
+type alias Pack a =
+    { base : BaseItem
+    , packType : PackType
+    , container : Container a
+    }
+
+
+info : Pack a -> ( Mass, Capacity )
+info { container } =
+    ( Container.mass container, Container.capacity container )
+
+
+contents : Pack a -> List a
+contents { container } =
+    Container.list container
 
 
 add : a -> Pack a -> ( Pack a, Container.Msg )
-add item (Pack packType container) =
+add item pack =
     let
         ( newContainer, msgs ) =
-            Container.add item container
+            Container.add item pack.container
     in
-        ( Pack packType newContainer, msgs )
+        ( { pack | container = newContainer }, msgs )
 
 
 remove : a -> Pack a -> Pack a
-remove item (Pack packType container) =
+remove item pack =
     let
         newContainer =
-            Container.remove item container
+            Container.remove item pack.container
     in
-        Pack packType newContainer
+        { pack | container = newContainer }
 
 
-mass : Pack a -> Mass
-mass (Pack _ container) =
-    Container.mass container
+init :
+    PackType
+    -> (Capacity -> Container a)
+    -> ItemStatus
+    -> IdentificationStatus
+    -> IdGenerator.ID
+    -> Pack a
+init packType toContainer status idStatus id =
+    let
+        make name price css mass capacity =
+            { base = BaseItem name price css mass status idStatus id
+            , packType = packType
+            , container = toContainer capacity
+            }
+    in
+        case packType of
+            SmallBag ->
+                make "Small Bag" (Prices 300 500) "Bag" (Mass.Mass 0 0) (Capacity 5000 6000)
 
+            MediumBag ->
+                make "Medium Bag" (Prices 500 700) "Bag" (Mass.Mass 0 0) (Capacity 10000 12000)
 
-capacity : Pack a -> Capacity
-capacity (Pack _ container) =
-    Container.capacity container
+            LargeBag ->
+                make "Large Bag" (Prices 900 900) "Bag" (Mass.Mass 0 0) (Capacity 15000 18000)
 
-list: Pack a -> List a
-list (Pack _ container) = Container.list container
+            SmallPack ->
+                make "Small Pack" (Prices 1000 1000) "Pack" (Mass.Mass 0 0) (Capacity 12000 50000)
 
-init : PackType -> (Capacity -> Container a) -> Pack a
-init packType makeContainer =
-    case packType of
-        SmallBag ->
-            Pack SmallBag <| makeContainer <| Capacity 5000 6000
+            MediumPack ->
+                make "Medium Pack" (Prices 2000 1500) "Pack" (Mass.Mass 0 0) (Capacity 22000 75000)
 
-        MediumBag ->
-            Pack MediumBag <| makeContainer <| Capacity 10000 12000
+            LargePack ->
+                make "Large Pack" (Prices 4000 100000) "Pack" (Mass.Mass 0 0) (Capacity 35000 100000)
 
-        LargeBag ->
-            Pack LargeBag <| makeContainer <| Capacity 15000 18000
+            SmallChest ->
+                make "Small Chest" (Prices 5000 100000) "Chest" (Mass.Mass 0 0) (Capacity 100000 50000)
 
-        SmallPack ->
-            Pack SmallPack <| makeContainer <| Capacity 12000 50000
+            MediumChest ->
+                make "Medium Chest" (Prices 15000 150000) "Chest" (Mass.Mass 0 0) (Capacity 100000 150000)
 
-        MediumPack ->
-            Pack MediumPack <| makeContainer <| Capacity 22000 75000
+            LargeChest ->
+                make "Large Chest" (Prices 25000 250000) "Chest" (Mass.Mass 0 0) (Capacity 100000 250000)
 
-        LargePack ->
-            Pack LargePack <| makeContainer <| Capacity 35000 100000
+            EnchantedSmallPackOfHolding ->
+                make "Enchanted Small Pack Of Holding" (Prices 5000 75000) "EnchantedPack" (Mass.Mass 0 0) (Capacity 50000 150000)
 
-        SmallChest ->
-            Pack SmallChest <| makeContainer <| Capacity 100000 50000
+            EnchantedMediumPackOfHolding ->
+                make "Enchanted Medium Pack Of Holding" (Prices 7500 100000) "EnchantedPack" (Mass.Mass 0 0) (Capacity 75000 200000)
 
-        MediumChest ->
-            Pack MediumChest <| makeContainer <| Capacity 100000 150000
-
-        LargeChest ->
-            Pack LargeChest <| makeContainer <| Capacity 100000 250000
-
-        EnchantedSmallPackOfHolding ->
-            Pack EnchantedSmallPackOfHolding <| makeContainer <| Capacity 50000 150000
-
-        EnchantedMediumPackOfHolding ->
-            Pack EnchantedMediumPackOfHolding <| makeContainer <| Capacity 75000 200000
-
-        EnchantedLargePackOfHolding ->
-            Pack EnchantedLargePackOfHolding <| makeContainer <| Capacity 100000 250000
-
-
-blueprint : PackType -> BaseItemData
-blueprint packType =
-    case packType of
-        SmallBag ->
-            BaseItemData "Small Bag" 300 500 "Bag" 0 0
-
-        MediumBag ->
-            BaseItemData "Medium Bag" 500 700 "Bag" 0 0
-
-        LargeBag ->
-            BaseItemData "Large Bag" 900 900 "Bag" 0 0
-
-        SmallPack ->
-            BaseItemData "Small Pack" 1000 1000 "Pack" 0 0
-
-        MediumPack ->
-            BaseItemData "Medium Pack" 2000 1500 "Pack" 0 0
-
-        LargePack ->
-            BaseItemData "Large Pack" 4000 100000 "Pack" 0 0
-
-        SmallChest ->
-            BaseItemData "Small Chest" 5000 100000 "Chest" 0 0
-
-        MediumChest ->
-            BaseItemData "Medium Chest" 15000 150000 "Chest" 0 0
-
-        LargeChest ->
-            BaseItemData "Large Chest" 25000 250000 "Chest" 0 0
-
-        EnchantedSmallPackOfHolding ->
-            BaseItemData "Enchanted Small Pack Of Holding" 5000 75000 "EnchantedPack" 0 0
-
-        EnchantedMediumPackOfHolding ->
-            BaseItemData "Enchanted Medium Pack Of Holding" 7500 100000 "EnchantedPack" 0 0
-
-        EnchantedLargePackOfHolding ->
-            BaseItemData "Enchanted Large Pack Of Holding" 10000 125000 "EnchantedPack" 0 0
+            EnchantedLargePackOfHolding ->
+                make "Enchanted Large Pack Of Holding" (Prices 10000 125000) "EnchantedPack" (Mass.Mass 0 0) (Capacity 100000 250000)

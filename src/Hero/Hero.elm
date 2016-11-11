@@ -20,10 +20,10 @@ import Utils.Vector as Vector exposing (..)
 import Utils.Direction as Direction exposing (Direction)
 import Stats exposing (Stats)
 import Hero.Attributes as Attributes exposing (Attributes)
-import Equipment exposing (Equipment)
+import Equipment exposing (Equipment, EquipmentSlot)
 import GameData.Types as Data
 import Utils.Lib as Lib
-import Item.Item as Item exposing (AnyItem)
+import Item.Item as Item exposing (Item)
 
 
 type Hero
@@ -98,9 +98,9 @@ setStats stats (A model) =
 -- Equipment
 
 
-equip : AnyItem -> Hero -> Result Equipment.Msg Hero
-equip item (A model) =
-    Equipment.equip item model.equipment
+equip : ( EquipmentSlot, Item ) -> Hero -> Result Equipment.Msg Hero
+equip ( slot, item ) (A model) =
+    Equipment.equip ( slot, item ) model.equipment
         |> Result.map (\equipment -> A { model | equipment = equipment })
 
 

@@ -18,6 +18,7 @@ Items can also be containers, so containers can hold containers.
 
 import Utils.Mass as Mass exposing (..)
 
+
 type alias ID =
     Int
 
@@ -25,6 +26,7 @@ type alias ID =
 type Msg
     = Ok
     | MassMsg Mass.Msg
+    | NestedItem
 
 
 type alias Model a =
@@ -70,15 +72,30 @@ add item (ContainerModel model) =
         mass =
             model.getMass item
 
-        mass' =
+        containerMassWithItem =
             Mass.add mass model.currentMass
-    in
-        case (Mass.withinCapacity mass' model.capacity) of
-            Mass.Ok ->
-                ( ContainerModel { model | currentMass = mass', items = item :: model.items }, Ok )
 
-            msg ->
-                ( ContainerModel model, MassMsg msg )
+        isNested =
+            List.any (\x -> model.equals x item) model.items
+
+        isWithinCapacity =
+            Mass.withinCapacity containerMassWithItem model.capacity
+    in
+        case ( isWithinCapacity, isNested ) of
+            ( Mass.Success, False ) ->
+                ( ContainerModel
+                    { model
+                        | currentMass = containerMassWithItem
+                        , items = item :: model.items
+                    }
+                , Ok
+                )
+
+            ( _, True ) ->
+                ( ContainerModel model, NestedItem )
+
+            ( massMsg, _ ) ->
+                ( ContainerModel model, MassMsg massMsg )
 
 
 {-| Takes an item out of the container if it exists.
