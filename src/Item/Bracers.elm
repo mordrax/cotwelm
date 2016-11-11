@@ -1,41 +1,28 @@
 module Item.Bracers exposing (..)
 
-import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
+import Utils.IdGenerator as IdGenerator
+import Utils.Mass as Mass exposing (Mass)
 
 
-type Bracers
-    = Bracers BracersType AC
+init : BracersType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Bracers
+init bracersType status idStatus id =
+    let
+        make name mass css prices ac =
+            { base = BaseItem name prices css mass status idStatus id
+            , bracersType = bracersType
+            , ac = ac
+            }
+    in
+        case bracersType of
+            NormalBracers ->
+                make "Bracers" (Mass.Mass 500 2000) "Bracers" (Prices 108 60) (AC 3)
 
+            BracersOfDefenseNormal ->
+                make "Bracers Of Defense Normal" (Mass.Mass 500 2000) "BracersEnchanted" (Prices 1836 1020) (AC 8)
 
-init : BracersType -> Bracers
-init bracersType =
-    case bracersType of
-        NormalBracers ->
-            Bracers NormalBracers (AC 3)
+            BracersOfDefenseS ->
+                make "Bracers Of Defense Strong" (Mass.Mass 500 2000) "BracersEnchanted" (Prices 5616 3120) (AC 13)
 
-        BracersOfDefenseNormal ->
-            Bracers BracersOfDefenseNormal (AC 8)
-
-        BracersOfDefenseS ->
-            Bracers BracersOfDefenseS (AC 13)
-
-        BracersOfDefenseVS ->
-            Bracers BracersOfDefenseVS (AC 18)
-
-
-blueprint : BracersType -> BaseItemData
-blueprint bracersType =
-    case bracersType of
-        NormalBracers ->
-            BaseItemData "Bracers" 500 2000 "Bracers" 108 60
-
-        BracersOfDefenseNormal ->
-            BaseItemData "Bracers Of Defense Normal" 500 2000 "BracersEnchanted" 1836 1020
-
-        BracersOfDefenseS ->
-            BaseItemData "Bracers Of Defense Strong" 500 2000 "BracersEnchanted" 5616 3120
-
-        BracersOfDefenseVS ->
-            BaseItemData "Bracers Of Defense Very Strong" 500 2000 "BracersEnchanted" 11556 6420
+            BracersOfDefenseVS ->
+                make "Bracers Of Defense Very Strong" (Mass.Mass 500 2000) "BracersEnchanted" (Prices 11556 6420) (AC 18)

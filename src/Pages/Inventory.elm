@@ -28,7 +28,8 @@ import Html.App exposing (..)
 
 import Item.Item as Item exposing (..)
 import Item.Data exposing (..)
-
+import Item.Pack as Pack exposing (Pack)
+import Container
 
 -- game
 
@@ -59,13 +60,13 @@ type alias Model =
 
 
 type Draggable
-    = DragSlot AnyItem EquipmentSlot
-    | DragPack AnyItem (Item (Item.Pack AnyItem))
-    | DragMerchant AnyItem Merchant
+    = DragSlot Item EquipmentSlot
+    | DragPack Item (Pack Item)
+    | DragMerchant Item Merchant
 
 
 type Droppable
-    = DropPack (Item (Item.Pack AnyItem))
+    = DropPack (Pack Item)
     | DropEquipment EquipmentSlot
     | DropMerchant Merchant
 
@@ -207,7 +208,7 @@ handleDragDrop dragSource dropTarget model =
 - Pack:
   - Nothing
 -}
-handleDrag : Draggable -> Model -> Result String ( Model, AnyItem )
+handleDrag : Draggable -> Model -> Result String ( Model, Item )
 handleDrag draggable model =
     case draggable of
         DragSlot item slot ->
@@ -236,7 +237,7 @@ handleDrag draggable model =
             transactWithMerchant item model
 
 
-transactWithMerchant : AnyItem -> Model -> Result String ( Model, AnyItem)
+transactWithMerchant : Item -> Model -> Result String ( Model, Item)
 transactWithMerchant item ({ merchant, equipment } as model) =
     let
         maybePurse =
@@ -282,7 +283,7 @@ transactWithMerchant item ({ merchant, equipment } as model) =
 - Pack
   - Check pack capacity
 -}
-handleDrop : Droppable -> AnyItem -> Model -> Result String Model
+handleDrop : Droppable -> Item -> Model -> Result String Model
 handleDrop droppable item model =
     case droppable of
         DropPack pack ->
@@ -300,10 +301,10 @@ handleDrop droppable item model =
                     Equipment.NoPackEquipped ->
                         Result.Err "Can't add to the pack. No packed equipped!"
 
-                    Equipment.ItemMsg (Item.Data.Ok) ->
+                    Equipment.ContainerMsg (Container.Ok) ->
                         success
 
-                    Equipment.ItemMsg msg ->
+                    Equipment.ContainerMsg msg ->
                         Result.Err ("Dropping into pack with unhandled item msg" ++ (toString msg))
 
                     msg ->
@@ -431,13 +432,13 @@ viewGround model =
     div [] []
 
 
-viewPackInfo : Maybe (Item (Pack AnyItem)) -> String
+viewPackInfo : Maybe (Pack Item) -> String
 viewPackInfo maybeItem =
     case maybeItem of
         Just pack ->
             let
                 ( Mass curBulk curWeight, Capacity capBulk capWeight ) =
-                    Item.packInfo pack
+                    Pack.info pack
 
                 print name a b =
                     name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
@@ -454,7 +455,7 @@ viewPackInfo maybeItem =
 ---------------
 
 
-viewPack : Maybe (Item (Pack AnyItem)) -> Model -> Html (DragDrop.Msg Draggable Droppable)
+viewPack : Maybe (Pack Item) -> Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPack maybePack ({ dnd } as model) =
     let
         packStyle =
@@ -477,7 +478,7 @@ viewShop shop dnd =
         wares =
             Shops.wares shop
 
-        makeDraggable : Shop -> AnyItem -> Html (DragDrop.Msg Draggable a)
+        makeDraggable : Shop -> Item -> Html (DragDrop.Msg Draggable a)
         makeDraggable shop item =
             DragDrop.draggable (Item.view item) (DragMerchant item (Shop shop)) dnd
 
@@ -492,7 +493,7 @@ viewShop shop dnd =
         droppableShop
 
 
-viewContainer : Item (Pack AnyItem) -> Model -> Html (DragDrop.Msg Draggable Droppable)
+viewContainer : Pack Item -> Model -> Html (DragDrop.Msg Draggable Droppable)
 viewContainer pack ({ equipment, dnd } as model) =
     let
         items =
@@ -565,8 +566,7 @@ viewPurse : Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPurse ({ equipment } as model) =
     let
         maybePurseContents =
-            ((Equipment.getPurse equipment)
-            |> Maybe.map Item.toPurse)
+            (Equipment.getPurse equipment)
                 `Maybe.andThen` maybeCoins
 
         maybeCoins coins =

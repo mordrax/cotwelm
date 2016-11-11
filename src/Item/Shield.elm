@@ -1,95 +1,55 @@
 module Item.Shield exposing (..)
 
-import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator exposing (..)
 import Item.Data exposing (..)
+import Utils.IdGenerator as IdGenerator
+import Utils.Mass as Mass exposing (Mass)
 
 
-type Shield
-    = ShieldM ShieldType AC
+init : ShieldType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Shield
+init shieldType status idStatus id =
+    let
+        make name mass css prices ac =
+            { base = BaseItem name prices css mass status idStatus id
+            , shieldType = shieldType
+            , ac = ac
+            }
+    in
+        case shieldType of
+            BrokenShield ->
+                make "Broken Shield" (Mass.Mass 4000 35000) "BrokenShield" (Prices 0 25) (AC 0)
 
+            SmallWoodenShield ->
+                make "Small Wooden Shield" (Mass.Mass 3000 15000) "WoodShield" (Prices 525 300) (AC 3)
 
-init : ShieldType -> Shield
-init shieldType =
-    case shieldType of
-        BrokenShield ->
-            ShieldM BrokenShield (AC 0)
+            MediumWoodenShield ->
+                make "Medium Wooden Shield" (Mass.Mass 4000 35000) "WoodShield" (Prices 1050 600) (AC 6)
 
-        SmallWoodenShield ->
-            ShieldM SmallWoodenShield (AC 3)
+            LargeWoodenShield ->
+                make "Large Wooden Shield" (Mass.Mass 5000 50000) "WoodShield" (Prices 2100 1200) (AC 9)
 
-        MediumWoodenShield ->
-            ShieldM MediumWoodenShield (AC 6)
+            SmallIronShield ->
+                make "Small Iron Shield" (Mass.Mass 4000 15000) "MetalShield" (Prices 1260 720) (AC 6)
 
-        LargeWoodenShield ->
-            ShieldM LargeWoodenShield (AC 9)
+            MediumIronShield ->
+                make "Medium Iron Shield" (Mass.Mass 5000 35000) "MetalShield" (Prices 2592 1440) (AC 9)
 
-        SmallIronShield ->
-            ShieldM SmallIronShield (AC 6)
+            LargeIronShield ->
+                make "Large Iron Shield" (Mass.Mass 6000 50000) "MetalShield" (Prices 3150 1800) (AC 12)
 
-        MediumIronShield ->
-            ShieldM MediumIronShield (AC 9)
+            SmallSteelShield ->
+                make "Small Steel Shield" (Mass.Mass 4000 15000) "MetalShield" (Prices 2730 1560) (AC 9)
 
-        LargeIronShield ->
-            ShieldM LargeIronShield (AC 12)
+            MediumSteelShield ->
+                make "Medium Steel Shield" (Mass.Mass 5000 35000) "MetalShield" (Prices 3360 1920) (AC 12)
 
-        SmallSteelShield ->
-            ShieldM SmallSteelShield (AC 9)
+            LargeSteelShield ->
+                make "Large Steel Shield" (Mass.Mass 6000 50000) "MetalShield" (Prices 4200 2400) (AC 15)
 
-        MediumSteelShield ->
-            ShieldM MediumSteelShield (AC 12)
+            SmallMeteoricSteelShield ->
+                make "Small Meteoric Steel Shield" (Mass.Mass 2500 10000) "MetalShield" (Prices 4620 2640) (AC 15)
 
-        LargeSteelShield ->
-            ShieldM LargeSteelShield (AC 15)
+            MediumMeteoricSteelShield ->
+                make "Medium Meteoric Steel Shield" (Mass.Mass 3500 25000) "MetalShield" (Prices 5940 3300) (AC 18)
 
-        SmallMeteoricSteelShield ->
-            ShieldM SmallMeteoricSteelShield (AC 15)
-
-        MediumMeteoricSteelShield ->
-            ShieldM MediumMeteoricSteelShield (AC 18)
-
-        LargeMeteoricSteelShield ->
-            ShieldM LargeMeteoricSteelShield (AC 21)
-
-
-blueprint : ShieldType -> BaseItemData
-blueprint shieldType =
-    case shieldType of
-        BrokenShield ->
-            BaseItemData "Broken Shield" 4000 35000 "BrokenShield" 0 25
-
-        SmallWoodenShield ->
-            BaseItemData "Small Wooden Shield" 3000 15000 "WoodShield" 525 300
-
-        MediumWoodenShield ->
-            BaseItemData "Medium Wooden Shield" 4000 35000 "WoodShield" 1050 600
-
-        LargeWoodenShield ->
-            BaseItemData "Large Wooden Shield" 5000 50000 "WoodShield" 2100 1200
-
-        SmallIronShield ->
-            BaseItemData "Small Iron Shield" 4000 15000 "MetalShield" 1260 720
-
-        MediumIronShield ->
-            BaseItemData "Medium Iron Shield" 5000 35000 "MetalShield" 2592 1440
-
-        LargeIronShield ->
-            BaseItemData "Large Iron Shield" 6000 50000 "MetalShield" 3150 1800
-
-        SmallSteelShield ->
-            BaseItemData "Small Steel Shield" 4000 15000 "MetalShield" 2730 1560
-
-        MediumSteelShield ->
-            BaseItemData "Medium Steel Shield" 5000 35000 "MetalShield" 3360 1920
-
-        LargeSteelShield ->
-            BaseItemData "Large Steel Shield" 6000 50000 "MetalShield" 4200 2400
-
-        SmallMeteoricSteelShield ->
-            BaseItemData "Small Meteoric Steel Shield" 2500 10000 "MetalShield" 4620 2640
-
-        MediumMeteoricSteelShield ->
-            BaseItemData "Medium Meteoric Steel Shield" 3500 25000 "MetalShield" 5940 3300
-
-        LargeMeteoricSteelShield ->
-            BaseItemData "Large Meteoric Steel Shield" 4500 35000 "MetalShield" 7560 4200
+            LargeMeteoricSteelShield ->
+                make "Large Meteoric Steel Shield" (Mass.Mass 4500 35000) "MetalShield" (Prices 7560 4200) (AC 21)

@@ -484,14 +484,14 @@ donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
 donDefaultGarb itemFactory hero =
     let
         equipmentToMake =
-            [ Item.Data.Weapon Dagger
-            , Item.Data.Armour ScaleMail
-            , Item.Data.Shield LargeIronShield
-            , Item.Data.Helmet LeatherHelmet
-            , Item.Data.Gauntlets NormalGauntlets
-            , Item.Data.Belt ThreeSlotBelt
-            , Item.Data.Purse
-            , Item.Data.Pack MediumPack
+            [ Item.Data.ItemTypeWeapon Dagger
+            , Item.Data.ItemTypeArmour ScaleMail
+            , Item.Data.ItemTypeShield LargeIronShield
+            , Item.Data.ItemTypeHelmet LeatherHelmet
+            , Item.Data.ItemTypeGauntlets NormalGauntlets
+            , Item.Data.ItemTypeBelt ThreeSlotBelt
+            , Item.Data.ItemTypePurse
+            , Item.Data.ItemTypePack MediumPack
             ]
 
         makeEquipment itemType ( accEquipment, itemFactory ) =
