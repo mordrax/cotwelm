@@ -46,4 +46,4 @@ init armourType status idStatus id =
                 make "Meteoric Steel Plate" (Mass.Mass 5000 30000) "MetalArmour" (Prices 105000 60000) (AC 54)
 
             ElvenChainMail ->
-                make "Elven Chain Mail" (Mass.Mass 50000 24000) "MetalArmour" (Prices 162000 90000) (AC 52)
+                make "Elven Chain Mail" (Mass.Mass 5000 24000) "MetalArmour" (Prices 162000 90000) (AC 52)

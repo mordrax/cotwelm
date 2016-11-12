@@ -22,9 +22,9 @@ module Combat
   CHANCE TO HIT
   -------------
   - Dexterity is the major contributor to a weapon's CTH%
-  - Defender's dexterity acts as dodging, so a high dex reduces the attacker's CTH.
   - A larger defender is easier to hit.
   - Bulk, a smaller weapon is easier to hit with.
+  - Wearing bulky armour negatively affects your CTH.
 
   ------
   DAMAGE
@@ -61,13 +61,56 @@ import Monster.Monster as Monster exposing (Monster)
 import Item.Weapon as Weapon
 import Item.Data
 import Types
+import Utils.Mass as Mass
+import EveryDict exposing (EveryDict)
+
+
+cth : Attributes -> Item.Data.Weapon -> Item.Data.Armour -> Monster.Size -> Int
+cth { str, dex } weapon armour monsterSize =
+    let
+        baseCTH =
+            dex
+
+        (Mass.Mass armourWeight armourBulk) =
+            armour.base.mass
+
+        -- At max str, can use max weight armour (plate) without penalty.
+        -- At min str, when using plate, gives a max penalty of -20% CTH
+        armourPenalty =
+            (str / 100 + armourWeight / 15000) * 20 |> clamp -20 0
+
+        (Mass.Mass weaponWeight weaponBulk) =
+            weapon.base.mass
+
+        -- Weapons less than 5000 (axe) has no bulk penalty, after which all weapons
+        -- up to the THS at 12000 gets a linear penalty up to x% CTH
+        weaponBulkPenalty =
+            (weaponBulk - 6000) / 6000 * 15 |> clamp -15 15
+
+        monsterSizePenalty =
+            monsterSize
+                |> (\x -> EveryDict.get x monsterSizeToPenalty)
+                |> Maybe.withDefault 0
+    in
+        baseCTH + armourPenalty + weaponBulkPenalty + monsterSizePenalty
+
+
+monsterSizeToPenalty : EveryDict Monster.Size Int
+monsterSizeToPenalty =
+    EveryDict.fromList
+        [ ( Monster.Tiny, -10 )
+        , ( Monster.Small, -5 )
+        , ( Monster.Medium, 0 )
+        , ( Monster.Large, 5 )
+        , ( Monster.Giant, 10 )
+        ]
 
 
 attack : Hero -> Monster -> Seed -> ( Monster, Seed )
 attack hero monster seed =
     let
         ( stats_, seed_, damage ) =
-            hit (Hero.stats hero) monster.stats seed
+            hit (Hero.attributes hero) monster.stats seed
 
         monster_ =
             { monster | stats = stats_ }
@@ -82,7 +125,7 @@ defend : Monster -> Hero -> Seed -> ( Hero, Seed )
 defend monster hero seed =
     let
         ( heroStats_, seed_, damage ) =
-            hit monster.stats (Hero.stats hero) seed
+            hit monster.stats (Hero.attributes hero) seed
 
         hero_ =
             Hero.setStats heroStats_ hero
@@ -94,24 +137,17 @@ defend monster hero seed =
 
 
 attackSpeed : Item.Data.Weapon -> Attributes -> Float
-attackSpeed weapon attributes =
-    let
-        { str, dex, int, con } =
-            Attributes.get attributes
-    in
-        1
+attackSpeed weapon { str, dex, int, con } =
+    1
 
 
 {-|
 -}
 damage : Item.Data.Weapon -> Attributes -> Types.DamageDie
-damage weapon attributes =
+damage weapon { str, dex, int, con } =
     let
         baseDamage =
             Weapon.damage weapon
-
-        { str, dex, int, con } =
-            Attributes.get attributes
     in
         Types.DamageDie 1 1
 
