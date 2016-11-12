@@ -3,7 +3,6 @@ module Hero.Attributes
         ( Attributes
         , Msg
         , view
-        , get
         , init
         , update
         )
@@ -11,13 +10,8 @@ module Hero.Attributes
 --where
 
 import Html exposing (..)
-import Html.App exposing (map)
-import Html.Events exposing (onClick, onInput)
-import Html.Attributes exposing (..)
-
-
-type Attributes
-    = A Model
+import Html.Events as HE
+import Html.Attributes as HA
 
 
 type Msg
@@ -32,7 +26,7 @@ type Attribute
     | Dexterity
 
 
-type alias Model =
+type alias Attributes =
     { ava : Int
     , str : Int
     , dex : Int
@@ -41,49 +35,39 @@ type alias Model =
     }
 
 
-get : Attributes -> { str : Int, dex : Int, int : Int, con : Int }
-get (A model) =
-    { str = model.str
-    , dex = model.dex
-    , int = model.int
-    , con = model.con
+init : Attributes
+init =
+    { ava = 100
+    , str = 20
+    , dex = 30
+    , con = 40
+    , int = 60
     }
 
 
-init : Attributes
-init =
-    A
-        { ava = 100
-        , str = 20
-        , dex = 30
-        , con = 40
-        , int = 60
-        }
-
-
 update : Msg -> Attributes -> Attributes
-update msg (A model) =
+update msg model =
     case msg of
         Update attribute value ->
             case attribute of
                 Available ->
-                    A { model | ava = model.ava + value }
+                    { model | ava = model.ava + value }
 
                 Strength ->
-                    A { model | str = model.str + value, ava = model.ava - value }
+                    { model | str = model.str + value, ava = model.ava - value }
 
                 Intelligence ->
-                    A { model | int = model.int + value, ava = model.ava - value }
+                    { model | int = model.int + value, ava = model.ava - value }
 
                 Constitution ->
-                    A { model | con = model.con + value, ava = model.ava - value }
+                    { model | con = model.con + value, ava = model.ava - value }
 
                 Dexterity ->
-                    A { model | dex = model.dex + value, ava = model.ava - value }
+                    { model | dex = model.dex + value, ava = model.ava - value }
 
 
 view : Attributes -> Html Msg
-view (A model) =
+view model =
     div []
         [ viewAttribute Available model False
         , viewAttribute Strength model True
@@ -95,13 +79,13 @@ view (A model) =
 
 viewButtons : Attribute -> Html Msg
 viewButtons attribute =
-    div [ class "ui buttons" ]
-        [ button [ class "ui icon button", onClick (Update attribute -5) ] [ i [ class "ui icon minus" ] [] ]
-        , button [ class "ui icon button", onClick (Update attribute 5) ] [ i [ class "ui icon plus" ] [] ]
+    div [ HA.class "ui buttons" ]
+        [ button [ HA.class "ui icon button", HE.onClick (Update attribute -5) ] [ i [ HA.class "ui icon minus" ] [] ]
+        , button [ HA.class "ui icon button", HE.onClick (Update attribute 5) ] [ i [ HA.class "ui icon plus" ] [] ]
         ]
 
 
-viewAttribute : Attribute -> Model -> Bool -> Html Msg
+viewAttribute : Attribute -> Attributes -> Bool -> Html Msg
 viewAttribute attr model buttons =
     let
         value =
@@ -110,15 +94,15 @@ viewAttribute attr model buttons =
         description =
             getDescription attr value
     in
-        div [ class "ui segments" ]
-            [ div [ class "ui segment left aligned" ]
-                [ h4 [ class "ui header" ] [ text (toString attr) ]
-                , div [ class "ui indicating progress", getDataPercent value ]
-                    [ div [ class "bar", (progressBarStyle value) ] []
-                    , div [ class "tick", (tickStyle 25) ] []
-                    , div [ class "tick", (tickStyle 50) ] []
-                    , div [ class "tick", (tickStyle 75) ] []
-                    , div [ class "label" ] [ text description ]
+        div [ HA.class "ui segments" ]
+            [ div [ HA.class "ui segment left aligned" ]
+                [ h4 [ HA.class "ui header" ] [ text (toString attr) ]
+                , div [ HA.class "ui indicating progress", getDataPercent value ]
+                    [ div [ HA.class "bar", (progressBarStyle value) ] []
+                    , div [ HA.class "tick", (tickStyle 25) ] []
+                    , div [ HA.class "tick", (tickStyle 50) ] []
+                    , div [ HA.class "tick", (tickStyle 75) ] []
+                    , div [ HA.class "label" ] [ text description ]
                     ]
                 , if buttons then
                     viewButtons attr
@@ -130,7 +114,7 @@ viewAttribute attr model buttons =
 
 progressBarStyle : Int -> Html.Attribute Msg
 progressBarStyle val =
-    style
+    HA.style
         [ ( "width", (toString val) ++ "%" )
         , ( "min-width", "0" )
         ]
@@ -138,7 +122,7 @@ progressBarStyle val =
 
 tickStyle : Int -> Html.Attribute Msg
 tickStyle val =
-    style
+    HA.style
         [ ( "width", (toString val) ++ "%" )
         , ( "min-width", "0" )
         , ( "border-right", "1px solid gray" )
@@ -149,7 +133,7 @@ tickStyle val =
         ]
 
 
-getAttributeValue : Attribute -> Model -> Int
+getAttributeValue : Attribute -> Attributes -> Int
 getAttributeValue attr model =
     case attr of
         Available ->
@@ -170,7 +154,7 @@ getAttributeValue attr model =
 
 getDataPercent : Int -> Html.Attribute Msg
 getDataPercent val =
-    attribute "data-percent" (toString val)
+    HA.attribute "data-percent" (toString val)
 
 
 

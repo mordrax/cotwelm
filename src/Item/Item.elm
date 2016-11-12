@@ -99,10 +99,12 @@ costOf item =
 ----------------------------------------------------------------------
 
 
-getMass : Item -> Mass
-getMass =
+mass : Item -> Mass
+mass =
     getModel >> .mass
 
+baseItemMass: BaseItem -> Mass
+baseItemMass {mass} = mass
 
 isCursed : Item -> Bool
 isCursed =
@@ -212,7 +214,7 @@ viewSlot item extraContent =
 
 containerBuilder : Capacity -> Container Item
 containerBuilder capacity =
-    Container.init capacity getMass equals
+    Container.init capacity mass equals
 
 
 newFoldableItem : ( key, ID -> Item ) -> ID -> ( key, Item )

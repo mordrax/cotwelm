@@ -2,9 +2,8 @@ module Stats
     exposing
         ( Stats
         , Msg(..)
-        , new
+        , init
         , takeHit
-        , combatStats
         , isDead
         , printHP
         , printSP
@@ -12,7 +11,7 @@ module Stats
 
 
 type Stats
-    = A Model
+    = Stats Model
 
 
 type Msg
@@ -23,30 +22,25 @@ type Msg
 type alias Model =
     { maxHP : Int
     , currentHP : Int
+    , hardMaxHP : Int
     , maxSP : Int
     , currentSP : Int
-    , damageRange : ( Int, Int )
-    , ac : Int
-    , hitChance : Int
+    , hardMaxSP : Int
     }
 
-{-|
--}
 
-
-
-new : Int -> Int -> Stats
-new hp sp =
-    A (Model hp hp sp sp ( 1, 6 ) 0 50)
+init : Int -> Int -> Stats
+init hp sp =
+    Stats (Model hp hp hp sp sp sp)
 
 
 isDead : Stats -> Bool
-isDead (A model) =
+isDead (Stats model) =
     model.currentHP < 0
 
 
 takeHit : Int -> Stats -> ( Stats, Msg )
-takeHit damage (A model) =
+takeHit damage (Stats model) =
     let
         hp' =
             model.currentHP - damage
@@ -57,21 +51,16 @@ takeHit damage (A model) =
             else
                 Dead
     in
-        ( A { model | currentHP = hp' }, msg )
-
-
-combatStats : Stats -> ( ( Int, Int ), Int, Int )
-combatStats (A model) =
-    ( model.damageRange, model.ac, model.hitChance )
+        ( Stats { model | currentHP = hp' }, msg )
 
 
 printHP : Stats -> String
-printHP (A model) =
+printHP (Stats model) =
     printAOverB model.currentHP model.maxHP
 
 
 printSP : Stats -> String
-printSP (A model) =
+printSP (Stats model) =
     printAOverB model.currentSP model.maxSP
 
 

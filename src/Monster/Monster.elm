@@ -2,6 +2,7 @@ module Monster.Monster
     exposing
         ( Monster
         , MonsterType(..)
+        , Size(..)
         , new
         , view
         , damageRange
@@ -26,6 +27,14 @@ type alias Monster =
     , stats : Stats
     , id : ID
     }
+
+
+type Size
+    = Tiny
+    | Small
+    | Medium
+    | Large
+    | Giant
 
 
 type alias Model =
@@ -168,7 +177,7 @@ new monsterType pos id =
             newSpellcaster class css name hp 0
 
         newSpellcaster class css name hp sp =
-            Monster (A <| Model class css name) pos (Stats.new hp sp) id
+            Monster (A <| Model class css name) pos (Stats.init hp sp) id
     in
         case monsterType of
             GiantRat ->
