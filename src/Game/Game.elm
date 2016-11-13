@@ -216,7 +216,7 @@ moveHero dir ({ hero, monsters, seed } as model) =
             ( _, _, Just monster, _ ) ->
                 let
                     ( monsterAfterHit, seed_ ) =
-                        Combat.attack hero monster seed
+                        Random.step (Combat.attack hero monster) seed
 
                     monsters_ =
                         if Stats.isDead monsterAfterHit.stats then
@@ -264,7 +264,7 @@ moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
                     ( _, _, _, True ) ->
                         let
                             ( heroAfterHit, seed_ ) =
-                                Combat.attack monster hero seed
+                                Random.step (Combat.attack monster hero) seed
                         in
                             moveMonsters restOfMonsters
                                 (monster :: movedMonsters)

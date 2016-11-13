@@ -53,7 +53,7 @@ module Combat
 
 import Stats exposing (..)
 import Dice exposing (..)
-import Random.Pcg as Random exposing (..)
+import Random.Pcg as Random exposing (Seed, Generator)
 import Hero.Hero as Hero exposing (Hero)
 import Attributes exposing (Attributes)
 import Monster.Monster as Monster exposing (Monster)
@@ -66,14 +66,26 @@ import Equipment exposing (Equipment)
 import Fighter exposing (Fighter)
 
 
-chanceToHit : Attributes -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour ) -> Int
-chanceToHit { str, dex } ( maybeWeapon, maybeArmour ) =
+{-| Returns a percentage between 0 and 100 of the chance the attacker has to hit it's
+    target based on the attacker's abilities.
+-}
+chanceToHit : Fighter a -> Int
+chanceToHit { attributes, equipment } =
     let
+        { str, dex } =
+            attributes
+
+        weapon =
+            Equipment.getWeapon equipment
+
+        armour =
+            Equipment.getArmour equipment
+
         baseCTH =
             toFloat dex
 
         (Mass.Mass armourWeight armourBulk) =
-            maybeArmour
+            armour
                 |> Maybe.map (.base >> .mass)
                 |> Maybe.withDefault (Mass.Mass 0 0)
 
@@ -83,7 +95,7 @@ chanceToHit { str, dex } ( maybeWeapon, maybeArmour ) =
             (toFloat str / 100 + toFloat armourWeight / 15000) * 20 |> clamp -20 0
 
         (Mass.Mass weaponWeight weaponBulk) =
-            maybeWeapon
+            weapon
                 |> Maybe.map (.base >> .mass)
                 |> Maybe.withDefault (Mass.Mass 0 0)
 
@@ -95,27 +107,54 @@ chanceToHit { str, dex } ( maybeWeapon, maybeArmour ) =
         round (baseCTH + armourPenalty + weaponBulkPenalty * 100)
 
 
-bodySizeToPenalty : EveryDict Types.BodySize Int
-bodySizeToPenalty =
-    EveryDict.fromList
-        [ ( Types.Tiny, -10 )
-        , ( Types.Small, -5 )
-        , ( Types.Medium, 0 )
-        , ( Types.Large, 5 )
-        , ( Types.Giant, 10 )
-        ]
-
-
-attack : Fighter a -> Fighter b -> Seed -> ( Fighter b, Seed )
-attack attacker defender seed =
+chanceToDodge : Fighter a -> Int
+chanceToDodge { attributes, equipment, bodySize } =
     let
-        ( defenderAfterHit, seed_, damage ) =
-            hit attacker defender seed
-
-        newMsg =
-            newHitMessage "You" ("the " ++ defender.name) (toString damage)
+        sizePenalty =
+            bodySize
+                |> bodySizeToDodge
+                |> clamp -10 10
     in
-        ( defenderAfterHit, seed_ )
+        sizePenalty
+
+
+bodySizeToDodge : Types.BodySize -> Int
+bodySizeToDodge bodySize =
+    case bodySize of
+        Types.Tiny ->
+            10
+
+        Types.Small ->
+            5
+
+        Types.Medium ->
+            0
+
+        Types.Large ->
+            -5
+
+        Types.Giant ->
+            -10
+
+
+attack : Fighter attacker -> Fighter defender -> Generator (Fighter defender)
+attack attacker defender =
+    let
+        ( cth, ctd ) =
+            ( chanceToHit attacker, chanceToDodge defender )
+
+        damageGen =
+            damageCalculator attacker
+
+        takeDamage damage =
+            let
+                hitMsg =
+                    newHitMessage "You" ("the " ++ defender.name) (toString damage)
+            in
+                { defender | stats = Stats.takeHit damage defender.stats }
+    in
+        damageGen
+            |> Random.map takeDamage
 
 
 attackSpeed : Item.Data.Weapon -> Attributes -> Float
@@ -125,13 +164,21 @@ attackSpeed weapon { str, dex, int, con } =
 
 {-|
 -}
-damage : Item.Data.Weapon -> Attributes -> Types.DamageDie
-damage weapon { str, dex, int, con } =
+damageCalculator : Fighter a -> Generator Int
+damageCalculator { attributes, equipment } =
     let
-        baseDamage =
-            Weapon.damage weapon
+        maybeWeapon =
+            Equipment.getWeapon equipment
+
+        (Types.DamageDie range bonus) =
+            case maybeWeapon of
+                Just weapon ->
+                    Weapon.damage weapon
+
+                _ ->
+                    Types.DamageDie (attributes.str // 10) 0
     in
-        Types.DamageDie 1 1
+        Random.int 1 6
 
 
 
@@ -140,28 +187,16 @@ damage weapon { str, dex, int, con } =
 
 newHitMessage : String -> String -> String -> String
 newHitMessage attacker defender damage =
-    attacker ++ " hit " ++ defender ++ " for " ++ damage ++ " damage!"
+    let
+        msg =
+            attacker ++ " hit " ++ defender ++ " for " ++ damage ++ " damage!"
+
+        _ =
+            Debug.log msg 0
+    in
+        msg
 
 
-weaponArmour : Fighter a -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour )
-weaponArmour { equipment } =
+weaponArmour : Equipment -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour )
+weaponArmour equipment =
     ( Equipment.getWeapon equipment, Equipment.getArmour equipment )
-
-
-hit : Fighter a -> Fighter b -> Seed -> ( Fighter b, Seed, Int )
-hit attacker defender seed =
-    --    let
-    --        cth =
-    --            chanceToHit attacker.attributes (weaponArmour attacker.equipment)
-    --
-    --        monsterSizePenalty =
-    --            defender.bodySize
-    --                |> (\x -> EveryDict.get x bodySizeToPenalty)
-    --                |> Maybe.withDefault 0
-    --                |> clamp -10 10
-    --
-    --        defenderAfterHit =
-    --            { defender | stats = Stats.takeHit 1 defender.stats }
-    --    in
-    --        ( defenderAfterHit, seed, 1 )
-    ( defender, seed, 1 )
