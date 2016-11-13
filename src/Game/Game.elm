@@ -214,8 +214,11 @@ moveHero dir ({ hero, monsters, seed } as model) =
         case obstructions of
             ( _, _, Just monster, _ ) ->
                 let
-                    ( monster_, seed_ ) =
-                        Combat.attack hero monster seed
+                    ( fighter, seed_ ) =
+                        Combat.attack (Hero.toFighter hero) (Monster.toFighter monster) seed
+
+                    monster_ =
+                        { monster | stats = fighter.stats }
 
                     monsters_ =
                         if Stats.isDead monster_.stats then
@@ -262,8 +265,11 @@ moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
                     -- hit hero
                     ( _, _, _, True ) ->
                         let
-                            ( hero_, seed_ ) =
-                                Combat.defend monster hero seed
+                            ( fighter, seed_ ) =
+                                Combat.attack (Monster.toFighter monster) (Hero.toFighter hero) seed
+
+                            hero_ =
+                                Hero.setStats fighter.stats hero
                         in
                             moveMonsters restOfMonsters
                                 (monster :: movedMonsters)
@@ -494,12 +500,12 @@ donDefaultGarb itemFactory hero =
             , ( Equipment.PackSlot, Item.Data.ItemTypePack MediumPack )
             ]
 
-        makeEquipment (slot, itemType) ( accEquipment, itemFactory ) =
+        makeEquipment ( slot, itemType ) ( accEquipment, itemFactory ) =
             let
                 ( item, itemFactory_ ) =
                     ItemFactory.make itemType itemFactory
             in
-                ( (slot, item) :: accEquipment, itemFactory_ )
+                ( ( slot, item ) :: accEquipment, itemFactory_ )
 
         ( defaultEquipment, factoryAfterProduction ) =
             List.foldl makeEquipment ( [], itemFactory ) equipmentToMake

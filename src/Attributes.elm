@@ -1,4 +1,4 @@
-module Hero.Attributes
+module Attributes
     exposing
         ( Attributes
         , Msg

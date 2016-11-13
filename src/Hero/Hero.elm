@@ -4,6 +4,7 @@ module Hero.Hero
         , init
         , view
         , move
+        , toFighter
         , teleport
         , position
         , stats
@@ -20,12 +21,13 @@ import Html exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Utils.Direction as Direction exposing (Direction)
 import Stats exposing (Stats)
-import Hero.Attributes as Attributes exposing (Attributes)
+import Attributes exposing (Attributes)
 import Equipment exposing (Equipment, EquipmentSlot)
 import GameData.Types as Data
 import Utils.Lib as Lib
 import Item.Item as Item exposing (Item)
-
+import Types
+import Fighter exposing (Fighter)
 
 
 type Hero
@@ -49,22 +51,20 @@ type alias Name =
 
 init : Name -> Attributes -> Data.Gender -> Hero
 init name ({ str, int, con } as attributes) gender =
-    let
-        hp =
-            con // 10 + str // 20
+    Hero
+        { name = name
+        , position = ( 11, 17 )
+        , stats = Stats.init attributes
+        , gender = gender
+        , attributes = attributes
+        , equipment = Equipment.init
+        , expLevel = 1
+        }
 
-        sp =
-            int // 5
-    in
-        Hero
-            { name = name
-            , position = ( 11, 17 )
-            , stats = Stats.init hp sp
-            , gender = gender
-            , attributes = attributes
-            , equipment = Equipment.init
-            , expLevel = 1
-            }
+
+toFighter : Hero -> Fighter
+toFighter (Hero { name, stats, attributes, equipment, expLevel }) =
+    { name = name, stats = stats, attributes = attributes, equipment = equipment, expLevel = expLevel, bodySize = Types.Medium }
 
 
 attributes : Hero -> Attributes

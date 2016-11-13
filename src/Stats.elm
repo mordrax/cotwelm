@@ -9,6 +9,8 @@ module Stats
         , printSP
         )
 
+import Attributes exposing (Attributes)
+
 
 type Stats
     = Stats Model
@@ -19,19 +21,64 @@ type Msg
     | Dead
 
 
+type Poison
+    = NotPoisoned
+    | MinorPoison
+    | MajorPoison
+    | AcutePoison
+
+
+type Adrenaline
+    = Calm
+    | Rush Int
+    | CoolOff Int
+
+
+type Burn
+    = NotBurning
+    | Burning Int
+
+
+type Frost
+    = NotFrozen
+    | Frozen Int
+
+
+type Shock
+    = NotShocked
+    | Shocked Int
+
+
 type alias Model =
-    { maxHP : Int
-    , currentHP : Int
+    { currentHP : Int
+    , maxHP : Int
     , hardMaxHP : Int
-    , maxSP : Int
     , currentSP : Int
+    , maxSP : Int
     , hardMaxSP : Int
+    , effects : Effects
     }
 
 
-init : Int -> Int -> Stats
-init hp sp =
-    Stats (Model hp hp hp sp sp sp)
+type alias Effects =
+    { poison : Poison
+    , adrenaline : Adrenaline
+    , burn : Burn
+    , frost : Frost
+    , shock : Shock
+    }
+
+
+init : Attributes -> Stats
+init { str, con, int } =
+    let
+        hp =
+            con // 10 + str // 20
+
+        sp =
+            int // 5
+    in
+        Stats <| Model hp hp hp sp sp sp <| Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
 
 
 isDead : Stats -> Bool
@@ -39,19 +86,9 @@ isDead (Stats model) =
     model.currentHP < 0
 
 
-takeHit : Int -> Stats -> ( Stats, Msg )
+takeHit : Int -> Stats -> Stats
 takeHit damage (Stats model) =
-    let
-        hp' =
-            model.currentHP - damage
-
-        msg =
-            if hp' > 0 then
-                Alive
-            else
-                Dead
-    in
-        ( Stats { model | currentHP = hp' }, msg )
+    Stats { model | currentHP = model.currentHP - damage }
 
 
 printHP : Stats -> String

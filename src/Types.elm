@@ -15,3 +15,11 @@ type alias Die =
 
 type alias Bonus =
     Int
+
+
+type BodySize
+    = Tiny
+    | Small
+    | Medium
+    | Large
+    | Giant
