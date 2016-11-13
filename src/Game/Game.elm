@@ -37,6 +37,7 @@ import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
 import Utils.Lib as Lib
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
+import Fighter exposing (Fighter)
 
 
 type Game
@@ -214,14 +215,11 @@ moveHero dir ({ hero, monsters, seed } as model) =
         case obstructions of
             ( _, _, Just monster, _ ) ->
                 let
-                    ( fighter, seed_ ) =
-                        Combat.attack (Hero.toFighter hero) (Monster.toFighter monster) seed
-
-                    monster_ =
-                        { monster | stats = fighter.stats }
+                    ( monsterAfterHit, seed_ ) =
+                        Combat.attack hero monster seed
 
                     monsters_ =
-                        if Stats.isDead monster_.stats then
+                        if Stats.isDead monsterAfterHit.stats then
                             Monsters.removeOne monster monsters
                         else
                             Monsters.updateOne monster monsters
@@ -265,16 +263,13 @@ moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
                     -- hit hero
                     ( _, _, _, True ) ->
                         let
-                            ( fighter, seed_ ) =
-                                Combat.attack (Monster.toFighter monster) (Hero.toFighter hero) seed
-
-                            hero_ =
-                                Hero.setStats fighter.stats hero
+                            ( heroAfterHit, seed_ ) =
+                                Combat.attack monster hero seed
                         in
                             moveMonsters restOfMonsters
                                 (monster :: movedMonsters)
                                 { model
-                                    | hero = hero_
+                                    | hero = heroAfterHit
                                     , seed = seed_
                                 }
 

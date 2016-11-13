@@ -4,7 +4,6 @@ module Hero.Hero
         , init
         , view
         , move
-        , toFighter
         , teleport
         , position
         , stats
@@ -30,11 +29,7 @@ import Types
 import Fighter exposing (Fighter)
 
 
-type Hero
-    = Hero Model
-
-
-type alias Model =
+type alias Hero =
     { name : Name
     , position : Vector
     , stats : Stats
@@ -42,6 +37,7 @@ type alias Model =
     , attributes : Attributes
     , equipment : Equipment
     , expLevel : Int
+    , bodySize : Types.BodySize
     }
 
 
@@ -51,63 +47,58 @@ type alias Name =
 
 init : Name -> Attributes -> Data.Gender -> Hero
 init name ({ str, int, con } as attributes) gender =
-    Hero
-        { name = name
-        , position = ( 11, 17 )
-        , stats = Stats.init attributes
-        , gender = gender
-        , attributes = attributes
-        , equipment = Equipment.init
-        , expLevel = 1
-        }
-
-
-toFighter : Hero -> Fighter
-toFighter (Hero { name, stats, attributes, equipment, expLevel }) =
-    { name = name, stats = stats, attributes = attributes, equipment = equipment, expLevel = expLevel, bodySize = Types.Medium }
+    { name = name
+    , position = ( 11, 17 )
+    , stats = Stats.init attributes
+    , gender = gender
+    , attributes = attributes
+    , equipment = Equipment.init
+    , expLevel = 1
+    , bodySize = Types.Medium
+    }
 
 
 attributes : Hero -> Attributes
-attributes (Hero { attributes }) =
+attributes { attributes } =
     attributes
 
 
 equipment : Hero -> Equipment
-equipment (Hero { equipment }) =
+equipment { equipment } =
     equipment
 
 
 updateEquipment : Equipment -> Hero -> Hero
-updateEquipment equipment (Hero model) =
-    Hero { model | equipment = equipment }
+updateEquipment equipment model =
+    { model | equipment = equipment }
 
 
 move : Direction -> Hero -> Hero
-move direction (Hero model) =
+move direction model =
     direction
         |> Vector.fromDirection
         |> Vector.add model.position
-        |> \x -> Hero { model | position = x }
+        |> \x -> { model | position = x }
 
 
 teleport : Vector -> Hero -> Hero
-teleport newPosition (Hero model) =
-    Hero { model | position = newPosition }
+teleport newPosition model =
+    { model | position = newPosition }
 
 
 position : Hero -> Vector
-position (Hero model) =
+position model =
     model.position
 
 
 stats : Hero -> Stats
-stats (Hero model) =
+stats model =
     model.stats
 
 
 setStats : Stats -> Hero -> Hero
-setStats stats (Hero model) =
-    Hero { model | stats = stats }
+setStats stats model =
+    { model | stats = stats }
 
 
 
@@ -115,9 +106,9 @@ setStats stats (Hero model) =
 
 
 equip : ( EquipmentSlot, Item ) -> Hero -> Result Equipment.Msg Hero
-equip ( slot, item ) (Hero model) =
+equip ( slot, item ) model =
     Equipment.equip ( slot, item ) model.equipment
-        |> Result.map (\equipment -> Hero { model | equipment = equipment })
+        |> Result.map (\equipment -> { model | equipment = equipment })
 
 
 
@@ -125,7 +116,7 @@ equip ( slot, item ) (Hero model) =
 
 
 view : Hero -> Html a
-view (Hero model) =
+view model =
     let
         heroCss =
             if model.gender == Data.Male then
@@ -137,7 +128,7 @@ view (Hero model) =
 
 
 viewStats : Hero -> Html a
-viewStats (Hero model) =
+viewStats model =
     div []
         [ div [] [ text "Stats:" ]
         , div [] [ text <| "HP: " ++ (Stats.printHP model.stats) ]

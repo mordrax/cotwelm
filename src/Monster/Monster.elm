@@ -3,8 +3,6 @@ module Monster.Monster
         ( Monster
         , MonsterType(..)
         , view
-        , toFighter
-        , fromFighter
         , init
         , initWithOptions
         )
@@ -38,16 +36,6 @@ type alias Monster =
 view : Monster -> Html a
 view { css, position } =
     div [ vectorToHtmlStyle position, class ("tile monster " ++ css) ] []
-
-
-toFighter : Monster -> Fighter
-toFighter { name, stats, attributes, equipment, expLevel, bodySize } =
-    { name = name, stats = stats, attributes = attributes, equipment = equipment, expLevel = expLevel, bodySize = bodySize }
-
-
-fromFighter : Fighter -> Monster -> Monster
-fromFighter { name, stats, attributes, equipment, expLevel, bodySize } model =
-    { model | name = name, stats = stats, attributes = attributes, equipment = equipment, expLevel = expLevel, bodySize = bodySize }
 
 
 init : MonsterType -> Vector -> ID -> Monster

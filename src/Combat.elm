@@ -63,6 +63,7 @@ import Types
 import Utils.Mass as Mass
 import EveryDict exposing (EveryDict)
 import Equipment exposing (Equipment)
+import Fighter exposing (Fighter)
 
 
 chanceToHit : Attributes -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour ) -> Int
@@ -105,27 +106,7 @@ bodySizeToPenalty =
         ]
 
 
-type alias Fighter =
-    { name : String
-    , stats : Stats
-    , attributes : Attributes
-    , equipment : Equipment
-    , expLevel : Int
-    , bodySize : Types.BodySize
-    }
-
-
-attack :
-    Fighter
-    -> { name : String
-       , stats : Stats
-       , attributes : Attributes
-       , equipment : Equipment
-       , expLevel : Int
-       , bodySize : Types.BodySize
-       }
-    -> Seed
-    -> ( Fighter, Seed )
+attack : Fighter a -> Fighter b -> Seed -> ( Fighter b, Seed )
 attack attacker defender seed =
     let
         ( defenderAfterHit, seed_, damage ) =
@@ -162,12 +143,12 @@ newHitMessage attacker defender damage =
     attacker ++ " hit " ++ defender ++ " for " ++ damage ++ " damage!"
 
 
-weaponArmour : Fighter -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour )
+weaponArmour : Fighter a -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour )
 weaponArmour { equipment } =
     ( Equipment.getWeapon equipment, Equipment.getArmour equipment )
 
 
-hit : Fighter -> Fighter -> Seed -> ( Fighter, Seed, Int )
+hit : Fighter a -> Fighter b -> Seed -> ( Fighter b, Seed, Int )
 hit attacker defender seed =
     --    let
     --        cth =
@@ -183,4 +164,4 @@ hit attacker defender seed =
     --            { defender | stats = Stats.takeHit 1 defender.stats }
     --    in
     --        ( defenderAfterHit, seed, 1 )
-    ( attacker, seed, 1 )
+    ( defender, seed, 1 )
