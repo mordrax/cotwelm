@@ -6,6 +6,8 @@ module Equipment
         , get
         , getPurse
         , getPack
+        , getWeapon
+        , getArmour
         , init
         , equip
         , unequip
@@ -323,6 +325,16 @@ getPurse (A model) =
 getPack : Equipment -> Maybe (Pack Item)
 getPack (A model) =
     model.pack
+
+
+getWeapon : Equipment -> Maybe Weapon
+getWeapon (A model) =
+    model.weapon
+
+
+getArmour : Equipment -> Maybe Armour
+getArmour (A model) =
+    model.armour
 
 
 get : EquipmentSlot -> Equipment -> Maybe Item

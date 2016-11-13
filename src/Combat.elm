@@ -1,7 +1,6 @@
 module Combat
     exposing
         ( attack
-        , defend
         )
 
 {-| Combat takes place between an attacker and defender. It only deals with melee combat.
@@ -56,84 +55,86 @@ import Stats exposing (..)
 import Dice exposing (..)
 import Random.Pcg as Random exposing (..)
 import Hero.Hero as Hero exposing (Hero)
-import Hero.Attributes as Attributes exposing (Attributes)
+import Attributes exposing (Attributes)
 import Monster.Monster as Monster exposing (Monster)
 import Item.Weapon as Weapon
 import Item.Data
 import Types
 import Utils.Mass as Mass
 import EveryDict exposing (EveryDict)
+import Equipment exposing (Equipment)
 
 
-cth : Attributes -> Item.Data.Weapon -> Item.Data.Armour -> Monster.Size -> Int
-cth { str, dex } weapon armour monsterSize =
+chanceToHit : Attributes -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour ) -> Int
+chanceToHit { str, dex } ( maybeWeapon, maybeArmour ) =
     let
         baseCTH =
-            dex
+            toFloat dex
 
         (Mass.Mass armourWeight armourBulk) =
-            armour.base.mass
+            maybeArmour
+                |> Maybe.map (.base >> .mass)
+                |> Maybe.withDefault (Mass.Mass 0 0)
 
         -- At max str, can use max weight armour (plate) without penalty.
         -- At min str, when using plate, gives a max penalty of -20% CTH
         armourPenalty =
-            (str / 100 + armourWeight / 15000) * 20 |> clamp -20 0
+            (toFloat str / 100 + toFloat armourWeight / 15000) * 20 |> clamp -20 0
 
         (Mass.Mass weaponWeight weaponBulk) =
-            weapon.base.mass
+            maybeWeapon
+                |> Maybe.map (.base >> .mass)
+                |> Maybe.withDefault (Mass.Mass 0 0)
 
         -- Weapons less than 5000 (axe) has no bulk penalty, after which all weapons
         -- up to the THS at 12000 gets a linear penalty up to x% CTH
         weaponBulkPenalty =
-            (weaponBulk - 6000) / 6000 * 15 |> clamp -15 15
-
-        monsterSizePenalty =
-            monsterSize
-                |> (\x -> EveryDict.get x monsterSizeToPenalty)
-                |> Maybe.withDefault 0
+            toFloat (weaponBulk - 6000) / 6000 * 15 |> clamp -15 15
     in
-        baseCTH + armourPenalty + weaponBulkPenalty + monsterSizePenalty
+        round (baseCTH + armourPenalty + weaponBulkPenalty * 100)
 
 
-monsterSizeToPenalty : EveryDict Monster.Size Int
-monsterSizeToPenalty =
+bodySizeToPenalty : EveryDict Types.BodySize Int
+bodySizeToPenalty =
     EveryDict.fromList
-        [ ( Monster.Tiny, -10 )
-        , ( Monster.Small, -5 )
-        , ( Monster.Medium, 0 )
-        , ( Monster.Large, 5 )
-        , ( Monster.Giant, 10 )
+        [ ( Types.Tiny, -10 )
+        , ( Types.Small, -5 )
+        , ( Types.Medium, 0 )
+        , ( Types.Large, 5 )
+        , ( Types.Giant, 10 )
         ]
 
 
-attack : Hero -> Monster -> Seed -> ( Monster, Seed )
-attack hero monster seed =
-    let
-        ( stats_, seed_, damage ) =
-            hit (Hero.attributes hero) monster.stats seed
+type alias Fighter =
+    { name : String
+    , stats : Stats
+    , attributes : Attributes
+    , equipment : Equipment
+    , expLevel : Int
+    , bodySize : Types.BodySize
+    }
 
-        monster_ =
-            { monster | stats = stats_ }
+
+attack :
+    Fighter
+    -> { name : String
+       , stats : Stats
+       , attributes : Attributes
+       , equipment : Equipment
+       , expLevel : Int
+       , bodySize : Types.BodySize
+       }
+    -> Seed
+    -> ( Fighter, Seed )
+attack attacker defender seed =
+    let
+        ( defenderAfterHit, seed_, damage ) =
+            hit attacker defender seed
 
         newMsg =
-            newHitMessage "You" ("the " ++ Monster.name monster) (toString damage)
+            newHitMessage "You" ("the " ++ defender.name) (toString damage)
     in
-        ( monster_, seed_ )
-
-
-defend : Monster -> Hero -> Seed -> ( Hero, Seed )
-defend monster hero seed =
-    let
-        ( heroStats_, seed_, damage ) =
-            hit monster.stats (Hero.attributes hero) seed
-
-        hero_ =
-            Hero.setStats heroStats_ hero
-
-        newMsg =
-            newHitMessage ("The " ++ Monster.name monster) "you" (toString damage)
-    in
-        ( hero_, seed_ )
+        ( defenderAfterHit, seed_ )
 
 
 attackSpeed : Item.Data.Weapon -> Attributes -> Float
@@ -161,22 +162,25 @@ newHitMessage attacker defender damage =
     attacker ++ " hit " ++ defender ++ " for " ++ damage ++ " damage!"
 
 
-hit : Stats -> Stats -> Seed -> ( Stats, Seed, Int )
+weaponArmour : Fighter -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour )
+weaponArmour { equipment } =
+    ( Equipment.getWeapon equipment, Equipment.getArmour equipment )
+
+
+hit : Fighter -> Fighter -> Seed -> ( Fighter, Seed, Int )
 hit attacker defender seed =
-    let
-        ( ( min, max ), _, toHit ) =
-            Stats.combatStats attacker
-
-        bonus =
-            min - 1
-
-        ( cappedDamage, seed' ) =
-            Dice.rollD (max - bonus) seed
-
-        damage =
-            cappedDamage + bonus
-
-        ( stats', msg ) =
-            Stats.takeHit damage defender
-    in
-        ( stats', seed', damage )
+    --    let
+    --        cth =
+    --            chanceToHit attacker.attributes (weaponArmour attacker.equipment)
+    --
+    --        monsterSizePenalty =
+    --            defender.bodySize
+    --                |> (\x -> EveryDict.get x bodySizeToPenalty)
+    --                |> Maybe.withDefault 0
+    --                |> clamp -10 10
+    --
+    --        defenderAfterHit =
+    --            { defender | stats = Stats.takeHit 1 defender.stats }
+    --    in
+    --        ( defenderAfterHit, seed, 1 )
+    ( attacker, seed, 1 )
