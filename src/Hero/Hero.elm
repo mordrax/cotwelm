@@ -9,8 +9,6 @@ module Hero.Hero
         , stats
         , setStats
         , viewStats
-        , equipment
-        , attributes
         , updateEquipment
         , equip
         )
@@ -56,16 +54,6 @@ init name ({ str, int, con } as attributes) gender =
     , expLevel = 1
     , bodySize = Types.Medium
     }
-
-
-attributes : Hero -> Attributes
-attributes { attributes } =
-    attributes
-
-
-equipment : Hero -> Equipment
-equipment { equipment } =
-    equipment
 
 
 updateEquipment : Equipment -> Hero -> Hero
@@ -120,9 +108,9 @@ view model =
     let
         heroCss =
             if model.gender == Data.Male then
-                "maleHero"
+                "male-hero"
             else
-                "femaleHero"
+                "female-hero"
     in
         div [ class ("tile " ++ heroCss), Lib.vectorToHtmlStyle <| model.position ] []
 

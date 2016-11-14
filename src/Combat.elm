@@ -64,6 +64,7 @@ import Utils.Mass as Mass
 import EveryDict exposing (EveryDict)
 import Equipment exposing (Equipment)
 import Fighter exposing (Fighter)
+import Debug exposing (log)
 
 
 {-| Returns a percentage between 0 and 100 of the chance the attacker has to hit it's
@@ -140,11 +141,20 @@ bodySizeToDodge bodySize =
 attack : Fighter attacker -> Fighter defender -> Generator (Fighter defender)
 attack attacker defender =
     let
-        ( cth, ctd ) =
-            ( chanceToHit attacker, chanceToDodge defender )
+        hitGen =
+            hitCalculator attacker defender
 
         damageGen =
             damageCalculator attacker
+
+        onHitResult isHit damage =
+            if isHit == False then
+                noDamage
+            else
+                takeDamage damage
+
+        noDamage =
+            defender
 
         takeDamage damage =
             let
@@ -153,13 +163,22 @@ attack attacker defender =
             in
                 { defender | stats = Stats.takeHit damage defender.stats }
     in
-        damageGen
-            |> Random.map takeDamage
+        Random.map2 onHitResult hitGen damageGen
 
 
 attackSpeed : Item.Data.Weapon -> Attributes -> Float
 attackSpeed weapon { str, dex, int, con } =
     1
+
+
+hitCalculator : Fighter attacker -> Fighter defender -> Generator Bool
+hitCalculator attacker defender =
+    let
+        hitThreshold =
+            log "cth" (chanceToHit attacker) - log "ctd" (chanceToDodge defender)
+    in
+        Random.int 0 100
+            |> Random.map ((>) hitThreshold)
 
 
 {-|
