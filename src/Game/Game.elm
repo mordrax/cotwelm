@@ -68,7 +68,7 @@ type Screen
 
 
 type Msg
-    = Keyboard (Keyboard.Msg)
+    = Keyboard Keyboard.Msg
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
     | MapsMsg Maps.Msg
     | WindowSize Window.Size
@@ -108,7 +108,7 @@ init seed hero difficulty =
             , currentScreen = MapScreen
             , shops = shops
             , idGen = idGenerator'
-            , inventory = Inventory.init Nothing (Hero.equipment heroWithDefaultEquipment)
+            , inventory = Inventory.init Nothing heroWithDefaultEquipment.equipment
             , monsters = monsters
             , seed = seed__
             , messages = [ "Welcome to castle of the winds!" ]
@@ -147,7 +147,7 @@ update msg ((A model) as game) =
             ( A
                 { model
                     | currentScreen = InventoryScreen
-                    , inventory = Inventory.init Nothing (Hero.equipment model.hero)
+                    , inventory = Inventory.init Nothing model.hero.equipment
                 }
             , Cmd.none
             )
@@ -301,7 +301,7 @@ enterBuilding building ({ hero, maps } as model) =
         Building.Shop shopType ->
             { model
                 | currentScreen = BuildingScreen building
-                , inventory = Inventory.init (Just <| Shops.shop shopType model.shops) (Hero.equipment hero)
+                , inventory = Inventory.init (Just <| Shops.shop shopType model.shops) hero.equipment
             }
 
         Building.Ordinary ->
@@ -443,10 +443,10 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model
             32
 
         ( prevX, prevY ) =
-            Debug.log "prev position" (Vector.scale tileSize prevPosition)
+            Vector.scale tileSize prevPosition
 
         ( curX, curY ) =
-            Debug.log "cur positition" (Vector.scale tileSize (Hero.position hero))
+            Vector.scale tileSize (Hero.position hero)
 
         ( xOff, yOff ) =
             ( windowSize.width // 2, windowSize.height // 2 )
@@ -455,16 +455,14 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model
             tileSize * 4
 
         scroll =
-            Debug.log "scroll"
-                { up = viewport.y + curY <= tolerance
-                , down = viewport.y + curY >= (windowSize.height * 4 // 5) - tolerance
-                , left = viewport.x + curX <= tolerance
-                , right = viewport.x + curX >= windowSize.width - tolerance
-                }
+            { up = viewport.y + curY <= tolerance
+            , down = viewport.y + curY >= (windowSize.height * 4 // 5) - tolerance
+            , left = viewport.x + curX <= tolerance
+            , right = viewport.x + curX >= windowSize.width - tolerance
+            }
 
         ( mapWidth, mapHeight ) =
-            Debug.log "mapsize"
-                (Maps.mapSize (Maps.currentAreaMap maps))
+            (Maps.mapSize (Maps.currentAreaMap maps))
 
         newX =
             if prevX /= curX && (scroll.left || scroll.right) then
@@ -478,7 +476,7 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model
             else
                 viewport.y
     in
-        { model | viewport = Debug.log "new pos" { x = newX, y = newY } }
+        { model | viewport = { x = newX, y = newY } }
 
 
 donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
