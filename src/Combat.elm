@@ -192,7 +192,7 @@ newHitMessage attacker defender damage =
             attacker ++ " hit " ++ defender ++ " for " ++ damage ++ " damage!"
 
         _ =
-            Debug.log msg 0
+            Debug.log msg ()
     in
         msg
 
