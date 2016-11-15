@@ -55,6 +55,7 @@ toTile (A ( entranceType, pos )) =
     in
         Tile.toTile pos tileType
 
-equal: Entrance -> Entrance -> Bool
+
+equal : Entrance -> Entrance -> Bool
 equal (A e1) (A e2) =
-    snd e1 == snd e2
+    Tuple.second e1 == Tuple.second e2

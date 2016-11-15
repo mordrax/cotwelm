@@ -31,7 +31,7 @@ import Utils.IdGenerator as IdGenerator exposing (..)
 import Random.Pcg as Random exposing (step, initialSeed, list, Seed)
 import Time exposing (now)
 import Task exposing (perform)
-import EveryDict as Dict exposing (EveryDict)
+import Dict exposing (Dict)
 
 
 type alias Items =
@@ -55,7 +55,11 @@ type ShopType
 
 
 type alias ShopsDict =
-    EveryDict ShopType Items
+    Dict ShopTypeString Items
+
+
+type alias ShopTypeString =
+    String
 
 
 type alias Model =
@@ -119,14 +123,14 @@ buy item purse (B items shopType) =
         ( B (item :: items) shopType, Purse.add cost purse )
 
 
-replenishReducer : ShopType -> ( EveryDict ShopType Items, ItemFactory, Seed ) -> ( EveryDict ShopType Items, ItemFactory, Seed )
+replenishReducer : ShopType -> ( Dict ShopTypeString Items, ItemFactory, Seed ) -> ( Dict ShopTypeString Items, ItemFactory, Seed )
 replenishReducer shopType ( currentStores, itemFactory, seed ) =
     let
         ( newItems, itemFactory_, seed_ ) =
             replenish (inventoryStock shopType) itemFactory seed
 
         newStores =
-            Dict.insert shopType newItems currentStores
+            Dict.insert (toString shopType) newItems currentStores
     in
         ( newStores, itemFactory_, seed_ )
 
@@ -151,7 +155,7 @@ replenish itemTypes itemFactory seed =
 
 getSeed : Cmd Msg
 getSeed =
-    perform (\x -> Ok)
+    Task.perform
         (\a -> (PopulateShop (Time.inSeconds a |> round |> Random.initialSeed)))
         Time.now
 
@@ -164,13 +168,13 @@ wares (B items _) =
 list : ShopType -> ShopsDict -> Items
 list shopType stores =
     stores
-        |> Dict.get shopType
+        |> Dict.get (toString shopType)
         |> Maybe.withDefault []
 
 
 updateShop : Shop -> Shops -> Shops
 updateShop (B items shopType) (A model) =
-    A { model | stores = Dict.insert shopType items model.stores }
+    A { model | stores = Dict.insert (toString shopType) items model.stores }
 
 
 type alias ProductName =

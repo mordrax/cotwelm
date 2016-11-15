@@ -18,7 +18,6 @@ import GameData.Building as Building exposing (Building)
 import GameData.Types as GDT exposing (Difficulty)
 import Hero.Hero as Hero exposing (Hero)
 import Html exposing (..)
-import Html.App exposing (map)
 import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item
@@ -89,7 +88,7 @@ init seed hero difficulty =
         ( shops, itemFactory__, seed_ ) =
             Shops.init seed itemFactoryAfterHeroEquipment
 
-        ( monsters, idGenerator' ) =
+        ( monsters, idGenerator_ ) =
             Monsters.init idGenerator
 
         ( maps, mapCmd, seed__ ) =
@@ -107,7 +106,7 @@ init seed hero difficulty =
             , maps = maps
             , currentScreen = MapScreen
             , shops = shops
-            , idGen = idGenerator'
+            , idGen = idGenerator_
             , inventory = Inventory.init Nothing heroWithDefaultEquipment.equipment
             , monsters = monsters
             , seed = seed__
@@ -533,13 +532,13 @@ view (A model) =
         BuildingScreen building ->
             case Building.buildingType building of
                 Building.Shop shopType ->
-                    Html.App.map InventoryMsg (Inventory.view model.inventory)
+                    Html.map InventoryMsg (Inventory.view model.inventory)
 
                 _ ->
                     viewBuilding building
 
         InventoryScreen ->
-            Html.App.map InventoryMsg (Inventory.view model.inventory)
+            Html.map InventoryMsg (Inventory.view model.inventory)
 
 
 viewMonsters : Model -> Html Msg
@@ -671,9 +670,7 @@ subscription (A model) =
 
 initialWindowSizeCmd : Cmd Msg
 initialWindowSizeCmd =
-    Task.perform (\x -> Debug.log "Getting window size failed: " x)
-        (\x -> WindowSize x)
-        Window.size
+    Task.perform (\x -> WindowSize x) Window.size
 
 
 

@@ -10,8 +10,8 @@ type alias Label =
     String
 
 
-labeledNumber' : (String -> number -> number) -> Label -> number -> (number -> a) -> Html a
-labeledNumber' convert label number msg =
+labeledNumber_ : (String -> number -> number) -> Label -> number -> (number -> a) -> Html a
+labeledNumber_ convert label number msg =
     labeledNumberWithStep convert label number 1.0 msg
 
 
@@ -20,7 +20,7 @@ labeledNumberWithStep convert label number inc msg =
     div [ class "ui labeled input" ]
         [ div [ class "ui label" ] [ text label ]
         , input
-            [ type' "number"
+            [ type_ "number"
             , step (toString inc)
             , onInput (\input -> msg <| convert input 0)
             , value (toString number)
@@ -35,7 +35,7 @@ labeledNumber label number msg =
         toIntWithDefault str default =
             Result.withDefault default (String.toInt str)
     in
-        labeledNumber' toIntWithDefault label number msg
+        labeledNumber_ toIntWithDefault label number msg
 
 
 labeledFloat : Label -> Float -> (Float -> a) -> Html a
@@ -53,7 +53,7 @@ inputWithIncDec val msg =
         [ button [ class "ui icon button" ]
             [ i [ class "minus icon" ] []
             ]
-        , input [ type' "number", value (toString val) ] []
+        , input [ type_ "number", value (toString val) ] []
         , button [ class "ui icon button" ]
             [ i [ class "plus icon" ] []
             ]

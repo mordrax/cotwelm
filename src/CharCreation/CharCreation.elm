@@ -11,7 +11,6 @@ module CharCreation.CharCreation
 -- where
 
 import Html exposing (..)
-import Html.App
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
 import Attributes exposing (Attributes)
@@ -96,7 +95,7 @@ view (A model) =
                         ]
                     , div []
                         [ Attributes.view model.attributes
-                            |> Html.App.map Attribute
+                            |> Html.map Attribute
                         ]
                     , div [ class "ui vertical segments" ]
                         [ div [ class "ui vertical segment" ] [ text "Character Gender" ]

@@ -103,8 +103,11 @@ mass : Item -> Mass
 mass =
     getModel >> .mass
 
-baseItemMass: BaseItem -> Mass
-baseItemMass {mass} = mass
+
+baseItemMass : BaseItem -> Mass
+baseItemMass { mass } =
+    mass
+
 
 isCursed : Item -> Bool
 isCursed =

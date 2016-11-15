@@ -25,6 +25,7 @@ import Utils.Lib as Lib exposing (..)
 import GameData.Types exposing (..)
 import Shops exposing (ShopType)
 
+
 type Building
     = BM Model
 

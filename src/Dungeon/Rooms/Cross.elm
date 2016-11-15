@@ -96,7 +96,7 @@ toWallSize roomSize =
 -}
 dots : WallSize -> List Int
 dots wallSize =
-    List.map (dot wallSize) [0..3]
+    List.map (dot wallSize) <| List.range 0 3
 
 
 dot : WallSize -> Int -> Int
@@ -151,13 +151,13 @@ floors ( roomSize, _ ) =
             dot wallSize
 
         floorMiddles =
-            [axis 1 + 1..axis 2 - 1]
+            List.range (axis 1 + 1) (axis 2 - 1)
 
         vertical =
-            lift2 (,) floorMiddles [axis 0 + 1..axis 3 - 1]
+            lift2 (,) floorMiddles <| List.range (axis 0 + 1) (axis 3 - 1)
 
         horizontal =
-            lift2 (,) [axis 0 + 1..axis 3 - 1] floorMiddles
+            lift2 (,) (List.range (axis 0 + 1) (axis 3 - 1)) floorMiddles
     in
         Set.toList <| Set.fromList (vertical ++ horizontal)
 
@@ -177,4 +177,4 @@ floors ( roomSize, _ ) =
 -}
 betweenDots : WallSize -> Int -> Int -> List Int
 betweenDots wallSize dot1 dot2 =
-    [(dot wallSize dot1) + 1..(dot wallSize dot2) - 1]
+    List.range ((dot wallSize dot1) + 1) ((dot wallSize dot2) - 1)
