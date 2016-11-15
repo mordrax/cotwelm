@@ -5,6 +5,7 @@ import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
 import Types
 
+
 type alias Fighter a =
     { a
         | name : String

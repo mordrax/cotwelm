@@ -87,23 +87,23 @@ floors dimension =
             \x -> (model.max + 1 + model.mid) - x
 
         floorsLeft =
-            \x -> List.map ((,) x) [(leftToBottom x)..(leftToTop x)]
+            \x -> List.map ((,) x) <| List.range (leftToBottom x) (leftToTop x)
 
         floorsRight =
-            \x -> List.map ((,) x) [(topToRight x)..(bottomToRight x)]
+            \x -> List.map ((,) x) <| List.range (topToRight x) (bottomToRight x)
 
         zeroToMidX =
-            [0..model.mid - 1]
+            List.range 0 (model.mid - 1)
 
         midToMaxX =
-            [model.mid + 1..model.max]
+            List.range (model.mid + 1) model.max
     in
         List.concat
             [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
               List.concat <| List.map floorsLeft zeroToMidX
             , -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
               List.concat <| List.map floorsRight midToMaxX
-            , List.map ((,) model.mid) [1..model.max - 1]
+            , List.map ((,) model.mid) <| List.range 1 (model.max - 1)
             ]
 
 
@@ -130,10 +130,10 @@ corners dimension =
             \x -> ( x, (model.max + 1 + model.mid) - x )
 
         zeroToMidX =
-            [0..model.mid - 1]
+            List.range 0 (model.mid - 1)
 
         midToMaxX =
-            [model.mid + 1..model.max]
+            List.range (model.mid + 1) model.max
     in
         List.concat
             [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
@@ -169,10 +169,10 @@ info dimension =
 largestEquilaterialDimension : Dimension -> RoomSize
 largestEquilaterialDimension ( x, y ) =
     let
-        ( x', y' ) =
+        ( x_, y_ ) =
             ( x - ((x + 1) % 2), y - ((y + 1) % 2) )
 
         smallestSide =
-            min x' y'
+            min x_ y_
     in
         smallestSide

@@ -61,7 +61,6 @@ import Item.Weapon as Weapon
 import Item.Data
 import Types
 import Utils.Mass as Mass
-import EveryDict exposing (EveryDict)
 import Equipment exposing (Equipment)
 import Fighter exposing (Fighter)
 import Debug exposing (log)

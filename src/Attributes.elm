@@ -178,7 +178,7 @@ getDescription attribute value =
     in
         (List.filter (isLessThanAttribute value) attributeDescriptions)
             |> List.head
-            |> Maybe.map snd
+            |> Maybe.map Tuple.second
             |> Maybe.withDefault ("No description matches the value " ++ toString value)
 
 

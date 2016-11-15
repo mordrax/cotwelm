@@ -41,7 +41,7 @@ foldResult f acc list =
         x :: xs ->
             let
                 nextAcc =
-                    Result.andThen acc (f x)
+                    Result.andThen (f x) acc
             in
                 foldResult f nextAcc xs
 

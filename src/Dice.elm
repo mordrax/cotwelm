@@ -44,46 +44,46 @@ rollD faces seed =
 roll2D : Int -> Seed -> ( ( Int, Int ), Seed )
 roll2D faces seed =
     let
-        ( a, seed' ) =
+        ( a, seed_ ) =
             rollD faces seed
 
-        ( b, seed'' ) =
-            rollD faces seed'
+        ( b, seed__ ) =
+            rollD faces seed_
     in
-        ( ( a, b ), seed'' )
+        ( ( a, b ), seed__ )
 
 
 roll3D : Int -> Seed -> ( ( Int, Int, Int ), Seed )
 roll3D faces seed =
     let
-        ( ( a, b ), seed' ) =
+        ( ( a, b ), seed_ ) =
             roll2D faces seed
 
-        ( c, seed'' ) =
-            rollD faces seed'
+        ( c, seed__ ) =
+            rollD faces seed_
     in
-        ( ( a, b, c ), seed'' )
+        ( ( a, b, c ), seed__ )
 
 
 roll4D : Int -> Seed -> ( ( Int, Int, Int, Int ), Seed )
 roll4D faces seed =
     let
-        ( ( a, b, c ), seed' ) =
+        ( ( a, b, c ), seed_ ) =
             roll3D faces seed
 
-        ( d, seed'' ) =
-            rollD faces seed'
+        ( d, seed__ ) =
+            rollD faces seed_
     in
-        ( ( a, b, c, d ), seed'' )
+        ( ( a, b, c, d ), seed__ )
 
 
 roll : Int -> ( List Int, Seed ) -> ( List Int, Seed )
 roll faces ( rolls, seed ) =
     let
-        ( roll, seed' ) =
+        ( roll, seed_ ) =
             rollD faces seed
     in
-        ( roll :: rolls, seed' )
+        ( roll :: rolls, seed_ )
 
 
 rollDs : List Int -> Seed -> ( List Int, Seed )

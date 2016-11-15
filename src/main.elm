@@ -19,8 +19,7 @@ import Game.Game as Game exposing (Game)
 -- Core/Elm imports
 
 import Html exposing (..)
-import Html.App exposing (map)
-import Navigation
+import Navigation exposing (Location)
 import String exposing (..)
 import Task exposing (perform)
 import Random.Pcg as Random exposing (initialSeed)
@@ -35,9 +34,10 @@ import Dungeon.Editor as Editor exposing (..)
 type Msg
     = SplashMsg SplashView.Msg
     | CharCreationMsg CharCreation.Msg
-    | GameMsg (Game.Msg)
+    | GameMsg Game.Msg
     | GenerateGame Random.Seed CharCreation
     | EditorMsg Editor.Msg
+    | ChangePage Page
 
 
 type Page
@@ -50,20 +50,21 @@ type Page
     | NotImplementedPage
 
 
-init : String -> ( Model, Cmd Msg )
-init url =
+init : Location -> ( Model, Cmd Msg )
+init location =
     let
         model =
-            { currentPage = GamePage
+            { currentPage = SplashPage
             , charCreation = CharCreation.init
             , game = Nothing
             , editor = Editor.init
             }
 
-        ( modelWithUrl, urlCmds ) =
-            urlUpdate url model
+        --        ( modelWithUrl, urlCmds ) =
+        --            urlUpdate location model
     in
-        ( modelWithUrl, urlCmds )
+        --        ( modelWithUrl, urlCmds )
+        ( model, Cmd.none )
 
 
 type alias Model =
@@ -74,13 +75,12 @@ type alias Model =
     }
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
     Navigation.program urlParser
         { init = init
         , update = update
         , view = view
-        , urlUpdate = urlUpdate
         , subscriptions = subscriptions
         }
 
@@ -128,20 +128,20 @@ update msg model =
 
                 Just game ->
                     let
-                        ( game', cmd ) =
+                        ( game_, cmd ) =
                             Game.update msg game
                     in
-                        ( { model | game = Just game' }, Cmd.map GameMsg cmd )
+                        ( { model | game = Just game_ }, Cmd.map GameMsg cmd )
 
         EditorMsg msg ->
             let
-                ( editor', cmds ) =
+                ( editor_, cmds ) =
                     Editor.update msg model.editor
 
                 gameCmds =
                     Cmd.map EditorMsg cmds
             in
-                ( { model | editor = editor' }, gameCmds )
+                ( { model | editor = editor_ }, gameCmds )
 
         GenerateGame seed charCreation ->
             let
@@ -159,19 +159,22 @@ update msg model =
             in
                 ( { model | game = Just game }, mainCmds )
 
+        ChangePage page ->
+            ( { model | currentPage = page }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
     case model.currentPage of
         CharCreationPage ->
             div []
-                [ Html.App.map CharCreationMsg
+                [ Html.map CharCreationMsg
                     (CharCreation.view model.charCreation)
                 ]
 
         SplashPage ->
             div []
-                [ Html.App.map SplashMsg SplashView.view
+                [ Html.map SplashMsg SplashView.view
                 ]
 
         GamePage ->
@@ -181,29 +184,13 @@ view model =
 
                 Just game ->
                     div []
-                        [ Html.App.map GameMsg (Game.view game) ]
+                        [ Html.map GameMsg (Game.view game) ]
 
         EditorPage ->
-            Html.App.map EditorMsg (Editor.view model.editor)
+            Html.map EditorMsg (Editor.view model.editor)
 
         _ ->
             h1 [] [ text "Page not implemented!" ]
-
-
-urlUpdate : String -> Model -> ( Model, Cmd Msg )
-urlUpdate url model =
-    let
-        setPage =
-            \x -> ( { model | currentPage = x }, Cmd.none )
-    in
-        if url == "charCreation" then
-            setPage CharCreationPage
-        else if url == "game" then
-            setPage GamePage
-        else if url == "editor" then
-            setPage EditorPage
-        else
-            setPage SplashPage
 
 
 
@@ -215,9 +202,16 @@ fromUrl url =
     String.dropLeft 2 url
 
 
-urlParser : Navigation.Parser String
-urlParser =
-    Navigation.makeParser (fromUrl << .hash)
+urlParser : Location -> Msg
+urlParser { hash } =
+    if hash == "#/charCreation" then
+        ChangePage CharCreationPage
+    else if hash == "#/game" then
+        ChangePage GamePage
+    else if hash == "#/editor" then
+        ChangePage EditorPage
+    else
+        ChangePage SplashPage
 
 
 {-| Random number seed
@@ -231,12 +225,5 @@ startNewGame charCreation =
                 |> round
                 |> Random.initialSeed
                 |> \seed -> GenerateGame seed charCreation
-
-        fail msg =
-            let
-                _ =
-                    Debug.log "FATAL: Unable to get a random seed, using 92374093709223 instead." msg
-            in
-                GenerateGame (Random.initialSeed 92374093709223) charCreation
     in
-        Task.perform fail success Time.now
+        Task.perform success Time.now

@@ -4,6 +4,7 @@ import Utils.Mass exposing (..)
 import Utils.IdGenerator exposing (..)
 import Types
 
+
 type Msg
     = ItemOk
     | NestedItem

@@ -9,6 +9,7 @@ type Area
     | DungeonLevelOne
     | DungeonLevel Int
 
+
 type Gender
     = Male
     | Female
