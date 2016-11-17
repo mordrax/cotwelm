@@ -18,7 +18,6 @@ import GameData.Building as Building exposing (Building)
 import GameData.Types as GDT exposing (Difficulty)
 import Hero.Hero as Hero exposing (Hero)
 import Html exposing (..)
-import Html.App exposing (map)
 import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item
@@ -37,6 +36,7 @@ import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
 import Utils.Lib as Lib
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
+import Fighter exposing (Fighter)
 
 
 type Game
@@ -67,7 +67,7 @@ type Screen
 
 
 type Msg
-    = Keyboard (Keyboard.Msg)
+    = Keyboard Keyboard.Msg
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
     | MapsMsg Maps.Msg
     | WindowSize Window.Size
@@ -88,7 +88,7 @@ init seed hero difficulty =
         ( shops, itemFactory__, seed_ ) =
             Shops.init seed itemFactoryAfterHeroEquipment
 
-        ( monsters, idGenerator' ) =
+        ( monsters, idGenerator_ ) =
             Monsters.init idGenerator
 
         ( maps, mapCmd, seed__ ) =
@@ -106,8 +106,8 @@ init seed hero difficulty =
             , maps = maps
             , currentScreen = MapScreen
             , shops = shops
-            , idGen = idGenerator'
-            , inventory = Inventory.init Nothing (Hero.equipment heroWithDefaultEquipment)
+            , idGen = idGenerator_
+            , inventory = Inventory.init Nothing heroWithDefaultEquipment.equipment
             , monsters = monsters
             , seed = seed__
             , messages = [ "Welcome to castle of the winds!" ]
@@ -146,7 +146,7 @@ update msg ((A model) as game) =
             ( A
                 { model
                     | currentScreen = InventoryScreen
-                    , inventory = Inventory.init Nothing (Hero.equipment model.hero)
+                    , inventory = Inventory.init Nothing model.hero.equipment
                 }
             , Cmd.none
             )
@@ -213,20 +213,7 @@ moveHero dir ({ hero, monsters, seed } as model) =
     in
         case obstructions of
             ( _, _, Just monster, _ ) ->
-                let
-                    ( monster_, seed_ ) =
-                        Combat.attack hero monster seed
-
-                    monsters_ =
-                        if Stats.isDead monster_.stats then
-                            Monsters.removeOne monster monsters
-                        else
-                            Monsters.updateOne monster monsters
-                in
-                    { model
-                        | seed = seed_
-                        , monsters = monsters_
-                    }
+                attackMonster monster model
 
             -- entering a building
             ( _, Just building, _, _ ) ->
@@ -239,6 +226,25 @@ moveHero dir ({ hero, monsters, seed } as model) =
             -- path free, moved
             ( False, _, _, _ ) ->
                 { model | hero = heroMoved }
+
+
+attackMonster : Monster -> Model -> Model
+attackMonster monster ({ hero, monsters, seed, messages } as model) =
+    let
+        ( ( msg, monsterAfterHit ), seed_ ) =
+            Random.step (Combat.attack hero monster) seed
+
+        monstersAfterHit monster =
+            if Stats.isDead monster.stats then
+                Monsters.removeOne monster monsters
+            else
+                Monsters.updateOne monster monsters
+    in
+        { model
+            | seed = seed_
+            , monsters = monstersAfterHit monsterAfterHit
+            , messages = msg :: messages
+        }
 
 
 moveMonsters : List Monster -> List Monster -> Model -> Model
@@ -261,16 +267,9 @@ moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
                 case obstructions of
                     -- hit hero
                     ( _, _, _, True ) ->
-                        let
-                            ( hero_, seed_ ) =
-                                Combat.defend monster hero seed
-                        in
-                            moveMonsters restOfMonsters
-                                (monster :: movedMonsters)
-                                { model
-                                    | hero = hero_
-                                    , seed = seed_
-                                }
+                        model
+                            |> attackHero monster
+                            |> moveMonsters restOfMonsters (monster :: movedMonsters)
 
                     ( True, _, _, _ ) ->
                         moveMonsters restOfMonsters (monster :: movedMonsters) model
@@ -288,6 +287,15 @@ moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
                             moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
 
 
+attackHero : Monster -> Model -> Model
+attackHero monster ({ hero, seed, messages } as model) =
+    let
+        ( ( msg, heroAfterHit ), seed_ ) =
+            Random.step (Combat.attack monster hero) seed
+    in
+        { model | messages = msg :: messages, hero = heroAfterHit, seed = seed_ }
+
+
 enterBuilding : Building -> Model -> Model
 enterBuilding building ({ hero, maps } as model) =
     case Building.buildingType building of
@@ -300,7 +308,7 @@ enterBuilding building ({ hero, maps } as model) =
         Building.Shop shopType ->
             { model
                 | currentScreen = BuildingScreen building
-                , inventory = Inventory.init (Just <| Shops.shop shopType model.shops) (Hero.equipment hero)
+                , inventory = Inventory.init (Just <| Shops.shop shopType model.shops) hero.equipment
             }
 
         Building.Ordinary ->
@@ -442,10 +450,10 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model
             32
 
         ( prevX, prevY ) =
-            Debug.log "prev position" (Vector.scale tileSize prevPosition)
+            Vector.scale tileSize prevPosition
 
         ( curX, curY ) =
-            Debug.log "cur positition" (Vector.scale tileSize (Hero.position hero))
+            Vector.scale tileSize (Hero.position hero)
 
         ( xOff, yOff ) =
             ( windowSize.width // 2, windowSize.height // 2 )
@@ -454,16 +462,14 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model
             tileSize * 4
 
         scroll =
-            Debug.log "scroll"
-                { up = viewport.y + curY <= tolerance
-                , down = viewport.y + curY >= (windowSize.height * 4 // 5) - tolerance
-                , left = viewport.x + curX <= tolerance
-                , right = viewport.x + curX >= windowSize.width - tolerance
-                }
+            { up = viewport.y + curY <= tolerance
+            , down = viewport.y + curY >= (windowSize.height * 4 // 5) - tolerance
+            , left = viewport.x + curX <= tolerance
+            , right = viewport.x + curX >= windowSize.width - tolerance
+            }
 
         ( mapWidth, mapHeight ) =
-            Debug.log "mapsize"
-                (Maps.mapSize (Maps.currentAreaMap maps))
+            (Maps.mapSize (Maps.currentAreaMap maps))
 
         newX =
             if prevX /= curX && (scroll.left || scroll.right) then
@@ -477,7 +483,7 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model
             else
                 viewport.y
     in
-        { model | viewport = Debug.log "new pos" { x = newX, y = newY } }
+        { model | viewport = { x = newX, y = newY } }
 
 
 donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
@@ -494,12 +500,12 @@ donDefaultGarb itemFactory hero =
             , ( Equipment.PackSlot, Item.Data.ItemTypePack MediumPack )
             ]
 
-        makeEquipment (slot, itemType) ( accEquipment, itemFactory ) =
+        makeEquipment ( slot, itemType ) ( accEquipment, itemFactory ) =
             let
                 ( item, itemFactory_ ) =
                     ItemFactory.make itemType itemFactory
             in
-                ( (slot, item) :: accEquipment, itemFactory_ )
+                ( ( slot, item ) :: accEquipment, itemFactory_ )
 
         ( defaultEquipment, factoryAfterProduction ) =
             List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
@@ -534,13 +540,13 @@ view (A model) =
         BuildingScreen building ->
             case Building.buildingType building of
                 Building.Shop shopType ->
-                    Html.App.map InventoryMsg (Inventory.view model.inventory)
+                    Html.map InventoryMsg (Inventory.view model.inventory)
 
                 _ ->
                     viewBuilding building
 
         InventoryScreen ->
-            Html.App.map InventoryMsg (Inventory.view model.inventory)
+            Html.map InventoryMsg (Inventory.view model.inventory)
 
 
 viewMonsters : Model -> Html Msg
@@ -672,9 +678,7 @@ subscription (A model) =
 
 initialWindowSizeCmd : Cmd Msg
 initialWindowSizeCmd =
-    Task.perform (\x -> Debug.log "Getting window size failed: " x)
-        (\x -> WindowSize x)
-        Window.size
+    Task.perform (\x -> WindowSize x) Window.size
 
 
 

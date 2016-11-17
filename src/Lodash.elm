@@ -10,7 +10,7 @@ shuffle : List a -> Generator (List a)
 shuffle list =
     list
         |> Array.fromList
-        |> shuffle'
+        |> shuffle_
         |> Random.map Array.toList
 
 
@@ -29,9 +29,9 @@ without x xs =
 range : Int -> Int -> List Int
 range x y =
     if x < y then
-        [x..y]
+        List.range x y
     else
-        reverse [y..x]
+        reverse <| List.range y x
 
 
 
@@ -76,8 +76,8 @@ choose arr =
 {-| Shuffle the array using the Fisher-Yates algorithm. Takes O(_n_ log _n_)
 time and O(_n_) additional space.
 -}
-shuffle' : Array a -> Generator (Array a)
-shuffle' arr =
+shuffle_ : Array a -> Generator (Array a)
+shuffle_ arr =
     if Array.isEmpty arr then
         constant arr
     else
@@ -85,16 +85,17 @@ shuffle' arr =
             helper : ( List a, Array a ) -> Generator ( List a, Array a )
             helper ( done, remaining ) =
                 choose remaining
-                    `Random.andThen` (\( m_val, shorter ) ->
-                                        case m_val of
-                                            Nothing ->
-                                                constant ( done, shorter )
+                    |> Random.andThen
+                        (\( m_val, shorter ) ->
+                            case m_val of
+                                Nothing ->
+                                    constant ( done, shorter )
 
-                                            Just val ->
-                                                helper ( val :: done, shorter )
-                                     )
+                                Just val ->
+                                    helper ( val :: done, shorter )
+                        )
         in
-            Random.map (fst >> Array.fromList) (helper ( [], arr ))
+            Random.map (Tuple.first >> Array.fromList) (helper ( [], arr ))
 
 
 {-| Given a list, choose an element uniformly at random. `Nothing` is only

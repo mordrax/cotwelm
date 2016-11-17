@@ -100,8 +100,8 @@ update msg model =
 
             RoomSize roomType val ->
                 let
-                    updateSizeRange sizeRange' config =
-                        { config | sizeRange = sizeRange' }
+                    updateSizeRange sizeRange_ config =
+                        { config | sizeRange = sizeRange_ }
                 in
                     { model | roomsConfig = updateRoomsConfig roomType (updateSizeRange val) model.roomsConfig }
 
@@ -229,7 +229,7 @@ addEntrances nEntrances ( walls, fullWalls, entrances ) =
                             )
                 in
                     (wallToEntrance generateWall)
-                        `andThen` recurse
+                        |> andThen recurse
 
 
 wallToEntrance : Generator Wall -> Generator Entrance
@@ -272,8 +272,8 @@ roomsConfigView model =
             ]
     in
         div []
-            (List.concat
-                <| List.map
+            (List.concat <|
+                List.map
                     (\( roomType, config ) ->
                         [ roomSizeView roomType config.sizeRange
                         , roomFrequencyView roomType config.frequency
@@ -291,8 +291,8 @@ roomSizeView roomType ( min, max ) =
     in
         UI.labeled2TupleNumber lbl
             ( min, max )
-            (\min' -> RoomSize roomType ( min', max ))
-            (\max' -> RoomSize roomType ( min, max' ))
+            (\min_ -> RoomSize roomType ( min_, max ))
+            (\max_ -> RoomSize roomType ( min, max_ ))
 
 
 roomFrequencyView : RoomType -> Int -> Html Msg

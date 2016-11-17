@@ -3,6 +3,8 @@ module Utils.Lib exposing (..)
 import Html.Attributes exposing (style)
 import Html exposing (..)
 import Utils.Vector exposing (..)
+import Regex
+import String
 
 
 px : number -> String
@@ -39,6 +41,16 @@ foldResult f acc list =
         x :: xs ->
             let
                 nextAcc =
-                    Result.andThen acc (f x)
+                    Result.andThen (f x) acc
             in
                 foldResult f nextAcc xs
+
+
+{-| Removes all non alphabetical characters and condenses it into one hyphen.
+    Then lowercases the whole string.
+-}
+toCSS : String -> String
+toCSS str =
+    str
+        |> Regex.replace Regex.All (Regex.regex "[^a-zA-Z]+") (\_ -> "-")
+        |> String.toLower

@@ -21,7 +21,6 @@ to know about hero equipment, items, containers etc...
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.App exposing (..)
 
 
 -- item
@@ -30,6 +29,7 @@ import Item.Item as Item exposing (..)
 import Item.Data exposing (..)
 import Item.Pack as Pack exposing (Pack)
 import Container
+
 
 -- game
 
@@ -56,7 +56,6 @@ type alias Model =
     , merchant : Merchant
     , equipment : Equipment
     }
-
 
 
 type Draggable
@@ -127,16 +126,17 @@ update msg (A ({ dnd } as model)) =
                     Just ( Just drag, Just drop ) ->
                         ( A <| handleDragDrop drag drop modelNewDnD, Nothing )
 
-        Keyboard Keyboard.Esc ->
+        Keyboard (Keyboard.Esc) ->
             case model.merchant of
                 Shop shop ->
                     ( A model, Just ( model.equipment, Just shop ) )
+
                 Ground ->
                     ( A model, Just ( model.equipment, Nothing ) )
 
-
         Keyboard msg ->
-            (A model, Nothing)
+            ( A model, Nothing )
+
 
 keyboardToInventoryMsg : Keyboard.Msg -> Msg s t
 keyboardToInventoryMsg msg =
@@ -174,7 +174,7 @@ handleDragDrop dragSource dropTarget model =
         noChange =
             model
 
-        handleDrop' item modelWithDrag =
+        handleDrop_ item modelWithDrag =
             case (handleDrop dropTarget item modelWithDrag) of
                 Result.Ok modelWithDragDrop ->
                     modelWithDragDrop
@@ -188,7 +188,7 @@ handleDragDrop dragSource dropTarget model =
     in
         case dragResult of
             Result.Ok ( modelWithDrag, item ) ->
-                handleDrop' item modelWithDrag
+                handleDrop_ item modelWithDrag
 
             Err msg ->
                 let
@@ -237,7 +237,7 @@ handleDrag draggable model =
             transactWithMerchant item model
 
 
-transactWithMerchant : Item -> Model -> Result String ( Model, Item)
+transactWithMerchant : Item -> Model -> Result String ( Model, Item )
 transactWithMerchant item ({ merchant, equipment } as model) =
     let
         maybePurse =
@@ -247,7 +247,6 @@ transactWithMerchant item ({ merchant, equipment } as model) =
             case maybePurse of
                 Just purse ->
                     Shops.sell item purse shop
-
 
                 Nothing ->
                     Result.Err "No purse to buy anything with!"
@@ -267,7 +266,7 @@ transactWithMerchant item ({ merchant, equipment } as model) =
         case merchant of
             Shop shop ->
                 buyFrom shop
-                    `Result.andThen` updateModelFromPurchase
+                    |> Result.andThen updateModelFromPurchase
 
             Ground ->
                 pickup
@@ -288,11 +287,11 @@ handleDrop droppable item model =
     case droppable of
         DropPack pack ->
             let
-                ( equipment', equipMsg ) =
+                ( equipment_, equipMsg ) =
                     Equipment.putInPack item model.equipment
 
                 success =
-                    Result.Ok { model | equipment = equipment' }
+                    Result.Ok { model | equipment = equipment_ }
             in
                 case equipMsg of
                     Equipment.Success ->
@@ -311,9 +310,9 @@ handleDrop droppable item model =
                         Result.Err ("Dropping into pack failed with unhanded msg: " ++ (toString msg))
 
         DropEquipment slot ->
-            case Equipment.equip (slot, item) model.equipment of
-                Result.Ok equipment' ->
-                    Result.Ok { model | equipment = equipment' }
+            case Equipment.equip ( slot, item ) model.equipment of
+                Result.Ok equipment_ ->
+                    Result.Ok { model | equipment = equipment_ }
 
                 Result.Err err ->
                     Result.Err (toString err)
@@ -329,7 +328,6 @@ handleDrop droppable item model =
                     let
                         ( shopAfterBought, purseAfterPaid ) =
                             Shops.buy item purse shop
-
                     in
                         Result.Ok
                             { model
@@ -340,7 +338,7 @@ handleDrop droppable item model =
                 case merchant of
                     Shop shop ->
                         getPurseResult
-                            `Result.andThen` sellTo shop
+                            |> Result.andThen (sellTo shop)
 
                     Ground ->
                         Result.Err "ERROR: Not implemented dropping stuff on the ground yet"
@@ -370,10 +368,10 @@ view (A ({ equipment, dnd } as model)) =
         div []
             [ heading "Inventory screen"
             , div [ class "ui two column grid" ]
-                [ Html.App.map DnDMsg equipmentColumn
+                [ Html.map DnDMsg equipmentColumn
                 , viewShopPackPurse model
                 ]
-            , Html.App.map DnDMsg (DragDrop.view dnd)
+            , Html.map DnDMsg (DragDrop.view dnd)
             ]
 
 
@@ -418,7 +416,7 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
                 , viewPurse model
                 ]
     in
-        Html.App.map DnDMsg
+        Html.map DnDMsg
             (columnWidth "ten"
                 [ shopGroundHtml
                 , packHtml
@@ -437,13 +435,13 @@ viewPackInfo maybeItem =
     case maybeItem of
         Just pack ->
             let
-                ( Mass curBulk curWeight, Capacity capBulk capWeight ) =
+                ( cur, cap ) =
                     Pack.info pack
 
                 print name a b =
                     name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
             in
-                (print "Bulk" curBulk capBulk) ++ ", " ++ (print "Weight" curWeight capWeight)
+                (print "Bulk" cur.bulk cap.maxBulk) ++ ", " ++ (print "Weight" cur.weight cap.maxWeight)
 
         _ ->
             ""
@@ -502,9 +500,8 @@ viewContainer pack ({ equipment, dnd } as model) =
         makeDraggable pack item =
             DragDrop.draggable (Item.view item) (DragPack item pack) dnd
     in
-                div [ class "ui cards" ]
-                    (List.map (makeDraggable pack) items)
-
+        div [ class "ui cards" ]
+            (List.map (makeDraggable pack) items)
 
 
 
@@ -567,7 +564,7 @@ viewPurse ({ equipment } as model) =
     let
         maybePurseContents =
             (Equipment.getPurse equipment)
-                `Maybe.andThen` maybeCoins
+                |> Maybe.andThen maybeCoins
 
         maybeCoins coins =
             Just (Purse.getCoins coins)

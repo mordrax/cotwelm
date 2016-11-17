@@ -1,7 +1,7 @@
 module Utils.Mass
     exposing
-        ( Mass(..)
-        , Capacity(..)
+        ( Mass
+        , Capacity
         , Msg(..)
         , withinCapacity
         , add
@@ -13,8 +13,8 @@ module Utils.Mass
 -}
 
 
-type Mass
-    = Mass Bulk Weight
+type alias Mass =
+    { weight : Weight, bulk : Bulk }
 
 
 type alias Bulk =
@@ -25,8 +25,8 @@ type alias Weight =
     Int
 
 
-type Capacity
-    = Capacity Bulk Weight
+type alias Capacity =
+    { maxWeight : Weight, maxBulk : Bulk }
 
 
 type Msg
@@ -36,18 +36,18 @@ type Msg
 
 
 add : Mass -> Mass -> Mass
-add (Mass aBulk aWeight) (Mass bBulk bWeight) =
-    Mass (aBulk + bBulk) (aWeight + bWeight)
+add a b =
+    Mass (a.bulk + b.bulk) (a.weight + b.weight)
 
 
 subtract : Mass -> Mass -> Mass
-subtract (Mass aBulk aWeight) (Mass bBulk bWeight) =
-    Mass (aBulk - bBulk) (aWeight - bWeight)
+subtract a b =
+    Mass (a.bulk - b.bulk) (a.weight - b.weight)
 
 
 withinCapacity : Mass -> Capacity -> Msg
-withinCapacity (Mass bulk weight) (Capacity capBulk capWeight) =
-    case ( bulk > capBulk, weight > capWeight ) of
+withinCapacity { bulk, weight } { maxBulk, maxWeight } =
+    case ( bulk > maxBulk, weight > maxWeight ) of
         ( True, _ ) ->
             TooBulky
 

@@ -42,7 +42,7 @@ equals (ID a) (ID b) =
 assignId : (ID -> a) -> ( List a, IdGenerator ) -> ( List a, IdGenerator )
 assignId toA ( listOfAs, generator ) =
     let
-        ( id, generator' ) =
+        ( id, generator_ ) =
             getUniqueId generator
     in
-        ( (toA id) :: listOfAs, generator' )
+        ( (toA id) :: listOfAs, generator_ )

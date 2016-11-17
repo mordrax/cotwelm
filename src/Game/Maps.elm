@@ -156,7 +156,7 @@ draw map scale =
 
 toTiles : Map -> List Tile
 toTiles =
-    Dict.toList >> List.map snd
+    Dict.toList >> List.map Tuple.second
 
 
 getTile : Map -> Vector -> Maybe Tile

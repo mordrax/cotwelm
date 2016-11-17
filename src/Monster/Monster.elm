@@ -2,10 +2,9 @@ module Monster.Monster
     exposing
         ( Monster
         , MonsterType(..)
-        , new
         , view
-        , damageRange
-        , name
+        , init
+        , initWithOptions
         )
 
 import Utils.Vector as Vector exposing (..)
@@ -14,52 +13,387 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Stats exposing (..)
 import Utils.IdGenerator exposing (ID)
-
-
-type BaseMonster
-    = A Model
+import Equipment exposing (Equipment)
+import Attributes exposing (Attributes)
+import Utils.Lib as Lib
+import Types
+import Fighter exposing (Fighter)
 
 
 type alias Monster =
-    { base : BaseMonster
+    { name : String
+    , css : String
     , position : Vector
     , stats : Stats
+    , attributes : Attributes
+    , equipment : Equipment
+    , expLevel : Int
+    , bodySize : Types.BodySize
     , id : ID
     }
 
 
-type alias Model =
-    { level : Int
-    , css : String
-    , name : String
-    }
-
-
-name : Monster -> String
-name { base } =
-    let
-        (A model) =
-            base
-    in
-        model.name
-
-
-damageRange : Monster -> ( Int, Int )
-damageRange { base } =
-    let
-        (A model) =
-            base
-    in
-        ( model.level, model.level * 4 )
-
-
 view : Monster -> Html a
-view { base, position } =
+view { css, position } =
+    div [ vectorToHtmlStyle position, class ("tile monster " ++ css) ] []
+
+
+init : MonsterType -> Vector -> ID -> Monster
+init monsterType pos id =
+    initWithOptions monsterType pos id Equipment.init
+
+
+initWithOptions : MonsterType -> Vector -> ID -> Equipment -> Monster
+initWithOptions monsterType pos id equipment =
     let
-        (A model) =
-            base
+        make name level attributes bodySize =
+            { name = name
+            , css = (Utils.Lib.toCSS name)
+            , position = pos
+            , stats = Stats.init attributes
+            , attributes = attributes
+            , equipment = equipment
+            , expLevel = level
+            , bodySize = bodySize
+            , id = id
+            }
     in
-        div [ vectorToHtmlStyle position, class ("tile monster " ++ model.css) ] []
+        case monsterType of
+            GiantRat ->
+                make "Giant Rat" 1 (Attributes 0 0 0 0 0) Types.Medium
+
+            Goblin ->
+                make "Goblin" 1 (Attributes 0 0 0 0 0) Types.Medium
+
+            GiantBat ->
+                make "Giant Bat" 2 (Attributes 0 0 0 0 0) Types.Medium
+
+            Hobgoblin ->
+                make "Hobgoblin" 2 (Attributes 0 0 0 0 0) Types.Medium
+
+            Kobold ->
+                make "Kobold" 2 (Attributes 0 0 0 0 0) Types.Medium
+
+            LargeSnake ->
+                make "Large Snake" 3 (Attributes 0 0 0 0 0) Types.Medium
+
+            Skeleton ->
+                make "Skeleton" 3 (Attributes 0 0 0 0 0) Types.Medium
+
+            WildDog ->
+                make "Wild Dog" 3 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Poison"
+            Viper ->
+                make "Viper" 5 (Attributes 0 0 0 0 0) Types.Medium
+
+            GoblinFighter ->
+                make "Goblin Fighter" 6 (Attributes 0 0 0 0 0) Types.Medium
+
+            GiantRedAnt ->
+                make "Giant Red Ant" 7 (Attributes 0 0 0 0 0) Types.Medium
+
+            WalkingCorpse ->
+                make "Walking Corpse" 7 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Arrow"
+            Bandit ->
+                make "Bandit" 10 (Attributes 0 0 0 0 0) Types.Medium
+
+            GiantTrapdoorSpider ->
+                make "Giant Trapdoor Spider" 10 (Attributes 0 0 0 0 0) Types.Medium
+
+            HugeLizard ->
+                make "Huge Lizard" 10 (Attributes 0 0 0 0 0) Types.Medium
+
+            RatMan ->
+                make "Rat-Man" 10 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Weapons"
+            Slime ->
+                make "Slime" 10 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Poison"
+            GiantScorpion ->
+                make "Giant Scorpion" 11 (Attributes 0 0 0 0 0) Types.Medium
+
+            GrayWolf ->
+                make "Gray Wolf" 11 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Cold, Lightning"
+            GelantinousGlob ->
+                make "Gelantinous Glob" 14 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Steals from Belt and Purse, Teleports"
+            SmirkingSneakThief ->
+                make "Smirking Sneak Thief" 15 (Attributes 0 0 0 0 0) Types.Medium
+
+            CarrionCreeper ->
+                make "Carrion Creeper" 16 (Attributes 0 0 0 0 0) Types.Medium
+
+            HugeOgre ->
+                make "Huge Ogre" 16 (Attributes 0 0 0 0 0) Types.Medium
+
+            Shadow ->
+                make "Shadow" 16 (Attributes 0 0 0 0 0) Types.Medium
+
+            AnimatedWoodenStatue ->
+                make "Animated Wooden Statue" 17 (Attributes 0 0 0 0 0) Types.Medium
+
+            BrownBear ->
+                make "Brown Bear" 17 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Poison, Breathes Poison Gas"
+            YoungGreenDragon ->
+                make "Young Green Dragon" 18 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Cold, Breathes Ice"
+            YoungWhiteDragon ->
+                make "Young White Dragon" 18 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Needles"
+            Manticore ->
+                make "Manticore" 19 (Attributes 0 0 0 0 0) Types.Medium
+
+            EerieGhost ->
+                make "Eerie Ghost" 20 (Attributes 0 0 0 0 0) Types.Medium
+
+            GruesomeTroll ->
+                make "Gruesome Troll" 20 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Lightning, Breathes Lightning"
+            YoungBlueDragon ->
+                make "Young Blue Dragon" 20 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Fire, Breathes Fire"
+            YoungRedDragon ->
+                make "Young Red Dragon" 20 (Attributes 0 0 0 0 0) Types.Medium
+
+            AnimatedBronzeStatue ->
+                make "Animated Bronze Statue" 25 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Arrow"
+            EvilWarrior ->
+                make "Evil Warrior" 25 (Attributes 0 0 0 0 0) Types.Medium
+
+            WolfMan ->
+                make "Wolf-Man" 25 (Attributes 0 0 0 0 0) Types.Medium
+
+            CaveBear ->
+                make "Cave Bear" 27 (Attributes 0 0 0 0 0) Types.Medium
+
+            WhiteWolf ->
+                make "White Wolf" 28 (Attributes 0 0 0 0 0) Types.Medium
+
+            Berserker ->
+                make "Berserker" 30 (Attributes 0 0 0 0 0) Types.Medium
+
+            AnimatedIronStatue ->
+                make "Animated Iron Statue" 35 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
+            TunnelWight ->
+                make "Tunnel Wight" 35 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Lightning, Breathes Lightning"
+            YoungAdultBlueDragon ->
+                make "Young Adult Blue Dragon" 35 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Poison, Breathes Poison Gas"
+            YoungAdultGreenDragon ->
+                make "Young Adult Green Dragon" 35 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Cold, Breathes Ice"
+            YoungAdultWhiteDragon ->
+                make "Young Adult White Dragon" 35 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Drains Intelligence and Mana Permanently"
+            PaleWraith ->
+                make "Pale Wraith" 37 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
+            BarrowWight ->
+                make "Barrow Wight" 40 (Attributes 0 0 0 0 0) Types.Medium
+
+            BearMan ->
+                make "Bear-Man" 40 (Attributes 0 0 0 0 0) Types.Medium
+
+            DustElemental ->
+                make "Dust Elemental" 40 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Throws Stones"
+            HillGiant ->
+                make "Hill Giant" 40 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Fire, Breathes Fire"
+            YoungAdultRedDragon ->
+                make "Young Adult Red Dragon" 40 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
+            Wizard ->
+                make "Wizard" 45 (Attributes 0 0 0 0 0) Types.Medium
+
+            BullMan ->
+                make "Bull-Man" 50 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
+            CastleWight ->
+                make "Castle Wight" 50 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Drains Intelligence and Mana Permanently"
+            DarkWraith ->
+                make "Dark Wraith" 50 (Attributes 0 0 0 0 0) Types.Medium
+
+            IceElemental ->
+                make "Ice Elemental" 50 (Attributes 0 0 0 0 0) Types.Medium
+
+            Spectre ->
+                make "Spectre" 50 (Attributes 0 0 0 0 0) Types.Medium
+
+            AnimatedMarbleStatue ->
+                make "Animated Marble Statue" 52 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Lightning, Breathes Lightning"
+            AdultBlueDragon ->
+                make "Adult Blue Dragon" 55 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Poison, Breathes Poison Gas"
+            AdultGreenDragon ->
+                make "Adult Green Dragon" 55 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Cold, Breathes Ice"
+            AdultWhiteDragon ->
+                make "Adult White Dragon" 55 (Attributes 0 0 0 0 0) Types.Medium
+
+            AirElemental ->
+                make "Air Elemental" 55 (Attributes 0 0 0 0 0) Types.Medium
+
+            MagmaElemental ->
+                make "Magma Elemental" 55 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Throws Stones"
+            StoneGiant ->
+                make "Stone Giant" 55 (Attributes 0 0 0 0 0) Types.Medium
+
+            TwoHeadedGiant ->
+                make "Two Headed Giant" 55 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Fire, Breathes Fire"
+            AdultRedDragon ->
+                make "Adult Red Dragon" 60 (Attributes 0 0 0 0 0) Types.Medium
+
+            FireElemental ->
+                make "Fire Elemental" 60 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Throws Iceballs"
+            FrostGiant ->
+                make "Frost Giant" 60 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "SuBaseons Spiked Devil"
+            SpikedDevil ->
+                make "Spiked Devil" 60 (Attributes 0 0 0 0 0) Types.Medium
+
+            WaterElemental ->
+                make "Water Elemental" 60 (Attributes 0 0 0 0 0) Types.Medium
+
+            EarthElemental ->
+                make "Earth Elemental" 65 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
+            Necromancer ->
+                make "Necromancer" 65 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Drains HP Permanently"
+            Vampire ->
+                make "Vampire" 65 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Drains Intelligence and Mana Permanently"
+            AbyssWraith ->
+                make "Abyss Wraith" 70 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Throws Boulders"
+            Utgardhalok ->
+                make "Utgardhalok" 70 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Throws Stones"
+            FireGiant ->
+                make "Fire Giant" 75 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Lightning, Breathes Lightning"
+            OldBlueDragon ->
+                make "Old Blue Dragon" 75 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Poison, Breathes Poison Gas"
+            OldGreenDragon ->
+                make "Old Green Dragon" 75 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Cold, Breathes Ice"
+            OldWhiteDragon ->
+                make "Old White Dragon" 75 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "SuBaseons Horned Devil"
+            HornedDevil ->
+                make "Horned Devil" 80 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Fire, Breathes Fire"
+            OldRedDragon ->
+                make "Old Red Dragon" 80 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Throws stones"
+            Rungnir ->
+                make "Rungnir" 80 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "SuBaseons Ice Devil"
+            IceDevil ->
+                make "Ice Devil" 85 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Throws Iceballs"
+            Thrym ->
+                make "Thrym" 90 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Poison, Breathes Poison Gas"
+            VeryOldGreenDragon ->
+                make "Very Old Green Dragon" 90 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Cold, Breathes Ice"
+            VeryOldWhiteDragon ->
+                make "Very Old White Dragon" 90 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Lightning, Breathes Lightning"
+            VeryOldBlueDragon ->
+                make "Very Old Blue Dragon" 95 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "SuBaseons Spiked Devil or Abyss Fiend"
+            AbyssFiend ->
+                make "Abyss Fiend" 100 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Throws Stones"
+            Thiassa ->
+                make "Thiassa" 100 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Fire, Breathes Fire"
+            VeryOldRedDragon ->
+                make "Very Old Red Dragon" 100 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Poison, Breathes Poison Gas"
+            AncientGreenDragon ->
+                make "Ancient Green Dragon" 105 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Cold, Breathes Ice"
+            AncientWhiteDragon ->
+                make "Ancient White Dragon" 105 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Lightning, Breathes Lightning"
+            AncientBlueDragon ->
+                make "Ancient Blue Dragon" 110 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "IBaseune to Fire, Breathes Fire"
+            AncientRedDragon ->
+                make "Ancient Red Dragon" 120 (Attributes 0 0 0 0 0) Types.Medium
+
+            -- Special: "Casts Fire, Lighting, and Wind Spells"
+            Sultur ->
+                make "Sultur" 344 (Attributes 0 0 0 0 0) Types.Medium
 
 
 type MonsterType
@@ -157,352 +491,3 @@ type MonsterType
     | AncientBlueDragon
     | AncientRedDragon
     | Sultur
-
-
-new : MonsterType -> Vector -> ID -> Monster
-new monsterType pos id =
-    let
-        newMonster class css name hp =
-            -- class: overall how dangerous monster is
-            -- css: css class for drawing
-            newSpellcaster class css name hp 0
-
-        newSpellcaster class css name hp sp =
-            Monster (A <| Model class css name) pos (Stats.new hp sp) id
-    in
-        case monsterType of
-            GiantRat ->
-                newMonster 1 "giantRat" "Giant Rat" 2
-
-            Goblin ->
-                newMonster 1 "goblin" "Goblin" 1
-
-            GiantBat ->
-                newMonster 2 "giantBat" "Giant Bat" 1
-
-            Hobgoblin ->
-                newMonster 2 "hobgoblin" "Hobgoblin" 1
-
-            Kobold ->
-                newMonster 2 "kobold" "Kobold" 1
-
-            LargeSnake ->
-                newMonster 3 "largeSnake" "Large Snake" 1
-
-            Skeleton ->
-                newMonster 3 "skeleton" "Skeleton" 1
-
-            WildDog ->
-                newMonster 3 "wildDog" "Wild Dog" 1
-
-            -- Special: "Poison"
-            Viper ->
-                newMonster 5 "viper" "Viper" 1
-
-            GoblinFighter ->
-                newMonster 6 "goblinFighter" "Goblin Fighter" 1
-
-            GiantRedAnt ->
-                newMonster 7 "giantRedAnt" "Giant Red Ant" 1
-
-            WalkingCorpse ->
-                newMonster 7 "walkingCorpse" "Walking Corpse" 1
-
-            -- Special: "Arrow"
-            Bandit ->
-                newMonster 10 "bandit" "Bandit" 1
-
-            GiantTrapdoorSpider ->
-                newMonster 10 "giantTrapdoorSpider" "Giant Trapdoor Spider" 1
-
-            HugeLizard ->
-                newMonster 10 "hugeLizard" "Huge Lizard" 1
-
-            RatMan ->
-                newMonster 10 "rat" "Rat-Man" 1
-
-            -- Special: "IBaseune to Weapons"
-            Slime ->
-                newMonster 10 "slime" "Slime" 1
-
-            -- Special: "Poison"
-            GiantScorpion ->
-                newMonster 11 "giantScorpion" "Giant Scorpion" 1
-
-            GrayWolf ->
-                newMonster 11 "grayWolf" "Gray Wolf" 1
-
-            -- Special: "IBaseune to Cold, Lightning"
-            GelantinousGlob ->
-                newMonster 14 "gelantinousGlob" "Gelantinous Glob" 1
-
-            -- Special: "Steals from Belt and Purse, Teleports"
-            SmirkingSneakThief ->
-                newMonster 15 "smirkingSneakThief" "Smirking Sneak Thief" 1
-
-            CarrionCreeper ->
-                newMonster 16 "carrionCreeper" "Carrion Creeper" 1
-
-            HugeOgre ->
-                newMonster 16 "hugeOgre" "Huge Ogre" 1
-
-            Shadow ->
-                newMonster 16 "shadow" "Shadow" 1
-
-            AnimatedWoodenStatue ->
-                newMonster 17 "animatedWoodenStatue" "Animated Wooden Statue" 1
-
-            BrownBear ->
-                newMonster 17 "brownBear" "Brown Bear" 1
-
-            -- Special: "IBaseune to Poison, Breathes Poison Gas"
-            YoungGreenDragon ->
-                newMonster 18 "youngGreenDragon" "Young Green Dragon" 1
-
-            -- Special: "IBaseune to Cold, Breathes Ice"
-            YoungWhiteDragon ->
-                newMonster 18 "youngWhiteDragon" "Young White Dragon" 1
-
-            -- Special: "Needles"
-            Manticore ->
-                newMonster 19 "manticore" "Manticore" 1
-
-            EerieGhost ->
-                newMonster 20 "eerieGhost" "Eerie Ghost" 1
-
-            GruesomeTroll ->
-                newMonster 20 "gruesomeTroll" "Gruesome Troll" 1
-
-            -- Special: "IBaseune to Lightning, Breathes Lightning"
-            YoungBlueDragon ->
-                newMonster 20 "youngBlueDragon" "Young Blue Dragon" 1
-
-            -- Special: "IBaseune to Fire, Breathes Fire"
-            YoungRedDragon ->
-                newMonster 20 "youngRedDragon" "Young Red Dragon" 1
-
-            AnimatedBronzeStatue ->
-                newMonster 25 "animatedBronzeStatue" "Animated Bronze Statue" 1
-
-            -- Special: "Arrow"
-            EvilWarrior ->
-                newMonster 25 "evilWarrior" "Evil Warrior" 1
-
-            WolfMan ->
-                newMonster 25 "wolf" "Wolf-Man" 1
-
-            CaveBear ->
-                newMonster 27 "caveBear" "Cave Bear" 1
-
-            WhiteWolf ->
-                newMonster 28 "whiteWolf" "White Wolf" 1
-
-            Berserker ->
-                newMonster 30 "berserker" "Berserker" 1
-
-            AnimatedIronStatue ->
-                newMonster 35 "animatedIronStatue" "Animated Iron Statue" 1
-
-            -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
-            TunnelWight ->
-                newMonster 35 "tunnelWight" "Tunnel Wight" 1
-
-            -- Special: "IBaseune to Lightning, Breathes Lightning"
-            YoungAdultBlueDragon ->
-                newMonster 35 "youngAdultBlueDragon" "Young Adult Blue Dragon" 1
-
-            -- Special: "IBaseune to Poison, Breathes Poison Gas"
-            YoungAdultGreenDragon ->
-                newMonster 35 "youngAdultGreenDragon" "Young Adult Green Dragon" 1
-
-            -- Special: "IBaseune to Cold, Breathes Ice"
-            YoungAdultWhiteDragon ->
-                newMonster 35 "youngAdultWhiteDragon" "Young Adult White Dragon" 1
-
-            -- Special: "Drains Intelligence and Mana Permanently"
-            PaleWraith ->
-                newMonster 37 "paleWraith" "Pale Wraith" 1
-
-            -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
-            BarrowWight ->
-                newMonster 40 "barrowWight" "Barrow Wight" 1
-
-            BearMan ->
-                newMonster 40 "bear" "Bear-Man" 1
-
-            DustElemental ->
-                newMonster 40 "dustElemental" "Dust Elemental" 1
-
-            -- Special: "Throws Stones"
-            HillGiant ->
-                newMonster 40 "hillGiant" "Hill Giant" 1
-
-            -- Special: "IBaseune to Fire, Breathes Fire"
-            YoungAdultRedDragon ->
-                newMonster 40 "youngAdultRedDragon" "Young Adult Red Dragon" 1
-
-            -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
-            Wizard ->
-                newMonster 45 "wizard" "Wizard" 1
-
-            BullMan ->
-                newMonster 50 "bull" "Bull-Man" 1
-
-            -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
-            CastleWight ->
-                newMonster 50 "castleWight" "Castle Wight" 1
-
-            -- Special: "Drains Intelligence and Mana Permanently"
-            DarkWraith ->
-                newMonster 50 "darkWraith" "Dark Wraith" 1
-
-            IceElemental ->
-                newMonster 50 "iceElemental" "Ice Elemental" 1
-
-            Spectre ->
-                newMonster 50 "spectre" "Spectre" 1
-
-            AnimatedMarbleStatue ->
-                newMonster 52 "animatedMarbleStatue" "Animated Marble Statue" 1
-
-            -- Special: "IBaseune to Lightning, Breathes Lightning"
-            AdultBlueDragon ->
-                newMonster 55 "adultBlueDragon" "Adult Blue Dragon" 1
-
-            -- Special: "IBaseune to Poison, Breathes Poison Gas"
-            AdultGreenDragon ->
-                newMonster 55 "adultGreenDragon" "Adult Green Dragon" 1
-
-            -- Special: "IBaseune to Cold, Breathes Ice"
-            AdultWhiteDragon ->
-                newMonster 55 "adultWhiteDragon" "Adult White Dragon" 1
-
-            AirElemental ->
-                newMonster 55 "airElemental" "Air Elemental" 1
-
-            MagmaElemental ->
-                newMonster 55 "magmaElemental" "Magma Elemental" 1
-
-            -- Special: "Throws Stones"
-            StoneGiant ->
-                newMonster 55 "stoneGiant" "Stone Giant" 1
-
-            TwoHeadedGiant ->
-                newMonster 55 "twoHeadedGiant" "Two Headed Giant" 1
-
-            -- Special: "IBaseune to Fire, Breathes Fire"
-            AdultRedDragon ->
-                newMonster 60 "adultRedDragon" "Adult Red Dragon" 1
-
-            FireElemental ->
-                newMonster 60 "fireElemental" "Fire Elemental" 1
-
-            -- Special: "Throws Iceballs"
-            FrostGiant ->
-                newMonster 60 "frostGiant" "Frost Giant" 1
-
-            -- Special: "SuBaseons Spiked Devil"
-            SpikedDevil ->
-                newMonster 60 "spikedDevil" "Spiked Devil" 1
-
-            WaterElemental ->
-                newMonster 60 "waterElemental" "Water Elemental" 1
-
-            EarthElemental ->
-                newMonster 65 "earthElemental" "Earth Elemental" 1
-
-            -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
-            Necromancer ->
-                newMonster 65 "necromancer" "Necromancer" 1
-
-            -- Special: "Drains HP Permanently"
-            Vampire ->
-                newMonster 65 "vampire" "Vampire" 1
-
-            -- Special: "Drains Intelligence and Mana Permanently"
-            AbyssWraith ->
-                newMonster 70 "abyssWraith" "Abyss Wraith" 1
-
-            -- Special: "Throws Boulders"
-            Utgardhalok ->
-                newMonster 70 "utgardhalok" "Utgardhalok" 1
-
-            -- Special: "Throws Stones"
-            FireGiant ->
-                newMonster 75 "fireGiant" "Fire Giant" 1
-
-            -- Special: "IBaseune to Lightning, Breathes Lightning"
-            OldBlueDragon ->
-                newMonster 75 "oldBlueDragon" "Old Blue Dragon" 1
-
-            -- Special: "IBaseune to Poison, Breathes Poison Gas"
-            OldGreenDragon ->
-                newMonster 75 "oldGreenDragon" "Old Green Dragon" 1
-
-            -- Special: "IBaseune to Cold, Breathes Ice"
-            OldWhiteDragon ->
-                newMonster 75 "oldWhiteDragon" "Old White Dragon" 1
-
-            -- Special: "SuBaseons Horned Devil"
-            HornedDevil ->
-                newMonster 80 "hornedDevil" "Horned Devil" 1
-
-            -- Special: "IBaseune to Fire, Breathes Fire"
-            OldRedDragon ->
-                newMonster 80 "oldRedDragon" "Old Red Dragon" 1
-
-            -- Special: "Throws stones"
-            Rungnir ->
-                newMonster 80 "rungnir" "Rungnir" 1
-
-            -- Special: "SuBaseons Ice Devil"
-            IceDevil ->
-                newMonster 85 "iceDevil" "Ice Devil" 1
-
-            -- Special: "Throws Iceballs"
-            Thrym ->
-                newMonster 90 "thrym" "Thrym" 1
-
-            -- Special: "IBaseune to Poison, Breathes Poison Gas"
-            VeryOldGreenDragon ->
-                newMonster 90 "veryOldGreenDragon" "Very Old Green Dragon" 1
-
-            -- Special: "IBaseune to Cold, Breathes Ice"
-            VeryOldWhiteDragon ->
-                newMonster 90 "veryOldWhiteDragon" "Very Old White Dragon" 1
-
-            -- Special: "IBaseune to Lightning, Breathes Lightning"
-            VeryOldBlueDragon ->
-                newMonster 95 "veryOldBlueDragon" "Very Old Blue Dragon" 1
-
-            -- Special: "SuBaseons Spiked Devil or Abyss Fiend"
-            AbyssFiend ->
-                newMonster 100 "abyssFiend" "Abyss Fiend" 1
-
-            -- Special: "Throws Stones"
-            Thiassa ->
-                newMonster 100 "thiassa" "Thiassa" 1
-
-            -- Special: "IBaseune to Fire, Breathes Fire"
-            VeryOldRedDragon ->
-                newMonster 100 "veryOldRedDragon" "Very Old Red Dragon" 1
-
-            -- Special: "IBaseune to Poison, Breathes Poison Gas"
-            AncientGreenDragon ->
-                newMonster 105 "ancientGreenDragon" "Ancient Green Dragon" 1
-
-            -- Special: "IBaseune to Cold, Breathes Ice"
-            AncientWhiteDragon ->
-                newMonster 105 "ancientWhiteDragon" "Ancient White Dragon" 1
-
-            -- Special: "IBaseune to Lightning, Breathes Lightning"
-            AncientBlueDragon ->
-                newMonster 110 "ancientBlueDragon" "Ancient Blue Dragon" 1
-
-            -- Special: "IBaseune to Fire, Breathes Fire"
-            AncientRedDragon ->
-                newMonster 120 "ancientRedDragon" "Ancient Red Dragon" 1
-
-            -- Special: "Casts Fire, Lighting, and Wind Spells"
-            Sultur ->
-                newMonster 344 "sultur" "Sultur" 1

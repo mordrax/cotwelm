@@ -146,10 +146,10 @@ clean ({ rooms, corridors, activePoints } as model) =
                     -- hits a room, join to the room with a door
                     ( Just room, _, newCorridorEndPosition, newEntrancePosition ) ->
                         let
-                            corridor' =
+                            corridor_ =
                                 Corridor.add ( newCorridorEndPosition, startDirection ) corridor
 
-                            room' =
+                            room_ =
                                 Room.addEntrance (Entrance.init Door newEntrancePosition) room
 
                             _ =
@@ -161,17 +161,17 @@ clean ({ rooms, corridors, activePoints } as model) =
                                     }
                         in
                             modelWithRemainingPoints
-                                |> addCorridor corridor'
-                                |> findAndUpdateRoom room'
+                                |> addCorridor corridor_
+                                |> findAndUpdateRoom room_
                                 |> clean
 
                     -- hits another corridor, join to the corridor with dungeon floor
                     ( _, Just joinedCorridor, newCorridorEndPosition, joinedCorridorNewFloor ) ->
                         let
-                            corridor' =
+                            corridor_ =
                                 Corridor.add ( newCorridorEndPosition, startDirection ) corridor
 
-                            joinedCorridor' =
+                            joinedCorridor_ =
                                 Corridor.addEntrance joinedCorridorNewFloor joinedCorridor
 
                             _ =
@@ -182,8 +182,8 @@ clean ({ rooms, corridors, activePoints } as model) =
                                     }
                         in
                             modelWithRemainingPoints
-                                |> addCorridor corridor'
-                                |> findAndUpdateCorridor joinedCorridor'
+                                |> addCorridor corridor_
+                                |> findAndUpdateCorridor joinedCorridor_
                                 |> clean
 
         [] ->
@@ -209,7 +209,7 @@ addWalls model =
             List.all ((/=) point) mapPoints
 
         allPoints =
-            List.Extra.lift2 (,) [1..model.config.dungeonSize] [1..model.config.dungeonSize]
+            List.Extra.lift2 (,) (List.range 1 model.config.dungeonSize) (List.range 1 model.config.dungeonSize)
 
         walls =
             allPoints
@@ -309,7 +309,7 @@ findAndUpdateRoom targetRoom ({ rooms, activePoints } as model) =
             else
                 room :: updatedRooms
 
-        rooms' =
+        rooms_ =
             List.foldl update [] rooms
 
         updateActivePoints pt updatedPoints =
@@ -323,10 +323,10 @@ findAndUpdateRoom targetRoom ({ rooms, activePoints } as model) =
                 someOtherPoint ->
                     someOtherPoint :: updatedPoints
 
-        activePoints' =
+        activePoints_ =
             List.foldl updateActivePoints [] activePoints
     in
-        { model | rooms = rooms', activePoints = activePoints' }
+        { model | rooms = rooms_, activePoints = activePoints_ }
 
 
 findAndUpdateCorridor : Corridor -> Model -> Model
@@ -336,18 +336,18 @@ findAndUpdateCorridor targetCorridor ({ corridors, activePoints } as model) =
             Corridor.end targetCorridor
 
         update corridor updatedCorridors =
-            if targetCorridorPosition == (fst <| Corridor.end corridor) then
+            if targetCorridorPosition == (Tuple.first <| Corridor.end corridor) then
                 targetCorridor :: updatedCorridors
             else
                 corridor :: updatedCorridors
 
-        corridors' =
+        corridors_ =
             List.foldl update [] corridors
 
         updateActivePoints pt updatedPoints =
             case pt of
                 ActiveCorridor corridor ->
-                    if targetCorridorPosition == (fst <| Corridor.end corridor) then
+                    if targetCorridorPosition == (Tuple.first <| Corridor.end corridor) then
                         ActiveCorridor targetCorridor :: updatedPoints
                     else
                         ActiveCorridor corridor :: updatedPoints
@@ -355,10 +355,10 @@ findAndUpdateCorridor targetCorridor ({ corridors, activePoints } as model) =
                 someOtherPoint ->
                     someOtherPoint :: updatedPoints
 
-        activePoints' =
+        activePoints_ =
             List.foldl updateActivePoints [] activePoints
     in
-        { model | corridors = corridors', activePoints = activePoints' }
+        { model | corridors = corridors_, activePoints = activePoints_ }
 
 
 {-| Returns the first room or corridor encountered and the point prior just before hitting
@@ -440,18 +440,22 @@ step model =
                 }
     in
         shuffle model.activePoints
-            `andThen` \x ->
-                        step' { model | activePoints = x }
-                            `andThen` \model ->
-                                        let
-                                            _ =
-                                                print model
-                                        in
-                                            constant model
+            |> andThen
+                (\x ->
+                    step_ { model | activePoints = x }
+                        |> andThen
+                            (\model ->
+                                let
+                                    _ =
+                                        print model
+                                in
+                                    constant model
+                            )
+                )
 
 
-step' : Model -> Generator Model
-step' ({ activePoints } as model) =
+step_ : Model -> Generator Model
+step_ ({ activePoints } as model) =
     case activePoints of
         -- when nothing's active, no more exploration
         [] ->
@@ -563,9 +567,9 @@ generateEntrance room ({ config } as model) =
         modelWithActiveRoomRemoved =
             { model | rooms = room :: model.rooms }
 
-        mapEntranceToModel ( room', entrance ) =
+        mapEntranceToModel ( room_, entrance ) =
             { model
-                | activePoints = ActiveRoom room' (Just entrance) :: model.activePoints
+                | activePoints = ActiveRoom room_ (Just entrance) :: model.activePoints
             }
     in
         if isRoomAtMaxEntrances then
@@ -577,7 +581,7 @@ generateEntrance room ({ config } as model) =
 generateRoom : DirectedVector -> Config.Model -> Generator Room
 generateRoom corridorEnding config =
     Room.generate config
-        `andThen` Room.placeRoom corridorEnding
+        |> andThen (Room.placeRoom corridorEnding)
 
 
 
