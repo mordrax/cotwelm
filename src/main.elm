@@ -19,6 +19,7 @@ import Game.Game as Game exposing (Game)
 -- Core/Elm imports
 
 import Html exposing (..)
+import Html.Attributes as HA
 import Navigation exposing (Location)
 import String exposing (..)
 import Task exposing (perform)
@@ -59,11 +60,7 @@ init location =
             , game = Nothing
             , editor = Editor.init
             }
-
-        --        ( modelWithUrl, urlCmds ) =
-        --            urlUpdate location model
     in
-        --        ( modelWithUrl, urlCmds )
         ( model, Cmd.none )
 
 
@@ -165,17 +162,18 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    viewPage model
+
+
+viewPage : Model -> Html Msg
+viewPage model =
     case model.currentPage of
         CharCreationPage ->
-            div []
-                [ Html.map CharCreationMsg
-                    (CharCreation.view model.charCreation)
-                ]
+            Html.map CharCreationMsg
+                (CharCreation.view model.charCreation)
 
         SplashPage ->
-            div []
-                [ Html.map SplashMsg SplashView.view
-                ]
+            Html.map SplashMsg SplashView.view
 
         GamePage ->
             case model.game of
@@ -183,8 +181,7 @@ view model =
                     h1 [] [ text "There is no game state. A possible reason is that you have not created a character." ]
 
                 Just game ->
-                    div []
-                        [ Html.map GameMsg (Game.view game) ]
+                    Html.map GameMsg (Game.view game)
 
         EditorPage ->
             Html.map EditorMsg (Editor.view model.editor)

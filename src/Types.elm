@@ -5,16 +5,11 @@ module Types exposing (..)
 -}
 
 
-type DamageDie
-    = DamageDie Die Bonus
-
-
-type alias Die =
-    Int
-
-
-type alias Bonus =
-    Int
+type alias Dice =
+    { nDice : Int
+    , sides : Int
+    , bonus : Int
+    }
 
 
 type BodySize
