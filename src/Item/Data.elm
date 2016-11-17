@@ -4,7 +4,6 @@ import Utils.Mass exposing (..)
 import Utils.IdGenerator exposing (..)
 import Types
 
-
 type Msg
     = ItemOk
     | NestedItem
@@ -75,7 +74,7 @@ type alias Weapon =
     { base : BaseItem
     , weaponType : WeaponType
     , wc : WC
-    , damage : Types.DamageDie
+    , damage : Types.Dice
     }
 
 

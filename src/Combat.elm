@@ -66,25 +66,30 @@ import Fighter exposing (Fighter)
 import Debug exposing (log)
 
 
-{-| Returns a percentage between 0 and 100 of the chance the attacker has to hit it's
-    target based on the attacker's abilities.
+type alias CTH =
+    { baseCTH : Int
+    , weaponBulkPenalty : Int
+    , armourPenalty : Int
+    , sizeModifier : Int
+    , blockPenalty : Int
+    , critRange : Int
+    }
+
+
+
+{-
+   }| Returns a percentage between 0 and 100 of the chance the attacker has to hit it's
+       target based on the attacker's abilities.
 -}
-chanceToHit : Fighter a -> Int
-chanceToHit { attributes, equipment } =
+
+
+chanceToHit : Fighter attacker -> Fighter defender -> CTH
+chanceToHit attacker defender =
     let
-        { str, dex } =
-            attributes
+        ( weapon, armour ) =
+            ( Equipment.getWeapon attacker.equipment, Equipment.getArmour attacker.equipment )
 
-        weapon =
-            Equipment.getWeapon equipment
-
-        armour =
-            Equipment.getArmour equipment
-
-        baseCTH =
-            toFloat dex
-
-        (Mass.Mass armourWeight armourBulk) =
+        armourMass =
             armour
                 |> Maybe.map (.base >> .mass)
                 |> Maybe.withDefault (Mass.Mass 0 0)
@@ -92,9 +97,12 @@ chanceToHit { attributes, equipment } =
         -- At max str, can use max weight armour (plate) without penalty.
         -- At min str, when using plate, gives a max penalty of -20% CTH
         armourPenalty =
-            (toFloat str / 100 + toFloat armourWeight / 15000) * 20 |> clamp -20 0
+            (toFloat attacker.attributes.str / 100 - toFloat armourMass.weight / 15000)
+                * 20
+                |> clamp -20 0
+                |> round
 
-        (Mass.Mass weaponWeight weaponBulk) =
+        weaponMass =
             weapon
                 |> Maybe.map (.base >> .mass)
                 |> Maybe.withDefault (Mass.Mass 0 0)
@@ -102,20 +110,23 @@ chanceToHit { attributes, equipment } =
         -- Weapons less than 5000 (axe) has no bulk penalty, after which all weapons
         -- up to the THS at 12000 gets a linear penalty up to x% CTH
         weaponBulkPenalty =
-            toFloat (weaponBulk - 6000) / 6000 * 15 |> clamp -15 15
-    in
-        round (baseCTH + armourPenalty + weaponBulkPenalty * 100)
+            (1 - toFloat weaponMass.bulk / 6000)
+                * 15
+                |> clamp -15 15
+                |> round
 
-
-chanceToDodge : Fighter a -> Int
-chanceToDodge { attributes, equipment, bodySize } =
-    let
-        sizePenalty =
-            bodySize
+        sizeModifier =
+            defender.bodySize
                 |> bodySizeToDodge
                 |> clamp -10 10
     in
-        sizePenalty
+        { baseCTH = attacker.attributes.dex
+        , armourPenalty = armourPenalty
+        , weaponBulkPenalty = weaponBulkPenalty
+        , sizeModifier = sizeModifier
+        , blockPenalty = 5
+        , critRange = 20
+        }
 
 
 bodySizeToDodge : Types.BodySize -> Int
@@ -137,47 +148,53 @@ bodySizeToDodge bodySize =
             -10
 
 
-attack : Fighter attacker -> Fighter defender -> Generator (Fighter defender)
+attack : Fighter attacker -> Fighter defender -> Generator (String ,Fighter defender)
 attack attacker defender =
     let
-        hitGen =
-            hitCalculator attacker defender
+        cth =
+            chanceToHit attacker defender
 
-        damageGen =
+        hitDie =
+            Random.int 1 100
+
+        damageDie =
             damageCalculator attacker
-
-        onHitResult isHit damage =
-            if isHit == False then
-                noDamage
-            else
-                takeDamage damage
-
-        noDamage =
-            defender
-
-        takeDamage damage =
-            let
-                hitMsg =
-                    newHitMessage "You" ("the " ++ defender.name) (toString damage)
-            in
-                { defender | stats = Stats.takeHit damage defender.stats }
     in
-        Random.map2 onHitResult hitGen damageGen
+        Random.map2 (hitResult cth defender) hitDie damageDie
+
+
+hitResult : CTH -> Fighter defender -> Int -> Int -> (String, Fighter defender)
+hitResult cth defender hitRoll damageRoll =
+    let
+        takeDamage damage =
+            { defender | stats = Stats.takeHit damage defender.stats }
+
+        _ =
+            Debug.log "hitResult"
+                { cth = cth
+                , hitRoll = hitRoll
+                , damageRoll = damageRoll
+                }
+
+        noPenaltyCTH =
+            cth.baseCTH + (max 0 cth.sizeModifier)
+    in
+        if hitRoll > noPenaltyCTH then
+            -- the roll was so high (high is bad) that even without penalties, attack still misses
+            ("You're lucky you didn't trip over your own sword.", defender)
+        else if hitRoll > noPenaltyCTH + cth.armourPenalty then
+            ("Your cumbersome armour gets in the way of the attack.", defender)
+        else if hitRoll > noPenaltyCTH + cth.weaponBulkPenalty then
+            ("You clumsily miss with the unweildy weapon", defender)
+        else if hitRoll > cth.baseCTH + cth.sizeModifier then
+            ("The small creature nimbly dodges out of the way of your strike.", defender)
+        else
+            ("The hit connected!", takeDamage damageRoll)
 
 
 attackSpeed : Item.Data.Weapon -> Attributes -> Float
 attackSpeed weapon { str, dex, int, con } =
     1
-
-
-hitCalculator : Fighter attacker -> Fighter defender -> Generator Bool
-hitCalculator attacker defender =
-    let
-        hitThreshold =
-            log "cth" (chanceToHit attacker) - log "ctd" (chanceToDodge defender)
-    in
-        Random.int 0 100
-            |> Random.map ((>) hitThreshold)
 
 
 {-|
@@ -188,15 +205,15 @@ damageCalculator { attributes, equipment } =
         maybeWeapon =
             Equipment.getWeapon equipment
 
-        (Types.DamageDie range bonus) =
+        dice =
             case maybeWeapon of
                 Just weapon ->
                     Weapon.damage weapon
 
                 _ ->
-                    Types.DamageDie (attributes.str // 10) 0
+                    Types.Dice 1 (attributes.str // 10) 0
     in
-        Random.int 1 6
+        Dice.roll dice
 
 
 

@@ -435,13 +435,13 @@ viewPackInfo maybeItem =
     case maybeItem of
         Just pack ->
             let
-                ( Mass curBulk curWeight, Capacity capBulk capWeight ) =
+                ( cur, cap ) =
                     Pack.info pack
 
                 print name a b =
                     name ++ ": " ++ (toString a) ++ " / " ++ (toString b)
             in
-                (print "Bulk" curBulk capBulk) ++ ", " ++ (print "Weight" curWeight capWeight)
+                (print "Bulk" cur.bulk cap.maxBulk) ++ ", " ++ (print "Weight" cur.weight cap.maxWeight)
 
         _ ->
             ""

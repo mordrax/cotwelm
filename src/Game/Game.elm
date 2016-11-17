@@ -213,20 +213,7 @@ moveHero dir ({ hero, monsters, seed } as model) =
     in
         case obstructions of
             ( _, _, Just monster, _ ) ->
-                let
-                    ( monsterAfterHit, seed_ ) =
-                        Random.step (Combat.attack hero monster) seed
-
-                    monsters_ =
-                        if Stats.isDead monsterAfterHit.stats then
-                            Monsters.removeOne monster monsters
-                        else
-                            Monsters.updateOne monster monsters
-                in
-                    { model
-                        | seed = seed_
-                        , monsters = monsters_
-                    }
+                attackMonster monster model
 
             -- entering a building
             ( _, Just building, _, _ ) ->
@@ -239,6 +226,25 @@ moveHero dir ({ hero, monsters, seed } as model) =
             -- path free, moved
             ( False, _, _, _ ) ->
                 { model | hero = heroMoved }
+
+
+attackMonster : Monster -> Model -> Model
+attackMonster monster ({ hero, monsters, seed, messages } as model) =
+    let
+        ( ( msg, monsterAfterHit ), seed_ ) =
+            Random.step (Combat.attack hero monster) seed
+
+        monstersAfterHit monster =
+            if Stats.isDead monster.stats then
+                Monsters.removeOne monster monsters
+            else
+                Monsters.updateOne monster monsters
+    in
+        { model
+            | seed = seed_
+            , monsters = monstersAfterHit monsterAfterHit
+            , messages = msg :: messages
+        }
 
 
 moveMonsters : List Monster -> List Monster -> Model -> Model
@@ -261,16 +267,9 @@ moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
                 case obstructions of
                     -- hit hero
                     ( _, _, _, True ) ->
-                        let
-                            ( heroAfterHit, seed_ ) =
-                                Random.step (Combat.attack monster hero) seed
-                        in
-                            moveMonsters restOfMonsters
-                                (monster :: movedMonsters)
-                                { model
-                                    | hero = heroAfterHit
-                                    , seed = seed_
-                                }
+                        model
+                            |> attackHero monster
+                            |> moveMonsters restOfMonsters (monster :: movedMonsters)
 
                     ( True, _, _, _ ) ->
                         moveMonsters restOfMonsters (monster :: movedMonsters) model
@@ -286,6 +285,15 @@ moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
                             moveMonsters restOfMonsters (monster :: movedMonsters) model
                         else
                             moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
+
+
+attackHero : Monster -> Model -> Model
+attackHero monster ({ hero, seed, messages } as model) =
+    let
+        ( ( msg, heroAfterHit ), seed_ ) =
+            Random.step (Combat.attack monster hero) seed
+    in
+        { model | messages = msg :: messages, hero = heroAfterHit, seed = seed_ }
 
 
 enterBuilding : Building -> Model -> Model
