@@ -112,7 +112,7 @@ remove item (ContainerModel model) =
         itemMass =
             model.getMass item
 
-        mass' =
+        mass_ =
             Mass.subtract model.currentMass itemMass
     in
-        ContainerModel { model | items = itemsWithoutIdItem, currentMass = mass' }
+        ContainerModel { model | items = itemsWithoutIdItem, currentMass = mass_ }

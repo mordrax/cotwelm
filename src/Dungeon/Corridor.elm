@@ -132,7 +132,7 @@ generate startPosition entranceFacing config =
         (startDirectionGen
             |> Random.map (\dir -> ( startPosition, dir ))
         )
-            `andThen` makeCorridor
+            |> andThen makeCorridor
 
 
 {-| Generate another point in the corridor by digging a random length from
@@ -243,7 +243,7 @@ add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
             headWithDefault start points
 
         newPath =
-            path (fst lastCorridorPoint) newVector
+            path (Tuple.first lastCorridorPoint) newVector
                 |> List.map (\x -> Tile.toTile x Tile.DarkDgn)
     in
         A
@@ -295,9 +295,9 @@ boundaryHelper ({ start, points, paths, entranceFacing } as model) =
 
         entranceExceptions =
             Set.fromList
-                [ Vector.add (fst start) (Vector.fromDirection entranceFacing)
-                , Vector.add (fst start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Left)
-                , Vector.add (fst start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Right)
+                [ Vector.add (Tuple.first start) (Vector.fromDirection entranceFacing)
+                , Vector.add (Tuple.first start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Left)
+                , Vector.add (Tuple.first start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Right)
                 ]
 
         exitExceptions =

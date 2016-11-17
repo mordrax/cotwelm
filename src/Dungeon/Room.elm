@@ -104,10 +104,10 @@ generate config =
             constant (A model)
     in
         roomTypeGenerator config model
-            `andThen` roomSizeGenerator config
-            `andThen` positionGenerator config
-            `andThen` floorsGenerator
-            `andThen` toRoomGenerator
+            |> andThen (roomSizeGenerator config)
+            |> andThen (positionGenerator config)
+            |> andThen floorsGenerator
+            |> andThen toRoomGenerator
 
 
 notTooClose : Entrances -> Vector -> Maybe Vector
@@ -189,9 +189,9 @@ adjacentToFloors floors =
 
 boundary : Room -> Vectors
 boundary (A model) =
-     model.floors
-    |> adjacentToFloors
-    |> List.map (Vector.add model.worldPos)
+    model.floors
+        |> adjacentToFloors
+        |> List.map (Vector.add model.worldPos)
 
 
 addEntrance : Entrance -> Room -> Room
@@ -211,10 +211,10 @@ addEntrance entrance (A ({ worldPos, entrances } as model)) =
 removeEntrance : Entrance -> Room -> Room
 removeEntrance entrance (A ({ entrances, worldPos } as model)) =
     let
-        entrances' =
+        entrances_ =
             List.filter (Entrance.equal entrance >> not) entrances
     in
-        A { model | entrances = entrances' }
+        A { model | entrances = entrances_ }
 
 
 toTiles : Room -> Tiles
@@ -304,14 +304,14 @@ placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
                 roomWorldPosition =
                     Vector.sub entrancePosition wall
             in
-                constant
-                    <| A
+                constant <|
+                    A
                         { model
                             | entrances = [ entrance ]
                             , worldPos = roomWorldPosition
                         }
     in
-        pickAWall candidateWalls `andThen` makeADoor
+        pickAWall candidateWalls |> andThen makeADoor
 
 
 wallsFacingDirection : Direction -> Walls -> Dimension -> Walls
@@ -380,7 +380,7 @@ pp (A { worldPos }) =
 roomTypeGenerator : Config.Model -> Model -> Generator Model
 roomTypeGenerator config model =
     Config.roomTypeGenerator config
-        `andThen` (\roomType' -> constant { model | roomType = roomType' })
+        |> andThen (\roomType_ -> constant { model | roomType = roomType_ })
 
 
 positionGenerator : Config.Model -> Model -> Generator Model
@@ -394,13 +394,13 @@ positionGenerator { dungeonSize } ({ dimension } as model) =
                 |> Vector.map (max 0)
     in
         (Dice.d2d maxX maxY)
-            `andThen` (\worldPos' -> constant { model | worldPos = worldPos' })
+            |> andThen (\worldPos_ -> constant { model | worldPos = worldPos_ })
 
 
 roomSizeGenerator : Config.Model -> Model -> Generator Model
 roomSizeGenerator config ({ roomType } as model) =
     Config.roomSizeGenerator roomType config
-        `andThen` (\roomSize -> constant { model | dimension = ( roomSize, roomSize ) })
+        |> andThen (\roomSize -> constant { model | dimension = ( roomSize, roomSize ) })
 
 
 headOfWalls : List Walls -> Wall

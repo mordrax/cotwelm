@@ -3,7 +3,6 @@ module Dungeon.Editor exposing (..)
 import Html exposing (..)
 import Html.Attributes as HA exposing (..)
 import Html.Events exposing (..)
-import Html.App exposing (map)
 import Game.Maps as Maps exposing (..)
 
 
@@ -58,7 +57,7 @@ generateSteps : Int -> Model -> Generator DungeonGenerator.Model
 generateSteps steps model =
     let
         oneStep _ gen =
-            gen `andThen` DungeonGenerator.step
+            gen |> andThen DungeonGenerator.step
     in
         case steps of
             0 ->
@@ -68,7 +67,7 @@ generateSteps steps model =
                 firstStep model
 
             n ->
-                List.foldl oneStep (firstStep model) [0..n - 1]
+                List.foldl oneStep (firstStep model) (List.range 0 (n - 1))
 
 
 generateCandidate : Model -> Generator DungeonGenerator.Model
@@ -83,18 +82,19 @@ generateCandidate model =
         (newCandidate model
             |> Random.map DungeonGenerator.clean
         )
-            `andThen` (\dungeonModel ->
-                        let
-                            _ =
-                                Debug.log "Editor.generateCandidate"
-                                    { length = List.length dungeonModel.rooms
-                                    }
-                        in
-                            if fitness dungeonModel then
-                                constant dungeonModel
-                            else
-                                generateCandidate model
-                      )
+            |> andThen
+                (\dungeonModel ->
+                    let
+                        _ =
+                            Debug.log "Editor.generateCandidate"
+                                { length = List.length dungeonModel.rooms
+                                }
+                    in
+                        if fitness dungeonModel then
+                            constant dungeonModel
+                        else
+                            generateCandidate model
+                )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -169,6 +169,6 @@ view model =
 mapSizeView : Model -> Html Msg
 mapSizeView model =
     p [ style [ ( "width", "300px" ) ] ]
-        [ Html.App.map ConfigMsg (Config.dungeonSizeView model.config)
-        , Html.App.map ConfigMsg (Config.roomsConfigView model.config)
+        [ Html.map ConfigMsg (Config.dungeonSizeView model.config)
+        , Html.map ConfigMsg (Config.roomsConfigView model.config)
         ]

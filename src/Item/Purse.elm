@@ -73,10 +73,10 @@ merge p1 p2 =
 purses : (Int -> Int -> Int) -> Purse -> Purse -> Purse
 purses op ({ base } as p1) p2 =
     Purse base
-        (p1.copper `op` p2.copper)
-        (p1.silver `op` p2.silver)
-        (p1.gold `op` p2.gold)
-        (p1.platinum `op` p2.platinum)
+        (op p1.copper p2.copper)
+        (op p1.silver p2.silver)
+        (op p1.gold p2.gold)
+        (op p1.platinum p2.platinum)
 
 
 remove : Int -> Purse -> Result String Purse
@@ -95,22 +95,22 @@ remove copperToRemove ({ copper, silver, gold, platinum } as model) =
             Result.Ok { model | copper = copper - copperToRemove }
         else if (copperToRemove <= totalSilvers) then
             let
-                ( copper', silver' ) =
+                ( copper_, silver_ ) =
                     toLeastSilvers (totalSilvers - copperToRemove)
             in
-                Result.Ok { model | copper = copper', silver = silver' }
+                Result.Ok { model | copper = copper_, silver = silver_ }
         else if (copperToRemove <= totalGold) then
             let
-                ( copper', silver', gold' ) =
+                ( copper_, silver_, gold_ ) =
                     toLeastGold (totalGold - copperToRemove)
             in
-                Result.Ok { model | copper = copper', silver = silver', gold = gold' }
+                Result.Ok { model | copper = copper_, silver = silver_, gold = gold_ }
         else if (copperToRemove <= totalPlatinum) then
             let
-                ( copper', silver', gold', platinum' ) =
+                ( copper_, silver_, gold_, platinum_ ) =
                     toLeastCoins (totalPlatinum - copperToRemove)
             in
-                Result.Ok { model | copper = copper', silver = silver', gold = gold', platinum = platinum' }
+                Result.Ok { model | copper = copper_, silver = silver_, gold = gold_, platinum = platinum_ }
         else
             Result.Err "Not enough coins to remove!"
 

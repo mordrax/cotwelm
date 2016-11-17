@@ -1,41 +1,41 @@
 
-.maleHero {
+.male-hero {
     background: url('/assets/original/monsters.png') -0px -0px;
 }
-.femaleHero {
+.female-hero {
     background: url('/assets/original/monsters.png') -32px -0px;
 }
 .kobold {
     background: url('/assets/original/monsters.png') -64px -0px;
 }
-.giantRat {
+.giant-rat {
     background: url('/assets/original/monsters.png') -96px -0px;
 }
-.largeSnake {
+.large-snake {
     background: url('/assets/original/monsters.png') -128px -0px;
 }
-.giantAnt {
+.giant-ant {
     background: url('/assets/original/monsters.png') -160px -0px;
 }
-.wildDog {
+.wild-dog {
     background: url('/assets/original/monsters.png') -192px -0px;
 }
 .skeleton {
     background: url('/assets/original/monsters.png') -224px -0px;
 }
-.giantTrapdoorSpider {
+.giant-trapdoor-spider {
     background: url('/assets/original/monsters.png') -256px -0px;
 }
-.giantBat {
+.giant-bat {
     background: url('/assets/original/monsters.png') -288px -0px;
 }
-.carrionCreeper {
+.carrion-creeper {
     background: url('/assets/original/monsters.png') -320px -0px;
 }
-.giantScorpion {
+.giant-scorpion {
     background: url('/assets/original/monsters.png') -352px -0px;
 }
-.greenSlime {
+.green-slime {
     background: url('/assets/original/monsters.png') -384px -0px;
 }
 .viper {
@@ -44,10 +44,10 @@
 .ogre {
     background: url('/assets/original/monsters.png') -0px -32px;
 }
-.walkingCorpse {
+.walking-corpse {
     background: url('/assets/original/monsters.png') -32px -32px;
 }
-.hugeLizard {
+.huge-lizard {
     background: url('/assets/original/monsters.png') -64px -32px;
 }
 .goblin {
@@ -65,16 +65,16 @@
 .wolf {
     background: url('/assets/original/monsters.png') -224px -32px;
 }
-.direWolf {
+.dire-wolf {
     background: url('/assets/original/monsters.png') -256px -32px;
 }
-.brownBear {
+.brown-bear {
     background: url('/assets/original/monsters.png') -288px -32px;
 }
-.caveBear {
+.cave-bear {
     background: url('/assets/original/monsters.png') -320px -32px;
 }
-.gelatinousGlob {
+.gelatinous-glob {
     background: url('/assets/original/monsters.png') -352px -32px;
 }
 .troll {
@@ -83,16 +83,16 @@
 .manticore {
     background: url('/assets/original/monsters.png') -416px -32px;
 }
-.bronzeGolem {
+.bronze-golem {
     background: url('/assets/original/monsters.png') -0px -64px;
 }
-.ironGolem {
+.iron-golem {
     background: url('/assets/original/monsters.png') -32px -64px;
 }
-.diamondGolem {
+.diamond-golem {
     background: url('/assets/original/monsters.png') -64px -64px;
 }
-.woodenGolem {
+.wooden-golem {
     background: url('/assets/original/monsters.png') -96px -64px;
 }
 .bandit {
@@ -122,90 +122,90 @@
 .vampire {
     background: url('/assets/original/monsters.png') -384px -64px;
 }
-.iceDevil {
+.ice-devil {
     background: url('/assets/original/monsters.png') -416px -64px;
 }
-.ratMan {
+.rat-man {
     background: url('/assets/original/monsters.png') -0px -96px;
 }
-.wolfMan {
+.wolf-man {
     background: url('/assets/original/monsters.png') -32px -96px;
 }
-.bearMan {
+.bear-man {
     background: url('/assets/original/monsters.png') -64px -96px;
 }
-.bullMan {
+.bull-man {
     background: url('/assets/original/monsters.png') -96px -96px;
 }
-.spikedDevil {
+.spiked-devil {
     background: url('/assets/original/monsters.png') -128px -96px;
 }
-.hornedDevil {
+.horned-devil {
     background: url('/assets/original/monsters.png') -160px -96px;
 }
-.abyssFiend {
+.abyss-fiend {
     background: url('/assets/original/monsters.png') -192px -96px;
 }
-.windElemental {
+.wind-elemental {
     background: url('/assets/original/monsters.png') -224px -96px;
 }
-.dustElemental {
+.dust-elemental {
     background: url('/assets/original/monsters.png') -256px -96px;
 }
-.fireElemental {
+.fire-elemental {
     background: url('/assets/original/monsters.png') -288px -96px;
 }
-.waterElemental {
+.water-elemental {
     background: url('/assets/original/monsters.png') -320px -96px;
 }
-.magmaElemental {
+.magma-elemental {
     background: url('/assets/original/monsters.png') -352px -96px;
 }
-.iceElemental {
+.ice-elemental {
     background: url('/assets/original/monsters.png') -384px -96px;
 }
-.earthElemental {
+.earth-elemental {
     background: url('/assets/original/monsters.png') -416px -96px;
 }
-.hillGiant {
+.hill-giant {
     background: url('/assets/original/monsters.png') -0px -128px;
 }
-.twoHeadGiant {
+.two-head-giant {
     background: url('/assets/original/monsters.png') -32px -128px;
 }
-.frostGiant {
+.frost-giant {
     background: url('/assets/original/monsters.png') -64px -128px;
 }
-.stoneGiant {
+.stone-giant {
     background: url('/assets/original/monsters.png') -96px -128px;
 }
-.fireGiant {
+.fire-giant {
     background: url('/assets/original/monsters.png') -128px -128px;
 }
 .surtur {
     background: url('/assets/original/monsters.png') -160px -128px;
 }
-.fireGiantKing {
+.fire-giant-king {
     background: url('/assets/original/monsters.png') -192px -128px;
 }
-.frostGiantKing {
+.frost-giant-king {
     background: url('/assets/original/monsters.png') -224px -128px;
 }
-.hillGiantKing {
+.hill-giant-king {
     background: url('/assets/original/monsters.png') -256px -128px;
 }
-.stoneGiantKing {
+.stone-giant-king {
     background: url('/assets/original/monsters.png') -288px -128px;
 }
-.redDragon {
+.red-dragon {
     background: url('/assets/original/monsters.png') -320px -128px;
 }
-.blueDragon {
+.blue-dragon {
     background: url('/assets/original/monsters.png') -352px -128px;
 }
-.whiteDragon {
+.white-dragon {
     background: url('/assets/original/monsters.png') -384px -128px;
 }
-.greenDragon {
+.green-dragon {
     background: url('/assets/original/monsters.png') -416px -128px;
 }

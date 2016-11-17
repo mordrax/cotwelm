@@ -101,13 +101,13 @@ rotate ( xInt, yInt ) dir =
                 Right ->
                     -45
 
-        x' =
+        x_ =
             x * cos angle - y * sin angle
 
-        y' =
+        y_ =
             x * sin angle + y * cos angle
     in
-        ( round x', round y' )
+        ( round x_, round y_ )
 
 
 rotateCompass : Direction -> RotationDirection -> Direction

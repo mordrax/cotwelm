@@ -11,10 +11,9 @@ module CharCreation.CharCreation
 -- where
 
 import Html exposing (..)
-import Html.App
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
-import Hero.Attributes as Attributes exposing (Attributes)
+import Attributes exposing (Attributes)
 import GameData.Types as GDT exposing (Gender(..), Difficulty(..))
 
 
@@ -29,7 +28,10 @@ type alias Model =
     , difficulty : Difficulty
     }
 
-type alias Name = String
+
+type alias Name =
+    String
+
 
 type Msg
     = Name String
@@ -93,7 +95,7 @@ view (A model) =
                         ]
                     , div []
                         [ Attributes.view model.attributes
-                            |> Html.App.map Attribute
+                            |> Html.map Attribute
                         ]
                     , div [ class "ui vertical segments" ]
                         [ div [ class "ui vertical segment" ] [ text "Character Gender" ]

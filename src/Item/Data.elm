@@ -2,7 +2,7 @@ module Item.Data exposing (..)
 
 import Utils.Mass exposing (..)
 import Utils.IdGenerator exposing (..)
-
+import Types
 
 type Msg
     = ItemOk
@@ -74,6 +74,7 @@ type alias Weapon =
     { base : BaseItem
     , weaponType : WeaponType
     , wc : WC
+    , damage : Types.Dice
     }
 
 
