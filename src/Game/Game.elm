@@ -231,7 +231,7 @@ moveHero dir ({ hero, monsters, seed } as model) =
 attackMonster : Monster -> Model -> Model
 attackMonster monster ({ hero, monsters, seed, messages } as model) =
     let
-        ( ( msg, monsterAfterHit ), seed_ ) =
+        ( ( msg, monsterAfterBeingHit ), seed_ ) =
             Random.step (Combat.attack hero monster) seed
 
         monstersAfterHit monster =
@@ -242,7 +242,7 @@ attackMonster monster ({ hero, monsters, seed, messages } as model) =
     in
         { model
             | seed = seed_
-            , monsters = monstersAfterHit monsterAfterHit
+            , monsters = monstersAfterHit monsterAfterBeingHit
             , messages = msg :: messages
         }
 
