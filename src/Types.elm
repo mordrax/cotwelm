@@ -18,3 +18,5 @@ type BodySize
     | Medium
     | Large
     | Giant
+
+type CreatureType = Hero | Monster

@@ -55,7 +55,7 @@ init : Location -> ( Model, Cmd Msg )
 init location =
     let
         model =
-            { currentPage = SplashPage
+            { currentPage = urlToPage location
             , charCreation = CharCreation.init
             , game = Nothing
             , editor = Editor.init
@@ -194,21 +194,21 @@ viewPage model =
 -- URL PARSERS - check out evancz/url-parser for fancier URL parsing
 
 
-fromUrl : String -> String
-fromUrl url =
-    String.dropLeft 2 url
-
-
 urlParser : Location -> Msg
-urlParser { hash } =
+urlParser location =
+    ChangePage <| urlToPage location
+
+
+urlToPage : Location -> Page
+urlToPage { hash } =
     if hash == "#/charCreation" then
-        ChangePage CharCreationPage
+        CharCreationPage
     else if hash == "#/game" then
-        ChangePage GamePage
+        GamePage
     else if hash == "#/editor" then
-        ChangePage EditorPage
+        EditorPage
     else
-        ChangePage SplashPage
+        SplashPage
 
 
 {-| Random number seed

@@ -64,6 +64,32 @@ import Utils.Mass as Mass
 import Equipment exposing (Equipment)
 import Fighter exposing (Fighter)
 import Debug exposing (log)
+import String
+
+
+attack : Fighter attacker -> Fighter defender -> Generator ( String, Fighter defender )
+attack attacker defender =
+    let
+        cth =
+            chanceToHit attacker defender
+
+        hitDie =
+            Random.int 1 100
+
+        damageDie =
+            damageCalculator attacker
+
+        names =
+            makeNames attacker defender
+    in
+        Random.map2 (,) hitDie damageDie
+            |> Random.andThen (\rolls -> hitResult cth names defender rolls)
+
+
+
+-------------------
+-- Chance to hit --
+-------------------
 
 
 type alias CTH =
@@ -74,13 +100,6 @@ type alias CTH =
     , blockPenalty : Int
     , critRange : Int
     }
-
-
-
-{-
-   }| Returns a percentage between 0 and 100 of the chance the attacker has to hit it's
-       target based on the attacker's abilities.
--}
 
 
 chanceToHit : Fighter attacker -> Fighter defender -> CTH
@@ -148,58 +167,39 @@ bodySizeToDodge bodySize =
             -10
 
 
-attack : Fighter attacker -> Fighter defender -> Generator (String ,Fighter defender)
-attack attacker defender =
-    let
-        cth =
-            chanceToHit attacker defender
 
-        hitDie =
-            Random.int 1 100
-
-        damageDie =
-            damageCalculator attacker
-    in
-        Random.map2 (hitResult cth defender) hitDie damageDie
+-----------------
+-- Hit result: -- Generate hit message, update defender
+-----------------
 
 
-hitResult : CTH -> Fighter defender -> Int -> Int -> (String, Fighter defender)
-hitResult cth defender hitRoll damageRoll =
+hitResult : CTH -> Names -> Fighter defender -> ( Int, ( DamageRoll, MaxDamage ) ) -> Generator ( String, Fighter defender )
+hitResult cth names defender ( hitRoll, ( damageRoll, maxDamage ) ) =
     let
         takeDamage damage =
             { defender | stats = Stats.takeHit damage defender.stats }
-
-        _ =
-            Debug.log "hitResult"
-                { cth = cth
-                , hitRoll = hitRoll
-                , damageRoll = damageRoll
-                }
 
         noPenaltyCTH =
             cth.baseCTH + (max 0 cth.sizeModifier)
     in
         if hitRoll > noPenaltyCTH then
             -- the roll was so high (high is bad) that even without penalties, attack still misses
-            ("You're lucky you didn't trip over your own sword.", defender)
-        else if hitRoll > noPenaltyCTH + cth.armourPenalty then
-            ("Your cumbersome armour gets in the way of the attack.", defender)
-        else if hitRoll > noPenaltyCTH + cth.weaponBulkPenalty then
-            ("You clumsily miss with the unweildy weapon", defender)
-        else if hitRoll > cth.baseCTH + cth.sizeModifier then
-            ("The small creature nimbly dodges out of the way of your strike.", defender)
+            missMsg names
+                |> Random.map (\msg -> ( msg, defender ))
         else
-            ("The hit connected!", takeDamage damageRoll)
+            hitMsg names ( damageRoll, maxDamage ) defender
+                |> Random.map (\msg -> ( msg, takeDamage damageRoll ))
 
 
-attackSpeed : Item.Data.Weapon -> Attributes -> Float
-attackSpeed weapon { str, dex, int, con } =
-    1
+type alias MaxDamage =
+    Int
 
 
-{-|
--}
-damageCalculator : Fighter a -> Generator Int
+type alias DamageRoll =
+    Int
+
+
+damageCalculator : Fighter a -> Generator ( DamageRoll, MaxDamage )
 damageCalculator { attributes, equipment } =
     let
         maybeWeapon =
@@ -214,24 +214,101 @@ damageCalculator { attributes, equipment } =
                     Types.Dice 1 (attributes.str // 10) 0
     in
         Dice.roll dice
+            |> Random.map (\roll -> ( roll, dice.nDice * dice.sides + dice.bonus ))
 
 
 
--- Privates
+------------------
+-- Attack speed --
+------------------
 
 
-newHitMessage : String -> String -> String -> String
-newHitMessage attacker defender damage =
-    let
-        msg =
-            attacker ++ " hit " ++ defender ++ " for " ++ damage ++ " damage!"
-
-        _ =
-            Debug.log msg ()
-    in
-        msg
+attackSpeed : Item.Data.Weapon -> Attributes -> Float
+attackSpeed weapon { str, dex, int, con } =
+    1
 
 
-weaponArmour : Equipment -> ( Maybe Item.Data.Weapon, Maybe Item.Data.Armour )
-weaponArmour equipment =
-    ( Equipment.getWeapon equipment, Equipment.getArmour equipment )
+
+-----------------------
+-- Hit/Miss messages --
+-----------------------
+
+
+missMsg : Names -> Generator String
+missMsg { att, attr, def, defr } =
+    Random.sample
+        [ attr ++ " half arsed attack failed to hit " ++ def
+        , attr ++ " fancy footwork did not fool " ++ def
+        , att ++ " could not hit the broadside of a barn with that pathetic attempt."
+        , att ++ " perform a decent attack but was perfectly parried by " ++ def
+        ]
+        |> Random.map (Maybe.withDefault <| attr ++ " fumbled attack complete missed " ++ def)
+
+
+hitMsg : Names -> ( DamageRoll, MaxDamage ) -> Fighter defender -> Generator String
+hitMsg names ( damageRoll, maxDamage ) { stats } =
+    Random.constant "Hit!"
+
+
+
+-----------
+-- Names --
+-----------
+
+
+{-| We cater for the following texts:
+'You totally miss the giant rat'
+'Your swing totally misses the giant rat'
+'The giant rat totally misses you'
+'The giant rat's attack bounces harmlessly off your shield'
+'The giant rat's attack hits you'
+
+Namely the texts you, your, the giant rat, the giant rat's needs to be identified.
+-}
+type alias Names =
+    { att : String
+    , attr : String
+    , def : String
+    , defr : String
+    }
+
+
+makeNames : Fighter attacker -> Fighter defender -> Names
+makeNames attacker defender =
+    { att = attackerName attacker False
+    , attr = attackerName attacker True
+    , def = defenderName defender False
+    , defr = defenderName defender True
+    }
+
+
+attackerName : Fighter a -> Bool -> String
+attackerName { type_, name } isPossesiveAdjective =
+    case ( type_, isPossesiveAdjective ) of
+        ( Types.Hero, True ) ->
+            "Your "
+
+        ( Types.Hero, False ) ->
+            "You "
+
+        ( _, True ) ->
+            "The " ++ String.toLower name ++ "'s"
+
+        ( _, False ) ->
+            "The " ++ String.toLower name
+
+
+defenderName : Fighter a -> Bool -> String
+defenderName { type_, name } isPossesiveAdjective =
+    case ( type_, isPossesiveAdjective ) of
+        ( Types.Hero, True ) ->
+            "your"
+
+        ( Types.Hero, False ) ->
+            "you"
+
+        ( _, True ) ->
+            "the " ++ String.toLower name ++ "'s"
+
+        ( _, False ) ->
+            "the " ++ String.toLower name

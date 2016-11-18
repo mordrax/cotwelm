@@ -29,6 +29,7 @@ import Fighter exposing (Fighter)
 
 type alias Hero =
     { name : Name
+    , type_ : Types.CreatureType
     , position : Vector
     , stats : Stats
     , gender : Data.Gender
@@ -46,6 +47,7 @@ type alias Name =
 init : Name -> Attributes -> Data.Gender -> Hero
 init name ({ str, int, con } as attributes) gender =
     { name = name
+    , type_ = Types.Hero
     , position = ( 11, 17 )
     , stats = Stats.init attributes
     , gender = gender

@@ -9,6 +9,7 @@ import Types
 type alias Fighter a =
     { a
         | name : String
+        , type_ : Types.CreatureType
         , stats : Stats
         , attributes : Attributes
         , equipment : Equipment

@@ -22,6 +22,7 @@ import Fighter exposing (Fighter)
 
 type alias Monster =
     { name : String
+    , type_ : Types.CreatureType
     , css : String
     , position : Vector
     , stats : Stats
@@ -48,6 +49,7 @@ initWithOptions monsterType pos id equipment =
     let
         make name level attributes bodySize =
             { name = name
+            , type_ = Types.Monster
             , css = (Utils.Lib.toCSS name)
             , position = pos
             , stats = Stats.init attributes
