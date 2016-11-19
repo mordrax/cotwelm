@@ -1,6 +1,8 @@
 module Combat
     exposing
         ( attack
+        , Fighter
+        , AttackMessage
         )
 
 {-| Combat takes place between an attacker and defender. It only deals with melee combat.
@@ -62,17 +64,45 @@ import Item.Data
 import Types
 import Utils.Mass as Mass
 import Equipment exposing (Equipment)
-import Fighter exposing (Fighter)
 import Debug exposing (log)
 import String
 
 
-attack : Fighter attacker -> Fighter defender -> Generator ( String, Fighter defender )
+type alias AttackMessage =
+    String
+
+
+type alias Defender a =
+    Fighter a
+
+
+type alias Attacker a =
+    Fighter a
+
+
+type alias HitRoll =
+    Int
+
+
+type alias Fighter a =
+    { a
+        | name : String
+        , type_ : Types.CreatureType
+        , stats : Stats
+        , attributes : Attributes
+        , equipment : Equipment
+        , expLevel : Int
+        , bodySize : Types.BodySize
+    }
+
+
+attack : Attacker a -> Defender b -> Generator ( AttackMessage, Defender b )
 attack attacker defender =
     let
         cth =
             chanceToHit attacker defender
 
+        -- Idea is to roll 1-100 under the chance to hit. So the higher cth, the better.
         hitDie =
             Random.int 1 100
 
@@ -102,7 +132,7 @@ type alias CTH =
     }
 
 
-chanceToHit : Fighter attacker -> Fighter defender -> CTH
+chanceToHit : Attacker a -> Defender b -> CTH
 chanceToHit attacker defender =
     let
         ( weapon, armour ) =
@@ -173,22 +203,35 @@ bodySizeToDodge bodySize =
 -----------------
 
 
-hitResult : CTH -> Names -> Fighter defender -> ( Int, ( DamageRoll, MaxDamage ) ) -> Generator ( String, Fighter defender )
+hitResult : CTH -> Names -> Defender b -> ( HitRoll, ( DamageRoll, MaxDamage ) ) -> Generator ( AttackMessage, Defender b )
 hitResult cth names defender ( hitRoll, ( damageRoll, maxDamage ) ) =
     let
-        takeDamage damage =
-            { defender | stats = Stats.takeHit damage defender.stats }
+        cthThreshold =
+            cth.baseCTH + cth.sizeModifier + cth.weaponBulkPenalty + cth.armourPenalty
 
-        noPenaltyCTH =
-            cth.baseCTH + (max 0 cth.sizeModifier)
+        isHit =
+            hitRoll < cthThreshold
+
+        isCrit =
+            hitRoll < cth.critRange
+
+        isBlocked =
+            hitRoll < cthThreshold + cth.blockPenalty
     in
-        if hitRoll > noPenaltyCTH then
-            -- the roll was so high (high is bad) that even without penalties, attack still misses
-            missMsg names
-                |> Random.map (\msg -> ( msg, defender ))
-        else
-            hitMsg names ( damageRoll, maxDamage ) defender
-                |> Random.map (\msg -> ( msg, takeDamage damageRoll ))
+        case ( isHit, isCrit, isBlocked ) of
+            ( _, True, _ ) ->
+                hitMsg names ( maxDamage, maxDamage ) defender
+
+            ( True, _, _ ) ->
+                hitMsg names ( damageRoll, maxDamage ) defender
+
+            ( False, _, True ) ->
+                blockedMsg names
+                    |> Random.map (\msg -> ( msg, defender ))
+
+            _ ->
+                missMsg names
+                    |> Random.map (\msg -> ( msg, defender ))
 
 
 type alias MaxDamage =
@@ -199,7 +242,7 @@ type alias DamageRoll =
     Int
 
 
-damageCalculator : Fighter a -> Generator ( DamageRoll, MaxDamage )
+damageCalculator : Attacker a -> Generator ( DamageRoll, MaxDamage )
 damageCalculator { attributes, equipment } =
     let
         maybeWeapon =
@@ -234,20 +277,95 @@ attackSpeed weapon { str, dex, int, con } =
 -----------------------
 
 
-missMsg : Names -> Generator String
+missMsg : Names -> Generator AttackMessage
 missMsg { att, attr, def, defr } =
     Random.sample
         [ attr ++ " half arsed attack failed to hit " ++ def
         , attr ++ " fancy footwork did not fool " ++ def
         , att ++ " could not hit the broadside of a barn with that pathetic attempt."
-        , att ++ " perform a decent attack but was perfectly parried by " ++ def
+        , att ++ " perform a decent attack but " ++ def ++ " perfectly parried the shot."
         ]
         |> Random.map (Maybe.withDefault <| attr ++ " fumbled attack complete missed " ++ def)
 
 
-hitMsg : Names -> ( DamageRoll, MaxDamage ) -> Fighter defender -> Generator String
-hitMsg names ( damageRoll, maxDamage ) { stats } =
-    Random.constant "Hit!"
+blockedMsg : Names -> Generator AttackMessage
+blockedMsg { att, attr, def, defr } =
+    Random.sample []
+        |> Random.map (Maybe.withDefault <| attr ++ " swing clanged against " ++ defr ++ " shield.")
+
+
+hitMsg : Names -> ( DamageRoll, MaxDamage ) -> Defender a -> Generator ( AttackMessage, Defender a )
+hitMsg { att, attr, def, defr } ( damageRoll, maxDamage ) defender =
+    let
+        critMsgs =
+            []
+
+        hitMsgs =
+            []
+
+        defaultHitMsg =
+            attr ++ " hit the " ++ def ++ "!"
+
+        defaultCritMsg =
+            att ++ " found a weak spot in " ++ defr ++ " defense! Ouch!"
+
+        defenderAfterDamage =
+            { defender | stats = Stats.takeHit damageRoll defender.stats }
+
+        addStatus msg =
+            case defender.type_ of
+                Types.Hero ->
+                    msg
+
+                _ ->
+                    msg ++ statusMsg defenderAfterDamage.stats
+    in
+        if damageRoll >= maxDamage then
+            Random.sample critMsgs
+                |> Random.map (Maybe.withDefault defaultCritMsg)
+                |> Random.map addStatus
+                |> Random.map (\msg -> ( msg, defenderAfterDamage ))
+        else
+            Random.sample hitMsgs
+                |> Random.map (Maybe.withDefault defaultHitMsg)
+                |> Random.map addStatus
+                |> Random.map (\msg -> ( msg, defenderAfterDamage ))
+
+
+statusMsg : Stats -> String
+statusMsg stats =
+    let
+        healthPercent =
+            toFloat stats.currentHP / toFloat stats.hardMaxHP
+    in
+        if healthPercent == 1 then
+            "Still in top shape!"
+        else if healthPercent >= 0.9 then
+            "It is slightly injured."
+        else if healthPercent >= 0.8 then
+            "It's looking a little worried."
+        else if healthPercent >= 0.7 then
+            "It is taking the fight seriously now."
+        else if healthPercent >= 0.6 then
+            "It has a few decent wounds."
+        else if healthPercent >= 0.5 then
+            "It has seen better days."
+        else if healthPercent >= 0.4 then
+            "It is bruised and battered, shoulders drooping."
+        else if healthPercent >= 0.3 then
+            "It doesn't look like it can handle much more."
+        else if healthPercent >= 0.2 then
+            "It saying it's prayers."
+        else if healthPercent >= 0.1 then
+            "It is bleeding from critical wounds."
+        else if healthPercent >= 0.0 then
+            "It looks to be mortally wounded."
+        else if healthPercent >= -0.5 then
+            "It looks clinically dead."
+        else if healthPercent >= -1 then
+            "It has been well and truly put down. Well done!"
+        else
+            "It has been pummeled into an unrecognisable heap."
 
 
 
@@ -273,42 +391,47 @@ type alias Names =
     }
 
 
-makeNames : Fighter attacker -> Fighter defender -> Names
+makeNames : Attacker a -> Defender b -> Names
 makeNames attacker defender =
-    { att = attackerName attacker False
-    , attr = attackerName attacker True
-    , def = defenderName defender False
-    , defr = defenderName defender True
+    { att = attackerName attacker NonPossessive
+    , attr = attackerName attacker Possessive
+    , def = defenderName defender NonPossessive
+    , defr = defenderName defender Possessive
     }
 
 
-attackerName : Fighter a -> Bool -> String
-attackerName { type_, name } isPossesiveAdjective =
-    case ( type_, isPossesiveAdjective ) of
-        ( Types.Hero, True ) ->
+type Adjective
+    = Possessive
+    | NonPossessive
+
+
+attackerName : Attacker a -> Adjective -> String
+attackerName { type_, name } adjective =
+    case ( type_, adjective ) of
+        ( Types.Hero, Possessive ) ->
             "Your "
 
-        ( Types.Hero, False ) ->
+        ( Types.Hero, NonPossessive ) ->
             "You "
 
-        ( _, True ) ->
+        ( _, Possessive ) ->
             "The " ++ String.toLower name ++ "'s"
 
-        ( _, False ) ->
+        ( _, NonPossessive ) ->
             "The " ++ String.toLower name
 
 
-defenderName : Fighter a -> Bool -> String
-defenderName { type_, name } isPossesiveAdjective =
-    case ( type_, isPossesiveAdjective ) of
-        ( Types.Hero, True ) ->
+defenderName : Defender a -> Adjective -> String
+defenderName { type_, name } adjective =
+    case ( type_, adjective ) of
+        ( Types.Hero, Possessive ) ->
             "your"
 
-        ( Types.Hero, False ) ->
+        ( Types.Hero, NonPossessive ) ->
             "you"
 
-        ( _, True ) ->
+        ( _, Possessive ) ->
             "the " ++ String.toLower name ++ "'s"
 
-        ( _, False ) ->
+        ( _, NonPossessive ) ->
             "the " ++ String.toLower name

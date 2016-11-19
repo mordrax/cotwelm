@@ -36,7 +36,6 @@ import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
 import Utils.Lib as Lib
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
-import Fighter exposing (Fighter)
 
 
 type Game

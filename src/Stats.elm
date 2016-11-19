@@ -12,10 +12,6 @@ module Stats
 import Attributes exposing (Attributes)
 
 
-type Stats
-    = Stats Model
-
-
 type Msg
     = Alive
     | Dead
@@ -49,7 +45,7 @@ type Shock
     | Shocked Int
 
 
-type alias Model =
+type alias Stats =
     { currentHP : Int
     , maxHP : Int
     , hardMaxHP : Int
@@ -78,26 +74,26 @@ init { str, con, int } =
         sp =
             int // 5
     in
-        Stats <| Model hp hp hp sp sp sp <| Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
+        Stats hp hp hp sp sp sp <| Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
 
 
 isDead : Stats -> Bool
-isDead (Stats model) =
+isDead model =
     model.currentHP < 0
 
 
 takeHit : Int -> Stats -> Stats
-takeHit damage (Stats model) =
-    Stats { model | currentHP = model.currentHP - damage }
+takeHit damage model =
+    { model | currentHP = model.currentHP - damage }
 
 
 printHP : Stats -> String
-printHP (Stats model) =
+printHP model =
     printAOverB model.currentHP model.maxHP
 
 
 printSP : Stats -> String
-printSP (Stats model) =
+printSP model =
     printAOverB model.currentSP model.maxSP
 
 

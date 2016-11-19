@@ -17,7 +17,6 @@ import Equipment exposing (Equipment)
 import Attributes exposing (Attributes)
 import Utils.Lib as Lib
 import Types
-import Fighter exposing (Fighter)
 
 
 type alias Monster =
