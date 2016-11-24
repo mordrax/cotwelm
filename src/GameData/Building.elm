@@ -1,6 +1,7 @@
 module GameData.Building
     exposing
         ( Building
+        , Buildings
         , BuildingType(..)
         , BuildingTile(..)
         , new
@@ -24,6 +25,10 @@ import Utils.Vector as Vector exposing (..)
 import Utils.Lib as Lib exposing (..)
 import GameData.Types exposing (..)
 import Shops exposing (ShopType)
+
+
+type alias Buildings =
+    List Building
 
 
 type Building
@@ -60,6 +65,7 @@ type BuildingTile
     | BurntStrawHouse_WF
     | HutTemple_NF
     | MineEntrance
+    | Well
 
 
 newLink : Area -> Vector -> BuildingType
@@ -121,4 +127,7 @@ new buildingTile pos name buildingType =
                 newBuilding ( 2, 0 ) ( 5, 6 )
 
             MineEntrance ->
+                newBuilding ( 0, 0 ) ( 1, 1 )
+
+            Well ->
                 newBuilding ( 0, 0 ) ( 1, 1 )

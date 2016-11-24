@@ -20,3 +20,5 @@ type Difficulty
     | Intermediate
     | Hard
     | Impossible
+
+

@@ -1,6 +1,8 @@
 module Dungeon.DungeonGenerator
     exposing
         ( step
+        , steps
+        , generate
         , toTiles
         , init
         , Model
@@ -16,12 +18,11 @@ import Dice exposing (..)
 import Random.Pcg as Random exposing (..)
 import Tile exposing (..)
 import Utils.Vector as Vector exposing (..)
-import Game.Maps as Maps exposing (..)
 import Lodash exposing (..)
 import List.Extra exposing (dropWhile)
 import Utils.Direction exposing (..)
 import Maybe.Extra exposing (..)
-import Dict
+import Dict exposing (Dict)
 import Set
 
 
@@ -73,16 +74,13 @@ type ActivePoint
     | ActiveCorridor Corridor
 
 
-init : Config.Model -> Generator Model
+init : Config.Model -> Model
 init config =
-    let
-        model =
-            Model config [] [] [] []
+    Model config [] [] [] []
 
-        addRoomToModel room =
-            { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [] }
-    in
-        Random.map addRoomToModel (Room.generate config)
+
+type alias Map =
+    Dict Vector Tile
 
 
 {-| Removes active entrances from rooms and
@@ -417,6 +415,41 @@ activePointToCorridor activePoint =
             Nothing
 
 
+generate : Config.Model -> Generator Map
+generate config =
+    let
+        candidate =
+            init config
+                |> steps 200
+                |> Random.map clean
+
+        fitness model =
+            List.length model.rooms > 8
+    in
+        candidate
+            |> Random.andThen
+                (\candidate ->
+                    if fitness candidate then
+                        constant <| toMap candidate
+                    else
+                        generate config
+                )
+
+
+steps : Int -> Model -> Generator Model
+steps steps model =
+    let
+        oneStep _ gen =
+            Random.andThen step gen
+    in
+        case steps of
+            0 ->
+                constant model
+
+            n ->
+                List.foldl oneStep (constant model) (List.range 0 (n - 1))
+
+
 {-| For each of the active rooms and corridors, generate another 'step'.
 For a room this could be make doors if the room has no doors or for a corridor
 this could be create a dead end, link up to a room etc.
@@ -440,17 +473,10 @@ step model =
                 }
     in
         shuffle model.activePoints
-            |> andThen
+            |> Random.andThen
                 (\x ->
                     step_ { model | activePoints = x }
-                        |> andThen
-                            (\model ->
-                                let
-                                    _ =
-                                        print model
-                                in
-                                    constant model
-                            )
+                        |> Random.andThen Random.constant
                 )
 
 
@@ -459,7 +485,14 @@ step_ ({ activePoints } as model) =
     case activePoints of
         -- when nothing's active, no more exploration
         [] ->
-            constant model
+            let
+                addRoomToModel room =
+                    { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [] }
+            in
+                if List.length model.rooms == 0 && List.length model.corridors == 0 then
+                    Random.map addRoomToModel (Room.generate model.config)
+                else
+                    constant model
 
         (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
             generateEntrance room { model | activePoints = remainingPoints }
@@ -664,7 +697,18 @@ toMap : Model -> Map
 toMap model =
     model
         |> toTiles
-        |> Maps.fromTiles
+        |> fromTiles
+
+
+fromTiles : Tiles -> Map
+fromTiles tiles =
+    let
+        toKVPair tile =
+            ( Tile.position tile, tile )
+    in
+        tiles
+            |> List.map toKVPair
+            |> Dict.fromList
 
 
 toOccupied : Model -> Vectors
