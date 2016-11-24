@@ -16,6 +16,7 @@ module Game.Maps
         , getTile
         , tileNeighbours
         , toScreenCoords
+        , downStairs
         )
 
 {-| Handles rendering of all the static/dynamic game areas
@@ -39,6 +40,8 @@ import Dict exposing (..)
 import Random.Pcg as Random exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Shops
+import Array.Hamt as Array exposing (Array)
+import Dungeon.DungeonGenerator as DungeonGenerator
 
 
 type Maps
@@ -47,13 +50,21 @@ type Maps
 
 type alias Model =
     { currentArea : Area
-    , maps : Dict String Map
-    , buildings : Dict String (List Building)
+    , village : Level
+    , farm : Level
+    , abandonedMinesEntry : Level
+    , abandonedMines : Array Level
     }
 
 
 type alias Map =
     Dict Vector Tile
+
+
+type alias Level =
+    { map : Map
+    , buildings : Buildings
+    }
 
 
 type alias Dimension =
@@ -70,32 +81,23 @@ init seed =
         getTiles area =
             Tile.mapToTiles (getASCIIMap area)
 
-        tilesToTuples area =
-            List.map toKVPair (getTiles area)
+        mapOfArea area =
+            (getTiles area)
+                |> List.map toKVPair
+                |> Dict.fromList
+
+        levelOfArea area =
+            Level (mapOfArea area) (buildingsOfArea area)
 
         toKVPair tile =
             ( Tile.position tile, tile )
-
-        --( level, seed' ) =
-        --    Random.step (DungeonGenerator.generate Config.init) seed
     in
         ( A
-            { currentArea =
-                --DungeonLevel 2
-                Village
-            , maps =
-                Dict.fromList
-                    [ ( toString Village, Dict.fromList (tilesToTuples Village) )
-                    , ( toString Farm, Dict.fromList (tilesToTuples Farm) )
-                    , ( toString DungeonLevelOne, Dict.fromList (tilesToTuples DungeonLevelOne) )
-                      --, ( toString (DungeonLevel 2), level )
-                    ]
-            , buildings =
-                Dict.fromList
-                    [ ( toString Village, villageBuildings )
-                    , ( toString Farm, farmBuildings )
-                    , ( toString DungeonLevelOne, dungeonLevelOneBuildings )
-                    ]
+            { currentArea = Village
+            , abandonedMines = Array.fromList []
+            , village = levelOfArea Village
+            , farm = levelOfArea Farm
+            , abandonedMinesEntry = levelOfArea DungeonLevelOne
             }
         , Cmd.none
         , seed
@@ -109,6 +111,37 @@ update msg (A model) =
             Debug.log "maps update" 1
     in
         (A { model | currentArea = Village })
+
+
+downStairs : Maps -> Generator Maps
+downStairs (A model) =
+    let
+        nextLevel =
+            case model.currentArea of
+                DungeonLevelOne ->
+                    0
+
+                DungeonLevel level ->
+                    level + 1
+
+                _ ->
+                    0
+    in
+        case Array.get nextLevel model.abandonedMines of
+            Just level ->
+                Random.constant (A { model | currentArea = DungeonLevel nextLevel })
+
+            Nothing ->
+                DungeonGenerator.generate Config.init
+                    |> Random.map (\map -> Array.push (Level map []) model.abandonedMines)
+                    |> Random.map
+                        (\abandonedMines ->
+                            A
+                                { model
+                                    | abandonedMines = abandonedMines
+                                    , currentArea = DungeonLevel nextLevel
+                                }
+                        )
 
 
 updateArea : GameData.Types.Area -> Maps -> Maps
@@ -178,18 +211,34 @@ toScreenCoords map mapSize =
 
 {-| Get the map for the current area
 -}
-currentAreaMap : Maps -> Map
-currentAreaMap (A model) =
-    let
-        maybeMap =
-            Dict.get (toString model.currentArea) model.maps
-    in
-        case maybeMap of
-            Just map ->
-                map
+currentArea : Maps -> Level
+currentArea (A model) =
+    case model.currentArea of
+        Village ->
+            model.village
 
-            Nothing ->
-                Dict.empty
+        Farm ->
+            model.farm
+
+        DungeonLevelOne ->
+            model.abandonedMinesEntry
+
+        DungeonLevel level ->
+            model.abandonedMines
+                |> Array.get level
+                |> Maybe.withDefault model.abandonedMinesEntry
+
+
+currentAreaMap : Maps -> Map
+currentAreaMap maps =
+    .map (currentArea maps)
+
+
+{-| Get the buildings in the current area
+-}
+getBuildings : Maps -> List Building
+getBuildings maps =
+    .buildings (currentArea maps)
 
 
 {-| Get the width and height of a map
@@ -204,22 +253,6 @@ mapSize map =
             List.foldr (\( a, b ) ( c, d ) -> ( max a c, max b d )) ( 0, 0 ) positions
     in
         ( maxX + 1, maxY + 1 )
-
-
-{-| Get the buildings in the current area
--}
-getBuildings : Maps -> List Building
-getBuildings (A model) =
-    let
-        maybeBuildings =
-            Dict.get (toString model.currentArea) model.buildings
-    in
-        case maybeBuildings of
-            Just buildings ->
-                buildings
-
-            Nothing ->
-                []
 
 
 {-| Get the ascii map for a specific area.
@@ -248,45 +281,47 @@ getASCIIMap area =
 --------------------------
 
 
-villageBuildings : List Building
-villageBuildings =
-    let
-        farmGate =
-            Building.newLink Farm ( 11, 31 )
-    in
-        [ Building.new Gate_NS ( 10, 0 ) "Village Gate" farmGate
-        , Building.new StrawHouse_EF ( 3, 6 ) "Junk Shop" Ordinary
-        , Building.new StrawHouse_WF ( 16, 5 ) "Private House" Ordinary
-        , Building.new Hut_EF ( 7, 13 ) "Potion Store" (Shop Shops.PotionStore)
-        , Building.new StrawHouse_WF ( 14, 12 ) "Private House 2" Ordinary
-        , Building.new StrawHouse_EF ( 6, 17 ) "Weapon Shop" (Shop Shops.WeaponSmith)
-        , Building.new StrawHouse_WF ( 14, 17 ) "General Store" (Shop Shops.GeneralStore)
-        , Building.new HutTemple_NF ( 9, 22 ) "Odin's Temple" Ordinary
-        ]
+buildingsOfArea : Area -> Buildings
+buildingsOfArea area =
+    case area of
+        Village ->
+            let
+                farmGate =
+                    Building.newLink Farm ( 11, 31 )
+            in
+                [ Building.new Building.Gate_NS ( 10, 0 ) "Village Gate" farmGate
+                , Building.new Building.StrawHouse_EF ( 3, 6 ) "Junk Shop" Ordinary
+                , Building.new Building.StrawHouse_WF ( 16, 5 ) "Private House" Ordinary
+                , Building.new Building.Hut_EF ( 7, 13 ) "Potion Store" (Shop Shops.PotionStore)
+                , Building.new Building.StrawHouse_WF ( 14, 12 ) "Private House 2" Ordinary
+                , Building.new Building.StrawHouse_EF ( 6, 17 ) "Weapon Shop" (Shop Shops.WeaponSmith)
+                , Building.new Building.StrawHouse_WF ( 14, 17 ) "General Store" (Shop Shops.GeneralStore)
+                , Building.new Building.HutTemple_NF ( 9, 22 ) "Odin's Temple" Ordinary
+                , Building.new Building.Well ( 11, 18 ) "Secret Entrance" (Building.newLink DungeonLevelOne ( 25, 3 ))
+                ]
 
+        Farm ->
+            let
+                villageGate =
+                    Building.newLink Village ( 11, 1 )
 
-farmBuildings : List Building
-farmBuildings =
-    let
-        villageGate =
-            Building.newLink Village ( 11, 1 )
+                mineExit =
+                    Building.newLink DungeonLevelOne ( 22, 39 )
+            in
+                [ Building.new Gate_NS ( 10, 32 ) "Farm Gate" villageGate
+                , Building.new StrawHouse_WF ( 43, 23 ) "Adopted Parents House" Ordinary
+                , Building.new Building.MineEntrance ( 24, 1 ) "Mine Entrance" mineExit
+                ]
 
-        mineExit =
-            Building.newLink DungeonLevelOne ( 22, 39 )
-    in
-        [ Building.new Gate_NS ( 10, 32 ) "Farm Gate" villageGate
-        , Building.new StrawHouse_WF ( 43, 23 ) "Adopted Parents House" Ordinary
-        , Building.new Building.MineEntrance ( 24, 1 ) "Mine Entrance" mineExit
-        ]
+        DungeonLevelOne ->
+            let
+                mineEntrance =
+                    Building.newLink Farm ( 24, 2 )
+            in
+                [ Building.new Building.MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance ]
 
-
-dungeonLevelOneBuildings : List Building
-dungeonLevelOneBuildings =
-    let
-        mineEntrance =
-            Building.newLink Farm ( 24, 2 )
-    in
-        [ Building.new Building.MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance ]
+        _ ->
+            []
 
 
 

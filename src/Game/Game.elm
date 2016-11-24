@@ -150,6 +150,20 @@ update msg ((A model) as game) =
             , Cmd.none
             )
 
+        Keyboard GoDownstairs ->
+            let
+                ( newMap, seed_ ) =
+                    Random.step (Maps.downStairs model.maps) model.seed
+            in
+                ( A
+                    { model
+                        | maps = newMap
+                        , seed = seed_
+                        , messages = "You go downstairs" :: model.messages
+                    }
+                , Cmd.none
+                )
+
         InventoryMsg msg ->
             let
                 ( inventory_, maybeExitValues ) =
@@ -292,7 +306,11 @@ attackHero monster ({ hero, seed, messages } as model) =
         ( ( msg, heroAfterHit ), seed_ ) =
             Random.step (Combat.attack monster hero) seed
     in
-        { model | messages = msg :: messages, hero = heroAfterHit, seed = seed_ }
+        { model
+            | messages = msg :: messages
+            , hero = heroAfterHit
+            , seed = seed_
+        }
 
 
 enterBuilding : Building -> Model -> Model

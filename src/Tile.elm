@@ -239,6 +239,7 @@ asciiTileMap =
         , ( 'C', White90Cave10 )
         , ( '=', Crop )
         , ( 'e', Well )
+        , ( '>', StairsDown )
         ]
 
 

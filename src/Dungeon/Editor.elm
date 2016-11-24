@@ -43,57 +43,22 @@ init =
     }
 
 
-firstStep : Model -> Generator DungeonGenerator.Model
-firstStep model =
-    case List.head model.dungeonSteps of
-        Just dungeonModel ->
-            DungeonGenerator.step { dungeonModel | config = model.config }
-
-        Nothing ->
-            DungeonGenerator.init model.config
-
-
-generateSteps : Int -> Model -> Generator DungeonGenerator.Model
-generateSteps steps model =
-    let
-        oneStep _ gen =
-            gen |> andThen DungeonGenerator.step
-    in
-        case steps of
-            0 ->
-                firstStep model
-
-            1 ->
-                firstStep model
-
-            n ->
-                List.foldl oneStep (firstStep model) (List.range 0 (n - 1))
-
-
 generateCandidate : Model -> Generator DungeonGenerator.Model
 generateCandidate model =
     let
-        newCandidate model =
-            generateSteps 200 model
+        newCandidate =
+            DungeonGenerator.steps 200 (DungeonGenerator.init model.config)
 
         fitness dungeonModel =
             List.length dungeonModel.rooms > 8
     in
-        (newCandidate model
-            |> Random.map DungeonGenerator.clean
-        )
-            |> andThen
+        Random.map DungeonGenerator.clean newCandidate
+            |> Random.andThen
                 (\dungeonModel ->
-                    let
-                        _ =
-                            Debug.log "Editor.generateCandidate"
-                                { length = List.length dungeonModel.rooms
-                                }
-                    in
-                        if fitness dungeonModel then
-                            constant dungeonModel
-                        else
-                            generateCandidate model
+                    if fitness dungeonModel then
+                        constant dungeonModel
+                    else
+                        generateCandidate model
                 )
 
 
@@ -121,7 +86,14 @@ update msg model =
                     ( model, Cmd.none )
 
         GenerateMap nSteps ->
-            ( model, Random.generate Dungeon (generateSteps nSteps model) )
+            let
+                dungeonModel =
+                    model.dungeonSteps
+                        |> List.reverse
+                        |> List.head
+                        |> Maybe.withDefault (DungeonGenerator.init model.config)
+            in
+                ( model, Random.generate Dungeon (DungeonGenerator.steps nSteps dungeonModel) )
 
         Dungeon dungeonModel ->
             ( { model | dungeonSteps = dungeonModel :: [], map = updateMap dungeonModel }

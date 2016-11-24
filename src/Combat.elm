@@ -304,7 +304,7 @@ hitMsg { att, attr, def, defr } ( damageRoll, maxDamage ) defender =
             []
 
         defaultHitMsg =
-            attr ++ " hit the " ++ def ++ "!"
+            att ++ " scored a hit on " ++ def ++ "!"
 
         defaultCritMsg =
             att ++ " found a weak spot in " ++ defr ++ " defense! Ouch!"
@@ -351,7 +351,7 @@ statusMsg stats =
         else if healthPercent >= 0.5 then
             "It has seen better days."
         else if healthPercent >= 0.4 then
-            "It is bruised and battered, shoulders drooping."
+            "It looks bruised and battered, shoulders drooping."
         else if healthPercent >= 0.3 then
             "It doesn't look like it can handle much more."
         else if healthPercent >= 0.2 then
@@ -359,9 +359,9 @@ statusMsg stats =
         else if healthPercent >= 0.1 then
             "It is bleeding from critical wounds."
         else if healthPercent >= 0.0 then
-            "It looks to be mortally wounded."
+            "It seems to be mortally wounded."
         else if healthPercent >= -0.5 then
-            "It looks clinically dead."
+            "It is clinically dead."
         else if healthPercent >= -1 then
             "It has been well and truly put down. Well done!"
         else
