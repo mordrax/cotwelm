@@ -36,6 +36,7 @@ import Tile exposing (..)
 import GameData.Types exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Html exposing (..)
+import Html.Lazy as Lazy
 import Dict exposing (..)
 import Random.Pcg as Random exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
@@ -133,7 +134,7 @@ downStairs (A model) =
 
             Nothing ->
                 DungeonGenerator.generate Config.init
-                    |> Random.map (\map -> Array.push (Level map []) model.abandonedMines)
+                    |> Random.map (\level -> Array.push level model.abandonedMines)
                     |> Random.map
                         (\abandonedMines ->
                             A
@@ -151,6 +152,11 @@ updateArea area (A model) =
 
 view : Maps -> Html a
 view maps =
+    Lazy.lazy view_ maps
+
+
+view_ : Maps -> Html a
+view_ maps =
     let
         map =
             currentAreaMap maps
