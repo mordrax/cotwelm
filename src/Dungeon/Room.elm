@@ -77,6 +77,9 @@ init =
         , worldPos = Vector.zero
         }
 
+floors : Room -> Vectors
+floors (A {floors, worldPos}) =
+    List.map (Vector.add worldPos) floors
 
 new : Entrances -> Floors -> RoomType -> Dimension -> Vector -> Room
 new entrances floors roomType dimension worldPos =
@@ -200,10 +203,6 @@ addEntrance entrance (A ({ worldPos, entrances } as model)) =
         entrancePosition =
             Vector.sub (Entrance.position entrance) worldPos
 
-        _ =
-            Debug.log "addEntrance"
-                { entrancePosition = entrancePosition
-                }
     in
         A { model | entrances = entrance :: entrances }
 
@@ -220,8 +219,6 @@ removeEntrance entrance (A ({ entrances, worldPos } as model)) =
 toTiles : Room -> Tiles
 toTiles (A { floors, entrances, worldPos }) =
     let
-        --        _ =
-        --            Debug.log "Room.toTiles" entrances
         toWorldPos localPos =
             Vector.add worldPos localPos
 
@@ -281,12 +278,6 @@ placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
                 |> Set.fromList
                 |> flip Set.diff (Set.fromList floors)
                 |> Set.toList
-
-        _ =
-            Debug.log "Room.placeRoom"
-                { floors = floors
-                , candidateWalls = candidateWalls
-                }
 
         pickAWall walls =
             walls

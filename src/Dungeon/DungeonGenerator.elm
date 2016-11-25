@@ -14,6 +14,8 @@ import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Corridor as Corridor exposing (..)
 import Dungeon.Room as Room exposing (..)
+import GameData.Building as Building exposing (Building, Buildings)
+import GameData.Types as Types
 import Dice exposing (..)
 import Random.Pcg as Random exposing (..)
 import Tile exposing (..)
@@ -62,6 +64,7 @@ type alias Model =
     , corridors : Corridors
     , activePoints : ActivePoints
     , walls : Tiles
+    , buildings : Buildings
     }
 
 
@@ -76,7 +79,7 @@ type ActivePoint
 
 init : Config.Model -> Model
 init config =
-    Model config [] [] [] []
+    Model config [] [] [] [] []
 
 
 type alias Map =
@@ -130,16 +133,10 @@ clean ({ rooms, corridors, activePoints } as model) =
                 case firstObstacle startDirectionVector startPosition modelWithRemainingPoints of
                     -- hits map edge, no obstacles
                     ( Maybe.Nothing, Maybe.Nothing, _, _ ) ->
-                        let
-                            _ =
-                                Debug.log "Clean - hitting edge, create dead end"
-                                    { deadEndPosition = (Vector.add startPosition startDirectionVector)
-                                    }
-                        in
-                            clean
-                                { modelWithInactiveCorridorRemainingPoints
-                                    | rooms = Room.newDeadEnd (Vector.add startPosition startDirectionVector) :: rooms
-                                }
+                        clean
+                            { modelWithInactiveCorridorRemainingPoints
+                                | rooms = Room.newDeadEnd (Vector.add startPosition startDirectionVector) :: rooms
+                            }
 
                     -- hits a room, join to the room with a door
                     ( Just room, _, newCorridorEndPosition, newEntrancePosition ) ->
@@ -150,13 +147,13 @@ clean ({ rooms, corridors, activePoints } as model) =
                             room_ =
                                 Room.addEntrance (Entrance.init Door newEntrancePosition) room
 
-                            _ =
-                                Debug.log "Clean - join room"
-                                    { corridor = Corridor.pp corridor
-                                    , newEndPoint = ( newCorridorEndPosition, startDirection )
-                                    , room = Room.pp room
-                                    , newEntrance = (Entrance.init Door newEntrancePosition)
-                                    }
+                            --                            _ =
+                            --                                Debug.log "Clean - join room"
+                            --                                    { corridor = Corridor.pp corridor
+                            --                                    , newEndPoint = ( newCorridorEndPosition, startDirection )
+                            --                                    , room = Room.pp room
+                            --                                    , newEntrance = (Entrance.init Door newEntrancePosition)
+                            --                                    }
                         in
                             modelWithRemainingPoints
                                 |> addCorridor corridor_
@@ -172,12 +169,12 @@ clean ({ rooms, corridors, activePoints } as model) =
                             joinedCorridor_ =
                                 Corridor.addEntrance joinedCorridorNewFloor joinedCorridor
 
-                            _ =
-                                Debug.log "DungeonGenerator join corridor"
-                                    { corridor = Corridor.pp corridor
-                                    , corridorNewEnd = ( newCorridorEndPosition, startDirection )
-                                    , joinedCorridorNewFloor = joinedCorridorNewFloor
-                                    }
+                            --                            _ =
+                            --                                Debug.log "DungeonGenerator join corridor"
+                            --                                    { corridor = Corridor.pp corridor
+                            --                                    , corridorNewEnd = ( newCorridorEndPosition, startDirection )
+                            --                                    , joinedCorridorNewFloor = joinedCorridorNewFloor
+                            --                                    }
                         in
                             modelWithRemainingPoints
                                 |> addCorridor corridor_
@@ -197,8 +194,8 @@ clean ({ rooms, corridors, activePoints } as model) =
 addWalls : Model -> Model
 addWalls model =
     let
-        map =
-            toMap model
+        { map } =
+            toLevel model
 
         mapPoints =
             Dict.keys map
@@ -415,25 +412,54 @@ activePointToCorridor activePoint =
             Nothing
 
 
-generate : Config.Model -> Generator Map
-generate config =
-    let
-        candidate =
-            init config
-                |> steps 200
-                |> Random.map clean
+candidate : Config.Model -> Generator Model
+candidate config =
+    init config
+        |> steps 200
+        |> Random.map clean
 
+
+generate : Config.Model -> Generator Level
+generate config =
+    generate_ config
+        |> Random.map toLevel
+
+
+generate_ : Config.Model -> Generator Model
+generate_ config =
+    let
         fitness model =
-            List.length model.rooms > 8
+            List.length model.rooms > config.minRooms
+
+        regenerateIfNotFit candidate =
+            if Debug.log "Candidate fit?: " (fitness candidate) then
+                constant candidate
+            else
+                generate_ config
     in
-        candidate
-            |> Random.andThen
-                (\candidate ->
-                    if fitness candidate then
-                        constant <| toMap candidate
-                    else
-                        generate config
-                )
+        candidate config
+            |> Random.andThen regenerateIfNotFit
+            |> Random.andThen addUpstairs
+
+
+addUpstairs : Model -> Generator Model
+addUpstairs model =
+    let
+        newStairs pos =
+            Building.new Building.StairsUp pos "UpStairs" (Building.LinkType <| Building.Link Types.DungeonLevelOne ( 10, 12 ))
+
+        addStairs pos =
+            { model | buildings = newStairs pos :: model.buildings }
+    in
+        case List.head model.rooms of
+            Just room ->
+                Room.floors room
+                    |> Random.sample
+                    |> Random.map (Maybe.withDefault <| Room.position room)
+                    |> Random.map addStairs
+
+            Nothing ->
+                Debug.crash "No rooms in level, but rooms should be guaranteed"
 
 
 steps : Int -> Model -> Generator Model
@@ -464,13 +490,6 @@ step model =
 
                 ActiveCorridor corridor ->
                     Corridor.pp corridor
-
-        print steppedModel =
-            Debug.log "DungeonGenerator.step"
-                { rooms = List.map Room.pp steppedModel.rooms
-                , corridors = List.map Corridor.pp steppedModel.corridors
-                , activePoints = List.map printPoint steppedModel.activePoints
-                }
     in
         shuffle model.activePoints
             |> Random.andThen
@@ -646,11 +665,11 @@ canFitCorridor model corridor =
         canFit =
             List.isEmpty overlappingTiles
 
-        _ =
-            Debug.log "DungeonGenerator.canFitCorridor"
-                { canFit = canFit
-                , corridor = Corridor.pp corridor
-                }
+        --        _ =
+        --            Debug.log "DungeonGenerator.canFitCorridor"
+        --                { canFit = canFit
+        --                , corridor = Corridor.pp corridor
+        --                }
     in
         canFit && withinBounds
 
@@ -678,11 +697,11 @@ canFitRoom model room =
         collisions =
             Set.toList <| Set.intersect roomPositionSet modelPositions
 
-        _ =
-            Debug.log "DungeonGenerator.canFitRoom"
-                { collisions = collisions
-                , roomPosition = roomPositions
-                }
+        --        _ =
+        --            Debug.log "DungeonGenerator.canFitRoom"
+        --                { collisions = collisions
+        --                , roomPosition = roomPositions
+        --                }
     in
         withinBounds && List.isEmpty collisions
 
@@ -693,11 +712,18 @@ canFitRoom model room =
 ------------------
 
 
-toMap : Model -> Map
-toMap model =
+toLevel : Model -> Level
+toLevel ({ buildings } as model) =
     model
         |> toTiles
         |> fromTiles
+        |> \x -> Level x buildings
+
+
+type alias Level =
+    { map : Map
+    , buildings : Buildings
+    }
 
 
 fromTiles : Tiles -> Map

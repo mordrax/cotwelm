@@ -2,6 +2,7 @@ module GameData.Building
     exposing
         ( Building
         , Buildings
+        , Link
         , BuildingType(..)
         , BuildingTile(..)
         , new
@@ -66,6 +67,8 @@ type BuildingTile
     | HutTemple_NF
     | MineEntrance
     | Well
+    | StairsDown
+    | StairsUp
 
 
 newLink : Area -> Vector -> BuildingType
@@ -130,4 +133,10 @@ new buildingTile pos name buildingType =
                 newBuilding ( 0, 0 ) ( 1, 1 )
 
             Well ->
+                newBuilding ( 0, 0 ) ( 1, 1 )
+
+            StairsDown ->
+                newBuilding ( 0, 0 ) ( 1, 1 )
+
+            StairsUp ->
                 newBuilding ( 0, 0 ) ( 1, 1 )

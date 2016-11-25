@@ -30,6 +30,7 @@ type alias Model =
     , mapScale : Float
     , maxEntrances : Int
     , corridor : CorridorConfig
+    , minRooms : Int
     }
 
 
@@ -69,7 +70,7 @@ type Msg
 
 init : Model
 init =
-    { dungeonSize = 100
+    { dungeonSize = 50
     , corridor =
         { minLength = 10
         , maxLength = 20
@@ -83,6 +84,7 @@ init =
         , diagonalSquares = RoomConfig ( 4, 10 ) 0
         , deadEnd = RoomConfig ( 1, 1 ) 0
         }
+    , minRooms = 4
     , mapScale = 0.2
     , maxEntrances = 4
     }
