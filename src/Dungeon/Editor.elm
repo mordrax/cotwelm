@@ -10,7 +10,7 @@ import Game.Maps as Maps exposing (..)
 
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
-
+import Level
 
 -- libs
 
@@ -20,7 +20,7 @@ import Random.Pcg as Random exposing (..)
 
 
 type alias Model =
-    { map : Maps.Map
+    { map : Level.Map
     , config : Config.Model
     , dungeonSteps : List DungeonGenerator.Model
     }
@@ -107,7 +107,7 @@ update msg model =
             ( { model | map = Dict.empty, dungeonSteps = [] }, Cmd.none )
 
 
-updateMap : DungeonGenerator.Model -> Map
+updateMap : DungeonGenerator.Model -> Level.Map
 updateMap dungeonModel =
     dungeonModel
         |> DungeonGenerator.toTiles

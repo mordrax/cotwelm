@@ -22,6 +22,7 @@ import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item
 import Item.Data exposing (..)
+import Level
 import Monster.Monster as Monster exposing (Monster)
 import Monster.Monsters as Monsters exposing (..)
 import Pages.Inventory as Inventory exposing (Inventory)
@@ -152,17 +153,43 @@ update msg ((A model) as game) =
 
         Keyboard GoDownstairs ->
             let
-                ( newMap, seed_ ) =
-                    Random.step (Maps.downStairs model.maps) model.seed
+                atHeroPosition =
+                    (==) model.hero.position
+
+                isOnStairs =
+                    Maps.currentLevel model.maps
+                        |> Level.downstairs
+                        |> Maybe.map .pos
+                        |> Maybe.map atHeroPosition
             in
-                ( A
-                    { model
-                        | maps = newMap
-                        , seed = seed_
-                        , messages = "You go downstairs" :: model.messages
-                    }
-                , Cmd.none
-                )
+                case isOnStairs of
+                    Just True ->
+                        let
+                            ( newMap, seed_ ) =
+                                Random.step (Maps.downStairs model.maps) model.seed
+
+                            heroAtBottomOfStairs =
+                                Maps.currentLevel newMap
+                                    |> Level.upstairs
+                                    |> Debug.log "upstairs"
+                                    |> Maybe.map .pos
+                                    |> Maybe.map (flip Hero.teleport model.hero)
+                                    |> Maybe.withDefault model.hero
+                        in
+                            ( A
+                                { model
+                                    | maps = newMap
+                                    , hero = heroAtBottomOfStairs
+                                    , seed = seed_
+                                    , messages = "You go downstairs" :: model.messages
+                                }
+                            , Cmd.none
+                            )
+
+                    _ ->
+                        ( A { model | messages = "You need to be on some stairs!" :: model.messages }
+                        , Cmd.none
+                        )
 
         InventoryMsg msg ->
             let
@@ -204,6 +231,11 @@ update msg ((A model) as game) =
 
         WindowSize size ->
             ( A { model | windowSize = size }, Cmd.none )
+
+
+newMessage : String -> Model -> Model
+newMessage msg model =
+    { model | messages = msg :: model.messages }
 
 
 
@@ -315,21 +347,31 @@ attackHero monster ({ hero, seed, messages } as model) =
 
 enterBuilding : Building -> Model -> Model
 enterBuilding building ({ hero, maps } as model) =
-    case Building.buildingType building of
-        Building.LinkType link ->
-            { model
-                | maps = Maps.updateArea link.area maps
-                , hero = Hero.teleport link.pos hero
-            }
+    let
+        modelWithHeroMoved =
+            { model | hero = Hero.teleport building.pos hero }
+    in
+        case Building.buildingType building of
+            Building.Linked link ->
+                { model
+                    | maps = Maps.updateArea link.area maps
+                    , hero = Hero.teleport link.pos hero
+                }
 
-        Building.Shop shopType ->
-            { model
-                | currentScreen = BuildingScreen building
-                , inventory = Inventory.init (Just <| Shops.shop shopType model.shops) hero.equipment
-            }
+            Building.Shop shopType ->
+                { model
+                    | currentScreen = BuildingScreen building
+                    , inventory = Inventory.init (Just <| Shops.shop shopType model.shops) hero.equipment
+                }
 
-        Building.Ordinary ->
-            { model | currentScreen = BuildingScreen building }
+            Building.Ordinary ->
+                { model | currentScreen = BuildingScreen building }
+
+            Building.StairUp ->
+                modelWithHeroMoved
+
+            Building.StairDown ->
+                modelWithHeroMoved
 
 
 {-| Given a position and a map, work out everything on the square
@@ -338,10 +380,15 @@ queryPosition : Vector -> Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
 queryPosition pos ({ hero, maps, monsters } as model) =
     let
         maybeTile =
-            Dict.get pos (Maps.currentAreaMap maps)
+            maps
+                |> Maps.currentLevel
+                |> Level.getTile pos
+
+        level =
+            Maps.currentLevel maps
 
         maybeBuilding =
-            buildingAtPosition pos (Maps.getBuildings maps)
+            buildingAtPosition pos level.buildings
 
         maybeMonster =
             monsters
@@ -486,7 +533,7 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model
             }
 
         ( mapWidth, mapHeight ) =
-            (Maps.mapSize (Maps.currentAreaMap maps))
+            (Level.size (Maps.currentLevel maps))
 
         newX =
             if prevX /= curX && (scroll.left || scroll.right) then

@@ -32,11 +32,7 @@ type alias Buildings =
     List Building
 
 
-type Building
-    = BM Model
-
-
-type alias Model =
+type alias Building =
     { tile : BuildingTile
     , entry : Vector
     , pos : Vector
@@ -53,7 +49,9 @@ type alias Link =
 
 
 type BuildingType
-    = LinkType Link
+    = Linked Link
+    | StairUp
+    | StairDown
     | Shop ShopType
     | Ordinary
 
@@ -73,11 +71,11 @@ type BuildingTile
 
 newLink : Area -> Vector -> BuildingType
 newLink area pos =
-    (LinkType <| Link area pos)
+    (Linked <| Link area pos)
 
 
 view : Building -> Html a
-view (BM model) =
+view model =
     let
         posStyle =
             Lib.vectorToHtmlStyle model.pos
@@ -88,7 +86,7 @@ view (BM model) =
 {-| Given a point and a building, will return true if the point is within the building
 -}
 isBuildingAtPosition : Vector -> Building -> Bool
-isBuildingAtPosition pos (BM model) =
+isBuildingAtPosition pos model =
     let
         bottomLeft =
             Vector.sub (Vector.add model.pos model.size) ( 1, 1 )
@@ -97,7 +95,7 @@ isBuildingAtPosition pos (BM model) =
 
 
 buildingType : Building -> BuildingType
-buildingType (BM model) =
+buildingType model =
     model.buildingType
 
 
@@ -108,7 +106,7 @@ new buildingTile pos name buildingType =
     let
         newBuilding =
             \entry size ->
-                BM <| Model buildingTile entry pos name size buildingType
+                Building buildingTile entry pos name size buildingType
     in
         case buildingTile of
             Gate_NS ->

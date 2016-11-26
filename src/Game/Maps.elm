@@ -1,7 +1,6 @@
 module Game.Maps
     exposing
         ( Maps
-        , Map
         , Msg
         , init
         , update
@@ -9,11 +8,8 @@ module Game.Maps
         , view
         , draw
         , fromTiles
-        , currentAreaMap
-        , mapSize
+        , currentLevel
         , getASCIIMap
-        , getBuildings
-        , getTile
         , tileNeighbours
         , toScreenCoords
         , downStairs
@@ -43,6 +39,7 @@ import Dungeon.Rooms.Config as Config exposing (..)
 import Shops
 import Array.Hamt as Array exposing (Array)
 import Dungeon.DungeonGenerator as DungeonGenerator
+import Level exposing (Level)
 
 
 type Maps
@@ -56,20 +53,6 @@ type alias Model =
     , abandonedMinesEntry : Level
     , abandonedMines : Array Level
     }
-
-
-type alias Map =
-    Dict Vector Tile
-
-
-type alias Level =
-    { map : Map
-    , buildings : Buildings
-    }
-
-
-type alias Dimension =
-    Vector
 
 
 type Msg
@@ -158,16 +141,16 @@ view maps =
 view_ : Maps -> Html a
 view_ maps =
     let
-        map =
-            currentAreaMap maps
+        level =
+            currentLevel maps
 
         buildingsHtml =
-            List.map Building.view (getBuildings maps)
+            List.map Building.view (level.buildings)
     in
-        div [] (draw map 1.0 ++ buildingsHtml)
+        div [] (draw level.map 1.0 ++ buildingsHtml)
 
 
-fromTiles : Tiles -> Map
+fromTiles : Tiles -> Level.Map
 fromTiles tiles =
     let
         toKVPair tile =
@@ -178,7 +161,7 @@ fromTiles tiles =
             |> Dict.fromList
 
 
-draw : Map -> Float -> List (Html a)
+draw : Level.Map -> Float -> List (Html a)
 draw map scale =
     let
         neighbours center =
@@ -193,17 +176,12 @@ draw map scale =
         List.map toHtml mapTiles
 
 
-toTiles : Map -> List Tile
+toTiles : Level.Map -> List Tile
 toTiles =
     Dict.toList >> List.map Tuple.second
 
 
-getTile : Map -> Vector -> Maybe Tile
-getTile map pos =
-    Dict.get pos map
-
-
-toScreenCoords : Map -> Int -> Map
+toScreenCoords : Level.Map -> Int -> Level.Map
 toScreenCoords map mapSize =
     let
         invertY ( ( x, y ), tile ) =
@@ -217,8 +195,8 @@ toScreenCoords map mapSize =
 
 {-| Get the map for the current area
 -}
-currentArea : Maps -> Level
-currentArea (A model) =
+currentLevel : Maps -> Level
+currentLevel (A model) =
     case model.currentArea of
         Village ->
             model.village
@@ -233,32 +211,6 @@ currentArea (A model) =
             model.abandonedMines
                 |> Array.get level
                 |> Maybe.withDefault model.abandonedMinesEntry
-
-
-currentAreaMap : Maps -> Map
-currentAreaMap maps =
-    .map (currentArea maps)
-
-
-{-| Get the buildings in the current area
--}
-getBuildings : Maps -> List Building
-getBuildings maps =
-    .buildings (currentArea maps)
-
-
-{-| Get the width and height of a map
--}
-mapSize : Map -> Dimension
-mapSize map =
-    let
-        positions =
-            Dict.keys map
-
-        ( maxX, maxY ) =
-            List.foldr (\( a, b ) ( c, d ) -> ( max a c, max b d )) ( 0, 0 ) positions
-    in
-        ( maxX + 1, maxY + 1 )
 
 
 {-| Get the ascii map for a specific area.
@@ -324,7 +276,9 @@ buildingsOfArea area =
                 mineEntrance =
                     Building.newLink Farm ( 24, 2 )
             in
-                [ Building.new Building.MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance ]
+                [ Building.new Building.MineEntrance ( 22, 40 ) "Mine Exit" mineEntrance
+                , Building.new Building.StairsDown ( 25, 2 ) "Down stairs" Building.StairDown
+                ]
 
         _ ->
             []
@@ -338,7 +292,7 @@ buildingsOfArea area =
 
 {-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
 -}
-tileNeighbours : Map -> Vector -> TileNeighbours
+tileNeighbours : Level.Map -> Vector -> TileNeighbours
 tileNeighbours map center =
     let
         addTilePosition =
