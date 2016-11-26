@@ -121,52 +121,80 @@ init seed hero difficulty =
 
 update : Msg -> Game -> ( Game, Cmd Msg )
 update msg ((A model) as game) =
-    case msg of
-        Keyboard (KeyDir dir) ->
-            ( model
-                |> moveHero dir
-                |> updateViewportOffset (Hero.position model.hero)
-                |> (\model -> moveMonsters model.monsters [] model)
-                |> A
-            , Cmd.none
-            )
+    let
+        atHeroPosition =
+            (==) model.hero.position
 
-        Keyboard Esc ->
-            case model.currentScreen of
-                MapScreen ->
-                    ( A model, Cmd.none )
+        isOnStairs upOrDownStairs =
+            Maps.currentLevel model.maps
+                |> upOrDownStairs
+                |> Maybe.map .pos
+                |> Maybe.map atHeroPosition
+    in
+        case msg of
+            Keyboard (KeyDir dir) ->
+                ( model
+                    |> moveHero dir
+                    |> updateViewportOffset (Hero.position model.hero)
+                    |> (\model -> moveMonsters model.monsters [] model)
+                    |> A
+                , Cmd.none
+                )
 
-                BuildingScreen _ ->
-                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
+            Keyboard Esc ->
+                case model.currentScreen of
+                    MapScreen ->
+                        ( A model, Cmd.none )
 
-                InventoryScreen ->
-                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
+                    BuildingScreen _ ->
+                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
 
-        Keyboard Inventory ->
-            ( A
-                { model
-                    | currentScreen = InventoryScreen
-                    , inventory = Inventory.init Nothing model.hero.equipment
-                }
-            , Cmd.none
-            )
+                    InventoryScreen ->
+                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
 
-        Keyboard GoDownstairs ->
-            let
-                atHeroPosition =
-                    (==) model.hero.position
+            Keyboard Inventory ->
+                ( A
+                    { model
+                        | currentScreen = InventoryScreen
+                        , inventory = Inventory.init Nothing model.hero.equipment
+                    }
+                , Cmd.none
+                )
 
-                isOnStairs =
-                    Maps.currentLevel model.maps
-                        |> Level.downstairs
-                        |> Maybe.map .pos
-                        |> Maybe.map atHeroPosition
-            in
-                case isOnStairs of
+            Keyboard GoUpstairs ->
+                case isOnStairs Level.upstairs of
+                    Just True ->
+                        let
+                            map_ =
+                                Maps.upstairs model.maps
+
+                            heroAtTopOfStairs =
+                                Maps.currentLevel map_
+                                    |> Level.downstairs
+                                    |> Maybe.map .pos
+                                    |> Maybe.map (flip Hero.teleport model.hero)
+                                    |> Maybe.withDefault model.hero
+                        in
+                            ( A
+                                { model
+                                    | maps = map_
+                                    , hero = heroAtTopOfStairs
+                                    , messages = "You climb back up the stairs" :: model.messages
+                                }
+                            , Cmd.none
+                            )
+
+                    _ ->
+                        ( A { model | messages = "You need to be on some stairs!" :: model.messages }
+                        , Cmd.none
+                        )
+
+            Keyboard GoDownstairs ->
+                case isOnStairs Level.downstairs of
                     Just True ->
                         let
                             ( newMap, seed_ ) =
-                                Random.step (Maps.downStairs model.maps) model.seed
+                                Random.step (Maps.downstairs model.maps) model.seed
 
                             heroAtBottomOfStairs =
                                 Maps.currentLevel newMap
@@ -191,46 +219,46 @@ update msg ((A model) as game) =
                         , Cmd.none
                         )
 
-        InventoryMsg msg ->
-            let
-                ( inventory_, maybeExitValues ) =
-                    Inventory.update msg model.inventory
-            in
-                case maybeExitValues of
-                    Nothing ->
-                        ( A { model | inventory = inventory_ }, Cmd.none )
+            InventoryMsg msg ->
+                let
+                    ( inventory_, maybeExitValues ) =
+                        Inventory.update msg model.inventory
+                in
+                    case maybeExitValues of
+                        Nothing ->
+                            ( A { model | inventory = inventory_ }, Cmd.none )
 
-                    Just ( equipment, maybeShop ) ->
-                        let
-                            modelWithHeroAndInventory =
-                                { model
-                                    | inventory = inventory_
-                                    , hero = Hero.updateEquipment equipment model.hero
-                                    , currentScreen = MapScreen
-                                }
-                        in
-                            case maybeShop of
-                                Nothing ->
-                                    ( A modelWithHeroAndInventory
-                                    , Cmd.none
-                                    )
+                        Just ( equipment, maybeShop ) ->
+                            let
+                                modelWithHeroAndInventory =
+                                    { model
+                                        | inventory = inventory_
+                                        , hero = Hero.updateEquipment equipment model.hero
+                                        , currentScreen = MapScreen
+                                    }
+                            in
+                                case maybeShop of
+                                    Nothing ->
+                                        ( A modelWithHeroAndInventory
+                                        , Cmd.none
+                                        )
 
-                                Just shop ->
-                                    ( A
-                                        { modelWithHeroAndInventory
-                                            | shops = Shops.updateShop shop model.shops
-                                        }
-                                    , Cmd.none
-                                    )
+                                    Just shop ->
+                                        ( A
+                                            { modelWithHeroAndInventory
+                                                | shops = Shops.updateShop shop model.shops
+                                            }
+                                        , Cmd.none
+                                        )
 
-        MapsMsg msg ->
-            ( A { model | maps = Maps.update msg model.maps }, Cmd.none )
+            MapsMsg msg ->
+                ( A { model | maps = Maps.update msg model.maps }, Cmd.none )
 
-        Keyboard _ ->
-            ( A model, Cmd.none )
+            Keyboard _ ->
+                ( A model, Cmd.none )
 
-        WindowSize size ->
-            ( A { model | windowSize = size }, Cmd.none )
+            WindowSize size ->
+                ( A { model | windowSize = size }, Cmd.none )
 
 
 newMessage : String -> Model -> Model
