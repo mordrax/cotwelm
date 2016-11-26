@@ -12,7 +12,8 @@ module Game.Maps
         , getASCIIMap
         , tileNeighbours
         , toScreenCoords
-        , downStairs
+        , downstairs
+        , upstairs
         )
 
 {-| Handles rendering of all the static/dynamic game areas
@@ -97,8 +98,25 @@ update msg (A model) =
         (A { model | currentArea = Village })
 
 
-downStairs : Maps -> Generator Maps
-downStairs (A model) =
+upstairs : Maps -> Maps
+upstairs (A model) =
+    let
+        modelWithArea area =
+            { model | currentArea = area }
+    in
+        case model.currentArea of
+            DungeonLevel 0 ->
+                A <| modelWithArea DungeonLevelOne
+
+            DungeonLevel n ->
+                A <| modelWithArea (DungeonLevel (n - 1))
+
+            _ ->
+                A <| modelWithArea Farm
+
+
+downstairs : Maps -> Generator Maps
+downstairs (A model) =
     let
         nextLevel =
             case model.currentArea of
