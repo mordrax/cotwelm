@@ -431,12 +431,12 @@ generate_ config =
         regenerateIfNotFit candidate =
             if Debug.log "Candidate fit?: " (fitness candidate) then
                 constant candidate
+                    |> Random.andThen addStairs
             else
                 generate_ config
     in
         candidate config
             |> Random.andThen regenerateIfNotFit
-            |> Random.andThen addStairs
 
 
 addStairs : Model -> Generator Model
