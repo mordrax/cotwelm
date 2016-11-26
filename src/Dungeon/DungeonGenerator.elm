@@ -26,6 +26,7 @@ import Utils.Direction exposing (..)
 import Maybe.Extra exposing (..)
 import Dict exposing (Dict)
 import Set
+import Level
 
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
@@ -80,10 +81,6 @@ type ActivePoint
 init : Config.Model -> Model
 init config =
     Model config [] [] [] [] []
-
-
-type alias Map =
-    Dict Vector Tile
 
 
 {-| Removes active entrances from rooms and
@@ -214,7 +211,7 @@ addWalls model =
         { model | walls = walls }
 
 
-calculateTypeOfWall : Map -> Vector -> Tile
+calculateTypeOfWall : Level.Map -> Vector -> Tile
 calculateTypeOfWall map position =
     case ( hasAdjacentFloors position map, hasThreeOrMoreNeighbourFloors position map ) of
         ( True, True ) ->
@@ -245,17 +242,17 @@ adjacentNeighbourTriplets =
     ]
 
 
-hasThreeOrMoreNeighbourFloors : Vector -> Map -> Bool
+hasThreeOrMoreNeighbourFloors : Vector -> Level.Map -> Bool
 hasThreeOrMoreNeighbourFloors position map =
     allDirectionsAreFloors adjacentNeighbourTriplets position map
 
 
-hasAdjacentFloors : Vector -> Map -> Bool
+hasAdjacentFloors : Vector -> Level.Map -> Bool
 hasAdjacentFloors position map =
     allDirectionsAreFloors adjacentNeighbourPairs position map
 
 
-allDirectionsAreFloors : List Directions -> Vector -> Map -> Bool
+allDirectionsAreFloors : List Directions -> Vector -> Level.Map -> Bool
 allDirectionsAreFloors neighbourDirections position map =
     let
         toNeighbours directions =
@@ -274,7 +271,7 @@ allDirectionsAreFloors neighbourDirections position map =
             |> List.any isFloorTiles
 
 
-neighbours : Vector -> Map -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
+neighbours : Vector -> Level.Map -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
 neighbours position map =
     let
         getTile direction =
@@ -419,7 +416,7 @@ candidate config =
         |> Random.map clean
 
 
-generate : Config.Model -> Generator Level
+generate : Config.Model -> Generator Level.Level
 generate config =
     generate_ config
         |> Random.map toLevel
@@ -439,27 +436,36 @@ generate_ config =
     in
         candidate config
             |> Random.andThen regenerateIfNotFit
-            |> Random.andThen addUpstairs
+            |> Random.andThen addStairs
 
 
-addUpstairs : Model -> Generator Model
-addUpstairs model =
+addStairs : Model -> Generator Model
+addStairs model =
     let
-        newStairs pos =
-            Building.new Building.StairsUp pos "UpStairs" (Building.LinkType <| Building.Link Types.DungeonLevelOne ( 10, 12 ))
+        upstairs pos =
+            Building.new Building.StairsUp pos "UpStairs" Building.StairUp
 
-        addStairs pos =
-            { model | buildings = newStairs pos :: model.buildings }
+        downstairs pos =
+            Building.new Building.StairsDown pos "DownStairs" Building.StairDown
+
+        addStairs stairs model =
+            { model | buildings = stairs :: model.buildings }
+
+        makeUpDownStairs floors =
+            case floors of
+                first :: second :: _ ->
+                    model
+                        |> addStairs (upstairs first)
+                        |> addStairs (downstairs second)
+
+                _ ->
+                    Debug.crash "Tis not good, dungeon does not have two tiles of floors."
     in
-        case List.head model.rooms of
-            Just room ->
-                Room.floors room
-                    |> Random.sample
-                    |> Random.map (Maybe.withDefault <| Room.position room)
-                    |> Random.map addStairs
-
-            Nothing ->
-                Debug.crash "No rooms in level, but rooms should be guaranteed"
+        model.rooms
+            |> List.map Room.floors
+            |> List.concat
+            |> shuffle
+            |> Random.map makeUpDownStairs
 
 
 steps : Int -> Model -> Generator Model
@@ -712,21 +718,15 @@ canFitRoom model room =
 ------------------
 
 
-toLevel : Model -> Level
+toLevel : Model -> Level.Level
 toLevel ({ buildings } as model) =
     model
         |> toTiles
         |> fromTiles
-        |> \x -> Level x buildings
+        |> \x -> Level.Level x buildings
 
 
-type alias Level =
-    { map : Map
-    , buildings : Buildings
-    }
-
-
-fromTiles : Tiles -> Map
+fromTiles : Tiles -> Level.Map
 fromTiles tiles =
     let
         toKVPair tile =
