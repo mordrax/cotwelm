@@ -5,6 +5,7 @@ module Game.Maps
         , init
         , update
         , updateArea
+        , updateCurrentLevel
         , view
         , draw
         , fromTiles
@@ -149,6 +150,22 @@ downstairs (A model) =
 updateArea : GameData.Types.Area -> Maps -> Maps
 updateArea area (A model) =
     A { model | currentArea = area }
+
+
+updateCurrentLevel : Level -> Maps -> Maps
+updateCurrentLevel level (A model) =
+    case model.currentArea of
+        Village ->
+            A { model | village = level }
+
+        Farm ->
+            A { model | farm = level }
+
+        DungeonLevelOne ->
+            A { model | abandonedMinesEntry = level }
+
+        DungeonLevel n ->
+            A { model | abandonedMines = Array.set n level model.abandonedMines }
 
 
 view : Vector -> Vector -> Maps -> Html a

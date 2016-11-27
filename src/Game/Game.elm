@@ -20,7 +20,7 @@ import Hero.Hero as Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
-import Item.Item as Item
+import Item.Item as Item exposing (Item)
 import Item.Data exposing (..)
 import Level
 import Monster.Monster as Monster exposing (Monster)
@@ -37,6 +37,7 @@ import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
 import Utils.Lib as Lib
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
+import Container exposing (Container)
 
 
 type Game
@@ -99,6 +100,9 @@ init seed hero difficulty =
                 [ Cmd.map MapsMsg mapCmd
                 , initialWindowSizeCmd
                 ]
+
+        ground =
+            getGroundAtHero heroWithDefaultEquipment maps
     in
         ( A
             { name = "A new game"
@@ -107,7 +111,7 @@ init seed hero difficulty =
             , currentScreen = MapScreen
             , shops = shops
             , idGen = idGenerator_
-            , inventory = Inventory.init Nothing heroWithDefaultEquipment.equipment
+            , inventory = Inventory.init (Inventory.Ground ground) heroWithDefaultEquipment.equipment
             , monsters = monsters
             , seed = seed__
             , messages = [ "Welcome to castle of the winds!" ]
@@ -153,13 +157,17 @@ update msg ((A model) as game) =
                         update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
 
             Keyboard Inventory ->
-                ( A
-                    { model
-                        | currentScreen = InventoryScreen
-                        , inventory = Inventory.init Nothing model.hero.equipment
-                    }
-                , Cmd.none
-                )
+                let
+                    ground =
+                        getGroundAtHero model.hero model.maps
+                in
+                    ( A
+                        { model
+                            | currentScreen = InventoryScreen
+                            , inventory = Inventory.init (Inventory.Ground ground) model.hero.equipment
+                        }
+                    , Cmd.none
+                    )
 
             Keyboard GoUpstairs ->
                 case isOnStairs Level.upstairs of
@@ -228,7 +236,7 @@ update msg ((A model) as game) =
                         Nothing ->
                             ( A { model | inventory = inventory_ }, Cmd.none )
 
-                        Just ( equipment, maybeShop ) ->
+                        Just ( equipment, merchant ) ->
                             let
                                 modelWithHeroAndInventory =
                                     { model
@@ -237,13 +245,30 @@ update msg ((A model) as game) =
                                         , currentScreen = MapScreen
                                     }
                             in
-                                case maybeShop of
-                                    Nothing ->
-                                        ( A modelWithHeroAndInventory
-                                        , Cmd.none
-                                        )
+                                case merchant of
+                                    Inventory.Ground container ->
+                                        let
+                                            heroPosition =
+                                                Hero.position model.hero
 
-                                    Just shop ->
+                                            tile =
+                                                getTileAtHero model.hero model.maps
+                                                    |> Tile.updateGround container
+
+                                            level_ =
+                                                Level.updateTile heroPosition tile (Maps.currentLevel model.maps)
+
+                                            maps_ =
+                                                Maps.updateCurrentLevel level_ model.maps
+                                        in
+                                            ( A
+                                                { modelWithHeroAndInventory
+                                                    | maps = maps_
+                                                }
+                                            , Cmd.none
+                                            )
+
+                                    Inventory.Shop shop ->
                                         ( A
                                             { modelWithHeroAndInventory
                                                 | shops = Shops.updateShop shop model.shops
@@ -270,6 +295,31 @@ newMessage msg model =
 --------------
 -- Privates --
 --------------
+
+
+getTileAtHero : Hero -> Maps -> Tile
+getTileAtHero hero maps =
+    let
+        heroPosition =
+            Hero.position hero
+
+        level =
+            Maps.currentLevel maps
+    in
+        case Level.getTile heroPosition level of
+            Just tile ->
+                tile
+
+            Nothing ->
+                Debug.crash "getTileAtHero" heroPosition
+
+
+getGroundAtHero : Hero -> Maps -> Container Item
+getGroundAtHero hero maps =
+    Tile.ground <| getTileAtHero hero maps
+
+
+
 -- Collision
 
 
@@ -389,7 +439,7 @@ enterBuilding building ({ hero, maps } as model) =
             Building.Shop shopType ->
                 { model
                     | currentScreen = BuildingScreen building
-                    , inventory = Inventory.init (Just <| Shops.shop shopType model.shops) hero.equipment
+                    , inventory = Inventory.init (Inventory.Shop <| Shops.shop shopType model.shops) hero.equipment
                 }
 
             Building.Ordinary ->

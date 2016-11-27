@@ -13,6 +13,7 @@ module Item.Item
         , costOf
           -- comparisons
         , equals
+        , containerBuilder
         )
 
 import Html exposing (..)

@@ -4,6 +4,8 @@ module Tile
         , Tiles
         , TileType(..)
         , TileNeighbours
+        , ground
+        , updateGround
         , isSameType
         , isSamePosition
         , isSolid
@@ -29,6 +31,9 @@ import String exposing (..)
 import Hero.Hero as Hero exposing (Hero)
 import Monster.Monster as Monster exposing (..)
 import List.Extra exposing (..)
+import Container exposing (Container)
+import Utils.Mass as Mass exposing (Capacity)
+import Random.Pcg as Random
 
 
 type alias Model =
@@ -37,6 +42,7 @@ type alias Model =
     , items : List Item
     , occupant : Occupant
     , position : Vector
+    , ground : Container Item
     }
 
 
@@ -63,6 +69,16 @@ type alias Tiles =
 -----------------------------------------------------------------------------------
 -- Turn a list of strings which represents ascii encoded tiles into actual Tiles --
 -----------------------------------------------------------------------------------
+
+
+ground : Tile -> Container Item
+ground (A { ground }) =
+    ground
+
+
+updateGround : Container Item -> Tile -> Tile
+updateGround newGround (A model) =
+    A { model | ground = newGround }
 
 
 tileType : Tile -> TileType
@@ -116,8 +132,11 @@ toTile ( x, y ) tileType =
     let
         solid =
             List.member tileType solidTiles
+
+        container =
+            Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-        A <| Model tileType solid [] Empty ( x, y )
+        A <| Model tileType solid [] Empty ( x, y ) container
 
 
 view : Tile -> TileNeighbours -> Html a
