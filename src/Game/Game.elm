@@ -677,12 +677,18 @@ viewMap ({ windowSize, viewport } as model) =
                     ]
                     html
                 ]
+
+        viewSize =
+            ( windowSize.width // 32, windowSize.height // 32 )
+
+        viewStart =
+            ( abs <| viewport.x // 32, abs <| viewport.y // 32 )
     in
         div []
             [ viewMenu
             , viewQuickMenu
             , adjustViewport
-                [ Maps.view model.maps
+                [ Maps.view viewStart viewSize model.maps
                 , Hero.view model.hero
                 , viewMonsters model
                 ]

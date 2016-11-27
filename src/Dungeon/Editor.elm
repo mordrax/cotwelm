@@ -12,6 +12,7 @@ import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 import Level
 
+
 -- libs
 
 import Lodash exposing (..)
@@ -134,7 +135,7 @@ view model =
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-                (Maps.draw screenMap model.config.mapScale)
+                (Maps.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale)
             ]
 
 
