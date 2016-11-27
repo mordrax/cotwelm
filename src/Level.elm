@@ -5,6 +5,7 @@ module Level
         , downstairs
         , upstairs
         , size
+        , updateTile
         , getTile
         )
 
@@ -73,3 +74,8 @@ size { map } =
 getTile : Vector -> Level -> Maybe Tile
 getTile pos { map } =
     Dict.get pos map
+
+
+updateTile : Vector -> Tile -> Level -> Level
+updateTile pos tile model =
+    { model | map = Dict.insert pos tile model.map }

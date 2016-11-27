@@ -1,6 +1,7 @@
 module Pages.Inventory
     exposing
         ( Inventory
+        , Merchant(..)
         , Msg
         , Draggable
         , Droppable
@@ -40,6 +41,7 @@ import Item.Purse as Purse exposing (..)
 import Shops exposing (Shops, Shop)
 import Game.Keyboard as Keyboard
 import Task
+import Container exposing (Container)
 
 
 type Inventory
@@ -48,7 +50,7 @@ type Inventory
 
 type Merchant
     = Shop Shop
-    | Ground
+    | Ground (Container Item)
 
 
 type alias Model =
@@ -75,22 +77,13 @@ type Msg source target
     | Keyboard Keyboard.Msg
 
 
-init : Maybe Shop -> Equipment -> Inventory
-init maybeShop equipment =
-    let
-        merchant =
-            case maybeShop of
-                Just shop ->
-                    Shop shop
-
-                Nothing ->
-                    Ground
-    in
-        A
-            { dnd = DragDrop.init
-            , merchant = merchant
-            , equipment = equipment
-            }
+init : Merchant -> Equipment -> Inventory
+init merchant equipment =
+    A
+        { dnd = DragDrop.init
+        , merchant = merchant
+        , equipment = equipment
+        }
 
 
 
@@ -99,7 +92,7 @@ init maybeShop equipment =
 ------------
 
 
-update : Msg Draggable Droppable -> Inventory -> ( Inventory, Maybe ( Equipment, Maybe Shop ) )
+update : Msg Draggable Droppable -> Inventory -> ( Inventory, Maybe ( Equipment, Merchant ) )
 update msg (A ({ dnd } as model)) =
     case msg of
         DnDMsg dragDropMsg ->
@@ -127,12 +120,7 @@ update msg (A ({ dnd } as model)) =
                         ( A <| handleDragDrop drag drop modelNewDnD, Nothing )
 
         Keyboard (Keyboard.Esc) ->
-            case model.merchant of
-                Shop shop ->
-                    ( A model, Just ( model.equipment, Just shop ) )
-
-                Ground ->
-                    ( A model, Just ( model.equipment, Nothing ) )
+            ( A model, Just ( model.equipment, model.merchant ) )
 
         Keyboard msg ->
             ( A model, Nothing )
@@ -259,17 +247,18 @@ transactWithMerchant item ({ merchant, equipment } as model) =
                   }
                 , item
                 )
-
-        pickup =
-            Result.Err "ERROR: Picking stuff up is not implemented yet"
     in
         case merchant of
             Shop shop ->
                 buyFrom shop
                     |> Result.andThen updateModelFromPurchase
 
-            Ground ->
-                pickup
+            Ground container ->
+                let
+                    container_ =
+                        Container.remove item container
+                in
+                    Result.Ok ( { model | merchant = Ground container_ }, item )
 
 
 {-| handleDrop
@@ -340,8 +329,12 @@ handleDrop droppable item model =
                         getPurseResult
                             |> Result.andThen (sellTo shop)
 
-                    Ground ->
-                        Result.Err "ERROR: Not implemented dropping stuff on the ground yet"
+                    Ground container ->
+                        let
+                            ( container_, _ ) =
+                                Container.add item container
+                        in
+                            Result.Ok { model | merchant = Ground container_ }
 
 
 
@@ -384,8 +377,8 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
         columnWidth width children =
             div [ class (width ++ " wide column") ] children
 
-        groundHtml =
-            div [] [ header "Ground", viewGround model ]
+        groundHtml container =
+            div [] [ header "Ground", viewGround container dnd ]
 
         shopHtml shop =
             div []
@@ -401,8 +394,8 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
                 Shop shop ->
                     shopHtml shop
 
-                Ground ->
-                    groundHtml
+                Ground container ->
+                    groundHtml container
 
         packHtml =
             div []
@@ -425,9 +418,25 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
             )
 
 
-viewGround : Model -> Html (DragDrop.Msg Draggable Droppable)
-viewGround model =
-    div [] []
+viewGround : Container Item -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable Droppable)
+viewGround container dnd =
+    let
+        styles =
+            style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
+
+        items =
+            Container.list container
+
+        makeDraggable ground item =
+            DragDrop.draggable (Item.view item) (DragMerchant item (Ground container)) dnd
+
+        droppableDiv =
+            div [ class "ui cards", styles ] (List.map (makeDraggable container) items)
+
+        droppableGround =
+            DragDrop.droppable (DropMerchant (Ground container)) dnd droppableDiv
+    in
+        droppableGround
 
 
 viewPackInfo : Maybe (Pack Item) -> String
