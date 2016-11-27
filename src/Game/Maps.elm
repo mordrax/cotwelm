@@ -151,21 +151,19 @@ updateArea area (A model) =
     A { model | currentArea = area }
 
 
-view : Maps -> Html a
-view maps =
-    Lazy.lazy view_ maps
-
-
-view_ : Maps -> Html a
-view_ maps =
+view : Vector -> Vector -> Maps -> Html a
+view start size maps =
     let
+        viewport =
+            { start = start, size = size }
+
         level =
             currentLevel maps
 
         buildingsHtml =
             List.map Building.view (level.buildings)
     in
-        div [] (draw level.map 1.0 ++ buildingsHtml)
+        div [] (draw viewport level.map 1.0 ++ buildingsHtml)
 
 
 fromTiles : Tiles -> Level.Map
@@ -179,8 +177,8 @@ fromTiles tiles =
             |> Dict.fromList
 
 
-draw : Level.Map -> Float -> List (Html a)
-draw map scale =
+draw : { viewport | start : Vector, size : Vector } -> Level.Map -> Float -> List (Html a)
+draw viewport map scale =
     let
         neighbours center =
             tileNeighbours map center
@@ -190,8 +188,14 @@ draw map scale =
 
         toHtml tile =
             Tile.scaledView tile scale (neighbours <| Tile.position tile)
+
+        withinViewport tile =
+            Tile.position tile
+                |> flip Vector.boxIntersectVector ( viewport.start, Vector.add viewport.start viewport.size )
     in
-        List.map toHtml mapTiles
+        mapTiles
+            |> List.filter withinViewport
+            |> List.map toHtml
 
 
 toTiles : Level.Map -> List Tile
