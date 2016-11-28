@@ -34,6 +34,7 @@ import List.Extra exposing (..)
 import Container exposing (Container)
 import Utils.Mass as Mass exposing (Capacity)
 import Random.Pcg as Random
+import String.Extra as StringX
 
 
 type alias Model =
@@ -157,9 +158,15 @@ scaledView (A ({ type_, position } as model)) scale neighbours =
 
                 Just data ->
                     rotateHalfTiles model data neighbours
+
+        tileCss =
+            type_
+                |> toString
+                |> StringX.dasherize
+                |> String.dropLeft 1
     in
         div
-            [ class ("tile " ++ toString type_ ++ " " ++ toString position)
+            [ class ("tile " ++ tileCss ++ " " ++ toString position)
             , style [ transform rotation scale ]
             , Lib.toScaledTilePosition position scale
             ]

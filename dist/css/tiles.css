@@ -7,163 +7,163 @@
 
 
 /* Row 1 */
-.Rock {
+.rock {
     background: url('/assets/original/tiles.png') 0 0;
 }
-.PathRock {
+.path-rock {
     background: url('/assets/original/tiles.png') -32px 0;
 }
-.MineEntrance {
+.mine-entrance {
     background: url('/assets/original/tiles.png') -64px 0;
 }
-.PortcullisClosed {
+.portcullis-closed {
     background: url('/assets/original/tiles.png') -96px 0;
 }
-.PortcullisOpen {
+.portcullis-open {
     background: url('/assets/original/tiles.png') -128px 0;
 }
-.Sign {
+.sign {
     background: url('/assets/original/tiles.png') -160px 0;
 }
-.Favicon {
+.favicon {
     background: url('/assets/original/tiles.png') -192px 0;
 }
 
 
 /* Row 2 */
-.Grass {
+.grass {
     background: url('/assets/original/tiles.png') 0 -32px;
 }
-.PathGrass {
+.path-grass {
     background: url('/assets/original/tiles.png') -32px -32px;
 }
-.Crop {
+.crop {
     background: url('/assets/original/tiles.png') -64px -32px;
 }
-.DestoyedVegePatch {
+.destoyed-vege-patch {
     background: url('/assets/original/tiles.png') -96px -32px;
 }
-.VegePatch {
+.vege-patch {
     background: url('/assets/original/tiles.png') -128px -32px;
 }
-.Well {
+.well {
     background: url('/assets/original/tiles.png') -160px -32px;
 }
-.Wagon {
+.wagon {
     background: url('/assets/original/tiles.png') -192px -32px;
 }
 
 
 /* Row 3 - Unlit floor */
-.DarkDgn {
+.dark-dgn {
     background: url('/assets/original/tiles.png') 0 -64px;
 }
-.WallDarkDgn {
+.wall-dark-dgn {
     background: url('/assets/original/tiles.png') -32px -64px;
 }
-.CastleCornerParapet {
-    background: : url('/assets/original/tiles.png') -64px -64px;
+.castle-corner-parapet {
+    background: url('/assets/original/tiles.png') -64px -64px;
 }
-.CastleWall {
-    background: : url('/assets/original/tiles.png') -96px -64px;
+.castle-wall {
+    background: url('/assets/original/tiles.png') -96px -64px;
 }
-.CastleParapet {
-    background: : url('/assets/original/tiles.png') -128px -64px;
+.castle-parapet {
+    background: url('/assets/original/tiles.png') -128px -64px;
 }
-.GreenWell {
-    background: : url('/assets/original/tiles.png') -160px -64px;
+.green-well {
+    background: url('/assets/original/tiles.png') -160px -64px;
 }
-.Ashes {
-    background: : url('/assets/original/tiles.png') -192px -64px;
+.ashes {
+    background: url('/assets/original/tiles.png') -192px -64px;
 }
 
 
 /* Row 4 - Water */
-.Water {
+.water {
     background: url('/assets/original/tiles.png') 0 -96px;
 }
-.WaterGrass {
+.water-grass {
     background: url('/assets/original/tiles.png') -32px -96px;
 }
-.BlueSquare {
+.blue-square {
     background: url('/assets/original/tiles.png') -64px -96px;
 }
-.Fountain {
+.fountain {
     background: url('/assets/original/tiles.png') -96px -96px;
 }
-.Altar {
+.altar {
     background: url('/assets/original/tiles.png') -128px -96px;
 }
-.Status {
+.status {
     background: url('/assets/original/tiles.png') -160px -96px;
 }
-.Throne {
+.throne {
     background: url('/assets/original/tiles.png') -192px -96px;
 }
 
 /* Row 5 - Path */
-.Path {
+.path {
     background: url('/assets/original/tiles.png') 0 -128px;
 }
-.WaterPath {
+.water-path {
     background: url('/assets/original/tiles.png') -32px -128px;
 }
-.StairsUp {
+.stairs-up {
     background: url('/assets/original/tiles.png') -64px -128px;
 }
-.StairsDown {
+.stairs-down {
     background: url('/assets/original/tiles.png') -96px -128px;
 }
-.TownWallCorner {
+.town-wall-corner {
     background: url('/assets/original/tiles.png') -128px -96px;
 }
-.TownWallStop {
+.town-wall-stop {
     background: url('/assets/original/tiles.png') -160px -96px;
 }
-.TownWall {
+.town-wall {
     background: url('/assets/original/tiles.png') -192px -96px;
 }
 
 
 /* Row 6 - Lit floor */
-.LitDgn {
+.lit-dgn {
     background: url('/assets/original/tiles.png') 0 -160px;
 }
-.WallLitDgn {
+.wall-lit-dgn {
     background: url('/assets/original/tiles.png') -32px -160px;
 }
-.DoorClosed {
+.door-closed {
     background: url('/assets/original/tiles.png') -64px -160px;
 }
-.DoorOpen {
+.door-open {
     background: url('/assets/original/tiles.png') -96px -160px;
 }
-.DoorBroken {
+.door-broken {
     background: url('/assets/original/tiles.png') -128px -160px;
 }
-.Cobweb {
+.cobweb {
     background: url('/assets/original/tiles.png') -160px -160px;
 }
-.Pillar {
+.pillar {
     background: url('/assets/original/tiles.png') -192px -160px;
 }
 
 
 /* Row 7 - Grass50Cave50 */
 
-.Grass50Cave50 {
+.grass50-cave50 {
     background: url('/assets/original/tiles.png') 0 -192px;
 }
-.Grass10Cave90 {
+.grass10-cave90 {
     background: url('/assets/original/tiles.png') -32px -192px;
 }
 
 
 /* Row 8 - White50Cave50 */
-.White50Cave50 {
+.white50-cave50 {
     background: url('/assets/original/tiles.png') 0 -224px;
 }
-.White90Cave10 {
+.white90-cave10 {
     background: url('/assets/original/tiles.png') -32px -224px;
 }
 
@@ -173,7 +173,7 @@
 /* Row 10 - Axe trap */
 
 
-.TreasurePile {
+.treasure-pile {
     background: url('/assets/original/tiles.png') -128px -640px;
 }
 

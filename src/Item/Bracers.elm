@@ -16,13 +16,13 @@ init bracersType status idStatus id =
     in
         case bracersType of
             NormalBracers ->
-                make "Bracers" (Mass.Mass 500 2000) "Bracers" (Prices 108 60) (AC 3)
+                make "Bracers" (Mass.Mass 500 2000) "bracers" (Prices 108 60) (AC 3)
 
             BracersOfDefenseNormal ->
-                make "Bracers Of Defense Normal" (Mass.Mass 500 2000) "BracersEnchanted" (Prices 1836 1020) (AC 8)
+                make "Bracers Of Defense Normal" (Mass.Mass 500 2000) "bracers-enchanted" (Prices 1836 1020) (AC 8)
 
             BracersOfDefenseS ->
-                make "Bracers Of Defense Strong" (Mass.Mass 500 2000) "BracersEnchanted" (Prices 5616 3120) (AC 13)
+                make "Bracers Of Defense Strong" (Mass.Mass 500 2000) "bracers-enchanted" (Prices 5616 3120) (AC 13)
 
             BracersOfDefenseVS ->
-                make "Bracers Of Defense Very Strong" (Mass.Mass 500 2000) "BracersEnchanted" (Prices 11556 6420) (AC 18)
+                make "Bracers Of Defense Very Strong" (Mass.Mass 500 2000) "bracers-enchanted" (Prices 11556 6420) (AC 18)
