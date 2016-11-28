@@ -286,14 +286,14 @@ buildingsOfArea area =
                 farmGate =
                     Building.newLink Farm ( 11, 31 )
             in
-                [ Building.new Building.Gate_NS ( 10, 0 ) "Village Gate" farmGate
-                , Building.new Building.StrawHouse_EF ( 3, 6 ) "Junk Shop" Ordinary
-                , Building.new Building.StrawHouse_WF ( 16, 5 ) "Private House" Ordinary
-                , Building.new Building.Hut_EF ( 7, 13 ) "Potion Store" (Shop Shops.PotionStore)
-                , Building.new Building.StrawHouse_WF ( 14, 12 ) "Private House 2" Ordinary
-                , Building.new Building.StrawHouse_EF ( 6, 17 ) "Weapon Shop" (Shop Shops.WeaponSmith)
-                , Building.new Building.StrawHouse_WF ( 14, 17 ) "General Store" (Shop Shops.GeneralStore)
-                , Building.new Building.HutTemple_NF ( 9, 22 ) "Odin's Temple" Ordinary
+                [ Building.new Building.Gate ( 10, 0 ) "Village Gate" farmGate
+                , Building.new Building.StrawHouseEast ( 3, 6 ) "Junk Shop" Ordinary
+                , Building.new Building.StrawHouseWest ( 16, 5 ) "Private House" Ordinary
+                , Building.new Building.Hut ( 7, 13 ) "Potion Store" (Shop Shops.PotionStore)
+                , Building.new Building.StrawHouseWest ( 14, 12 ) "Private House 2" Ordinary
+                , Building.new Building.StrawHouseEast ( 6, 17 ) "Weapon Shop" (Shop Shops.WeaponSmith)
+                , Building.new Building.StrawHouseWest ( 14, 17 ) "General Store" (Shop Shops.GeneralStore)
+                , Building.new Building.HutTemple ( 9, 22 ) "Odin's Temple" Ordinary
                 , Building.new Building.Well ( 11, 18 ) "Secret Entrance" (Building.newLink DungeonLevelOne ( 25, 3 ))
                 ]
 
@@ -305,8 +305,8 @@ buildingsOfArea area =
                 mineExit =
                     Building.newLink DungeonLevelOne ( 22, 39 )
             in
-                [ Building.new Gate_NS ( 10, 32 ) "Farm Gate" villageGate
-                , Building.new StrawHouse_WF ( 43, 23 ) "Adopted Parents House" Ordinary
+                [ Building.new Gate ( 10, 32 ) "Farm Gate" villageGate
+                , Building.new StrawHouseWest ( 43, 23 ) "Adopted Parents House" Ordinary
                 , Building.new Building.MineEntrance ( 24, 1 ) "Mine Entrance" mineExit
                 ]
 

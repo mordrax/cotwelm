@@ -26,6 +26,7 @@ import Utils.Vector as Vector exposing (..)
 import Utils.Lib as Lib exposing (..)
 import GameData.Types exposing (..)
 import Shops exposing (ShopType)
+import String.Extra as StringX
 
 
 type alias Buildings =
@@ -57,12 +58,12 @@ type BuildingType
 
 
 type BuildingTile
-    = Gate_NS
-    | Hut_EF
-    | StrawHouse_EF
-    | StrawHouse_WF
-    | BurntStrawHouse_WF
-    | HutTemple_NF
+    = Gate
+    | Hut
+    | StrawHouseEast
+    | StrawHouseWest
+    | BurntStrawHouseWest
+    | HutTemple
     | MineEntrance
     | Well
     | StairsDown
@@ -79,8 +80,14 @@ view model =
     let
         posStyle =
             Lib.vectorToHtmlStyle model.pos
+
+        tileCss =
+            model.tile
+                |> toString
+                |> StringX.dasherize
+                |> String.dropLeft 1
     in
-        div [ class ("tile " ++ (toString model.tile)), posStyle ] []
+        div [ class ("tile " ++ tileCss), posStyle ] []
 
 
 {-| Given a point and a building, will return true if the point is within the building
@@ -109,22 +116,22 @@ new buildingTile pos name buildingType =
                 Building buildingTile entry pos name size buildingType
     in
         case buildingTile of
-            Gate_NS ->
+            Gate ->
                 newBuilding ( 1, 0 ) ( 3, 1 )
 
-            Hut_EF ->
+            Hut ->
                 newBuilding ( 0, 1 ) ( 2, 2 )
 
-            StrawHouse_EF ->
+            StrawHouseEast ->
                 newBuilding ( 2, 1 ) ( 3, 3 )
 
-            StrawHouse_WF ->
+            StrawHouseWest ->
                 newBuilding ( 0, 1 ) ( 3, 3 )
 
-            BurntStrawHouse_WF ->
+            BurntStrawHouseWest ->
                 newBuilding ( 0, 1 ) ( 3, 3 )
 
-            HutTemple_NF ->
+            HutTemple ->
                 newBuilding ( 2, 0 ) ( 5, 6 )
 
             MineEntrance ->
