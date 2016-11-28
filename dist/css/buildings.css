@@ -1,37 +1,37 @@
 .building {
     position: absolute;
 }
-.Gate_NS            {
+.gate {
     background: url('/assets/original/buildings.png') -0px -0px;
     height: 32px;
     width: 96px;
 }
 
-.Hut_EF             {
+.hut {
     background: url('/assets/original/buildings.png') -96px -0px;
     height: 64px;
     width: 64px;
 }
 
-.StrawHouse_EF      {
+.straw-house-east {
     background: url('/assets/original/buildings.png') -0px -64px;
     height: 96px;
     width: 96px;
 }
 
-.StrawHouse_WF      {
+.straw-house-west {
     background: url('/assets/original/buildings.png') -192px -64px;
     height: 96px;
     width: 96px;
 }
 
-.BurntStrawHouse_WF {
+.burnt-straw-house-west {
     background: url('/assets/original/buildings.png') -288px -64px;
     height: 96px;
     width: 96px;
 }
 
-.HutTemple_NF       {
+.hut-temple {
     background: url('/assets/original/buildings.png') -0px -288px;
     height: 160px;
     width: 160px;
