@@ -581,10 +581,10 @@ viewPurse ({ equipment } as model) =
         case maybePurseContents of
             Just ( c, s, g, p ) ->
                 div [ class "ui grid" ]
-                    [ div [ class "CoinsCopper cotwItem" ] [ text (toString c) ]
-                    , div [ class "CoinsSilver cotwItem" ] [ text (toString s) ]
-                    , div [ class "CoinsGold cotwItem" ] [ text (toString g) ]
-                    , div [ class "CoinsPlatinum cotwItem" ] [ text (toString p) ]
+                    [ div [ class "coins-copper cotw-item" ] [ text (toString c) ]
+                    , div [ class "coins-silver cotw-item" ] [ text (toString s) ]
+                    , div [ class "coins-gold cotw-item" ] [ text (toString g) ]
+                    , div [ class "coins-platinum cotw-item" ] [ text (toString p) ]
                     ]
 
             _ ->

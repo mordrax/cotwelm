@@ -198,7 +198,7 @@ viewSlot item extraContent =
                 -}
                 []
                 [ div [ class "image" ]
-                    [ i [ class ("cotwItem " ++ model.css) ] []
+                    [ i [ class ("cotw-item " ++ model.css) ] []
                     ]
                 , div [ class "content" ]
                     [ a [ class "header" ]
