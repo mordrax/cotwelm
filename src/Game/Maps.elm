@@ -213,6 +213,7 @@ draw viewport map scale =
         mapTiles
             |> List.filter withinViewport
             |> List.map toHtml
+            |> List.concat
 
 
 toTiles : Level.Map -> List Tile
