@@ -86,14 +86,17 @@ init seed hero difficulty =
         ( heroWithDefaultEquipment, itemFactoryAfterHeroEquipment ) =
             donDefaultGarb itemFactory hero
 
-        ( shops, itemFactory__, seed_ ) =
+        ( shops, itemFactoryAfterShop, seed_ ) =
             Shops.init seed itemFactoryAfterHeroEquipment
+
+        ( leatherArmour, itemFactory_ ) =
+            ItemFactory.make (ItemTypeArmour LeatherArmour) itemFactoryAfterShop
 
         ( monsters, idGenerator_ ) =
             Monsters.init idGenerator
 
         ( maps, mapCmd, seed__ ) =
-            Maps.init seed_
+            Maps.init leatherArmour seed_
 
         cmd =
             Cmd.batch
