@@ -140,13 +140,13 @@ toTile ( x, y ) tileType =
         A <| Model tileType solid [] Empty ( x, y ) container
 
 
-view : Tile -> TileNeighbours -> Html a
+view : Tile -> TileNeighbours -> List (Html a)
 view tile neighbours =
     scaledView tile 1.0 neighbours
 
 
-scaledView : Tile -> Float -> TileNeighbours -> Html a
-scaledView (A ({ type_, position } as model)) scale neighbours =
+scaledView : Tile -> Float -> TileNeighbours -> List (Html a)
+scaledView (A ({ type_, position, ground } as model)) scale neighbours =
     let
         transform rotation scale =
             ( "transform", "rotate(" ++ toString rotation ++ "deg) scale" ++ toString ( scale, scale ) )
@@ -159,18 +159,42 @@ scaledView (A ({ type_, position } as model)) scale neighbours =
                 Just data ->
                     rotateHalfTiles model data neighbours
 
-        tileCss =
-            type_
-                |> toString
-                |> StringX.dasherize
-                |> String.dropLeft 1
+        tileToCss =
+            toString
+                >> StringX.dasherize
+                >> String.dropLeft 1
+
+        tileDiv css =
+            div
+                [ class ("tile " ++ css ++ " " ++ toString position)
+                , style [ transform rotation scale ]
+                , Lib.toScaledTilePosition position scale
+                ]
+                []
+
+        itemsOnGround =
+            Container.list ground
+
+        itemDiv item =
+            div
+                [ class ("tile cotw-item " ++ (Item.css item))
+                , style [ transform rotation scale ]
+                , Lib.toScaledTilePosition position scale
+                ]
+                []
+
+        baseTile =
+            tileDiv (tileToCss type_)
     in
-        div
-            [ class ("tile " ++ tileCss ++ " " ++ toString position)
-            , style [ transform rotation scale ]
-            , Lib.toScaledTilePosition position scale
-            ]
-            []
+        case itemsOnGround of
+            [] ->
+                [ baseTile ]
+
+            item :: [] ->
+                [ baseTile, itemDiv item ]
+
+            _ ->
+                [ baseTile, tileDiv <| tileToCss TreasurePile ]
 
 
 type alias HalfTileData =

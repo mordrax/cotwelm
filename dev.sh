@@ -1,4 +1,6 @@
-
+pkill elm-reactor &
+pkill node &
+sleep 1
 # elm game running on 8008
 
 elm reactor --port 8000 &

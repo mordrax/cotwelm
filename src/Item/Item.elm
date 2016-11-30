@@ -7,6 +7,7 @@ module Item.Item
         , newFoldableItem
         , view
         , viewSlot
+        , css
           -- item functions
         , isCursed
         , priceOf
@@ -177,6 +178,11 @@ getModel anItem =
 view : Item -> Html msg
 view item =
     viewSlot item ""
+
+
+css : Item -> String
+css =
+    getModel >> .css
 
 
 viewSlot : Item -> String -> Html msg
