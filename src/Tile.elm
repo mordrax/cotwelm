@@ -5,6 +5,7 @@ module Tile
         , TileType(..)
         , TileNeighbours
         , ground
+        , drop
         , updateGround
         , isSameType
         , isSamePosition
@@ -75,6 +76,15 @@ type alias Tiles =
 ground : Tile -> Container Item
 ground (A { ground }) =
     ground
+
+
+drop : Item -> Tile -> Tile
+drop item (A model) =
+    let
+        ( groundWithItem, _ ) =
+            Container.add item model.ground
+    in
+        (A { model | ground = groundWithItem })
 
 
 updateGround : Container Item -> Tile -> Tile

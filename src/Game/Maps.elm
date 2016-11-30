@@ -42,6 +42,7 @@ import Shops
 import Array.Hamt as Array exposing (Array)
 import Dungeon.DungeonGenerator as DungeonGenerator
 import Level exposing (Level)
+import Item.Item as Item exposing (Item)
 
 
 type Maps
@@ -61,8 +62,8 @@ type Msg
     = GenerateDungeonLevel Int
 
 
-init : Random.Seed -> ( Maps, Cmd Msg, Random.Seed )
-init seed =
+init : Item -> Random.Seed -> ( Maps, Cmd Msg, Random.Seed )
+init armour seed =
     let
         getTiles area =
             Tile.mapToTiles (getASCIIMap area)
@@ -77,13 +78,25 @@ init seed =
 
         toKVPair tile =
             ( Tile.position tile, tile )
+
+        mineEntryLevel =
+            levelOfArea DungeonLevelOne
+
+        mineEntryLevelWithArmour =
+            { mineEntryLevel
+                | map = Dict.insert ( 13, 19 ) darkDungeonWithArmour mineEntryLevel.map
+            }
+
+        darkDungeonWithArmour =
+            Tile.toTile ( 13, 19 ) Tile.DarkDgn
+                |> Tile.drop armour
     in
         ( A
             { currentArea = Village
             , abandonedMines = Array.fromList []
             , village = levelOfArea Village
             , farm = levelOfArea Farm
-            , abandonedMinesEntry = levelOfArea DungeonLevelOne
+            , abandonedMinesEntry = mineEntryLevelWithArmour
             }
         , Cmd.none
         , seed
