@@ -83,16 +83,16 @@
 .manticore {
     background: url('/assets/original/monsters.png') -416px -32px;
 }
-.bronze-golem {
+.animated-wooden-statue {
     background: url('/assets/original/monsters.png') -0px -64px;
 }
-.iron-golem {
+.animated-bronze-status {
     background: url('/assets/original/monsters.png') -32px -64px;
 }
-.diamond-golem {
+.animated-marble-statue {
     background: url('/assets/original/monsters.png') -64px -64px;
 }
-.wooden-golem {
+.animated-wooden-statue {
     background: url('/assets/original/monsters.png') -96px -64px;
 }
 .bandit {
