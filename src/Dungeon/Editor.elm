@@ -10,6 +10,8 @@ import Game.Maps as Maps exposing (..)
 
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
+import Dungeon.Types
+import Dungeon.Clean
 import Level
 
 
@@ -23,13 +25,13 @@ import Random.Pcg as Random exposing (..)
 type alias Model =
     { map : Level.Map
     , config : Config.Model
-    , dungeonSteps : List DungeonGenerator.Model
+    , dungeonSteps : List Dungeon.Types.Model
     }
 
 
 type Msg
     = GenerateMap Int
-    | Dungeon DungeonGenerator.Model
+    | Dungeon Dungeon.Types.Model
     | ConfigMsg Config.Msg
     | ResetMap
     | Clean
@@ -44,16 +46,16 @@ init =
     }
 
 
-generateCandidate : Model -> Generator DungeonGenerator.Model
+generateCandidate : Model -> Generator Dungeon.Types.Model
 generateCandidate model =
     let
         newCandidate =
             DungeonGenerator.steps 200 (DungeonGenerator.init model.config)
 
         fitness dungeonModel =
-            List.length dungeonModel.rooms > 8
+            List.length dungeonModel.rooms > model.config.minRooms
     in
-        Random.map DungeonGenerator.clean newCandidate
+        Random.map Dungeon.Clean.clean newCandidate
             |> Random.andThen
                 (\dungeonModel ->
                     if fitness dungeonModel then
@@ -74,7 +76,7 @@ update msg model =
                 Just dungeonModel ->
                     let
                         cleanedModel =
-                            DungeonGenerator.clean dungeonModel
+                            Dungeon.Clean.clean dungeonModel
                     in
                         ( { model
                             | dungeonSteps = cleanedModel :: model.dungeonSteps
@@ -108,10 +110,10 @@ update msg model =
             ( { model | map = Dict.empty, dungeonSteps = [] }, Cmd.none )
 
 
-updateMap : DungeonGenerator.Model -> Level.Map
+updateMap : Dungeon.Types.Model -> Level.Map
 updateMap dungeonModel =
     dungeonModel
-        |> DungeonGenerator.toTiles
+        |> Dungeon.Types.toTiles
         |> Maps.fromTiles
 
 
