@@ -107,6 +107,9 @@
 .necromancer {
     background: url('/assets/original/monsters.png') -224px -64px;
 }
+.tunnel-wight,
+.barrow-wight,
+.castle-wight,
 .wight {
     background: url('/assets/original/monsters.png') -256px -64px;
 }
@@ -170,6 +173,7 @@
 .hill-giant {
     background: url('/assets/original/monsters.png') -0px -128px;
 }
+.rungnir,
 .two-head-giant {
     background: url('/assets/original/monsters.png') -32px -128px;
 }
@@ -197,15 +201,39 @@
 .stone-giant-king {
     background: url('/assets/original/monsters.png') -288px -128px;
 }
+.young-red-dragon,
+.young-adult-red-dragon,
+.adult-red-dragon,
+.old-red-dragon,
+.very-old-red-dragon,
+.ancient-red-dragon,
 .red-dragon {
     background: url('/assets/original/monsters.png') -320px -128px;
 }
+.young-blue-dragon,
+.young-adult-blue-dragon,
+.adult-blue-dragon,
+.old-blue-dragon,
+.very-old-blue-dragon,
+.ancient-blue-dragon,
 .blue-dragon {
     background: url('/assets/original/monsters.png') -352px -128px;
 }
+.young-white-dragon,
+.young-adult-white-dragon,
+.adult-white-dragon,
+.old-white-dragon,
+.very-old-white-dragon,
+.ancient-white-dragon,
 .white-dragon {
     background: url('/assets/original/monsters.png') -384px -128px;
 }
+.young-green-dragon,
+.young-adult-green-dragon,
+.adult-green-dragon,
+.old-green-dragon,
+.very-old-green-dragon,
+.ancient-green-dragon,
 .green-dragon {
     background: url('/assets/original/monsters.png') -416px -128px;
 }

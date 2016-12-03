@@ -5,6 +5,9 @@ module Monster.Monster
         , view
         , init
         , initWithOptions
+        , update
+        , remove
+        , randomMonsters
         )
 
 import Utils.Vector as Vector exposing (..)
@@ -17,6 +20,9 @@ import Equipment exposing (Equipment)
 import Attributes exposing (Attributes)
 import Utils.Lib as Lib
 import Types
+import Random.Pcg as Random exposing (Generator)
+import Lodash
+import Maybe
 
 
 type alias Monster =
@@ -29,7 +35,6 @@ type alias Monster =
     , equipment : Equipment
     , expLevel : Int
     , bodySize : Types.BodySize
-    , id : ID
     }
 
 
@@ -38,25 +43,152 @@ view { css, position } =
     div [ vectorToHtmlStyle position, class ("tile monster " ++ css) ] []
 
 
-init : MonsterType -> Vector -> ID -> Monster
-init monsterType pos id =
-    initWithOptions monsterType pos id Equipment.init
+init : MonsterType -> Vector -> Monster
+init monsterType pos =
+    initWithOptions monsterType pos Equipment.init
 
 
-initWithOptions : MonsterType -> Vector -> ID -> Equipment -> Monster
-initWithOptions monsterType pos id equipment =
+randomMonsters : List Vector -> Generator (List Monster)
+randomMonsters positions =
+    List.foldl randomMonstersReducer (Random.constant []) positions
+
+
+randomMonstersReducer : Vector -> Generator (List Monster) -> Generator (List Monster)
+randomMonstersReducer position monsters =
+    randomMonster position
+        |> (\monster -> Random.map2 (::) monster monsters)
+
+
+randomMonster : Vector -> Generator Monster
+randomMonster position =
+    Lodash.shuffle types
+        |> Random.map (List.head)
+        |> Random.map (Maybe.withDefault GiantRat)
+        |> Random.map (flip init position)
+
+
+update : Monster -> List Monster -> List Monster
+update monster monsters =
+    monster :: remove monster monsters
+
+
+remove : Monster -> List Monster -> List Monster
+remove monster monsters =
+    List.filter (\x -> monster.position /= x.position) monsters
+
+
+types : List MonsterType
+types =
+    [ GiantRat
+    , Goblin
+    , GiantBat
+    , Hobgoblin
+    , Kobold
+    , LargeSnake
+    , Skeleton
+    , WildDog
+    , Viper
+    , GoblinFighter
+    , GiantRedAnt
+    , WalkingCorpse
+    , Bandit
+    , GiantTrapdoorSpider
+    , HugeLizard
+    , RatMan
+    , Slime
+    , GiantScorpion
+    , GrayWolf
+    , GelantinousGlob
+    , SmirkingSneakThief
+    , CarrionCreeper
+    , HugeOgre
+    , Shadow
+    , AnimatedWoodenStatue
+    , BrownBear
+    , YoungGreenDragon
+    , YoungWhiteDragon
+    , Manticore
+    , EerieGhost
+    , GruesomeTroll
+    , YoungBlueDragon
+    , YoungRedDragon
+    , AnimatedBronzeStatue
+    , EvilWarrior
+    , WolfMan
+    , CaveBear
+    , WhiteWolf
+    , Berserker
+    , AnimatedIronStatue
+    , TunnelWight
+    , YoungAdultBlueDragon
+    , YoungAdultGreenDragon
+    , YoungAdultWhiteDragon
+    , PaleWraith
+    , BarrowWight
+    , BearMan
+    , DustElemental
+    , HillGiant
+    , YoungAdultRedDragon
+    , Wizard
+    , BullMan
+    , CastleWight
+    , DarkWraith
+    , IceElemental
+    , Spectre
+    , AnimatedMarbleStatue
+    , AdultBlueDragon
+    , AdultGreenDragon
+    , AdultWhiteDragon
+    , AirElemental
+    , MagmaElemental
+    , StoneGiant
+    , TwoHeadedGiant
+    , AdultRedDragon
+    , FireElemental
+    , FrostGiant
+    , SpikedDevil
+    , WaterElemental
+    , EarthElemental
+    , Necromancer
+    , Vampire
+    , AbyssWraith
+    , Utgardhalok
+    , FireGiant
+    , OldBlueDragon
+    , OldGreenDragon
+    , OldWhiteDragon
+    , HornedDevil
+    , OldRedDragon
+    , Rungnir
+    , IceDevil
+    , Thrym
+    , VeryOldGreenDragon
+    , VeryOldWhiteDragon
+    , VeryOldBlueDragon
+    , AbyssFiend
+    , Thiassa
+    , VeryOldRedDragon
+    , AncientGreenDragon
+    , AncientWhiteDragon
+    , AncientBlueDragon
+    , AncientRedDragon
+    , Sultur
+    ]
+
+
+initWithOptions : MonsterType -> Vector -> Equipment -> Monster
+initWithOptions monsterType position equipment =
     let
         make name level attributes bodySize =
             { name = name
             , type_ = Types.Monster
             , css = (Utils.Lib.toCSS name)
-            , position = pos
+            , position = position
             , stats = Stats.init attributes
             , attributes = attributes
             , equipment = equipment
             , expLevel = level
             , bodySize = bodySize
-            , id = id
             }
     in
         case monsterType of

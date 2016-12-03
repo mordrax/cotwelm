@@ -7,6 +7,7 @@ module Level
         , size
         , updateTile
         , getTile
+        , floors
         )
 
 --import List exposing (..)

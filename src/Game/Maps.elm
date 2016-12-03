@@ -1,6 +1,6 @@
 module Game.Maps
     exposing
-        ( Maps
+        ( Model
         , Msg
         , init
         , update
@@ -43,10 +43,8 @@ import Array.Hamt as Array exposing (Array)
 import Dungeon.DungeonGenerator as DungeonGenerator
 import Level exposing (Level)
 import Item.Item as Item exposing (Item)
-
-
-type Maps
-    = A Model
+import Monster.Monster as Monster
+import Lodash
 
 
 type alias Model =
@@ -62,7 +60,7 @@ type Msg
     = GenerateDungeonLevel Int
 
 
-init : Item -> Random.Seed -> ( Maps, Cmd Msg, Random.Seed )
+init : Item -> Random.Seed -> ( Model, Cmd Msg, Random.Seed )
 init armour seed =
     let
         getTiles area =
@@ -91,46 +89,45 @@ init armour seed =
             Tile.toTile ( 13, 19 ) Tile.DarkDgn
                 |> Tile.drop armour
     in
-        ( A
-            { currentArea = Village
-            , abandonedMines = Array.fromList []
-            , village = levelOfArea Village
-            , farm = levelOfArea Farm
-            , abandonedMinesEntry = mineEntryLevelWithArmour
-            }
+        ( { currentArea = Village
+          , abandonedMines = Array.fromList []
+          , village = levelOfArea Village
+          , farm = levelOfArea Farm
+          , abandonedMinesEntry = mineEntryLevelWithArmour
+          }
         , Cmd.none
         , seed
         )
 
 
-update : Msg -> Maps -> Maps
-update msg (A model) =
+update : Msg -> Model -> Model
+update msg model =
     let
         _ =
             Debug.log "maps update" 1
     in
-        (A { model | currentArea = Village })
+        { model | currentArea = Village }
 
 
-upstairs : Maps -> Maps
-upstairs (A model) =
+upstairs : Model -> Model
+upstairs model =
     let
         modelWithArea area =
             { model | currentArea = area }
     in
         case model.currentArea of
             DungeonLevel 0 ->
-                A <| modelWithArea DungeonLevelOne
+                modelWithArea DungeonLevelOne
 
             DungeonLevel n ->
-                A <| modelWithArea (DungeonLevel (n - 1))
+                modelWithArea (DungeonLevel (n - 1))
 
             _ ->
-                A <| modelWithArea Farm
+                modelWithArea Farm
 
 
-downstairs : Maps -> Generator Maps
-downstairs (A model) =
+downstairs : Model -> Generator Model
+downstairs model =
     let
         nextLevel =
             case model.currentArea of
@@ -145,43 +142,55 @@ downstairs (A model) =
     in
         case Array.get nextLevel model.abandonedMines of
             Just level ->
-                Random.constant (A { model | currentArea = DungeonLevel nextLevel })
+                Random.constant { model | currentArea = DungeonLevel nextLevel }
 
             Nothing ->
                 DungeonGenerator.generate Config.init
+                    |> Random.andThen addMonstersToLevel
                     |> Random.map (\level -> Array.push level model.abandonedMines)
                     |> Random.map
                         (\abandonedMines ->
-                            A
-                                { model
-                                    | abandonedMines = abandonedMines
-                                    , currentArea = DungeonLevel nextLevel
-                                }
+                            { model
+                                | abandonedMines = abandonedMines
+                                , currentArea = DungeonLevel nextLevel
+                            }
                         )
 
 
-updateArea : GameData.Types.Area -> Maps -> Maps
-updateArea area (A model) =
-    A { model | currentArea = area }
+addMonstersToLevel : Level -> Generator Level
+addMonstersToLevel level =
+    let
+        floors =
+            Level.floors level
+    in
+        Lodash.shuffle floors
+            |> Random.map (List.take 10)
+            |> Random.andThen Monster.randomMonsters
+            |> Random.map (\monsters -> { level | monsters = monsters })
 
 
-updateCurrentLevel : Level -> Maps -> Maps
-updateCurrentLevel level (A model) =
+updateArea : GameData.Types.Area -> Model -> Model
+updateArea area model =
+    { model | currentArea = area }
+
+
+updateCurrentLevel : Level -> Model -> Model
+updateCurrentLevel level model =
     case model.currentArea of
         Village ->
-            A { model | village = level }
+            { model | village = level }
 
         Farm ->
-            A { model | farm = level }
+            { model | farm = level }
 
         DungeonLevelOne ->
-            A { model | abandonedMinesEntry = level }
+            { model | abandonedMinesEntry = level }
 
         DungeonLevel n ->
-            A { model | abandonedMines = Array.set n level model.abandonedMines }
+            { model | abandonedMines = Array.set n level model.abandonedMines }
 
 
-view : Vector -> Vector -> Maps -> Html a
+view : Vector -> Vector -> Model -> Html a
 view start size maps =
     let
         viewport =
@@ -248,8 +257,8 @@ toScreenCoords map mapSize =
 
 {-| Get the map for the current area
 -}
-currentLevel : Maps -> Level
-currentLevel (A model) =
+currentLevel : Model -> Level
+currentLevel model =
     case model.currentArea of
         Village ->
             model.village
