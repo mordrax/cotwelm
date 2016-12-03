@@ -13,7 +13,7 @@ import Combat
 import Dict
 import Equipment exposing (Equipment)
 import Game.Keyboard as Keyboard exposing (..)
-import Game.Maps as Maps exposing (Maps)
+import Game.Maps as Maps
 import GameData.Building as Building exposing (Building)
 import GameData.Types as GDT exposing (Difficulty)
 import Hero.Hero as Hero exposing (Hero)
@@ -24,7 +24,6 @@ import Item.Item as Item exposing (Item)
 import Item.Data exposing (..)
 import Level
 import Monster.Monster as Monster exposing (Monster)
-import Monster.Monsters as Monsters exposing (..)
 import Pages.Inventory as Inventory exposing (Inventory)
 import Random.Pcg as Random exposing (..)
 import Set exposing (Set)
@@ -47,11 +46,10 @@ type Game
 type alias Model =
     { name : String
     , hero : Hero
-    , maps : Maps
+    , maps : Maps.Model
     , currentScreen : Screen
     , shops : Shops
     , idGen : IdGenerator
-    , monsters : List Monster
     , seed : Random.Seed
     , windowSize : Window.Size
     , messages : List String
@@ -92,9 +90,6 @@ init seed hero difficulty =
         ( leatherArmour, itemFactory_ ) =
             ItemFactory.make (ItemTypeArmour LeatherArmour) itemFactoryAfterShop
 
-        ( monsters, idGenerator_ ) =
-            Monsters.init idGenerator
-
         ( maps, mapCmd, seed__ ) =
             Maps.init leatherArmour seed_
 
@@ -113,9 +108,8 @@ init seed hero difficulty =
             , maps = maps
             , currentScreen = MapScreen
             , shops = shops
-            , idGen = idGenerator_
+            , idGen = idGenerator
             , inventory = Inventory.init (Inventory.Ground ground) heroWithDefaultEquipment.equipment
-            , monsters = monsters
             , seed = seed__
             , messages = [ "Welcome to castle of the winds!" ]
             , difficulty = difficulty
@@ -124,6 +118,13 @@ init seed hero difficulty =
             }
         , cmd
         )
+
+
+monstersOnLevel : Model -> List Monster
+monstersOnLevel model =
+    model.maps
+        |> Maps.currentLevel
+        |> .monsters
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
@@ -143,7 +144,7 @@ update msg ((A model) as game) =
                 ( model
                     |> moveHero dir
                     |> updateViewportOffset (Hero.position model.hero)
-                    |> (\model -> moveMonsters model.monsters [] model)
+                    |> (\model -> moveMonsters (monstersOnLevel model) [] model)
                     |> A
                 , Cmd.none
                 )
@@ -303,7 +304,7 @@ newMessage msg model =
 --------------
 
 
-getTileAtHero : Hero -> Maps -> Tile
+getTileAtHero : Hero -> Maps.Model -> Tile
 getTileAtHero hero maps =
     let
         heroPosition =
@@ -320,7 +321,7 @@ getTileAtHero hero maps =
                 Debug.crash "getTileAtHero" heroPosition
 
 
-getGroundAtHero : Hero -> Maps -> Container Item
+getGroundAtHero : Hero -> Maps.Model -> Container Item
 getGroundAtHero hero maps =
     Tile.ground <| getTileAtHero hero maps
 
@@ -330,7 +331,7 @@ getGroundAtHero hero maps =
 
 
 moveHero : Direction -> Model -> Model
-moveHero dir ({ hero, monsters, seed } as model) =
+moveHero dir ({ hero, seed } as model) =
     let
         heroMoved =
             Hero.move dir hero
@@ -357,21 +358,31 @@ moveHero dir ({ hero, monsters, seed } as model) =
                 { model | hero = heroMoved }
 
 
+updateMonsters : List Monster -> Maps.Model -> Maps.Model
+updateMonsters monsters maps =
+    Maps.currentLevel maps
+        |> (\level -> { level | monsters = monsters })
+        |> (\level -> Maps.updateCurrentLevel level maps)
+
+
 attackMonster : Monster -> Model -> Model
-attackMonster monster ({ hero, monsters, seed, messages } as model) =
+attackMonster monster ({ hero, seed, messages, maps } as model) =
     let
+        monsters =
+            monstersOnLevel model
+
         ( ( msg, monsterAfterBeingHit ), seed_ ) =
             Random.step (Combat.attack hero monster) seed
 
         monstersAfterHit monster =
             if Stats.isDead monster.stats then
-                Monsters.removeOne monster monsters
+                Monster.remove monster monsters
             else
-                Monsters.updateOne monster monsters
+                Monster.update monster monsters
     in
         { model
             | seed = seed_
-            , monsters = monstersAfterHit monsterAfterBeingHit
+            , maps = updateMonsters (monstersAfterHit monsterAfterBeingHit) model.maps
             , messages = msg :: messages
         }
 
@@ -380,7 +391,7 @@ moveMonsters : List Monster -> List Monster -> Model -> Model
 moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
     case monsters of
         [] ->
-            { model | monsters = movedMonsters }
+            { model | maps = updateMonsters movedMonsters maps }
 
         monster :: restOfMonsters ->
             let
@@ -461,8 +472,11 @@ enterBuilding building ({ hero, maps } as model) =
 {-| Given a position and a map, work out everything on the square
 -}
 queryPosition : Vector -> Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
-queryPosition pos ({ hero, maps, monsters } as model) =
+queryPosition pos ({ hero, maps } as model) =
     let
+        monsters =
+            monstersOnLevel model
+
         maybeTile =
             maps
                 |> Maps.currentLevel
@@ -698,8 +712,13 @@ view (A model) =
 
 
 viewMonsters : Model -> Html Msg
-viewMonsters ({ monsters } as model) =
+viewMonsters model =
     let
+        monsters =
+            model.maps
+                |> Maps.currentLevel
+                |> .monsters
+
         monsterHtml monster =
             Monster.view monster
     in
