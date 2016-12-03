@@ -3,31 +3,28 @@ module Dungeon.DungeonGenerator
         ( step
         , steps
         , generate
-        , toTiles
         , init
-        , Model
-        , clean
         )
 
-import Dungeon.Rooms.Config as Config exposing (..)
+import Dice exposing (..)
+import Dict exposing (Dict)
+import Dungeon.Clean
+import Dungeon.Corridor as Corridor exposing (Corridor)
+import Dungeon.Entrance as Entrance exposing (Entrance)
+import Dungeon.Room as Room exposing (Room)
+import Dungeon.Rooms.Config as Config
 import Dungeon.Rooms.Type exposing (..)
-import Dungeon.Entrance as Entrance exposing (..)
-import Dungeon.Corridor as Corridor exposing (..)
-import Dungeon.Room as Room exposing (..)
+import Dungeon.Types exposing (..)
 import GameData.Building as Building exposing (Building, Buildings)
 import GameData.Types as Types
-import Dice exposing (..)
-import Random.Pcg as Random exposing (..)
-import Tile exposing (..)
-import Utils.Vector as Vector exposing (..)
-import Lodash exposing (..)
-import List.Extra exposing (dropWhile)
-import Utils.Direction exposing (..)
-import Maybe.Extra exposing (..)
-import Dict exposing (Dict)
-import Set
 import Level
-
+import List.Extra exposing (dropWhile)
+import Lodash
+import Random.Pcg as Random exposing (Generator, constant)
+import Set
+import Tile
+import Utils.Direction exposing (Direction)
+import Utils.Vector as Vector exposing (Vector)
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
 to use the returned Generator type to step through a dungeon creation. The caller can
@@ -59,361 +56,22 @@ Active -
 -- types
 
 
-type alias Model =
-    { config : Config.Model
-    , rooms : Rooms
-    , corridors : Corridors
-    , activePoints : ActivePoints
-    , walls : Tiles
-    , buildings : Buildings
-    }
-
-
-type alias ActivePoints =
-    List ActivePoint
-
-
-type ActivePoint
-    = ActiveRoom Room (Maybe Entrance)
-    | ActiveCorridor Corridor
-
-
 init : Config.Model -> Model
 init config =
     Model config [] [] [] [] []
 
 
-{-| Removes active entrances from rooms and
-    end corridors that will hit walls with a single door room.
--}
-clean : Model -> Model
-clean ({ rooms, corridors, activePoints } as model) =
-    case activePoints of
-        (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
-            clean
-                { model
-                    | rooms = room :: rooms
-                    , activePoints = remainingPoints
-                }
 
-        (ActiveRoom room (Just entrance)) :: remainingPoints ->
-            let
-                cleanedRoom =
-                    Room.removeEntrance entrance room
-
-                modelWithCleanedRoom =
-                    { model | rooms = cleanedRoom :: rooms, activePoints = remainingPoints }
-            in
-                clean modelWithCleanedRoom
-
-        (ActiveCorridor corridor) :: remainingPoints ->
-            let
-                modelWithRemainingPoints =
-                    { model
-                        | activePoints = remainingPoints
-                    }
-
-                modelWithInactiveCorridorRemainingPoints =
-                    { modelWithRemainingPoints
-                        | corridors = corridor :: corridors
-                    }
-
-                ( startPosition, startDirection ) =
-                    Corridor.end corridor
-
-                startDirectionVector =
-                    Vector.fromDirection startDirection
-
-                addCorridor c m =
-                    { m | corridors = c :: m.corridors }
-            in
-                case firstObstacle startDirectionVector startPosition modelWithRemainingPoints of
-                    -- hits map edge, no obstacles
-                    ( Maybe.Nothing, Maybe.Nothing, _, _ ) ->
-                        clean
-                            { modelWithInactiveCorridorRemainingPoints
-                                | rooms = Room.newDeadEnd (Vector.add startPosition startDirectionVector) :: rooms
-                            }
-
-                    -- hits a room, join to the room with a door
-                    ( Just room, _, newCorridorEndPosition, newEntrancePosition ) ->
-                        let
-                            corridor_ =
-                                Corridor.add ( newCorridorEndPosition, startDirection ) corridor
-
-                            room_ =
-                                Room.addEntrance (Entrance.init Door newEntrancePosition) room
-
-                            --                            _ =
-                            --                                Debug.log "Clean - join room"
-                            --                                    { corridor = Corridor.pp corridor
-                            --                                    , newEndPoint = ( newCorridorEndPosition, startDirection )
-                            --                                    , room = Room.pp room
-                            --                                    , newEntrance = (Entrance.init Door newEntrancePosition)
-                            --                                    }
-                        in
-                            modelWithRemainingPoints
-                                |> addCorridor corridor_
-                                |> findAndUpdateRoom room_
-                                |> clean
-
-                    -- hits another corridor, join to the corridor with dungeon floor
-                    ( _, Just joinedCorridor, newCorridorEndPosition, joinedCorridorNewFloor ) ->
-                        let
-                            corridor_ =
-                                Corridor.add ( newCorridorEndPosition, startDirection ) corridor
-
-                            joinedCorridor_ =
-                                Corridor.addEntrance joinedCorridorNewFloor joinedCorridor
-
-                            --                            _ =
-                            --                                Debug.log "DungeonGenerator join corridor"
-                            --                                    { corridor = Corridor.pp corridor
-                            --                                    , corridorNewEnd = ( newCorridorEndPosition, startDirection )
-                            --                                    , joinedCorridorNewFloor = joinedCorridorNewFloor
-                            --                                    }
-                        in
-                            modelWithRemainingPoints
-                                |> addCorridor corridor_
-                                |> findAndUpdateCorridor joinedCorridor_
-                                |> clean
-
-        [] ->
-            addWalls model
-
-
-
----------------
--- Add walls --
----------------
-
-
-addWalls : Model -> Model
-addWalls model =
-    let
-        { map } =
-            toLevel model
-
-        mapPoints =
-            Dict.keys map
-
-        isNotAMapPoint point =
-            List.all ((/=) point) mapPoints
-
-        allPoints =
-            List.Extra.lift2 (,) (List.range 1 model.config.dungeonSize) (List.range 1 model.config.dungeonSize)
-
-        walls =
-            allPoints
-                |> List.filter isNotAMapPoint
-                |> List.map (calculateTypeOfWall map)
-    in
-        { model | walls = walls }
-
-
-calculateTypeOfWall : Level.Map -> Vector -> Tile
-calculateTypeOfWall map position =
-    case ( hasAdjacentFloors position map, hasThreeOrMoreNeighbourFloors position map ) of
-        ( True, True ) ->
-            Tile.toTile position Tile.DarkDgn
-
-        ( True, False ) ->
-            Tile.toTile position Tile.WallDarkDgn
-
-        _ ->
-            Tile.toTile position Tile.Rock
-
-
-adjacentNeighbourPairs : List Directions
-adjacentNeighbourPairs =
-    [ [ N, E ]
-    , [ E, S ]
-    , [ S, W ]
-    , [ W, N ]
-    ]
-
-
-adjacentNeighbourTriplets : List Directions
-adjacentNeighbourTriplets =
-    [ [ N, E, S ]
-    , [ E, S, W ]
-    , [ S, W, N ]
-    , [ W, N, E ]
-    ]
-
-
-hasThreeOrMoreNeighbourFloors : Vector -> Level.Map -> Bool
-hasThreeOrMoreNeighbourFloors position map =
-    allDirectionsAreFloors adjacentNeighbourTriplets position map
-
-
-hasAdjacentFloors : Vector -> Level.Map -> Bool
-hasAdjacentFloors position map =
-    allDirectionsAreFloors adjacentNeighbourPairs position map
-
-
-allDirectionsAreFloors : List Directions -> Vector -> Level.Map -> Bool
-allDirectionsAreFloors neighbourDirections position map =
-    let
-        toNeighbours directions =
-            directions
-                |> List.map Vector.fromDirection
-                |> List.map (Vector.add position)
-                |> List.map (flip Dict.get map)
-
-        isFloorTiles maybeTiles =
-            maybeTiles
-                |> List.map (Maybe.Extra.filter (\x -> Tile.tileType x == Tile.DarkDgn))
-                |> List.all ((/=) Nothing)
-    in
-        neighbourDirections
-            |> List.map toNeighbours
-            |> List.any isFloorTiles
-
-
-neighbours : Vector -> Level.Map -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
-neighbours position map =
-    let
-        getTile direction =
-            direction
-                |> Vector.fromDirection
-                |> Vector.add position
-                |> flip Dict.get map
-    in
-        ( getTile N, getTile E, getTile S, getTile W )
-
-
-
----------------------------------------------------------
--- Update room/corridor in model via world coordinates --
----------------------------------------------------------
-
-
-findAndUpdateRoom : Room -> Model -> Model
-findAndUpdateRoom targetRoom ({ rooms, activePoints } as model) =
-    let
-        targetRoomPosition =
-            Room.position targetRoom
-
-        update room updatedRooms =
-            if targetRoomPosition == Room.position room then
-                targetRoom :: updatedRooms
-            else
-                room :: updatedRooms
-
-        rooms_ =
-            List.foldl update [] rooms
-
-        updateActivePoints pt updatedPoints =
-            case pt of
-                ActiveRoom room entrances ->
-                    if targetRoomPosition == Room.position room then
-                        ActiveRoom targetRoom entrances :: updatedPoints
-                    else
-                        ActiveRoom room entrances :: updatedPoints
-
-                someOtherPoint ->
-                    someOtherPoint :: updatedPoints
-
-        activePoints_ =
-            List.foldl updateActivePoints [] activePoints
-    in
-        { model | rooms = rooms_, activePoints = activePoints_ }
-
-
-findAndUpdateCorridor : Corridor -> Model -> Model
-findAndUpdateCorridor targetCorridor ({ corridors, activePoints } as model) =
-    let
-        ( targetCorridorPosition, _ ) =
-            Corridor.end targetCorridor
-
-        update corridor updatedCorridors =
-            if targetCorridorPosition == (Tuple.first <| Corridor.end corridor) then
-                targetCorridor :: updatedCorridors
-            else
-                corridor :: updatedCorridors
-
-        corridors_ =
-            List.foldl update [] corridors
-
-        updateActivePoints pt updatedPoints =
-            case pt of
-                ActiveCorridor corridor ->
-                    if targetCorridorPosition == (Tuple.first <| Corridor.end corridor) then
-                        ActiveCorridor targetCorridor :: updatedPoints
-                    else
-                        ActiveCorridor corridor :: updatedPoints
-
-                someOtherPoint ->
-                    someOtherPoint :: updatedPoints
-
-        activePoints_ =
-            List.foldl updateActivePoints [] activePoints
-    in
-        { model | corridors = corridors_, activePoints = activePoints_ }
-
-
-{-| Returns the first room or corridor encountered and the point prior just before hitting
-    the obstacle as well as the point where it hits the obstacle.
--}
-firstObstacle : Vector -> Vector -> Model -> ( Maybe Room, Maybe Corridor, Vector, Vector )
-firstObstacle digDirectionVector (( x, y ) as currentPosition) ({ rooms, corridors, activePoints, config } as model) =
-    if not <| Config.withinDungeonBounds currentPosition config then
-        ( Maybe.Nothing, Maybe.Nothing, ( 0, 0 ), ( 0, 0 ) )
-    else
-        case query currentPosition model of
-            ( Maybe.Nothing, Maybe.Nothing ) ->
-                firstObstacle digDirectionVector (Vector.add digDirectionVector currentPosition) model
-
-            ( r, c ) ->
-                ( r, c, Vector.sub currentPosition digDirectionVector, currentPosition )
-
-
-query : Vector -> Model -> ( Maybe Room, Maybe Corridor )
-query position { rooms, corridors, activePoints } =
-    let
-        maybeRoom =
-            (rooms
-                ++ (List.filterMap activePointToRoom activePoints)
-            )
-                |> List.filter (\room -> Room.isCollision room position)
-                |> List.head
-
-        maybeCorridor =
-            (corridors
-                ++ (List.filterMap activePointToCorridor activePoints)
-            )
-                |> List.filter (Corridor.isCollision position)
-                |> List.head
-    in
-        ( maybeRoom, maybeCorridor )
-
-
-activePointToRoom : ActivePoint -> Maybe Room
-activePointToRoom activePoint =
-    case activePoint of
-        ActiveRoom room _ ->
-            Just room
-
-        _ ->
-            Nothing
-
-
-activePointToCorridor : ActivePoint -> Maybe Corridor
-activePointToCorridor activePoint =
-    case activePoint of
-        ActiveCorridor corridor ->
-            Just corridor
-
-        _ ->
-            Nothing
+----------------------------
+-- Cleaning active points --
+----------------------------
 
 
 candidate : Config.Model -> Generator Model
 candidate config =
     init config
         |> steps 200
-        |> Random.map clean
+        |> Random.map Dungeon.Clean.clean
 
 
 generate : Config.Model -> Generator Level.Level
@@ -459,12 +117,12 @@ addStairs model =
                         |> addStairs (downstairs second)
 
                 _ ->
-                    Debug.crash "Tis not good, dungeon does not have two tiles of floors."
+                    Debug.log "ERROR: Tis not good, dungeon does not have two tiles of floors." model
     in
         model.rooms
             |> List.map Room.floors
             |> List.concat
-            |> shuffle
+            |> Lodash.shuffle
             |> Random.map makeUpDownStairs
 
 
@@ -497,7 +155,7 @@ step model =
                 ActiveCorridor corridor ->
                     Corridor.pp corridor
     in
-        shuffle model.activePoints
+        Lodash.shuffle model.activePoints
             |> Random.andThen
                 (\x ->
                     step_ { model | activePoints = x }
@@ -610,7 +268,7 @@ generateActivePointFromCorridor corridor model =
         corridorEnd =
             Corridor.end corridor
     in
-        choices [ activeRoom, activeCorridor ]
+        Random.choices [ activeRoom, activeCorridor ]
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
@@ -636,10 +294,10 @@ generateEntrance room ({ config } as model) =
             Random.map mapEntranceToModel (Room.generateEntrance room)
 
 
-generateRoom : DirectedVector -> Config.Model -> Generator Room
+generateRoom : Vector.DirectedVector -> Config.Model -> Generator Room
 generateRoom corridorEnding config =
     Room.generate config
-        |> andThen (Room.placeRoom corridorEnding)
+        |> Random.andThen (Room.placeRoom corridorEnding)
 
 
 
@@ -710,76 +368,3 @@ canFitRoom model room =
         --                }
     in
         withinBounds && List.isEmpty collisions
-
-
-
-------------------
--- Model to Map --
-------------------
-
-
-toLevel : Model -> Level.Level
-toLevel ({ buildings } as model) =
-    model
-        |> toTiles
-        |> fromTiles
-        |> \x -> Level.Level x buildings
-
-
-fromTiles : Tiles -> Level.Map
-fromTiles tiles =
-    let
-        toKVPair tile =
-            ( Tile.position tile, tile )
-    in
-        tiles
-            |> List.map toKVPair
-            |> Dict.fromList
-
-
-toOccupied : Model -> Vectors
-toOccupied { rooms, corridors, activePoints } =
-    let
-        ( activeRooms, activeCorridors ) =
-            List.foldl roomsAndCorridorsFromActivePoint ( [], [] ) activePoints
-
-        roomVectors =
-            (rooms ++ activeRooms)
-                |> List.map Room.boundary
-                |> List.concat
-
-        corridorVectors =
-            (corridors ++ activeCorridors)
-                |> List.map Corridor.boundary
-                |> List.concat
-    in
-        roomVectors ++ corridorVectors
-
-
-toTiles : Model -> Tiles
-toTiles { rooms, corridors, activePoints, walls } =
-    let
-        ( activeRooms, activeCorridors ) =
-            List.foldl roomsAndCorridorsFromActivePoint ( [], [] ) activePoints
-
-        roomTiles =
-            (rooms ++ activeRooms)
-                |> List.map Room.toTiles
-                |> List.concat
-
-        corridorTiles =
-            (corridors ++ activeCorridors)
-                |> List.map Corridor.toTiles
-                |> List.concat
-    in
-        roomTiles ++ corridorTiles ++ walls
-
-
-roomsAndCorridorsFromActivePoint : ActivePoint -> ( Rooms, Corridors ) -> ( Rooms, Corridors )
-roomsAndCorridorsFromActivePoint point ( rooms, corridors ) =
-    case point of
-        ActiveRoom room _ ->
-            ( room :: rooms, corridors )
-
-        ActiveCorridor corridor ->
-            ( rooms, corridor :: corridors )

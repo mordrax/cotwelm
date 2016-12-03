@@ -7,12 +7,12 @@ The module has no model but rather are mostly a collection of constants used by 
 dungeon generator to create random dungeon levels.
 -}
 
-import UI exposing (..)
 import Array exposing (..)
-import Random.Pcg as Random exposing (..)
-import Lodash exposing (..)
-import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
+import Dungeon.Rooms.Type exposing (..)
+import Lodash exposing (..)
+import Random.Pcg as Random exposing (..)
+import UI exposing (..)
 import Utils.Vector as Vector exposing (..)
 
 

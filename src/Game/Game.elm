@@ -207,8 +207,11 @@ update msg ((A model) as game) =
                             ( newMap, seed_ ) =
                                 Random.step (Maps.downstairs model.maps) model.seed
 
-                            heroAtBottomOfStairs =
+                            currentLevel =
                                 Maps.currentLevel newMap
+
+                            heroAtBottomOfStairs =
+                                currentLevel
                                     |> Level.upstairs
                                     |> Debug.log "upstairs"
                                     |> Maybe.map .pos

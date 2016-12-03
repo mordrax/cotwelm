@@ -74,7 +74,7 @@ init armour seed =
                 |> Dict.fromList
 
         levelOfArea area =
-            Level (mapOfArea area) (buildingsOfArea area)
+            Level (mapOfArea area) (buildingsOfArea area) []
 
         toKVPair tile =
             ( Tile.position tile, tile )

@@ -16,6 +16,7 @@ import Dict exposing (..)
 import GameData.Building as Building exposing (Building, Buildings)
 import Utils.Vector as Vector exposing (Vector)
 import Tile exposing (Tile)
+import Monster.Monster as Monster exposing (Monster)
 
 
 type alias Map =
@@ -25,6 +26,7 @@ type alias Map =
 type alias Level =
     { map : Map
     , buildings : Buildings
+    , monsters : List Monster
     }
 
 
@@ -32,10 +34,11 @@ type Msg
     = NoOp
 
 
-init : Map -> Buildings -> Level
-init map buildings =
+init : Map -> Buildings -> List Monster -> Level
+init map buildings monsters =
     { map = map
     , buildings = buildings
+    , monsters = monsters
     }
 
 
@@ -79,3 +82,12 @@ getTile pos { map } =
 updateTile : Vector -> Tile -> Level -> Level
 updateTile pos tile model =
     { model | map = Dict.insert pos tile model.map }
+
+
+floors : Level -> List Vector
+floors { map } =
+    map
+        |> toList
+        |> List.map Tuple.second
+        |> List.filter (Tile.isSolid >> not)
+        |> List.map Tile.position
