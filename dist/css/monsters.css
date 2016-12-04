@@ -62,10 +62,10 @@
 .thief {
     background: url('/assets/original/monsters.png') -192px -32px;
 }
-.wolf {
+.white-wolf {
     background: url('/assets/original/monsters.png') -224px -32px;
 }
-.dire-wolf {
+.gray-wolf {
     background: url('/assets/original/monsters.png') -256px -32px;
 }
 .brown-bear {

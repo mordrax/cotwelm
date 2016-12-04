@@ -15,6 +15,7 @@ module Game.Maps
         , toScreenCoords
         , downstairs
         , upstairs
+        , getTile
         )
 
 {-| Handles rendering of all the static/dynamic game areas
@@ -293,6 +294,23 @@ getASCIIMap area =
 
         _ ->
             []
+
+
+getTile : Vector -> Model -> Tile
+getTile position model =
+    let
+        maybeTile =
+            currentLevel model
+                |> .map
+                |> Dict.get position
+    in
+        case maybeTile of
+            Just tile ->
+                tile
+
+            _ ->
+                Debug.log ("Could not find the tile the hero" ++ toString position ++ " is standing on.")
+                    (Tile.toTile ( 0, 0 ) Tile.Grass)
 
 
 

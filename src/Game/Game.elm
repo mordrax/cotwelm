@@ -1,6 +1,6 @@
 module Game.Game
     exposing
-        ( Game
+        ( Model
         , Msg
         , init
         , update
@@ -39,10 +39,6 @@ import Window exposing (Size)
 import Container exposing (Container)
 
 
-type Game
-    = A Model
-
-
 type alias Model =
     { name : String
     , hero : Hero
@@ -72,7 +68,7 @@ type Msg
     | WindowSize Window.Size
 
 
-init : Random.Seed -> Hero -> Difficulty -> ( Game, Cmd Msg )
+init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
 init seed hero difficulty =
     let
         idGenerator =
@@ -102,20 +98,19 @@ init seed hero difficulty =
         ground =
             getGroundAtHero heroWithDefaultEquipment maps
     in
-        ( A
-            { name = "A new game"
-            , hero = heroWithDefaultEquipment
-            , maps = maps
-            , currentScreen = MapScreen
-            , shops = shops
-            , idGen = idGenerator
-            , inventory = Inventory.init (Inventory.Ground ground) heroWithDefaultEquipment.equipment
-            , seed = seed__
-            , messages = [ "Welcome to castle of the winds!" ]
-            , difficulty = difficulty
-            , windowSize = { width = 640, height = 640 }
-            , viewport = { x = 0, y = 0 }
-            }
+        ( { name = "A new game"
+          , hero = heroWithDefaultEquipment
+          , maps = maps
+          , currentScreen = MapScreen
+          , shops = shops
+          , idGen = idGenerator
+          , inventory = Inventory.init (Inventory.Ground ground) heroWithDefaultEquipment.equipment
+          , seed = seed__
+          , messages = [ "Welcome to castle of the winds!" ]
+          , difficulty = difficulty
+          , windowSize = { width = 640, height = 640 }
+          , viewport = { x = 0, y = 0 }
+          }
         , cmd
         )
 
@@ -127,8 +122,8 @@ monstersOnLevel model =
         |> .monsters
 
 
-update : Msg -> Game -> ( Game, Cmd Msg )
-update msg ((A model) as game) =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model  =
     let
         atHeroPosition =
             (==) model.hero.position
@@ -143,33 +138,31 @@ update msg ((A model) as game) =
             Keyboard (KeyDir dir) ->
                 ( model
                     |> moveHero dir
-                    |> updateViewportOffset (Hero.position model.hero)
+                    |> updateViewportOffset model.hero.position
                     |> (\model -> moveMonsters (monstersOnLevel model) [] model)
-                    |> A
                 , Cmd.none
                 )
 
             Keyboard Esc ->
                 case model.currentScreen of
                     MapScreen ->
-                        ( A model, Cmd.none )
+                        ( model, Cmd.none )
 
                     BuildingScreen _ ->
-                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
+                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
 
                     InventoryScreen ->
-                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) game
+                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
 
             Keyboard Inventory ->
                 let
                     ground =
                         getGroundAtHero model.hero model.maps
                 in
-                    ( A
-                        { model
-                            | currentScreen = InventoryScreen
-                            , inventory = Inventory.init (Inventory.Ground ground) model.hero.equipment
-                        }
+                    ( { model
+                        | currentScreen = InventoryScreen
+                        , inventory = Inventory.init (Inventory.Ground ground) model.hero.equipment
+                      }
                     , Cmd.none
                     )
 
@@ -187,17 +180,17 @@ update msg ((A model) as game) =
                                     |> Maybe.map (flip Hero.teleport model.hero)
                                     |> Maybe.withDefault model.hero
                         in
-                            ( A
-                                { model
-                                    | maps = map_
-                                    , hero = heroAtTopOfStairs
-                                    , messages = "You climb back up the stairs" :: model.messages
-                                }
+                            ( { model
+                                | maps = map_
+                                , hero = heroAtTopOfStairs
+                                , messages = "You climb back up the stairs" :: model.messages
+                              }
+                                |> updateViewportOffset model.hero.position
                             , Cmd.none
                             )
 
                     _ ->
-                        ( A { model | messages = "You need to be on some stairs!" :: model.messages }
+                        ( { model | messages = "You need to be on some stairs!" :: model.messages }
                         , Cmd.none
                         )
 
@@ -219,18 +212,18 @@ update msg ((A model) as game) =
                                     |> Maybe.map (flip Hero.teleport model.hero)
                                     |> Maybe.withDefault model.hero
                         in
-                            ( A
-                                { model
-                                    | maps = newMap
-                                    , hero = heroAtBottomOfStairs
-                                    , seed = seed_
-                                    , messages = "You go downstairs" :: model.messages
-                                }
+                            ( { model
+                                | maps = newMap
+                                , hero = heroAtBottomOfStairs
+                                , seed = seed_
+                                , messages = "You go downstairs" :: model.messages
+                              }
+                                |> updateViewportOffset model.hero.position
                             , Cmd.none
                             )
 
                     _ ->
-                        ( A { model | messages = "You need to be on some stairs!" :: model.messages }
+                        ( { model | messages = "You need to be on some stairs!" :: model.messages }
                         , Cmd.none
                         )
 
@@ -241,7 +234,7 @@ update msg ((A model) as game) =
                 in
                     case maybeExitValues of
                         Nothing ->
-                            ( A { model | inventory = inventory_ }, Cmd.none )
+                            ( { model | inventory = inventory_ }, Cmd.none )
 
                         Just ( equipment, merchant ) ->
                             let
@@ -255,42 +248,37 @@ update msg ((A model) as game) =
                                 case merchant of
                                     Inventory.Ground container ->
                                         let
-                                            heroPosition =
-                                                Hero.position model.hero
-
                                             tile =
-                                                getTileAtHero model.hero model.maps
+                                                Maps.getTile model.hero.position model.maps
                                                     |> Tile.updateGround container
 
                                             level_ =
-                                                Level.updateTile heroPosition tile (Maps.currentLevel model.maps)
+                                                Level.updateTile model.hero.position tile (Maps.currentLevel model.maps)
 
                                             maps_ =
                                                 Maps.updateCurrentLevel level_ model.maps
                                         in
-                                            ( A
-                                                { modelWithHeroAndInventory
-                                                    | maps = maps_
-                                                }
+                                            ( { modelWithHeroAndInventory
+                                                | maps = maps_
+                                              }
                                             , Cmd.none
                                             )
 
                                     Inventory.Shop shop ->
-                                        ( A
-                                            { modelWithHeroAndInventory
-                                                | shops = Shops.updateShop shop model.shops
-                                            }
+                                        ( { modelWithHeroAndInventory
+                                            | shops = Shops.updateShop shop model.shops
+                                          }
                                         , Cmd.none
                                         )
 
             MapsMsg msg ->
-                ( A { model | maps = Maps.update msg model.maps }, Cmd.none )
+                ( { model | maps = Maps.update msg model.maps }, Cmd.none )
 
             Keyboard _ ->
-                ( A model, Cmd.none )
+                ( model, Cmd.none )
 
             WindowSize size ->
-                ( A { model | windowSize = size }, Cmd.none )
+                ( { model | windowSize = size }, Cmd.none )
 
 
 newMessage : String -> Model -> Model
@@ -304,26 +292,11 @@ newMessage msg model =
 --------------
 
 
-getTileAtHero : Hero -> Maps.Model -> Tile
-getTileAtHero hero maps =
-    let
-        heroPosition =
-            Hero.position hero
-
-        level =
-            Maps.currentLevel maps
-    in
-        case Level.getTile heroPosition level of
-            Just tile ->
-                tile
-
-            Nothing ->
-                Debug.crash "getTileAtHero" heroPosition
-
-
 getGroundAtHero : Hero -> Maps.Model -> Container Item
 getGroundAtHero hero maps =
-    Tile.ground <| getTileAtHero hero maps
+    hero.position
+        |> flip Maps.getTile maps
+        |> Tile.ground
 
 
 
@@ -693,8 +666,8 @@ donDefaultGarb itemFactory hero =
 ----------
 
 
-view : Game -> Html Msg
-view (A model) =
+view : Model -> Html Msg
+view model =
     case model.currentScreen of
         MapScreen ->
             viewMap model
@@ -834,8 +807,8 @@ viewBuilding building =
     div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
 
 
-subscription : Game -> Sub Msg
-subscription (A model) =
+subscription : Model -> Sub Msg
+subscription model =
     Sub.batch
         [ Window.resizes (\x -> WindowSize x)
         , Sub.map InventoryMsg (Inventory.subscription model.inventory)
