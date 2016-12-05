@@ -37,6 +37,7 @@ import Utils.Lib as Lib
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
 import Container exposing (Container)
+import Keyboard.Extra as KeyboardX
 
 
 type alias Model =
@@ -52,6 +53,7 @@ type alias Model =
     , viewport : { x : Int, y : Int }
     , difficulty : Difficulty
     , inventory : Inventory
+    , keyboard : KeyboardX.Model
     }
 
 
@@ -68,6 +70,7 @@ type Msg
     | WindowSize Window.Size
     | ClickTile Vector
     | Walk (List Vector)
+    | KeyboardXMsg KeyboardX.Msg
 
 
 init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
@@ -99,6 +102,9 @@ init seed hero difficulty =
 
         ground =
             getGroundAtHero heroWithDefaultEquipment maps
+
+        ( keyboardXModel, keyboardXCmd ) =
+            KeyboardX.init
     in
         ( { name = "A new game"
           , hero = heroWithDefaultEquipment
@@ -112,8 +118,9 @@ init seed hero difficulty =
           , difficulty = difficulty
           , windowSize = { width = 640, height = 640 }
           , viewport = { x = 0, y = 0 }
+          , keyboard = keyboardXModel
           }
-        , cmd
+        , Cmd.batch [ cmd, Cmd.map KeyboardXMsg keyboardXCmd ]
         )
 
 
@@ -137,6 +144,16 @@ update msg model =
                 |> Maybe.map atHeroPosition
     in
         case msg of
+            KeyboardXMsg msg ->
+                let
+                    _ =
+                        Debug.log "keyboard msg: " msg
+
+                    ( keyboard, cmd ) =
+                        KeyboardX.update msg model.keyboard
+                in
+                    ( { model | keyboard = keyboard }, Cmd.map KeyboardXMsg cmd )
+
             Keyboard (KeyDir dir) ->
                 ( model
                     |> moveHero dir
@@ -847,7 +864,7 @@ subscription model =
     Sub.batch
         [ Window.resizes (\x -> WindowSize x)
         , Sub.map InventoryMsg (Inventory.subscription model.inventory)
-        , Sub.map Keyboard (Keyboard.subscription)
+        , Sub.map KeyboardXMsg (KeyboardX.subscriptions)
         ]
 
 
