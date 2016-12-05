@@ -14,7 +14,6 @@ module Tile
         , setPosition
         , mapToTiles
         , view
-        , scaledView
         , toTile
         , tileType
         )
@@ -23,7 +22,8 @@ import Utils.Vector exposing (..)
 import GameData.Building as Building exposing (..)
 import Item.Item as Item exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as HA
+import Html.Events as HE
 import Utils.Vector as Vector exposing (..)
 import Utils.Lib as Lib exposing (..)
 import List exposing (..)
@@ -150,16 +150,22 @@ toTile ( x, y ) tileType =
         A <| Model tileType solid [] Empty ( x, y ) container
 
 
-view : Tile -> TileNeighbours -> List (Html a)
-view tile neighbours =
-    scaledView tile 1.0 neighbours
-
-
-scaledView : Tile -> Float -> TileNeighbours -> List (Html a)
-scaledView (A ({ type_, position, ground } as model)) scale neighbours =
+view : Tile -> Float -> TileNeighbours -> (Vector -> a) -> List (Html a)
+view (A ({ type_, position, ground } as model)) scale neighbours onClick =
     let
         transform rotation scale =
-            ( "transform", "rotate(" ++ toString rotation ++ "deg) scale" ++ toString ( scale, scale ) )
+            case ( rotation, scale ) of
+                ( 0, 1 ) ->
+                    ( "", "" )
+
+                ( 0, _ ) ->
+                    ( "transform", "scale" ++ toString ( scale, scale ) )
+
+                ( _, 1 ) ->
+                    ( "transform", "rotate(" ++ toString rotation ++ "deg)" )
+
+                _ ->
+                    ( "transform", "rotate(" ++ toString rotation ++ "deg) scale" ++ toString ( scale, scale ) )
 
         rotation =
             case List.Extra.find (\( halfTileType, _, _ ) -> type_ == halfTileType) halfTiles of
@@ -176,9 +182,10 @@ scaledView (A ({ type_, position, ground } as model)) scale neighbours =
 
         tileDiv css =
             div
-                [ class ("tile " ++ css ++ " " ++ toString position)
-                , style [ transform rotation scale ]
+                [ HA.class ("tile " ++ css ++ " " ++ toString position)
+                , HA.style [ transform rotation scale ]
                 , Lib.toScaledTilePosition position scale
+                , clickAttribute position
                 ]
                 []
 
@@ -187,11 +194,14 @@ scaledView (A ({ type_, position, ground } as model)) scale neighbours =
 
         itemDiv item =
             div
-                [ class ("tile cotw-item " ++ (Item.css item))
-                , style [ transform rotation scale ]
+                [ HA.class ("tile cotw-item " ++ (Item.css item))
+                , HA.style [ transform rotation scale ]
                 , Lib.toScaledTilePosition position scale
                 ]
                 []
+
+        clickAttribute position =
+            HE.onClick (onClick position)
 
         baseTile =
             tileDiv (tileToCss type_)

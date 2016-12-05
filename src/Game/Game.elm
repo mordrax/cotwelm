@@ -66,6 +66,8 @@ type Msg
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
     | MapsMsg Maps.Msg
     | WindowSize Window.Size
+    | ClickTile Vector
+    | Walk (List Vector)
 
 
 init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
@@ -123,7 +125,7 @@ monstersOnLevel model =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model  =
+update msg model =
     let
         atHeroPosition =
             (==) model.hero.position
@@ -279,6 +281,35 @@ update msg model  =
 
             WindowSize size ->
                 ( { model | windowSize = size }, Cmd.none )
+
+            ClickTile targetPosition ->
+                let
+                    path =
+                        findPath model.hero.position targetPosition model
+                in
+                    update (Walk path) model
+
+            Walk [] ->
+                ( model, Cmd.none )
+
+            Walk (x :: xs) ->
+                let
+                    dir =
+                        Vector.sub x model.hero.position
+                            |> Vector.toDirection
+
+                    walkRemainingPathTask =
+                        Task.succeed xs
+
+                    ( model_, cmds_ ) =
+                        update (Keyboard (KeyDir dir)) model
+                in
+                    ( model_
+                    , Cmd.batch
+                        [ Task.perform Walk walkRemainingPathTask
+                        , cmds_
+                        ]
+                    )
 
 
 newMessage : String -> Model -> Model
@@ -502,24 +533,28 @@ buildingAtPosition pos buildings =
 -----------------
 
 
-pathMonster : Monster -> Hero -> Model -> Monster
-pathMonster monster hero model =
+findPath : Vector -> Vector -> Model -> List Vector
+findPath from to model =
     let
         path =
-            AStar.findPath heuristic
-                (neighbours model)
-                monster.position
-                (Hero.position hero)
+            AStar.findPath heuristic (neighbours model) from to
     in
         case path of
-            Nothing ->
-                monster
+            Just path ->
+                path
 
-            Just [] ->
-                monster
+            _ ->
+                []
 
-            Just (( x, y ) :: _) ->
-                { monster | position = ( x, y ) }
+
+pathMonster : Monster -> Hero -> Model -> Monster
+pathMonster monster hero model =
+    case findPath monster.position hero.position model of
+        x :: _ ->
+            { monster | position = x }
+
+        _ ->
+            monster
 
 
 {-| Manhattan but counts diagonal cost as one (since you can move diagonally)
@@ -736,7 +771,7 @@ viewMap ({ windowSize, viewport } as model) =
             [ viewMenu
             , viewQuickMenu
             , adjustViewport
-                [ Maps.view viewStart viewSize model.maps
+                [ Maps.view ( viewStart, viewSize ) ClickTile model.maps
                 , Hero.view model.hero
                 , viewMonsters model
                 ]
