@@ -36,6 +36,7 @@ type Msg
     | ResetMap
     | Clean
     | NewCandidate
+    | Noop
 
 
 init : Model
@@ -109,6 +110,9 @@ update msg model =
         ResetMap ->
             ( { model | map = Dict.empty, dungeonSteps = [] }, Cmd.none )
 
+        Noop ->
+            ( model, Cmd.none )
+
 
 updateMap : Dungeon.Types.Model -> Level.Map
 updateMap dungeonModel =
@@ -125,6 +129,9 @@ view model =
 
         screenMap =
             Maps.toScreenCoords model.map model.config.dungeonSize
+
+        clickTile position =
+            Noop
     in
         div []
             [ div []
@@ -137,7 +144,7 @@ view model =
                 , mapSizeView model
                 ]
             , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-                (Maps.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale)
+                (Maps.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
             ]
 
 
