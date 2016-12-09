@@ -37,7 +37,6 @@ import Utils.Lib as Lib
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
 import Container exposing (Container)
-import Keyboard.Extra as KeyboardX
 
 
 type alias Model =
@@ -53,7 +52,6 @@ type alias Model =
     , viewport : { x : Int, y : Int }
     , difficulty : Difficulty
     , inventory : Inventory
-    , keyboard : KeyboardX.Model
     }
 
 
@@ -64,13 +62,12 @@ type Screen
 
 
 type Msg
-    = Keyboard Keyboard.Msg
+    = KeyboardMsg Keyboard.Msg
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
     | MapsMsg Maps.Msg
     | WindowSize Window.Size
     | ClickTile Vector
-    | Walk (List Vector)
-    | KeyboardXMsg KeyboardX.Msg
+    | PathTo (List Vector)
 
 
 init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
@@ -102,9 +99,6 @@ init seed hero difficulty =
 
         ground =
             getGroundAtHero heroWithDefaultEquipment maps
-
-        ( keyboardXModel, keyboardXCmd ) =
-            KeyboardX.init
     in
         ( { name = "A new game"
           , hero = heroWithDefaultEquipment
@@ -118,9 +112,8 @@ init seed hero difficulty =
           , difficulty = difficulty
           , windowSize = { width = 640, height = 640 }
           , viewport = { x = 0, y = 0 }
-          , keyboard = keyboardXModel
           }
-        , Cmd.batch [ cmd, Cmd.map KeyboardXMsg keyboardXCmd ]
+        , cmd
         )
 
 
@@ -144,25 +137,23 @@ update msg model =
                 |> Maybe.map atHeroPosition
     in
         case msg of
-            KeyboardXMsg msg ->
+            KeyboardMsg (KeyDir dir) ->
+                moveHero dir model
+                    |> \( model, _ ) -> ( model, Cmd.none )
+
+            KeyboardMsg (Walk dir) ->
                 let
-                    _ =
-                        Debug.log "keyboard msg: " msg
-
-                    ( keyboard, cmd ) =
-                        KeyboardX.update msg model.keyboard
+                    ( modelWithMovedHero, hasMoved ) =
+                        moveHero dir model
                 in
-                    ( { model | keyboard = keyboard }, Cmd.map KeyboardXMsg cmd )
+                    case hasMoved of
+                        False ->
+                            ( modelWithMovedHero, Cmd.none )
 
-            Keyboard (KeyDir dir) ->
-                ( model
-                    |> moveHero dir
-                    |> updateViewportOffset model.hero.position
-                    |> (\model -> moveMonsters (monstersOnLevel model) [] model)
-                , Cmd.none
-                )
+                        True ->
+                            update (KeyboardMsg (Walk dir)) modelWithMovedHero
 
-            Keyboard Esc ->
+            KeyboardMsg Esc ->
                 case model.currentScreen of
                     MapScreen ->
                         ( model, Cmd.none )
@@ -173,7 +164,7 @@ update msg model =
                     InventoryScreen ->
                         update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
 
-            Keyboard Inventory ->
+            KeyboardMsg Inventory ->
                 let
                     ground =
                         getGroundAtHero model.hero model.maps
@@ -185,7 +176,7 @@ update msg model =
                     , Cmd.none
                     )
 
-            Keyboard GoUpstairs ->
+            KeyboardMsg GoUpstairs ->
                 case isOnStairs Level.upstairs of
                     Just True ->
                         let
@@ -213,7 +204,7 @@ update msg model =
                         , Cmd.none
                         )
 
-            Keyboard GoDownstairs ->
+            KeyboardMsg GoDownstairs ->
                 case isOnStairs Level.downstairs of
                     Just True ->
                         let
@@ -293,7 +284,7 @@ update msg model =
             MapsMsg msg ->
                 ( { model | maps = Maps.update msg model.maps }, Cmd.none )
 
-            Keyboard _ ->
+            KeyboardMsg _ ->
                 ( model, Cmd.none )
 
             WindowSize size ->
@@ -304,12 +295,12 @@ update msg model =
                     path =
                         findPath model.hero.position targetPosition model
                 in
-                    update (Walk path) model
+                    update (PathTo path) model
 
-            Walk [] ->
+            PathTo [] ->
                 ( model, Cmd.none )
 
-            Walk (x :: xs) ->
+            PathTo (x :: xs) ->
                 let
                     dir =
                         Vector.sub x model.hero.position
@@ -319,11 +310,11 @@ update msg model =
                         Task.succeed xs
 
                     ( model_, cmds_ ) =
-                        update (Keyboard (KeyDir dir)) model
+                        update (KeyboardMsg (KeyDir dir)) model
                 in
                     ( model_
                     , Cmd.batch
-                        [ Task.perform Walk walkRemainingPathTask
+                        [ Task.perform PathTo walkRemainingPathTask
                         , cmds_
                         ]
                     )
@@ -351,11 +342,28 @@ getGroundAtHero hero maps =
 -- Collision
 
 
-moveHero : Direction -> Model -> Model
-moveHero dir ({ hero, seed } as model) =
+moveHero : Direction -> Model -> ( Model, Bool )
+moveHero dir model =
+    let
+        ( modelWithHeroMoved, hasMoved ) =
+            moveHero_ dir model
+    in
+        case hasMoved of
+            False ->
+                ( modelWithHeroMoved, False )
+
+            _ ->
+                modelWithHeroMoved
+                    |> updateViewportOffset model.hero.position
+                    |> (\model -> moveMonsters (monstersOnLevel model) [] model)
+                    |> (\model -> ( model, True ))
+
+
+moveHero_ : Direction -> Model -> ( Model, Bool )
+moveHero_ dir model =
     let
         heroMoved =
-            Hero.move dir hero
+            Hero.move dir model.hero
 
         obstructions =
             heroMoved
@@ -364,19 +372,19 @@ moveHero dir ({ hero, seed } as model) =
     in
         case obstructions of
             ( _, _, Just monster, _ ) ->
-                attackMonster monster model
+                ( attackMonster monster model, False )
 
             -- entering a building
             ( _, Just building, _, _ ) ->
-                enterBuilding building model
+                ( enterBuilding building model, False )
 
             -- path blocked
             ( True, _, _, _ ) ->
-                model
+                ( model, False )
 
             -- path free, moved
             ( False, _, _, _ ) ->
-                { model | hero = heroMoved }
+                ( { model | hero = heroMoved }, True )
 
 
 updateMonsters : List Monster -> Maps.Model -> Maps.Model
@@ -864,7 +872,7 @@ subscription model =
     Sub.batch
         [ Window.resizes (\x -> WindowSize x)
         , Sub.map InventoryMsg (Inventory.subscription model.inventory)
-        , Sub.map KeyboardXMsg (KeyboardX.subscriptions)
+        , Sub.map KeyboardMsg (Keyboard.subscription)
         ]
 
 
