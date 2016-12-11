@@ -5,15 +5,18 @@ module Level
         , downstairs
         , upstairs
         , size
-        , updateTile
+        , updateGround
         , getTile
         , floors
+        , drop
         )
 
 --import List exposing (..)
 --import Set exposing (..)
 
-import Dict exposing (..)
+import Container exposing (Container)
+import Dict exposing (Dict)
+import Item.Item as Item exposing (Item)
 import GameData.Building as Building exposing (Building, Buildings)
 import Utils.Vector as Vector exposing (Vector)
 import Tile exposing (Tile)
@@ -80,15 +83,34 @@ getTile pos { map } =
     Dict.get pos map
 
 
-updateTile : Vector -> Tile -> Level -> Level
-updateTile pos tile model =
-    { model | map = Dict.insert pos tile model.map }
+updateGround : Vector -> Container Item -> Level -> Level
+updateGround pos payload model =
+    let
+        maybeTile =
+            Dict.get pos model.map
+                |> Maybe.map (Tile.updateGround payload)
+    in
+        case maybeTile of
+            Nothing ->
+                model
+
+            Just tile ->
+                { model | map = Dict.insert pos tile model.map }
+
+
+drop : Vector -> Item -> Level -> Level
+drop position item model =
+    Dict.get position model.map
+        |> Maybe.map (Tile.drop item)
+        |> Maybe.map (\x -> Dict.insert position x model.map)
+        |> Maybe.withDefault model.map
+        |> (\map -> { model | map = map })
 
 
 floors : Level -> List Vector
 floors { map } =
     map
-        |> toList
+        |> Dict.toList
         |> List.map Tuple.second
         |> List.filter (Tile.isSolid >> not)
         |> List.map Tile.position

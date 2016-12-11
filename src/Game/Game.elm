@@ -258,12 +258,8 @@ update msg model =
                                 case merchant of
                                     Inventory.Ground container ->
                                         let
-                                            tile =
-                                                Maps.getTile model.hero.position model.maps
-                                                    |> Tile.updateGround container
-
                                             level_ =
-                                                Level.updateTile model.hero.position tile (Maps.currentLevel model.maps)
+                                                Level.updateGround model.hero.position container (Maps.currentLevel model.maps)
 
                                             maps_ =
                                                 Maps.updateCurrentLevel level_ model.maps
@@ -382,11 +378,13 @@ moveHero_ dir model =
                 ( { model | hero = heroMoved }, True )
 
 
-updateMonsters : List Monster -> Maps.Model -> Maps.Model
-updateMonsters monsters maps =
-    Maps.currentLevel maps
-        |> (\level -> { level | monsters = monsters })
-        |> (\level -> Maps.updateCurrentLevel level maps)
+
+-------------------------
+-- Attacking a monster --
+-- 1. Resolve combat   --
+-- 2. Determine death  --
+-- 3. Calculate loot   --
+-------------------------
 
 
 attackMonster : Monster -> Model -> Model
@@ -395,19 +393,68 @@ attackMonster monster ({ hero, seed, messages, maps } as model) =
         monsters =
             monstersOnLevel model
 
-        ( ( msg, monsterAfterBeingHit ), seed_ ) =
-            Random.step (Combat.attack hero monster) seed
+        ( maybeMonster, seed_, combatMsg ) =
+            resolveCombat hero monster seed
 
-        monstersAfterHit monster =
-            if Stats.isDead monster.stats then
-                Monster.remove monster monsters
-            else
-                Monster.update monster monsters
+        monsters_ =
+            case maybeMonster of
+                Nothing ->
+                    Monster.remove monster monsters
+
+                Just monster ->
+                    Monster.update monster monsters
+
+        modelAfterCombat =
+            { model
+                | seed = seed_
+                , maps = updateMonstersOnCurrentLevel monsters_ model.maps
+                , messages = combatMsg :: messages
+            }
+
+        modelAfterCombatAndLoot =
+            case maybeMonster of
+                Just monster ->
+                    modelAfterCombat
+
+                Nothing ->
+                    addLoot monster modelAfterCombat
+    in
+        modelAfterCombatAndLoot
+
+
+resolveCombat : Hero -> Monster -> Seed -> ( Maybe Monster, Seed, String )
+resolveCombat hero monster seed =
+    let
+        ( ( combatMsg, monsterAfterBeingHit ), seed_ ) =
+            Random.step (Combat.attack hero monster) seed
+    in
+        if Stats.isDead monster.stats then
+            ( Nothing, seed_, combatMsg )
+        else
+            ( Just monsterAfterBeingHit, seed_, combatMsg )
+
+
+updateMonstersOnCurrentLevel : List Monster -> Maps.Model -> Maps.Model
+updateMonstersOnCurrentLevel monsters maps =
+    Maps.currentLevel maps
+        |> (\level -> { level | monsters = monsters })
+        |> (\level -> Maps.updateCurrentLevel level maps)
+
+
+addLoot : Monster -> Model -> Model
+addLoot monster model =
+    let
+        currentLevel =
+            Maps.currentLevel model.maps
+
+        (loot, factory_) = ItemFactory.make (ItemTypeGauntlets NormalGauntlets) ItemFactory.init
+
+        currentLevel_ =
+            Level.drop monster.position loot currentLevel
     in
         { model
-            | seed = seed_
-            , maps = updateMonsters (monstersAfterHit monsterAfterBeingHit) model.maps
-            , messages = msg :: messages
+            | seed = model.seed
+            , maps = Maps.updateCurrentLevel currentLevel_ model.maps
         }
 
 
@@ -415,7 +462,7 @@ moveMonsters : List Monster -> List Monster -> Model -> Model
 moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
     case monsters of
         [] ->
-            { model | maps = updateMonsters movedMonsters maps }
+            { model | maps = updateMonstersOnCurrentLevel movedMonsters maps }
 
         monster :: restOfMonsters ->
             let

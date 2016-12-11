@@ -18,24 +18,24 @@ module Tile
         , tileType
         )
 
-import Utils.Vector exposing (..)
+import Container exposing (Container)
+import Dict exposing (..)
 import GameData.Building as Building exposing (..)
-import Item.Item as Item exposing (..)
+import Hero.Hero as Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
-import Utils.Vector as Vector exposing (..)
-import Utils.Lib as Lib exposing (..)
+import Item.Item as Item exposing (..)
 import List exposing (..)
-import Dict exposing (..)
-import String exposing (..)
-import Hero.Hero as Hero exposing (Hero)
-import Monster.Monster as Monster exposing (..)
 import List.Extra exposing (..)
-import Container exposing (Container)
-import Utils.Mass as Mass exposing (Capacity)
+import Monster.Monster as Monster exposing (..)
 import Random.Pcg as Random
+import String exposing (..)
 import String.Extra as StringX
+import Utils.Lib as Lib exposing (..)
+import Utils.Mass as Mass exposing (Capacity)
+import Utils.Vector as Vector exposing (..)
+import Utils.Vector exposing (..)
 
 
 type alias Model =
