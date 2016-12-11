@@ -162,11 +162,6 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    viewPage model
-
-
-viewPage : Model -> Html Msg
-viewPage model =
     case model.currentPage of
         CharCreationPage ->
             Html.map CharCreationMsg
