@@ -195,7 +195,7 @@ update msg model =
                                 , hero = heroAtTopOfStairs
                                 , messages = "You climb back up the stairs" :: model.messages
                               }
-                                |> updateViewportOffset model.hero.position
+                                |> updateViewportOffset
                             , Cmd.none
                             )
 
@@ -228,7 +228,7 @@ update msg model =
                                 , seed = seed_
                                 , messages = "You go downstairs" :: model.messages
                               }
-                                |> updateViewportOffset model.hero.position
+                                |> updateViewportOffset
                             , Cmd.none
                             )
 
@@ -350,13 +350,13 @@ moveHero dir model =
     in
         case hasMoved of
             False ->
-                ( modelWithHeroMoved, False )
+                ( updateViewportOffset modelWithHeroMoved, False )
 
             _ ->
                 modelWithHeroMoved
-                    |> updateViewportOffset model.hero.position
-                    |> (\model -> moveMonsters (monstersOnLevel model) [] model)
-                    |> (\model -> ( model, True ))
+                    |> updateViewportOffset
+                    |> (\m -> moveMonsters (monstersOnLevel m) [] m)
+                    |> (\m -> ( m, True ))
 
 
 moveHero_ : Direction -> Model -> ( Model, Bool )
@@ -364,13 +364,8 @@ moveHero_ dir model =
     let
         heroMoved =
             Hero.move dir model.hero
-
-        obstructions =
-            heroMoved
-                |> Hero.position
-                |> \newHeroPosition -> queryPosition newHeroPosition model
     in
-        case obstructions of
+        case queryPosition heroMoved.position model of
             ( _, _, Just monster, _ ) ->
                 ( attackMonster monster model, False )
 
@@ -638,14 +633,11 @@ isMonsterObstruction monster monsters =
 -----------
 
 
-updateViewportOffset : Vector -> Model -> Model
-updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model) =
+updateViewportOffset : Model -> Model
+updateViewportOffset ({ windowSize, viewport, maps, hero } as model) =
     let
         tileSize =
             32
-
-        ( prevX, prevY ) =
-            Vector.scale tileSize prevPosition
 
         ( curX, curY ) =
             Vector.scale tileSize (Hero.position hero)
@@ -667,13 +659,13 @@ updateViewportOffset prevPosition ({ windowSize, viewport, maps, hero } as model
             (Level.size (Maps.currentLevel maps))
 
         newX =
-            if prevX /= curX && (scroll.left || scroll.right) then
+            if scroll.left || scroll.right then
                 clamp (windowSize.width - mapWidth * tileSize) 0 (xOff - curX)
             else
                 viewport.x
 
         newY =
-            if prevY /= curY && (scroll.up || scroll.down) then
+            if scroll.up || scroll.down then
                 clamp (windowSize.height * 4 // 5 - mapHeight * tileSize) 0 (yOff - curY)
             else
                 viewport.y
