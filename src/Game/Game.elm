@@ -52,6 +52,7 @@ type alias Model =
     , viewport : { x : Int, y : Int }
     , difficulty : Difficulty
     , inventory : Inventory
+    , itemFactory: ItemFactory
     }
 
 
@@ -112,6 +113,7 @@ init seed hero difficulty =
           , difficulty = difficulty
           , windowSize = { width = 640, height = 640 }
           , viewport = { x = 0, y = 0 }
+          , itemFactory = itemFactory_
           }
         , cmd
         )
@@ -447,7 +449,7 @@ addLoot monster model =
         currentLevel =
             Maps.currentLevel model.maps
 
-        (loot, factory_) = ItemFactory.make (ItemTypeGauntlets NormalGauntlets) ItemFactory.init
+        (loot, itemFactory_) = ItemFactory.make (ItemTypeGauntlets NormalGauntlets) model.itemFactory
 
         currentLevel_ =
             Level.drop monster.position loot currentLevel
@@ -455,6 +457,7 @@ addLoot monster model =
         { model
             | seed = model.seed
             , maps = Maps.updateCurrentLevel currentLevel_ model.maps
+            , itemFactory = itemFactory_
         }
 
 
