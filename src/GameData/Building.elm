@@ -36,7 +36,7 @@ type alias Buildings =
 type alias Building =
     { tile : BuildingTile
     , entry : Vector
-    , pos : Vector
+    , position : Vector
     , name : String
     , size : Vector
     , buildingType : BuildingType
@@ -45,7 +45,7 @@ type alias Building =
 
 type alias Link =
     { area : Area
-    , pos : Vector
+    , position : Vector
     }
 
 
@@ -79,7 +79,7 @@ view : Building -> Html a
 view model =
     let
         posStyle =
-            Lib.vectorToHtmlStyle model.pos
+            Lib.vectorToHtmlStyle model.position
 
         tileCss =
             model.tile
@@ -96,9 +96,9 @@ isBuildingAtPosition : Vector -> Building -> Bool
 isBuildingAtPosition pos model =
     let
         bottomLeft =
-            Vector.sub (Vector.add model.pos model.size) ( 1, 1 )
+            Vector.sub (Vector.add model.position model.size) ( 1, 1 )
     in
-        boxIntersectVector pos ( model.pos, bottomLeft )
+        boxIntersectVector pos ( model.position, bottomLeft )
 
 
 buildingType : Building -> BuildingType

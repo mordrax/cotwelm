@@ -87,9 +87,9 @@ drop item (A model) =
         (A { model | ground = groundWithItem })
 
 
-updateGround : Container Item -> Tile -> Tile
-updateGround newGround (A model) =
-    A { model | ground = newGround }
+updateGround : List Item -> Tile -> Tile
+updateGround items (A model) =
+    A { model | ground = Container.set items model.ground }
 
 
 tileType : Tile -> TileType
