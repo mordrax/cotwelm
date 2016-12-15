@@ -6,6 +6,7 @@ module Container
         , list
         , add
         , remove
+        , set
         , mass
         , capacity
         )
@@ -17,10 +18,6 @@ Items can also be containers, so containers can hold containers.
 -}
 
 import Utils.Mass as Mass exposing (..)
-
-
-type alias ID =
-    Int
 
 
 type Msg
@@ -63,6 +60,9 @@ list : Container a -> List a
 list (ContainerModel model) =
     model.items
 
+set: List a -> Container a -> Container a
+set items (ContainerModel model) =
+    ContainerModel { model | items = items }
 
 {-| Try to add a new item to the container. Makes sure that the item obeys mass/capacity rules.
 -}
@@ -75,8 +75,10 @@ add item (ContainerModel model) =
         containerMassWithItem =
             Mass.add mass model.currentMass
 
+        log x = Debug.log "comparing " x
+
         isNested =
-            List.any (\x -> model.equals x item) model.items
+            List.any (\x -> model.equals (log x) (log item)) model.items
 
         isWithinCapacity =
             Mass.withinCapacity containerMassWithItem model.capacity

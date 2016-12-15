@@ -52,7 +52,7 @@ type alias Model =
     , viewport : { x : Int, y : Int }
     , difficulty : Difficulty
     , inventory : Inventory
-    , itemFactory: ItemFactory
+    , itemFactory : ItemFactory
     }
 
 
@@ -126,8 +126,8 @@ monstersOnLevel model =
         |> .monsters
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+updateKeyboard : Keyboard.Msg -> Model -> ( Model, Cmd Msg )
+updateKeyboard keyboardMsg model =
     let
         atHeroPosition =
             (==) model.hero.position
@@ -135,15 +135,15 @@ update msg model =
         isOnStairs upOrDownStairs =
             Maps.currentLevel model.maps
                 |> upOrDownStairs
-                |> Maybe.map .pos
+                |> Maybe.map .position
                 |> Maybe.map atHeroPosition
     in
-        case msg of
-            KeyboardMsg (KeyDir dir) ->
+        case keyboardMsg of
+            KeyDir dir ->
                 moveHero dir model
                     |> \( model, _ ) -> ( model, Cmd.none )
 
-            KeyboardMsg (Walk dir) ->
+            Walk dir ->
                 let
                     ( modelWithMovedHero, hasMoved ) =
                         moveHero dir model
@@ -155,7 +155,7 @@ update msg model =
                         True ->
                             update (KeyboardMsg (Walk dir)) modelWithMovedHero
 
-            KeyboardMsg Esc ->
+            Esc ->
                 case model.currentScreen of
                     MapScreen ->
                         ( model, Cmd.none )
@@ -166,7 +166,7 @@ update msg model =
                     InventoryScreen ->
                         update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
 
-            KeyboardMsg Inventory ->
+            Inventory ->
                 let
                     ground =
                         getGroundAtHero model.hero model.maps
@@ -178,7 +178,7 @@ update msg model =
                     , Cmd.none
                     )
 
-            KeyboardMsg GoUpstairs ->
+            GoUpstairs ->
                 case isOnStairs Level.upstairs of
                     Just True ->
                         let
@@ -188,7 +188,7 @@ update msg model =
                             heroAtTopOfStairs =
                                 Maps.currentLevel map_
                                     |> Level.downstairs
-                                    |> Maybe.map .pos
+                                    |> Maybe.map .position
                                     |> Maybe.map (flip Hero.teleport model.hero)
                                     |> Maybe.withDefault model.hero
                         in
@@ -206,21 +206,18 @@ update msg model =
                         , Cmd.none
                         )
 
-            KeyboardMsg GoDownstairs ->
+            GoDownstairs ->
                 case isOnStairs Level.downstairs of
                     Just True ->
                         let
                             ( newMap, seed_ ) =
                                 Random.step (Maps.downstairs model.maps) model.seed
 
-                            currentLevel =
-                                Maps.currentLevel newMap
-
                             heroAtBottomOfStairs =
-                                currentLevel
+                                Maps.currentLevel newMap
                                     |> Level.upstairs
                                     |> Debug.log "upstairs"
-                                    |> Maybe.map .pos
+                                    |> Maybe.map .position
                                     |> Maybe.map (flip Hero.teleport model.hero)
                                     |> Maybe.withDefault model.hero
                         in
@@ -239,83 +236,150 @@ update msg model =
                         , Cmd.none
                         )
 
-            InventoryMsg msg ->
+            Get ->
                 let
-                    ( inventory_, maybeExitValues ) =
-                        Inventory.update msg model.inventory
+                    maybeItems =
+                        Maps.currentLevel model.maps
+                            |> Level.getTile model.hero.position
+                            |> Maybe.map Tile.ground
+                            |> Maybe.map Container.list
                 in
-                    case maybeExitValues of
+                    case maybeItems of
                         Nothing ->
-                            ( { model | inventory = inventory_ }, Cmd.none )
+                            ( model, Cmd.none )
 
-                        Just ( equipment, merchant ) ->
-                            let
-                                modelWithHeroAndInventory =
-                                    { model
-                                        | inventory = inventory_
-                                        , hero = Hero.updateEquipment equipment model.hero
-                                        , currentScreen = MapScreen
-                                    }
-                            in
-                                case merchant of
-                                    Inventory.Ground container ->
-                                        let
-                                            level_ =
-                                                Level.updateGround model.hero.position container (Maps.currentLevel model.maps)
+                        Just items ->
+                            ( pickup items model, Cmd.none )
 
-                                            maps_ =
-                                                Maps.updateCurrentLevel level_ model.maps
-                                        in
-                                            ( { modelWithHeroAndInventory
-                                                | maps = maps_
-                                              }
-                                            , Cmd.none
-                                            )
+            other ->
+                let
+                    _ =
+                        Debug.log "Keyboard key not implemented yet" other
+                in
+                    ( model, Cmd.none )
 
-                                    Inventory.Shop shop ->
+
+pickup : List Item -> Model -> Model
+pickup items model =
+    let
+        ( hero_, msgs, failedToPickup ) =
+            List.foldl pickupReducer ( model.hero, [], [] ) (Debug.log "picking up: " items)
+
+        failedToPickupWithPosition =
+            List.map (\x -> ( hero_.position, x )) failedToPickup
+
+        maps_ =
+            Maps.currentLevel model.maps
+                |> Level.updateGround hero_.position failedToPickup
+                |> flip Maps.updateCurrentLevel model.maps
+    in
+        { model
+            | hero = hero_
+            , maps = maps_
+            , messages = msgs ++ model.messages
+        }
+
+
+pickupReducer : Item -> ( Hero, List String, List Item ) -> ( Hero, List String, List Item )
+pickupReducer item ( hero, messages, remainingItems ) =
+    let
+        ( equipment_, msg ) =
+            Equipment.putInPack item hero.equipment
+
+        success =
+            ( { hero | equipment = equipment_ }, messages, remainingItems )
+    in
+        case msg of
+            Equipment.Success ->
+                success
+
+            Equipment.ContainerMsg (Container.Ok) ->
+                success
+
+            other ->
+                ( hero, ("Failed to pick up item: " ++ toString other) :: messages, remainingItems )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        KeyboardMsg msg ->
+            updateKeyboard msg model
+
+        InventoryMsg msg ->
+            let
+                ( inventory_, maybeExitValues ) =
+                    Inventory.update msg model.inventory
+            in
+                case maybeExitValues of
+                    Nothing ->
+                        ( { model | inventory = inventory_ }, Cmd.none )
+
+                    Just ( equipment, merchant ) ->
+                        let
+                            modelWithHeroAndInventory =
+                                { model
+                                    | inventory = inventory_
+                                    , hero = Hero.updateEquipment equipment model.hero
+                                    , currentScreen = MapScreen
+                                }
+                        in
+                            case merchant of
+                                Inventory.Ground container ->
+                                    let
+                                        level_ =
+                                            Level.updateGround model.hero.position (Container.list container) (Maps.currentLevel model.maps)
+
+                                        maps_ =
+                                            Maps.updateCurrentLevel level_ model.maps
+                                    in
                                         ( { modelWithHeroAndInventory
-                                            | shops = Shops.updateShop shop model.shops
+                                            | maps = maps_
                                           }
                                         , Cmd.none
                                         )
 
-            MapsMsg msg ->
-                ( { model | maps = Maps.update msg model.maps }, Cmd.none )
+                                Inventory.Shop shop ->
+                                    ( { modelWithHeroAndInventory
+                                        | shops = Shops.updateShop shop model.shops
+                                      }
+                                    , Cmd.none
+                                    )
 
-            KeyboardMsg _ ->
-                ( model, Cmd.none )
+        MapsMsg msg ->
+            ( { model | maps = Maps.update msg model.maps }, Cmd.none )
 
-            WindowSize size ->
-                ( { model | windowSize = size }, Cmd.none )
+        WindowSize size ->
+            ( { model | windowSize = size }, Cmd.none )
 
-            ClickTile targetPosition ->
-                let
-                    path =
-                        findPath model.hero.position targetPosition model
-                in
-                    update (PathTo path) model
+        ClickTile targetPosition ->
+            let
+                path =
+                    findPath model.hero.position targetPosition model
+            in
+                update (PathTo path) model
 
-            PathTo [] ->
-                ( model, Cmd.none )
+        PathTo [] ->
+            ( model, Cmd.none )
 
-            PathTo (x :: xs) ->
-                let
-                    dir =
-                        Vector.sub x model.hero.position
-                            |> Vector.toDirection
+        PathTo (x :: xs) ->
+            let
+                dir =
+                    Vector.sub x model.hero.position
+                        |> Vector.toDirection
 
-                    walkRemainingPathTask =
-                        Task.succeed xs
+                walkRemainingPathTask =
+                    Task.succeed xs
 
-                    ( model_, cmds_ ) =
-                        update (KeyboardMsg (KeyDir dir)) model
-                in
-                    ( model_
-                    , Cmd.batch
-                        [ Task.perform PathTo walkRemainingPathTask
-                        , cmds_
-                        ]
-                    )
+                ( model_, cmds_ ) =
+                    update (KeyboardMsg (KeyDir dir)) model
+            in
+                ( model_
+                , Cmd.batch
+                    [ Task.perform PathTo walkRemainingPathTask
+                    , cmds_
+                    ]
+                )
 
 
 newMessage : String -> Model -> Model
@@ -449,10 +513,11 @@ addLoot monster model =
         currentLevel =
             Maps.currentLevel model.maps
 
-        (loot, itemFactory_) = ItemFactory.make (ItemTypeGauntlets NormalGauntlets) model.itemFactory
+        ( loot, itemFactory_ ) =
+            ItemFactory.make (ItemTypeGauntlets NormalGauntlets) model.itemFactory
 
         currentLevel_ =
-            Level.drop monster.position loot currentLevel
+            Level.drop ( monster.position, loot ) currentLevel
     in
         { model
             | seed = model.seed
@@ -518,13 +583,13 @@ enterBuilding : Building -> Model -> Model
 enterBuilding building ({ hero, maps } as model) =
     let
         modelWithHeroMoved =
-            { model | hero = Hero.teleport building.pos hero }
+            { model | hero = Hero.teleport building.position hero }
     in
         case Building.buildingType building of
             Building.Linked link ->
                 { model
                     | maps = Maps.updateArea link.area maps
-                    , hero = Hero.teleport link.pos hero
+                    , hero = Hero.teleport link.position hero
                 }
 
             Building.Shop shopType ->

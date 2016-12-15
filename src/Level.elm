@@ -83,7 +83,7 @@ getTile pos { map } =
     Dict.get pos map
 
 
-updateGround : Vector -> Container Item -> Level -> Level
+updateGround : Vector -> List Item -> Level -> Level
 updateGround pos payload model =
     let
         maybeTile =
@@ -98,8 +98,8 @@ updateGround pos payload model =
                 { model | map = Dict.insert pos tile model.map }
 
 
-drop : Vector -> Item -> Level -> Level
-drop position item model =
+drop : (Vector, Item) -> Level -> Level
+drop (position, item) model =
     Dict.get position model.map
         |> Maybe.map (Tile.drop item)
         |> Maybe.map (\x -> Dict.insert position x model.map)
