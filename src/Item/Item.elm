@@ -60,6 +60,10 @@ type Item
     | ItemOvergarment Overgarment
     | ItemRing Ring
     | ItemBoots Boots
+    | ItemCopper Purse.CopperCoins
+    | ItemSilver Purse.SilverCoins
+    | ItemGold Purse.GoldCoins
+    | ItemPlatinum Purse.PlatinumCoins
 
 
 
@@ -172,6 +176,18 @@ getModel anItem =
             base
 
         ItemBoots { base } ->
+            base
+
+        ItemCopper { base } ->
+            base
+
+        ItemSilver { base } ->
+            base
+
+        ItemGold { base } ->
+            base
+
+        ItemPlatinum { base } ->
             base
 
 

@@ -3,6 +3,7 @@ module Utils.IdGenerator
         ( IdGenerator
         , ID
         , init
+        , empty
         , getUniqueId
         , equals
         , assignId
@@ -28,6 +29,8 @@ init : IdGenerator
 init =
     IDModel 0
 
+empty: ID
+empty = ID -1
 
 getUniqueId : IdGenerator -> ( ID, IdGenerator )
 getUniqueId (IDModel model) =
