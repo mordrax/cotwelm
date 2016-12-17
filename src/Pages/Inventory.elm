@@ -243,7 +243,7 @@ transactWithMerchant item ({ merchant, equipment } as model) =
             Result.Ok
                 ( { model
                     | merchant = Shop shop
-                    , equipment = Equipment.updatePurseContents purse equipment
+                    , equipment = Equipment.setPurse purse equipment
                   }
                 , item
                 )
@@ -321,7 +321,7 @@ handleDrop droppable item model =
                         Result.Ok
                             { model
                                 | merchant = Shop shopAfterBought
-                                , equipment = Equipment.updatePurseContents purseAfterPaid model.equipment
+                                , equipment = Equipment.setPurse purseAfterPaid model.equipment
                             }
             in
                 case merchant of

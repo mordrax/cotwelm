@@ -281,7 +281,7 @@ newWithOptions itemType id status idStatus =
             ItemPack <| Pack.init packType containerBuilder status idStatus id
 
         ItemTypePurse ->
-            ItemPurse <| Purse.init id
+            ItemPurse Purse.init
 
         ItemTypeCopper value ->
             ItemCopper <| Purse.initCoppers value
