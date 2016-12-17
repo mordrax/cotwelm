@@ -571,24 +571,18 @@ viewEquipment equipment dnd =
 viewPurse : Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPurse ({ equipment } as model) =
     let
-        maybePurseContents =
-            (Equipment.getPurse equipment)
-                |> Maybe.andThen maybeCoins
-
-        maybeCoins coins =
-            Just (Purse.getCoins coins)
+        coinView { copper, silver, gold, platinum } =
+            div [ class "ui grid" ]
+                [ div [ class "coins-copper cotw-item" ] [ text (toString copper) ]
+                , div [ class "coins-silver cotw-item" ] [ text (toString silver) ]
+                , div [ class "coins-gold cotw-item" ] [ text (toString gold) ]
+                , div [ class "coins-platinum cotw-item" ] [ text (toString platinum) ]
+                ]
     in
-        case maybePurseContents of
-            Just ( c, s, g, p ) ->
-                div [ class "ui grid" ]
-                    [ div [ class "coins-copper cotw-item" ] [ text (toString c) ]
-                    , div [ class "coins-silver cotw-item" ] [ text (toString s) ]
-                    , div [ class "coins-gold cotw-item" ] [ text (toString g) ]
-                    , div [ class "coins-platinum cotw-item" ] [ text (toString p) ]
-                    ]
-
-            _ ->
-                div [] []
+        (Equipment.getPurse equipment)
+            |> Maybe.map .coins
+            |> Maybe.map coinView
+            |> Maybe.withDefault (div [] [])
 
 
 subscription : Inventory -> Sub (Msg Draggable Droppable)

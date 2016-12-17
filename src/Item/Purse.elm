@@ -1,11 +1,19 @@
 module Item.Purse
     exposing
         ( Purse
+        , Coins
+        , CopperCoins
+        , SilverCoins
+        , GoldCoins
+        , PlatinumCoins
         , init
+        , initCoppers
+        , initSilvers
+        , initGolds
+        , initPlatinums
         , add
         , merge
         , remove
-        , getCoins
         )
 
 import Item.Data exposing (..)
@@ -16,24 +24,71 @@ import Utils.Mass as Mass exposing (Mass)
 init : IdGenerator.ID -> Purse
 init id =
     { base = BaseItem "Purse" (Prices 0 0) "Purse" (Mass.Mass 0 0) Normal Identified id
-    , copper = 100
-    , silver = 10
-    , gold = 1
-    , platinum = 1
+    , coins = Coins 100 10 1 1
+    }
+
+
+type alias CopperCoins =
+    { base : BaseItem, value : Int }
+
+
+type alias SilverCoins =
+    { base : BaseItem, value : Int }
+
+
+type alias GoldCoins =
+    { base : BaseItem, value : Int }
+
+
+type alias PlatinumCoins =
+    { base : BaseItem, value : Int }
+
+
+initCoinBaseItem : String -> Int -> BaseItem
+initCoinBaseItem name value =
+    BaseItem name (Prices value value) name (Mass.Mass 0 0) Normal Identified IdGenerator.empty
+
+
+initCoppers : Int -> CopperCoins
+initCoppers value =
+    { base = initCoinBaseItem "Copper" value
+    , value = value
+    }
+
+
+initSilvers : Int -> SilverCoins
+initSilvers value =
+    { base = initCoinBaseItem "Silver" value
+    , value = value
+    }
+
+
+initGolds : Int -> GoldCoins
+initGolds value =
+    { base = initCoinBaseItem "Gold" value
+    , value = value
+    }
+
+
+initPlatinums : Int -> PlatinumCoins
+initPlatinums value =
+    { base = initCoinBaseItem "Platinum" value
+    , value = value
+    }
+
+
+type alias Coins =
+    { copper : Int
+    , silver : Int
+    , gold : Int
+    , platinum : Int
     }
 
 
 type alias Purse =
     { base : BaseItem
-    , copper : Coins
-    , silver : Coins
-    , gold : Coins
-    , platinum : Coins
+    , coins : Coins
     }
-
-
-type alias Coins =
-    Int
 
 
 type Msg
@@ -41,26 +96,20 @@ type Msg
     | NotEnoughCoins
 
 
-
---        , baseItem = (Model id "Purse" 0 0 "Purse" status idStatus <| Mass 0 0)
-
-
-getCoins : Purse -> ( Int, Int, Int, Int )
-getCoins model =
-    ( model.copper
-    , model.silver
-    , model.gold
-    , model.platinum
-    )
-
-
 add : Int -> Purse -> Purse
-add coppers ({ copper, silver, gold, platinum } as model) =
+add coppers ({ coins } as model) =
     let
-        ( c, s, g, p ) =
+        leastCoins =
             toLeastCoins coppers
     in
-        { model | copper = copper + c, silver = silver + s, gold = gold + g, platinum = platinum + p }
+        { model
+            | coins =
+                Coins
+                    (coins.copper + leastCoins.copper)
+                    (coins.silver + leastCoins.silver)
+                    (coins.gold + leastCoins.gold)
+                    (coins.platinum + leastCoins.platinum)
+        }
 
 
 merge : Purse -> Purse -> Purse
@@ -71,57 +120,58 @@ merge p1 p2 =
 {-| Perform an operation (+, -, etc...) on each denomination of two purses
 -}
 purses : (Int -> Int -> Int) -> Purse -> Purse -> Purse
-purses op ({ base } as p1) p2 =
-    Purse base
-        (op p1.copper p2.copper)
-        (op p1.silver p2.silver)
-        (op p1.gold p2.gold)
-        (op p1.platinum p2.platinum)
+purses op p1 p2 =
+    Purse p1.base
+        (Coins (op p1.coins.copper p2.coins.copper)
+            (op p1.coins.silver p2.coins.silver)
+            (op p1.coins.gold p2.coins.gold)
+            (op p1.coins.platinum p2.coins.platinum)
+        )
 
 
 remove : Int -> Purse -> Result String Purse
-remove copperToRemove ({ copper, silver, gold, platinum } as model) =
+remove copperToRemove ({ coins } as model) =
     let
         totalSilvers =
-            copper + silver * 100
+            coins.copper + coins.silver * 100
 
         totalGold =
-            totalSilvers + gold * 10000
+            totalSilvers + coins.gold * 10000
 
         totalPlatinum =
-            totalGold + platinum * 1000000
+            totalGold + coins.platinum * 1000000
     in
-        if (copperToRemove <= copper) then
-            Result.Ok { model | copper = copper - copperToRemove }
+        if (copperToRemove <= coins.copper) then
+            Result.Ok { model | coins = { coins | copper = coins.copper - copperToRemove } }
         else if (copperToRemove <= totalSilvers) then
             let
                 ( copper_, silver_ ) =
                     toLeastSilvers (totalSilvers - copperToRemove)
             in
-                Result.Ok { model | copper = copper_, silver = silver_ }
+                Result.Ok { model | coins = { coins | copper = copper_, silver = silver_ } }
         else if (copperToRemove <= totalGold) then
             let
                 ( copper_, silver_, gold_ ) =
                     toLeastGold (totalGold - copperToRemove)
             in
-                Result.Ok { model | copper = copper_, silver = silver_, gold = gold_ }
+                Result.Ok { model | coins = { coins | copper = copper_, silver = silver_, gold = gold_ } }
         else if (copperToRemove <= totalPlatinum) then
             let
-                ( copper_, silver_, gold_, platinum_ ) =
+                coins =
                     toLeastCoins (totalPlatinum - copperToRemove)
             in
-                Result.Ok { model | copper = copper_, silver = silver_, gold = gold_, platinum = platinum_ }
+                Result.Ok { model | coins = { coins | copper = coins.copper, silver = coins.silver, gold = coins.gold, platinum = coins.platinum } }
         else
             Result.Err "Not enough coins to remove!"
 
 
-toLeastCoins : Int -> ( Int, Int, Int, Int )
-toLeastCoins coins =
+toLeastCoins : Int -> Coins
+toLeastCoins coppers =
     let
         ( copper, silver, gold ) =
-            toLeastGold coins
+            toLeastGold coppers
     in
-        ( copper, silver, gold % 100, gold // 100 )
+        Coins copper silver (gold % 100) (gold // 100)
 
 
 toLeastGold : Int -> ( Int, Int, Int )
