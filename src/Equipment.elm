@@ -14,7 +14,7 @@ module Equipment
         , putInPack
         , removeFromPack
         , getPackContent
-        , updatePurseContents
+        , setPurse
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
@@ -306,8 +306,8 @@ getPackContent (A model) =
             []
 
 
-updatePurseContents : Purse -> Equipment -> Equipment
-updatePurseContents purse (A model) =
+setPurse : Purse -> Equipment -> Equipment
+setPurse purse (A model) =
     A { model | purse = Just purse }
 
 

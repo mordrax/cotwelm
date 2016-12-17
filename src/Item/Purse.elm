@@ -12,6 +12,7 @@ module Item.Purse
         , initGolds
         , initPlatinums
         , add
+        , addCoins
         , merge
         , remove
         )
@@ -21,9 +22,9 @@ import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : IdGenerator.ID -> Purse
-init id =
-    { base = BaseItem "Purse" (Prices 0 0) "Purse" (Mass.Mass 0 0) Normal Identified id
+init : Purse
+init =
+    { base = BaseItem "Purse" (Prices 0 0) "Purse" (Mass.Mass 0 0) Normal Identified IdGenerator.empty
     , coins = Coins 100 10 1 1
     }
 
@@ -112,21 +113,25 @@ add coppers ({ coins } as model) =
         }
 
 
+addCoins : Coins -> Purse -> Purse
+addCoins coins purse =
+    Purse purse.base (merge_ (+) coins purse.coins)
+
+
 merge : Purse -> Purse -> Purse
 merge p1 p2 =
-    (purses (+) p1 p2)
+    Purse p1.base (merge_ (+) p1.coins p2.coins)
 
 
 {-| Perform an operation (+, -, etc...) on each denomination of two purses
 -}
-purses : (Int -> Int -> Int) -> Purse -> Purse -> Purse
-purses op p1 p2 =
-    Purse p1.base
-        (Coins (op p1.coins.copper p2.coins.copper)
-            (op p1.coins.silver p2.coins.silver)
-            (op p1.coins.gold p2.coins.gold)
-            (op p1.coins.platinum p2.coins.platinum)
-        )
+merge_ : (Int -> Int -> Int) -> Coins -> Coins -> Coins
+merge_ op c1 c2 =
+    (Coins (op c1.copper c2.copper)
+        (op c1.silver c2.silver)
+        (op c1.gold c2.gold)
+        (op c1.platinum c2.platinum)
+    )
 
 
 remove : Int -> Purse -> Result String Purse

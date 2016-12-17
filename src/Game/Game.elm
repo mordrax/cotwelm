@@ -283,11 +283,11 @@ pickup items model =
 pickupReducer : Item -> ( Hero, List String, List Item ) -> ( Hero, List String, List Item )
 pickupReducer item ( hero, messages, remainingItems ) =
     let
-        ( equipment_, msg ) =
-            Equipment.putInPack item hero.equipment
+        ( hero_, msg ) =
+            Hero.pickup item hero
 
         success =
-            ( { hero | equipment = equipment_ }, messages, remainingItems )
+            ( hero_, messages, remainingItems )
     in
         case msg of
             Equipment.Success ->
@@ -297,7 +297,7 @@ pickupReducer item ( hero, messages, remainingItems ) =
                 success
 
             other ->
-                ( hero, ("Failed to pick up item: " ++ toString other) :: messages, remainingItems )
+                ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, remainingItems )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
