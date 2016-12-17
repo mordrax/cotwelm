@@ -22,9 +22,7 @@ type alias Model =
 
 init : ItemFactory
 init =
-    { idGenerator = IdGenerator.init
-    }
-        |> A
+    A <| Model IdGenerator.init
 
 
 make : Item.Data.ItemType -> ItemFactory -> ( Item, ItemFactory )

@@ -44,35 +44,35 @@ type alias PlatinumCoins =
     { base : BaseItem, value : Int }
 
 
-initCoinBaseItem : String -> Int -> BaseItem
-initCoinBaseItem name value =
-    BaseItem name (Prices value value) name (Mass.Mass 0 0) Normal Identified IdGenerator.empty
+initCoinBaseItem : String -> String -> Int -> BaseItem
+initCoinBaseItem name css value =
+    BaseItem name (Prices value value) css (Mass.Mass 0 0) Normal Identified IdGenerator.empty
 
 
 initCoppers : Int -> CopperCoins
 initCoppers value =
-    { base = initCoinBaseItem "Copper" value
+    { base = initCoinBaseItem "Copper" "coins-copper" value
     , value = value
     }
 
 
 initSilvers : Int -> SilverCoins
 initSilvers value =
-    { base = initCoinBaseItem "Silver" value
+    { base = initCoinBaseItem "Silver" "coins-silver" value
     , value = value
     }
 
 
 initGolds : Int -> GoldCoins
 initGolds value =
-    { base = initCoinBaseItem "Gold" value
+    { base = initCoinBaseItem "Gold" "coins-gold" value
     , value = value
     }
 
 
 initPlatinums : Int -> PlatinumCoins
 initPlatinums value =
-    { base = initCoinBaseItem "Platinum" value
+    { base = initCoinBaseItem "Platinum" "coins-platinum" value
     , value = value
     }
 

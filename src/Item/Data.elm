@@ -43,6 +43,10 @@ type ItemType
     | ItemTypeOvergarment OvergarmentType
     | ItemTypeRing RingType
     | ItemTypeBoots BootsType
+    | ItemTypeCopper Int
+    | ItemTypeSilver Int
+    | ItemTypeGold Int
+    | ItemTypePlatinum Int
 
 
 type alias Buy =

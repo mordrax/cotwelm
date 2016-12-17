@@ -514,7 +514,7 @@ addLoot monster model =
             Maps.currentLevel model.maps
 
         ( loot, itemFactory_ ) =
-            ItemFactory.make (ItemTypeGauntlets NormalGauntlets) model.itemFactory
+            ItemFactory.make (ItemTypeCopper 1234) model.itemFactory
 
         currentLevel_ =
             Level.drop ( monster.position, loot ) currentLevel
