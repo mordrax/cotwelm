@@ -2,6 +2,7 @@ module Monster.Monster
     exposing
         ( Monster
         , MonsterType(..)
+        , types
         , view
         , init
         , initWithOptions

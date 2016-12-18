@@ -27,9 +27,10 @@ import Random.Pcg as Random exposing (initialSeed)
 import Time exposing (inSeconds, now)
 
 
--- Dungeon Editor
+-- Tools
 
 import Dungeon.Editor as Editor exposing (..)
+import Arena
 
 
 type Msg
@@ -38,6 +39,7 @@ type Msg
     | GameMsg Game.Msg
     | GenerateGame Random.Seed CharCreation
     | EditorMsg Editor.Msg
+    | ArenaMsg Arena.Msg
     | ChangePage Page
 
 
@@ -48,6 +50,7 @@ type Page
     | ShopPage
     | DungeonPage
     | EditorPage
+    | ArenaPage
     | NotImplementedPage
 
 
@@ -59,6 +62,7 @@ init location =
             , charCreation = CharCreation.init
             , game = Nothing
             , editor = Editor.init
+            , arena = Arena.init
             }
     in
         ( model, Cmd.none )
@@ -69,6 +73,7 @@ type alias Model =
     , charCreation : CharCreation
     , game : Maybe Game.Model
     , editor : Editor.Model
+    , arena : Arena.Model
     }
 
 
@@ -140,6 +145,16 @@ update msg model =
             in
                 ( { model | editor = editor_ }, gameCmds )
 
+        ArenaMsg msg ->
+            let
+                ( arena_, cmds ) =
+                    Arena.update msg model.arena
+
+                gameCmds =
+                    Cmd.map ArenaMsg cmds
+            in
+                ( { model | arena = arena_ }, gameCmds )
+
         GenerateGame seed charCreation ->
             let
                 ( name, gender, difficulty, attributes ) =
@@ -181,6 +196,9 @@ view model =
         EditorPage ->
             Html.map EditorMsg (Editor.view model.editor)
 
+        ArenaPage ->
+            Html.map ArenaMsg (Arena.view model.arena)
+
         _ ->
             h1 [] [ text "Page not implemented!" ]
 
@@ -202,6 +220,8 @@ urlToPage { hash } =
         GamePage
     else if hash == "#/editor" then
         EditorPage
+    else if hash == "#/arena" then
+        ArenaPage
     else
         SplashPage
 
