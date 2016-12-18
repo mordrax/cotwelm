@@ -45,35 +45,35 @@ type alias PlatinumCoins =
     { base : BaseItem, value : Int }
 
 
-initCoinBaseItem : String -> String -> Int -> BaseItem
-initCoinBaseItem name css value =
-    BaseItem name (Prices value value) css (Mass.Mass 0 0) Normal Identified IdGenerator.empty
+initCoinBaseItem : String -> String -> IdGenerator.ID -> Int -> BaseItem
+initCoinBaseItem name css id value =
+    BaseItem name (Prices value value) css (Mass.Mass 0 0) Normal Identified id
 
 
-initCoppers : Int -> CopperCoins
-initCoppers value =
-    { base = initCoinBaseItem "Copper" "coins-copper" value
+initCoppers : IdGenerator.ID -> Int -> CopperCoins
+initCoppers id value =
+    { base = initCoinBaseItem "Copper" "coins-copper" id value
     , value = value
     }
 
 
-initSilvers : Int -> SilverCoins
-initSilvers value =
-    { base = initCoinBaseItem "Silver" "coins-silver" value
+initSilvers : IdGenerator.ID -> Int -> SilverCoins
+initSilvers id value =
+    { base = initCoinBaseItem "Silver" "coins-silver" id value
     , value = value
     }
 
 
-initGolds : Int -> GoldCoins
-initGolds value =
-    { base = initCoinBaseItem "Gold" "coins-gold" value
+initGolds : IdGenerator.ID -> Int -> GoldCoins
+initGolds id value =
+    { base = initCoinBaseItem "Gold" "coins-gold" id value
     , value = value
     }
 
 
-initPlatinums : Int -> PlatinumCoins
-initPlatinums value =
-    { base = initCoinBaseItem "Platinum" "coins-platinum" value
+initPlatinums : IdGenerator.ID -> Int -> PlatinumCoins
+initPlatinums id value =
+    { base = initCoinBaseItem "Platinum" "coins-platinum" id value
     , value = value
     }
 
