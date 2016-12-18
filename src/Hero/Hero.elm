@@ -10,7 +10,6 @@ module Hero.Hero
         , setStats
         , viewStats
         , updateEquipment
-        , pickup
         , equip
         )
 
@@ -92,45 +91,8 @@ setStats stats model =
     { model | stats = stats }
 
 
-pickupCoins : Purse.Coins -> Hero -> Hero
-pickupCoins coins hero =
-    let
-        purse =
-            Equipment.getPurse hero.equipment
-                |> Maybe.withDefault Purse.init
-                |> Purse.addCoins coins
-
-        equipment =
-            Equipment.setPurse purse hero.equipment
-    in
-        { hero | equipment = equipment }
-
-
 
 -- Equipment
-
-
-pickup : Item -> Hero -> (Hero, Equipment.Msg)
-pickup item hero =
-    case item of
-        Item.ItemCopper { value } ->
-            (pickupCoins (Purse.Coins value 0 0 0) hero, Equipment.Success)
-
-        Item.ItemSilver { value } ->
-            (pickupCoins (Purse.Coins 0 value 0 0) hero, Equipment.Success)
-
-        Item.ItemGold { value } ->
-            (pickupCoins (Purse.Coins 0 0 value 0) hero, Equipment.Success)
-
-        Item.ItemPlatinum { value } ->
-            (pickupCoins (Purse.Coins 0 0 0 value) hero, Equipment.Success)
-
-        _ ->
-            let
-                ( equipment_, msg ) =
-                    Equipment.putInPack item hero.equipment
-            in
-                ({ hero | equipment = equipment_ }, msg)
 
 
 equip : ( EquipmentSlot, Item ) -> Hero -> Result Equipment.Msg Hero

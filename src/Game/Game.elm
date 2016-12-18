@@ -283,8 +283,10 @@ pickup items model =
 pickupReducer : Item -> ( Hero, List String, List Item ) -> ( Hero, List String, List Item )
 pickupReducer item ( hero, messages, remainingItems ) =
     let
-        ( hero_, msg ) =
-            Hero.pickup item hero
+        ( equipment_, msg ) =
+            Equipment.putInPack item hero.equipment
+
+        hero_ = { hero | equipment = equipment_}
 
         success =
             ( hero_, messages, remainingItems )

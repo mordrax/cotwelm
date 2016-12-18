@@ -265,7 +265,25 @@ unequip slot (A model) =
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
 -}
 putInPack : Item -> Equipment -> ( Equipment, Msg )
-putInPack item (A model) =
+putInPack item equipment =
+    case item of
+        Item.ItemCopper { value } ->
+            ( putInPurse (Purse.Coins value 0 0 0) equipment, Success )
+
+        Item.ItemSilver { value } ->
+            ( putInPurse (Purse.Coins 0 value 0 0) equipment, Success )
+
+        Item.ItemGold { value } ->
+            ( putInPurse (Purse.Coins 0 0 value 0) equipment, Success )
+
+        Item.ItemPlatinum { value } ->
+            ( putInPurse (Purse.Coins 0 0 0 value) equipment, Success )
+
+        _ ->
+            putInPack_ item equipment
+
+putInPack_ : Item -> Equipment -> ( Equipment, Msg )
+putInPack_ item (A model) =
     let
         noChange =
             ( A model, Success )
@@ -280,6 +298,16 @@ putInPack item (A model) =
                         Pack.add item pack
                 in
                     ( A { model | pack = Just packWithItem }, ContainerMsg msg )
+
+putInPurse : Purse.Coins -> Equipment -> Equipment
+putInPurse coins equipment =
+    let
+        purse =
+            getPurse equipment
+                |> Maybe.withDefault Purse.init
+                |> Purse.addCoins coins
+    in
+        setPurse purse equipment
 
 
 removeFromPack : Item -> Equipment -> Equipment
