@@ -86,7 +86,7 @@
 .animated-wooden-statue {
     background: url('/assets/original/monsters.png') -0px -64px;
 }
-.animated-bronze-status {
+.animated-bronze-statue {
     background: url('/assets/original/monsters.png') -32px -64px;
 }
 .animated-marble-statue {
@@ -116,7 +116,7 @@
 .wraith {
     background: url('/assets/original/monsters.png') -288px -64px;
 }
-.ghost {
+.eerie-ghost {
     background: url('/assets/original/monsters.png') -320px -64px;
 }
 .shadow {

@@ -24,7 +24,6 @@ import GameData.Types as Data
 import Utils.Lib as Lib
 import Item.Item as Item exposing (Item)
 import Types
-import Item.Purse as Purse exposing (Purse)
 
 
 type alias Hero =

@@ -284,16 +284,16 @@ newWithOptions itemType id status idStatus =
             ItemPurse Purse.init
 
         ItemTypeCopper value ->
-            ItemCopper <| Purse.initCoppers value
+            ItemCopper <| Purse.initCoppers id value
 
         ItemTypeSilver value ->
-            ItemSilver <| Purse.initSilvers value
+            ItemSilver <| Purse.initSilvers id value
 
         ItemTypeGold value ->
-            ItemGold <| Purse.initGolds value
+            ItemGold <| Purse.initGolds id value
 
         ItemTypePlatinum value ->
-            ItemPlatinum <| Purse.initPlatinums value
+            ItemPlatinum <| Purse.initPlatinums id value
 
         -- Neckwear
         --        Overgarment

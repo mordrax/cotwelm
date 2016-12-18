@@ -286,7 +286,8 @@ pickupReducer item ( hero, messages, remainingItems ) =
         ( equipment_, msg ) =
             Equipment.putInPack item hero.equipment
 
-        hero_ = { hero | equipment = equipment_}
+        hero_ =
+            { hero | equipment = equipment_ }
 
         success =
             ( hero_, messages, remainingItems )
