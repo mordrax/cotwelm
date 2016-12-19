@@ -4,6 +4,7 @@ module Attributes
         , Msg
         , view
         , init
+        , initCustom
         , update
         )
 
@@ -42,6 +43,16 @@ init =
     , dex = 30
     , con = 40
     , int = 60
+    }
+
+
+initCustom : Int -> Int -> Int -> Int -> Attributes
+initCustom str dex con int =
+    { ava = 0
+    , str = str
+    , dex = dex
+    , con = con
+    , int = int
     }
 
 

@@ -34,10 +34,6 @@ range x y =
         reverse <| List.range y x
 
 
-
--- Random.Extra
-
-
 {-| Sample without replacement: produce a randomly selected element of the
 array, and the array with that element omitted (shifting all later elements
 down). If the array is empty, the selected element will be `Nothing`.
@@ -124,3 +120,14 @@ sample2 =
                         find (k - 1) zs
     in
         \xs -> Random.map (\i -> find i xs) (int 0 (List.length xs - 1))
+
+{-| Turn a list of generators into a generator of lists.
+-}
+combine : List (Generator a) -> Generator (List a)
+combine generators =
+    case generators of
+        [] ->
+            constant []
+
+        g :: gs ->
+            Random.map2 (::) g (combine gs)
