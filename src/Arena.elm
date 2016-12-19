@@ -11,21 +11,30 @@ import Monster.Monster as Monster exposing (Monster)
 import Hero.Hero as Hero exposing (Hero)
 import Attributes exposing (Attributes)
 import GameData.Types as Types
+import Random.Pcg as Random exposing (Generator)
+import Random.Extra as RandomX
+import Stats
+import Lodash
 
 
-type alias Match =
+type alias VS =
     { hero : Hero
     , monster : Monster
-    , currentHero : Hero
-    , currentMonster : Monster
     , battles : Int
     , wins : Int
     , hpRemaining : List Int
+    , rounds : List Int
+    }
+
+
+type alias RoundResult =
+    { rounds : Int
+    , hpRemaining : Int
     }
 
 
 type alias Model =
-    { matches : List Match
+    { matches : List VS
     , hero : Hero
     }
 
@@ -33,6 +42,7 @@ type alias Model =
 type Msg
     = GenerateCombatants
     | Fight
+    | FightResult (List VS)
 
 
 init : Model
@@ -50,10 +60,79 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GenerateCombatants ->
-            ( model, Cmd.none )
+            ( init, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
+        Fight ->
+            ( model
+            , model.matches
+                |> List.map fights
+                |> Lodash.combine
+                |> Random.generate FightResult
+            )
+
+        FightResult vses ->
+            ( { model | matches = vses }, Cmd.none )
+
+
+fights : VS -> Generator VS
+fights ({ hero, monster } as vs) =
+    let
+        initRound =
+            { rounds = 0
+            , hpRemaining = 999
+            }
+    in
+        if vs.battles >= 10 then
+            Random.constant vs
+        else
+            round hero monster True initRound
+                |> Random.map (\res -> updateVSFromRoundResult res vs)
+                |> Random.andThen fights
+
+
+updateVSFromRoundResult : RoundResult -> VS -> VS
+updateVSFromRoundResult { rounds, hpRemaining } vs =
+    let
+        addWin vs =
+            if hpRemaining > 0 then
+                { vs | wins = vs.wins + 1 }
+            else
+                vs
+
+        addResult vs =
+            { vs
+                | hpRemaining = hpRemaining :: vs.hpRemaining
+                , rounds = rounds :: vs.rounds
+            }
+
+        incBattle vs =
+            { vs | battles = vs.battles + 1 }
+    in
+        vs
+            |> addWin
+            |> addResult
+            |> incBattle
+
+
+round : Hero -> Monster -> Bool -> RoundResult -> Generator RoundResult
+round hero monster heroAttacking result =
+    let
+        resultNextRound =
+            { result | rounds = result.rounds + 1 }
+
+        nextAttacker =
+            not heroAttacking
+    in
+        if Stats.isDead hero.stats then
+            Random.constant { result | hpRemaining = 0 }
+        else if Stats.isDead monster.stats then
+            Random.constant { result | hpRemaining = hero.stats.currentHP }
+        else if heroAttacking == True then
+            Combat.attack hero monster
+                |> Random.andThen (\( _, monster_ ) -> round hero monster_ nextAttacker resultNextRound)
+        else
+            Combat.attack monster hero
+                |> Random.andThen (\( _, hero_ ) -> round hero_ monster nextAttacker resultNextRound)
 
 
 
@@ -65,33 +144,46 @@ view model =
     div []
         [ welcomeView
         , menuView
+        , heroView model.hero
         , combatView model
+        ]
+
+
+heroView : Hero -> Html Msg
+heroView { attributes, stats } =
+    div []
+        [ text ("Hero attributes: " ++ ppAttributes attributes)
+        , text ("Hero HP: " ++ toString stats.maxHP)
         ]
 
 
 combatView : Model -> Html Msg
 combatView { matches, hero } =
-    table [HA.class "ui striped celled table"]
+    table [ HA.class "ui striped celled table" ]
         [ thead []
             [ th [] [ text "Type" ]
             , th [] [ text "Level" ]
             , th [] [ text "Attributes" ]
             , th [] [ text "Size" ]
             , th [] [ text "Win %" ]
-            , th [] [ text "HP remaining" ]
+            , th [] [ text "Avg HP remaining" ]
             ]
         , tbody [] (List.map matchView matches)
         ]
 
 
-matchView : Match -> Html Msg
+matchView : VS -> Html Msg
 matchView { monster, hpRemaining, battles, wins } =
+    let
+        over a b = toString a ++ " / " ++ toString b
+        percent a = "  ( " ++ toString a ++ "% )"
+    in
     tr []
         [ td [] [ text monster.name ]
         , td [] [ text <| toString monster.expLevel ]
         , td [] [ text <| ppAttributes monster.attributes ]
         , td [] [ text <| toString monster.bodySize ]
-        , td [] [ text <| toString (toFloat wins / toFloat battles) ]
+        , td [] [ text <| (over wins battles) ++ percent (toFloat wins * 100 / toFloat battles) ]
         , td [] [ text <| toString (toFloat (sum hpRemaining) / toFloat battles) ]
         ]
 
@@ -134,14 +226,16 @@ ppAttributes { str, dex, int, con } =
 
 initHero : Combat.Fighter Hero
 initHero =
-    Hero.init "Heox" Attributes.init Types.Male
+    Hero.init "Heox" (Attributes.initCustom 100 100 100 100) Types.Male
 
 
-initMatches : Hero -> List Match
+initMatches : Hero -> List VS
 initMatches hero =
     let
-        newMonster monsterType = Monster.init monsterType (0,0)
+        newMonster monsterType =
+            Monster.init monsterType ( 0, 0 )
+
         newMatch monsterType =
-            Match hero (newMonster monsterType) hero (newMonster monsterType) 0 0 []
+            VS hero (newMonster monsterType) 0 0 [] []
     in
         List.map newMatch Monster.types
