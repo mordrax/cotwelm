@@ -4,6 +4,7 @@ import Utils.Mass exposing (..)
 import Utils.IdGenerator exposing (..)
 import Types
 
+
 type Msg
     = ItemOk
     | NestedItem
@@ -160,6 +161,8 @@ type WeaponType
     | MorningStar
     | BastardSword
     | TwoHandedSword
+    -- monster weapons
+    | SmallClaws
 
 
 type HelmetType
@@ -184,6 +187,8 @@ type ArmourType
     | PlateArmour
     | MeteoricSteelPlate
     | ElvenChainMail
+      -- monster armour
+    | SoftHide
 
 
 type ShieldType

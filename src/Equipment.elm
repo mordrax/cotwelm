@@ -10,6 +10,7 @@ module Equipment
         , getArmour
         , init
         , equip
+        , equipMany
         , unequip
         , putInPack
         , removeFromPack
@@ -40,6 +41,7 @@ import Container
 
 -- utils
 
+import Utils.Lib as Lib
 import Utils.Mass as Mass exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (..)
 
@@ -116,6 +118,20 @@ init =
         , rightRing = Nothing
         , boots = Nothing
         }
+
+
+equipMany : List ( EquipmentSlot, Item ) -> Equipment -> Equipment
+equipMany itemSlotPairs equipment =
+    let
+        equippingResult =
+            Lib.foldResult (\item -> equip item) (Result.Ok equipment) itemSlotPairs
+    in
+        case equippingResult of
+            Result.Ok equipment_ ->
+                equipment_
+
+            _ ->
+                equipment
 
 
 equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
@@ -282,6 +298,7 @@ putInPack item equipment =
         _ ->
             putInPack_ item equipment
 
+
 putInPack_ : Item -> Equipment -> ( Equipment, Msg )
 putInPack_ item (A model) =
     let
@@ -298,6 +315,7 @@ putInPack_ item (A model) =
                         Pack.add item pack
                 in
                     ( A { model | pack = Just packWithItem }, ContainerMsg msg )
+
 
 putInPurse : Purse.Coins -> Equipment -> Equipment
 putInPurse coins equipment =
