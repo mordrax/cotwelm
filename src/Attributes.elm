@@ -1,11 +1,13 @@
 module Attributes
     exposing
         ( Attributes
+        , Attribute(..)
         , Msg
         , view
         , init
         , initCustom
         , update
+        , set
         )
 
 --where
@@ -75,6 +77,25 @@ update msg model =
 
                 Dexterity ->
                     { model | dex = model.dex + value, ava = model.ava - value }
+
+
+set : ( Attribute, Int ) -> Attributes -> Attributes
+set ( attribute, value ) model =
+    case attribute of
+        Available ->
+            { model | ava = value }
+
+        Strength ->
+            { model | str = value }
+
+        Intelligence ->
+            { model | int = value }
+
+        Constitution ->
+            { model | con = value }
+
+        Dexterity ->
+            { model | dex = value }
 
 
 view : Attributes -> Html Msg
