@@ -15,6 +15,8 @@ import Random.Pcg as Random exposing (Generator)
 import Random.Extra as RandomX
 import Stats
 import Lodash
+import UI
+import Attributes
 
 
 type alias VS =
@@ -42,11 +44,12 @@ type alias Model =
 type Msg
     = Fight
     | FightResult (List VS)
+    | SetAttribute Attributes.Attribute Int
 
 
 maxRounds : Int
 maxRounds =
-    100
+    50
 
 
 init : Model
@@ -60,20 +63,33 @@ init =
         }
 
 
+fightCmd : Model -> Cmd Msg
+fightCmd model =
+    model.matches
+        |> List.map fights
+        |> Lodash.combine
+        |> Random.generate FightResult
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ hero } as model) =
     case msg of
         Fight ->
             let
                 newModel =
-                    init
+                    { model | matches = initMatches hero }
             in
-                ( newModel
-                , newModel.matches
-                    |> List.map fights
-                    |> Lodash.combine
-                    |> Random.generate FightResult
-                )
+                ( newModel, fightCmd newModel )
+
+        SetAttribute attr val ->
+            let
+                hero_ =
+                    Hero.init "Heox" (Attributes.set ( attr, val ) hero.attributes) Types.Male
+
+                model_ =
+                    { model | hero = hero_, matches = initMatches hero_ }
+            in
+                ( model_, fightCmd model_ )
 
         FightResult vses ->
             ( { model | matches = vses }, Cmd.none )
@@ -157,8 +173,16 @@ view model =
 heroView : Hero -> Html Msg
 heroView { attributes, stats } =
     div []
-        [ text ("Hero attributes: " ++ ppAttributes attributes)
-        , text ("Hero HP: " ++ toString stats.maxHP)
+        [ div []
+            [ text ("Hero attributes: " ++ ppAttributes attributes)
+            , text ("Hero HP: " ++ toString stats.maxHP)
+            ]
+        , div []
+            [ UI.labeledNumber "Str: " attributes.str (SetAttribute Attributes.Strength)
+            , UI.labeledNumber "Dex: " attributes.dex (SetAttribute Attributes.Dexterity)
+            , UI.labeledNumber "Con: " attributes.con (SetAttribute Attributes.Constitution)
+            , UI.labeledNumber "Int: " attributes.int (SetAttribute Attributes.Intelligence)
+            ]
         ]
 
 
