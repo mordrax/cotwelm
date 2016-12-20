@@ -40,9 +40,13 @@ type alias Model =
 
 
 type Msg
-    = GenerateCombatants
-    | Fight
+    = Fight
     | FightResult (List VS)
+
+
+maxRounds : Int
+maxRounds =
+    100
 
 
 init : Model
@@ -59,16 +63,17 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GenerateCombatants ->
-            ( init, Cmd.none )
-
         Fight ->
-            ( model
-            , model.matches
-                |> List.map fights
-                |> Lodash.combine
-                |> Random.generate FightResult
-            )
+            let
+                newModel =
+                    init
+            in
+                ( newModel
+                , newModel.matches
+                    |> List.map fights
+                    |> Lodash.combine
+                    |> Random.generate FightResult
+                )
 
         FightResult vses ->
             ( { model | matches = vses }, Cmd.none )
@@ -79,10 +84,10 @@ fights ({ hero, monster } as vs) =
     let
         initRound =
             { rounds = 0
-            , hpRemaining = 999
+            , hpRemaining = hero.stats.maxHP
             }
     in
-        if vs.battles >= 10 then
+        if vs.battles >= maxRounds then
             Random.constant vs
         else
             round hero monster True initRound
@@ -165,6 +170,7 @@ combatView { matches, hero } =
             , th [] [ text "Level" ]
             , th [] [ text "Attributes" ]
             , th [] [ text "Size" ]
+            , th [] [ text "Hp" ]
             , th [] [ text "Win %" ]
             , th [] [ text "Avg HP remaining" ]
             ]
@@ -175,17 +181,21 @@ combatView { matches, hero } =
 matchView : VS -> Html Msg
 matchView { monster, hpRemaining, battles, wins } =
     let
-        over a b = toString a ++ " / " ++ toString b
-        percent a = "  ( " ++ toString a ++ "% )"
+        over a b =
+            toString a ++ " / " ++ toString b
+
+        percent a =
+            "  ( " ++ toString a ++ "% )"
     in
-    tr []
-        [ td [] [ text monster.name ]
-        , td [] [ text <| toString monster.expLevel ]
-        , td [] [ text <| ppAttributes monster.attributes ]
-        , td [] [ text <| toString monster.bodySize ]
-        , td [] [ text <| (over wins battles) ++ percent (toFloat wins * 100 / toFloat battles) ]
-        , td [] [ text <| toString (toFloat (sum hpRemaining) / toFloat battles) ]
-        ]
+        tr []
+            [ td [] [ text monster.name ]
+            , td [] [ text <| toString monster.expLevel ]
+            , td [] [ text <| ppAttributes monster.attributes ]
+            , td [] [ text <| toString monster.bodySize ]
+            , td [] [ text <| toString monster.stats.maxHP ]
+            , td [] [ text <| (over wins battles) ++ percent (toFloat wins * 100 / toFloat battles) ]
+            , td [] [ text <| toString (toFloat (sum hpRemaining) / toFloat battles) ]
+            ]
 
 
 menuView : Html Msg
@@ -199,8 +209,7 @@ menuView =
                 [ text txt ]
     in
         h1 []
-            [ btn "Generate Fighters" GenerateCombatants
-            , btn "Fight!" Fight
+            [ btn "Fight!" Fight
             ]
 
 
@@ -226,14 +235,14 @@ ppAttributes { str, dex, int, con } =
 
 initHero : Combat.Fighter Hero
 initHero =
-    Hero.init "Heox" (Attributes.initCustom 100 100 100 100) Types.Male
+    Hero.init "Heox" (Attributes.initCustom 50 75 50 50) Types.Male
 
 
 initMatches : Hero -> List VS
 initMatches hero =
     let
         newMonster monsterType =
-            Monster.init monsterType ( 0, 0 )
+            Monster.initForArena monsterType
 
         newMatch monsterType =
             VS hero (newMonster monsterType) 0 0 [] []

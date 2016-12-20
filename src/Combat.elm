@@ -248,10 +248,14 @@ damageCalculator { attributes, equipment } =
         maybeWeapon =
             Equipment.getWeapon equipment
 
+        addStrToBonus str die =
+            { die | bonus = str // 10 + die.bonus }
+
         dice =
             case maybeWeapon of
                 Just weapon ->
                     Weapon.damage weapon
+                        |> addStrToBonus attributes.str
 
                 _ ->
                     Types.Dice 1 (attributes.str // 10) 0
