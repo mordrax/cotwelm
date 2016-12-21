@@ -3,6 +3,8 @@ module Stats
         ( Stats
         , Msg(..)
         , init
+        , initExperienced
+        , incLevel
         , takeHit
         , isDead
         , printHP
@@ -66,15 +68,50 @@ type alias Effects =
 
 
 init : Attributes -> Stats
-init { str, con, int } =
+init attributes =
     let
         hp =
-            con // 10 + str // 20
+            hpBonus attributes
 
         sp =
-            int // 5
+            spBonus attributes
     in
         Stats hp hp hp sp sp sp <| Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
+
+
+initExperienced : Attributes -> Int -> Stats
+initExperienced attributes level =
+    init attributes
+        |> incLevel level attributes
+
+
+hpBonus : Attributes -> Int
+hpBonus { str, con } =
+    con // 10 + str // 20
+
+
+spBonus : Attributes -> Int
+spBonus { int } =
+    int // 5
+
+
+incLevel : Int -> Attributes -> Stats -> Stats
+incLevel newLevel attributes stats =
+    let
+        totalHpBonus =
+            newLevel * hpBonus attributes
+
+        totalSpBonus =
+            newLevel * spBonus attributes
+    in
+        { stats
+            | currentHP = stats.currentHP + totalHpBonus
+            , maxHP = stats.maxHP + totalHpBonus
+            , hardMaxHP = stats.hardMaxHP + totalHpBonus
+            , currentSP = stats.currentSP + totalSpBonus
+            , maxSP = stats.maxSP + totalSpBonus
+            , hardMaxSP = stats.hardMaxSP + totalSpBonus
+        }
 
 
 isDead : Stats -> Bool

@@ -2,7 +2,7 @@ module Item.Data exposing (..)
 
 import Utils.Mass exposing (..)
 import Utils.IdGenerator exposing (..)
-import Types
+import Dice exposing (Dice)
 
 
 type Msg
@@ -79,7 +79,7 @@ type alias Weapon =
     { base : BaseItem
     , weaponType : WeaponType
     , wc : WC
-    , damage : Types.Dice
+    , damage : Dice
     }
 
 
@@ -161,8 +161,13 @@ type WeaponType
     | MorningStar
     | BastardSword
     | TwoHandedSword
-    -- monster weapons
+      -- monster weapons
     | SmallClaws
+    | Crossbow
+    | Fangs
+    | Pincers
+    | Bow
+    | LargeClaws
 
 
 type HelmetType
@@ -189,6 +194,9 @@ type ArmourType
     | ElvenChainMail
       -- monster armour
     | SoftHide
+    | Bones
+    | Shell
+    | ToughHide
 
 
 type ShieldType

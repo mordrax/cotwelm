@@ -3,10 +3,10 @@ module Item.Weapon exposing (init, damage)
 import Item.Data exposing (..)
 import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
-import Types
+import Dice exposing (Dice)
 
 
-damage : Weapon -> Types.Dice
+damage : Weapon -> Dice
 damage { damage } =
     damage
 
@@ -21,8 +21,11 @@ init weaponType status idStatus id =
             , damage = damage
             }
 
+        makeMonsterWeapon name wc damage =
+            make name ( 0, 0 ) "" ( 0, 0 ) wc damage
+
         d n faces bonus =
-            Types.Dice n faces bonus
+            Dice n faces bonus
     in
         case weaponType of
             BrokenSword ->
@@ -81,4 +84,19 @@ init weaponType status idStatus id =
 
             -- monster weapons
             SmallClaws ->
-                make "Small Claws" ( 0, 0 ) "" ( 0, 0 ) (WC 1) (d 1 3 0)
+                makeMonsterWeapon "Small Claws" (WC 1) (d 1 3 0)
+
+            Crossbow ->
+                makeMonsterWeapon "Crossbow" (WC 5) (d 1 12 3)
+
+            Fangs ->
+                makeMonsterWeapon "Fangs" (WC 10) (d 1 2 0)
+
+            Pincers ->
+                makeMonsterWeapon "Pincers" (WC 10) (d 2 6 0)
+
+            Bow ->
+                makeMonsterWeapon "Bow" (WC 6) (d 1 6 0)
+
+            LargeClaws ->
+                makeMonsterWeapon "Large Claws" (WC 8) (d 2 6 0)

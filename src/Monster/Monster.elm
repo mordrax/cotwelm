@@ -27,6 +27,7 @@ import Maybe
 import Item.Item as Item exposing (Item)
 import Item.Data as ItemData
 
+
 type alias Monster =
     { name : String
     , type_ : Types.CreatureType
@@ -90,7 +91,7 @@ init monsterType position =
             , type_ = Types.Monster
             , css = (Utils.Lib.toCSS name)
             , position = position
-            , stats = Stats.init attributes
+            , stats = Stats.initExperienced attributes level
             , attributes = attributes
             , equipment = makeEquipment itemSlotPair
             , expLevel = level
@@ -99,65 +100,135 @@ init monsterType position =
 
         makeWeapon weaponType =
             Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty
+
         makeArmour armourType =
             Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty
+
+        makeShield shieldType =
+            Item.new (ItemData.ItemTypeShield shieldType) IdGenerator.empty
+
+        basicEquipment weapon armour =
+            [ ( Equipment.WeaponSlot, makeWeapon weapon )
+            , ( Equipment.ArmourSlot, makeArmour armour )
+            ]
+
+        basicShieldEquipment weapon shield armour =
+            ( Equipment.ShieldSlot, makeShield shield ) :: basicEquipment weapon armour
     in
         case monsterType of
             GiantRat ->
                 make "Giant Rat"
                     1
-                    (Attributes 0 50 50 50 50)
-                    Types.Medium
-                    [ ( Equipment.WeaponSlot, makeWeapon ItemData.SmallClaws ),
-                      ( Equipment.ArmourSlot, makeArmour ItemData.SoftHide )
-                    ]
+                    (Attributes 0 20 60 30 5)
+                    Types.Small
+                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
             Goblin ->
-                make "Goblin" 1 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Goblin"
+                    1
+                    (Attributes 0 20 60 30 30)
+                    Types.Small
+                    (basicEquipment ItemData.Club ItemData.LeatherArmour)
 
             GiantBat ->
-                make "Giant Bat" 2 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Giant Bat"
+                    2
+                    (Attributes 0 50 50 50 50)
+                    Types.Small
+                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
             Hobgoblin ->
-                make "Hobgoblin" 2 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Hobgoblin"
+                    2
+                    (Attributes 0 50 50 50 50)
+                    Types.Medium
+                    (basicEquipment ItemData.Spear ItemData.StuddedLeatherArmour)
 
             Kobold ->
-                make "Kobold" 2 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Kobold"
+                    2
+                    (Attributes 0 50 50 50 50)
+                    Types.Small
+                    (basicEquipment ItemData.Crossbow ItemData.ChainMail)
 
             LargeSnake ->
-                make "Large Snake" 3 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Large Snake"
+                    3
+                    (Attributes 0 50 50 50 50)
+                    Types.Tiny
+                    (basicEquipment ItemData.Fangs ItemData.SoftHide)
 
             Skeleton ->
-                make "Skeleton" 3 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Skeleton"
+                    3
+                    (Attributes 0 50 50 50 50)
+                    Types.Medium
+                    (basicEquipment ItemData.ShortSword ItemData.Bones)
 
             WildDog ->
-                make "Wild Dog" 3 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Wild Dog"
+                    3
+                    (Attributes 0 50 50 50 50)
+                    Types.Small
+                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
             -- Special: "Poison"
             Viper ->
-                make "Viper" 5 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Viper"
+                    5
+                    (Attributes 0 50 50 50 50)
+                    Types.Tiny
+                    (basicEquipment ItemData.Fangs ItemData.SoftHide)
 
             GoblinFighter ->
-                make "Goblin Fighter" 6 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Goblin Fighter"
+                    6
+                    (Attributes 0 50 50 50 50)
+                    Types.Small
+                    (basicShieldEquipment ItemData.ShortSword ItemData.MediumIronShield ItemData.StuddedLeatherArmour)
 
             GiantRedAnt ->
-                make "Giant Red Ant" 7 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Giant Red Ant"
+                    7
+                    (Attributes 0 50 50 50 50)
+                    Types.Medium
+                    (basicEquipment ItemData.Pincers ItemData.Shell)
 
             WalkingCorpse ->
-                make "Walking Corpse" 7 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Walking Corpse"
+                    7
+                    (Attributes 0 100 50 50 50)
+                    Types.Medium
+                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
             -- Special: "Arrow"
             Bandit ->
-                make "Bandit" 10 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Bandit"
+                    10
+                    (Attributes 0 50 50 50 50)
+                    Types.Medium
+                    (basicEquipment ItemData.Bow ItemData.StuddedLeatherArmour)
 
             GiantTrapdoorSpider ->
-                make "Giant Trapdoor Spider" 10 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Giant Trapdoor Spider"
+                    10
+                    (Attributes 0 50 50 50 50)
+                    Types.Large
+                    (basicEquipment ItemData.Pincers ItemData.Shell)
 
             HugeLizard ->
-                make "Huge Lizard" 10 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Huge Lizard"
+                    10
+                    (Attributes 0 50 50 50 50)
+                    Types.Large
+                    (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
 
             RatMan ->
-                make "Rat-Man" 10 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Rat-Man"
+                    10
+                    (Attributes 0 50 50 50 50)
+                    Types.Medium
+                    (basicEquipment ItemData.MorningStar ItemData.ToughHide)
 
             -- Special: "Immune to Weapons"
             Slime ->

@@ -1,8 +1,5 @@
 module Arena exposing (..)
 
-import List exposing (..)
-import Dict exposing (..)
-import Set exposing (..)
 import Combat
 import Html exposing (..)
 import Html.Events as HE
@@ -17,6 +14,9 @@ import Stats
 import Lodash
 import UI
 import Attributes
+import Item.Item as Item exposing (Item)
+import Equipment exposing (Equipment)
+import Dice
 
 
 type alias VS =
@@ -193,6 +193,8 @@ combatView { matches, hero } =
             [ th [] [ text "Type" ]
             , th [] [ text "Level" ]
             , th [] [ text "Attributes" ]
+            , th [] [ text "Weapon" ]
+            , th [] [ text "Armour" ]
             , th [] [ text "Size" ]
             , th [] [ text "Hp" ]
             , th [] [ text "Win %" ]
@@ -210,16 +212,48 @@ matchView { monster, hpRemaining, battles, wins } =
 
         percent a =
             "  ( " ++ toString a ++ "% )"
+
+        weapon =
+            monster.equipment
+                |> Equipment.get Equipment.WeaponSlot
+                |> ppWeapon
+
+        armour =
+            monster.equipment
+                |> Equipment.get Equipment.ArmourSlot
+                |> ppArmour
     in
         tr []
             [ td [] [ text monster.name ]
             , td [] [ text <| toString monster.expLevel ]
             , td [] [ text <| ppAttributes monster.attributes ]
+            , td [] [ text weapon ]
+            , td [] [ text armour ]
             , td [] [ text <| toString monster.bodySize ]
             , td [] [ text <| toString monster.stats.maxHP ]
             , td [] [ text <| (over wins battles) ++ percent (toFloat wins * 100 / toFloat battles) ]
-            , td [] [ text <| toString (toFloat (sum hpRemaining) / toFloat battles) ]
+            , td [] [ text <| toString (toFloat (List.sum hpRemaining) / toFloat battles) ]
             ]
+
+
+ppWeapon : Maybe Item -> String
+ppWeapon item =
+    case item of
+        Just (Item.ItemWeapon weapon) ->
+            weapon.base.name ++ " ( " ++ Dice.pp weapon.damage ++ " )"
+
+        _ ->
+            "No weapon"
+
+
+ppArmour : Maybe Item -> String
+ppArmour item =
+    case item of
+        Just (Item.ItemArmour armour) ->
+            armour.base.name ++ " ( " ++ toString armour.ac ++ " )"
+
+        _ ->
+            "No armour"
 
 
 menuView : Html Msg
@@ -265,10 +299,22 @@ initHero =
 initMatches : Hero -> List VS
 initMatches hero =
     let
+        heroExperienced level hero =
+            case level of
+                0 ->
+                    hero
+
+                n ->
+                    heroExperienced (n - 1) (Hero.level hero)
+
         newMonster monsterType =
             Monster.initForArena monsterType
 
         newMatch monsterType =
-            VS hero (newMonster monsterType) 0 0 [] []
+            let
+                monster =
+                    (newMonster monsterType)
+            in
+                VS (heroExperienced monster.expLevel hero) monster 0 0 [] []
     in
         List.map newMatch Monster.types

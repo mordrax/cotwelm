@@ -61,12 +61,12 @@ import Attributes exposing (Attributes)
 import Monster.Monster as Monster exposing (Monster)
 import Item.Weapon as Weapon
 import Item.Data
-import Types
+import Dice exposing (Dice)
 import Utils.Mass as Mass
 import Equipment exposing (Equipment)
 import Debug exposing (log)
 import String
-
+import Types
 
 type alias AttackMessage =
     String
@@ -258,7 +258,7 @@ damageCalculator { attributes, equipment } =
                         |> addStrToBonus attributes.str
 
                 _ ->
-                    Types.Dice 1 (attributes.str // 10) 0
+                    Dice 1 (attributes.str // 10) 0
     in
         Dice.roll dice
             |> Random.map (\roll -> ( roll, dice.nDice * dice.sides + dice.bonus ))

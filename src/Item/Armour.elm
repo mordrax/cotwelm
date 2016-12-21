@@ -13,6 +13,9 @@ init armourType status idStatus id =
             , armourType = armourType
             , ac = ac
             }
+
+        makeMonsterArmour name ac =
+            make name ( 0, 0 ) "" ( 0, 0 ) ac
     in
         case armourType of
             RustyArmour ->
@@ -50,4 +53,13 @@ init armourType status idStatus id =
 
             -- monster armour
             SoftHide ->
-                make "Soft Hide" ( 0, 0 ) "" ( 0, 0 ) (AC 2)
+                makeMonsterArmour "Soft Hide" (AC 2)
+
+            Bones ->
+                makeMonsterArmour "Bones" (AC 12)
+
+            Shell ->
+                makeMonsterArmour "Shell" (AC 18)
+
+            ToughHide ->
+                makeMonsterArmour "Tough Hide" (AC 24)
