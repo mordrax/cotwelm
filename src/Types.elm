@@ -4,14 +4,6 @@ module Types exposing (..)
     eg DamageDie 6 2 would be 1D6 + 2
 -}
 
-
-type alias Dice =
-    { nDice : Int
-    , sides : Int
-    , bonus : Int
-    }
-
-
 type BodySize
     = Tiny
     | Small

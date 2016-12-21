@@ -4,6 +4,7 @@ module Hero.Hero
         , init
         , view
         , move
+        , level
         , teleport
         , position
         , stats
@@ -88,6 +89,11 @@ stats model =
 setStats : Stats -> Hero -> Hero
 setStats stats model =
     { model | stats = stats }
+
+
+level : Hero -> Hero
+level hero =
+    { hero | stats = Stats.incLevel 1 hero.attributes hero.stats }
 
 
 

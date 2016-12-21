@@ -4,11 +4,25 @@ module Dice exposing (..)
 -}
 
 import Random.Pcg as Random exposing (..)
-import Types exposing (Dice)
+
+
+type alias Dice =
+    { nDice : Int
+    , sides : Int
+    , bonus : Int
+    }
 
 
 type alias Sides =
     Int
+
+
+pp : Dice -> String
+pp { nDice, sides, bonus } =
+    if bonus > 0 then
+        toString nDice ++ "D" ++ toString sides ++ "+" ++ toString bonus
+    else
+        toString nDice ++ "D" ++ toString sides
 
 
 {-| Create nDx + a where:
