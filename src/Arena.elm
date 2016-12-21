@@ -311,7 +311,7 @@ initHeroLookup hero =
     let
         reducer dict hero lvl =
             case lvl of
-                50 ->
+                500 ->
                     dict
 
                 n ->
@@ -337,4 +337,4 @@ initMatches heroLookup =
             in
                 VS (Dict.get monster.expLevel heroLookup |> Maybe.withDefault initHero) monster 0 0 [] []
     in
-        List.map newMatch Monster.types
+        List.map newMatch (List.take 20 Monster.types)
