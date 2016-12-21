@@ -1,6 +1,7 @@
 module Arena exposing (..)
 
 import Combat
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Events as HE
 import Html.Attributes as HA
@@ -37,7 +38,8 @@ type alias RoundResult =
 
 type alias Model =
     { matches : List VS
-    , hero : Hero
+    , heroAttributes : Attributes
+    , heroLookup : Dict Int Hero
     }
 
 
@@ -55,11 +57,12 @@ maxRounds =
 init : Model
 init =
     let
-        hero =
-            initHero
+        heroLookup =
+            initHeroLookup initHero
     in
-        { matches = initMatches hero
-        , hero = hero
+        { matches = initMatches heroLookup
+        , heroAttributes = Attributes.init
+        , heroLookup = heroLookup
         }
 
 
@@ -72,22 +75,29 @@ fightCmd model =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ hero } as model) =
+update msg model =
     case msg of
         Fight ->
             let
                 newModel =
-                    { model | matches = initMatches hero }
+                    { model | matches = initMatches model.heroLookup }
             in
                 ( newModel, fightCmd newModel )
 
         SetAttribute attr val ->
             let
-                hero_ =
-                    Hero.init "Heox" (Attributes.set ( attr, val ) hero.attributes) Types.Male
+                attributes_ =
+                    Attributes.set ( attr, val ) model.heroAttributes
+
+                heroLookup_ =
+                    initHeroLookup <| Hero.init "Heox" attributes_ Types.Male
 
                 model_ =
-                    { model | hero = hero_, matches = initMatches hero_ }
+                    { model
+                        | heroLookup = heroLookup_
+                        , matches = initMatches heroLookup_
+                        , heroAttributes = attributes_
+                    }
             in
                 ( model_, fightCmd model_ )
 
@@ -165,7 +175,7 @@ view model =
     div []
         [ welcomeView
         , menuView
-        , heroView model.hero
+        , heroView (Dict.get 1 model.heroLookup |> Maybe.withDefault initHero)
         , combatView model
         ]
 
@@ -187,7 +197,7 @@ heroView { attributes, stats } =
 
 
 combatView : Model -> Html Msg
-combatView { matches, hero } =
+combatView { matches } =
     table [ HA.class "ui striped celled table" ]
         [ thead []
             [ th [] [ text "Type" ]
@@ -296,17 +306,27 @@ initHero =
     Hero.init "Heox" (Attributes.initCustom 50 75 50 50) Types.Male
 
 
-initMatches : Hero -> List VS
-initMatches hero =
+initHeroLookup : Hero -> Dict Int Hero
+initHeroLookup hero =
     let
-        heroExperienced level hero =
-            case level of
-                0 ->
-                    hero
+        reducer dict hero lvl =
+            case lvl of
+                50 ->
+                    dict
 
                 n ->
-                    heroExperienced (n - 1) (Hero.level hero)
+                    let
+                        nextLvlHero =
+                            (Hero.level hero)
+                    in
+                        reducer (Dict.insert n nextLvlHero dict) nextLvlHero (n + 1)
+    in
+        reducer Dict.empty hero 1
 
+
+initMatches : Dict Int Hero -> List VS
+initMatches heroLookup =
+    let
         newMonster monsterType =
             Monster.initForArena monsterType
 
@@ -315,6 +335,6 @@ initMatches hero =
                 monster =
                     (newMonster monsterType)
             in
-                VS (heroExperienced monster.expLevel hero) monster 0 0 [] []
+                VS (Dict.get monster.expLevel heroLookup |> Maybe.withDefault initHero) monster 0 0 [] []
     in
         List.map newMatch Monster.types
