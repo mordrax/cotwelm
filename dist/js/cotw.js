@@ -18256,7 +18256,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Giant Rat',
 					1,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 20, 60, 30, 5),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 30, 60, 30, 5),
 					_mordrax$cotwelm$Types$Small,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallClaws, _mordrax$cotwelm$Item_Data$SoftHide));
 			case 'Goblin':
@@ -18264,7 +18264,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Goblin',
 					1,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 20, 60, 30, 30),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 40, 65, 30, 20),
 					_mordrax$cotwelm$Types$Small,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$Club, _mordrax$cotwelm$Item_Data$LeatherArmour));
 			case 'GiantBat':
@@ -18272,7 +18272,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Giant Bat',
 					2,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 30, 70, 20, 10),
 					_mordrax$cotwelm$Types$Small,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallClaws, _mordrax$cotwelm$Item_Data$SoftHide));
 			case 'Hobgoblin':
@@ -18280,7 +18280,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Hobgoblin',
 					2,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 70, 50, 50),
 					_mordrax$cotwelm$Types$Medium,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$Spear, _mordrax$cotwelm$Item_Data$StuddedLeatherArmour));
 			case 'Kobold':
@@ -18288,7 +18288,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Kobold',
 					2,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 30, 70, 30, 50),
 					_mordrax$cotwelm$Types$Small,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$Crossbow, _mordrax$cotwelm$Item_Data$ChainMail));
 			case 'LargeSnake':
@@ -18296,7 +18296,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Large Snake',
 					3,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 20, 70, 30, 30),
 					_mordrax$cotwelm$Types$Tiny,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$Fangs, _mordrax$cotwelm$Item_Data$SoftHide));
 			case 'Skeleton':
@@ -18304,7 +18304,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Skeleton',
 					3,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 60, 60, 40, 10),
 					_mordrax$cotwelm$Types$Medium,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$ShortSword, _mordrax$cotwelm$Item_Data$Bones));
 			case 'WildDog':
@@ -18312,7 +18312,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Wild Dog',
 					3,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 30, 70, 30, 30),
 					_mordrax$cotwelm$Types$Small,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallClaws, _mordrax$cotwelm$Item_Data$SoftHide));
 			case 'Viper':
@@ -18320,7 +18320,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Viper',
 					5,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 20, 80, 20, 30),
 					_mordrax$cotwelm$Types$Tiny,
 					A2(basicEquipment, _mordrax$cotwelm$Item_Data$Fangs, _mordrax$cotwelm$Item_Data$SoftHide));
 			case 'GoblinFighter':
@@ -18328,7 +18328,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 					make,
 					'Goblin Fighter',
 					6,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 75, 50, 50),
 					_mordrax$cotwelm$Types$Small,
 					A3(basicShieldEquipment, _mordrax$cotwelm$Item_Data$ShortSword, _mordrax$cotwelm$Item_Data$MediumIronShield, _mordrax$cotwelm$Item_Data$StuddedLeatherArmour));
 			case 'GiantRedAnt':
@@ -18534,7 +18534,7 @@ var _mordrax$cotwelm$Monster_Monster$init = F2(
 			case 'WolfMan':
 				return A5(
 					make,
-					'Wolf-Man',
+					'Wolf Man',
 					25,
 					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
 					_mordrax$cotwelm$Types$Medium,
@@ -20149,7 +20149,7 @@ var _mordrax$cotwelm$Arena$initHeroLookup = function (hero) {
 var _mordrax$cotwelm$Arena$initHero = A3(
 	_mordrax$cotwelm$Hero_Hero$init,
 	'Heox',
-	A4(_mordrax$cotwelm$Attributes$initCustom, 50, 75, 50, 50),
+	A4(_mordrax$cotwelm$Attributes$initCustom, 60, 60, 60, 50),
 	_mordrax$cotwelm$GameData_Types$Male);
 var _mordrax$cotwelm$Arena$ppAttributes = function (_p2) {
 	var _p3 = _p2;
@@ -20217,56 +20217,51 @@ var _mordrax$cotwelm$Arena$ppWeapon = function (item) {
 		return 'No weapon';
 	}
 };
-var _mordrax$cotwelm$Arena$matchView = function (_p8) {
-	var _p9 = _p8;
-	var _p12 = _p9.wins;
-	var _p11 = _p9.monster;
-	var _p10 = _p9.battles;
-	var armour = _mordrax$cotwelm$Arena$ppArmour(
-		A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$ArmourSlot, _p11.equipment));
-	var weapon = _mordrax$cotwelm$Arena$ppWeapon(
-		A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$WeaponSlot, _p11.equipment));
-	var percent = function (a) {
+var _mordrax$cotwelm$Arena$matchView = function (maybeMatch) {
+	var _p8 = maybeMatch;
+	if (_p8.ctor === 'Nothing') {
 		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			'  ( ',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(a),
-				'% )'));
-	};
-	var over = F2(
-		function (a, b) {
+			_elm_lang$html$Html$tr,
+			{ctor: '[]'},
+			{ctor: '[]'});
+	} else {
+		var _p11 = _p8._0.wins;
+		var _p10 = _p8._0.monster;
+		var _p9 = _p8._0.battles;
+		var armour = _mordrax$cotwelm$Arena$ppArmour(
+			A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$ArmourSlot, _p10.equipment));
+		var weapon = _mordrax$cotwelm$Arena$ppWeapon(
+			A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$WeaponSlot, _p10.equipment));
+		var percent = function (a) {
 			return A2(
 				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(a),
+				'  ( ',
 				A2(
 					_elm_lang$core$Basics_ops['++'],
-					' / ',
-					_elm_lang$core$Basics$toString(b)));
-		});
-	return A2(
-		_elm_lang$html$Html$tr,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$td,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p11.name),
-					_1: {ctor: '[]'}
-				}),
-			_1: {
+					_elm_lang$core$Basics$toString(a),
+					'% )'));
+		};
+		var over = F2(
+			function (a, b) {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(a),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' / ',
+						_elm_lang$core$Basics$toString(b)));
+			});
+		return A2(
+			_elm_lang$html$Html$tr,
+			{ctor: '[]'},
+			{
 				ctor: '::',
 				_0: A2(
 					_elm_lang$html$Html$td,
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(
-							_elm_lang$core$Basics$toString(_p11.expLevel)),
+						_0: _elm_lang$html$Html$text(_p10.name),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -20277,7 +20272,7 @@ var _mordrax$cotwelm$Arena$matchView = function (_p8) {
 						{
 							ctor: '::',
 							_0: _elm_lang$html$Html$text(
-								_mordrax$cotwelm$Arena$ppAttributes(_p11.attributes)),
+								_elm_lang$core$Basics$toString(_p10.expLevel)),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
@@ -20287,7 +20282,8 @@ var _mordrax$cotwelm$Arena$matchView = function (_p8) {
 							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(weapon),
+								_0: _elm_lang$html$Html$text(
+									_mordrax$cotwelm$Arena$ppAttributes(_p10.attributes)),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
@@ -20297,7 +20293,7 @@ var _mordrax$cotwelm$Arena$matchView = function (_p8) {
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text(armour),
+									_0: _elm_lang$html$Html$text(weapon),
 									_1: {ctor: '[]'}
 								}),
 							_1: {
@@ -20307,8 +20303,7 @@ var _mordrax$cotwelm$Arena$matchView = function (_p8) {
 									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(
-											_elm_lang$core$Basics$toString(_p11.bodySize)),
+										_0: _elm_lang$html$Html$text(armour),
 										_1: {ctor: '[]'}
 									}),
 								_1: {
@@ -20319,7 +20314,7 @@ var _mordrax$cotwelm$Arena$matchView = function (_p8) {
 										{
 											ctor: '::',
 											_0: _elm_lang$html$Html$text(
-												_elm_lang$core$Basics$toString(_p11.stats.maxHP)),
+												_elm_lang$core$Basics$toString(_p10.bodySize)),
 											_1: {ctor: '[]'}
 										}),
 									_1: {
@@ -20330,11 +20325,7 @@ var _mordrax$cotwelm$Arena$matchView = function (_p8) {
 											{
 												ctor: '::',
 												_0: _elm_lang$html$Html$text(
-													A2(
-														_elm_lang$core$Basics_ops['++'],
-														A2(over, _p12, _p10),
-														percent(
-															(_elm_lang$core$Basics$toFloat(_p12) * 100) / _elm_lang$core$Basics$toFloat(_p10)))),
+													_elm_lang$core$Basics$toString(_p10.stats.maxHP)),
 												_1: {ctor: '[]'}
 											}),
 										_1: {
@@ -20345,12 +20336,28 @@ var _mordrax$cotwelm$Arena$matchView = function (_p8) {
 												{
 													ctor: '::',
 													_0: _elm_lang$html$Html$text(
-														_elm_lang$core$Basics$toString(
-															_elm_lang$core$Basics$toFloat(
-																_elm_lang$core$List$sum(_p9.hpRemaining)) / _elm_lang$core$Basics$toFloat(_p10))),
+														A2(
+															_elm_lang$core$Basics_ops['++'],
+															A2(over, _p11, _p9),
+															percent(
+																(_elm_lang$core$Basics$toFloat(_p11) * 100) / _elm_lang$core$Basics$toFloat(_p9)))),
 													_1: {ctor: '[]'}
 												}),
-											_1: {ctor: '[]'}
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text(
+															_elm_lang$core$Basics$toString(
+																_elm_lang$core$Basics$toFloat(
+																	_elm_lang$core$List$sum(_p8._0.hpRemaining)) / _elm_lang$core$Basics$toFloat(_p9))),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
 										}
 									}
 								}
@@ -20358,11 +20365,11 @@ var _mordrax$cotwelm$Arena$matchView = function (_p8) {
 						}
 					}
 				}
-			}
-		});
+			});
+	}
 };
-var _mordrax$cotwelm$Arena$combatView = function (_p13) {
-	var _p14 = _p13;
+var _mordrax$cotwelm$Arena$combatView = function (_p12) {
+	var _p13 = _p12;
 	return A2(
 		_elm_lang$html$Html$table,
 		{
@@ -20480,7 +20487,15 @@ var _mordrax$cotwelm$Arena$combatView = function (_p13) {
 				_0: A2(
 					_elm_lang$html$Html$tbody,
 					{ctor: '[]'},
-					A2(_elm_lang$core$List$map, _mordrax$cotwelm$Arena$matchView, _p14.matches)),
+					A2(
+						_elm_lang$core$List$map,
+						_mordrax$cotwelm$Arena$matchView,
+						A2(
+							_elm_lang$core$List$map,
+							function (monsterType) {
+								return A2(_elm_lang$core$Dict$get, monsterType, _p13.matchResults);
+							},
+							A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, _mordrax$cotwelm$Monster_Monster$types)))),
 				_1: {ctor: '[]'}
 			}
 		});
@@ -20499,22 +20514,22 @@ var _mordrax$cotwelm$Arena$round = F4(
 				result,
 				{hpRemaining: hero.stats.currentHP})) : (_elm_lang$core$Native_Utils.eq(heroAttacking, true) ? A2(
 			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			function (_p15) {
-				var _p16 = _p15;
-				return A4(_mordrax$cotwelm$Arena$round, hero, _p16._1, nextAttacker, resultNextRound);
+			function (_p14) {
+				var _p15 = _p14;
+				return A4(_mordrax$cotwelm$Arena$round, hero, _p15._1, nextAttacker, resultNextRound);
 			},
 			A2(_mordrax$cotwelm$Combat$attack, hero, monster)) : A2(
 			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			function (_p17) {
-				var _p18 = _p17;
-				return A4(_mordrax$cotwelm$Arena$round, _p18._1, monster, nextAttacker, resultNextRound);
+			function (_p16) {
+				var _p17 = _p16;
+				return A4(_mordrax$cotwelm$Arena$round, _p17._1, monster, nextAttacker, resultNextRound);
 			},
 			A2(_mordrax$cotwelm$Combat$attack, monster, hero))));
 	});
 var _mordrax$cotwelm$Arena$updateVSFromRoundResult = F2(
-	function (_p19, vs) {
-		var _p20 = _p19;
-		var _p21 = _p20.hpRemaining;
+	function (_p18, vs) {
+		var _p19 = _p18;
+		var _p20 = _p19.hpRemaining;
 		var incBattle = function (vs) {
 			return _elm_lang$core$Native_Utils.update(
 				vs,
@@ -20524,12 +20539,12 @@ var _mordrax$cotwelm$Arena$updateVSFromRoundResult = F2(
 			return _elm_lang$core$Native_Utils.update(
 				vs,
 				{
-					hpRemaining: {ctor: '::', _0: _p21, _1: vs.hpRemaining},
-					rounds: {ctor: '::', _0: _p20.rounds, _1: vs.rounds}
+					hpRemaining: {ctor: '::', _0: _p20, _1: vs.hpRemaining},
+					rounds: {ctor: '::', _0: _p19.rounds, _1: vs.rounds}
 				});
 		};
 		var addWin = function (vs) {
-			return (_elm_lang$core$Native_Utils.cmp(_p21, 0) > 0) ? _elm_lang$core$Native_Utils.update(
+			return (_elm_lang$core$Native_Utils.cmp(_p20, 0) > 0) ? _elm_lang$core$Native_Utils.update(
 				vs,
 				{wins: vs.wins + 1}) : vs;
 		};
@@ -20537,23 +20552,23 @@ var _mordrax$cotwelm$Arena$updateVSFromRoundResult = F2(
 			addResult(
 				addWin(vs)));
 	});
-var _mordrax$cotwelm$Arena$maxRounds = 50;
-var _mordrax$cotwelm$Arena$fights = function (_p22) {
-	var _p23 = _p22;
-	var _p25 = _p23;
-	var _p24 = _p23.hero;
-	var initRound = {rounds: 0, hpRemaining: _p24.stats.maxHP};
-	return (_elm_lang$core$Native_Utils.cmp(_p25.battles, _mordrax$cotwelm$Arena$maxRounds) > -1) ? _mgold$elm_random_pcg$Random_Pcg$constant(_p25) : A2(
+var _mordrax$cotwelm$Arena$maxRounds = 100;
+var _mordrax$cotwelm$Arena$fights = function (_p21) {
+	var _p22 = _p21;
+	var _p24 = _p22;
+	var _p23 = _p22.hero;
+	var initRound = {rounds: 0, hpRemaining: _p23.stats.maxHP};
+	return (_elm_lang$core$Native_Utils.cmp(_p24.battles, _mordrax$cotwelm$Arena$maxRounds) > -1) ? _mgold$elm_random_pcg$Random_Pcg$constant(_p24) : A2(
 		_mgold$elm_random_pcg$Random_Pcg$andThen,
 		_mordrax$cotwelm$Arena$fights,
 		A2(
 			_mgold$elm_random_pcg$Random_Pcg$map,
 			function (res) {
-				return A2(_mordrax$cotwelm$Arena$updateVSFromRoundResult, res, _p25);
+				return A2(_mordrax$cotwelm$Arena$updateVSFromRoundResult, res, _p24);
 			},
-			A4(_mordrax$cotwelm$Arena$round, _p24, _p23.monster, true, initRound)));
+			A4(_mordrax$cotwelm$Arena$round, _p23, _p22.monster, true, initRound)));
 };
-var _mordrax$cotwelm$Arena$VS = F6(
+var _mordrax$cotwelm$Arena$Match = F6(
 	function (a, b, c, d, e, f) {
 		return {hero: a, monster: b, battles: c, wins: d, hpRemaining: e, rounds: f};
 	});
@@ -20564,7 +20579,7 @@ var _mordrax$cotwelm$Arena$initMatches = function (heroLookup) {
 	var newMatch = function (monsterType) {
 		var monster = newMonster(monsterType);
 		return A6(
-			_mordrax$cotwelm$Arena$VS,
+			_mordrax$cotwelm$Arena$Match,
 			A2(
 				_elm_lang$core$Maybe$withDefault,
 				_mordrax$cotwelm$Arena$initHero,
@@ -20575,34 +20590,38 @@ var _mordrax$cotwelm$Arena$initMatches = function (heroLookup) {
 			{ctor: '[]'},
 			{ctor: '[]'});
 	};
-	return A2(
-		_elm_lang$core$List$map,
-		newMatch,
-		A2(_elm_lang$core$List$take, 20, _mordrax$cotwelm$Monster_Monster$types));
+	return A2(_elm_lang$core$List$map, newMatch, _mordrax$cotwelm$Monster_Monster$types);
 };
 var _mordrax$cotwelm$Arena$init = function () {
 	var heroLookup = _mordrax$cotwelm$Arena$initHeroLookup(_mordrax$cotwelm$Arena$initHero);
 	return {
 		matches: _mordrax$cotwelm$Arena$initMatches(heroLookup),
 		heroAttributes: _mordrax$cotwelm$Attributes$init,
-		heroLookup: heroLookup
+		heroLookup: heroLookup,
+		matchResults: _elm_lang$core$Dict$fromList(
+			{ctor: '[]'}),
+		resetCounter: 0
 	};
 }();
 var _mordrax$cotwelm$Arena$RoundResult = F2(
 	function (a, b) {
 		return {rounds: a, hpRemaining: b};
 	});
-var _mordrax$cotwelm$Arena$Model = F3(
-	function (a, b, c) {
-		return {matches: a, heroAttributes: b, heroLookup: c};
+var _mordrax$cotwelm$Arena$Model = F5(
+	function (a, b, c, d, e) {
+		return {matches: a, matchResults: b, heroAttributes: c, heroLookup: d, resetCounter: e};
+	});
+var _mordrax$cotwelm$Arena$Sleep = F2(
+	function (a, b) {
+		return {ctor: 'Sleep', _0: a, _1: b};
 	});
 var _mordrax$cotwelm$Arena$SetAttribute = F2(
 	function (a, b) {
 		return {ctor: 'SetAttribute', _0: a, _1: b};
 	});
-var _mordrax$cotwelm$Arena$heroView = function (_p26) {
-	var _p27 = _p26;
-	var _p28 = _p27.attributes;
+var _mordrax$cotwelm$Arena$heroView = function (_p25) {
+	var _p26 = _p25;
+	var _p27 = _p26.attributes;
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -20617,14 +20636,14 @@ var _mordrax$cotwelm$Arena$heroView = function (_p26) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'Hero attributes: ',
-							_mordrax$cotwelm$Arena$ppAttributes(_p28))),
+							_mordrax$cotwelm$Arena$ppAttributes(_p27))),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$html$Html$text(
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								'Hero HP: ',
-								_elm_lang$core$Basics$toString(_p27.stats.maxHP))),
+								_elm_lang$core$Basics$toString(_p26.stats.maxHP))),
 						_1: {ctor: '[]'}
 					}
 				}),
@@ -20638,28 +20657,28 @@ var _mordrax$cotwelm$Arena$heroView = function (_p26) {
 						_0: A3(
 							_mordrax$cotwelm$UI$labeledNumber,
 							'Str: ',
-							_p28.str,
+							_p27.str,
 							_mordrax$cotwelm$Arena$SetAttribute(_mordrax$cotwelm$Attributes$Strength)),
 						_1: {
 							ctor: '::',
 							_0: A3(
 								_mordrax$cotwelm$UI$labeledNumber,
 								'Dex: ',
-								_p28.dex,
+								_p27.dex,
 								_mordrax$cotwelm$Arena$SetAttribute(_mordrax$cotwelm$Attributes$Dexterity)),
 							_1: {
 								ctor: '::',
 								_0: A3(
 									_mordrax$cotwelm$UI$labeledNumber,
 									'Con: ',
-									_p28.con,
+									_p27.con,
 									_mordrax$cotwelm$Arena$SetAttribute(_mordrax$cotwelm$Attributes$Constitution)),
 								_1: {
 									ctor: '::',
 									_0: A3(
 										_mordrax$cotwelm$UI$labeledNumber,
 										'Int: ',
-										_p28.$int,
+										_p27.$int,
 										_mordrax$cotwelm$Arena$SetAttribute(_mordrax$cotwelm$Attributes$Intelligence)),
 									_1: {ctor: '[]'}
 								}
@@ -20670,35 +20689,109 @@ var _mordrax$cotwelm$Arena$heroView = function (_p26) {
 			}
 		});
 };
-var _mordrax$cotwelm$Arena$FightResult = function (a) {
-	return {ctor: 'FightResult', _0: a};
-};
-var _mordrax$cotwelm$Arena$fightCmd = function (model) {
-	return A2(
-		_mgold$elm_random_pcg$Random_Pcg$generate,
-		_mordrax$cotwelm$Arena$FightResult,
-		_mordrax$cotwelm$Lodash$combine(
-			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Arena$fights, model.matches)));
-};
+var _mordrax$cotwelm$Arena$Fight = F3(
+	function (a, b, c) {
+		return {ctor: 'Fight', _0: a, _1: b, _2: c};
+	});
 var _mordrax$cotwelm$Arena$update = F2(
 	function (msg, model) {
-		var _p29 = msg;
-		switch (_p29.ctor) {
+		var spaceChar = _elm_lang$core$Char$fromCode(32);
+		var removeSpace = function (str) {
+			return A2(
+				_elm_lang$core$String$filter,
+				function (_p28) {
+					return !A2(
+						F2(
+							function (x, y) {
+								return _elm_lang$core$Native_Utils.eq(x, y);
+							}),
+						spaceChar,
+						_p28);
+				},
+				str);
+		};
+		var asyncCmd = F3(
+			function (match, matches, resetCounter) {
+				return A2(
+					_mgold$elm_random_pcg$Random_Pcg$generate,
+					function (matchResult) {
+						return A3(_mordrax$cotwelm$Arena$Fight, matchResult, matches, resetCounter);
+					},
+					_mordrax$cotwelm$Arena$fights(match));
+			});
+		var fightResult = F3(
+			function (match, matches, resetCounter) {
+				return A2(
+					_elm_lang$core$Task$perform,
+					function (_p29) {
+						return A2(
+							_mordrax$cotwelm$Arena$Sleep,
+							A3(asyncCmd, match, matches, resetCounter),
+							resetCounter);
+					},
+					_elm_lang$core$Process$sleep(150));
+			});
+		var _p30 = msg;
+		switch (_p30.ctor) {
+			case 'Sleep':
+				return _elm_lang$core$Native_Utils.eq(_p30._1, model.resetCounter) ? {ctor: '_Tuple2', _0: model, _1: _p30._0} : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'StartFight':
+				if (_p30._0.ctor === '[]') {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				} else {
+					var _p31 = _p30._1;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								matchResults: _elm_lang$core$Dict$fromList(
+									{ctor: '[]'}),
+								resetCounter: _p31
+							}),
+						_1: A3(fightResult, _p30._0._0, _p30._0._1, _p31)
+					};
+				}
 			case 'Fight':
-				var newModel = _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						matches: _mordrax$cotwelm$Arena$initMatches(model.heroLookup)
-					});
-				return {
-					ctor: '_Tuple2',
-					_0: newModel,
-					_1: _mordrax$cotwelm$Arena$fightCmd(newModel)
-				};
-			case 'SetAttribute':
+				if (_p30._1.ctor === '[]') {
+					var _p32 = _p30._0;
+					return (!_elm_lang$core$Native_Utils.eq(model.resetCounter, _p30._2)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								matchResults: A3(
+									_elm_lang$core$Dict$insert,
+									removeSpace(_p32.monster.name),
+									_p32,
+									model.matchResults)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					var _p34 = _p30._2;
+					var _p33 = _p30._0;
+					return (!_elm_lang$core$Native_Utils.eq(model.resetCounter, _p34)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								matchResults: A3(
+									_elm_lang$core$Dict$insert,
+									A2(
+										_elm_lang$core$Debug$log,
+										'monstername: ',
+										removeSpace(_p33.monster.name)),
+									_p33,
+									model.matchResults)
+							}),
+						_1: A3(fightResult, _p30._1._0, _p30._1._1, _p34)
+					};
+				}
+			default:
 				var attributes_ = A2(
 					_mordrax$cotwelm$Attributes$set,
-					{ctor: '_Tuple2', _0: _p29._0, _1: _p29._1},
+					{ctor: '_Tuple2', _0: _p30._0, _1: _p30._1},
 					model.heroAttributes);
 				var heroLookup_ = _mordrax$cotwelm$Arena$initHeroLookup(
 					A3(_mordrax$cotwelm$Hero_Hero$init, 'Heox', attributes_, _mordrax$cotwelm$GameData_Types$Male));
@@ -20709,23 +20802,14 @@ var _mordrax$cotwelm$Arena$update = F2(
 						matches: _mordrax$cotwelm$Arena$initMatches(heroLookup_),
 						heroAttributes: attributes_
 					});
-				return {
-					ctor: '_Tuple2',
-					_0: model_,
-					_1: _mordrax$cotwelm$Arena$fightCmd(model_)
-				};
-			default:
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{matches: _p29._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
+				return {ctor: '_Tuple2', _0: model_, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
-var _mordrax$cotwelm$Arena$Fight = {ctor: 'Fight'};
-var _mordrax$cotwelm$Arena$menuView = function () {
+var _mordrax$cotwelm$Arena$StartFight = F2(
+	function (a, b) {
+		return {ctor: 'StartFight', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$Arena$menuView = function (model) {
 	var btn = F2(
 		function (txt, msg) {
 			return A2(
@@ -20750,10 +20834,16 @@ var _mordrax$cotwelm$Arena$menuView = function () {
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: A2(btn, 'Fight!', _mordrax$cotwelm$Arena$Fight),
+			_0: A2(
+				btn,
+				'Fight!',
+				A2(
+					_mordrax$cotwelm$Arena$StartFight,
+					_mordrax$cotwelm$Arena$initMatches(model.heroLookup),
+					model.resetCounter + 1)),
 			_1: {ctor: '[]'}
 		});
-}();
+};
 var _mordrax$cotwelm$Arena$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -20763,7 +20853,7 @@ var _mordrax$cotwelm$Arena$view = function (model) {
 			_0: _mordrax$cotwelm$Arena$welcomeView,
 			_1: {
 				ctor: '::',
-				_0: _mordrax$cotwelm$Arena$menuView,
+				_0: _mordrax$cotwelm$Arena$menuView(model),
 				_1: {
 					ctor: '::',
 					_0: _mordrax$cotwelm$Arena$heroView(
