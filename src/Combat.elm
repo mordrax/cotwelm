@@ -119,6 +119,9 @@ attack attacker defender =
 
 -------------------
 -- Chance to hit --
+-- SAC: Add up all the AC for armour, this is the Sum of AC
+-- Dex: The dex value of the attacker from 0 to 100.
+-- A hit is rolling a D100 over (Dex - SAC)
 -------------------
 
 
