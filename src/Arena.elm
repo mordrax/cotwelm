@@ -49,13 +49,15 @@ type alias Model =
     , matchResults : Dict String Match
     , heroAttributes : Attributes
     , heroLookup : Dict Int Hero
+    , resetCounter : Int
     }
 
 
 type Msg
-    = Fight (Maybe Match) Matches
+    = StartFight Matches Int
+    | Fight Match Matches Int
     | SetAttribute Attributes.Attribute Int
-    | Sleep (Cmd Msg)
+    | Sleep (Cmd Msg) Int
 
 
 maxRounds : Int
@@ -73,17 +75,18 @@ init =
         , heroAttributes = Attributes.init
         , heroLookup = heroLookup
         , matchResults = Dict.fromList []
+        , resetCounter = 0
         }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        asyncCmd match matches =
-            Random.generate (\matchResult -> Fight (Just matchResult) matches) (fights match)
+        asyncCmd match matches resetCounter =
+            Random.generate (\matchResult -> Fight matchResult matches resetCounter) (fights match)
 
-        fightResult match matches =
-            Task.perform (\_ -> Sleep (asyncCmd match matches)) (Process.sleep 150)
+        fightResult match matches resetCounter =
+            Task.perform (\_ -> Sleep (asyncCmd match matches resetCounter) resetCounter) (Process.sleep 150)
 
         spaceChar =
             Char.fromCode 32
@@ -92,29 +95,40 @@ update msg model =
             String.filter (not << (==) spaceChar) str
     in
         case msg of
-            Sleep cmd ->
-                ( model, cmd )
+            Sleep cmd resetCounter ->
+                if resetCounter == model.resetCounter then
+                    ( model, cmd )
+                else
+                    ( model, Cmd.none )
 
-            Fight Nothing [] ->
+            StartFight [] resetCounter ->
                 ( model, Cmd.none )
 
-            Fight Nothing (nextMatch :: remainingMatches) ->
-                ( { model | matchResults = Dict.fromList [] }, fightResult nextMatch remainingMatches )
-
-            Fight (Just match) [] ->
-                ( { model
-                    | matchResults =
-                        Dict.insert (removeSpace match.monster.name) match model.matchResults
-                  }
-                , Cmd.none
+            StartFight (nextMatch :: remainingMatches) resetCounter ->
+                ( { model | matchResults = Dict.fromList [], resetCounter = resetCounter }
+                , fightResult nextMatch remainingMatches resetCounter
                 )
 
-            Fight (Just match) (nextMatch :: remainingMatches) ->
-                ( { model
-                    | matchResults = Dict.insert (Debug.log "monstername: " (removeSpace match.monster.name)) match model.matchResults
-                  }
-                , fightResult nextMatch remainingMatches
-                )
+            Fight match [] resetCounter ->
+                if model.resetCounter /= resetCounter then
+                    ( model, Cmd.none )
+                else
+                    ( { model
+                        | matchResults =
+                            Dict.insert (removeSpace match.monster.name) match model.matchResults
+                      }
+                    , Cmd.none
+                    )
+
+            Fight match (nextMatch :: remainingMatches) resetCounter ->
+                if model.resetCounter /= resetCounter then
+                    ( model, Cmd.none )
+                else
+                    ( { model
+                        | matchResults = Dict.insert (Debug.log "monstername: " (removeSpace match.monster.name)) match model.matchResults
+                      }
+                    , fightResult nextMatch remainingMatches resetCounter
+                    )
 
             SetAttribute attr val ->
                 let
@@ -316,7 +330,7 @@ menuView model =
                 [ text txt ]
     in
         h1 []
-            [ btn "Fight!" <| Fight Nothing (initMatches model.heroLookup)
+            [ btn "Fight!" <| StartFight (initMatches model.heroLookup) (model.resetCounter + 1)
             ]
 
 
