@@ -1,26 +1,30 @@
 module Arena exposing (..)
 
-import Combat
-import Dict exposing (Dict)
-import Html exposing (..)
-import Html.Events as HE
-import Html.Attributes as HA
-import Monster.Monster as Monster exposing (Monster)
-import Hero.Hero as Hero exposing (Hero)
-import Attributes exposing (Attributes)
-import GameData.Types as Types
-import Random.Pcg as Random exposing (Generator)
-import Random.Extra as RandomX
-import Stats
-import Lodash
-import UI
 import Attributes
-import Item.Item as Item exposing (Item)
-import Equipment exposing (Equipment)
+import Attributes exposing (Attributes)
+import Char
+import Combat
 import Dice
+import Dict exposing (Dict)
+import Equipment exposing (Equipment)
+import GameData.Types as Types
+import Hero.Hero as Hero exposing (Hero)
+import Html exposing (..)
+import Html.Attributes as HA
+import Html.Events as HE
+import Item.Item as Item exposing (Item)
+import Lodash
+import Monster.Monster as Monster exposing (Monster)
+import Process
+import Random.Extra as RandomX
+import Random.Pcg as Random exposing (Generator)
+import Stats
+import Task
+import Time exposing (Time)
+import UI
 
 
-type alias VS =
+type alias Match =
     { hero : Hero
     , monster : Monster
     , battles : Int
@@ -36,22 +40,27 @@ type alias RoundResult =
     }
 
 
+type alias Matches =
+    List Match
+
+
 type alias Model =
-    { matches : List VS
+    { matches : Matches
+    , matchResults : Dict String Match
     , heroAttributes : Attributes
     , heroLookup : Dict Int Hero
     }
 
 
 type Msg
-    = Fight
-    | FightResult (List VS)
+    = Fight (Maybe Match) Matches
     | SetAttribute Attributes.Attribute Int
+    | Sleep (Cmd Msg)
 
 
 maxRounds : Int
 maxRounds =
-    50
+    100
 
 
 init : Model
@@ -63,49 +72,69 @@ init =
         { matches = initMatches heroLookup
         , heroAttributes = Attributes.init
         , heroLookup = heroLookup
+        , matchResults = Dict.fromList []
         }
-
-
-fightCmd : Model -> Cmd Msg
-fightCmd model =
-    model.matches
-        |> List.map fights
-        |> Lodash.combine
-        |> Random.generate FightResult
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        Fight ->
-            let
-                newModel =
-                    { model | matches = initMatches model.heroLookup }
-            in
-                ( newModel, fightCmd newModel )
+    let
+        asyncCmd match matches =
+            Random.generate (\matchResult -> Fight (Just matchResult) matches) (fights match)
 
-        SetAttribute attr val ->
-            let
-                attributes_ =
-                    Attributes.set ( attr, val ) model.heroAttributes
+        fightResult match matches =
+            Task.perform (\_ -> Sleep (asyncCmd match matches)) (Process.sleep 150)
 
-                heroLookup_ =
-                    initHeroLookup <| Hero.init "Heox" attributes_ Types.Male
+        spaceChar =
+            Char.fromCode 32
 
-                model_ =
-                    { model
-                        | heroLookup = heroLookup_
-                        , matches = initMatches heroLookup_
-                        , heroAttributes = attributes_
-                    }
-            in
-                ( model_, fightCmd model_ )
+        removeSpace str =
+            String.filter (not << (==) spaceChar) str
+    in
+        case msg of
+            Sleep cmd ->
+                ( model, cmd )
 
-        FightResult vses ->
-            ( { model | matches = vses }, Cmd.none )
+            Fight Nothing [] ->
+                ( model, Cmd.none )
+
+            Fight Nothing (nextMatch :: remainingMatches) ->
+                ( { model | matchResults = Dict.fromList [] }, fightResult nextMatch remainingMatches )
+
+            Fight (Just match) [] ->
+                ( { model
+                    | matchResults =
+                        Dict.insert (removeSpace match.monster.name) match model.matchResults
+                  }
+                , Cmd.none
+                )
+
+            Fight (Just match) (nextMatch :: remainingMatches) ->
+                ( { model
+                    | matchResults = Dict.insert (Debug.log "monstername: " (removeSpace match.monster.name)) match model.matchResults
+                  }
+                , fightResult nextMatch remainingMatches
+                )
+
+            SetAttribute attr val ->
+                let
+                    attributes_ =
+                        Attributes.set ( attr, val ) model.heroAttributes
+
+                    heroLookup_ =
+                        initHeroLookup <| Hero.init "Heox" attributes_ Types.Male
+
+                    model_ =
+                        { model
+                            | heroLookup = heroLookup_
+                            , matches = initMatches heroLookup_
+                            , heroAttributes = attributes_
+                        }
+                in
+                    ( model_, Cmd.none )
 
 
-fights : VS -> Generator VS
+fights : Match -> Generator Match
 fights ({ hero, monster } as vs) =
     let
         initRound =
@@ -121,7 +150,7 @@ fights ({ hero, monster } as vs) =
                 |> Random.andThen fights
 
 
-updateVSFromRoundResult : RoundResult -> VS -> VS
+updateVSFromRoundResult : RoundResult -> Match -> Match
 updateVSFromRoundResult { rounds, hpRemaining } vs =
     let
         addWin vs =
@@ -174,7 +203,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ welcomeView
-        , menuView
+        , menuView model
         , heroView (Dict.get 1 model.heroLookup |> Maybe.withDefault initHero)
         , combatView model
         ]
@@ -197,7 +226,7 @@ heroView { attributes, stats } =
 
 
 combatView : Model -> Html Msg
-combatView { matches } =
+combatView { matchResults } =
     table [ HA.class "ui striped celled table" ]
         [ thead []
             [ th [] [ text "Type" ]
@@ -210,40 +239,50 @@ combatView { matches } =
             , th [] [ text "Win %" ]
             , th [] [ text "Avg HP remaining" ]
             ]
-        , tbody [] (List.map matchView matches)
+        , tbody []
+            (Monster.types
+                |> List.map toString
+                |> List.map (\monsterType -> Dict.get monsterType matchResults)
+                |> List.map matchView
+            )
         ]
 
 
-matchView : VS -> Html Msg
-matchView { monster, hpRemaining, battles, wins } =
-    let
-        over a b =
-            toString a ++ " / " ++ toString b
+matchView : Maybe Match -> Html Msg
+matchView maybeMatch =
+    case maybeMatch of
+        Nothing ->
+            tr [] []
 
-        percent a =
-            "  ( " ++ toString a ++ "% )"
+        Just { monster, hpRemaining, battles, wins } ->
+            let
+                over a b =
+                    toString a ++ " / " ++ toString b
 
-        weapon =
-            monster.equipment
-                |> Equipment.get Equipment.WeaponSlot
-                |> ppWeapon
+                percent a =
+                    "  ( " ++ toString a ++ "% )"
 
-        armour =
-            monster.equipment
-                |> Equipment.get Equipment.ArmourSlot
-                |> ppArmour
-    in
-        tr []
-            [ td [] [ text monster.name ]
-            , td [] [ text <| toString monster.expLevel ]
-            , td [] [ text <| ppAttributes monster.attributes ]
-            , td [] [ text weapon ]
-            , td [] [ text armour ]
-            , td [] [ text <| toString monster.bodySize ]
-            , td [] [ text <| toString monster.stats.maxHP ]
-            , td [] [ text <| (over wins battles) ++ percent (toFloat wins * 100 / toFloat battles) ]
-            , td [] [ text <| toString (toFloat (List.sum hpRemaining) / toFloat battles) ]
-            ]
+                weapon =
+                    monster.equipment
+                        |> Equipment.get Equipment.WeaponSlot
+                        |> ppWeapon
+
+                armour =
+                    monster.equipment
+                        |> Equipment.get Equipment.ArmourSlot
+                        |> ppArmour
+            in
+                tr []
+                    [ td [] [ text monster.name ]
+                    , td [] [ text <| toString monster.expLevel ]
+                    , td [] [ text <| ppAttributes monster.attributes ]
+                    , td [] [ text weapon ]
+                    , td [] [ text armour ]
+                    , td [] [ text <| toString monster.bodySize ]
+                    , td [] [ text <| toString monster.stats.maxHP ]
+                    , td [] [ text <| (over wins battles) ++ percent (toFloat wins * 100 / toFloat battles) ]
+                    , td [] [ text <| toString (toFloat (List.sum hpRemaining) / toFloat battles) ]
+                    ]
 
 
 ppWeapon : Maybe Item -> String
@@ -266,8 +305,8 @@ ppArmour item =
             "No armour"
 
 
-menuView : Html Msg
-menuView =
+menuView : Model -> Html Msg
+menuView model =
     let
         btn txt msg =
             button
@@ -277,7 +316,7 @@ menuView =
                 [ text txt ]
     in
         h1 []
-            [ btn "Fight!" Fight
+            [ btn "Fight!" <| Fight Nothing (initMatches model.heroLookup)
             ]
 
 
@@ -303,7 +342,7 @@ ppAttributes { str, dex, int, con } =
 
 initHero : Combat.Fighter Hero
 initHero =
-    Hero.init "Heox" (Attributes.initCustom 50 75 50 50) Types.Male
+    Hero.init "Heox" (Attributes.initCustom 60 60 60 50) Types.Male
 
 
 initHeroLookup : Hero -> Dict Int Hero
@@ -324,7 +363,7 @@ initHeroLookup hero =
         reducer Dict.empty hero 1
 
 
-initMatches : Dict Int Hero -> List VS
+initMatches : Dict Int Hero -> List Match
 initMatches heroLookup =
     let
         newMonster monsterType =
@@ -335,6 +374,7 @@ initMatches heroLookup =
                 monster =
                     (newMonster monsterType)
             in
-                VS (Dict.get monster.expLevel heroLookup |> Maybe.withDefault initHero) monster 0 0 [] []
+                Match (Dict.get monster.expLevel heroLookup |> Maybe.withDefault initHero) monster 0 0 [] []
     in
-        List.map newMatch (List.take 20 Monster.types)
+        --        List.map newMatch (List.take 20 Monster.types)
+        List.map newMatch Monster.types
