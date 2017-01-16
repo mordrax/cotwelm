@@ -8,6 +8,7 @@ module Equipment
         , getPack
         , getWeapon
         , getArmour
+        , calculateAC
         , init
         , equip
         , equipMany
@@ -118,6 +119,22 @@ init =
         , rightRing = Nothing
         , boots = Nothing
         }
+
+
+calculateAC : Equipment -> AC
+calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
+    let
+        getAC : Maybe { b | ac : AC } -> AC
+        getAC item =
+            item
+                |> Maybe.map .ac
+                |> Maybe.withDefault (AC 0)
+    in
+        getAC armour
+            |> addAC (getAC shield)
+            |> addAC (getAC helmet)
+            |> addAC (getAC bracers)
+            |> addAC (getAC gauntlets)
 
 
 equipMany : List ( EquipmentSlot, Item ) -> Equipment -> Equipment

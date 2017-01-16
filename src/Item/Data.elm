@@ -21,6 +21,13 @@ type AC
     = AC Int
 
 
+addAC : AC -> AC -> AC
+addAC (AC a) (AC b) =
+    AC (a + b)
+
+acToInt: AC -> Int
+acToInt (AC a) = a
+
 type IdentificationStatus
     = Identified
     | Unidentified

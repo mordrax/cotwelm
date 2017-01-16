@@ -121,7 +121,7 @@ init monsterType position =
                     1
                     (Attributes 0 30 60 30 5)
                     Types.Small
-                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+                    (basicEquipment ItemData.SmallClaws ItemData.PlateArmour)
 
             Goblin ->
                 make "Goblin"
