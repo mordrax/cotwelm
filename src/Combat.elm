@@ -68,6 +68,7 @@ import Debug exposing (log)
 import String
 import Types
 
+
 type alias AttackMessage =
     String
 
@@ -141,6 +142,8 @@ chanceToHit attacker defender =
         ( weapon, armour ) =
             ( Equipment.getWeapon attacker.equipment, Equipment.getArmour attacker.equipment )
 
+        ac = Equipment.calculateAC defender.equipment
+
         armourMass =
             armour
                 |> Maybe.map (.base >> .mass)
@@ -160,26 +163,27 @@ chanceToHit attacker defender =
                 |> Maybe.withDefault (Mass.Mass 0 0)
 
         -- Weapons less than 5000 (axe) has no bulk penalty, after which all weapons
-        -- up to the THS at 12000 gets a linear penalty up to x% CTH
+        -- up to the THS at 12000 gets a linear penalty up to +-15% CTH
         weaponBulkPenalty =
             (1 - toFloat weaponMass.bulk / 6000)
                 * 15
                 |> clamp -15 15
                 |> round
 
+        -- Hitting tiny to giant creatures give either a penalty or a bonus to hit
+        -- The bigger the creature the easier to hit, with a range of -+10% CTH
         sizeModifier =
             defender.bodySize
                 |> bodySizeToDodge
                 |> clamp -10 10
     in
-        { baseCTH = attacker.attributes.dex
+        { baseCTH = attacker.attributes.dex - (Item.Data.acToInt ac)
         , armourPenalty = armourPenalty
         , weaponBulkPenalty = weaponBulkPenalty
         , sizeModifier = sizeModifier
         , blockPenalty = 5
         , critRange = 20
         }
-
 
 bodySizeToDodge : Types.BodySize -> Int
 bodySizeToDodge bodySize =
