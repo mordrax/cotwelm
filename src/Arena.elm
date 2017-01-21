@@ -12,6 +12,8 @@ import Hero.Hero as Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
+import Utils.IdGenerator as IdGenerator
+import Item.Data as ItemData
 import Item.Item as Item exposing (Item)
 import Lodash
 import Monster.Monster as Monster exposing (Monster)
@@ -31,12 +33,16 @@ type alias Match =
     , wins : Int
     , hpRemaining : List Int
     , rounds : List Int
+    , heroHitMonster : List Int
+    , monsterHitHero : List Int
     }
 
 
 type alias RoundResult =
     { rounds : Int
     , hpRemaining : Int
+    , heroHitMonster : Int
+    , monsterHitHero : Int
     }
 
 
@@ -58,21 +64,27 @@ type Msg
     | Fight Match Matches Int
     | SetAttribute Attributes.Attribute Int
     | Sleep (Cmd Msg) Int
+    | Stop
 
 
 maxRounds : Int
 maxRounds =
-    100
+    2000
 
 
 init : Model
 init =
     let
         heroLookup =
-            initHeroLookup initHero
+            initHeroLookup (initHero customAttributes)
+
+        attributesAtLevelOne =
+            Dict.get 1 heroLookup
+                |> Maybe.map .attributes
+                |> Maybe.withDefault (Attributes.initCustom 0 0 0 0)
     in
         { matches = initMatches heroLookup
-        , heroAttributes = Attributes.init
+        , heroAttributes = attributesAtLevelOne
         , heroLookup = heroLookup
         , matchResults = Dict.fromList []
         , resetCounter = 0
@@ -95,6 +107,9 @@ update msg model =
             String.filter (not << (==) spaceChar) str
     in
         case msg of
+            Stop ->
+                ( { model | resetCounter = model.resetCounter + 1 }, Cmd.none )
+
             Sleep cmd resetCounter ->
                 if resetCounter == model.resetCounter then
                     ( model, cmd )
@@ -136,7 +151,7 @@ update msg model =
                         Attributes.set ( attr, val ) model.heroAttributes
 
                     heroLookup_ =
-                        initHeroLookup <| Hero.init "Heox" attributes_ Types.Male
+                        initHeroLookup (initHero attributes_)
 
                     model_ =
                         { model
@@ -154,6 +169,8 @@ fights ({ hero, monster } as vs) =
         initRound =
             { rounds = 0
             , hpRemaining = hero.stats.maxHP
+            , heroHitMonster = 0
+            , monsterHitHero = 0
             }
     in
         if vs.battles >= maxRounds then
@@ -165,7 +182,7 @@ fights ({ hero, monster } as vs) =
 
 
 updateVSFromRoundResult : RoundResult -> Match -> Match
-updateVSFromRoundResult { rounds, hpRemaining } vs =
+updateVSFromRoundResult { rounds, hpRemaining, heroHitMonster, monsterHitHero } vs =
     let
         addWin vs =
             if hpRemaining > 0 then
@@ -177,6 +194,8 @@ updateVSFromRoundResult { rounds, hpRemaining } vs =
             { vs
                 | hpRemaining = hpRemaining :: vs.hpRemaining
                 , rounds = rounds :: vs.rounds
+                , heroHitMonster = heroHitMonster :: vs.heroHitMonster
+                , monsterHitHero = monsterHitHero :: vs.monsterHitHero
             }
 
         incBattle vs =
@@ -194,8 +213,23 @@ round hero monster heroAttacking result =
         resultNextRound =
             { result | rounds = result.rounds + 1 }
 
+        updateHitHero h h_ roundResult =
+            { roundResult | monsterHitHero = roundResult.monsterHitHero + oneIfDamaged h h_ }
+
+        updateHitMonster m m_ roundResult =
+            { roundResult | heroHitMonster = roundResult.heroHitMonster + oneIfDamaged m m_ }
+
         nextAttacker =
             not heroAttacking
+
+        isDamaged a a_ =
+            a.stats.currentHP > a_.stats.currentHP
+
+        oneIfDamaged a a_ =
+            if isDamaged a a_ then
+                1
+            else
+                0
     in
         if Stats.isDead hero.stats then
             Random.constant { result | hpRemaining = 0 }
@@ -203,10 +237,20 @@ round hero monster heroAttacking result =
             Random.constant { result | hpRemaining = hero.stats.currentHP }
         else if heroAttacking == True then
             Combat.attack hero monster
-                |> Random.andThen (\( _, monster_ ) -> round hero monster_ nextAttacker resultNextRound)
+                |> Random.andThen
+                    (\( _, monster_ ) ->
+                        resultNextRound
+                            |> updateHitMonster monster monster_
+                            |> round hero monster_ nextAttacker
+                    )
         else
             Combat.attack monster hero
-                |> Random.andThen (\( _, hero_ ) -> round hero_ monster nextAttacker resultNextRound)
+                |> Random.andThen
+                    (\( _, hero_ ) ->
+                        resultNextRound
+                            |> updateHitHero hero hero_
+                            |> round hero_ monster nextAttacker
+                    )
 
 
 
@@ -218,7 +262,7 @@ view model =
     div []
         [ welcomeView
         , menuView model
-        , heroView (Dict.get 1 model.heroLookup |> Maybe.withDefault initHero)
+        , heroView (Dict.get 1 model.heroLookup |> Maybe.withDefault (initHero customAttributes))
         , combatView model
         ]
 
@@ -227,8 +271,8 @@ heroView : Hero -> Html Msg
 heroView { attributes, stats } =
     div []
         [ div []
-            [ text ("Hero attributes: " ++ ppAttributes attributes)
-            , text ("Hero HP: " ++ toString stats.maxHP)
+            [ div [] [ text ("Hero attributes: " ++ ppAttributes attributes) ]
+            , div [] [ text ("Hero HP: " ++ toString stats.maxHP) ]
             ]
         , div []
             [ UI.labeledNumber "Str: " attributes.str (SetAttribute Attributes.Strength)
@@ -252,6 +296,9 @@ combatView { matchResults } =
             , th [] [ text "Hp" ]
             , th [] [ text "Win %" ]
             , th [] [ text "Avg HP remaining" ]
+            , th [] [ text "Avg Turns taken" ]
+            , th [] [ text "Avg Hits (hero, monster)" ]
+            , th [] [ text "Hero's CTH %" ]
             ]
         , tbody []
             (Monster.types
@@ -268,7 +315,7 @@ matchView maybeMatch =
         Nothing ->
             tr [] []
 
-        Just { monster, hpRemaining, battles, wins } ->
+        Just { monster, hpRemaining, rounds, battles, wins, hero, heroHitMonster, monsterHitHero } ->
             let
                 over a b =
                     toString a ++ " / " ++ toString b
@@ -285,17 +332,46 @@ matchView maybeMatch =
                     monster.equipment
                         |> Equipment.get Equipment.ArmourSlot
                         |> ppArmour
+
+                avgHpRemaining =
+                    toString (toFloat (List.sum hpRemaining) / toFloat battles)
+
+                avgTurnsTaken =
+                    toString (toFloat (List.sum rounds) / toFloat battles)
+
+                cth =
+                    Combat.chanceToHit hero monster
+
+                cthText =
+                    "Base: "
+                        ++ toString cth.baseCTH
+                        ++ " Penalties: wea/arm ("
+                        ++ toString cth.weaponBulkPenalty
+                        ++ "/"
+                        ++ toString cth.armourPenalty
+                        ++ ") size("
+                        ++ toString (cth.sizeModifier * -1)
+                        ++ ")"
+
+                avgHeroHitMonster =
+                    toString (toFloat (List.sum heroHitMonster) / toFloat battles)
+
+                avgMonsterHitHero =
+                    toString (toFloat (List.sum monsterHitHero) / toFloat battles)
             in
                 tr []
-                    [ td [] [ text monster.name ]
+                    [ td [] [ text <| monster.name ]
                     , td [] [ text <| toString monster.expLevel ]
                     , td [] [ text <| ppAttributes monster.attributes ]
-                    , td [] [ text weapon ]
-                    , td [] [ text armour ]
+                    , td [] [ text <| weapon ]
+                    , td [] [ text <| armour ]
                     , td [] [ text <| toString monster.bodySize ]
                     , td [] [ text <| toString monster.stats.maxHP ]
-                    , td [] [ text <| (over wins battles) ++ percent (toFloat wins * 100 / toFloat battles) ]
-                    , td [] [ text <| toString (toFloat (List.sum hpRemaining) / toFloat battles) ]
+                    , td [] [ text <| percent (toFloat wins * 100 / toFloat battles) ]
+                    , td [] [ text <| avgHpRemaining ++ " / " ++ toString hero.stats.maxHP ]
+                    , td [] [ text <| avgTurnsTaken ]
+                    , td [] [ text <| "(" ++ avgHeroHitMonster ++ " , " ++ avgMonsterHitHero ++ ")" ]
+                    , td [] [ text <| cthText ]
                     ]
 
 
@@ -331,6 +407,7 @@ menuView model =
     in
         h1 []
             [ btn "Fight!" <| StartFight (initMatches model.heroLookup) (model.resetCounter + 1)
+            , btn "Stop" Stop
             ]
 
 
@@ -354,9 +431,70 @@ ppAttributes { str, dex, int, con } =
 -- Constants
 
 
-initHero : Combat.Fighter Hero
-initHero =
-    Hero.init "Heox" (Attributes.initCustom 60 60 60 50) Types.Male
+customAttributes =
+    Attributes.initCustom 60 60 60 50
+
+
+initHero : Attributes -> Combat.Fighter Hero
+initHero attrs =
+    Hero.init "Heox" attrs Types.Male
+        |> equipHero
+
+
+equipHero : Hero -> Hero
+equipHero hero =
+    let
+        makeWeapon weaponType =
+            Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty
+
+        makeArmour armourType =
+            Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty
+
+        makeShield shieldType =
+            Item.new (ItemData.ItemTypeShield shieldType) IdGenerator.empty
+
+        makeHelmet helmetType =
+            Item.new (ItemData.ItemTypeHelmet helmetType) IdGenerator.empty
+
+        makeGauntlets gauntletsType =
+            Item.new (ItemData.ItemTypeGauntlets gauntletsType) IdGenerator.empty
+
+        makeBracers bracersType =
+            Item.new (ItemData.ItemTypeBracers bracersType) IdGenerator.empty
+
+        lowLevel =
+            [ ( Equipment.WeaponSlot, makeWeapon ItemData.ShortSword )
+            , ( Equipment.ArmourSlot, makeArmour ItemData.LeatherArmour )
+            , ( Equipment.HelmetSlot, makeHelmet ItemData.LeatherHelmet )
+            , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
+            , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
+            , ( Equipment.ShieldSlot, makeShield ItemData.SmallWoodenShield )
+            ]
+
+        midLevel =
+            [ ( Equipment.WeaponSlot, makeWeapon ItemData.BroadSword )
+            , ( Equipment.ArmourSlot, makeArmour ItemData.ChainMail )
+            , ( Equipment.HelmetSlot, makeHelmet ItemData.IronHelmet )
+            , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
+            , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
+            , ( Equipment.ShieldSlot, makeShield ItemData.LargeIronShield )
+            ]
+
+        highLevel =
+            [ ( Equipment.WeaponSlot, makeWeapon ItemData.TwoHandedSword )
+            , ( Equipment.ArmourSlot, makeArmour ItemData.PlateArmour )
+            , ( Equipment.HelmetSlot, makeHelmet ItemData.MeteoricSteelHelmet )
+            , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
+            , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
+            , ( Equipment.ShieldSlot, makeShield ItemData.LargeMeteoricSteelShield )
+            ]
+    in
+        if hero.expLevel <= 10 then
+            { hero | equipment = Equipment.equipMany lowLevel hero.equipment }
+        else if hero.expLevel <= 20 then
+            { hero | equipment = Equipment.equipMany midLevel hero.equipment }
+        else
+            { hero | equipment = Equipment.equipMany highLevel hero.equipment }
 
 
 initHeroLookup : Hero -> Dict Int Hero
@@ -388,7 +526,7 @@ initMatches heroLookup =
                 monster =
                     (newMonster monsterType)
             in
-                Match (Dict.get monster.expLevel heroLookup |> Maybe.withDefault initHero) monster 0 0 [] []
+                Match (Dict.get monster.expLevel heroLookup |> Maybe.withDefault (initHero customAttributes)) monster 0 0 [] [] [] []
     in
         --        List.map newMatch (List.take 20 Monster.types)
         List.map newMatch Monster.types
