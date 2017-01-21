@@ -3,6 +3,9 @@ module Combat
         ( attack
         , Fighter
         , AttackMessage
+          -- for Arena
+        , chanceToHit
+        , cthThreshold
         )
 
 {-| Combat takes place between an attacker and defender. It only deals with melee combat.
@@ -136,13 +139,19 @@ type alias CTH =
     }
 
 
+cthThreshold : CTH -> Int
+cthThreshold cth =
+    cth.baseCTH + cth.sizeModifier + cth.weaponBulkPenalty + cth.armourPenalty
+
+
 chanceToHit : Attacker a -> Defender b -> CTH
 chanceToHit attacker defender =
     let
         ( weapon, armour ) =
             ( Equipment.getWeapon attacker.equipment, Equipment.getArmour attacker.equipment )
 
-        ac = Equipment.calculateAC defender.equipment
+        ac =
+            Equipment.calculateAC defender.equipment
 
         armourMass =
             armour
@@ -162,11 +171,10 @@ chanceToHit attacker defender =
                 |> Maybe.map (.base >> .mass)
                 |> Maybe.withDefault (Mass.Mass 0 0)
 
-        -- Weapons less than 5000 (axe) has no bulk penalty, after which all weapons
-        -- up to the THS at 12000 gets a linear penalty up to +-15% CTH
+        -- Weak users are penalised for heavy weapons. Min str of 20 to use a weapon of 0 weight
+        -- with no penalty.
         weaponBulkPenalty =
-            (1 - toFloat weaponMass.bulk / 6000)
-                * 15
+            (toFloat (attacker.attributes.str - 20) * 50 - toFloat weaponMass.weight) / 100
                 |> clamp -15 15
                 |> round
 
@@ -184,6 +192,7 @@ chanceToHit attacker defender =
         , blockPenalty = 5
         , critRange = 20
         }
+
 
 bodySizeToDodge : Types.BodySize -> Int
 bodySizeToDodge bodySize =
@@ -213,17 +222,14 @@ bodySizeToDodge bodySize =
 hitResult : CTH -> Names -> Defender b -> ( HitRoll, ( DamageRoll, MaxDamage ) ) -> Generator ( AttackMessage, Defender b )
 hitResult cth names defender ( hitRoll, ( damageRoll, maxDamage ) ) =
     let
-        cthThreshold =
-            cth.baseCTH + cth.sizeModifier + cth.weaponBulkPenalty + cth.armourPenalty
-
         isHit =
-            hitRoll < cthThreshold
+            hitRoll < (cthThreshold cth)
 
         isCrit =
             hitRoll < cth.critRange
 
         isBlocked =
-            hitRoll < cthThreshold + cth.blockPenalty
+            hitRoll < (cthThreshold cth) + cth.blockPenalty
     in
         case ( isHit, isCrit, isBlocked ) of
             ( _, True, _ ) ->
