@@ -25,6 +25,7 @@ import Task
 import Time exposing (Time)
 import UI
 import Item.Weapon as Weapon
+import Item.Armour as Armour
 
 
 type alias Match =
@@ -67,6 +68,7 @@ type Msg
     | Stop
     | SetAttribute Attributes.Attribute Int
     | ChangeHeroWeapon ItemData.WeaponType
+    | ChangeHeroArmour ItemData.ArmourType
 
 
 maxRounds : Int
@@ -168,6 +170,13 @@ update msg model =
                 let
                     _ =
                         Debug.log "Changing weapon to: " weaponType
+                in
+                    ( model, Cmd.none )
+
+            ChangeHeroArmour armourType ->
+                let
+                    _ =
+                        Debug.log "Changing armour to: " armourType
                 in
                     ( model, Cmd.none )
 
@@ -283,8 +292,10 @@ view model =
 heroView : Hero -> Html Msg
 heroView hero =
     div []
-        [ heroStatsView hero
+        [ h3 [] [ text "Stats" ]
+        , heroStatsView hero
         , heroAttributesView hero
+        , h3 [] [ text "Equipment" ]
         , heroEquipmentView hero
         ]
 
@@ -307,10 +318,28 @@ heroAttributesView { attributes } =
 heroEquipmentView : Hero -> Html Msg
 heroEquipmentView hero =
     let
+        weaponTypeMatches weaponType =
+            Equipment.getWeapon hero.equipment
+                |> Maybe.map .weaponType
+                |> Maybe.map ((==) weaponType)
+                |> Maybe.withDefault False
+
+        armourTypeMatches armourType =
+            Equipment.getArmour hero.equipment
+                |> Maybe.map .armourType
+                |> Maybe.map ((==) armourType)
+                |> Maybe.withDefault False
+
         weapons =
-            List.map (\x -> ( x, False )) Weapon.listTypes
+            List.map (\x -> ( x, weaponTypeMatches x )) Weapon.listTypes
+
+        armour =
+            List.map (\x -> ( x, armourTypeMatches x )) Armour.listTypes
     in
-        UI.list (toString >> text) ChangeHeroWeapon ( Weapon.encode, Weapon.decoder ) weapons
+        div []
+            [ UI.list (toString >> text) ChangeHeroWeapon ( Weapon.encode, Weapon.decoder ) weapons
+            , UI.list (toString >> text) ChangeHeroArmour ( Armour.encode, Armour.decoder ) armour
+            ]
 
 
 
