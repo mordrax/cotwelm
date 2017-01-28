@@ -24,6 +24,7 @@ import Stats
 import Task
 import Time exposing (Time)
 import UI
+import Item.Weapon as Weapon
 
 
 type alias Match =
@@ -62,9 +63,10 @@ type alias Model =
 type Msg
     = StartFight Matches Int
     | Fight Match Matches Int
-    | SetAttribute Attributes.Attribute Int
     | Sleep (Cmd Msg) Int
     | Stop
+    | SetAttribute Attributes.Attribute Int
+    | ChangeHeroWeapon ItemData.WeaponType
 
 
 maxRounds : Int
@@ -161,6 +163,13 @@ update msg model =
                         }
                 in
                     ( model_, Cmd.none )
+
+            ChangeHeroWeapon weaponType ->
+                let
+                    _ =
+                        Debug.log "Changing weapon to: " weaponType
+                in
+                    ( model, Cmd.none )
 
 
 fights : Match -> Generator Match
@@ -267,20 +276,45 @@ view model =
         ]
 
 
+
+-- Hero view
+
+
 heroView : Hero -> Html Msg
-heroView { attributes, stats } =
+heroView hero =
     div []
-        [ div []
-            [ div [] [ text ("Hero attributes: " ++ ppAttributes attributes) ]
-            , div [] [ text ("Hero HP: " ++ toString stats.maxHP) ]
-            ]
-        , div []
-            [ UI.labeledNumber "Str: " attributes.str (SetAttribute Attributes.Strength)
-            , UI.labeledNumber "Dex: " attributes.dex (SetAttribute Attributes.Dexterity)
-            , UI.labeledNumber "Con: " attributes.con (SetAttribute Attributes.Constitution)
-            , UI.labeledNumber "Int: " attributes.int (SetAttribute Attributes.Intelligence)
-            ]
+        [ heroStatsView hero
+        , heroAttributesView hero
+        , heroEquipmentView hero
         ]
+
+
+heroStatsView : Hero -> Html Msg
+heroStatsView { stats } =
+    div [] [ text ("Hero HP: " ++ toString stats.maxHP) ]
+
+
+heroAttributesView : Hero -> Html Msg
+heroAttributesView { attributes } =
+    div []
+        [ UI.labeledNumber "Str: " attributes.str (SetAttribute Attributes.Strength)
+        , UI.labeledNumber "Dex: " attributes.dex (SetAttribute Attributes.Dexterity)
+        , UI.labeledNumber "Con: " attributes.con (SetAttribute Attributes.Constitution)
+        , UI.labeledNumber "Int: " attributes.int (SetAttribute Attributes.Intelligence)
+        ]
+
+
+heroEquipmentView : Hero -> Html Msg
+heroEquipmentView hero =
+    let
+        weapons =
+            List.map (\x -> ( x, False )) Weapon.listTypes
+    in
+        UI.list (toString >> text) ChangeHeroWeapon ( Weapon.encode, Weapon.decoder ) weapons
+
+
+
+-- Combat table
 
 
 combatView : Model -> Html Msg
@@ -309,6 +343,16 @@ combatView { matchResults } =
         ]
 
 
+toOneDecimal : Float -> String
+toOneDecimal num =
+    num
+        |> (*) 10
+        |> Basics.round
+        |> toFloat
+        |> flip (/) 10
+        |> toString
+
+
 matchView : Maybe Match -> Html Msg
 matchView maybeMatch =
     case maybeMatch of
@@ -334,10 +378,10 @@ matchView maybeMatch =
                         |> ppArmour
 
                 avgHpRemaining =
-                    toString (toFloat (List.sum hpRemaining) / toFloat battles)
+                    toOneDecimal (toFloat (List.sum hpRemaining) / toFloat battles)
 
                 avgTurnsTaken =
-                    toString (toFloat (List.sum rounds) / toFloat battles)
+                    toOneDecimal (toFloat (List.sum rounds) / toFloat battles)
 
                 cth =
                     Combat.chanceToHit hero monster
@@ -354,10 +398,10 @@ matchView maybeMatch =
                         ++ ")"
 
                 avgHeroHitMonster =
-                    toString (toFloat (List.sum heroHitMonster) / toFloat battles)
+                    toOneDecimal (toFloat (List.sum heroHitMonster) / toFloat battles)
 
                 avgMonsterHitHero =
-                    toString (toFloat (List.sum monsterHitHero) / toFloat battles)
+                    toOneDecimal (toFloat (List.sum monsterHitHero) / toFloat battles)
             in
                 tr []
                     [ td [] [ text <| monster.name ]
@@ -432,7 +476,7 @@ ppAttributes { str, dex, int, con } =
 
 
 customAttributes =
-    Attributes.initCustom 60 60 60 50
+    Attributes.initCustom 70 70 70 50
 
 
 initHero : Attributes -> Combat.Fighter Hero

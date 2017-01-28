@@ -1,9 +1,18 @@
-module Item.Weapon exposing (init, damage)
+module Item.Weapon
+    exposing
+        ( init
+        , damage
+        , listTypes
+        , encode
+        , decoder
+        )
 
 import Item.Data exposing (..)
 import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 import Dice exposing (Dice)
+import Json.Decode as JD
+import Dict exposing (Dict)
 
 
 damage : Weapon -> Dice
@@ -100,3 +109,54 @@ init weaponType status idStatus id =
 
             LargeClaws ->
                 makeMonsterWeapon "Large Claws" (WC 8) (d 2 6 0)
+
+
+listTypes : List WeaponType
+listTypes =
+    [ BrokenSword
+    , Club
+    , Dagger
+    , Hammer
+    , HandAxe
+    , Quarterstaff
+    , Spear
+    , ShortSword
+    , Mace
+    , Flail
+    , Axe
+    , WarHammer
+    , LongSword
+    , BattleAxe
+    , BroadSword
+    , MorningStar
+    , BastardSword
+    , TwoHandedSword
+    , SmallClaws
+    , Crossbow
+    , Fangs
+    , Pincers
+    , Bow
+    , LargeClaws
+    ]
+
+
+encode : WeaponType -> String
+encode =
+    toString
+
+
+decoder : String -> WeaponType
+decoder value =
+    Dict.get value weaponTypeDict
+        |> Maybe.withDefault BrokenSword
+
+
+weaponTypeDict : Dict String WeaponType
+weaponTypeDict =
+    let
+        makeKVP x =
+            ( toString x, x )
+    in
+        listTypes
+            |> List.map makeKVP
+            |> Dict.fromList

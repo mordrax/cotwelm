@@ -98,18 +98,32 @@ init monsterType position =
             , bodySize = bodySize
             }
 
-        makeWeapon weaponType =
-            Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty
+        weaponSlot weaponType =
+            ( Equipment.WeaponSlot, Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty )
 
-        makeArmour armourType =
-            Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty
+        armourSlot armourType =
+            ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty )
 
         makeShield shieldType =
             Item.new (ItemData.ItemTypeShield shieldType) IdGenerator.empty
 
         basicEquipment weapon armour =
-            [ ( Equipment.WeaponSlot, makeWeapon weapon )
-            , ( Equipment.ArmourSlot, makeArmour armour )
+            [ weaponSlot weapon
+            , armourSlot armour
+            ]
+
+        leatherEquipment =
+            [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.LeatherArmour) IdGenerator.empty )
+            , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.LeatherHelmet) IdGenerator.empty )
+            , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
+            , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
+            ]
+
+        ironEquipment =
+            [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.ChainMail) IdGenerator.empty )
+            , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.IronHelmet) IdGenerator.empty )
+            , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
+            , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
             ]
 
         basicShieldEquipment weapon shield armour =
@@ -119,21 +133,21 @@ init monsterType position =
             GiantRat ->
                 make "Giant Rat"
                     1
-                    (Attributes 0 30 60 30 5)
+                    (Attributes 0 40 60 50 5)
                     Types.Small
                     (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
             Goblin ->
                 make "Goblin"
                     1
-                    (Attributes 0 40 65 30 20)
+                    (Attributes 0 40 75 50 20)
                     Types.Small
-                    (basicEquipment ItemData.Club ItemData.LeatherArmour)
+                    (weaponSlot ItemData.Club :: leatherEquipment)
 
             GiantBat ->
                 make "Giant Bat"
                     1
-                    (Attributes 0 30 70 20 10)
+                    (Attributes 0 30 70 40 10)
                     Types.Small
                     (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
@@ -142,14 +156,14 @@ init monsterType position =
                     2
                     (Attributes 0 30 70 30 50)
                     Types.Small
-                    (basicEquipment ItemData.Crossbow ItemData.ChainMail)
+                    (weaponSlot ItemData.Crossbow :: ironEquipment)
 
             Hobgoblin ->
                 make "Hobgoblin"
                     2
                     (Attributes 0 50 70 50 50)
                     Types.Medium
-                    (basicEquipment ItemData.Spear ItemData.StuddedLeatherArmour)
+                    (weaponSlot ItemData.Spear :: leatherEquipment)
 
             LargeSnake ->
                 make "Large Snake"
