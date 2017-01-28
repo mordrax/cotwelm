@@ -1,8 +1,9 @@
-module Item.Armour exposing (init)
+module Item.Armour exposing (init, listTypes, encode, decoder)
 
 import Item.Data exposing (..)
 import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
+import Dict exposing (Dict)
 
 
 init : ArmourType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Armour
@@ -63,3 +64,45 @@ init armourType status idStatus id =
 
             ToughHide ->
                 makeMonsterArmour "Tough Hide" (AC 35)
+
+
+listTypes : List ArmourType
+listTypes =
+    [ RustyArmour
+    , LeatherArmour
+    , StuddedLeatherArmour
+    , RingMail
+    , ScaleMail
+    , ChainMail
+    , SplintMail
+    , PlateMail
+    , PlateArmour
+    , MeteoricSteelPlate
+    , ElvenChainMail
+    , SoftHide
+    , Bones
+    , Shell
+    , ToughHide
+    ]
+
+
+encode : ArmourType -> String
+encode =
+    toString
+
+
+decoder : String -> ArmourType
+decoder value =
+    Dict.get value armourTypeDict
+        |> Maybe.withDefault RustyArmour
+
+
+armourTypeDict : Dict String ArmourType
+armourTypeDict =
+    let
+        makeKVP x =
+            ( toString x, x )
+    in
+        listTypes
+            |> List.map makeKVP
+            |> Dict.fromList
