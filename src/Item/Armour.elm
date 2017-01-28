@@ -13,7 +13,7 @@ init armourType status idStatus id =
             , armourType = armourType
             , ac = ac
             }
-LeatherHelmet
+
         makeMonsterArmour name ac =
             make name ( 0, 0 ) "" ( 0, 0 ) ac
     in
@@ -53,13 +53,13 @@ LeatherHelmet
 
             -- monster armour
             SoftHide ->
-                makeMonsterArmour "Soft Hide" (AC 3)
+                makeMonsterArmour "Soft Hide" (AC 20)
 
             Bones ->
-                makeMonsterArmour "Bones" (AC 12)
+                makeMonsterArmour "Bones" (AC 25)
 
             Shell ->
-                makeMonsterArmour "Shell" (AC 18)
+                makeMonsterArmour "Shell" (AC 30)
 
             ToughHide ->
-                makeMonsterArmour "Tough Hide" (AC 24)
+                makeMonsterArmour "Tough Hide" (AC 35)

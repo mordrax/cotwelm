@@ -4,6 +4,8 @@ import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import String exposing (..)
+import Json.Decode as JD
+import Json.Decode.Pipeline as JP
 
 
 type alias Label =
@@ -69,3 +71,55 @@ labeled2TupleNumber label ( min, max ) minMsg maxMsg =
             , labeledNumber "Max" max maxMsg
             ]
         ]
+
+
+list :
+    (item -> Html msg)
+    -> (item -> msg)
+    -> ( item -> String, String -> item )
+    -> List ( item, Bool )
+    -> Html msg
+list display selectAction ( encoder, decoder ) items =
+    let
+        renderItem ( item, isSelected ) =
+            Html.option
+                [ selected isSelected
+                , value (encoder item)
+                ]
+                [ display item ]
+
+        eventToString =
+            .target >> .value >> decoder
+
+        msgDecoder =
+            changeEventDecoder
+                |> JD.map eventToString
+                |> JD.map selectAction
+    in
+        items
+            |> List.map renderItem
+            |> Html.select
+                [ on "change" msgDecoder ]
+
+
+changeEventDecoder : JD.Decoder Event
+changeEventDecoder =
+    let
+        targetDecoder =
+            JP.decode Target |> JP.required "value" JD.string
+
+        eventDecoder =
+            JP.decode Event |> JP.required "target" targetDecoder
+    in
+        JP.decode Event
+            |> JP.required "target" targetDecoder
+
+
+type alias Event =
+    { target : Target
+    }
+
+
+type alias Target =
+    { value : String
+    }
