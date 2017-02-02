@@ -175,15 +175,21 @@ update msg model =
                 let
                     customEquipment_ =
                         ( weaponType, Tuple.second model.customEquipment )
+
+                    model_ =
+                        { model | customEquipment = customEquipment_ }
                 in
-                    ( { model | customEquipment = customEquipment_ }, Cmd.none )
+                    update (startNewFight model_) model_
 
             ChangeHeroArmour armourType ->
                 let
                     customEquipment_ =
                         ( Tuple.first model.customEquipment, armourType )
+
+                    model_ =
+                        { model | customEquipment = customEquipment_ }
                 in
-                    ( { model | customEquipment = customEquipment_ }, Cmd.none )
+                    update (startNewFight model_) model_
 
 
 fights : Match -> Generator Match
@@ -494,9 +500,14 @@ menuView model =
                 [ text txt ]
     in
         h1 []
-            [ btn "Fight!" <| StartFight (initMatches model.heroLookup model.customEquipment) (model.resetCounter + 1)
+            [ btn "Fight!" (startNewFight model)
             , btn "Stop" Stop
             ]
+
+
+startNewFight : Model -> Msg
+startNewFight model =
+    StartFight (initMatches model.heroLookup model.customEquipment) (model.resetCounter + 1)
 
 
 welcomeView : Html Msg
