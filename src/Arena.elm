@@ -57,6 +57,7 @@ type alias Model =
     , matchResults : Dict String Match
     , heroAttributes : Attributes
     , heroLookup : Dict Int Hero
+    , customEquipment : CustomEquipment
     , resetCounter : Int
     }
 
@@ -79,19 +80,23 @@ maxRounds =
 init : Model
 init =
     let
+        customEquipment =
+            ( ItemData.ShortSword, ItemData.LeatherArmour )
+
         heroLookup =
-            initHeroLookup (initHero customAttributes)
+            initHeroLookup (initHero customAttributes customEquipment)
 
         attributesAtLevelOne =
             Dict.get 1 heroLookup
                 |> Maybe.map .attributes
                 |> Maybe.withDefault (Attributes.initCustom 0 0 0 0)
     in
-        { matches = initMatches heroLookup
+        { matches = initMatches heroLookup customEquipment
         , heroAttributes = attributesAtLevelOne
         , heroLookup = heroLookup
         , matchResults = Dict.fromList []
         , resetCounter = 0
+        , customEquipment = customEquipment
         }
 
 
@@ -155,12 +160,12 @@ update msg model =
                         Attributes.set ( attr, val ) model.heroAttributes
 
                     heroLookup_ =
-                        initHeroLookup (initHero attributes_)
+                        initHeroLookup (initHero attributes_ model.customEquipment)
 
                     model_ =
                         { model
                             | heroLookup = heroLookup_
-                            , matches = initMatches heroLookup_
+                            , matches = initMatches heroLookup_ model.customEquipment
                             , heroAttributes = attributes_
                         }
                 in
@@ -168,17 +173,17 @@ update msg model =
 
             ChangeHeroWeapon weaponType ->
                 let
-                    _ =
-                        Debug.log "Changing weapon to: " weaponType
+                    customEquipment_ =
+                        ( weaponType, Tuple.second model.customEquipment )
                 in
-                    ( model, Cmd.none )
+                    ( { model | customEquipment = customEquipment_ }, Cmd.none )
 
             ChangeHeroArmour armourType ->
                 let
-                    _ =
-                        Debug.log "Changing armour to: " armourType
+                    customEquipment_ =
+                        ( Tuple.first model.customEquipment, armourType )
                 in
-                    ( model, Cmd.none )
+                    ( { model | customEquipment = customEquipment_ }, Cmd.none )
 
 
 fights : Match -> Generator Match
@@ -277,12 +282,17 @@ round hero monster heroAttacking result =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ welcomeView
-        , menuView model
-        , heroView (Dict.get 1 model.heroLookup |> Maybe.withDefault (initHero customAttributes))
-        , combatView model
-        ]
+    let
+        hero =
+            Dict.get 1 model.heroLookup
+                |> Maybe.withDefault (initHero customAttributes model.customEquipment)
+    in
+        div []
+            [ welcomeView
+            , menuView model
+            , heroView hero
+            , combatView model
+            ]
 
 
 
@@ -406,6 +416,11 @@ matchView maybeMatch =
                         |> Equipment.get Equipment.ArmourSlot
                         |> ppArmour
 
+                totalArmour =
+                    Equipment.calculateAC monster.equipment
+                        |> toString
+                        |> \x -> "Total" ++ x
+
                 avgHpRemaining =
                     toOneDecimal (toFloat (List.sum hpRemaining) / toFloat battles)
 
@@ -437,7 +452,7 @@ matchView maybeMatch =
                     , td [] [ text <| toString monster.expLevel ]
                     , td [] [ text <| ppAttributes monster.attributes ]
                     , td [] [ text <| weapon ]
-                    , td [] [ text <| armour ]
+                    , td [] [ text <| (armour ++ " " ++ totalArmour) ]
                     , td [] [ text <| toString monster.bodySize ]
                     , td [] [ text <| toString monster.stats.maxHP ]
                     , td [] [ text <| percent (toFloat wins * 100 / toFloat battles) ]
@@ -479,7 +494,7 @@ menuView model =
                 [ text txt ]
     in
         h1 []
-            [ btn "Fight!" <| StartFight (initMatches model.heroLookup) (model.resetCounter + 1)
+            [ btn "Fight!" <| StartFight (initMatches model.heroLookup model.customEquipment) (model.resetCounter + 1)
             , btn "Stop" Stop
             ]
 
@@ -508,21 +523,29 @@ customAttributes =
     Attributes.initCustom 70 70 70 50
 
 
-initHero : Attributes -> Combat.Fighter Hero
-initHero attrs =
+type alias CustomEquipment =
+    ( ItemData.WeaponType, ItemData.ArmourType )
+
+
+initHero : Attributes -> CustomEquipment -> Combat.Fighter Hero
+initHero attrs equipment =
     Hero.init "Heox" attrs Types.Male
-        |> equipHero
+        |> \x -> equipHero x equipment
 
 
-equipHero : Hero -> Hero
-equipHero hero =
+makeWeapon : ItemData.WeaponType -> Item
+makeWeapon weaponType =
+    Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty
+
+
+makeArmour : ItemData.ArmourType -> Item
+makeArmour armourType =
+    Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty
+
+
+equipHero : Hero -> ( ItemData.WeaponType, ItemData.ArmourType ) -> Hero
+equipHero hero ( customWeaponType, customArmourType ) =
     let
-        makeWeapon weaponType =
-            Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty
-
-        makeArmour armourType =
-            Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty
-
         makeShield shieldType =
             Item.new (ItemData.ItemTypeShield shieldType) IdGenerator.empty
 
@@ -536,8 +559,8 @@ equipHero hero =
             Item.new (ItemData.ItemTypeBracers bracersType) IdGenerator.empty
 
         lowLevel =
-            [ ( Equipment.WeaponSlot, makeWeapon ItemData.ShortSword )
-            , ( Equipment.ArmourSlot, makeArmour ItemData.LeatherArmour )
+            [ ( Equipment.WeaponSlot, makeWeapon customWeaponType )
+            , ( Equipment.ArmourSlot, makeArmour customArmourType )
             , ( Equipment.HelmetSlot, makeHelmet ItemData.LeatherHelmet )
             , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
             , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
@@ -545,8 +568,8 @@ equipHero hero =
             ]
 
         midLevel =
-            [ ( Equipment.WeaponSlot, makeWeapon ItemData.BroadSword )
-            , ( Equipment.ArmourSlot, makeArmour ItemData.ChainMail )
+            [ ( Equipment.WeaponSlot, makeWeapon customWeaponType )
+            , ( Equipment.ArmourSlot, makeArmour customArmourType )
             , ( Equipment.HelmetSlot, makeHelmet ItemData.IronHelmet )
             , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
             , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
@@ -554,8 +577,8 @@ equipHero hero =
             ]
 
         highLevel =
-            [ ( Equipment.WeaponSlot, makeWeapon ItemData.TwoHandedSword )
-            , ( Equipment.ArmourSlot, makeArmour ItemData.PlateArmour )
+            [ ( Equipment.WeaponSlot, makeWeapon customWeaponType )
+            , ( Equipment.ArmourSlot, makeArmour customArmourType )
             , ( Equipment.HelmetSlot, makeHelmet ItemData.MeteoricSteelHelmet )
             , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
             , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
@@ -588,8 +611,8 @@ initHeroLookup hero =
         reducer Dict.empty hero 1
 
 
-initMatches : Dict Int Hero -> List Match
-initMatches heroLookup =
+initMatches : Dict Int Hero -> CustomEquipment -> List Match
+initMatches heroLookup ( weaponType, armourType ) =
     let
         newMonster monsterType =
             Monster.initForArena monsterType
@@ -598,8 +621,34 @@ initMatches heroLookup =
             let
                 monster =
                     (newMonster monsterType)
+
+                addCustomEquipment hero =
+                    { hero
+                        | equipment =
+                            hero.equipment
+                                |> Equipment.unequip Equipment.WeaponSlot
+                                |> Result.andThen (Equipment.unequip Equipment.ArmourSlot)
+                                |> Result.toMaybe
+                                |> Maybe.map
+                                    (\x ->
+                                        Equipment.equipMany
+                                            [ ( Equipment.WeaponSlot, makeWeapon weaponType )
+                                            , ( Equipment.ArmourSlot, makeArmour armourType )
+                                            ]
+                                            x
+                                    )
+                                |> Maybe.withDefault hero.equipment
+                    }
+
+                hero =
+                    case Dict.get monster.expLevel heroLookup of
+                        Just lookedUpHero ->
+                            addCustomEquipment lookedUpHero
+
+                        Nothing ->
+                            Debug.crash "Could not look up a hero with exp level: " monster.expLevel
             in
-                Match (Dict.get monster.expLevel heroLookup |> Maybe.withDefault (initHero customAttributes)) monster 0 0 [] [] [] []
+                Match hero monster 0 0 [] [] [] []
     in
         --        List.map newMatch (List.take 20 Monster.types)
         List.map newMatch Monster.types
