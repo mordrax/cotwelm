@@ -6,6 +6,7 @@ module Combat
           -- for Arena
         , chanceToHit
         , cthThreshold
+        , quadraticCTHCalculator
         )
 
 {-| Combat takes place between an attacker and defender. It only deals with melee combat.
@@ -139,6 +140,30 @@ type alias CTH =
     }
 
 
+{-|
+   -- y = x^2
+   -- y - cth, x - normalised value (-50 to 50)
+   -- y / cthMax = (x / 50)^2
+   -- cthMax - CTH range (a capped range for cth effect e.g 15 means -15 to 15)
+   -- x = (y / normalizedVar) ^ 1/2 * cthMax
+-}
+quadraticCTHCalculator : Int -> Int -> Int
+quadraticCTHCalculator cthMax y =
+    let
+        sign = y // abs y
+
+
+        absY =
+            abs y
+    in
+        (toFloat absY / 50.0)
+            |> \x -> x ^ 2
+            |> clamp 0 1
+            |> (*) (toFloat cthMax)
+            |> round
+            |> (*) sign
+
+
 cthThreshold : CTH -> Int
 cthThreshold cth =
     cth.baseCTH + cth.sizeModifier + cth.weaponBulkPenalty + cth.armourPenalty
@@ -161,22 +186,30 @@ chanceToHit attacker defender =
         -- At max str, can use max weight armour (plate) without penalty.
         -- At min str, when using plate, gives a max penalty of -20% CTH
         armourPenalty =
-            (toFloat attacker.attributes.str / 100 - toFloat armourMass.weight / 15000)
-                * 20
+            quadraticCTHCalculator 20 (attacker.attributes.str - round (toFloat armourMass.weight / 15000 * 100))
                 |> clamp -20 0
-                |> round
 
         weaponMass =
             weapon
                 |> Maybe.map (.base >> .mass)
                 |> Maybe.withDefault (Mass.Mass 0 0)
 
-        -- Weak users are penalised for heavy weapons. Min str of 20 to use a weapon of 0 weight
-        -- with no penalty.
+        -- Weak users are penalised for heavy weapons. The base curve is y = x*3 where
+        -- y is the weight difference in what the attacker can wield and what the weapon weight is
+        -- x is the max adv/penalty to cth provided
+        -- The formula below is derived from y = -3000 * (x/15)^3
+        -- This means that the x can range between -15 and 15% cth with the weapon penalty
+        -- maxing out at about 3000 wt difference,
+        -- e.g an attacker of str 50 can use up to 3000 wt, wielding a THS of weight 5000
+        -- should incur ~ -12% penalty to CTH
         weaponBulkPenalty =
-            (toFloat (attacker.attributes.str - 20) * 50 - toFloat weaponMass.weight) / 100
-                |> clamp -15 15
-                |> round
+            quadraticCTHCalculator 15 weaponWeightToWielderCapacityDifference
+
+        maxWeaponWeight =
+            5000.0
+
+        weaponWeightToWielderCapacityDifference =
+            attacker.attributes.str - round (toFloat weaponMass.weight / maxWeaponWeight * 100)
 
         -- Hitting tiny to giant creatures give either a penalty or a bonus to hit
         -- The bigger the creature the easier to hit, with a range of -+10% CTH

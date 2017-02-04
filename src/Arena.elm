@@ -376,7 +376,7 @@ combatView { matchResults } =
             , th [] [ text "Win %" ]
             , th [] [ text "Avg HP remaining" ]
             , th [] [ text "Avg Turns taken" ]
-            , th [] [ text "Avg Hits (hero, monster)" ]
+            , th [] [ text "Avg Hits (hero, monster), (per turn)" ]
             , th [] [ text "Hero's CTH %" ]
             ]
         , tbody []
@@ -431,7 +431,7 @@ matchView maybeMatch =
                     toOneDecimal (toFloat (List.sum hpRemaining) / toFloat battles)
 
                 avgTurnsTaken =
-                    toOneDecimal (toFloat (List.sum rounds) / toFloat battles)
+                    toFloat (List.sum rounds) / toFloat battles
 
                 cth =
                     Combat.chanceToHit hero monster
@@ -448,10 +448,20 @@ matchView maybeMatch =
                         ++ ")"
 
                 avgHeroHitMonster =
-                    toOneDecimal (toFloat (List.sum heroHitMonster) / toFloat battles)
+                    toFloat (List.sum heroHitMonster) / toFloat battles
+
+                avgHeroHitPerTurn =
+                    (avgHeroHitMonster / avgTurnsTaken * 100)
+                        |> Basics.round
+                        |> toString
 
                 avgMonsterHitHero =
-                    toOneDecimal (toFloat (List.sum monsterHitHero) / toFloat battles)
+                    toFloat (List.sum monsterHitHero) / toFloat battles
+
+                avgMonsterHitPerTurn =
+                    (avgMonsterHitHero / avgTurnsTaken * 100)
+                        |> Basics.round
+                        |> toString
             in
                 tr []
                     [ td [] [ text <| monster.name ]
@@ -463,8 +473,19 @@ matchView maybeMatch =
                     , td [] [ text <| toString monster.stats.maxHP ]
                     , td [] [ text <| percent (toFloat wins * 100 / toFloat battles) ]
                     , td [] [ text <| avgHpRemaining ++ " / " ++ toString hero.stats.maxHP ]
-                    , td [] [ text <| avgTurnsTaken ]
-                    , td [] [ text <| "(" ++ avgHeroHitMonster ++ " , " ++ avgMonsterHitHero ++ ")" ]
+                    , td [] [ text <| toOneDecimal avgTurnsTaken ]
+                    , td []
+                        [ text <|
+                            "("
+                                ++ toOneDecimal avgHeroHitMonster
+                                ++ " , "
+                                ++ toOneDecimal avgMonsterHitHero
+                                ++ "), ("
+                                ++ avgHeroHitPerTurn
+                                ++ "%, "
+                                ++ avgMonsterHitPerTurn
+                                ++ "%)"
+                        ]
                     , td [] [ text <| cthText ]
                     ]
 
