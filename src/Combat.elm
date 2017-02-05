@@ -132,6 +132,7 @@ attack attacker defender =
 
 type alias CTH =
     { baseCTH : Int
+    , ac : Int
     , weaponBulkPenalty : Int
     , armourPenalty : Int
     , sizeModifier : Int
@@ -150,14 +151,14 @@ type alias CTH =
 quadraticCTHCalculator : Int -> Int -> Int
 quadraticCTHCalculator cthMax y =
     let
-        sign = y // abs y
-
+        sign =
+            y // abs y
 
         absY =
             abs y
     in
         (toFloat absY / 50.0)
-            |> \x -> x ^ 2
+            |> (\x -> x ^ 2)
             |> clamp 0 1
             |> (*) (toFloat cthMax)
             |> round
@@ -166,7 +167,13 @@ quadraticCTHCalculator cthMax y =
 
 cthThreshold : CTH -> Int
 cthThreshold cth =
-    cth.baseCTH + cth.sizeModifier + cth.weaponBulkPenalty + cth.armourPenalty
+    (cth.baseCTH
+        - cth.ac
+        + cth.sizeModifier
+        + cth.weaponBulkPenalty
+        + cth.armourPenalty
+    )
+        |> clamp 1 99
 
 
 chanceToHit : Attacker a -> Defender b -> CTH
@@ -218,7 +225,8 @@ chanceToHit attacker defender =
                 |> bodySizeToDodge
                 |> clamp -10 10
     in
-        { baseCTH = attacker.attributes.dex - (Item.Data.acToInt ac)
+        { baseCTH = attacker.attributes.dex
+        , ac = Item.Data.acToInt ac
         , armourPenalty = armourPenalty
         , weaponBulkPenalty = weaponBulkPenalty
         , sizeModifier = sizeModifier
@@ -231,19 +239,19 @@ bodySizeToDodge : Types.BodySize -> Int
 bodySizeToDodge bodySize =
     case bodySize of
         Types.Tiny ->
-            10
+            -10
 
         Types.Small ->
-            5
+            -5
 
         Types.Medium ->
             0
 
         Types.Large ->
-            -5
+            5
 
         Types.Giant ->
-            -10
+            10
 
 
 
@@ -255,14 +263,17 @@ bodySizeToDodge bodySize =
 hitResult : CTH -> Names -> Defender b -> ( HitRoll, ( DamageRoll, MaxDamage ) ) -> Generator ( AttackMessage, Defender b )
 hitResult cth names defender ( hitRoll, ( damageRoll, maxDamage ) ) =
     let
+        hitThreshold =
+            cthThreshold cth
+
         isHit =
-            hitRoll < (cthThreshold cth)
+            hitRoll <= hitThreshold
 
         isCrit =
-            hitRoll < cth.critRange
+            hitRoll <= ceiling (toFloat cth.critRange * toFloat hitThreshold / 100)
 
         isBlocked =
-            hitRoll < (cthThreshold cth) + cth.blockPenalty
+            hitRoll <= hitThreshold + cth.blockPenalty
     in
         case ( isHit, isCrit, isBlocked ) of
             ( _, True, _ ) ->
