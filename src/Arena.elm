@@ -34,14 +34,16 @@ type alias Match =
     , battles : Int
     , wins : Int
     , hpRemaining : List Int
-    , rounds : List Int
+    , heroRounds : List Int
+    , monsterRounds : List Int
     , heroHitMonster : List Int
     , monsterHitHero : List Int
     }
 
 
 type alias RoundResult =
-    { rounds : Int
+    { heroRounds : Int
+    , monsterRounds : Int
     , hpRemaining : Int
     , heroHitMonster : Int
     , monsterHitHero : Int
@@ -196,7 +198,8 @@ fights : Match -> Generator Match
 fights ({ hero, monster } as vs) =
     let
         initRound =
-            { rounds = 0
+            { heroRounds = 0
+            , monsterRounds = 0
             , hpRemaining = hero.stats.maxHP
             , heroHitMonster = 0
             , monsterHitHero = 0
@@ -211,7 +214,7 @@ fights ({ hero, monster } as vs) =
 
 
 updateVSFromRoundResult : RoundResult -> Match -> Match
-updateVSFromRoundResult { rounds, hpRemaining, heroHitMonster, monsterHitHero } vs =
+updateVSFromRoundResult { heroRounds, monsterRounds, hpRemaining, heroHitMonster, monsterHitHero } vs =
     let
         addWin vs =
             if hpRemaining > 0 then
@@ -222,7 +225,8 @@ updateVSFromRoundResult { rounds, hpRemaining, heroHitMonster, monsterHitHero } 
         addResult vs =
             { vs
                 | hpRemaining = hpRemaining :: vs.hpRemaining
-                , rounds = rounds :: vs.rounds
+                , heroRounds = heroRounds :: vs.heroRounds
+                , monsterRounds = monsterRounds :: vs.monsterRounds
                 , heroHitMonster = heroHitMonster :: vs.heroHitMonster
                 , monsterHitHero = monsterHitHero :: vs.monsterHitHero
             }
@@ -239,8 +243,13 @@ updateVSFromRoundResult { rounds, hpRemaining, heroHitMonster, monsterHitHero } 
 round : Hero -> Monster -> Bool -> RoundResult -> Generator RoundResult
 round hero monster heroAttacking result =
     let
-        resultNextRound =
-            { result | rounds = result.rounds + 1 }
+        resultNextRound heroAttacking =
+            case heroAttacking of
+                True ->
+                    { result | heroRounds = result.heroRounds + 1 }
+
+                False ->
+                    { result | monsterRounds = result.monsterRounds + 1 }
 
         updateHitHero h h_ roundResult =
             { roundResult | monsterHitHero = roundResult.monsterHitHero + oneIfDamaged h h_ }
@@ -261,14 +270,16 @@ round hero monster heroAttacking result =
                 0
     in
         if Stats.isDead hero.stats then
-            Random.constant { result | hpRemaining = 0 }
+            Random.constant
+                { result | hpRemaining = 0 }
         else if Stats.isDead monster.stats then
-            Random.constant { result | hpRemaining = hero.stats.currentHP }
+            Random.constant
+                { result | hpRemaining = hero.stats.currentHP }
         else if heroAttacking == True then
             Combat.attack hero monster
                 |> Random.andThen
                     (\( _, monster_ ) ->
-                        resultNextRound
+                        resultNextRound heroAttacking
                             |> updateHitMonster monster monster_
                             |> round hero monster_ nextAttacker
                     )
@@ -276,7 +287,7 @@ round hero monster heroAttacking result =
             Combat.attack monster hero
                 |> Random.andThen
                     (\( _, hero_ ) ->
-                        resultNextRound
+                        resultNextRound heroAttacking
                             |> updateHitHero hero hero_
                             |> round hero_ monster nextAttacker
                     )
@@ -317,8 +328,19 @@ heroView hero =
 
 
 heroStatsView : Hero -> Html Msg
-heroStatsView { stats } =
-    div [] [ text ("Hero HP: " ++ toString stats.maxHP) ]
+heroStatsView hero =
+    let
+        ac =
+            hero.equipment
+                |> Equipment.calculateAC
+                |> ItemData.acToInt
+    in
+        div []
+            [ div [] [ text ("Hero HP: " ++ toString hero.stats.maxHP) ]
+            , div [] [ text ("Hero AC: " ++ toString ac) ]
+            , div [] [ text <| ppWeapon <| Equipment.get Equipment.WeaponSlot hero.equipment]
+            , div [] [ text <| ppArmour <| Equipment.get Equipment.ArmourSlot hero.equipment]
+            ]
 
 
 heroAttributesView : Hero -> Html Msg
@@ -374,10 +396,11 @@ combatView { matchResults } =
             , th [] [ text "Size" ]
             , th [] [ text "Hp" ]
             , th [] [ text "Win %" ]
-            , th [] [ text "Avg HP remaining" ]
-            , th [] [ text "Avg Turns taken" ]
-            , th [] [ text "Avg Hits (hero, monster), (per turn)" ]
-            , th [] [ text "Hero's CTH %" ]
+            , th [] [ text "HP" ]
+            , th [] [ text "Turns" ]
+            , th [] [ text "Hits / CTH (hero, monster)" ]
+            , th [] [ text "Hero's CTH" ]
+            , th [] [ text "Monster's CTH" ]
             ]
         , tbody []
             (Monster.types
@@ -390,12 +413,29 @@ combatView { matchResults } =
 
 toOneDecimal : Float -> String
 toOneDecimal num =
-    num
-        |> (*) 10
-        |> Basics.round
-        |> toFloat
-        |> flip (/) 10
+    toNSignificantPlaces num 1
         |> toString
+
+
+toNSignificantPlaces : Float -> Int -> Float
+toNSignificantPlaces num sig =
+    let
+        factor =
+            toFloat (10 ^ sig)
+    in
+        num
+            |> (*) factor
+            |> Basics.round
+            |> toFloat
+            |> flip (/) factor
+
+
+toPercentage : Float -> String
+toPercentage num =
+    num
+        |> (*) 100
+        |> toString
+        |> String.slice 0 4
 
 
 matchView : Maybe Match -> Html Msg
@@ -404,7 +444,7 @@ matchView maybeMatch =
         Nothing ->
             tr [] []
 
-        Just { monster, hpRemaining, rounds, battles, wins, hero, heroHitMonster, monsterHitHero } ->
+        Just { monster, hpRemaining, heroRounds, monsterRounds, battles, wins, hero, heroHitMonster, monsterHitHero } ->
             let
                 over a b =
                     toString a ++ " / " ++ toString b
@@ -431,7 +471,7 @@ matchView maybeMatch =
                     toOneDecimal (toFloat (List.sum hpRemaining) / toFloat battles)
 
                 avgTurnsTaken =
-                    toFloat (List.sum rounds) / toFloat battles
+                    toFloat (List.sum heroRounds + List.sum monsterRounds) / toFloat battles
 
                 cth =
                     Combat.chanceToHit hero monster
@@ -444,24 +484,40 @@ matchView maybeMatch =
                         ++ "/"
                         ++ toString cth.armourPenalty
                         ++ ") size("
-                        ++ toString (cth.sizeModifier * -1)
+                        ++ toString (cth.sizeModifier)
+                        ++ ")"
+
+                monsterCTH =
+                    Combat.chanceToHit monster hero
+
+                monsterCTHText =
+                    "Base: "
+                        ++ toString monsterCTH.baseCTH
+                        ++ " Penalties: wea/arm ("
+                        ++ toString monsterCTH.weaponBulkPenalty
+                        ++ "/"
+                        ++ toString monsterCTH.armourPenalty
+                        ++ ") size("
+                        ++ toString (monsterCTH.sizeModifier)
                         ++ ")"
 
                 avgHeroHitMonster =
-                    toFloat (List.sum heroHitMonster) / toFloat battles
-
-                avgHeroHitPerTurn =
-                    (avgHeroHitMonster / avgTurnsTaken * 100)
-                        |> Basics.round
-                        |> toString
+                    toFloat (List.sum heroHitMonster) / toFloat (List.sum heroRounds)
 
                 avgMonsterHitHero =
-                    toFloat (List.sum monsterHitHero) / toFloat battles
+                    toFloat (List.sum monsterHitHero) / toFloat (List.sum monsterRounds)
 
-                avgMonsterHitPerTurn =
-                    (avgMonsterHitHero / avgTurnsTaken * 100)
-                        |> Basics.round
-                        |> toString
+                avgHits =
+                    "(" ++ toPercentage avgHeroHitMonster ++ "% , " ++ toPercentage avgMonsterHitHero ++ "%)"
+
+                heroCTHThreshold =
+                    Combat.chanceToHit hero monster |> Combat.cthThreshold
+
+                monsterCTHThreshold =
+                    Combat.chanceToHit monster hero |> Combat.cthThreshold
+
+                thresholds =
+                    "(" ++ toString heroCTHThreshold ++ ", " ++ toString monsterCTHThreshold ++ ")"
             in
                 tr []
                     [ td [] [ text <| monster.name ]
@@ -474,19 +530,9 @@ matchView maybeMatch =
                     , td [] [ text <| percent (toFloat wins * 100 / toFloat battles) ]
                     , td [] [ text <| avgHpRemaining ++ " / " ++ toString hero.stats.maxHP ]
                     , td [] [ text <| toOneDecimal avgTurnsTaken ]
-                    , td []
-                        [ text <|
-                            "("
-                                ++ toOneDecimal avgHeroHitMonster
-                                ++ " , "
-                                ++ toOneDecimal avgMonsterHitHero
-                                ++ "), ("
-                                ++ avgHeroHitPerTurn
-                                ++ "%, "
-                                ++ avgMonsterHitPerTurn
-                                ++ "%)"
-                        ]
+                    , td [] [ text <| avgHits ++ " , " ++ thresholds ]
                     , td [] [ text <| cthText ]
+                    , td [] [ text <| monsterCTHText ]
                     ]
 
 
@@ -680,7 +726,7 @@ initMatches heroLookup ( weaponType, armourType ) =
                         Nothing ->
                             Debug.crash "Could not look up a hero with exp level: " monster.expLevel
             in
-                Match hero monster 0 0 [] [] [] []
+                Match hero monster 0 0 [] [] [] [] []
     in
         --        List.map newMatch (List.take 20 Monster.types)
         List.map newMatch Monster.types
