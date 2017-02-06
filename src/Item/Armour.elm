@@ -54,16 +54,16 @@ init armourType status idStatus id =
 
             -- monster armour
             SoftHide ->
-                makeMonsterArmour "Soft Hide" (AC 20)
+                makeMonsterArmour "Soft Hide" (AC 10)
 
             Bones ->
-                makeMonsterArmour "Bones" (AC 25)
+                makeMonsterArmour "Bones" (AC 15)
 
             Shell ->
-                makeMonsterArmour "Shell" (AC 30)
+                makeMonsterArmour "Shell" (AC 20)
 
             ToughHide ->
-                makeMonsterArmour "Tough Hide" (AC 35)
+                makeMonsterArmour "Tough Hide" (AC 20)
 
 
 listTypes : List ArmourType

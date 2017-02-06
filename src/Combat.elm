@@ -211,6 +211,7 @@ chanceToHit attacker defender =
         -- should incur ~ -12% penalty to CTH
         weaponBulkPenalty =
             quadraticCTHCalculator 15 weaponWeightToWielderCapacityDifference
+            |> clamp -15 10
 
         maxWeaponWeight =
             5000.0
