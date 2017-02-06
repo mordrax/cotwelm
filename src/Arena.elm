@@ -301,7 +301,7 @@ view : Model -> Html Msg
 view model =
     let
         hero =
-            Dict.get 1 model.heroLookup
+            Dict.get 2 model.heroLookup
                 |> Maybe.withDefault (initHero customAttributes model.customEquipment)
     in
         div []
@@ -338,8 +338,8 @@ heroStatsView hero =
         div []
             [ div [] [ text ("Hero HP: " ++ toString hero.stats.maxHP) ]
             , div [] [ text ("Hero AC: " ++ toString ac) ]
-            , div [] [ text <| ppWeapon <| Equipment.get Equipment.WeaponSlot hero.equipment]
-            , div [] [ text <| ppArmour <| Equipment.get Equipment.ArmourSlot hero.equipment]
+            , div [] [ text <| ppWeapon <| Equipment.get Equipment.WeaponSlot hero.equipment ]
+            , div [] [ text <| ppArmour <| Equipment.get Equipment.ArmourSlot hero.equipment ]
             ]
 
 
@@ -388,19 +388,36 @@ combatView : Model -> Html Msg
 combatView { matchResults } =
     table [ HA.class "ui striped celled table" ]
         [ thead []
-            [ th [] [ text "Type" ]
-            , th [] [ text "Level" ]
-            , th [] [ text "Attributes" ]
-            , th [] [ text "Weapon" ]
-            , th [] [ text "Armour" ]
-            , th [] [ text "Size" ]
-            , th [] [ text "Hp" ]
-            , th [] [ text "Win %" ]
-            , th [] [ text "HP" ]
-            , th [] [ text "Turns" ]
-            , th [] [ text "Hits / CTH (hero, monster)" ]
-            , th [] [ text "Hero's CTH" ]
-            , th [] [ text "Monster's CTH" ]
+            [ tr []
+                [ th [] [ text "Type" ]
+                , th [] [ text "Level" ]
+                , th [] [ text "Attributes" ]
+                , th [] [ text "Weapon" ]
+                , th [] [ text "Armour" ]
+                , th [] [ text "Size" ]
+                , th [] [ text "Hp" ]
+                , th [] [ text "Win %" ]
+                , th [] [ text "HP" ]
+                , th [] [ text "Turns" ]
+                , th [ HA.colspan 2 ] [ text "Hits / Turn" ]
+                , th [ HA.colspan 2 ] [ text "CTH: base/wea/arm/size/crit = (total)" ]
+                ]
+            , tr []
+                [ th [] []
+                , th [] []
+                , th [] []
+                , th [] []
+                , th [] []
+                , th [] []
+                , th [] []
+                , th [] []
+                , th [] []
+                , th [] []
+                , th [] [ text "Hero" ]
+                , th [] [ text "Monster" ]
+                , th [] [ text "Hero" ]
+                , th [] [ text "Monster" ]
+                ]
             ]
         , tbody []
             (Monster.types
@@ -477,28 +494,30 @@ matchView maybeMatch =
                     Combat.chanceToHit hero monster
 
                 cthText =
-                    "Base: "
-                        ++ toString cth.baseCTH
-                        ++ " Penalties: wea/arm ("
+                    toString cth.baseCTH
+                        ++ "/"
                         ++ toString cth.weaponBulkPenalty
                         ++ "/"
                         ++ toString cth.armourPenalty
-                        ++ ") size("
+                        ++ "/"
                         ++ toString (cth.sizeModifier)
+                        ++ " = ("
+                        ++ toString heroCTHThreshold
                         ++ ")"
 
                 monsterCTH =
                     Combat.chanceToHit monster hero
 
                 monsterCTHText =
-                    "Base: "
-                        ++ toString monsterCTH.baseCTH
-                        ++ " Penalties: wea/arm ("
+                    toString monsterCTH.baseCTH
+                        ++ "/"
                         ++ toString monsterCTH.weaponBulkPenalty
                         ++ "/"
                         ++ toString monsterCTH.armourPenalty
-                        ++ ") size("
+                        ++ "/"
                         ++ toString (monsterCTH.sizeModifier)
+                        ++ " = ("
+                        ++ toString monsterCTHThreshold
                         ++ ")"
 
                 avgHeroHitMonster =
@@ -507,17 +526,11 @@ matchView maybeMatch =
                 avgMonsterHitHero =
                     toFloat (List.sum monsterHitHero) / toFloat (List.sum monsterRounds)
 
-                avgHits =
-                    "(" ++ toPercentage avgHeroHitMonster ++ "% , " ++ toPercentage avgMonsterHitHero ++ "%)"
-
                 heroCTHThreshold =
                     Combat.chanceToHit hero monster |> Combat.cthThreshold
 
                 monsterCTHThreshold =
                     Combat.chanceToHit monster hero |> Combat.cthThreshold
-
-                thresholds =
-                    "(" ++ toString heroCTHThreshold ++ ", " ++ toString monsterCTHThreshold ++ ")"
             in
                 tr []
                     [ td [] [ text <| monster.name ]
@@ -530,7 +543,8 @@ matchView maybeMatch =
                     , td [] [ text <| percent (toFloat wins * 100 / toFloat battles) ]
                     , td [] [ text <| avgHpRemaining ++ " / " ++ toString hero.stats.maxHP ]
                     , td [] [ text <| toOneDecimal avgTurnsTaken ]
-                    , td [] [ text <| avgHits ++ " , " ++ thresholds ]
+                    , td [] [ text <| toPercentage avgHeroHitMonster ++ "%" ]
+                    , td [] [ text <| toPercentage avgMonsterHitHero ++ "%" ]
                     , td [] [ text <| cthText ]
                     , td [] [ text <| monsterCTHText ]
                     ]
