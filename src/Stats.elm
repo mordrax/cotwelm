@@ -87,12 +87,12 @@ initExperienced attributes level =
 
 hpBonus : Attributes -> Int
 hpBonus { str, con } =
-    con // 10 + str // 20
+    con // 15 + str // 25
 
 
 spBonus : Attributes -> Int
 spBonus { int } =
-    int // 5
+    int // 10
 
 
 incLevel : Int -> Attributes -> Stats -> Stats
