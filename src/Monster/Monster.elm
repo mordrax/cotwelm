@@ -226,31 +226,31 @@ init monsterType position =
             GiantTrapdoorSpider ->
                 make "Giant Trapdoor Spider"
                     5
-                    (Attributes 0 60 60 60 50)
+                    (Attributes 0 60 60 60 30)
                     Types.Large
                     (basicEquipment ItemData.Pincers ItemData.Shell)
 
             HugeLizard ->
                 make "Huge Lizard"
                     5
-                    (Attributes 0 70 65 60 50)
+                    (Attributes 0 70 65 60 30)
                     Types.Large
                     (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
 
             RatMan ->
-                make "Rat-Man"
+                make "Rat Man"
                     5
-                    (Attributes 0 50 50 50 50)
+                    (Attributes 0 60 60 60 60)
                     Types.Medium
                     (basicEquipment ItemData.MorningStar ItemData.ToughHide)
 
             -- Special: "Immune to Weapons"
             Slime ->
-                make "Slime" 6 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Slime" 6 (Attributes 0 50 50 90 50) Types.Medium []
 
             -- Special: "Poison"
             GiantScorpion ->
-                make "Giant Scorpion" 6 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Giant Scorpion" 6 (Attributes 0 75 50 60 50) Types.Large (basicEquipment ItemData.Pincers ItemData.Shell)
 
             GrayWolf ->
                 make "Gray Wolf" 6 (Attributes 0 50 50 50 50) Types.Medium []
