@@ -23,6 +23,12 @@ module Combat
   Experience (level) plays a part in all aspects of combat as a seasoned warrior will fight better
   than beginners in general.
 
+  -----
+  LEVEL
+  -----
+  - Max level is 50
+  - At higher levels, a attacker should have a better chance to hit and defend against incoming hits
+
   -------------
   CHANCE TO HIT
   -------------
@@ -211,7 +217,7 @@ chanceToHit attacker defender =
         -- should incur ~ -12% penalty to CTH
         weaponBulkPenalty =
             quadraticCTHCalculator 15 weaponWeightToWielderCapacityDifference
-            |> clamp -15 10
+                |> clamp -15 10
 
         maxWeaponWeight =
             5000.0
@@ -226,8 +232,8 @@ chanceToHit attacker defender =
                 |> bodySizeToDodge
                 |> clamp -10 10
     in
-        { baseCTH = attacker.attributes.dex
-        , ac = Item.Data.acToInt ac
+        { baseCTH = attacker.attributes.dex + attacker.expLevel * 2
+        , ac = Item.Data.acToInt ac + defender.expLevel * 2
         , armourPenalty = armourPenalty
         , weaponBulkPenalty = weaponBulkPenalty
         , sizeModifier = sizeModifier
@@ -274,7 +280,7 @@ hitResult cth names defender ( hitRoll, ( damageRoll, maxDamage ) ) =
             hitRoll <= ceiling (toFloat cth.critRange * toFloat hitThreshold / 100)
 
         isBlocked =
-            hitRoll <= hitThreshold + cth.blockPenalty
+            hitRoll <= hitThreshold
     in
         case ( isHit, isCrit, isBlocked ) of
             ( _, True, _ ) ->
@@ -306,8 +312,12 @@ damageCalculator { attributes, equipment } =
         maybeWeapon =
             Equipment.getWeapon equipment
 
+        strBonus str =
+            ((str - 50) // 10)
+                |> clamp 0 5
+
         addStrToBonus str die =
-            { die | bonus = str // 10 + die.bonus }
+            { die | bonus = die.bonus + strBonus str }
 
         dice =
             case maybeWeapon of

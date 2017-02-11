@@ -133,14 +133,14 @@ init monsterType position =
             GiantRat ->
                 make "Giant Rat"
                     1
-                    (Attributes 0 40 60 50 5)
+                    (Attributes 0 40 50 50 5)
                     Types.Small
                     (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
             Goblin ->
                 make "Goblin"
                     1
-                    (Attributes 0 40 75 50 20)
+                    (Attributes 0 40 60 50 20)
                     Types.Small
                     (weaponSlot ItemData.Club :: leatherEquipment)
 
@@ -154,14 +154,14 @@ init monsterType position =
             Kobold ->
                 make "Kobold"
                     2
-                    (Attributes 0 30 70 30 50)
+                    (Attributes 0 30 60 30 50)
                     Types.Small
-                    (weaponSlot ItemData.Crossbow :: ironEquipment)
+                    (weaponSlot ItemData.Crossbow :: leatherEquipment)
 
             Hobgoblin ->
                 make "Hobgoblin"
                     2
-                    (Attributes 0 50 70 50 50)
+                    (Attributes 0 50 60 50 50)
                     Types.Medium
                     (weaponSlot ItemData.Spear :: leatherEquipment)
 
@@ -175,16 +175,16 @@ init monsterType position =
             Skeleton ->
                 make "Skeleton"
                     3
-                    (Attributes 0 60 60 40 10)
+                    (Attributes 0 60 65 40 10)
                     Types.Medium
                     (basicEquipment ItemData.ShortSword ItemData.Bones)
 
             WildDog ->
                 make "Wild Dog"
                     3
-                    (Attributes 0 30 70 30 30)
+                    (Attributes 0 50 75 30 30)
                     Types.Small
-                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
 
             -- Special: "Poison"
             Viper ->
@@ -199,19 +199,19 @@ init monsterType position =
                     4
                     (Attributes 0 50 75 50 50)
                     Types.Small
-                    (basicShieldEquipment ItemData.ShortSword ItemData.MediumIronShield ItemData.StuddedLeatherArmour)
+                    (basicShieldEquipment ItemData.Axe ItemData.MediumIronShield ItemData.StuddedLeatherArmour)
 
             GiantRedAnt ->
                 make "Giant Red Ant"
                     4
-                    (Attributes 0 50 50 50 50)
-                    Types.Medium
+                    (Attributes 0 80 50 60 40)
+                    Types.Large
                     (basicEquipment ItemData.Pincers ItemData.Shell)
 
             WalkingCorpse ->
                 make "Walking Corpse"
                     4
-                    (Attributes 0 100 50 50 50)
+                    (Attributes 0 100 40 95 20)
                     Types.Medium
                     (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
@@ -219,21 +219,21 @@ init monsterType position =
             Bandit ->
                 make "Bandit"
                     4
-                    (Attributes 0 50 50 50 50)
+                    (Attributes 0 60 75 60 50)
                     Types.Medium
-                    (basicEquipment ItemData.Bow ItemData.StuddedLeatherArmour)
+                    (weaponSlot ItemData.Bow :: leatherEquipment)
 
             GiantTrapdoorSpider ->
                 make "Giant Trapdoor Spider"
                     5
-                    (Attributes 0 50 50 50 50)
+                    (Attributes 0 60 60 60 50)
                     Types.Large
                     (basicEquipment ItemData.Pincers ItemData.Shell)
 
             HugeLizard ->
                 make "Huge Lizard"
                     5
-                    (Attributes 0 50 50 50 50)
+                    (Attributes 0 70 65 60 50)
                     Types.Large
                     (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
 

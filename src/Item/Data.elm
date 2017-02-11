@@ -25,8 +25,11 @@ addAC : AC -> AC -> AC
 addAC (AC a) (AC b) =
     AC (a + b)
 
-acToInt: AC -> Int
-acToInt (AC a) = a
+
+acToInt : AC -> Int
+acToInt (AC a) =
+    a
+
 
 type IdentificationStatus
     = Identified
@@ -170,6 +173,7 @@ type WeaponType
     | TwoHandedSword
       -- monster weapons
     | SmallClaws
+    | SmallBite
     | Crossbow
     | Fangs
     | Pincers

@@ -270,11 +270,9 @@ round hero monster heroAttacking result =
                 0
     in
         if Stats.isDead hero.stats then
-            Random.constant
-                { result | hpRemaining = 0 }
+            Random.constant { result | hpRemaining = 0 }
         else if Stats.isDead monster.stats then
-            Random.constant
-                { result | hpRemaining = hero.stats.currentHP }
+            Random.constant { result | hpRemaining = hero.stats.currentHP }
         else if heroAttacking == True then
             Combat.attack hero monster
                 |> Random.andThen
@@ -301,7 +299,7 @@ view : Model -> Html Msg
 view model =
     let
         hero =
-            Dict.get 2 model.heroLookup
+            Dict.get 1 model.heroLookup
                 |> Maybe.withDefault (initHero customAttributes model.customEquipment)
     in
         div []
@@ -467,7 +465,10 @@ matchView maybeMatch =
                     toString a ++ " / " ++ toString b
 
                 percent a =
-                    "  ( " ++ toString a ++ "% )"
+                    toString a ++ "%"
+
+                brackets a =
+                    "( " ++ a ++ " )"
 
                 weapon =
                     monster.equipment
@@ -482,13 +483,16 @@ matchView maybeMatch =
                 totalArmour =
                     Equipment.calculateAC monster.equipment
                         |> toString
-                        |> \x -> "Total" ++ x
+                        |> brackets
 
                 avgHpRemaining =
                     toOneDecimal (toFloat (List.sum hpRemaining) / toFloat battles)
 
                 avgTurnsTaken =
                     toFloat (List.sum heroRounds + List.sum monsterRounds) / toFloat battles
+
+                avgHeroTurnsTaken =
+                    toFloat (List.sum heroRounds) / toFloat battles
 
                 cth =
                     Combat.chanceToHit hero monster
@@ -542,7 +546,7 @@ matchView maybeMatch =
                     , td [] [ text <| toString monster.stats.maxHP ]
                     , td [] [ text <| percent (toFloat wins * 100 / toFloat battles) ]
                     , td [] [ text <| avgHpRemaining ++ " / " ++ toString hero.stats.maxHP ]
-                    , td [] [ text <| toOneDecimal avgTurnsTaken ]
+                    , td [] [ text <| toOneDecimal avgTurnsTaken ++ " " ++ brackets (toOneDecimal avgHeroTurnsTaken) ]
                     , td [] [ text <| toPercentage avgHeroHitMonster ++ "%" ]
                     , td [] [ text <| toPercentage avgMonsterHitHero ++ "%" ]
                     , td [] [ text <| cthText ]
@@ -696,9 +700,9 @@ initHeroLookup hero =
                 n ->
                     let
                         nextLvlHero =
-                            (Hero.level hero)
+                            (Hero.levelUp hero)
                     in
-                        reducer (Dict.insert n nextLvlHero dict) nextLvlHero (n + 1)
+                        reducer (Dict.insert n hero dict) nextLvlHero (n + 1)
     in
         reducer Dict.empty hero 1
 
@@ -709,11 +713,8 @@ initMatches heroLookup ( weaponType, armourType ) =
         newMonster monsterType =
             Monster.initForArena monsterType
 
-        newMatch monsterType =
+        newMatch monster =
             let
-                monster =
-                    (newMonster monsterType)
-
                 addCustomEquipment hero =
                     { hero
                         | equipment =
@@ -743,4 +744,6 @@ initMatches heroLookup ( weaponType, armourType ) =
                 Match hero monster 0 0 [] [] [] [] []
     in
         --        List.map newMatch (List.take 20 Monster.types)
-        List.map newMatch Monster.types
+        List.map newMonster Monster.types
+            |> List.filter (.expLevel >> flip (>) 3)
+            |> List.map newMatch
