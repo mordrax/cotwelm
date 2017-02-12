@@ -38,7 +38,22 @@ type alias Monster =
     , equipment : Equipment
     , expLevel : Int
     , bodySize : Types.BodySize
+    , attackTypes : List AttackType
+    , speed : Int
     }
+
+
+type AttackType
+    = Melee
+    | Ranged
+    | Poison
+    | Acid
+    | Fire
+    | Ice
+    | Lightning
+    | Drain
+    | Steal
+    | Spell
 
 
 view : Monster -> Html a
@@ -86,7 +101,7 @@ init monsterType position =
         makeEquipment equipment =
             Equipment.equipMany equipment Equipment.init
 
-        make name level attributes bodySize itemSlotPair =
+        make name level attributes itemSlotPair =
             { name = name
             , type_ = Types.Monster
             , css = (Utils.Lib.toCSS name)
@@ -95,8 +110,19 @@ init monsterType position =
             , attributes = attributes
             , equipment = makeEquipment itemSlotPair
             , expLevel = level
-            , bodySize = bodySize
+            , bodySize = Types.Medium
+            , attackTypes = [ Melee ]
+            , speed = 100
             }
+
+        setSpeed speed monster =
+            { monster | speed = speed }
+
+        setAttackTypes attackTypes monster =
+            { monster | attackTypes = attackTypes }
+
+        setBodySize size monster =
+            { monster | bodySize = size }
 
         weaponSlot weaponType =
             ( Equipment.WeaponSlot, Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty )
@@ -134,85 +160,85 @@ init monsterType position =
                 make "Giant Rat"
                     1
                     (Attributes 0 40 50 50 5)
-                    Types.Small
                     (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+                    |> setBodySize Types.Small
 
             Goblin ->
                 make "Goblin"
                     1
                     (Attributes 0 40 60 50 20)
-                    Types.Small
                     (weaponSlot ItemData.Club :: leatherEquipment)
+                    |> setBodySize Types.Small
 
             GiantBat ->
                 make "Giant Bat"
                     1
                     (Attributes 0 30 70 40 10)
-                    Types.Small
                     (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+                    |> setBodySize Types.Small
 
             Kobold ->
                 make "Kobold"
                     2
                     (Attributes 0 30 60 30 50)
-                    Types.Small
                     (weaponSlot ItemData.Crossbow :: leatherEquipment)
+                    |> setBodySize Types.Small
+                    |> setAttackTypes [ Melee, Ranged ]
 
             Hobgoblin ->
                 make "Hobgoblin"
                     2
                     (Attributes 0 50 60 50 50)
-                    Types.Medium
                     (weaponSlot ItemData.Spear :: leatherEquipment)
 
             LargeSnake ->
                 make "Large Snake"
                     2
                     (Attributes 0 20 70 30 30)
-                    Types.Tiny
                     (basicEquipment ItemData.Fangs ItemData.SoftHide)
+                    |> setBodySize Types.Tiny
+                    |> setAttackTypes [ Poison ]
 
             Skeleton ->
                 make "Skeleton"
                     3
                     (Attributes 0 60 65 40 10)
-                    Types.Medium
                     (basicEquipment ItemData.ShortSword ItemData.Bones)
 
             WildDog ->
                 make "Wild Dog"
                     3
                     (Attributes 0 50 75 30 30)
-                    Types.Small
                     (basicEquipment ItemData.SmallBite ItemData.SoftHide)
+                    |> setBodySize Types.Small
 
             -- Special: "Poison"
             Viper ->
                 make "Viper"
                     3
                     (Attributes 0 20 80 20 30)
-                    Types.Tiny
                     (basicEquipment ItemData.Fangs ItemData.SoftHide)
+                    |> setBodySize Types.Tiny
+                    |> setAttackTypes [ Poison ]
 
             GoblinFighter ->
                 make "Goblin Fighter"
                     4
                     (Attributes 0 50 75 50 50)
-                    Types.Small
                     (basicShieldEquipment ItemData.Axe ItemData.MediumIronShield ItemData.StuddedLeatherArmour)
+                    |> setBodySize Types.Small
 
             GiantRedAnt ->
                 make "Giant Red Ant"
                     4
                     (Attributes 0 80 50 60 40)
-                    Types.Large
                     (basicEquipment ItemData.Pincers ItemData.Shell)
+                    |> setBodySize Types.Large
 
             WalkingCorpse ->
                 make "Walking Corpse"
                     4
                     (Attributes 0 100 40 95 20)
-                    Types.Medium
                     (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
             -- Special: "Arrow"
@@ -220,315 +246,601 @@ init monsterType position =
                 make "Bandit"
                     4
                     (Attributes 0 60 75 60 50)
-                    Types.Medium
                     (weaponSlot ItemData.Bow :: leatherEquipment)
+                    |> setAttackTypes [ Ranged ]
 
             GiantTrapdoorSpider ->
                 make "Giant Trapdoor Spider"
                     5
                     (Attributes 0 60 60 60 30)
-                    Types.Large
                     (basicEquipment ItemData.Pincers ItemData.Shell)
+                    |> setBodySize Types.Large
 
             HugeLizard ->
                 make "Huge Lizard"
                     5
                     (Attributes 0 70 65 60 30)
-                    Types.Large
                     (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
+                    |> setBodySize Types.Large
 
             RatMan ->
                 make "Rat Man"
                     5
                     (Attributes 0 60 60 60 60)
-                    Types.Medium
                     (basicEquipment ItemData.MorningStar ItemData.ToughHide)
 
-            -- Special: "Immune to Weapons"
+            -- Special: "Immune to Weapons", "Acid"
             Slime ->
-                make "Slime" 6 (Attributes 0 50 50 90 50) Types.Medium []
+                make "Slime"
+                    6
+                    (Attributes 0 50 50 90 50)
+                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
+                    |> setAttackTypes [ Acid ]
 
             -- Special: "Poison"
             GiantScorpion ->
-                make "Giant Scorpion" 6 (Attributes 0 75 50 60 50) Types.Large (basicEquipment ItemData.Pincers ItemData.Shell)
+                make "Giant Scorpion"
+                    6
+                    (Attributes 0 75 50 60 50)
+                    (basicEquipment ItemData.Pincers ItemData.Shell)
+                    |> setBodySize Types.Large
+                    |> setAttackTypes [ Poison ]
 
             GrayWolf ->
-                make "Gray Wolf" 6 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Gray Wolf"
+                    6
+                    (Attributes 0 50 50 50 50)
+                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
+                    |> setBodySize Types.Small
 
             -- Special: "Immune to Cold, Lightning"
             GelantinousGlob ->
-                make "Gelantinous Glob" 7 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Gelantinous Glob"
+                    7
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Steals from Belt and Purse, Teleports"
             SmirkingSneakThief ->
-                make "Smirking Sneak Thief" 7 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Smirking Sneak Thief"
+                    7
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Steal ]
 
             CarrionCreeper ->
-                make "Carrion Creeper" 7 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Carrion Creeper"
+                    7
+                    (Attributes 0 50 50 50 50)
+                    []
 
             HugeOgre ->
-                make "Huge Ogre" 8 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Huge Ogre"
+                    8
+                    (Attributes 0 50 50 50 50)
+                    []
 
             Shadow ->
-                make "Shadow" 8 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Shadow"
+                    8
+                    (Attributes 0 50 50 50 50)
+                    []
 
             AnimatedWoodenStatue ->
-                make "Animated Wooden Statue" 8 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Animated Wooden Statue"
+                    8
+                    (Attributes 0 50 50 50 50)
+                    []
 
             BrownBear ->
-                make "Brown Bear" 9 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Brown Bear"
+                    9
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Immune to Poison, Breathes Poison Gas"
             -- Special: "Needles"
             Manticore ->
-                make "Manticore" 10 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Manticore"
+                    10
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Melee, Poison ]
 
             EerieGhost ->
-                make "Eerie Ghost" 10 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Eerie Ghost"
+                    10
+                    (Attributes 0 50 50 50 50)
+                    []
 
             GruesomeTroll ->
-                make "Gruesome Troll" 10 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Gruesome Troll"
+                    10
+                    (Attributes 0 50 50 50 50)
+                    []
 
             YoungGreenDragon ->
-                make "Young Green Dragon" 11 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Young Green Dragon"
+                    11
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Acid ]
 
             -- Special: "Immune to Cold, Breathes Ice"
             YoungWhiteDragon ->
-                make "Young White Dragon" 11 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Young White Dragon"
+                    11
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             -- Special: "Immune to Lightning, Breathes Lightning"
             YoungBlueDragon ->
-                make "Young Blue Dragon" 11 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Young Blue Dragon"
+                    11
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Lightning ]
 
             -- Special: "Immune to Fire, Breathes Fire"
             YoungRedDragon ->
-                make "Young Red Dragon" 11 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Young Red Dragon"
+                    11
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire ]
 
             AnimatedBronzeStatue ->
-                make "Animated Bronze Statue" 11 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Animated Bronze Statue"
+                    11
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Arrow"
             EvilWarrior ->
-                make "Evil Warrior" 11 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Evil Warrior"
+                    11
+                    (Attributes 0 50 50 50 50)
+                    []
 
             WolfMan ->
-                make "Wolf Man" 12 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Wolf Man"
+                    12
+                    (Attributes 0 50 50 50 50)
+                    []
 
             CaveBear ->
-                make "Cave Bear" 12 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Cave Bear"
+                    12
+                    (Attributes 0 50 50 50 50)
+                    []
 
             WhiteWolf ->
-                make "White Wolf" 12 (Attributes 0 50 50 50 50) Types.Medium []
+                make "White Wolf"
+                    12
+                    (Attributes 0 50 50 50 50)
+                    []
 
             Berserker ->
-                make "Berserker" 13 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Berserker"
+                    13
+                    (Attributes 0 50 50 50 50)
+                    []
 
             AnimatedIronStatue ->
-                make "Animated Iron Statue" 13 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Animated Iron Statue"
+                    13
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
             TunnelWight ->
-                make "Tunnel Wight" 13 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Tunnel Wight"
+                    13
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Drain ]
 
             -- Special: "Immune to Lightning, Breathes Lightning"
             YoungAdultBlueDragon ->
-                make "Young Adult Blue Dragon" 15 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Young Adult Blue Dragon"
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Lightning ]
 
             -- Special: "Immune to Poison, Breathes Poison Gas"
             YoungAdultGreenDragon ->
-                make "Young Adult Green Dragon" 15 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Young Adult Green Dragon"
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Acid ]
 
             -- Special: "Immune to Cold, Breathes Ice"
             YoungAdultWhiteDragon ->
-                make "Young Adult White Dragon" 15 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Young Adult White Dragon"
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             -- Special: "Drains Intelligence and Mana Permanently"
             PaleWraith ->
-                make "Pale Wraith" 14 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Pale Wraith"
+                    14
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Drain ]
 
             -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
             BarrowWight ->
-                make "Barrow Wight" 14 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Barrow Wight"
+                    14
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Drain ]
 
             BearMan ->
-                make "Bear-Man" 14 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Bear-Man"
+                    14
+                    (Attributes 0 50 50 50 50)
+                    []
 
             DustElemental ->
-                make "Dust Elemental" 15 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Dust Elemental"
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Throws Stones"
             HillGiant ->
-                make "Hill Giant" 15 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Hill Giant"
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Immune to Fire, Breathes Fire"
             YoungAdultRedDragon ->
-                make "Young Adult Red Dragon" 15 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Young Adult Red Dragon"
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire ]
 
             -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
             Wizard ->
-                make "Wizard" 18 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Wizard"
+                    18
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Spell ]
 
             BullMan ->
-                make "Bull-Man" 16 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Bull-Man"
+                    16
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
             CastleWight ->
-                make "Castle Wight" 14 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Castle Wight"
+                    14
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Drain ]
 
             -- Special: "Drains Intelligence and Mana Permanently"
             DarkWraith ->
-                make "Dark Wraith" 15 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Dark Wraith"
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Drain ]
 
             IceElemental ->
-                make "Ice Elemental" 16 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Ice Elemental"
+                    16
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             Spectre ->
-                make "Spectre" 17 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Spectre"
+                    17
+                    (Attributes 0 50 50 50 50)
+                    []
 
             AnimatedMarbleStatue ->
-                make "Animated Marble Statue" 18 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Animated Marble Statue"
+                    18
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Immune to Lightning, Breathes Lightning"
             AdultBlueDragon ->
-                make "Adult Blue Dragon" 19 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Adult Blue Dragon"
+                    19
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Lightning ]
 
             -- Special: "Immune to Poison, Breathes Poison Gas"
             AdultGreenDragon ->
-                make "Adult Green Dragon" 19 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Adult Green Dragon"
+                    19
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Acid ]
 
             -- Special: "Immune to Cold, Breathes Ice"
             AdultWhiteDragon ->
-                make "Adult White Dragon" 19 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Adult White Dragon"
+                    19
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             AirElemental ->
-                make "Air Elemental" 16 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Air Elemental"
+                    16
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Lightning ]
 
             MagmaElemental ->
-                make "Magma Elemental" 18 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Magma Elemental"
+                    18
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire ]
 
             -- Special: "Throws Stones"
             StoneGiant ->
-                make "Stone Giant" 19 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Stone Giant"
+                    19
+                    (Attributes 0 50 50 50 50)
+                    []
 
             TwoHeadedGiant ->
-                make "Two Headed Giant" 21 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Two Headed Giant"
+                    21
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Immune to Fire, Breathes Fire"
             AdultRedDragon ->
-                make "Adult Red Dragon" 24 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Adult Red Dragon"
+                    24
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire ]
 
             FireElemental ->
-                make "Fire Elemental" 20 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Fire Elemental"
+                    20
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire ]
 
             -- Special: "Throws Iceballs"
             FrostGiant ->
-                make "Frost Giant" 19 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Frost Giant"
+                    19
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             -- Special: "SuBaseons Spiked Devil"
             SpikedDevil ->
-                make "Spiked Devil" 20 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Spiked Devil"
+                    20
+                    (Attributes 0 50 50 50 50)
+                    []
 
             WaterElemental ->
-                make "Water Elemental" 19 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Water Elemental"
+                    19
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             EarthElemental ->
-                make "Earth Elemental" 19 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Earth Elemental"
+                    19
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
             Necromancer ->
-                make "Necromancer" 16 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Necromancer"
+                    16
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Spell ]
 
             -- Special: "Drains HP Permanently"
             Vampire ->
-                make "Vampire" 20 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Vampire"
+                    20
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Drain ]
 
             -- Special: "Drains Intelligence and Mana Permanently"
             AbyssWraith ->
-                make "Abyss Wraith" 21 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Abyss Wraith"
+                    21
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Drain ]
 
             -- Special: "Throws Boulders"
             Utgardhalok ->
-                make "Utgardhalok" 25 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Utgardhalok"
+                    25
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ranged ]
 
             -- Special: "Throws Stones"
             FireGiant ->
-                make "Fire Giant" 21 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Fire Giant"
+                    21
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire, Ranged ]
 
             -- Special: "Immune to Lightning, Breathes Lightning"
             OldBlueDragon ->
-                make "Old Blue Dragon" 28 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Old Blue Dragon"
+                    28
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Lightning ]
 
             -- Special: "Immune to Poison, Breathes Poison Gas"
             OldGreenDragon ->
-                make "Old Green Dragon" 28 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Old Green Dragon"
+                    28
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Acid ]
 
             -- Special: "Immune to Cold, Breathes Ice"
             OldWhiteDragon ->
-                make "Old White Dragon" 28 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Old White Dragon"
+                    28
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             -- Special: "SuBaseons Horned Devil"
             HornedDevil ->
-                make "Horned Devil" 23 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Horned Devil"
+                    23
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Melee, Fire ]
 
             -- Special: "Immune to Fire, Breathes Fire"
             OldRedDragon ->
-                make "Old Red Dragon" 28 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Old Red Dragon"
+                    28
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire ]
 
             -- Special: "Throws stones"
             Rungnir ->
-                make "Rungnir" 15 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Rungnir"
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ranged ]
 
             -- Special: "SuBaseons Ice Devil"
             IceDevil ->
-                make "Ice Devil" 23 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Ice Devil"
+                    23
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             -- Special: "Throws Iceballs"
             Thrym ->
-                make "Thrym" 25 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Thrym"
+                    25
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             -- Special: "Immune to Poison, Breathes Poison Gas"
             VeryOldGreenDragon ->
-                make "Very Old Green Dragon" 32 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Very Old Green Dragon"
+                    32
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Acid ]
 
             -- Special: "Immune to Cold, Breathes Ice"
             VeryOldWhiteDragon ->
-                make "Very Old White Dragon" 32 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Very Old White Dragon"
+                    32
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             -- Special: "Immune to Lightning, Breathes Lightning"
             VeryOldBlueDragon ->
-                make "Very Old Blue Dragon" 32 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Very Old Blue Dragon"
+                    32
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Lightning ]
 
             -- Special: "SuBaseons Spiked Devil or Abyss Fiend"
             AbyssFiend ->
-                make "Abyss Fiend" 26 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Abyss Fiend"
+                    26
+                    (Attributes 0 50 50 50 50)
+                    []
 
             -- Special: "Throws Stones"
             Thiassa ->
-                make "Thiassa" 26 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Thiassa"
+                    26
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ranged ]
 
             -- Special: "Immune to Fire, Breathes Fire"
             VeryOldRedDragon ->
-                make "Very Old Red Dragon" 32 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Very Old Red Dragon"
+                    32
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire ]
 
             -- Special: "Immune to Poison, Breathes Poison Gas"
             AncientGreenDragon ->
-                make "Ancient Green Dragon" 35 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Ancient Green Dragon"
+                    35
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Acid ]
 
             -- Special: "Immune to Cold, Breathes Ice"
             AncientWhiteDragon ->
-                make "Ancient White Dragon" 35 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Ancient White Dragon"
+                    35
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Ice ]
 
             -- Special: "Immune to Lightning, Breathes Lightning"
             AncientBlueDragon ->
-                make "Ancient Blue Dragon" 35 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Ancient Blue Dragon"
+                    35
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Lightning ]
 
             -- Special: "Immune to Fire, Breathes Fire"
             AncientRedDragon ->
-                make "Ancient Red Dragon" 35 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Ancient Red Dragon"
+                    35
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Fire ]
 
             -- Special: "Casts Fire, Lighting, and Wind Spells"
             Sultur ->
-                make "Sultur" 40 (Attributes 0 50 50 50 50) Types.Medium []
+                make "Sultur"
+                    40
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Melee, Spell, Fire, Lightning, Ice ]
 
 
 types : List MonsterType
