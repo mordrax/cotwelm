@@ -282,7 +282,7 @@ round hero monster heroAttacking result =
                             |> round hero monster_ nextAttacker
                     )
         else
-            Combat.attack monster hero
+            Combat.defend monster hero
                 |> Random.andThen
                     (\( _, hero_ ) ->
                         resultNextRound heroAttacking
@@ -746,5 +746,4 @@ initMatches heroLookup ( weaponType, armourType ) =
         --        List.map newMatch (List.take 20 Monster.types)
         List.map newMonster Monster.types
             |> List.filter (.expLevel >> flip (>=) 5)
-
             |> List.map newMatch

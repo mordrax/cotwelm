@@ -1,6 +1,7 @@
 module Combat
     exposing
         ( attack
+        , defend
         , Fighter
         , AttackMessage
           -- for Arena
@@ -107,8 +108,18 @@ type alias Fighter a =
     }
 
 
-attack : Attacker a -> Defender b -> Generator ( AttackMessage, Defender b )
-attack attacker defender =
+attack : Hero -> Monster -> Generator ( AttackMessage, Monster )
+attack hero monster =
+    attack_ hero monster 1
+
+
+defend : Monster -> Hero -> Generator ( AttackMessage, Hero )
+defend monster hero =
+    attack_ monster hero monster.attacks
+
+
+attack_ : Attacker a -> Defender b -> Int -> Generator ( AttackMessage, Defender b )
+attack_ attacker defender attacksRemaining =
     let
         cth =
             chanceToHit attacker defender
@@ -122,9 +133,17 @@ attack attacker defender =
 
         names =
             makeNames attacker defender
+
+        genResult =
+            Random.map2 (,) hitDie damageDie
+                |> Random.andThen (\rolls -> hitResult cth names defender rolls)
     in
-        Random.map2 (,) hitDie damageDie
-            |> Random.andThen (\rolls -> hitResult cth names defender rolls)
+        case attacksRemaining of
+            1 ->
+                genResult
+
+            n ->
+                Random.andThen attacker defender (n - 1)
 
 
 
