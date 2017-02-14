@@ -39,6 +39,7 @@ type alias Monster =
     , expLevel : Int
     , bodySize : Types.BodySize
     , attackTypes : List AttackType
+    , attacks : Int
     , speed : Int
     }
 
@@ -112,8 +113,12 @@ init monsterType position =
             , expLevel = level
             , bodySize = Types.Medium
             , attackTypes = [ Melee ]
+            , attacks = 1
             , speed = 100
             }
+
+        setAttacks attacks monster =
+            { monster | attacks = attacks }
 
         setSpeed speed monster =
             { monster | speed = speed }
@@ -292,6 +297,7 @@ init monsterType position =
                     (Attributes 0 50 50 50 50)
                     (basicEquipment ItemData.SmallBite ItemData.ToughHide)
                     |> setBodySize Types.Small
+                    |> setAttacks 2
 
             -- Special: "Immune to Cold, Lightning"
             GelantinousGlob ->
