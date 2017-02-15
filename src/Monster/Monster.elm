@@ -294,7 +294,14 @@ init monsterType position =
             GrayWolf ->
                 make "Gray Wolf"
                     6
-                    (Attributes 0 50 50 50 50)
+                    (Attributes 0 60 80 50 50)
+                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
+                    |> setBodySize Types.Small
+
+            WhiteWolf ->
+                make "White Wolf"
+                    6
+                    (Attributes 0 60 80 50 50)
                     (basicEquipment ItemData.SmallBite ItemData.ToughHide)
                     |> setBodySize Types.Small
                     |> setAttacks 2
@@ -417,12 +424,6 @@ init monsterType position =
 
             CaveBear ->
                 make "Cave Bear"
-                    12
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            WhiteWolf ->
-                make "White Wolf"
                     12
                     (Attributes 0 50 50 50 50)
                     []
@@ -870,6 +871,7 @@ types =
     , Slime
     , GiantScorpion
     , GrayWolf
+    , WhiteWolf
     , GelantinousGlob
     , SmirkingSneakThief
     , CarrionCreeper
@@ -888,7 +890,7 @@ types =
     , EvilWarrior
     , WolfMan
     , CaveBear
-    , WhiteWolf
+--    , WhiteWolf
     , Berserker
     , AnimatedIronStatue
     , TunnelWight

@@ -137,13 +137,18 @@ attack_ attacker defender attacksRemaining =
         genResult =
             Random.map2 (,) hitDie damageDie
                 |> Random.andThen (\rolls -> hitResult cth names defender rolls)
+
+        attackAgain ( msg, def ) =
+            attack_ attacker def (attacksRemaining - 1)
+                |> Random.map (\( newMsg, newDef ) -> ( msg ++ newMsg, newDef ))
     in
         case attacksRemaining of
             1 ->
                 genResult
 
             n ->
-                Random.andThen attacker defender (n - 1)
+                genResult
+                    |> Random.andThen attackAgain
 
 
 
