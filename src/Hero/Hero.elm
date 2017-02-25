@@ -119,7 +119,7 @@ view model =
             else
                 "female-hero"
     in
-        div [ class ("tile " ++ heroCss), Lib.vectorToHtmlStyle <| model.position ] []
+        div [ class ("tile " ++ heroCss), style (Lib.vectorToHtmlStyle model.position) ] []
 
 
 viewStats : Hero -> Html a

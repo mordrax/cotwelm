@@ -191,8 +191,8 @@ updateCurrentLevel level model =
             { model | abandonedMines = Array.set n level model.abandonedMines }
 
 
-view : (Vector, Vector) -> (Vector -> a) -> Model -> Html a
-view (start, size) onClick maps =
+view : ( Vector, Vector ) -> (Vector -> a) -> Model -> Html a
+view ( start, size ) onClick maps =
     let
         viewport =
             { start = start, size = size }
@@ -217,7 +217,12 @@ fromTiles tiles =
             |> Dict.fromList
 
 
-draw : { viewport | start : Vector, size : Vector } -> Level.Map -> Float -> (Vector -> a) -> List (Html a)
+draw :
+    { viewport | start : Vector, size : Vector }
+    -> Level.Map
+    -> Float
+    -> (Vector -> a)
+    -> List (Html a)
 draw viewport map scale onClick =
     let
         neighbours center =

@@ -12,12 +12,11 @@ px a =
     (toString a) ++ "px"
 
 
-vectorToHtmlStyle : Vector -> Attribute msg
+vectorToHtmlStyle : Vector -> List ( String, String )
 vectorToHtmlStyle ( x, y ) =
-    style
-        [ ( "top", px (y * 32) )
-        , ( "left", px (x * 32) )
-        ]
+    [ ( "top", px (y * 32) )
+    , ( "left", px (x * 32) )
+    ]
 
 
 toScaledTilePosition : Vector -> Float -> Attribute msg
