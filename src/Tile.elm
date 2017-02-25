@@ -195,7 +195,7 @@ view (A ({ type_, position, ground } as model)) scale neighbours onClick =
         itemDiv item =
             div
                 [ HA.class ("tile cotw-item " ++ (Item.css item))
-                , HA.style [ transform rotation scale ]
+                , HA.style [ transform rotation scale, ("pointer-events", "none") ]
                 , Lib.toScaledTilePosition position scale
                 ]
                 []
