@@ -1,7 +1,6 @@
 module Item.Item
     exposing
         ( Item(..)
-        , Item
         , Items
         , new
         , newFoldableItem
@@ -251,7 +250,6 @@ newFoldableItem ( key, itemFactory ) id =
 new : ItemType -> ID -> Item
 new itemType id =
     newWithOptions itemType id Normal Identified
-
 
 newWithOptions : ItemType -> ID -> ItemStatus -> IdentificationStatus -> Item
 newWithOptions itemType id status idStatus =

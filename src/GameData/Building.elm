@@ -81,13 +81,16 @@ view model =
         posStyle =
             Lib.vectorToHtmlStyle model.position
 
+        pointEventStyle =
+            [ ( "pointer-events", "none" ) ]
+
         tileCss =
             model.tile
                 |> toString
                 |> StringX.dasherize
                 |> String.dropLeft 1
     in
-        div [ class ("tile " ++ tileCss), posStyle ] []
+        div [ class ("tile " ++ tileCss), style (posStyle ++ pointEventStyle) ] []
 
 
 {-| Given a point and a building, will return true if the point is within the building

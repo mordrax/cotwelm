@@ -358,7 +358,7 @@ update msg model =
         ClickTile targetPosition ->
             let
                 path =
-                    findPath model.hero.position targetPosition model
+                    Debug.log "Path: " (findPath model.hero.position targetPosition True model)
             in
                 update (PathTo path) model
 
@@ -613,7 +613,18 @@ enterBuilding building ({ hero, maps } as model) =
 
 {-| Given a position and a map, work out everything on the square
 -}
-queryPosition : Vector -> Model -> ( Bool, Maybe Building, Maybe Monster, Bool )
+type alias TileObstruction =
+    Bool
+
+
+type alias HeroObstruction =
+    Bool
+
+
+queryPosition :
+    Vector
+    -> Model
+    -> ( TileObstruction, Maybe Building, Maybe Monster, HeroObstruction )
 queryPosition pos ({ hero, maps } as model) =
     let
         monsters =
@@ -671,28 +682,25 @@ buildingAtPosition pos buildings =
 -----------------
 
 
-findPath : Vector -> Vector -> Model -> List Vector
-findPath from to model =
+findPath : Vector -> Vector -> Bool -> Model -> List Vector
+findPath from to ignoreObstructions model =
     let
-        path =
-            AStar.findPath heuristic (neighbours model) from to
+        neighboursFunction =
+            if ignoreObstructions then
+                neighboursIncludeBuildings
+            else
+                neighbours
     in
-        case path of
-            Just path ->
-                path
-
-            _ ->
-                []
+        AStar.findPath heuristic (neighboursFunction model) from to
+            |> Maybe.withDefault []
 
 
 pathMonster : Monster -> Hero -> Model -> Monster
 pathMonster monster hero model =
-    case findPath monster.position hero.position model of
-        x :: _ ->
-            { monster | position = x }
-
-        _ ->
-            monster
+    findPath monster.position hero.position False model
+        |> List.head
+        |> Maybe.withDefault monster.position
+        |> \newPosition -> { monster | position = newPosition }
 
 
 {-| Manhattan but counts diagonal cost as one (since you can move diagonally)
@@ -703,22 +711,40 @@ heuristic start end =
         ( dx, dy ) =
             Vector.sub start end
     in
-        toFloat (max dx dy)
+        (dx ^ 2 + dy ^ 2)
+            |> toFloat
+            |> sqrt
+
+
+neighbours_ : Model -> Vector -> (Vector -> Bool) -> Set Vector
+neighbours_ model position isObstructedFilter =
+    position
+        |> Vector.neighbours
+        |> List.filter isObstructedFilter
+        |> Set.fromList
+
+
+neighboursIncludeBuildings : Model -> Vector -> Set Vector
+neighboursIncludeBuildings model position =
+    let
+        isObstructedFilter pos =
+            case queryPosition pos model of
+                ( False, _, Nothing, False ) ->
+                    True
+
+                _ ->
+                    False
+    in
+        neighbours_ model position isObstructedFilter
 
 
 neighbours : Model -> Vector -> Set Vector
 neighbours model position =
     let
-        add x y =
-            Vector.add position ( x, y )
-
-        notObstructed vector =
+        obstructionFilter vector =
             not (isObstructed vector model)
     in
-        position
-            |> Vector.neighbours
-            |> List.filter notObstructed
-            |> Set.fromList
+        neighbours_ model position obstructionFilter
 
 
 isObstructed : Vector -> Model -> Bool

@@ -59,7 +59,7 @@ type AttackType
 
 view : Monster -> Html a
 view { css, position } =
-    div [ vectorToHtmlStyle position, class ("tile monster " ++ css) ] []
+    div [ style (vectorToHtmlStyle position), class ("tile monster " ++ css) ] []
 
 
 initForArena : MonsterType -> Monster
