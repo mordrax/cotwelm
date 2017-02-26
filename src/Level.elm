@@ -112,5 +112,5 @@ floors { map } =
     map
         |> Dict.toList
         |> List.map Tuple.second
-        |> List.filter (Tile.isSolid >> not)
+        |> List.filter (.solid >> not)
         |> List.map Tile.position
