@@ -9,13 +9,11 @@ module Tile
         , updateGround
         , isSameType
         , isSamePosition
-        , isSolid
         , position
         , setPosition
         , mapToTiles
         , view
         , toTile
-        , tileType
         )
 
 import Container exposing (Container)
@@ -38,7 +36,7 @@ import Utils.Vector as Vector exposing (..)
 import Utils.Vector exposing (..)
 
 
-type alias Model =
+type alias Tile =
     { type_ : TileType
     , solid : Bool
     , items : List Item
@@ -59,10 +57,6 @@ type Occupant
     | Empty
 
 
-type Tile
-    = A Model
-
-
 type alias Tiles =
     List Tile
 
@@ -74,51 +68,41 @@ type alias Tiles =
 
 
 ground : Tile -> Container Item
-ground (A { ground }) =
+ground { ground } =
     ground
 
 
 drop : Item -> Tile -> Tile
-drop item (A model) =
+drop item model =
     let
         ( groundWithItem, _ ) =
             Container.add item model.ground
     in
-        (A { model | ground = groundWithItem })
+        { model | ground = groundWithItem }
 
 
 updateGround : List Item -> Tile -> Tile
-updateGround items (A model) =
-    A { model | ground = Container.set items model.ground }
-
-
-tileType : Tile -> TileType
-tileType (A { type_ }) =
-    type_
-
-
-isSolid : Tile -> Bool
-isSolid (A { solid }) =
-    solid
+updateGround items model =
+    { model | ground = Container.set items model.ground }
 
 
 isSameType : Tile -> Tile -> Bool
-isSameType (A t1) (A t2) =
+isSameType t1 t2 =
     t1.type_ == t2.type_
 
 
 isSamePosition : Tile -> Tile -> Bool
-isSamePosition (A t1) (A t2) =
+isSamePosition t1 t2 =
     t1.position == t2.position
 
 
 setPosition : Vector -> Tile -> Tile
-setPosition newPosition (A model) =
-    A <| { model | position = newPosition }
+setPosition newPosition model =
+    { model | position = newPosition }
 
 
 position : Tile -> Vector
-position (A { position }) =
+position { position } =
     position
 
 
@@ -147,11 +131,11 @@ toTile ( x, y ) tileType =
         container =
             Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-        A <| Model tileType solid [] Empty ( x, y ) container
+        Tile tileType solid [] Empty ( x, y ) container
 
 
 view : Tile -> Float -> TileNeighbours -> (Vector -> a) -> List (Html a)
-view (A ({ type_, position, ground } as model)) scale neighbours onClick =
+view ({ type_, position, ground } as model) scale neighbours onClick =
     let
         transform rotation scale =
             case ( rotation, scale ) of
@@ -195,7 +179,7 @@ view (A ({ type_, position, ground } as model)) scale neighbours onClick =
         itemDiv item =
             div
                 [ HA.class ("tile cotw-item " ++ (Item.css item))
-                , HA.style [ transform rotation scale, ("pointer-events", "none") ]
+                , HA.style [ transform rotation scale, ( "pointer-events", "none" ) ]
                 , Lib.toScaledTilePosition position scale
                 ]
                 []
@@ -232,7 +216,7 @@ halfTiles =
     ]
 
 
-rotateHalfTiles : Model -> HalfTileData -> TileNeighbours -> Int
+rotateHalfTiles : Tile -> HalfTileData -> TileNeighbours -> Int
 rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighbours =
     let
         aOrb x a b =
@@ -241,7 +225,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpLeft maybeUp maybeLeft =
             case ( maybeUp, maybeLeft ) of
                 ( Just up, Just left ) ->
-                    if (isSameType up left && tileType up == targetTileType) then
+                    if (isSameType up left && up.type_ == targetTileType) then
                         90
                     else
                         0
@@ -252,7 +236,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpRight maybeUp maybeRight =
             case ( maybeUp, maybeRight ) of
                 ( Just up, Just right ) ->
-                    if (isSameType up right && tileType up == targetTileType) then
+                    if (isSameType up right && up.type_ == targetTileType) then
                         180
                     else
                         0
@@ -264,7 +248,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkDownRight maybeDown maybeRight =
             case ( maybeDown, maybeRight ) of
                 ( Just down, Just right ) ->
-                    if (isSameType down right && tileType down == targetTileType) then
+                    if (isSameType down right && down.type_ == targetTileType) then
                         -90
                     else
                         0

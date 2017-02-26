@@ -22,7 +22,7 @@ import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item exposing (Item)
 import Item.Data exposing (..)
-import Level
+import Level exposing (Level)
 import Monster.Monster as Monster exposing (Monster)
 import Pages.Inventory as Inventory exposing (Inventory)
 import Random.Pcg as Random exposing (..)
@@ -126,137 +126,140 @@ monstersOnLevel model =
         |> .monsters
 
 
-updateKeyboard : Keyboard.Msg -> Model -> ( Model, Cmd Msg )
-updateKeyboard keyboardMsg model =
+isOnStairs : (Level -> Maybe Building) -> Model -> Bool
+isOnStairs upOrDownStairs model =
     let
         atHeroPosition =
             (==) model.hero.position
-
-        isOnStairs upOrDownStairs =
-            Maps.currentLevel model.maps
-                |> upOrDownStairs
-                |> Maybe.map .position
-                |> Maybe.map atHeroPosition
     in
-        case keyboardMsg of
-            KeyDir dir ->
-                moveHero dir model
-                    |> \( model, _ ) -> ( model, Cmd.none )
+        Maps.currentLevel model.maps
+            |> upOrDownStairs
+            |> Maybe.map .position
+            |> Maybe.map atHeroPosition
+            |> Maybe.withDefault False
 
-            Walk dir ->
-                let
-                    ( modelWithMovedHero, hasMoved ) =
-                        moveHero dir model
-                in
-                    case hasMoved of
-                        False ->
-                            ( modelWithMovedHero, Cmd.none )
 
-                        True ->
-                            update (KeyboardMsg (Walk dir)) modelWithMovedHero
+updateKeyboard : Keyboard.Msg -> Model -> ( Model, Cmd Msg )
+updateKeyboard keyboardMsg model =
+    case keyboardMsg of
+        KeyDir dir ->
+            moveHero dir model
+                |> \( model, _ ) -> ( model, Cmd.none )
 
-            Esc ->
-                case model.currentScreen of
-                    MapScreen ->
-                        ( model, Cmd.none )
+        Walk dir ->
+            let
+                ( modelWithMovedHero, hasMoved ) =
+                    moveHero dir model
+            in
+                case hasMoved of
+                    False ->
+                        ( modelWithMovedHero, Cmd.none )
 
-                    BuildingScreen _ ->
-                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
+                    True ->
+                        update (KeyboardMsg (Walk dir)) modelWithMovedHero
 
-                    InventoryScreen ->
-                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
+        Esc ->
+            case model.currentScreen of
+                MapScreen ->
+                    ( model, Cmd.none )
 
-            Inventory ->
-                let
-                    ground =
-                        getGroundAtHero model.hero model.maps
-                in
-                    ( { model
-                        | currentScreen = InventoryScreen
-                        , inventory = Inventory.init (Inventory.Ground ground) model.hero.equipment
-                      }
+                BuildingScreen _ ->
+                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
+
+                InventoryScreen ->
+                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
+
+        Inventory ->
+            let
+                ground =
+                    getGroundAtHero model.hero model.maps
+            in
+                ( { model
+                    | currentScreen = InventoryScreen
+                    , inventory = Inventory.init (Inventory.Ground ground) model.hero.equipment
+                  }
+                , Cmd.none
+                )
+
+        GoUpstairs ->
+            case isOnStairs Level.upstairs model of
+                True ->
+                    let
+                        map_ =
+                            Maps.upstairs model.maps
+
+                        heroAtTopOfStairs =
+                            Maps.currentLevel map_
+                                |> Level.downstairs
+                                |> Maybe.map .position
+                                |> Maybe.map (flip Hero.teleport model.hero)
+                                |> Maybe.withDefault model.hero
+                    in
+                        ( { model
+                            | maps = map_
+                            , hero = heroAtTopOfStairs
+                            , messages = "You climb back up the stairs" :: model.messages
+                          }
+                            |> updateViewportOffset
+                        , Cmd.none
+                        )
+
+                False ->
+                    ( { model | messages = "You need to be on some stairs!" :: model.messages }
                     , Cmd.none
                     )
 
-            GoUpstairs ->
-                case isOnStairs Level.upstairs of
-                    Just True ->
-                        let
-                            map_ =
-                                Maps.upstairs model.maps
+        GoDownstairs ->
+            case isOnStairs Level.downstairs model of
+                True ->
+                    let
+                        ( newMap, seed_ ) =
+                            Random.step (Maps.downstairs model.maps) model.seed
 
-                            heroAtTopOfStairs =
-                                Maps.currentLevel map_
-                                    |> Level.downstairs
-                                    |> Maybe.map .position
-                                    |> Maybe.map (flip Hero.teleport model.hero)
-                                    |> Maybe.withDefault model.hero
-                        in
-                            ( { model
-                                | maps = map_
-                                , hero = heroAtTopOfStairs
-                                , messages = "You climb back up the stairs" :: model.messages
-                              }
-                                |> updateViewportOffset
-                            , Cmd.none
-                            )
-
-                    _ ->
-                        ( { model | messages = "You need to be on some stairs!" :: model.messages }
+                        heroAtBottomOfStairs =
+                            Maps.currentLevel newMap
+                                |> Level.upstairs
+                                |> Debug.log "upstairs"
+                                |> Maybe.map .position
+                                |> Maybe.map (flip Hero.teleport model.hero)
+                                |> Maybe.withDefault model.hero
+                    in
+                        ( { model
+                            | maps = newMap
+                            , hero = heroAtBottomOfStairs
+                            , seed = seed_
+                            , messages = "You go downstairs" :: model.messages
+                          }
+                            |> updateViewportOffset
                         , Cmd.none
                         )
 
-            GoDownstairs ->
-                case isOnStairs Level.downstairs of
-                    Just True ->
-                        let
-                            ( newMap, seed_ ) =
-                                Random.step (Maps.downstairs model.maps) model.seed
+                False ->
+                    ( { model | messages = "You need to be on some stairs!" :: model.messages }
+                    , Cmd.none
+                    )
 
-                            heroAtBottomOfStairs =
-                                Maps.currentLevel newMap
-                                    |> Level.upstairs
-                                    |> Debug.log "upstairs"
-                                    |> Maybe.map .position
-                                    |> Maybe.map (flip Hero.teleport model.hero)
-                                    |> Maybe.withDefault model.hero
-                        in
-                            ( { model
-                                | maps = newMap
-                                , hero = heroAtBottomOfStairs
-                                , seed = seed_
-                                , messages = "You go downstairs" :: model.messages
-                              }
-                                |> updateViewportOffset
-                            , Cmd.none
-                            )
+        Get ->
+            let
+                maybeItems =
+                    Maps.currentLevel model.maps
+                        |> Level.getTile model.hero.position
+                        |> Maybe.map Tile.ground
+                        |> Maybe.map Container.list
+            in
+                case maybeItems of
+                    Nothing ->
+                        ( model, Cmd.none )
 
-                    _ ->
-                        ( { model | messages = "You need to be on some stairs!" :: model.messages }
-                        , Cmd.none
-                        )
+                    Just items ->
+                        ( pickup items model, Cmd.none )
 
-            Get ->
-                let
-                    maybeItems =
-                        Maps.currentLevel model.maps
-                            |> Level.getTile model.hero.position
-                            |> Maybe.map Tile.ground
-                            |> Maybe.map Container.list
-                in
-                    case maybeItems of
-                        Nothing ->
-                            ( model, Cmd.none )
-
-                        Just items ->
-                            ( pickup items model, Cmd.none )
-
-            other ->
-                let
-                    _ =
-                        Debug.log "Keyboard key not implemented yet" other
-                in
-                    ( model, Cmd.none )
+        other ->
+            let
+                _ =
+                    Debug.log "Keyboard key not implemented yet" other
+            in
+                ( model, Cmd.none )
 
 
 pickup : List Item -> Model -> Model
@@ -374,15 +377,34 @@ update msg model =
                 walkRemainingPathTask =
                     Task.succeed xs
 
-                ( model_, cmds_ ) =
+                currentTile =
+                    Maps.getTile x model.maps
+
+                ( modelAfterMovement, cmdsAfterMovement ) =
                     update (KeyboardMsg (KeyDir dir)) model
             in
-                ( model_
-                , Cmd.batch
-                    [ Task.perform PathTo walkRemainingPathTask
-                    , cmds_
-                    ]
-                )
+                case ( xs, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement) of
+                    ( [], True, _ ) ->
+                        let
+                            _ =
+                                Debug.log "Taking upstairs" 1
+                        in
+                            update (KeyboardMsg GoUpstairs) modelAfterMovement
+
+                    ( [], _, True) ->
+                        let
+                            _ =
+                                Debug.log "Taking downstairs" 1
+                        in
+                            update (KeyboardMsg GoDownstairs) modelAfterMovement
+
+                    _ ->
+                        ( modelAfterMovement
+                        , Cmd.batch
+                            [ Task.perform PathTo walkRemainingPathTask
+                            , cmdsAfterMovement
+                            ]
+                        )
 
 
 newMessage : String -> Model -> Model
@@ -650,12 +672,9 @@ queryPosition pos ({ hero, maps } as model) =
             (Hero.position hero) == pos
 
         tileObstruction =
-            case maybeTile of
-                Just tile ->
-                    Tile.isSolid tile
-
-                Nothing ->
-                    True
+            maybeTile
+                |> Maybe.map .solid
+                |> Maybe.withDefault True
     in
         ( tileObstruction, maybeBuilding, maybeMonster, hasHero )
 

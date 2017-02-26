@@ -179,7 +179,7 @@ allDirectionsAreFloors neighbourDirections position map =
 
         isFloorTiles maybeTiles =
             maybeTiles
-                |> List.map (Maybe.Extra.filter (\x -> Tile.tileType x == Tile.DarkDgn))
+                |> List.map (Maybe.Extra.filter (\x -> x.type_ == Tile.DarkDgn))
                 |> List.all ((/=) Nothing)
     in
         neighbourDirections
