@@ -65,7 +65,6 @@ type Screen
 type Msg
     = KeyboardMsg Keyboard.Msg
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
-    | MapsMsg Maps.Msg
     | WindowSize Window.Size
     | ClickTile Vector
     | PathTo (List Vector)
@@ -93,10 +92,7 @@ init seed hero difficulty =
             Maps.init leatherArmour seed_
 
         cmd =
-            Cmd.batch
-                [ Cmd.map MapsMsg mapCmd
-                , initialWindowSizeCmd
-                ]
+            initialWindowSizeCmd
 
         ground =
             getGroundAtHero heroWithDefaultEquipment maps
@@ -352,9 +348,6 @@ update msg model =
                                     , Cmd.none
                                     )
 
-        MapsMsg msg ->
-            ( { model | maps = Maps.update msg model.maps }, Cmd.none )
-
         WindowSize size ->
             ( { model | windowSize = size }, Cmd.none )
 
@@ -383,7 +376,7 @@ update msg model =
                 ( modelAfterMovement, cmdsAfterMovement ) =
                     update (KeyboardMsg (KeyDir dir)) model
             in
-                case ( xs, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement) of
+                case ( xs, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement ) of
                     ( [], True, _ ) ->
                         let
                             _ =
@@ -391,7 +384,7 @@ update msg model =
                         in
                             update (KeyboardMsg GoUpstairs) modelAfterMovement
 
-                    ( [], _, True) ->
+                    ( [], _, True ) ->
                         let
                             _ =
                                 Debug.log "Taking downstairs" 1
@@ -906,6 +899,7 @@ viewMonsters model =
             model.maps
                 |> Maps.currentLevel
                 |> .monsters
+                |>
 
         monsterHtml monster =
             Monster.view monster
