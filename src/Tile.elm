@@ -47,7 +47,7 @@ type alias Tile =
 
 
 type Visibility
-    = Unknown
+    = Hidden
     | Explored
     | WithinFOV
 
@@ -132,7 +132,7 @@ toTile ( x, y ) tileType =
         container =
             Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-        Tile tileType solid [] Empty ( x, y ) container Unknown
+        Tile tileType solid [] Empty ( x, y ) container Hidden
 
 
 view : Tile -> Float -> TileNeighbours -> (Vector -> a) -> List (Html a)
@@ -192,7 +192,7 @@ view ({ type_, position, ground, visible } as model) scale neighbours onClick =
             tileDiv (tileToCss type_)
     in
         case ( itemsOnGround, visible ) of
-            ( _, Unknown ) ->
+            ( _, Hidden ) ->
                 []
 
             ( _, Explored ) ->

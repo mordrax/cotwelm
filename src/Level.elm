@@ -40,12 +40,18 @@ type Msg
     = NoOp
 
 
+setMap : Level -> Map -> Level
+setMap level map =
+    { level | map = map }
+
+
 init : List Tile -> List Building -> List Monster -> Level
 init tiles buildings monsters =
     { map = fromTiles tiles
     , buildings = buildings
     , monsters = monsters
     }
+
 
 fromTiles : List Tile -> Map
 fromTiles tiles =
@@ -110,13 +116,13 @@ updateGround pos payload model =
                 { model | map = Dict.insert pos tile model.map }
 
 
-drop : (Vector, Item) -> Level -> Level
-drop (position, item) model =
-    Dict.get position model.map
+drop : ( Vector, Item ) -> Level -> Level
+drop ( position, item ) level =
+    Dict.get position level.map
         |> Maybe.map (Tile.drop item)
-        |> Maybe.map (\x -> Dict.insert position x model.map)
-        |> Maybe.withDefault model.map
-        |> (\map -> { model | map = map })
+        |> Maybe.map (\x -> Dict.insert position x level.map)
+        |> Maybe.withDefault level.map
+        |> setMap level
 
 
 floors : Level -> List Vector

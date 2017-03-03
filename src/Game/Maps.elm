@@ -63,31 +63,25 @@ type Msg
 init : Item -> Random.Seed -> ( Model, Cmd Msg, Random.Seed )
 init armour seed =
     let
-        areaToTiles area =
+        areaToTiles area visibility =
             area
                 |> getASCIIMap
                 |> Tile.mapToTiles
-                |> List.map (Tile.setVisibility Tile.Explored)
+                |> List.map (Tile.setVisibility visibility)
 
-        levelOfArea area =
-            Level.init (areaToTiles area) (buildingsOfArea area) []
+        levelOfArea area visibility=
+            Level.init (areaToTiles area visibility) (buildingsOfArea area) []
 
         mineEntryLevel =
-            levelOfArea DungeonLevelOne
+            levelOfArea DungeonLevelOne Tile.Hidden
 
         mineEntryLevelWithArmour =
-            { mineEntryLevel
-                | map = Dict.insert ( 13, 19 ) darkDungeonWithArmour mineEntryLevel.map
-            }
-
-        darkDungeonWithArmour =
-            Tile.toTile ( 13, 19 ) Tile.DarkDgn
-                |> Tile.drop armour
+          Level.drop ((13, 19), armour) mineEntryLevel
     in
         ( { currentArea = Village
           , abandonedMines = Array.fromList []
-          , village = levelOfArea Village
-          , farm = levelOfArea Farm
+          , village = levelOfArea Village Tile.Explored
+          , farm = levelOfArea Farm Tile.Explored
           , abandonedMinesEntry = mineEntryLevelWithArmour
           }
         , Cmd.none
@@ -198,8 +192,8 @@ view ( start, size ) onClick maps =
             building.position
                 |> (\x -> Level.getTile x level)
                 |> Maybe.map .visible
-                |> Maybe.withDefault Tile.Unknown
-                |> ((/=) Tile.Unknown)
+                |> Maybe.withDefault Tile.Hidden
+                |> ((/=) Tile.Hidden)
 
         buildingsHtml =
             level.buildings
