@@ -5,7 +5,7 @@ import Dungeon.Corridor as Corridor exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Room as Room exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
-import Tile exposing (..)
+import Tile exposing (Tile)
 import Level
 import Dict exposing (Dict)
 import Utils.Vector exposing (Vector)
@@ -15,7 +15,7 @@ type alias Model =
     , rooms : Rooms
     , corridors : Corridors
     , activePoints : ActivePoints
-    , walls : Tiles
+    , walls : List Tile
     , buildings : Buildings
     }
 
@@ -29,11 +29,11 @@ type ActivePoint
     | ActiveCorridor Corridor
 
 
-fromTiles : Tiles -> Level.Map
+fromTiles : List Tile -> Level.Map
 fromTiles tiles =
     let
         toKVPair tile =
-            ( Tile.position tile, tile )
+            ( tile.position, tile )
     in
         tiles
             |> List.map toKVPair
@@ -67,7 +67,7 @@ toOccupied { rooms, corridors, activePoints } =
         roomVectors ++ corridorVectors
 
 
-toTiles : Model -> Tiles
+toTiles : Model -> List Tile
 toTiles { rooms, corridors, activePoints, walls } =
     let
         ( activeRooms, activeCorridors ) =

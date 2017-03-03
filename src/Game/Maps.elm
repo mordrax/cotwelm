@@ -31,7 +31,7 @@ Mines lvl 1 - 8
 
 import GameData.ASCIIMaps exposing (..)
 import GameData.Building as Building exposing (..)
-import Tile exposing (..)
+import Tile exposing (Tile)
 import GameData.Types exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Html exposing (..)
@@ -64,8 +64,12 @@ type Msg
 init : Item -> Random.Seed -> ( Model, Cmd Msg, Random.Seed )
 init armour seed =
     let
+        makeExplored tile =
+            { tile | visible = Tile.Explored }
+
         getTiles area =
             Tile.mapToTiles (getASCIIMap area)
+                |> List.map makeExplored
 
         mapOfArea area =
             (getTiles area)
@@ -76,7 +80,7 @@ init armour seed =
             Level (mapOfArea area) (buildingsOfArea area) []
 
         toKVPair tile =
-            ( Tile.position tile, tile )
+            ( tile.position, tile )
 
         mineEntryLevel =
             levelOfArea DungeonLevelOne
@@ -200,17 +204,26 @@ view ( start, size ) onClick maps =
         level =
             currentLevel maps
 
+        onVisibleTile building =
+            building.position
+                |> (\x -> Level.getTile x level)
+                |> Maybe.map .visible
+                |> Maybe.withDefault Tile.Unknown
+                |> ((/=) Tile.Unknown)
+
         buildingsHtml =
-            List.map Building.view (level.buildings)
+            level.buildings
+                |> List.filter onVisibleTile
+                |> List.map Building.view
     in
         div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
 
 
-fromTiles : Tiles -> Level.Map
+fromTiles : List Tile -> Level.Map
 fromTiles tiles =
     let
         toKVPair tile =
-            ( Tile.position tile, tile )
+            ( tile.position, tile )
     in
         tiles
             |> List.map toKVPair
@@ -232,10 +245,10 @@ draw viewport map scale onClick =
             toTiles map
 
         toHtml tile =
-            Tile.view tile scale (neighbours <| Tile.position tile) onClick
+            Tile.view tile scale (neighbours <| tile.position) onClick
 
         withinViewport tile =
-            Tile.position tile
+            tile.position
                 |> flip Vector.boxIntersectVector ( viewport.start, Vector.add viewport.start viewport.size )
     in
         mapTiles
@@ -377,7 +390,7 @@ buildingsOfArea area =
 
 {-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
 -}
-tileNeighbours : Level.Map -> Vector -> TileNeighbours
+tileNeighbours : Level.Map -> Vector -> Tile.TileNeighbours
 tileNeighbours map center =
     let
         addTilePosition =
