@@ -17,7 +17,7 @@ module Level
 import Container exposing (Container)
 import Dict exposing (Dict)
 import Item.Item as Item exposing (Item)
-import GameData.Building as Building exposing (Building, Buildings)
+import GameData.Building as Building exposing (Building)
 import Utils.Vector as Vector exposing (Vector)
 import Tile exposing (Tile)
 import Monster.Monster as Monster exposing (Monster)
@@ -29,7 +29,7 @@ type alias Map =
 
 type alias Level =
     { map : Map
-    , buildings : Buildings
+    , buildings : List Building
     , monsters : List Monster
     }
 
@@ -38,7 +38,7 @@ type Msg
     = NoOp
 
 
-init : Map -> Buildings -> List Monster -> Level
+init : Map -> List Building -> List Monster -> Level
 init map buildings monsters =
     { map = map
     , buildings = buildings

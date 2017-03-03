@@ -1,13 +1,11 @@
 module GameData.Building
     exposing
         ( Building
-        , Buildings
         , Link
         , BuildingType(..)
         , BuildingTile(..)
         , new
         , view
-        , buildingType
         , isBuildingAtPosition
         , newLink
         )
@@ -27,10 +25,6 @@ import Utils.Lib as Lib exposing (..)
 import GameData.Types exposing (..)
 import Shops exposing (ShopType)
 import String.Extra as StringX
-
-
-type alias Buildings =
-    List Building
 
 
 type alias Building =
@@ -102,11 +96,6 @@ isBuildingAtPosition pos model =
             Vector.sub (Vector.add model.position model.size) ( 1, 1 )
     in
         boxIntersectVector pos ( model.position, bottomLeft )
-
-
-buildingType : Building -> BuildingType
-buildingType model =
-    model.buildingType
 
 
 {-| Given a building type, the top right corner and a nem, will create a new building

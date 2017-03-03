@@ -337,7 +337,7 @@ getTile position model =
 --------------------------
 
 
-buildingsOfArea : Area -> Buildings
+buildingsOfArea : Area -> List Building
 buildingsOfArea area =
     case area of
         Village ->
