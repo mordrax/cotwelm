@@ -244,7 +244,7 @@ updateKeyboard keyboardMsg model =
                 maybeItems =
                     Maps.currentLevel model.maps
                         |> Level.getTile model.hero.position
-                        |> Maybe.map Tile.ground
+                        |> Maybe.map .ground
                         |> Maybe.map Container.list
             in
                 case maybeItems of
@@ -422,7 +422,7 @@ getGroundAtHero : Hero -> Maps.Model -> Container Item
 getGroundAtHero hero maps =
     hero.position
         |> flip Maps.getTile maps
-        |> Tile.ground
+        |> .ground
 
 
 

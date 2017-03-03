@@ -1,15 +1,13 @@
 module Tile
     exposing
         ( Tile
-        , Tiles
+        , Visibility(..)
         , TileType(..)
         , TileNeighbours
-        , ground
         , drop
         , updateGround
         , isSameType
         , isSamePosition
-        , position
         , setPosition
         , mapToTiles
         , view
@@ -43,7 +41,14 @@ type alias Tile =
     , occupant : Occupant
     , position : Vector
     , ground : Container Item
+    , visible : Visibility
     }
+
+
+type Visibility
+    = Unknown
+    | Explored
+    | WithinFOV
 
 
 type alias TileNeighbours =
@@ -65,11 +70,6 @@ type alias Tiles =
 -----------------------------------------------------------------------------------
 -- Turn a list of strings which represents ascii encoded tiles into actual Tiles --
 -----------------------------------------------------------------------------------
-
-
-ground : Tile -> Container Item
-ground { ground } =
-    ground
 
 
 drop : Item -> Tile -> Tile
@@ -101,11 +101,6 @@ setPosition newPosition model =
     { model | position = newPosition }
 
 
-position : Tile -> Vector
-position { position } =
-    position
-
-
 {-| Given a ASCII list of strings representing tiles, output a list of tiles
 -}
 mapToTiles : List String -> List Tile
@@ -131,11 +126,11 @@ toTile ( x, y ) tileType =
         container =
             Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-        Tile tileType solid [] Empty ( x, y ) container
+        Tile tileType solid [] Empty ( x, y ) container Unknown
 
 
 view : Tile -> Float -> TileNeighbours -> (Vector -> a) -> List (Html a)
-view ({ type_, position, ground } as model) scale neighbours onClick =
+view ({ type_, position, ground, visible } as model) scale neighbours onClick =
     let
         transform rotation scale =
             case ( rotation, scale ) of
@@ -190,14 +185,17 @@ view ({ type_, position, ground } as model) scale neighbours onClick =
         baseTile =
             tileDiv (tileToCss type_)
     in
-        case itemsOnGround of
-            [] ->
+        case ( itemsOnGround, visible ) of
+            ( _, Unknown ) ->
+                []
+
+            ( _, Explored ) ->
                 [ baseTile ]
 
-            item :: [] ->
+            ( item :: [], WithinFOV ) ->
                 [ baseTile, itemDiv item ]
 
-            _ ->
+            ( _, WithinFOV ) ->
                 [ baseTile, tileDiv <| tileToCss TreasurePile ]
 
 

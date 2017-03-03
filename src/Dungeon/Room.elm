@@ -24,7 +24,7 @@ import Dungeon.Corridor as Corridor exposing (..)
 import Random.Pcg as Random exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Lodash exposing (..)
-import Tile exposing (..)
+import Tile exposing (Tile)
 import Dungeon.Entrance as Entrance exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Dice exposing (..)
@@ -216,7 +216,7 @@ removeEntrance entrance (A ({ entrances, worldPos } as model)) =
         A { model | entrances = entrances_ }
 
 
-toTiles : Room -> Tiles
+toTiles : Room -> List Tile
 toTiles (A { floors, entrances, worldPos }) =
     let
         toWorldPos localPos =
