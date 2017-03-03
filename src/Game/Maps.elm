@@ -175,7 +175,7 @@ view ( start, size ) onClick maps =
 
         onVisibleTile building =
             building.position
-                |> (\x -> Level.getTile x level)
+                |> (\x -> Level.tileAtPosition x level)
                 |> Maybe.map .visible
                 |> Maybe.withDefault Tile.Hidden
                 |> ((/=) Tile.Hidden)
