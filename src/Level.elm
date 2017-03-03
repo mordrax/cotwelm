@@ -2,6 +2,8 @@ module Level
     exposing
         ( Level
         , Map
+        , init
+        , fromTiles
         , downstairs
         , upstairs
         , size
@@ -38,12 +40,22 @@ type Msg
     = NoOp
 
 
-init : Map -> List Building -> List Monster -> Level
-init map buildings monsters =
-    { map = map
+init : List Tile -> List Building -> List Monster -> Level
+init tiles buildings monsters =
+    { map = fromTiles tiles
     , buildings = buildings
     , monsters = monsters
     }
+
+fromTiles : List Tile -> Map
+fromTiles tiles =
+    let
+        toKVPair tile =
+            ( tile.position, tile )
+    in
+        tiles
+            |> List.map toKVPair
+            |> Dict.fromList
 
 
 upstairs : Level -> Maybe Building

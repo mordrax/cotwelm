@@ -4,6 +4,7 @@ module Tile
         , Visibility(..)
         , TileType(..)
         , TileNeighbours
+        , setVisibility
         , drop
         , updateGround
         , isSameType
@@ -99,6 +100,11 @@ isSamePosition t1 t2 =
 setPosition : Vector -> Tile -> Tile
 setPosition newPosition model =
     { model | position = newPosition }
+
+
+setVisibility : Visibility -> Tile -> Tile
+setVisibility visibility tile =
+    { tile | visible = visibility }
 
 
 {-| Given a ASCII list of strings representing tiles, output a list of tiles

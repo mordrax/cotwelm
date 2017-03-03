@@ -118,7 +118,7 @@ updateMap : Dungeon.Types.Model -> Level.Map
 updateMap dungeonModel =
     dungeonModel
         |> Dungeon.Types.toTiles
-        |> Maps.fromTiles
+        |> Level.fromTiles
 
 
 view : Model -> Html Msg
