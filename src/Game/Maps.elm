@@ -1,9 +1,7 @@
 module Game.Maps
     exposing
         ( Model
-        , Msg
         , init
-        , update
         , updateArea
         , updateCurrentLevel
         , view
@@ -56,10 +54,6 @@ type alias Model =
     }
 
 
-type Msg
-    = GenerateDungeonLevel Int
-
-
 init : Item -> Random.Seed -> ( Model, Cmd Msg, Random.Seed )
 init armour seed =
     let
@@ -87,15 +81,6 @@ init armour seed =
         , Cmd.none
         , seed
         )
-
-
-update : Msg -> Model -> Model
-update msg model =
-    let
-        _ =
-            Debug.log "maps update" 1
-    in
-        { model | currentArea = Village }
 
 
 upstairs : Model -> Model
