@@ -610,7 +610,7 @@ enterBuilding building ({ hero, maps } as model) =
         modelWithHeroMoved =
             { model | hero = Hero.teleport building.position hero }
     in
-        case Building.buildingType building of
+        case building.buildingType of
             Building.Linked link ->
                 { model
                     | maps = Maps.updateArea link.area maps
@@ -888,7 +888,7 @@ view model =
             viewMap model
 
         BuildingScreen building ->
-            case Building.buildingType building of
+            case building.buildingType of
                 Building.Shop shopType ->
                     Html.map InventoryMsg (Inventory.view model.inventory)
 
