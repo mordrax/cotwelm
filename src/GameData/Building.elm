@@ -6,6 +6,7 @@ module GameData.Building
         , BuildingTile(..)
         , new
         , view
+        , byType
         , isBuildingAtPosition
         , newLink
         )
@@ -62,6 +63,12 @@ type BuildingTile
     | Well
     | StairsDown
     | StairsUp
+
+
+byType : BuildingType -> List Building -> List Building
+byType buildingType buildings =
+    buildings
+        |> List.filter (.buildingType >> (==) buildingType)
 
 
 newLink : Area -> Vector -> BuildingType

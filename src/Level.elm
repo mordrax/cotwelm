@@ -8,7 +8,7 @@ module Level
         , upstairs
         , size
         , updateGround
-        , getTile
+        , tileAtPosition
         , floors
         , drop
         )
@@ -66,19 +66,13 @@ fromTiles tiles =
 
 upstairs : Level -> Maybe Building
 upstairs model =
-    let
-        isStairUp =
-            .buildingType >> (==) Building.StairUp
-    in
-        model.buildings
-            |> List.filter isStairUp
-            |> List.head
+    Building.byType Building.StairUp model.buildings
+        |> List.head
 
 
 downstairs : Level -> Maybe Building
 downstairs model =
-    model.buildings
-        |> List.filter (\x -> x.buildingType == Building.StairDown)
+  Building.byType Building.StairDown model.buildings
         |> List.head
 
 
@@ -96,8 +90,8 @@ size { map } =
         ( maxX + 1, maxY + 1 )
 
 
-getTile : Vector -> Level -> Maybe Tile
-getTile pos { map } =
+tileAtPosition : Vector -> Level -> Maybe Tile
+tileAtPosition pos { map } =
     Dict.get pos map
 
 

@@ -239,7 +239,7 @@ updateKeyboard keyboardMsg model =
             let
                 maybeItems =
                     Maps.currentLevel model.maps
-                        |> Level.getTile model.hero.position
+                        |> Level.tileAtPosition model.hero.position
                         |> Maybe.map .ground
                         |> Maybe.map Container.list
             in
@@ -648,7 +648,7 @@ queryPosition pos ({ hero, maps } as model) =
         maybeTile =
             maps
                 |> Maps.currentLevel
-                |> Level.getTile pos
+                |> Level.tileAtPosition pos
 
         level =
             Maps.currentLevel maps
@@ -895,16 +895,19 @@ view model =
 viewMonsters : Model -> Html Msg
 viewMonsters model =
     let
-        monsters =
+        isMonsterVisible monster =
             model.maps
                 |> Maps.currentLevel
-                |> .monsters
-                |>
-
-        monsterHtml monster =
-            Monster.view monster
+                |> Level.tileAtPosition monster.position
+                |> Maybe.map .visible
+                |> Maybe.withDefault Tile.Hidden
+                |> (==) Tile.WithinFOV
     in
-        div [] (List.map monsterHtml monsters)
+        model
+            |> monstersOnLevel
+            |> List.filter isMonsterVisible
+            |> List.map Monster.view
+            |> div []
 
 
 viewMap : Model -> Html Msg
