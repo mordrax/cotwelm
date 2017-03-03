@@ -8,7 +8,6 @@ module Game.Maps
         , updateCurrentLevel
         , view
         , draw
-        , fromTiles
         , currentLevel
         , getASCIIMap
         , tileNeighbours
@@ -64,23 +63,14 @@ type Msg
 init : Item -> Random.Seed -> ( Model, Cmd Msg, Random.Seed )
 init armour seed =
     let
-        makeExplored tile =
-            { tile | visible = Tile.Explored }
-
-        getTiles area =
-            Tile.mapToTiles (getASCIIMap area)
-                |> List.map makeExplored
-
-        mapOfArea area =
-            (getTiles area)
-                |> List.map toKVPair
-                |> Dict.fromList
+        areaToTiles area =
+            area
+                |> getASCIIMap
+                |> Tile.mapToTiles
+                |> List.map (Tile.setVisibility Tile.Explored)
 
         levelOfArea area =
-            Level (mapOfArea area) (buildingsOfArea area) []
-
-        toKVPair tile =
-            ( tile.position, tile )
+            Level.init (areaToTiles area) (buildingsOfArea area) []
 
         mineEntryLevel =
             levelOfArea DungeonLevelOne
@@ -219,15 +209,6 @@ view ( start, size ) onClick maps =
         div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
 
 
-fromTiles : List Tile -> Level.Map
-fromTiles tiles =
-    let
-        toKVPair tile =
-            ( tile.position, tile )
-    in
-        tiles
-            |> List.map toKVPair
-            |> Dict.fromList
 
 
 draw :
