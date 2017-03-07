@@ -7,8 +7,6 @@ module Tile
         , setVisibility
         , drop
         , updateGround
-        , isSameType
-        , isSamePosition
         , setPosition
         , mapToTiles
         , view
@@ -43,6 +41,7 @@ type alias Tile =
     , position : Vector
     , ground : Container Item
     , visible : Visibility
+    , isLit : Bool
     }
 
 
@@ -87,15 +86,6 @@ updateGround items model =
     { model | ground = Container.set items model.ground }
 
 
-isSameType : Tile -> Tile -> Bool
-isSameType t1 t2 =
-    t1.type_ == t2.type_
-
-
-isSamePosition : Tile -> Tile -> Bool
-isSamePosition t1 t2 =
-    t1.position == t2.position
-
 
 setPosition : Vector -> Tile -> Tile
 setPosition newPosition model =
@@ -132,7 +122,7 @@ toTile ( x, y ) tileType =
         container =
             Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-        Tile tileType solid [] Empty ( x, y ) container Hidden
+        Tile tileType solid [] Empty ( x, y ) container Hidden False
 
 
 view : Tile -> Float -> TileNeighbours -> (Vector -> a) -> List (Html a)
@@ -229,7 +219,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpLeft maybeUp maybeLeft =
             case ( maybeUp, maybeLeft ) of
                 ( Just up, Just left ) ->
-                    if (isSameType up left && up.type_ == targetTileType) then
+                    if (up.type_ == left.type_ && up.type_ == targetTileType) then
                         90
                     else
                         0
@@ -240,7 +230,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpRight maybeUp maybeRight =
             case ( maybeUp, maybeRight ) of
                 ( Just up, Just right ) ->
-                    if (isSameType up right && up.type_ == targetTileType) then
+                    if ( up.type_ == right.type_ && up.type_ == targetTileType) then
                         180
                     else
                         0
@@ -252,7 +242,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkDownRight maybeDown maybeRight =
             case ( maybeDown, maybeRight ) of
                 ( Just down, Just right ) ->
-                    if (isSameType down right && down.type_ == targetTileType) then
+                    if (down.type_ == right.type_ && down.type_ == targetTileType) then
                         -90
                     else
                         0

@@ -13,9 +13,6 @@ module Level
         , drop
         )
 
---import List exposing (..)
---import Set exposing (..)
-
 import Container exposing (Container)
 import Dict exposing (Dict)
 import Item.Item as Item exposing (Item)
@@ -23,6 +20,8 @@ import GameData.Building as Building exposing (Building)
 import Utils.Vector as Vector exposing (Vector)
 import Tile exposing (Tile)
 import Monster.Monster as Monster exposing (Monster)
+import Dungeon.Room as Room exposing (Room)
+import Dungeon.Corridor as Corridor exposing (Corridor)
 
 
 type alias Map =
@@ -33,6 +32,8 @@ type alias Level =
     { map : Map
     , buildings : List Building
     , monsters : List Monster
+    , rooms : List Room
+    , corridors : List Corridor
     }
 
 
@@ -50,6 +51,8 @@ init tiles buildings monsters =
     { map = fromTiles tiles
     , buildings = buildings
     , monsters = monsters
+    , rooms = []
+    , corridors = []
     }
 
 
@@ -72,7 +75,7 @@ upstairs model =
 
 downstairs : Level -> Maybe Building
 downstairs model =
-  Building.byType Building.StairDown model.buildings
+    Building.byType Building.StairDown model.buildings
         |> List.head
 
 
@@ -126,3 +129,13 @@ floors { map } =
         |> List.map Tuple.second
         |> List.filter (.solid >> not)
         |> List.map .position
+
+
+-- FOV
+------
+-- Field of view depends on two things, line of sight and lit status of room/corridor
+-- Line of sight is
+------
+updateFOV : Vector -> Level -> Level
+updateFOV position ({ map, rooms, corridors } as level) =
+    level
