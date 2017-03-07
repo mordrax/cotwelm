@@ -10,6 +10,7 @@ import Level
 import Dict exposing (Dict)
 import Utils.Vector exposing (Vector)
 
+
 type alias Model =
     { config : Config.Model
     , rooms : Rooms
@@ -29,23 +30,15 @@ type ActivePoint
     | ActiveCorridor Corridor
 
 
-fromTiles : List Tile -> Level.Map
-fromTiles tiles =
-    let
-        toKVPair tile =
-            ( tile.position, tile )
-    in
-        tiles
-            |> List.map toKVPair
-            |> Dict.fromList
-
-
 toLevel : Model -> Level.Level
-toLevel ({ buildings } as model) =
-    model
-        |> toTiles
-        |> fromTiles
-        |> \x -> Level.Level x buildings []
+toLevel ({ buildings, rooms, corridors } as model) =
+    let
+        map =
+            model
+                |> toTiles
+                |> Level.fromTiles
+    in
+        Level.Level map buildings [] rooms corridors
 
 
 toOccupied : Model -> List Vector
@@ -84,6 +77,7 @@ toTiles { rooms, corridors, activePoints, walls } =
                 |> List.concat
     in
         roomTiles ++ corridorTiles ++ walls
+
 
 roomsAndCorridorsFromActivePoint : ActivePoint -> ( Rooms, Corridors ) -> ( Rooms, Corridors )
 roomsAndCorridorsFromActivePoint point ( rooms, corridors ) =

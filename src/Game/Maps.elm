@@ -54,6 +54,11 @@ type alias Model =
     }
 
 
+setCurrentArea : Area -> Model -> Model
+setCurrentArea area model =
+    { model | currentArea = area }
+
+
 init : Item -> Random.Seed -> ( Model, Cmd Msg, Random.Seed )
 init armour seed =
     let
@@ -63,14 +68,14 @@ init armour seed =
                 |> Tile.mapToTiles
                 |> List.map (Tile.setVisibility visibility)
 
-        levelOfArea area visibility=
+        levelOfArea area visibility =
             Level.init (areaToTiles area visibility) (buildingsOfArea area) []
 
         mineEntryLevel =
             levelOfArea DungeonLevelOne Tile.Hidden
 
         mineEntryLevelWithArmour =
-          Level.drop ((13, 19), armour) mineEntryLevel
+            Level.drop ( ( 13, 19 ), armour ) mineEntryLevel
     in
         ( { currentArea = Village
           , abandonedMines = Array.fromList []
@@ -85,20 +90,15 @@ init armour seed =
 
 upstairs : Model -> Model
 upstairs model =
-    let
-        modelWithArea area =
-            { model | currentArea = area }
-    in
-        case model.currentArea of
-            DungeonLevel 0 ->
-                modelWithArea DungeonLevelOne
+    case model.currentArea of
+        DungeonLevel 0 ->
+            setCurrentArea DungeonLevelOne model
 
-            DungeonLevel n ->
-                modelWithArea (DungeonLevel (n - 1))
+        DungeonLevel n ->
+            setCurrentArea (DungeonLevel (n - 1)) model
 
-            _ ->
-                modelWithArea Farm
-
+        _ ->
+            setCurrentArea Farm model
 
 downstairs : Model -> Generator Model
 downstairs model =
@@ -116,7 +116,9 @@ downstairs model =
     in
         case Array.get nextLevel model.abandonedMines of
             Just level ->
-                Random.constant { model | currentArea = DungeonLevel nextLevel }
+                DungeonLevel nextLevel
+                    |> (\x -> setCurrentArea x model)
+                    |> Random.constant
 
             Nothing ->
                 DungeonGenerator.generate Config.init
@@ -186,8 +188,6 @@ view ( start, size ) onClick maps =
                 |> List.map Building.view
     in
         div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
-
-
 
 
 draw :
