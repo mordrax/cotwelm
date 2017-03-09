@@ -427,6 +427,10 @@ moveHero dir model =
     let
         ( modelWithHeroMoved, hasMoved ) =
             moveHero_ dir model
+
+        updateCurrentLevelFOV model =
+            Level.updateFOV model.hero.position (Maps.currentLevel model.maps)
+                |> (\level -> { model | maps = Maps.updateCurrentLevel level model.maps })
     in
         case hasMoved of
             False ->
@@ -436,6 +440,7 @@ moveHero dir model =
                 modelWithHeroMoved
                     |> updateViewportOffset
                     |> (\m -> moveMonsters (monstersOnLevel m) [] m)
+                    |> updateCurrentLevelFOV
                     |> (\m -> ( m, True ))
 
 

@@ -11,6 +11,7 @@ module Level
         , tileAtPosition
         , floors
         , drop
+        , updateFOV
         )
 
 import Container exposing (Container)
@@ -131,11 +132,46 @@ floors { map } =
         |> List.map .position
 
 
+
 -- FOV
 ------
--- Field of view depends on two things, line of sight and lit status of room/corridor
--- Line of sight is
+-- Field of view is used for two things
+-- 1. Calculating which monsters are visible
+-- 2. Determining which tile is explored. Once a tile is explored, it does not
+--    matter if its in view anymore.
+--
 ------
+
+
+lineOfSight : Vector -> Vector -> Map -> Bool
+lineOfSight a b map =
+    True
+
+
 updateFOV : Vector -> Level -> Level
-updateFOV position ({ map, rooms, corridors } as level) =
-    level
+updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
+    let
+        newExploredTiles =
+            level
+                |> unexploredTiles
+                |> List.filter (\tile -> lineOfSight heroPosition tile.position map)
+                |> List.map (Tile.setVisibility Tile.Explored)
+
+        addToMap tile map =
+            Dict.insert tile.position tile map
+
+        newMap =
+            List.foldl addToMap map newExploredTiles
+
+        newMonsters =
+            monsters
+    in
+        { level | map = newMap, monsters = newMonsters }
+
+
+unexploredTiles : Level -> List Tile
+unexploredTiles { map } =
+    map
+        |> Dict.toList
+        |> List.map Tuple.second
+        |> List.filter (.visible >> (==) Tile.Hidden)
