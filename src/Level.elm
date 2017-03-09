@@ -146,11 +146,17 @@ floors { map } =
 
 lineOfSight : Vector -> Vector -> Map -> Bool
 lineOfSight a b map =
-    BresenhamLine.line a b
-        |> List.map (\point -> Dict.get point map)
-        |> List.map (Maybe.map (.solid >> not))
-        |> List.map (Maybe.withDefault False)
-        |> List.all identity
+    let
+        isSeeThroughOrEitherEndpoints tile =
+            (tile.solid == False)
+                || (tile.position == a)
+                || (tile.position == b)
+    in
+        BresenhamLine.line a b
+            |> List.map (\point -> Dict.get point map)
+            |> List.map (Maybe.map isSeeThroughOrEitherEndpoints)
+            |> List.map (Maybe.withDefault False)
+            |> List.all identity
 
 
 updateFOV : Vector -> Level -> Level
