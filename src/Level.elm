@@ -23,6 +23,7 @@ import Tile exposing (Tile)
 import Monster.Monster as Monster exposing (Monster)
 import Dungeon.Room as Room exposing (Room)
 import Dungeon.Corridor as Corridor exposing (Corridor)
+import Utils.BresenhamLine as BresenhamLine
 
 
 type alias Map =
@@ -145,7 +146,11 @@ floors { map } =
 
 lineOfSight : Vector -> Vector -> Map -> Bool
 lineOfSight a b map =
-    True
+    BresenhamLine.line a b
+        |> List.map (\point -> Dict.get point map)
+        |> List.map (Maybe.map (.solid >> not))
+        |> List.map (Maybe.withDefault False)
+        |> List.all identity
 
 
 updateFOV : Vector -> Level -> Level

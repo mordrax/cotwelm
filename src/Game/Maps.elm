@@ -44,7 +44,6 @@ import Item.Item as Item exposing (Item)
 import Monster.Monster as Monster
 import Lodash
 
-
 type alias Model =
     { currentArea : Area
     , village : Level
