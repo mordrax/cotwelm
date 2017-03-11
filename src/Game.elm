@@ -434,7 +434,10 @@ moveHero dir model =
     in
         case hasMoved of
             False ->
-                ( updateViewportOffset modelWithHeroMoved, False )
+                ( updateViewportOffset modelWithHeroMoved
+                    |> (\m -> moveMonsters (monstersOnLevel m) [] m)
+                , False
+                )
 
             _ ->
                 modelWithHeroMoved
@@ -899,11 +902,11 @@ view model =
 
 viewMonsters : Model -> Html Msg
 viewMonsters model =
-        model
-            |> monstersOnLevel
-            |> List.filter (.visible >> (==) LineOfSight)
-            |> List.map Monster.view
-            |> div []
+    model
+        |> monstersOnLevel
+        |> List.filter (.visible >> (==) LineOfSight)
+        |> List.map Monster.view
+        |> div []
 
 
 viewMap : Model -> Html Msg
