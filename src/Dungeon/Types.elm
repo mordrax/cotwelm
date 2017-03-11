@@ -1,6 +1,6 @@
 module Dungeon.Types exposing (..)
 
-import GameData.Building as Building exposing (Building)
+import Building exposing (Building)
 import Dungeon.Corridor as Corridor exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Room as Room exposing (..)

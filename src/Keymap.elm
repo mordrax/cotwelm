@@ -1,8 +1,8 @@
-module Game.Keyboard exposing (Msg(..), subscription)
+module Keymap exposing (Msg(..), subscription)
 
 import Keyboard exposing (..)
-import Dict exposing (..)
-import Utils.Vector as Vector exposing (..)
+import Dict exposing (Dict)
+import Utils.Vector as Vector exposing (Vector)
 import Utils.Direction as Direction exposing (Direction(..))
 
 

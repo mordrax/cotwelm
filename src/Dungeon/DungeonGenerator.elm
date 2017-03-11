@@ -15,8 +15,8 @@ import Dungeon.Room as Room exposing (Room)
 import Dungeon.Rooms.Config as Config
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Types exposing (..)
-import GameData.Building as Building exposing (Building)
-import GameData.Types as Types
+import Building exposing (Building)
+import Types exposing (..)
 import Level
 import List.Extra exposing (dropWhile)
 import Lodash

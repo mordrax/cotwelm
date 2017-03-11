@@ -1,9 +1,9 @@
 module Lodash exposing (..)
 
-import Array exposing (..)
-import Random.Pcg as Random exposing (..)
-import Maybe exposing (withDefault)
+import Array exposing (Array)
 import List exposing (reverse)
+import Maybe exposing (withDefault)
+import Random.Pcg as Random exposing (Generator, constant)
 
 
 shuffle : List a -> Generator (List a)
@@ -119,7 +119,7 @@ sample2 =
                     else
                         find (k - 1) zs
     in
-        \xs -> Random.map (\i -> find i xs) (int 0 (List.length xs - 1))
+        \xs -> Random.map (\i -> find i xs) (Random.int 0 (List.length xs - 1))
 
 {-| Turn a list of generators into a generator of lists.
 -}

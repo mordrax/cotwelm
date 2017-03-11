@@ -30,7 +30,6 @@ import Utils.Vector as Vector exposing (..)
 import Dice exposing (..)
 import Dict exposing (..)
 import List exposing (..)
-import Dungeon.Corridor exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Set exposing (..)
 

@@ -14,23 +14,20 @@ module Tile
         )
 
 import Container exposing (Container)
-import Dict exposing (..)
-import GameData.Building as Building exposing (..)
-import Hero.Hero as Hero exposing (Hero)
+import Dict exposing (Dict)
+import Building exposing (Building)
+import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
-import Item.Item as Item exposing (..)
-import List exposing (..)
-import List.Extra exposing (..)
-import Monster.Monster as Monster exposing (..)
+import Item.Item as Item exposing (Item)
+import List.Extra as ListX
+import Monster exposing (Monster)
 import Random.Pcg as Random
-import String exposing (..)
 import String.Extra as StringX
-import Utils.Lib as Lib exposing (..)
+import Utils.Lib as Lib
 import Utils.Mass as Mass exposing (Capacity)
-import Utils.Vector as Vector exposing (..)
-import Utils.Vector exposing (..)
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Tile =
@@ -143,7 +140,7 @@ view ({ type_, position, ground, visible } as model) scale neighbours onClick =
                     ( "transform", "rotate(" ++ toString rotation ++ "deg) scale" ++ toString ( scale, scale ) )
 
         rotation =
-            case List.Extra.find (\( halfTileType, _, _ ) -> type_ == halfTileType) halfTiles of
+            case ListX.find (\( halfTileType, _, _ ) -> type_ == halfTileType) halfTiles of
                 Nothing ->
                     0
 

@@ -1,9 +1,8 @@
 module SplashView exposing (view, Msg(..))
 
--- where
 
 import Html exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 
 
