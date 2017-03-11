@@ -40,6 +40,7 @@ type alias Monster =
     , attackTypes : List AttackType
     , attacks : Int
     , speed : Int
+    , visible: Visibility
     }
 
 
@@ -114,6 +115,7 @@ init monsterType position =
             , attackTypes = [ Melee ]
             , attacks = 1
             , speed = 100
+            , visible = Hidden
             }
 
         setAttacks attacks monster =

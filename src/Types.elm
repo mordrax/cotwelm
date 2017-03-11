@@ -33,3 +33,8 @@ type Difficulty
     | Intermediate
     | Hard
     | Impossible
+
+type Visibility
+    = Hidden
+    | Known
+    | LineOfSight
