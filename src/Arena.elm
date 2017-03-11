@@ -15,7 +15,6 @@ import Item.Armour as Armour
 import Item.Data as ItemData
 import Item.Item as Item exposing (Item)
 import Item.Weapon as Weapon
-import Lodash
 import Monster exposing (Monster)
 import Process
 import Random.Extra as RandomX

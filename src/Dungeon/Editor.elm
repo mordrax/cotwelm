@@ -1,17 +1,16 @@
 module Dungeon.Editor exposing (..)
 
-import Dict exposing (..)
+import Dict exposing (Dict)
 import Dungeon.Clean
 import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.Types
 import Html exposing (..)
-import Html.Attributes as HA exposing (..)
-import Html.Events exposing (..)
+import Html.Attributes as HA
+import Html.Events as HE
 import Level
-import Lodash exposing (..)
 import Maps
-import Random.Pcg as Random exposing (..)
+import Random.Pcg as Random exposing (Generator, constant)
 
 
 type alias Model =
@@ -128,21 +127,21 @@ view model =
         div []
             [ div []
                 [ --roomSizeView model,
-                  button [ class "ui button", onClick <| GenerateMap 1 ] [ text "Step" ]
-                , button [ class "ui button", onClick <| GenerateMap 50 ] [ text "Step x50" ]
-                , button [ class "ui button", onClick <| Clean ] [ text "Clean" ]
-                , button [ class "ui button", onClick <| ResetMap ] [ text "Destroy!" ]
-                , button [ class "ui button", onClick <| NewCandidate ] [ text "NewCandidate" ]
+                  button [ HA.class "ui button", HE.onClick <| GenerateMap 1 ] [ text "Step" ]
+                , button [ HA.class "ui button", HE.onClick <| GenerateMap 50 ] [ text "Step x50" ]
+                , button [ HA.class "ui button", HE.onClick <| Clean ] [ text "Clean" ]
+                , button [ HA.class "ui button", HE.onClick <| ResetMap ] [ text "Destroy!" ]
+                , button [ HA.class "ui button", HE.onClick <| NewCandidate ] [ text "NewCandidate" ]
                 , mapSizeView model
                 ]
-            , div [ style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
+            , div [ HA.style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
                 (Maps.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
             ]
 
 
 mapSizeView : Model -> Html Msg
 mapSizeView model =
-    p [ style [ ( "width", "300px" ) ] ]
+    p [ HA.style [ ( "width", "300px" ) ] ]
         [ Html.map ConfigMsg (Config.dungeonSizeView model.config)
         , Html.map ConfigMsg (Config.roomsConfigView model.config)
         ]

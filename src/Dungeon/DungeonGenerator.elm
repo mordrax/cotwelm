@@ -19,12 +19,13 @@ import Building exposing (Building)
 import Types exposing (..)
 import Level
 import List.Extra exposing (dropWhile)
-import Lodash
 import Random.Pcg as Random exposing (Generator, constant)
 import Set
 import Tile exposing (Tile)
 import Utils.Direction exposing (Direction)
+import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
+
 
 {-| The dungeon generator module creates a dungeon progressively by allowing the caller
 to use the returned Generator type to step through a dungeon creation. The caller can
@@ -122,7 +123,7 @@ addStairs model =
         model.rooms
             |> List.map Room.floors
             |> List.concat
-            |> Lodash.shuffle
+            |> Misc.shuffle
             |> Random.map makeUpDownStairs
 
 
@@ -155,7 +156,7 @@ step model =
                 ActiveCorridor corridor ->
                     Corridor.pp corridor
     in
-        Lodash.shuffle model.activePoints
+        Misc.shuffle model.activePoints
             |> Random.andThen
                 (\x ->
                     step_ { model | activePoints = x }

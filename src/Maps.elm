@@ -36,13 +36,13 @@ import Html exposing (..)
 import Html.Lazy as Lazy
 import Item.Item as Item exposing (Item)
 import Level exposing (Level)
-import Lodash
 import Monster
-import Random.Pcg as Random exposing (..)
+import Random.Pcg as Random exposing (Generator)
 import Shops
 import Tile exposing (Tile)
 import Types exposing (..)
-import Utils.Vector as Vector exposing (..)
+import Utils.Misc as Misc
+import Utils.Vector as Vector exposing (Vector)
 
 type alias Model =
     { currentArea : Area
@@ -137,7 +137,7 @@ addMonstersToLevel level =
         floors =
             Level.floors level
     in
-        Lodash.shuffle floors
+        Misc.shuffle floors
             |> Random.map (List.take 10)
             |> Random.andThen Monster.randomMonsters
             |> Random.map (\monsters -> { level | monsters = monsters })

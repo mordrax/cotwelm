@@ -59,8 +59,8 @@ import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Tile exposing (Tile)
-import Lodash exposing (..)
 import Utils.Direction as Direction exposing (..)
+import Utils.Misc as Misc
 import Random.Pcg as Random exposing (..)
 import Dice exposing (..)
 
@@ -170,8 +170,8 @@ onePossibleDirection : Direction -> Generator Direction
 onePossibleDirection direction =
     direction
         |> allPossibleDirections
-        |> shuffle
-        |> Random.map (headWithDefault direction)
+        |> Misc.shuffle
+        |> Random.map (Misc.headWithDefault direction)
 
 
 onePossibleCardinalDirection : Direction -> Generator Direction
@@ -179,8 +179,8 @@ onePossibleCardinalDirection direction =
     direction
         |> allPossibleDirections
         |> List.filter Direction.isCardinal
-        |> shuffle
-        |> Random.map (headWithDefault direction)
+        |> Misc.shuffle
+        |> Random.map (Misc.headWithDefault direction)
 
 
 {-| A corridor can be vertical/horizontal or it can be diagonal. All the possible endings
@@ -236,7 +236,7 @@ add : DirectedVector -> Corridor -> Corridor
 add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
     let
         lastCorridorPoint =
-            headWithDefault start points
+            Misc.headWithDefault start points
 
         newPath =
             path (Tuple.first lastCorridorPoint) newVector
@@ -341,12 +341,12 @@ path ( x1, y1 ) ( x2, y2 ) =
             if x1 == x2 then
                 repeat length x1
             else
-                Lodash.range x1 x2
+                Misc.range x1 x2
 
         rangeY =
             if y1 == y2 then
                 repeat length y1
             else
-                Lodash.range y1 y2
+                Misc.range y1 y2
     in
         List.map2 (,) rangeX rangeY
