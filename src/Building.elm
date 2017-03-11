@@ -22,7 +22,7 @@ Buildings are aware of their size and how to draw themselves on the map using cs
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Utils.Vector as Vector exposing (..)
-import Utils.Lib as Lib exposing (..)
+import Utils.Misc as Misc exposing (..)
 import Types exposing (..)
 import Shops exposing (ShopType)
 import String.Extra as StringX
@@ -80,7 +80,7 @@ view : Building -> Html a
 view model =
     let
         posStyle =
-            Lib.vectorToHtmlStyle model.position
+            Misc.vectorToHtmlStyle model.position
 
         pointEventStyle =
             [ ( "pointer-events", "none" ) ]
