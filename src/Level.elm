@@ -149,7 +149,7 @@ lineOfSight : Vector -> Vector -> Map -> Bool
 lineOfSight a b map =
     let
         isSeeThroughOrEitherEndpoints tile =
-            (tile.solid == False)
+            ((tile.solid == False) && (tile.type_ /= Tile.DoorClosed))
                 || (tile.position == a)
                 || (tile.position == b)
     in
