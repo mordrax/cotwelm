@@ -1,22 +1,22 @@
 module Arena exposing (..)
 
-import Attributes
 import Attributes exposing (Attributes)
 import Char
 import Combat
 import Dice
 import Dict exposing (Dict)
 import Equipment exposing (Equipment)
-import GameData.Types as Types
-import Hero.Hero as Hero exposing (Hero)
+import Types exposing (..)
+import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
-import Utils.IdGenerator as IdGenerator
+import Item.Armour as Armour
 import Item.Data as ItemData
 import Item.Item as Item exposing (Item)
+import Item.Weapon as Weapon
 import Lodash
-import Monster.Monster as Monster exposing (Monster)
+import Monster exposing (Monster)
 import Process
 import Random.Extra as RandomX
 import Random.Pcg as Random exposing (Generator)
@@ -24,8 +24,7 @@ import Stats
 import Task
 import Time exposing (Time)
 import UI
-import Item.Weapon as Weapon
-import Item.Armour as Armour
+import Utils.IdGenerator as IdGenerator
 
 
 type alias Match =

@@ -1,14 +1,11 @@
-module Game.Maps
+module Maps
     exposing
         ( Model
-        , Msg
         , init
-        , update
         , updateArea
         , updateCurrentLevel
         , view
         , draw
-        , fromTiles
         , currentLevel
         , getASCIIMap
         , tileNeighbours
@@ -29,24 +26,23 @@ Dynamic lvls are:
 Mines lvl 1 - 8
 -}
 
-import GameData.ASCIIMaps exposing (..)
-import GameData.Building as Building exposing (..)
-import Tile exposing (..)
-import GameData.Types exposing (..)
-import Utils.Vector as Vector exposing (..)
+import Array.Hamt as Array exposing (Array)
+import ASCIIMaps exposing (..)
+import Building exposing (Building)
+import Dict
+import Dungeon.DungeonGenerator as DungeonGenerator
+import Dungeon.Rooms.Config as Config
 import Html exposing (..)
 import Html.Lazy as Lazy
-import Dict exposing (..)
-import Random.Pcg as Random exposing (..)
-import Dungeon.Rooms.Config as Config exposing (..)
-import Shops
-import Array.Hamt as Array exposing (Array)
-import Dungeon.DungeonGenerator as DungeonGenerator
-import Level exposing (Level)
 import Item.Item as Item exposing (Item)
-import Monster.Monster as Monster
+import Level exposing (Level)
 import Lodash
-
+import Monster
+import Random.Pcg as Random exposing (..)
+import Shops
+import Tile exposing (Tile)
+import Types exposing (..)
+import Utils.Vector as Vector exposing (..)
 
 type alias Model =
     { currentArea : Area
@@ -57,75 +53,50 @@ type alias Model =
     }
 
 
-type Msg
-    = GenerateDungeonLevel Int
+setCurrentArea : Area -> Model -> Model
+setCurrentArea area model =
+    { model | currentArea = area }
 
 
-init : Item -> Random.Seed -> ( Model, Cmd Msg, Random.Seed )
+init : Item -> Random.Seed -> ( Model, Random.Seed )
 init armour seed =
     let
-        getTiles area =
-            Tile.mapToTiles (getASCIIMap area)
+        areaToTiles area visibility =
+            area
+                |> getASCIIMap
+                |> Tile.mapToTiles
+                |> List.map (Tile.setVisibility visibility)
 
-        mapOfArea area =
-            (getTiles area)
-                |> List.map toKVPair
-                |> Dict.fromList
-
-        levelOfArea area =
-            Level (mapOfArea area) (buildingsOfArea area) []
-
-        toKVPair tile =
-            ( Tile.position tile, tile )
+        levelOfArea area visibility =
+            Level.init (areaToTiles area visibility) (buildingsOfArea area) []
 
         mineEntryLevel =
-            levelOfArea DungeonLevelOne
+            levelOfArea DungeonLevelOne Hidden
 
         mineEntryLevelWithArmour =
-            { mineEntryLevel
-                | map = Dict.insert ( 13, 19 ) darkDungeonWithArmour mineEntryLevel.map
-            }
-
-        darkDungeonWithArmour =
-            Tile.toTile ( 13, 19 ) Tile.DarkDgn
-                |> Tile.drop armour
+            Level.drop ( ( 13, 19 ), armour ) mineEntryLevel
     in
         ( { currentArea = Village
           , abandonedMines = Array.fromList []
-          , village = levelOfArea Village
-          , farm = levelOfArea Farm
+          , village = levelOfArea Village Known
+          , farm = levelOfArea Farm Known
           , abandonedMinesEntry = mineEntryLevelWithArmour
           }
-        , Cmd.none
         , seed
         )
 
 
-update : Msg -> Model -> Model
-update msg model =
-    let
-        _ =
-            Debug.log "maps update" 1
-    in
-        { model | currentArea = Village }
-
-
 upstairs : Model -> Model
 upstairs model =
-    let
-        modelWithArea area =
-            { model | currentArea = area }
-    in
-        case model.currentArea of
-            DungeonLevel 0 ->
-                modelWithArea DungeonLevelOne
+    case model.currentArea of
+        DungeonLevel 0 ->
+            setCurrentArea DungeonLevelOne model
 
-            DungeonLevel n ->
-                modelWithArea (DungeonLevel (n - 1))
+        DungeonLevel n ->
+            setCurrentArea (DungeonLevel (n - 1)) model
 
-            _ ->
-                modelWithArea Farm
-
+        _ ->
+            setCurrentArea Farm model
 
 downstairs : Model -> Generator Model
 downstairs model =
@@ -143,7 +114,9 @@ downstairs model =
     in
         case Array.get nextLevel model.abandonedMines of
             Just level ->
-                Random.constant { model | currentArea = DungeonLevel nextLevel }
+                DungeonLevel nextLevel
+                    |> (\x -> setCurrentArea x model)
+                    |> Random.constant
 
             Nothing ->
                 DungeonGenerator.generate Config.init
@@ -170,7 +143,7 @@ addMonstersToLevel level =
             |> Random.map (\monsters -> { level | monsters = monsters })
 
 
-updateArea : GameData.Types.Area -> Model -> Model
+updateArea : Area -> Model -> Model
 updateArea area model =
     { model | currentArea = area }
 
@@ -200,21 +173,19 @@ view ( start, size ) onClick maps =
         level =
             currentLevel maps
 
+        onVisibleTile building =
+            building.position
+                |> (\x -> Level.tileAtPosition x level)
+                |> Maybe.map .visible
+                |> Maybe.withDefault Hidden
+                |> ((/=) Hidden)
+
         buildingsHtml =
-            List.map Building.view (level.buildings)
+            level.buildings
+                |> List.filter onVisibleTile
+                |> List.map Building.view
     in
         div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
-
-
-fromTiles : Tiles -> Level.Map
-fromTiles tiles =
-    let
-        toKVPair tile =
-            ( Tile.position tile, tile )
-    in
-        tiles
-            |> List.map toKVPair
-            |> Dict.fromList
 
 
 draw :
@@ -232,10 +203,10 @@ draw viewport map scale onClick =
             toTiles map
 
         toHtml tile =
-            Tile.view tile scale (neighbours <| Tile.position tile) onClick
+            Tile.view tile scale (neighbours <| tile.position) onClick
 
         withinViewport tile =
-            Tile.position tile
+            tile.position
                 |> flip Vector.boxIntersectVector ( viewport.start, Vector.add viewport.start viewport.size )
     in
         mapTiles
@@ -324,7 +295,7 @@ getTile position model =
 --------------------------
 
 
-buildingsOfArea : Area -> Buildings
+buildingsOfArea : Area -> List Building
 buildingsOfArea area =
     case area of
         Village ->
@@ -333,13 +304,13 @@ buildingsOfArea area =
                     Building.newLink Farm ( 11, 31 )
             in
                 [ Building.new Building.Gate ( 10, 0 ) "Village Gate" farmGate
-                , Building.new Building.StrawHouseEast ( 3, 6 ) "Junk Shop" Ordinary
-                , Building.new Building.StrawHouseWest ( 16, 5 ) "Private House" Ordinary
-                , Building.new Building.Hut ( 7, 13 ) "Potion Store" (Shop Shops.PotionStore)
-                , Building.new Building.StrawHouseWest ( 14, 12 ) "Private House 2" Ordinary
-                , Building.new Building.StrawHouseEast ( 6, 17 ) "Weapon Shop" (Shop Shops.WeaponSmith)
-                , Building.new Building.StrawHouseWest ( 14, 17 ) "General Store" (Shop Shops.GeneralStore)
-                , Building.new Building.HutTemple ( 9, 22 ) "Odin's Temple" Ordinary
+                , Building.new Building.StrawHouseEast ( 3, 6 ) "Junk Shop" Building.Ordinary
+                , Building.new Building.StrawHouseWest ( 16, 5 ) "Private House" Building.Ordinary
+                , Building.new Building.Hut ( 7, 13 ) "Potion Store" (Building.Shop Shops.PotionStore)
+                , Building.new Building.StrawHouseWest ( 14, 12 ) "Private House 2" Building.Ordinary
+                , Building.new Building.StrawHouseEast ( 6, 17 ) "Weapon Shop" (Building.Shop Shops.WeaponSmith)
+                , Building.new Building.StrawHouseWest ( 14, 17 ) "General Store" (Building.Shop Shops.GeneralStore)
+                , Building.new Building.HutTemple ( 9, 22 ) "Odin's Temple" Building.Ordinary
                 , Building.new Building.Well ( 11, 18 ) "Secret Entrance" (Building.newLink DungeonLevelOne ( 25, 3 ))
                 ]
 
@@ -351,8 +322,8 @@ buildingsOfArea area =
                 mineExit =
                     Building.newLink DungeonLevelOne ( 22, 39 )
             in
-                [ Building.new Gate ( 10, 32 ) "Farm Gate" villageGate
-                , Building.new StrawHouseWest ( 43, 23 ) "Adopted Parents House" Ordinary
+                [ Building.new Building.Gate ( 10, 32 ) "Farm Gate" villageGate
+                , Building.new Building.StrawHouseWest ( 43, 23 ) "Adopted Parents House" Building.Ordinary
                 , Building.new Building.MineEntrance ( 24, 1 ) "Mine Entrance" mineExit
                 ]
 
@@ -377,7 +348,7 @@ buildingsOfArea area =
 
 {-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
 -}
-tileNeighbours : Level.Map -> Vector -> TileNeighbours
+tileNeighbours : Level.Map -> Vector -> Tile.TileNeighbours
 tileNeighbours map center =
     let
         addTilePosition =

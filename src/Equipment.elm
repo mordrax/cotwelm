@@ -29,25 +29,14 @@ Does not render equipment but will provide a API to retrieve them.
 @docs get, init, putInPack
 -}
 
---items
-
-import Item.Item as Item exposing (..)
-import Item.Data exposing (..)
-import Item.Pack as Pack
-import Item.Belt as Belt exposing (Belt)
-import Item.Purse as Purse exposing (Purse)
-import Item.Pack as Pack exposing (Pack)
 import Container
-
-
--- utils
-
-import Utils.Lib as Lib
-import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator as IdGenerator exposing (..)
-
-
--- core
+import Item.Belt as Belt exposing (Belt)
+import Item.Data exposing (..)
+import Item.Item as Item exposing (Item)
+import Item.Pack as Pack exposing (Pack)
+import Item.Purse as Purse exposing (Purse)
+import Utils.Misc as Misc
+import Utils.Mass as Mass
 
 
 type alias Model =
@@ -141,7 +130,7 @@ equipMany : List ( EquipmentSlot, Item ) -> Equipment -> Equipment
 equipMany itemSlotPairs equipment =
     let
         equippingResult =
-            Lib.foldResult (\item -> equip item) (Result.Ok equipment) itemSlotPairs
+            Misc.foldResult (\item -> equip item) (Result.Ok equipment) itemSlotPairs
     in
         case equippingResult of
             Result.Ok equipment_ ->
@@ -154,7 +143,7 @@ equipMany itemSlotPairs equipment =
 equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
 equip ( slot, item ) (A model) =
     case ( slot, item ) of
-        ( WeaponSlot, ItemWeapon weapon ) ->
+        ( WeaponSlot, Item.ItemWeapon weapon ) ->
             case model.weapon of
                 Nothing ->
                     Ok (A { model | weapon = Just weapon })
@@ -170,7 +159,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( ArmourSlot, ItemArmour armour ) ->
+        ( ArmourSlot, Item.ItemArmour armour ) ->
             case model.armour of
                 Nothing ->
                     Result.Ok (A { model | armour = Just armour })
@@ -178,7 +167,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( ShieldSlot, ItemShield shield ) ->
+        ( ShieldSlot, Item.ItemShield shield ) ->
             case model.shield of
                 Nothing ->
                     Result.Ok (A { model | shield = Just shield })
@@ -186,7 +175,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( HelmetSlot, ItemHelmet helmet ) ->
+        ( HelmetSlot, Item.ItemHelmet helmet ) ->
             case model.helmet of
                 Nothing ->
                     Result.Ok (A { model | helmet = Just helmet })
@@ -194,7 +183,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( BracersSlot, ItemBracers bracers ) ->
+        ( BracersSlot, Item.ItemBracers bracers ) ->
             case model.bracers of
                 Nothing ->
                     Result.Ok (A { model | bracers = Just bracers })
@@ -202,7 +191,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( GauntletsSlot, ItemGauntlets gauntlets ) ->
+        ( GauntletsSlot, Item.ItemGauntlets gauntlets ) ->
             case model.gauntlets of
                 Nothing ->
                     Result.Ok (A { model | gauntlets = Just gauntlets })
@@ -210,7 +199,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( BeltSlot, ItemBelt belt ) ->
+        ( BeltSlot, Item.ItemBelt belt ) ->
             case model.belt of
                 Nothing ->
                     Result.Ok (A { model | belt = Just belt })
@@ -218,7 +207,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( PurseSlot, ItemPurse purse ) ->
+        ( PurseSlot, Item.ItemPurse purse ) ->
             case model.purse of
                 Nothing ->
                     Result.Ok (A { model | purse = Just purse })
@@ -226,7 +215,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( PackSlot, ItemPack pack ) ->
+        ( PackSlot, Item.ItemPack pack ) ->
             case model.pack of
                 Nothing ->
                     Result.Ok (A { model | pack = Just pack })
@@ -234,7 +223,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( NeckwearSlot, ItemNeckwear neckwear ) ->
+        ( NeckwearSlot, Item.ItemNeckwear neckwear ) ->
             case model.neckwear of
                 Nothing ->
                     Result.Ok (A { model | neckwear = Just neckwear })
@@ -242,7 +231,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( OvergarmentSlot, ItemOvergarment overgarment ) ->
+        ( OvergarmentSlot, Item.ItemOvergarment overgarment ) ->
             case model.overgarment of
                 Nothing ->
                     Result.Ok (A { model | overgarment = Just overgarment })
@@ -250,7 +239,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( LeftRingSlot, ItemRing leftRing ) ->
+        ( LeftRingSlot, Item.ItemRing leftRing ) ->
             case model.leftRing of
                 Nothing ->
                     Result.Ok (A { model | leftRing = Just leftRing })
@@ -258,7 +247,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( RightRingSlot, ItemRing rightRing ) ->
+        ( RightRingSlot, Item.ItemRing rightRing ) ->
             case model.rightRing of
                 Nothing ->
                     Result.Ok (A { model | rightRing = Just rightRing })
@@ -266,7 +255,7 @@ equip ( slot, item ) (A model) =
                 _ ->
                     Err ItemAlreadyEquipped
 
-        ( BootsSlot, ItemBoots boots ) ->
+        ( BootsSlot, Item.ItemBoots boots ) ->
             case model.boots of
                 Nothing ->
                     Result.Ok (A { model | boots = Just boots })
@@ -404,49 +393,49 @@ get : EquipmentSlot -> Equipment -> Maybe Item
 get slot (A model) =
     case slot of
         WeaponSlot ->
-            model.weapon |> Maybe.map ItemWeapon
+            model.weapon |> Maybe.map Item.ItemWeapon
 
         FreehandSlot ->
             model.freehand
 
         ArmourSlot ->
-            model.armour |> Maybe.map ItemArmour
+            model.armour |> Maybe.map Item.ItemArmour
 
         ShieldSlot ->
-            model.shield |> Maybe.map ItemShield
+            model.shield |> Maybe.map Item.ItemShield
 
         HelmetSlot ->
-            model.helmet |> Maybe.map ItemHelmet
+            model.helmet |> Maybe.map Item.ItemHelmet
 
         BracersSlot ->
-            model.bracers |> Maybe.map ItemBracers
+            model.bracers |> Maybe.map Item.ItemBracers
 
         GauntletsSlot ->
-            model.gauntlets |> Maybe.map ItemGauntlets
+            model.gauntlets |> Maybe.map Item.ItemGauntlets
 
         BeltSlot ->
-            model.belt |> Maybe.map ItemBelt
+            model.belt |> Maybe.map Item.ItemBelt
 
         PurseSlot ->
-            model.purse |> Maybe.map ItemPurse
+            model.purse |> Maybe.map Item.ItemPurse
 
         PackSlot ->
-            model.pack |> Maybe.map ItemPack
+            model.pack |> Maybe.map Item.ItemPack
 
         NeckwearSlot ->
-            model.neckwear |> Maybe.map ItemNeckwear
+            model.neckwear |> Maybe.map Item.ItemNeckwear
 
         OvergarmentSlot ->
-            model.overgarment |> Maybe.map ItemOvergarment
+            model.overgarment |> Maybe.map Item.ItemOvergarment
 
         LeftRingSlot ->
-            model.leftRing |> Maybe.map ItemRing
+            model.leftRing |> Maybe.map Item.ItemRing
 
         RightRingSlot ->
-            model.rightRing |> Maybe.map ItemRing
+            model.rightRing |> Maybe.map Item.ItemRing
 
         BootsSlot ->
-            model.boots |> Maybe.map ItemBoots
+            model.boots |> Maybe.map Item.ItemBoots
 
 
 {-| Sets the equipment slot to either an item or nothing

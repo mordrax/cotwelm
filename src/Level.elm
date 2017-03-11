@@ -2,25 +2,29 @@ module Level
     exposing
         ( Level
         , Map
+        , init
+        , fromTiles
         , downstairs
         , upstairs
         , size
         , updateGround
-        , getTile
+        , tileAtPosition
         , floors
         , drop
+        , updateFOV
         )
-
---import List exposing (..)
---import Set exposing (..)
 
 import Container exposing (Container)
 import Dict exposing (Dict)
+import Dungeon.Corridor as Corridor exposing (Corridor)
+import Dungeon.Room as Room exposing (Room)
+import Building exposing (Building)
 import Item.Item as Item exposing (Item)
-import GameData.Building as Building exposing (Building, Buildings)
-import Utils.Vector as Vector exposing (Vector)
+import Monster exposing (Monster)
 import Tile exposing (Tile)
-import Monster.Monster as Monster exposing (Monster)
+import Types exposing (..)
+import Utils.BresenhamLine as BresenhamLine
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Map =
@@ -29,8 +33,10 @@ type alias Map =
 
 type alias Level =
     { map : Map
-    , buildings : Buildings
+    , buildings : List Building
     , monsters : List Monster
+    , rooms : List Room
+    , corridors : List Corridor
     }
 
 
@@ -38,29 +44,41 @@ type Msg
     = NoOp
 
 
-init : Map -> Buildings -> List Monster -> Level
-init map buildings monsters =
-    { map = map
+setMap : Level -> Map -> Level
+setMap level map =
+    { level | map = map }
+
+
+init : List Tile -> List Building -> List Monster -> Level
+init tiles buildings monsters =
+    { map = fromTiles tiles
     , buildings = buildings
     , monsters = monsters
+    , rooms = []
+    , corridors = []
     }
+
+
+fromTiles : List Tile -> Map
+fromTiles tiles =
+    let
+        toKVPair tile =
+            ( tile.position, tile )
+    in
+        tiles
+            |> List.map toKVPair
+            |> Dict.fromList
 
 
 upstairs : Level -> Maybe Building
 upstairs model =
-    let
-        isStairUp =
-            .buildingType >> (==) Building.StairUp
-    in
-        model.buildings
-            |> List.filter isStairUp
-            |> List.head
+    Building.byType Building.StairUp model.buildings
+        |> List.head
 
 
 downstairs : Level -> Maybe Building
 downstairs model =
-    model.buildings
-        |> List.filter (\x -> x.buildingType == Building.StairDown)
+    Building.byType Building.StairDown model.buildings
         |> List.head
 
 
@@ -78,8 +96,8 @@ size { map } =
         ( maxX + 1, maxY + 1 )
 
 
-getTile : Vector -> Level -> Maybe Tile
-getTile pos { map } =
+tileAtPosition : Vector -> Level -> Maybe Tile
+tileAtPosition pos { map } =
     Dict.get pos map
 
 
@@ -98,13 +116,13 @@ updateGround pos payload model =
                 { model | map = Dict.insert pos tile model.map }
 
 
-drop : (Vector, Item) -> Level -> Level
-drop (position, item) model =
-    Dict.get position model.map
+drop : ( Vector, Item ) -> Level -> Level
+drop ( position, item ) level =
+    Dict.get position level.map
         |> Maybe.map (Tile.drop item)
-        |> Maybe.map (\x -> Dict.insert position x model.map)
-        |> Maybe.withDefault model.map
-        |> (\map -> { model | map = map })
+        |> Maybe.map (\x -> Dict.insert position x level.map)
+        |> Maybe.withDefault level.map
+        |> setMap level
 
 
 floors : Level -> List Vector
@@ -113,4 +131,68 @@ floors { map } =
         |> Dict.toList
         |> List.map Tuple.second
         |> List.filter (.solid >> not)
-        |> List.map Tile.position
+        |> List.map .position
+
+
+
+-- FOV
+------
+-- Field of view is used for two things
+-- 1. Calculating which monsters are visible
+-- 2. Determining which tile is explored. Once a tile is explored, it does not
+--    matter if its in view anymore.
+--
+------
+
+
+lineOfSight : Vector -> Vector -> Map -> Bool
+lineOfSight a b map =
+    let
+        isSeeThroughOrEitherEndpoints tile =
+            ((tile.solid == False) && (tile.type_ /= Tile.DoorClosed))
+                || (tile.position == a)
+                || (tile.position == b)
+    in
+        BresenhamLine.line a b
+            |> List.map (\point -> Dict.get point map)
+            |> List.map (Maybe.map isSeeThroughOrEitherEndpoints)
+            |> List.map (Maybe.withDefault False)
+            |> List.all identity
+
+
+calculateMonsterVisibility : Monster -> Vector -> Map -> Monster
+calculateMonsterVisibility monster heroPosition map =
+    if lineOfSight monster.position heroPosition map then
+        { monster | visible = LineOfSight }
+    else
+        monster
+
+
+updateFOV : Vector -> Level -> Level
+updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
+    let
+        newExploredTiles =
+            level
+                |> unexploredTiles
+                |> List.filter (\tile -> lineOfSight heroPosition tile.position map)
+                |> List.map (Tile.setVisibility Known)
+
+        addToMap tile map =
+            Dict.insert tile.position tile map
+
+        newMap =
+            List.foldl addToMap map newExploredTiles
+
+        newMonsters =
+            monsters
+                |> List.map (\monster -> calculateMonsterVisibility monster heroPosition map)
+    in
+        { level | map = newMap, monsters = newMonsters }
+
+
+unexploredTiles : Level -> List Tile
+unexploredTiles { map } =
+    map
+        |> Dict.toList
+        |> List.map Tuple.second
+        |> List.filter (.visible >> (==) Hidden)

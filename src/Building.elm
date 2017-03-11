@@ -1,13 +1,12 @@
-module GameData.Building
+module Building
     exposing
         ( Building
-        , Buildings
         , Link
         , BuildingType(..)
         , BuildingTile(..)
         , new
         , view
-        , buildingType
+        , byType
         , isBuildingAtPosition
         , newLink
         )
@@ -23,14 +22,10 @@ Buildings are aware of their size and how to draw themselves on the map using cs
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Utils.Vector as Vector exposing (..)
-import Utils.Lib as Lib exposing (..)
-import GameData.Types exposing (..)
+import Utils.Misc as Misc exposing (..)
+import Types exposing (..)
 import Shops exposing (ShopType)
 import String.Extra as StringX
-
-
-type alias Buildings =
-    List Building
 
 
 type alias Building =
@@ -70,6 +65,12 @@ type BuildingTile
     | StairsUp
 
 
+byType : BuildingType -> List Building -> List Building
+byType buildingType buildings =
+    buildings
+        |> List.filter (.buildingType >> (==) buildingType)
+
+
 newLink : Area -> Vector -> BuildingType
 newLink area pos =
     (Linked <| Link area pos)
@@ -79,7 +80,7 @@ view : Building -> Html a
 view model =
     let
         posStyle =
-            Lib.vectorToHtmlStyle model.position
+            Misc.vectorToHtmlStyle model.position
 
         pointEventStyle =
             [ ( "pointer-events", "none" ) ]
@@ -102,11 +103,6 @@ isBuildingAtPosition pos model =
             Vector.sub (Vector.add model.position model.size) ( 1, 1 )
     in
         boxIntersectVector pos ( model.position, bottomLeft )
-
-
-buildingType : Building -> BuildingType
-buildingType model =
-    model.buildingType
 
 
 {-| Given a building type, the top right corner and a nem, will create a new building
