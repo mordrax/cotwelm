@@ -19,34 +19,29 @@ module Dungeon.Room exposing (..)
 --        , placeRoom
 --        )
 
-import Dungeon.Rooms.Config as Config exposing (..)
+import Dice
 import Dungeon.Corridor as Corridor exposing (..)
-import Random.Pcg as Random exposing (..)
+import Dungeon.Entrance as Entrance exposing (Entrance)
+import Dungeon.Rooms.Circular as Circular
+import Dungeon.Rooms.Config as Config
+import Dungeon.Rooms.Cross as Cross
+import Dungeon.Rooms.DeadEnd as DeadEnd
+import Dungeon.Rooms.DiagonalSquares as DiagonalSquares
+import Dungeon.Rooms.Diamond as Diamond
+import Dungeon.Rooms.Potion as Potion
+import Dungeon.Rooms.Rectangular as Rectangular
 import Dungeon.Rooms.Type exposing (..)
-import Lodash exposing (..)
+import List
+import Random.Pcg as Random exposing (Generator, constant, andThen)
+import Set exposing (Set)
 import Tile exposing (Tile)
-import Dungeon.Entrance as Entrance exposing (..)
-import Utils.Vector as Vector exposing (..)
-import Dice exposing (..)
-import Dict exposing (..)
-import List exposing (..)
 import Utils.Direction as Direction exposing (..)
-import Set exposing (..)
-
-
--- room types
-
-import Dungeon.Rooms.Rectangular as Rectangular exposing (..)
-import Dungeon.Rooms.Cross as Cross exposing (..)
-import Dungeon.Rooms.Diamond as Diamond exposing (..)
-import Dungeon.Rooms.Potion as Potion exposing (..)
-import Dungeon.Rooms.Circular as Circular exposing (..)
-import Dungeon.Rooms.DiagonalSquares as DiagonalSquares exposing (..)
-import Dungeon.Rooms.DeadEnd as DeadEnd exposing (..)
+import Utils.Misc as Misc
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Model =
-    { entrances : Entrances
+    { entrances : List Entrance
     , floors : Floors
     , roomType : RoomType
     , dimension : Dimension
@@ -55,7 +50,7 @@ type alias Model =
 
 
 type alias Corners =
-    Vectors
+    List Vector
 
 
 type Room
@@ -76,11 +71,13 @@ init =
         , worldPos = Vector.zero
         }
 
-floors : Room -> Vectors
-floors (A {floors, worldPos}) =
+
+floors : Room -> List Vector
+floors (A { floors, worldPos }) =
     List.map (Vector.add worldPos) floors
 
-new : Entrances -> Floors -> RoomType -> Dimension -> Vector -> Room
+
+new : List Entrance -> Floors -> RoomType -> Dimension -> Vector -> Room
 new entrances floors roomType dimension worldPos =
     A
         { entrances = entrances
@@ -93,7 +90,7 @@ new entrances floors roomType dimension worldPos =
 
 newDeadEnd : Vector -> Room
 newDeadEnd worldPos =
-    new [ Entrance.init Door worldPos ] [] DeadEnd ( 1, 1 ) worldPos
+    new [ Entrance.init Entrance.Door worldPos ] [] DeadEnd ( 1, 1 ) worldPos
 
 
 generate : Config.Model -> Generator Room
@@ -112,7 +109,7 @@ generate config =
             |> andThen toRoomGenerator
 
 
-notTooClose : Entrances -> Vector -> Maybe Vector
+notTooClose : List Entrance -> Vector -> Maybe Vector
 notTooClose entrances position =
     if List.any ((==) position) (List.map Entrance.position entrances) then
         Nothing
@@ -122,7 +119,7 @@ notTooClose entrances position =
         Just position
 
 
-tooCloseToEntrances : Vector -> Entrances -> Bool
+tooCloseToEntrances : Vector -> List Entrance -> Bool
 tooCloseToEntrances ( x, y ) entrances =
     let
         tooCloseToEntrance entrance =
@@ -161,7 +158,7 @@ generateEntrance (A ({ entrances, worldPos, floors } as model)) =
             |> Random.map toReturn
 
 
-adjacentToFloorsWithoutDiagonals : Floors -> Vectors
+adjacentToFloorsWithoutDiagonals : Floors -> List Vector
 adjacentToFloorsWithoutDiagonals floors =
     let
         lessFloors floorSet =
@@ -175,7 +172,7 @@ adjacentToFloorsWithoutDiagonals floors =
             |> Set.toList
 
 
-adjacentToFloors : Floors -> Vectors
+adjacentToFloors : Floors -> List Vector
 adjacentToFloors floors =
     let
         lessFloors floorSet =
@@ -189,7 +186,7 @@ adjacentToFloors floors =
             |> Set.toList
 
 
-boundary : Room -> Vectors
+boundary : Room -> List Vector
 boundary (A model) =
     model.floors
         |> adjacentToFloors
@@ -201,7 +198,6 @@ addEntrance entrance (A ({ worldPos, entrances } as model)) =
     let
         entrancePosition =
             Vector.sub (Entrance.position entrance) worldPos
-
     in
         A { model | entrances = entrance :: entrances }
 
@@ -234,7 +230,7 @@ toTiles (A { floors, entrances, worldPos }) =
             ++ List.concat (List.map makeTiles roomTileTypes)
 
 
-entrances : Room -> Entrances
+entrances : Room -> List Entrance
 entrances (A { entrances }) =
     entrances
 
@@ -265,7 +261,7 @@ entranceFacing (A { floors, worldPos }) entrance =
             N
 
 
-placeRoom : DirectedVector -> Room -> Generator Room
+placeRoom : Vector.DirectedVector -> Room -> Generator Room
 placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
     let
         wallFacing =
@@ -280,8 +276,8 @@ placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
 
         pickAWall walls =
             walls
-                |> shuffle
-                |> Random.map (headWithDefault ( 0, 0 ))
+                |> Misc.shuffle
+                |> Random.map (Misc.headWithDefault ( 0, 0 ))
 
         makeADoor wall =
             let
@@ -289,13 +285,13 @@ placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
                     Vector.add endPoint (Vector.fromDirection endDirection)
 
                 entrance =
-                    Entrance.init Door entrancePosition
+                    Entrance.init Entrance.Door entrancePosition
 
                 roomWorldPosition =
                     Vector.sub entrancePosition wall
             in
-                constant <|
-                    A
+                constant
+                    <| A
                         { model
                             | entrances = [ entrance ]
                             , worldPos = roomWorldPosition
@@ -401,19 +397,19 @@ headOfWalls walls =
         |> Maybe.withDefault ( 0, 0 )
 
 
-generateEntranceHelper : Vectors -> Generator Entrance
+generateEntranceHelper : List Vector -> Generator Entrance
 generateEntranceHelper possibleEntrancePositions =
     let
         newEntrance pos =
-            Entrance.init Door pos
+            Entrance.init Entrance.Door pos
 
         makeADoor positions =
             positions
-                |> Lodash.headWithDefault ( 0, 0 )
+                |> Misc.headWithDefault ( 0, 0 )
                 |> newEntrance
     in
         possibleEntrancePositions
-            |> shuffle
+            |> Misc.shuffle
             |> Random.map makeADoor
 
 

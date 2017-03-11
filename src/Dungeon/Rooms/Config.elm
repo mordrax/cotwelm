@@ -7,20 +7,12 @@ The module has no model but rather are mostly a collection of constants used by 
 dungeon generator to create random dungeon levels.
 -}
 
-import Array exposing (..)
-import Dungeon.Entrance as Entrance exposing (..)
+import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Rooms.Type exposing (..)
-import Lodash exposing (..)
-import Random.Pcg as Random exposing (..)
-import UI exposing (..)
-import Utils.Vector as Vector exposing (..)
-
-
--- html
-
 import Html exposing (..)
-import Html.Attributes as HA exposing (..)
-import Html.Events exposing (..)
+import Random.Pcg as Random exposing (Generator, constant)
+import UI exposing (..)
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Model =
@@ -174,7 +166,7 @@ roomSizeGenerator roomType ({ roomsConfig } as model) =
 
 roomTypeGenerator : Model -> Generator RoomType
 roomTypeGenerator { roomsConfig } =
-    frequency
+    Random.frequency
         [ ( toFloat roomsConfig.rectangular.frequency, constant Rectangular )
         , ( toFloat roomsConfig.cross.frequency, constant Cross )
         , ( toFloat roomsConfig.diamond.frequency, constant Diamond )
@@ -192,14 +184,14 @@ wallSampler walls =
             constant ( 0, 0 )
 
         wall :: restOfWalls ->
-            sample walls
+            Random.sample walls
                 |> Random.map (Maybe.withDefault wall)
 
 
 addEntrances :
     Int
-    -> ( List Walls, List Walls, Entrances )
-    -> Generator ( List Walls, Entrances )
+    -> ( List Walls, List Walls, List Entrance )
+    -> Generator ( List Walls, List Entrance )
 addEntrances nEntrances ( walls, fullWalls, entrances ) =
     let
         createGenerator =
@@ -231,12 +223,12 @@ addEntrances nEntrances ( walls, fullWalls, entrances ) =
                             )
                 in
                     (wallToEntrance generateWall)
-                        |> andThen recurse
+                        |> Random.andThen recurse
 
 
 wallToEntrance : Generator Wall -> Generator Entrance
 wallToEntrance wallGen =
-    Random.map (Entrance.init Door) wallGen
+    Random.map (Entrance.init Entrance.Door) wallGen
 
 
 withinDungeonBounds : Vector -> Model -> Bool
@@ -274,8 +266,8 @@ roomsConfigView model =
             ]
     in
         div []
-            (List.concat <|
-                List.map
+            (List.concat
+                <| List.map
                     (\( roomType, config ) ->
                         [ roomSizeView roomType config.sizeRange
                         , roomFrequencyView roomType config.frequency

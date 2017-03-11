@@ -17,7 +17,6 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Item.Data as ItemData
 import Item.Item as Item exposing (Item)
-import Lodash
 import Maybe
 import Random.Pcg as Random exposing (Generator)
 import Stats exposing (Stats)
@@ -80,7 +79,7 @@ randomMonstersReducer position monsters =
 
 randomMonster : Vector -> Generator Monster
 randomMonster position =
-    Lodash.shuffle types
+    Misc.shuffle types
         |> Random.map (List.head)
         |> Random.map (Maybe.withDefault GiantRat)
         |> Random.map (flip init position)
