@@ -16,14 +16,14 @@ module Level
 
 import Container exposing (Container)
 import Dict exposing (Dict)
-import Item.Item as Item exposing (Item)
-import GameData.Building as Building exposing (Building)
-import Utils.Vector as Vector exposing (Vector)
-import Tile exposing (Tile)
-import Monster.Monster as Monster exposing (Monster)
-import Dungeon.Room as Room exposing (Room)
 import Dungeon.Corridor as Corridor exposing (Corridor)
+import Dungeon.Room as Room exposing (Room)
+import Building exposing (Building)
+import Item.Item as Item exposing (Item)
+import Monster exposing (Monster)
+import Tile exposing (Tile)
 import Utils.BresenhamLine as BresenhamLine
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Map =

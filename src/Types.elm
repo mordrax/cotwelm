@@ -1,8 +1,7 @@
 module Types exposing (..)
 
-{-| DamageDie holds the die used to calculate the damage and a static bonus to add to the rolled die.
-    eg DamageDie 6 2 would be 1D6 + 2
--}
+-- All Monsters and Hero has a body size. This is used to calculate cth
+
 
 type BodySize
     = Tiny
@@ -11,4 +10,26 @@ type BodySize
     | Large
     | Giant
 
-type CreatureType = Hero | Monster
+
+type CreatureType
+    = Hero
+    | Monster
+
+
+type Area
+    = Village
+    | Farm
+    | DungeonLevelOne
+    | DungeonLevel Int
+
+
+type Gender
+    = Male
+    | Female
+
+
+type Difficulty
+    = Easy
+    | Intermediate
+    | Hard
+    | Impossible

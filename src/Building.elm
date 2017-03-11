@@ -1,4 +1,4 @@
-module GameData.Building
+module Building
     exposing
         ( Building
         , Link
@@ -23,7 +23,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Utils.Lib as Lib exposing (..)
-import GameData.Types exposing (..)
+import Types exposing (..)
 import Shops exposing (ShopType)
 import String.Extra as StringX
 

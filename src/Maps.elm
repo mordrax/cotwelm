@@ -1,4 +1,4 @@
-module Game.Maps
+module Maps
     exposing
         ( Model
         , init
@@ -26,23 +26,23 @@ Dynamic lvls are:
 Mines lvl 1 - 8
 -}
 
-import GameData.ASCIIMaps exposing (..)
-import GameData.Building as Building exposing (..)
-import Tile exposing (Tile)
-import GameData.Types exposing (..)
-import Utils.Vector as Vector exposing (..)
+import Array.Hamt as Array exposing (Array)
+import ASCIIMaps exposing (..)
+import Building exposing (Building)
+import Dict
+import Dungeon.DungeonGenerator as DungeonGenerator
+import Dungeon.Rooms.Config as Config
 import Html exposing (..)
 import Html.Lazy as Lazy
-import Dict exposing (..)
-import Random.Pcg as Random exposing (..)
-import Dungeon.Rooms.Config as Config exposing (..)
-import Shops
-import Array.Hamt as Array exposing (Array)
-import Dungeon.DungeonGenerator as DungeonGenerator
-import Level exposing (Level)
 import Item.Item as Item exposing (Item)
-import Monster.Monster as Monster
+import Level exposing (Level)
 import Lodash
+import Monster
+import Random.Pcg as Random exposing (..)
+import Shops
+import Tile exposing (Tile)
+import Types exposing (..)
+import Utils.Vector as Vector exposing (..)
 
 type alias Model =
     { currentArea : Area
@@ -58,7 +58,7 @@ setCurrentArea area model =
     { model | currentArea = area }
 
 
-init : Item -> Random.Seed -> ( Model, Cmd Msg, Random.Seed )
+init : Item -> Random.Seed -> ( Model, Random.Seed )
 init armour seed =
     let
         areaToTiles area visibility =
@@ -82,7 +82,6 @@ init armour seed =
           , farm = levelOfArea Farm Tile.Explored
           , abandonedMinesEntry = mineEntryLevelWithArmour
           }
-        , Cmd.none
         , seed
         )
 
@@ -144,7 +143,7 @@ addMonstersToLevel level =
             |> Random.map (\monsters -> { level | monsters = monsters })
 
 
-updateArea : GameData.Types.Area -> Model -> Model
+updateArea : Area -> Model -> Model
 updateArea area model =
     { model | currentArea = area }
 
@@ -305,13 +304,13 @@ buildingsOfArea area =
                     Building.newLink Farm ( 11, 31 )
             in
                 [ Building.new Building.Gate ( 10, 0 ) "Village Gate" farmGate
-                , Building.new Building.StrawHouseEast ( 3, 6 ) "Junk Shop" Ordinary
-                , Building.new Building.StrawHouseWest ( 16, 5 ) "Private House" Ordinary
-                , Building.new Building.Hut ( 7, 13 ) "Potion Store" (Shop Shops.PotionStore)
-                , Building.new Building.StrawHouseWest ( 14, 12 ) "Private House 2" Ordinary
-                , Building.new Building.StrawHouseEast ( 6, 17 ) "Weapon Shop" (Shop Shops.WeaponSmith)
-                , Building.new Building.StrawHouseWest ( 14, 17 ) "General Store" (Shop Shops.GeneralStore)
-                , Building.new Building.HutTemple ( 9, 22 ) "Odin's Temple" Ordinary
+                , Building.new Building.StrawHouseEast ( 3, 6 ) "Junk Shop" Building.Ordinary
+                , Building.new Building.StrawHouseWest ( 16, 5 ) "Private House" Building.Ordinary
+                , Building.new Building.Hut ( 7, 13 ) "Potion Store" (Building.Shop Shops.PotionStore)
+                , Building.new Building.StrawHouseWest ( 14, 12 ) "Private House 2" Building.Ordinary
+                , Building.new Building.StrawHouseEast ( 6, 17 ) "Weapon Shop" (Building.Shop Shops.WeaponSmith)
+                , Building.new Building.StrawHouseWest ( 14, 17 ) "General Store" (Building.Shop Shops.GeneralStore)
+                , Building.new Building.HutTemple ( 9, 22 ) "Odin's Temple" Building.Ordinary
                 , Building.new Building.Well ( 11, 18 ) "Secret Entrance" (Building.newLink DungeonLevelOne ( 25, 3 ))
                 ]
 
@@ -323,8 +322,8 @@ buildingsOfArea area =
                 mineExit =
                     Building.newLink DungeonLevelOne ( 22, 39 )
             in
-                [ Building.new Gate ( 10, 32 ) "Farm Gate" villageGate
-                , Building.new StrawHouseWest ( 43, 23 ) "Adopted Parents House" Ordinary
+                [ Building.new Building.Gate ( 10, 32 ) "Farm Gate" villageGate
+                , Building.new Building.StrawHouseWest ( 43, 23 ) "Adopted Parents House" Building.Ordinary
                 , Building.new Building.MineEntrance ( 24, 1 ) "Mine Entrance" mineExit
                 ]
 

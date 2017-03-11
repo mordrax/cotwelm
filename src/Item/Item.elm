@@ -16,29 +16,21 @@ module Item.Item
         , containerBuilder
         )
 
+import Container exposing (Container)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Container exposing (Container)
-
-
--- utils
-
-import Utils.Mass as Mass exposing (..)
-import Utils.IdGenerator as IdGenerator exposing (..)
-
-
--- sub items
-
-import Item.Data exposing (..)
-import Item.Weapon
 import Item.Armour
-import Item.Shield
-import Item.Helmet
-import Item.Bracers
-import Item.Gauntlets
 import Item.Belt as Belt exposing (Belt)
+import Item.Bracers
+import Item.Data exposing (..)
+import Item.Gauntlets
+import Item.Helmet
 import Item.Pack as Pack exposing (Pack)
 import Item.Purse as Purse exposing (Purse)
+import Item.Shield
+import Item.Weapon
+import Utils.IdGenerator as IdGenerator exposing (..)
+import Utils.Mass as Mass exposing (..)
 
 
 type alias Items =
@@ -250,6 +242,7 @@ newFoldableItem ( key, itemFactory ) id =
 new : ItemType -> ID -> Item
 new itemType id =
     newWithOptions itemType id Normal Identified
+
 
 newWithOptions : ItemType -> ID -> ItemStatus -> IdentificationStatus -> Item
 newWithOptions itemType id status idStatus =
