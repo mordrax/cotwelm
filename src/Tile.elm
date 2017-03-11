@@ -1,15 +1,11 @@
 module Tile
     exposing
         ( Tile
-        , Tiles
         , TileType(..)
         , TileNeighbours
-        , ground
+        , setVisibility
         , drop
         , updateGround
-        , isSameType
-        , isSamePosition
-        , position
         , setPosition
         , mapToTiles
         , view
@@ -17,23 +13,21 @@ module Tile
         )
 
 import Container exposing (Container)
-import Dict exposing (..)
-import GameData.Building as Building exposing (..)
-import Hero.Hero as Hero exposing (Hero)
+import Dict exposing (Dict)
+import Building exposing (Building)
+import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
-import Item.Item as Item exposing (..)
-import List exposing (..)
-import List.Extra exposing (..)
-import Monster.Monster as Monster exposing (..)
+import Item.Item as Item exposing (Item)
+import List.Extra as ListX
+import Monster exposing (Monster)
 import Random.Pcg as Random
-import String exposing (..)
 import String.Extra as StringX
-import Utils.Lib as Lib exposing (..)
+import Types exposing (..)
+import Utils.Misc as Misc
 import Utils.Mass as Mass exposing (Capacity)
-import Utils.Vector as Vector exposing (..)
-import Utils.Vector exposing (..)
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Tile =
@@ -43,6 +37,8 @@ type alias Tile =
     , occupant : Occupant
     , position : Vector
     , ground : Container Item
+    , visible : Visibility
+    , isLit : Bool
     }
 
 
@@ -67,11 +63,6 @@ type alias Tiles =
 -----------------------------------------------------------------------------------
 
 
-ground : Tile -> Container Item
-ground { ground } =
-    ground
-
-
 drop : Item -> Tile -> Tile
 drop item model =
     let
@@ -86,24 +77,14 @@ updateGround items model =
     { model | ground = Container.set items model.ground }
 
 
-isSameType : Tile -> Tile -> Bool
-isSameType t1 t2 =
-    t1.type_ == t2.type_
-
-
-isSamePosition : Tile -> Tile -> Bool
-isSamePosition t1 t2 =
-    t1.position == t2.position
-
-
 setPosition : Vector -> Tile -> Tile
 setPosition newPosition model =
     { model | position = newPosition }
 
 
-position : Tile -> Vector
-position { position } =
-    position
+setVisibility : Visibility -> Tile -> Tile
+setVisibility visibility tile =
+    { tile | visible = visibility }
 
 
 {-| Given a ASCII list of strings representing tiles, output a list of tiles
@@ -131,11 +112,11 @@ toTile ( x, y ) tileType =
         container =
             Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-        Tile tileType solid [] Empty ( x, y ) container
+        Tile tileType solid [] Empty ( x, y ) container Hidden False
 
 
 view : Tile -> Float -> TileNeighbours -> (Vector -> a) -> List (Html a)
-view ({ type_, position, ground } as model) scale neighbours onClick =
+view ({ type_, position, ground, visible } as model) scale neighbours onClick =
     let
         transform rotation scale =
             case ( rotation, scale ) of
@@ -152,7 +133,7 @@ view ({ type_, position, ground } as model) scale neighbours onClick =
                     ( "transform", "rotate(" ++ toString rotation ++ "deg) scale" ++ toString ( scale, scale ) )
 
         rotation =
-            case List.Extra.find (\( halfTileType, _, _ ) -> type_ == halfTileType) halfTiles of
+            case ListX.find (\( halfTileType, _, _ ) -> type_ == halfTileType) halfTiles of
                 Nothing ->
                     0
 
@@ -168,7 +149,7 @@ view ({ type_, position, ground } as model) scale neighbours onClick =
             div
                 [ HA.class ("tile " ++ css ++ " " ++ toString position)
                 , HA.style [ transform rotation scale ]
-                , Lib.toScaledTilePosition position scale
+                , Misc.toScaledTilePosition position scale
                 , clickAttribute position
                 ]
                 []
@@ -180,7 +161,7 @@ view ({ type_, position, ground } as model) scale neighbours onClick =
             div
                 [ HA.class ("tile cotw-item " ++ (Item.css item))
                 , HA.style [ transform rotation scale, ( "pointer-events", "none" ) ]
-                , Lib.toScaledTilePosition position scale
+                , Misc.toScaledTilePosition position scale
                 ]
                 []
 
@@ -190,15 +171,18 @@ view ({ type_, position, ground } as model) scale neighbours onClick =
         baseTile =
             tileDiv (tileToCss type_)
     in
-        case itemsOnGround of
-            [] ->
-                [ baseTile ]
+        case ( itemsOnGround, visible ) of
+            ( _, Hidden ) ->
+                []
 
-            item :: [] ->
-                [ baseTile, itemDiv item ]
+            ( singleItem :: [], _ ) ->
+                [ baseTile, itemDiv singleItem ]
+
+            ( a :: b :: _, _ ) ->
+                [ baseTile, tileDiv <| tileToCss TreasurePile ]
 
             _ ->
-                [ baseTile, tileDiv <| tileToCss TreasurePile ]
+                [ baseTile ]
 
 
 type alias HalfTileData =
@@ -225,7 +209,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpLeft maybeUp maybeLeft =
             case ( maybeUp, maybeLeft ) of
                 ( Just up, Just left ) ->
-                    if (isSameType up left && up.type_ == targetTileType) then
+                    if (up.type_ == left.type_ && up.type_ == targetTileType) then
                         90
                     else
                         0
@@ -236,7 +220,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpRight maybeUp maybeRight =
             case ( maybeUp, maybeRight ) of
                 ( Just up, Just right ) ->
-                    if (isSameType up right && up.type_ == targetTileType) then
+                    if (up.type_ == right.type_ && up.type_ == targetTileType) then
                         180
                     else
                         0
@@ -248,7 +232,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkDownRight maybeDown maybeRight =
             case ( maybeDown, maybeRight ) of
                 ( Just down, Just right ) ->
-                    if (isSameType down right && down.type_ == targetTileType) then
+                    if (down.type_ == right.type_ && down.type_ == targetTileType) then
                         -90
                     else
                         0

@@ -1,4 +1,4 @@
-module Pages.Inventory
+module Inventory
     exposing
         ( Inventory
         , Merchant(..)
@@ -20,28 +20,19 @@ The module subscribes to mouse events for item interactions and is generally hig
 to know about hero equipment, items, containers etc...
 -}
 
+import Container exposing (Container)
+import Equipment exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-
-
--- item
-
-import Item.Item as Item exposing (..)
 import Item.Data exposing (..)
+import Item.Item as Item exposing (..)
 import Item.Pack as Pack exposing (Pack)
-import Container
-
-
--- game
-
-import Equipment exposing (..)
-import Utils.Mass as Mass exposing (..)
-import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Item.Purse as Purse exposing (..)
+import Keymap
 import Shops exposing (Shops, Shop)
-import Game.Keyboard as Keyboard
 import Task
-import Container exposing (Container)
+import Utils.DragDrop as DragDrop exposing (DragDrop)
+import Utils.Mass as Mass exposing (..)
 
 
 type Inventory
@@ -74,7 +65,7 @@ type Droppable
 
 type Msg source target
     = DnDMsg (DragDrop.Msg source target)
-    | Keyboard Keyboard.Msg
+    | Keyboard Keymap.Msg
 
 
 init : Merchant -> Equipment -> Inventory
@@ -119,14 +110,14 @@ update msg (A ({ dnd } as model)) =
                     Just ( Just drag, Just drop ) ->
                         ( A <| handleDragDrop drag drop modelNewDnD, Nothing )
 
-        Keyboard (Keyboard.Esc) ->
+        Keyboard (Keymap.Esc) ->
             ( A model, Just ( model.equipment, model.merchant ) )
 
         Keyboard msg ->
             ( A model, Nothing )
 
 
-keyboardToInventoryMsg : Keyboard.Msg -> Msg s t
+keyboardToInventoryMsg : Keymap.Msg -> Msg s t
 keyboardToInventoryMsg msg =
     Keyboard msg
 

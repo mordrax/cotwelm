@@ -2,3 +2,6 @@ elm-stuff
 index.html
 index.php
 dist
+.idea
+node_modules
+analyse

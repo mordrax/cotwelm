@@ -1,4 +1,4 @@
-module Hero.Hero
+module Hero
     exposing
         ( Hero
         , init
@@ -14,17 +14,17 @@ module Hero.Hero
         , equip
         )
 
-import Html.Attributes exposing (..)
-import Html exposing (..)
-import Utils.Vector as Vector exposing (..)
-import Utils.Direction as Direction exposing (Direction)
-import Stats exposing (Stats)
 import Attributes exposing (Attributes)
 import Equipment exposing (Equipment, EquipmentSlot)
-import GameData.Types as Data
-import Utils.Lib as Lib
+import Types exposing (..)
+import Html exposing (..)
+import Html.Attributes as HA
 import Item.Item as Item exposing (Item)
-import Types
+import Stats exposing (Stats)
+import Types exposing (..)
+import Utils.Direction as Direction exposing (Direction)
+import Utils.Misc as Misc
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Hero =
@@ -32,7 +32,7 @@ type alias Hero =
     , type_ : Types.CreatureType
     , position : Vector
     , stats : Stats
-    , gender : Data.Gender
+    , gender : Gender
     , attributes : Attributes
     , equipment : Equipment
     , expLevel : Int
@@ -44,7 +44,7 @@ type alias Name =
     String
 
 
-init : Name -> Attributes -> Data.Gender -> Hero
+init : Name -> Attributes -> Gender -> Hero
 init name ({ str, int, con } as attributes) gender =
     { name = name
     , type_ = Types.Hero
@@ -114,12 +114,12 @@ view : Hero -> Html a
 view model =
     let
         heroCss =
-            if model.gender == Data.Male then
+            if model.gender == Male then
                 "male-hero"
             else
                 "female-hero"
     in
-        div [ class ("tile " ++ heroCss), style (Lib.vectorToHtmlStyle model.position) ] []
+        div [ HA.class ("tile " ++ heroCss), HA.style (Misc.vectorToHtmlStyle model.position) ] []
 
 
 viewStats : Hero -> Html a

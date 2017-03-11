@@ -15,14 +15,14 @@ import Dungeon.Room as Room exposing (Room)
 import Dungeon.Rooms.Config as Config
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Types exposing (..)
-import GameData.Building as Building exposing (Building, Buildings)
-import GameData.Types as Types
+import Building exposing (Building)
+import Types exposing (..)
 import Level
 import List.Extra exposing (dropWhile)
 import Lodash
 import Random.Pcg as Random exposing (Generator, constant)
 import Set
-import Tile
+import Tile exposing (Tile)
 import Utils.Direction exposing (Direction)
 import Utils.Vector as Vector exposing (Vector)
 
@@ -313,7 +313,7 @@ canFitCorridor model corridor =
             toOccupied model
 
         corridorPositions =
-            (List.map Tile.position (Corridor.toTiles corridor))
+            (List.map .position (Corridor.toTiles corridor))
                 ++ (Corridor.boundary corridor)
 
         inModelTiles tile =
@@ -348,7 +348,7 @@ canFitRoom model room =
         roomPositions =
             (room
                 |> Room.toTiles
-                |> List.map Tile.position
+                |> List.map .position
             )
                 ++ (Room.boundary room)
 

@@ -1,24 +1,16 @@
 module Dungeon.Editor exposing (..)
 
+import Dict exposing (..)
+import Dungeon.Clean
+import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
+import Dungeon.Rooms.Config as Config exposing (..)
+import Dungeon.Types
 import Html exposing (..)
 import Html.Attributes as HA exposing (..)
 import Html.Events exposing (..)
-import Game.Maps as Maps exposing (..)
-
-
--- Dungeon
-
-import Dungeon.Rooms.Config as Config exposing (..)
-import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
-import Dungeon.Types
-import Dungeon.Clean
 import Level
-
-
--- libs
-
 import Lodash exposing (..)
-import Dict exposing (..)
+import Maps
 import Random.Pcg as Random exposing (..)
 
 
@@ -118,7 +110,7 @@ updateMap : Dungeon.Types.Model -> Level.Map
 updateMap dungeonModel =
     dungeonModel
         |> Dungeon.Types.toTiles
-        |> Maps.fromTiles
+        |> Level.fromTiles
 
 
 view : Model -> Html Msg

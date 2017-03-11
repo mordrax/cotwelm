@@ -1,36 +1,17 @@
 module Main exposing (..)
 
---Splash Screen
-
-import SplashView exposing (..)
-
-
--- Character creation
-
-import CharCreation.CharCreation as CharCreation exposing (..)
-import Hero.Hero as Hero exposing (Hero)
-
-
--- Main game screen
-
-import Game.Game as Game
-
-
--- Core/Elm imports
-
+import Arena
+import CharCreation exposing (CharCreation)
+import Dungeon.Editor as Editor exposing (..)
+import Game
+import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
 import Navigation exposing (Location)
-import String exposing (..)
-import Task exposing (perform)
 import Random.Pcg as Random exposing (initialSeed)
+import SplashView
+import Task exposing (perform)
 import Time exposing (inSeconds, now)
-
-
--- Tools
-
-import Dungeon.Editor as Editor exposing (..)
-import Arena
 
 
 type Msg
@@ -100,7 +81,7 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SplashMsg NewGame ->
+        SplashMsg SplashView.NewGame ->
             ( model, Navigation.newUrl "#/charCreation" )
 
         SplashMsg _ ->

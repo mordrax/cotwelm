@@ -1,4 +1,4 @@
-module GameData.ASCIIMaps exposing (..)
+module ASCIIMaps exposing (..)
 
 {-| Holds all static map data:
 - ASCII maps for each area

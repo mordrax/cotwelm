@@ -58,7 +58,7 @@ import Utils.Vector as Vector exposing (..)
 import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
-import Tile exposing (..)
+import Tile exposing (Tile)
 import Lodash exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Random.Pcg as Random exposing (..)
@@ -78,7 +78,7 @@ type alias Model =
     , start : DirectedVector
     , points : DirectedVectors
     , entrances : Entrances
-    , paths : Tiles
+    , paths : List Tile
     }
 
 
@@ -264,7 +264,7 @@ end (A { points, start }) =
             start
 
 
-toTiles : Corridor -> Tiles
+toTiles : Corridor -> List Tile
 toTiles (A ({ start, points, entrances, paths } as model)) =
     List.map Entrance.toTile entrances
         ++ paths
@@ -287,7 +287,7 @@ boundaryHelper ({ start, points, paths, entranceFacing } as model) =
             end (A model)
 
         pathPositions =
-            List.map Tile.position paths
+            List.map .position paths
 
         entranceExceptions =
             Set.fromList
@@ -309,7 +309,7 @@ boundaryHelper ({ start, points, paths, entranceFacing } as model) =
                 |> Set.diff positionSet
     in
         paths
-            |> List.map Tile.position
+            |> List.map .position
             |> List.map Vector.neighbours
             |> List.concat
             |> Set.fromList

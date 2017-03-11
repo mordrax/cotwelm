@@ -13,25 +13,15 @@ module Shops
         , updateShop
         )
 
--- items
-
-import Item.Purse as Purse exposing (Purse)
-import Item.Item as Item exposing (..)
+import Dict exposing (Dict)
 import Item.Data exposing (..)
 import Item.Factory as ItemFactory exposing (ItemFactory)
-
-
--- utils
-
-import Utils.IdGenerator as IdGenerator exposing (..)
-
-
--- 3rd party
-
+import Item.Item as Item exposing (Item)
+import Item.Purse as Purse exposing (Purse)
 import Random.Pcg as Random exposing (step, initialSeed, list, Seed)
-import Time exposing (now)
 import Task exposing (perform)
-import Dict exposing (Dict)
+import Time exposing (now)
+import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
 
 
 type alias Items =
@@ -155,8 +145,7 @@ replenish itemTypes itemFactory seed =
 
 getSeed : Cmd Msg
 getSeed =
-    Task.perform
-        (\a -> (PopulateShop (Time.inSeconds a |> round |> Random.initialSeed)))
+    Task.perform (\a -> (PopulateShop (Time.inSeconds a |> round |> Random.initialSeed)))
         Time.now
 
 

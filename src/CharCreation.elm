@@ -1,4 +1,4 @@
-module CharCreation.CharCreation
+module CharCreation
     exposing
         ( CharCreation
         , Msg
@@ -14,7 +14,7 @@ import Html exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (..)
 import Attributes exposing (Attributes)
-import GameData.Types as GDT exposing (Gender(..), Difficulty(..))
+import Types exposing (..)
 
 
 type CharCreation

@@ -64,20 +64,19 @@ module Combat
 
 -}
 
-import Stats exposing (..)
-import Dice exposing (..)
-import Random.Pcg as Random exposing (Seed, Generator)
-import Hero.Hero as Hero exposing (Hero)
 import Attributes exposing (Attributes)
-import Monster.Monster as Monster exposing (Monster)
-import Item.Weapon as Weapon
-import Item.Data
-import Dice exposing (Dice)
-import Utils.Mass as Mass
-import Equipment exposing (Equipment)
 import Debug exposing (log)
+import Dice exposing (Dice)
+import Equipment exposing (Equipment)
+import Hero exposing (Hero)
+import Item.Data
+import Item.Weapon as Weapon
+import Monster exposing (Monster)
+import Random.Pcg as Random exposing (Seed, Generator)
+import Stats exposing (Stats)
 import String
-import Types
+import Types exposing (..)
+import Utils.Mass as Mass
 
 
 type alias AttackMessage =

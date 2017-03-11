@@ -1,4 +1,4 @@
-module Game.Game
+module Game
     exposing
         ( Model
         , Msg
@@ -12,28 +12,28 @@ import AStar
 import Combat
 import Dict
 import Equipment exposing (Equipment)
-import Game.Keyboard as Keyboard exposing (..)
-import Game.Maps as Maps
-import GameData.Building as Building exposing (Building)
-import GameData.Types as GDT exposing (Difficulty)
-import Hero.Hero as Hero exposing (Hero)
+import Keymap
+import Maps
+import Building exposing (Building)
+import Types exposing (..)
+import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item exposing (Item)
 import Item.Data exposing (..)
 import Level exposing (Level)
-import Monster.Monster as Monster exposing (Monster)
-import Pages.Inventory as Inventory exposing (Inventory)
-import Random.Pcg as Random exposing (..)
+import Monster exposing (Monster)
+import Inventory exposing (Inventory)
+import Random.Pcg as Random exposing (Generator, Seed)
 import Set exposing (Set)
 import Shops exposing (Shops)
-import Stats exposing (..)
+import Stats exposing (Stats)
 import Task exposing (perform)
 import Tile exposing (Tile)
 import Utils.Direction as Direction exposing (Direction)
 import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
-import Utils.Lib as Lib
+import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
 import Container exposing (Container)
@@ -63,9 +63,8 @@ type Screen
 
 
 type Msg
-    = KeyboardMsg Keyboard.Msg
+    = KeyboardMsg Keymap.Msg
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
-    | MapsMsg Maps.Msg
     | WindowSize Window.Size
     | ClickTile Vector
     | PathTo (List Vector)
@@ -89,14 +88,11 @@ init seed hero difficulty =
         ( leatherArmour, itemFactory_ ) =
             ItemFactory.make (ItemTypeArmour LeatherArmour) itemFactoryAfterShop
 
-        ( maps, mapCmd, seed__ ) =
+        ( maps, seed__ ) =
             Maps.init leatherArmour seed_
 
         cmd =
-            Cmd.batch
-                [ Cmd.map MapsMsg mapCmd
-                , initialWindowSizeCmd
-                ]
+            initialWindowSizeCmd
 
         ground =
             getGroundAtHero heroWithDefaultEquipment maps
@@ -139,14 +135,14 @@ isOnStairs upOrDownStairs model =
             |> Maybe.withDefault False
 
 
-updateKeyboard : Keyboard.Msg -> Model -> ( Model, Cmd Msg )
+updateKeyboard : Keymap.Msg -> Model -> ( Model, Cmd Msg )
 updateKeyboard keyboardMsg model =
     case keyboardMsg of
-        KeyDir dir ->
+        Keymap.KeyDir dir ->
             moveHero dir model
                 |> \( model, _ ) -> ( model, Cmd.none )
 
-        Walk dir ->
+        Keymap.Walk dir ->
             let
                 ( modelWithMovedHero, hasMoved ) =
                     moveHero dir model
@@ -156,20 +152,20 @@ updateKeyboard keyboardMsg model =
                         ( modelWithMovedHero, Cmd.none )
 
                     True ->
-                        update (KeyboardMsg (Walk dir)) modelWithMovedHero
+                        update (KeyboardMsg (Keymap.Walk dir)) modelWithMovedHero
 
-        Esc ->
+        Keymap.Esc ->
             case model.currentScreen of
                 MapScreen ->
                     ( model, Cmd.none )
 
                 BuildingScreen _ ->
-                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
+                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) model
 
                 InventoryScreen ->
-                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Esc) model
+                    update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) model
 
-        Inventory ->
+        Keymap.Inventory ->
             let
                 ground =
                     getGroundAtHero model.hero model.maps
@@ -181,7 +177,7 @@ updateKeyboard keyboardMsg model =
                 , Cmd.none
                 )
 
-        GoUpstairs ->
+        Keymap.GoUpstairs ->
             case isOnStairs Level.upstairs model of
                 True ->
                     let
@@ -209,7 +205,7 @@ updateKeyboard keyboardMsg model =
                     , Cmd.none
                     )
 
-        GoDownstairs ->
+        Keymap.GoDownstairs ->
             case isOnStairs Level.downstairs model of
                 True ->
                     let
@@ -239,12 +235,12 @@ updateKeyboard keyboardMsg model =
                     , Cmd.none
                     )
 
-        Get ->
+        Keymap.Get ->
             let
                 maybeItems =
                     Maps.currentLevel model.maps
-                        |> Level.getTile model.hero.position
-                        |> Maybe.map Tile.ground
+                        |> Level.tileAtPosition model.hero.position
+                        |> Maybe.map .ground
                         |> Maybe.map Container.list
             in
                 case maybeItems of
@@ -352,9 +348,6 @@ update msg model =
                                     , Cmd.none
                                     )
 
-        MapsMsg msg ->
-            ( { model | maps = Maps.update msg model.maps }, Cmd.none )
-
         WindowSize size ->
             ( { model | windowSize = size }, Cmd.none )
 
@@ -381,22 +374,22 @@ update msg model =
                     Maps.getTile x model.maps
 
                 ( modelAfterMovement, cmdsAfterMovement ) =
-                    update (KeyboardMsg (KeyDir dir)) model
+                    update (KeyboardMsg (Keymap.KeyDir dir)) model
             in
-                case ( xs, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement) of
+                case ( xs, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement ) of
                     ( [], True, _ ) ->
                         let
                             _ =
                                 Debug.log "Taking upstairs" 1
                         in
-                            update (KeyboardMsg GoUpstairs) modelAfterMovement
+                            update (KeyboardMsg Keymap.GoUpstairs) modelAfterMovement
 
-                    ( [], _, True) ->
+                    ( [], _, True ) ->
                         let
                             _ =
                                 Debug.log "Taking downstairs" 1
                         in
-                            update (KeyboardMsg GoDownstairs) modelAfterMovement
+                            update (KeyboardMsg Keymap.GoDownstairs) modelAfterMovement
 
                     _ ->
                         ( modelAfterMovement
@@ -422,7 +415,7 @@ getGroundAtHero : Hero -> Maps.Model -> Container Item
 getGroundAtHero hero maps =
     hero.position
         |> flip Maps.getTile maps
-        |> Tile.ground
+        |> .ground
 
 
 
@@ -434,6 +427,10 @@ moveHero dir model =
     let
         ( modelWithHeroMoved, hasMoved ) =
             moveHero_ dir model
+
+        updateCurrentLevelFOV model =
+            Level.updateFOV model.hero.position (Maps.currentLevel model.maps)
+                |> (\level -> { model | maps = Maps.updateCurrentLevel level model.maps })
     in
         case hasMoved of
             False ->
@@ -443,6 +440,7 @@ moveHero dir model =
                 modelWithHeroMoved
                     |> updateViewportOffset
                     |> (\m -> moveMonsters (monstersOnLevel m) [] m)
+                    |> updateCurrentLevelFOV
                     |> (\m -> ( m, True ))
 
 
@@ -610,7 +608,7 @@ enterBuilding building ({ hero, maps } as model) =
         modelWithHeroMoved =
             { model | hero = Hero.teleport building.position hero }
     in
-        case Building.buildingType building of
+        case building.buildingType of
             Building.Linked link ->
                 { model
                     | maps = Maps.updateArea link.area maps
@@ -655,7 +653,7 @@ queryPosition pos ({ hero, maps } as model) =
         maybeTile =
             maps
                 |> Maps.currentLevel
-                |> Level.getTile pos
+                |> Level.tileAtPosition pos
 
         level =
             Maps.currentLevel maps
@@ -861,7 +859,7 @@ donDefaultGarb itemFactory hero =
             List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
 
         equippingHero =
-            Lib.foldResult (\item -> Hero.equip item) (Ok hero) defaultEquipment
+            Misc.foldResult (\item -> Hero.equip item) (Ok hero) defaultEquipment
     in
         case equippingHero of
             Result.Ok heroEquipped ->
@@ -888,7 +886,7 @@ view model =
             viewMap model
 
         BuildingScreen building ->
-            case Building.buildingType building of
+            case building.buildingType of
                 Building.Shop shopType ->
                     Html.map InventoryMsg (Inventory.view model.inventory)
 
@@ -901,16 +899,11 @@ view model =
 
 viewMonsters : Model -> Html Msg
 viewMonsters model =
-    let
-        monsters =
-            model.maps
-                |> Maps.currentLevel
-                |> .monsters
-
-        monsterHtml monster =
-            Monster.view monster
-    in
-        div [] (List.map monsterHtml monsters)
+        model
+            |> monstersOnLevel
+            |> List.filter (.visible >> (==) LineOfSight)
+            |> List.map Monster.view
+            |> div []
 
 
 viewMap : Model -> Html Msg
@@ -1027,7 +1020,7 @@ subscription model =
     Sub.batch
         [ Window.resizes (\x -> WindowSize x)
         , Sub.map InventoryMsg (Inventory.subscription model.inventory)
-        , Sub.map KeyboardMsg (Keyboard.subscription)
+        , Sub.map KeyboardMsg (Keymap.subscription)
         ]
 
 
