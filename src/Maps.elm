@@ -71,15 +71,15 @@ init armour seed =
             Level.init (areaToTiles area visibility) (buildingsOfArea area) []
 
         mineEntryLevel =
-            levelOfArea DungeonLevelOne Tile.Hidden
+            levelOfArea DungeonLevelOne Hidden
 
         mineEntryLevelWithArmour =
             Level.drop ( ( 13, 19 ), armour ) mineEntryLevel
     in
         ( { currentArea = Village
           , abandonedMines = Array.fromList []
-          , village = levelOfArea Village Tile.Explored
-          , farm = levelOfArea Farm Tile.Explored
+          , village = levelOfArea Village Known
+          , farm = levelOfArea Farm Known
           , abandonedMinesEntry = mineEntryLevelWithArmour
           }
         , seed
@@ -177,8 +177,8 @@ view ( start, size ) onClick maps =
             building.position
                 |> (\x -> Level.tileAtPosition x level)
                 |> Maybe.map .visible
-                |> Maybe.withDefault Tile.Hidden
-                |> ((/=) Tile.Hidden)
+                |> Maybe.withDefault Hidden
+                |> ((/=) Hidden)
 
         buildingsHtml =
             level.buildings

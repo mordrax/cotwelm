@@ -22,6 +22,7 @@ import Building exposing (Building)
 import Item.Item as Item exposing (Item)
 import Monster exposing (Monster)
 import Tile exposing (Tile)
+import Types exposing (..)
 import Utils.BresenhamLine as BresenhamLine
 import Utils.Vector as Vector exposing (Vector)
 
@@ -159,6 +160,14 @@ lineOfSight a b map =
             |> List.all identity
 
 
+calculateMonsterVisibility : Monster -> Vector -> Map -> Monster
+calculateMonsterVisibility monster heroPosition map =
+    if lineOfSight monster.position heroPosition map then
+        { monster | visible = LineOfSight }
+    else
+        monster
+
+
 updateFOV : Vector -> Level -> Level
 updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
     let
@@ -166,7 +175,7 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
             level
                 |> unexploredTiles
                 |> List.filter (\tile -> lineOfSight heroPosition tile.position map)
-                |> List.map (Tile.setVisibility Tile.Explored)
+                |> List.map (Tile.setVisibility Known)
 
         addToMap tile map =
             Dict.insert tile.position tile map
@@ -176,6 +185,7 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
 
         newMonsters =
             monsters
+                |> List.map (\monster -> calculateMonsterVisibility monster heroPosition map)
     in
         { level | map = newMap, monsters = newMonsters }
 
@@ -185,4 +195,4 @@ unexploredTiles { map } =
     map
         |> Dict.toList
         |> List.map Tuple.second
-        |> List.filter (.visible >> (==) Tile.Hidden)
+        |> List.filter (.visible >> (==) Hidden)

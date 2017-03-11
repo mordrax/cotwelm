@@ -1,7 +1,6 @@
 module Tile
     exposing
         ( Tile
-        , Visibility(..)
         , TileType(..)
         , TileNeighbours
         , setVisibility
@@ -25,6 +24,7 @@ import List.Extra as ListX
 import Monster exposing (Monster)
 import Random.Pcg as Random
 import String.Extra as StringX
+import Types exposing (..)
 import Utils.Misc as Misc
 import Utils.Mass as Mass exposing (Capacity)
 import Utils.Vector as Vector exposing (Vector)
@@ -41,11 +41,6 @@ type alias Tile =
     , isLit : Bool
     }
 
-
-type Visibility
-    = Hidden
-    | Explored
-    | WithinFOV
 
 
 type alias TileNeighbours =
@@ -182,13 +177,13 @@ view ({ type_, position, ground, visible } as model) scale neighbours onClick =
             ( _, Hidden ) ->
                 []
 
-            ( _, Explored ) ->
+            ( _, Known ) ->
                 [ baseTile ]
 
-            ( item :: [], WithinFOV ) ->
+            ( item :: [], LineOfSight ) ->
                 [ baseTile, itemDiv item ]
 
-            ( _, WithinFOV ) ->
+            ( _, LineOfSight ) ->
                 [ baseTile, tileDiv <| tileToCss TreasurePile ]
 
 

@@ -899,18 +899,9 @@ view model =
 
 viewMonsters : Model -> Html Msg
 viewMonsters model =
-    let
-        isMonsterVisible monster =
-            model.maps
-                |> Maps.currentLevel
-                |> Level.tileAtPosition monster.position
-                |> Maybe.map .visible
-                |> Maybe.withDefault Tile.Hidden
-                |> (==) Tile.WithinFOV
-    in
         model
             |> monstersOnLevel
-            |> List.filter isMonsterVisible
+            |> List.filter (.visible >> (==) LineOfSight)
             |> List.map Monster.view
             |> div []
 
