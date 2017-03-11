@@ -42,7 +42,6 @@ type alias Tile =
     }
 
 
-
 type alias TileNeighbours =
     ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
 
@@ -76,7 +75,6 @@ drop item model =
 updateGround : List Item -> Tile -> Tile
 updateGround items model =
     { model | ground = Container.set items model.ground }
-
 
 
 setPosition : Vector -> Tile -> Tile
@@ -177,14 +175,14 @@ view ({ type_, position, ground, visible } as model) scale neighbours onClick =
             ( _, Hidden ) ->
                 []
 
-            ( _, Known ) ->
-                [ baseTile ]
+            ( singleItem :: [], _ ) ->
+                [ baseTile, itemDiv singleItem ]
 
-            ( item :: [], LineOfSight ) ->
-                [ baseTile, itemDiv item ]
-
-            ( _, LineOfSight ) ->
+            ( a :: b :: _, _ ) ->
                 [ baseTile, tileDiv <| tileToCss TreasurePile ]
+
+            _ ->
+                [ baseTile ]
 
 
 type alias HalfTileData =
@@ -222,7 +220,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpRight maybeUp maybeRight =
             case ( maybeUp, maybeRight ) of
                 ( Just up, Just right ) ->
-                    if ( up.type_ == right.type_ && up.type_ == targetTileType) then
+                    if (up.type_ == right.type_ && up.type_ == targetTileType) then
                         180
                     else
                         0
