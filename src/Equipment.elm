@@ -35,7 +35,7 @@ import Item.Data exposing (..)
 import Item.Item as Item exposing (Item)
 import Item.Pack as Pack exposing (Pack)
 import Item.Purse as Purse exposing (Purse)
-import Utils.Lib as Lib
+import Utils.Misc as Misc
 import Utils.Mass as Mass
 
 
@@ -130,7 +130,7 @@ equipMany : List ( EquipmentSlot, Item ) -> Equipment -> Equipment
 equipMany itemSlotPairs equipment =
     let
         equippingResult =
-            Lib.foldResult (\item -> equip item) (Result.Ok equipment) itemSlotPairs
+            Misc.foldResult (\item -> equip item) (Result.Ok equipment) itemSlotPairs
     in
         case equippingResult of
             Result.Ok equipment_ ->

@@ -23,7 +23,7 @@ import Random.Pcg as Random exposing (Generator)
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (ID)
-import Utils.Lib as Lib
+import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
 
@@ -58,7 +58,7 @@ type AttackType
 
 view : Monster -> Html a
 view { css, position } =
-    div [ HA.style (Lib.vectorToHtmlStyle position), HA.class ("tile monster " ++ css) ] []
+    div [ HA.style (Misc.vectorToHtmlStyle position), HA.class ("tile monster " ++ css) ] []
 
 
 initForArena : MonsterType -> Monster
@@ -104,7 +104,7 @@ init monsterType position =
         make name level attributes itemSlotPair =
             { name = name
             , type_ = Types.Monster
-            , css = Lib.toCSS name
+            , css = Misc.toCSS name
             , position = position
             , stats = Stats.initExperienced attributes level
             , attributes = attributes

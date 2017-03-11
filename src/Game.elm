@@ -33,7 +33,7 @@ import Task exposing (perform)
 import Tile exposing (Tile)
 import Utils.Direction as Direction exposing (Direction)
 import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
-import Utils.Lib as Lib
+import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
 import Container exposing (Container)
@@ -859,7 +859,7 @@ donDefaultGarb itemFactory hero =
             List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
 
         equippingHero =
-            Lib.foldResult (\item -> Hero.equip item) (Ok hero) defaultEquipment
+            Misc.foldResult (\item -> Hero.equip item) (Ok hero) defaultEquipment
     in
         case equippingHero of
             Result.Ok heroEquipped ->

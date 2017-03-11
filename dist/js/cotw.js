@@ -17918,7 +17918,7 @@ var _mordrax$cotwelm$Utils_Vector$zero = {ctor: '_Tuple2', _0: 0, _1: 0};
 var _mordrax$cotwelm$Utils_Vector$Right = {ctor: 'Right'};
 var _mordrax$cotwelm$Utils_Vector$Left = {ctor: 'Left'};
 
-var _mordrax$cotwelm$Utils_Lib$toCSS = function (str) {
+var _mordrax$cotwelm$Utils_Misc$toCSS = function (str) {
 	return _elm_lang$core$String$toLower(
 		A4(
 			_elm_lang$core$Regex$replace,
@@ -17929,7 +17929,7 @@ var _mordrax$cotwelm$Utils_Lib$toCSS = function (str) {
 			},
 			str));
 };
-var _mordrax$cotwelm$Utils_Lib$foldResult = F3(
+var _mordrax$cotwelm$Utils_Misc$foldResult = F3(
 	function (f, acc, list) {
 		foldResult:
 		while (true) {
@@ -17951,33 +17951,33 @@ var _mordrax$cotwelm$Utils_Lib$foldResult = F3(
 			}
 		}
 	});
-var _mordrax$cotwelm$Utils_Lib$px = function (a) {
+var _mordrax$cotwelm$Utils_Misc$px = function (a) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
 		_elm_lang$core$Basics$toString(a),
 		'px');
 };
-var _mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle = function (_p2) {
+var _mordrax$cotwelm$Utils_Misc$vectorToHtmlStyle = function (_p2) {
 	var _p3 = _p2;
 	return {
 		ctor: '::',
 		_0: {
 			ctor: '_Tuple2',
 			_0: 'top',
-			_1: _mordrax$cotwelm$Utils_Lib$px(_p3._1 * 32)
+			_1: _mordrax$cotwelm$Utils_Misc$px(_p3._1 * 32)
 		},
 		_1: {
 			ctor: '::',
 			_0: {
 				ctor: '_Tuple2',
 				_0: 'left',
-				_1: _mordrax$cotwelm$Utils_Lib$px(_p3._0 * 32)
+				_1: _mordrax$cotwelm$Utils_Misc$px(_p3._0 * 32)
 			},
 			_1: {ctor: '[]'}
 		}
 	};
 };
-var _mordrax$cotwelm$Utils_Lib$toScaledTilePosition = F2(
+var _mordrax$cotwelm$Utils_Misc$toScaledTilePosition = F2(
 	function (_p4, scale) {
 		var _p5 = _p4;
 		var size = _elm_lang$core$Basics$round(scale * 32);
@@ -17987,14 +17987,14 @@ var _mordrax$cotwelm$Utils_Lib$toScaledTilePosition = F2(
 				_0: {
 					ctor: '_Tuple2',
 					_0: 'top',
-					_1: _mordrax$cotwelm$Utils_Lib$px(_p5._1 * size)
+					_1: _mordrax$cotwelm$Utils_Misc$px(_p5._1 * size)
 				},
 				_1: {
 					ctor: '::',
 					_0: {
 						ctor: '_Tuple2',
 						_0: 'left',
-						_1: _mordrax$cotwelm$Utils_Lib$px(_p5._0 * size)
+						_1: _mordrax$cotwelm$Utils_Misc$px(_p5._0 * size)
 					},
 					_1: {ctor: '[]'}
 				}
@@ -18538,7 +18538,7 @@ var _mordrax$cotwelm$Equipment$equip = F2(
 var _mordrax$cotwelm$Equipment$equipMany = F2(
 	function (itemSlotPairs, equipment) {
 		var equippingResult = A3(
-			_mordrax$cotwelm$Utils_Lib$foldResult,
+			_mordrax$cotwelm$Utils_Misc$foldResult,
 			function (item) {
 				return _mordrax$cotwelm$Equipment$equip(item);
 			},
@@ -18810,7 +18810,7 @@ var _mordrax$cotwelm$Hero$view = function (model) {
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$style(
-					_mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(model.position)),
+					_mordrax$cotwelm$Utils_Misc$vectorToHtmlStyle(model.position)),
 				_1: {ctor: '[]'}
 			}
 		},
@@ -19067,7 +19067,7 @@ var _mordrax$cotwelm$Monster$view = function (_p0) {
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Attributes$style(
-				_mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(_p1.position)),
+				_mordrax$cotwelm$Utils_Misc$vectorToHtmlStyle(_p1.position)),
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$class(
@@ -19286,7 +19286,7 @@ var _mordrax$cotwelm$Monster$init = F2(
 				return {
 					name: name,
 					type_: _mordrax$cotwelm$Types$Monster,
-					css: _mordrax$cotwelm$Utils_Lib$toCSS(name),
+					css: _mordrax$cotwelm$Utils_Misc$toCSS(name),
 					position: position,
 					stats: A2(_mordrax$cotwelm$Stats$initExperienced, attributes, level),
 					attributes: attributes,
@@ -23910,7 +23910,7 @@ var _mordrax$cotwelm$Building$view = function (model) {
 		_0: {ctor: '_Tuple2', _0: 'pointer-events', _1: 'none'},
 		_1: {ctor: '[]'}
 	};
-	var posStyle = _mordrax$cotwelm$Utils_Lib$vectorToHtmlStyle(model.position);
+	var posStyle = _mordrax$cotwelm$Utils_Misc$vectorToHtmlStyle(model.position);
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -24925,7 +24925,7 @@ var _mordrax$cotwelm$Tile$view = F4(
 							}),
 						_1: {
 							ctor: '::',
-							_0: A2(_mordrax$cotwelm$Utils_Lib$toScaledTilePosition, _p23, scale),
+							_0: A2(_mordrax$cotwelm$Utils_Misc$toScaledTilePosition, _p23, scale),
 							_1: {
 								ctor: '::',
 								_0: clickAttribute(_p23),
@@ -24962,7 +24962,7 @@ var _mordrax$cotwelm$Tile$view = F4(
 							}),
 						_1: {
 							ctor: '::',
-							_0: A2(_mordrax$cotwelm$Utils_Lib$toScaledTilePosition, _p23, scale),
+							_0: A2(_mordrax$cotwelm$Utils_Misc$toScaledTilePosition, _p23, scale),
 							_1: {ctor: '[]'}
 						}
 					}
@@ -30803,7 +30803,7 @@ var _mordrax$cotwelm$Game$donDefaultGarb = F2(
 		var defaultEquipment = _p5._0;
 		var factoryAfterProduction = _p5._1;
 		var equippingHero = A3(
-			_mordrax$cotwelm$Utils_Lib$foldResult,
+			_mordrax$cotwelm$Utils_Misc$foldResult,
 			function (item) {
 				return _mordrax$cotwelm$Hero$equip(item);
 			},

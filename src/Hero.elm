@@ -23,7 +23,7 @@ import Item.Item as Item exposing (Item)
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Direction as Direction exposing (Direction)
-import Utils.Lib as Lib
+import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
 
@@ -119,7 +119,7 @@ view model =
             else
                 "female-hero"
     in
-        div [ HA.class ("tile " ++ heroCss), HA.style (Lib.vectorToHtmlStyle model.position) ] []
+        div [ HA.class ("tile " ++ heroCss), HA.style (Misc.vectorToHtmlStyle model.position) ] []
 
 
 viewStats : Hero -> Html a

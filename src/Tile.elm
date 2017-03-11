@@ -25,7 +25,7 @@ import List.Extra as ListX
 import Monster exposing (Monster)
 import Random.Pcg as Random
 import String.Extra as StringX
-import Utils.Lib as Lib
+import Utils.Misc as Misc
 import Utils.Mass as Mass exposing (Capacity)
 import Utils.Vector as Vector exposing (Vector)
 
@@ -156,7 +156,7 @@ view ({ type_, position, ground, visible } as model) scale neighbours onClick =
             div
                 [ HA.class ("tile " ++ css ++ " " ++ toString position)
                 , HA.style [ transform rotation scale ]
-                , Lib.toScaledTilePosition position scale
+                , Misc.toScaledTilePosition position scale
                 , clickAttribute position
                 ]
                 []
@@ -168,7 +168,7 @@ view ({ type_, position, ground, visible } as model) scale neighbours onClick =
             div
                 [ HA.class ("tile cotw-item " ++ (Item.css item))
                 , HA.style [ transform rotation scale, ( "pointer-events", "none" ) ]
-                , Lib.toScaledTilePosition position scale
+                , Misc.toScaledTilePosition position scale
                 ]
                 []
 
