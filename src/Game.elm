@@ -147,7 +147,7 @@ updateKeyboard keyboardMsg model =
                 ( modelWithMovedHero, hasMoved ) =
                     moveHero dir model
             in
-                case hasMoved of
+                case Debug.log "Walking: " hasMoved of
                     False ->
                         ( modelWithMovedHero, Cmd.none )
 
@@ -361,43 +361,27 @@ update msg model =
         PathTo [] ->
             ( model, Cmd.none )
 
-        PathTo (x :: xs) ->
+        PathTo (nextStep :: remainingSteps) ->
             let
                 dir =
-                    Vector.sub x model.hero.position
+                    Vector.sub nextStep model.hero.position
                         |> Vector.toDirection
 
-                walkRemainingPathTask =
-                    Task.succeed xs
-
                 currentTile =
-                    Maps.getTile x model.maps
+                    Maps.getTile nextStep model.maps
 
                 ( modelAfterMovement, cmdsAfterMovement ) =
                     update (KeyboardMsg (Keymap.KeyDir dir)) model
             in
-                case ( xs, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement ) of
+                case ( remainingSteps, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement ) of
                     ( [], True, _ ) ->
-                        let
-                            _ =
-                                Debug.log "Taking upstairs" 1
-                        in
-                            update (KeyboardMsg Keymap.GoUpstairs) modelAfterMovement
+                        update (KeyboardMsg Keymap.GoUpstairs) modelAfterMovement
 
                     ( [], _, True ) ->
-                        let
-                            _ =
-                                Debug.log "Taking downstairs" 1
-                        in
-                            update (KeyboardMsg Keymap.GoDownstairs) modelAfterMovement
+                        update (KeyboardMsg Keymap.GoDownstairs) modelAfterMovement
 
                     _ ->
-                        ( modelAfterMovement
-                        , Cmd.batch
-                            [ Task.perform PathTo walkRemainingPathTask
-                            , cmdsAfterMovement
-                            ]
-                        )
+                        update (PathTo remainingSteps) modelAfterMovement
 
 
 newMessage : String -> Model -> Model
