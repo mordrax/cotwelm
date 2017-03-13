@@ -43,7 +43,7 @@ import Utils.Vector as Vector exposing (Vector)
 -- Model: Room
 
 
-type alias Model =
+type alias Room =
     { entrances : List Entrance
     , floors : Floors
     , roomType : RoomType
@@ -53,42 +53,38 @@ type alias Model =
     }
 
 
-setEntrances : List Entrance -> Model -> Model
-setEntrances val model =
-    { model | entrances = val }
+setEntrances : List Entrance -> Room -> Room
+setEntrances val room =
+    { room | entrances = val }
 
 
-setFloors : Floors -> Model -> Model
-setFloors val model =
-    { model | floors = val }
+setFloors : Floors -> Room -> Room
+setFloors val room =
+    { room | floors = val }
 
 
-setRoomType : RoomType -> Model -> Model
-setRoomType val model =
-    { model | roomType = val }
+setRoomType : RoomType -> Room -> Room
+setRoomType val room =
+    { room | roomType = val }
 
 
-setDimension : Dimension -> Model -> Model
-setDimension val model =
-    { model | dimension = val }
+setDimension : Dimension -> Room -> Room
+setDimension val room =
+    { room | dimension = val }
 
 
-setWorldPos : Vector -> Model -> Model
-setWorldPos val model =
-    { model | worldPos = val }
+setWorldPos : Vector -> Room -> Room
+setWorldPos val room =
+    { room | worldPos = val }
 
 
-setLightSource : LightSource -> Model -> Model
-setLightSource val model =
-    { model | lightSource = val }
+setLightSource : LightSource -> Room -> Room
+setLightSource val room =
+    { room | lightSource = val }
 
 
 type alias Corners =
     List Vector
-
-
-type Room
-    = A Model
 
 
 type alias Rooms =
@@ -97,31 +93,29 @@ type alias Rooms =
 
 init : Room
 init =
-    A
-        { entrances = []
-        , floors = []
-        , roomType = DeadEnd
-        , dimension = ( 1, 1 )
-        , worldPos = Vector.zero
-        , lightSource = Dark
-        }
+    { entrances = []
+    , floors = []
+    , roomType = DeadEnd
+    , dimension = ( 1, 1 )
+    , worldPos = Vector.zero
+    , lightSource = Dark
+    }
 
 
 floors : Room -> List Vector
-floors (A { floors, worldPos }) =
+floors { floors, worldPos } =
     List.map (Vector.add worldPos) floors
 
 
 new : List Entrance -> Floors -> RoomType -> Dimension -> Vector -> Room
 new entrances floors roomType dimension worldPos =
-    A
-        { entrances = entrances
-        , floors = floors
-        , roomType = roomType
-        , dimension = dimension
-        , worldPos = worldPos
-        , lightSource = Dark
-        }
+    { entrances = entrances
+    , floors = floors
+    , roomType = roomType
+    , dimension = dimension
+    , worldPos = worldPos
+    , lightSource = Dark
+    }
 
 
 newDeadEnd : Vector -> Room
@@ -131,19 +125,12 @@ newDeadEnd worldPos =
 
 generate : Config.Model -> Generator Room
 generate config =
-    let
-        (A model) =
-            init
-
-        toRoomGenerator model =
-            constant (A model)
-    in
-        roomTypeGenerator config model
-            |> andThen (roomSizeGenerator config)
-            |> andThen (positionGenerator config)
-            |> andThen floorsGenerator
-            |> andThen lightSourceGenerator
-            |> andThen toRoomGenerator
+    roomTypeGenerator config init
+        |> andThen (roomSizeGenerator config)
+        |> andThen (positionGenerator config)
+        |> andThen floorsGenerator
+        |> andThen lightSourceGenerator
+        |> andThen constant
 
 
 notTooClose : List Entrance -> Vector -> Maybe Vector
@@ -178,7 +165,7 @@ tooCloseToEntrances ( x, y ) entrances =
 It also reports the door that just got added)
 -}
 generateEntrance : Room -> Generator ( Room, Entrance )
-generateEntrance (A ({ entrances, worldPos, floors } as model)) =
+generateEntrance ({ entrances, worldPos, floors } as room) =
     let
         possibleEntrancePositions =
             adjacentToFloorsWithoutDiagonals floors
@@ -186,7 +173,7 @@ generateEntrance (A ({ entrances, worldPos, floors } as model)) =
                 |> List.filterMap (notTooClose entrances)
 
         toReturn entrance =
-            ( A { model | entrances = entrance :: entrances }
+            ( { room | entrances = entrance :: entrances }
             , entrance
             )
     in
@@ -224,32 +211,32 @@ adjacentToFloors floors =
 
 
 boundary : Room -> List Vector
-boundary (A model) =
-    model.floors
+boundary room =
+    room.floors
         |> adjacentToFloors
-        |> List.map (Vector.add model.worldPos)
+        |> List.map (Vector.add room.worldPos)
 
 
 addEntrance : Entrance -> Room -> Room
-addEntrance entrance (A ({ worldPos, entrances } as model)) =
+addEntrance entrance ({ worldPos, entrances } as room) =
     let
         entrancePosition =
             Vector.sub (Entrance.position entrance) worldPos
     in
-        A { model | entrances = entrance :: entrances }
+        { room | entrances = entrance :: entrances }
 
 
 removeEntrance : Entrance -> Room -> Room
-removeEntrance entrance (A ({ entrances, worldPos } as model)) =
+removeEntrance entrance ({ entrances, worldPos } as model) =
     let
         entrances_ =
             List.filter (Entrance.equal entrance >> not) entrances
     in
-        A { model | entrances = entrances_ }
+        { model | entrances = entrances_ }
 
 
 toTiles : Room -> List Tile
-toTiles (A { floors, entrances, worldPos }) =
+toTiles { floors, entrances, worldPos } =
     let
         toWorldPos localPos =
             Vector.add worldPos localPos
@@ -268,12 +255,12 @@ toTiles (A { floors, entrances, worldPos }) =
 
 
 entrances : Room -> List Entrance
-entrances (A { entrances }) =
+entrances { entrances } =
     entrances
 
 
 entranceFacing : Room -> Entrance -> Direction
-entranceFacing (A { floors, worldPos }) entrance =
+entranceFacing { floors, worldPos } entrance =
     let
         entrancePos =
             entrance
@@ -299,7 +286,7 @@ entranceFacing (A { floors, worldPos }) entrance =
 
 
 placeRoom : Vector.DirectedVector -> Room -> Generator Room
-placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
+placeRoom ( endPoint, endDirection ) ({ dimension, floors } as room) =
     let
         wallFacing =
             Vector.oppositeDirection endDirection
@@ -328,11 +315,10 @@ placeRoom ( endPoint, endDirection ) (A ({ dimension, floors } as model)) =
                     Vector.sub entrancePosition wall
             in
                 constant
-                    <| A
-                        { model
-                            | entrances = [ entrance ]
-                            , worldPos = roomWorldPosition
-                        }
+                    { room
+                        | entrances = [ entrance ]
+                        , worldPos = roomWorldPosition
+                    }
     in
         pickAWall candidateWalls |> andThen makeADoor
 
@@ -370,12 +356,12 @@ wallsFacingDirection direction walls ( maxX, maxY ) =
 
 
 position : Room -> Vector
-position (A { worldPos }) =
+position { worldPos } =
     worldPos
 
 
 isCollision : Room -> Vector -> Bool
-isCollision (A { entrances, floors, worldPos }) position =
+isCollision { entrances, floors, worldPos } position =
     let
         localPosition =
             Vector.sub position worldPos
@@ -392,7 +378,7 @@ isCollision (A { entrances, floors, worldPos }) position =
 
 
 pp : Room -> String
-pp (A { worldPos }) =
+pp { worldPos } =
     "Room at (" ++ toString worldPos ++ ")"
 
 
@@ -400,27 +386,27 @@ pp (A { worldPos }) =
 -- Privates
 
 
-lightSourceGenerator : Model -> Generator Model
-lightSourceGenerator model =
+lightSourceGenerator : Room -> Generator Room
+lightSourceGenerator room =
     let
         setArtificialLightSource isLit =
             if isLit then
-                { model | lightSource = Artificial }
+                { room | lightSource = Artificial }
             else
-                model
+                room
     in
         Random.bool
             |> Random.map setArtificialLightSource
 
 
-roomTypeGenerator : Config.Model -> Model -> Generator Model
+roomTypeGenerator : Config.Model -> Room -> Generator Room
 roomTypeGenerator config model =
     Config.roomTypeGenerator config
         |> Random.map (flip setRoomType model)
 
 
-positionGenerator : Config.Model -> Model -> Generator Model
-positionGenerator { dungeonSize } ({ dimension } as model) =
+positionGenerator : Config.Model -> Room -> Generator Room
+positionGenerator { dungeonSize } ({ dimension } as room) =
     let
         ( dimX, dimY ) =
             dimension
@@ -430,10 +416,10 @@ positionGenerator { dungeonSize } ({ dimension } as model) =
                 |> Vector.map (max 0)
     in
         (Dice.d2d maxX maxY)
-            |> Random.map (flip setWorldPos model)
+            |> Random.map (flip setWorldPos room)
 
 
-roomSizeGenerator : Config.Model -> Model -> Generator Model
+roomSizeGenerator : Config.Model -> Room -> Generator Room
 roomSizeGenerator config ({ roomType } as model) =
     Config.roomSizeGenerator roomType config
         |> Random.map (\size -> setDimension ( size, size ) model)
@@ -463,14 +449,14 @@ generateEntranceHelper possibleEntrancePositions =
             |> Random.map makeADoor
 
 
-floorsGenerator : Model -> Generator Model
-floorsGenerator ({ roomType, dimension } as model) =
+floorsGenerator : Room -> Generator Room
+floorsGenerator ({ roomType, dimension } as room) =
     let
         makeFloors =
             (templates roomType).makeFloors
     in
         makeFloors dimension
-            |> flip setFloors model
+            |> flip setFloors room
             |> constant
 
 

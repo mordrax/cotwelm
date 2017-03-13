@@ -101,6 +101,16 @@ tileAtPosition pos { map } =
     Dict.get pos map
 
 
+roomAtPosition : Vector -> List Room -> Maybe Room
+roomAtPosition pos rooms =
+    let
+        inRoom room =
+            Vector.boxIntersectVector pos ( room.worldPos, Vector.add room.worldPos room.dimension )
+    in
+        List.filter inRoom rooms
+            |> List.head
+
+
 updateGround : Vector -> List Item -> Level -> Level
 updateGround pos payload model =
     let
@@ -145,13 +155,19 @@ floors { map } =
 ------
 
 
-lineOfSight : Vector -> Vector -> Map -> Bool
-lineOfSight a b map =
+lineOfSight : Vector -> Vector -> Level -> Bool
+lineOfSight a b ({ map, rooms } as level) =
     let
+        roomLightSource tile =
+            roomAtPosition tile.position rooms
+                |> Maybe.map .lightSource
+                |> Maybe.withDefault Dark
+
         isSeeThroughOrEitherEndpoints tile =
-            ((tile.solid == False) && (tile.type_ /= Tile.DoorClosed))
+            ((not tile.solid) && (tile.type_ /= Tile.DoorClosed) && (roomLightSource tile /= Dark))
                 || (tile.position == a)
                 || (tile.position == b)
+                || (Vector.adjacent a b)
     in
         BresenhamLine.line a b
             |> List.map (\point -> Dict.get point map)
@@ -160,9 +176,9 @@ lineOfSight a b map =
             |> List.all identity
 
 
-calculateMonsterVisibility : Monster -> Vector -> Map -> Monster
-calculateMonsterVisibility monster heroPosition map =
-    if lineOfSight monster.position heroPosition map then
+calculateMonsterVisibility : Monster -> Vector -> Level -> Monster
+calculateMonsterVisibility monster heroPosition ({ map } as level) =
+    if lineOfSight monster.position heroPosition level then
         { monster | visible = LineOfSight }
     else
         monster
@@ -174,7 +190,7 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
         newExploredTiles =
             level
                 |> unexploredTiles
-                |> List.filter (\tile -> lineOfSight heroPosition tile.position map)
+                |> List.filter (\tile -> lineOfSight heroPosition tile.position level)
                 |> List.map (Tile.setVisibility Known)
 
         addToMap tile map =
@@ -185,7 +201,7 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
 
         newMonsters =
             monsters
-                |> List.map (\monster -> calculateMonsterVisibility monster heroPosition map)
+                |> List.map (\monster -> calculateMonsterVisibility monster heroPosition level)
     in
         { level | map = newMap, monsters = newMonsters }
 
