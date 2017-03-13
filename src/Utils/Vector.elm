@@ -72,6 +72,11 @@ distance ( v1x, v1y ) ( v2x, v2y ) =
             |> sqrt
 
 
+adjacent : Vector -> Vector -> Bool
+adjacent ( x1, y1 ) ( x2, y2 ) =
+    (abs (x1 - x2) <= 1) && (abs (y1 - y2) <= 1)
+
+
 
 --------------------
 -- Vector helpers --
