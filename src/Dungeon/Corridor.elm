@@ -22,7 +22,7 @@ module Dungeon.Corridor
     corridor intersects with this one.
 
     A corridor has one entrance and one exit with 0 to many points in between.
-    The entrance, exit and all points are DirectedVectors that points to the next point.
+    The entrance, exit and all points are List DirectedVector that points to the next point.
     The exit's direction points at where the exit faces but the entrance points to the next
     point so we need a entranceFacing to point backwards to where the entrance comes from.
 
@@ -51,18 +51,19 @@ module Dungeon.Corridor
     the corridor relative to that coordinate system.
 -}
 
-import List exposing (..)
-import Dict exposing (..)
-import Set exposing (..)
-import Utils.Vector as Vector exposing (..)
+import Dice
+import Dict exposing (Dict)
+import Dungeon.Entrance as Entrance exposing (Entrance)
+import Dungeon.Rooms.Config as Config
 import Dungeon.Rooms.Type exposing (..)
-import Dungeon.Entrance as Entrance exposing (..)
-import Dungeon.Rooms.Config as Config exposing (..)
+import List
+import Random.Pcg as Random exposing (..)
+import Set
 import Tile exposing (Tile)
+import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Utils.Misc as Misc
-import Random.Pcg as Random exposing (..)
-import Dice exposing (..)
+import Utils.Vector as Vector exposing (Vector, DirectedVector)
 
 
 type Corridor
@@ -76,9 +77,10 @@ type alias Corridors =
 type alias Model =
     { entranceFacing : Direction
     , start : DirectedVector
-    , points : DirectedVectors
-    , entrances : Entrances
+    , points : List DirectedVector
+    , entrances : List Entrance
     , paths : List Tile
+    , lightSource : LightSource
     }
 
 
@@ -90,6 +92,7 @@ init start entranceFacing =
         , points = []
         , entrances = []
         , paths = []
+        , lightSource = Dark
         }
 
 
@@ -125,10 +128,10 @@ generate startPosition entranceFacing config =
             in
                 extend corridor config
     in
-        (startDirectionGen
+        startDirectionGen
             |> Random.map (\dir -> ( startPosition, dir ))
-        )
             |> andThen makeCorridor
+            |> andThen lightSourceGenerator
 
 
 {-| Generate another point in the corridor by digging a random length from
@@ -150,6 +153,19 @@ extend corridor config =
             |> Random.map (\( len, dir ) -> add ( stepsFromPoint lastPoint len, dir ) corridor)
 
 
+lightSourceGenerator : Corridor -> Generator Corridor
+lightSourceGenerator (A corridor) =
+    let
+        setArtificialLightSource isLit =
+            if isLit then
+                A { corridor | lightSource = Artificial }
+            else
+                A corridor
+    in
+        Random.bool
+            |> Random.map setArtificialLightSource
+
+
 stepsFromPoint : DirectedVector -> Int -> Vector
 stepsFromPoint ( startPosition, startDirection ) steps =
     startDirection
@@ -160,8 +176,8 @@ stepsFromPoint ( startPosition, startDirection ) steps =
 
 allPossibleDirections : Direction -> Directions
 allPossibleDirections facing =
-    [ Vector.rotateCompass facing Left
-    , Vector.rotateCompass facing Right
+    [ Vector.rotateCompass facing Vector.Left
+    , Vector.rotateCompass facing Vector.Right
     , facing
     ]
 
@@ -206,7 +222,7 @@ Diagonal corridors must end facing a cardinal direction
 # #####
  ######
 -}
-possibleEnds : Vector -> Corridor -> DirectedVectors
+possibleEnds : Vector -> Corridor -> List DirectedVector
 possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
     let
         secondLastPoint =
@@ -221,7 +237,7 @@ possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
             Vector.facing secondLastPoint lastPoint
 
         ( facingLeft, facingRight ) =
-            ( Left, Right )
+            ( Vector.Left, Vector.Right )
                 |> Vector.map (Vector.rotateCompass facing)
 
         makeDirectedVector direction =
@@ -275,12 +291,12 @@ isCollision position corridor =
     List.any ((==) position) (boundary corridor)
 
 
-boundary : Corridor -> Vectors
+boundary : Corridor -> List Vector
 boundary (A model) =
     boundaryHelper model
 
 
-boundaryHelper : Model -> Vectors
+boundaryHelper : Model -> List Vector
 boundaryHelper ({ start, points, paths, entranceFacing } as model) =
     let
         ( endPosition, endFacing ) =
@@ -292,15 +308,15 @@ boundaryHelper ({ start, points, paths, entranceFacing } as model) =
         entranceExceptions =
             Set.fromList
                 [ Vector.add (Tuple.first start) (Vector.fromDirection entranceFacing)
-                , Vector.add (Tuple.first start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Left)
-                , Vector.add (Tuple.first start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Right)
+                , Vector.add (Tuple.first start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Vector.Left)
+                , Vector.add (Tuple.first start) (Vector.fromDirection <| Vector.rotateCompass entranceFacing Vector.Right)
                 ]
 
         exitExceptions =
             Set.fromList
                 [ Vector.add endPosition (Vector.fromDirection endFacing)
-                , Vector.add endPosition (Vector.fromDirection <| Vector.rotateCompass endFacing Left)
-                , Vector.add endPosition (Vector.fromDirection <| Vector.rotateCompass endFacing Right)
+                , Vector.add endPosition (Vector.fromDirection <| Vector.rotateCompass endFacing Vector.Left)
+                , Vector.add endPosition (Vector.fromDirection <| Vector.rotateCompass endFacing Vector.Right)
                 ]
 
         lessPaths positionSet =
@@ -331,7 +347,7 @@ pp (A { start }) =
 {-| The path between any two vectors is the linear line that connects them.
    e.g path (5, 0) (0, 5) = [(5, 0), (4, 1), (3, 2), (2, 3), (1, 4), (0, 5)]
 -}
-path : Vector -> Vector -> Vectors
+path : Vector -> Vector -> List Vector
 path ( x1, y1 ) ( x2, y2 ) =
     let
         length =
@@ -339,13 +355,13 @@ path ( x1, y1 ) ( x2, y2 ) =
 
         rangeX =
             if x1 == x2 then
-                repeat length x1
+                List.repeat length x1
             else
                 Misc.range x1 x2
 
         rangeY =
             if y1 == y2 then
-                repeat length y1
+                List.repeat length y1
             else
                 Misc.range y1 y2
     in

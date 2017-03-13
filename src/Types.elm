@@ -34,7 +34,14 @@ type Difficulty
     | Hard
     | Impossible
 
+
 type Visibility
     = Hidden
     | Known
     | LineOfSight
+
+
+type LightSource
+    = Dark
+    | Sun
+    | Artificial

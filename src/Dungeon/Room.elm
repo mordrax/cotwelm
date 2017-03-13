@@ -20,7 +20,6 @@ module Dungeon.Room exposing (..)
 --        )
 
 import Dice
-import Dungeon.Corridor as Corridor exposing (..)
 import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Rooms.Circular as Circular
 import Dungeon.Rooms.Config as Config
@@ -35,9 +34,13 @@ import List
 import Random.Pcg as Random exposing (Generator, constant, andThen)
 import Set exposing (Set)
 import Tile exposing (Tile)
+import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
+
+
+-- Model: Room
 
 
 type alias Model =
@@ -46,7 +49,38 @@ type alias Model =
     , roomType : RoomType
     , dimension : Dimension
     , worldPos : Vector
+    , lightSource : LightSource
     }
+
+
+setEntrances : List Entrance -> Model -> Model
+setEntrances val model =
+    { model | entrances = val }
+
+
+setFloors : Floors -> Model -> Model
+setFloors val model =
+    { model | floors = val }
+
+
+setRoomType : RoomType -> Model -> Model
+setRoomType val model =
+    { model | roomType = val }
+
+
+setDimension : Dimension -> Model -> Model
+setDimension val model =
+    { model | dimension = val }
+
+
+setWorldPos : Vector -> Model -> Model
+setWorldPos val model =
+    { model | worldPos = val }
+
+
+setLightSource : LightSource -> Model -> Model
+setLightSource val model =
+    { model | lightSource = val }
 
 
 type alias Corners =
@@ -69,6 +103,7 @@ init =
         , roomType = DeadEnd
         , dimension = ( 1, 1 )
         , worldPos = Vector.zero
+        , lightSource = Dark
         }
 
 
@@ -85,6 +120,7 @@ new entrances floors roomType dimension worldPos =
         , roomType = roomType
         , dimension = dimension
         , worldPos = worldPos
+        , lightSource = Dark
         }
 
 
@@ -106,6 +142,7 @@ generate config =
             |> andThen (roomSizeGenerator config)
             |> andThen (positionGenerator config)
             |> andThen floorsGenerator
+            |> andThen lightSourceGenerator
             |> andThen toRoomGenerator
 
 
@@ -363,10 +400,23 @@ pp (A { worldPos }) =
 -- Privates
 
 
+lightSourceGenerator : Model -> Generator Model
+lightSourceGenerator model =
+    let
+        setArtificialLightSource isLit =
+            if isLit then
+                { model | lightSource = Artificial }
+            else
+                model
+    in
+        Random.bool
+            |> Random.map setArtificialLightSource
+
+
 roomTypeGenerator : Config.Model -> Model -> Generator Model
 roomTypeGenerator config model =
     Config.roomTypeGenerator config
-        |> andThen (\roomType_ -> constant { model | roomType = roomType_ })
+        |> Random.map (flip setRoomType model)
 
 
 positionGenerator : Config.Model -> Model -> Generator Model
@@ -380,13 +430,13 @@ positionGenerator { dungeonSize } ({ dimension } as model) =
                 |> Vector.map (max 0)
     in
         (Dice.d2d maxX maxY)
-            |> andThen (\worldPos_ -> constant { model | worldPos = worldPos_ })
+            |> Random.map (flip setWorldPos model)
 
 
 roomSizeGenerator : Config.Model -> Model -> Generator Model
 roomSizeGenerator config ({ roomType } as model) =
     Config.roomSizeGenerator roomType config
-        |> andThen (\roomSize -> constant { model | dimension = ( roomSize, roomSize ) })
+        |> Random.map (\size -> setDimension ( size, size ) model)
 
 
 headOfWalls : List Walls -> Wall
@@ -419,7 +469,9 @@ floorsGenerator ({ roomType, dimension } as model) =
         makeFloors =
             (templates roomType).makeFloors
     in
-        constant { model | floors = makeFloors dimension }
+        makeFloors dimension
+            |> flip setFloors model
+            |> constant
 
 
 templates : RoomType -> RoomTemplate
