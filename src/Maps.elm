@@ -68,7 +68,7 @@ init armour seed =
                 |> List.map (Tile.setVisibility visibility)
 
         levelOfArea area visibility =
-            Level.init (areaToTiles area visibility) (buildingsOfArea area) []
+            Level.initNonDungeon (areaToTiles area visibility) (buildingsOfArea area) []
 
         mineEntryLevel =
             levelOfArea DungeonLevelOne Hidden

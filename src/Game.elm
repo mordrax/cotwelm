@@ -197,6 +197,7 @@ updateKeyboard keyboardMsg model =
                             , messages = "You climb back up the stairs" :: model.messages
                           }
                             |> updateViewportOffset
+                            |> updateCurrentLevelFOV
                         , Cmd.none
                         )
 
@@ -227,6 +228,7 @@ updateKeyboard keyboardMsg model =
                             , messages = "You go downstairs" :: model.messages
                           }
                             |> updateViewportOffset
+                            |> updateCurrentLevelFOV
                         , Cmd.none
                         )
 
@@ -406,15 +408,17 @@ getGroundAtHero hero maps =
 -- Collision
 
 
+updateCurrentLevelFOV : Model -> Model
+updateCurrentLevelFOV model =
+    Level.updateFOV model.hero.position (Maps.currentLevel model.maps)
+        |> (\level -> { model | maps = Maps.updateCurrentLevel level model.maps })
+
+
 moveHero : Direction -> Model -> ( Model, Bool )
 moveHero dir model =
     let
         ( modelWithHeroMoved, hasMoved ) =
             moveHero_ dir model
-
-        updateCurrentLevelFOV model =
-            Level.updateFOV model.hero.position (Maps.currentLevel model.maps)
-                |> (\level -> { model | maps = Maps.updateCurrentLevel level model.maps })
     in
         case hasMoved of
             False ->
@@ -592,15 +596,15 @@ attackHero monster ({ hero, seed, messages } as model) =
 enterBuilding : Building -> Model -> Model
 enterBuilding building ({ hero, maps } as model) =
     let
-        modelWithHeroMoved =
-            { model | hero = Hero.teleport building.position hero }
+        teleportHero model newPosition =
+            { model | hero = Hero.teleport newPosition hero }
+                |> updateViewportOffset
+                |> updateCurrentLevelFOV
     in
         case building.buildingType of
             Building.Linked link ->
-                { model
-                    | maps = Maps.updateArea link.area maps
-                    , hero = Hero.teleport link.position hero
-                }
+                { model | maps = Maps.updateArea link.area maps }
+                    |> flip teleportHero link.position
 
             Building.Shop shopType ->
                 { model
@@ -612,10 +616,10 @@ enterBuilding building ({ hero, maps } as model) =
                 { model | currentScreen = BuildingScreen building }
 
             Building.StairUp ->
-                modelWithHeroMoved
+                teleportHero model building.position
 
             Building.StairDown ->
-                modelWithHeroMoved
+                teleportHero model building.position
 
 
 {-| Given a position and a map, work out everything on the square
