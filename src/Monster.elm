@@ -39,7 +39,7 @@ type alias Monster =
     , attackTypes : List AttackType
     , attacks : Int
     , speed : Int
-    , visible: Visibility
+    , visible : Visibility
     }
 
 
@@ -890,7 +890,7 @@ types =
     , EvilWarrior
     , WolfMan
     , CaveBear
---    , WhiteWolf
+      --    , WhiteWolf
     , Berserker
     , AnimatedIronStatue
     , TunnelWight
@@ -1045,6 +1045,7 @@ type MonsterType
     | AncientBlueDragon
     | AncientRedDragon
     | Sultur
+
 
 
 --1   name: "Giant Rat"                   Special: " "

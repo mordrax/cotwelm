@@ -236,14 +236,18 @@ removeEntrance entrance ({ entrances, worldPos } as model) =
 
 
 toTiles : Room -> List Tile
-toTiles { floors, entrances, worldPos } =
+toTiles { floors, entrances, worldPos, lightSource } =
     let
         toWorldPos localPos =
             Vector.add worldPos localPos
 
         roomTileTypes =
-            [ ( Tile.DarkDgn, floors )
-            ]
+            case lightSource of
+                Dark ->
+                    [ ( Tile.DarkDgn, floors ) ]
+
+                _ ->
+                    [ ( Tile.LitDgn, floors ) ]
 
         makeTiles ( tileType, positions ) =
             positions

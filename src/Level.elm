@@ -2,7 +2,7 @@ module Level
     exposing
         ( Level
         , Map
-        , init
+        , initNonDungeon
         , fromTiles
         , downstairs
         , upstairs
@@ -48,9 +48,8 @@ setMap : Level -> Map -> Level
 setMap level map =
     { level | map = map }
 
-
-init : List Tile -> List Building -> List Monster -> Level
-init tiles buildings monsters =
+initNonDungeon : List Tile -> List Building -> List Monster -> Level
+initNonDungeon tiles buildings monsters =
     { map = fromTiles tiles
     , buildings = buildings
     , monsters = monsters
