@@ -2,10 +2,10 @@ module Monster
     exposing
         ( Monster
         , MonsterType(..)
+        , make
+        , makeForArena
         , types
         , view
-        , initForArena
-        , init
         , update
         , remove
         , randomMonsters
@@ -20,6 +20,7 @@ import Item.Item as Item exposing (Item)
 import Maybe
 import Random.Pcg as Random exposing (Generator)
 import Stats exposing (Stats)
+import String.Extra as StringX
 import Types exposing (..)
 import Utils.IdGenerator as IdGenerator exposing (ID)
 import Utils.Misc as Misc
@@ -43,6 +44,71 @@ type alias Monster =
     }
 
 
+setName : String -> Monster -> Monster
+setName val monster =
+    { monster | name = val }
+
+
+setType_ : MonsterType -> Monster -> Monster
+setType_ val monster =
+    { monster | type_ = val }
+
+
+setCss : String -> Monster -> Monster
+setCss val monster =
+    { monster | css = val }
+
+
+setPosition : Vector -> Monster -> Monster
+setPosition val monster =
+    { monster | position = val }
+
+
+setStats : Stats -> Monster -> Monster
+setStats val monster =
+    { monster | stats = val }
+
+
+setAttributes : Attributes -> Monster -> Monster
+setAttributes val monster =
+    { monster | attributes = val }
+
+
+setEquipment : Equipment -> Monster -> Monster
+setEquipment val monster =
+    { monster | equipment = val }
+
+
+setExpLevel : Int -> Monster -> Monster
+setExpLevel val monster =
+    { monster | expLevel = val }
+
+
+setBodySize : Types.BodySize -> Monster -> Monster
+setBodySize val monster =
+    { monster | bodySize = val }
+
+
+setAttackTypes : List AttackType -> Monster -> Monster
+setAttackTypes val monster =
+    { monster | attackTypes = val }
+
+
+setAttacks : Int -> Monster -> Monster
+setAttacks val monster =
+    { monster | attacks = val }
+
+
+setSpeed : Int -> Monster -> Monster
+setSpeed val monster =
+    { monster | speed = val }
+
+
+setVisible : Visibility -> Monster -> Monster
+setVisible val monster =
+    { monster | visible = val }
+
+
 type AttackType
     = Melee
     | Ranged
@@ -61,9 +127,9 @@ view { css, position } =
     div [ HA.style (Misc.vectorToHtmlStyle position), HA.class ("tile monster " ++ css) ] []
 
 
-initForArena : MonsterType -> Monster
-initForArena monsterType =
-    init monsterType ( 0, 0 )
+makeForArena : MonsterType -> Monster
+makeForArena monsterType =
+    make monsterType ( 0, 0 )
 
 
 randomMonsters : List Vector -> Generator (List Monster)
@@ -82,7 +148,7 @@ randomMonster position =
     Misc.shuffle types
         |> Random.map (List.head)
         |> Random.map (Maybe.withDefault GiantRat)
-        |> Random.map (flip init position)
+        |> Random.map (flip make position)
 
 
 update : Monster -> List Monster -> List Monster
@@ -95,16 +161,16 @@ remove monster monsters =
     List.filter (\x -> monster.position /= x.position) monsters
 
 
-init : MonsterType -> Vector -> Monster
-init monsterType position =
+make : MonsterType -> Vector -> Monster
+make monsterType position =
     let
         makeEquipment equipment =
             Equipment.equipMany equipment Equipment.init
 
-        make name level attributes itemSlotPair =
-            { name = name
+        init monsterType level attributes itemSlotPair =
+            { name = StringX.toTitleCase monsterType
             , type_ = Types.Monster
-            , css = Misc.toCSS name
+            , css = monsterToCSS monsterType
             , position = position
             , stats = Stats.initExperienced attributes level
             , attributes = attributes
@@ -116,18 +182,6 @@ init monsterType position =
             , speed = 100
             , visible = Hidden
             }
-
-        setAttacks attacks monster =
-            { monster | attacks = attacks }
-
-        setSpeed speed monster =
-            { monster | speed = speed }
-
-        setAttackTypes attackTypes monster =
-            { monster | attackTypes = attackTypes }
-
-        setBodySize size monster =
-            { monster | bodySize = size }
 
         weaponSlot weaponType =
             ( Equipment.WeaponSlot, Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty )
@@ -161,122 +215,121 @@ init monsterType position =
             ( Equipment.ShieldSlot, makeShield shield ) :: basicEquipment weapon armour
     in
         case monsterType of
-            GiantRat ->
-                make "Giant Rat"
-                    1
-                    (Attributes 0 40 50 50 5)
-                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
-                    |> setBodySize Types.Small
-
-            Goblin ->
-                make "Goblin"
-                    1
-                    (Attributes 0 40 60 50 20)
-                    (weaponSlot ItemData.Club :: leatherEquipment)
-                    |> setBodySize Types.Small
-
-            GiantBat ->
-                make "Giant Bat"
-                    1
-                    (Attributes 0 30 70 40 10)
-                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
-                    |> setBodySize Types.Small
-
             Kobold ->
-                make "Kobold"
+                init Kobold
                     2
                     (Attributes 0 30 60 30 50)
                     (weaponSlot ItemData.Crossbow :: leatherEquipment)
                     |> setBodySize Types.Small
                     |> setAttackTypes [ Melee, Ranged ]
 
-            Hobgoblin ->
-                make "Hobgoblin"
-                    2
-                    (Attributes 0 50 60 50 50)
-                    (weaponSlot ItemData.Spear :: leatherEquipment)
+            GiantRat ->
+                init GiantRat
+                    1
+                    (Attributes 0 40 50 50 5)
+                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+                    |> setBodySize Types.Small
 
             LargeSnake ->
-                make "Large Snake"
+                init LargeSnake
                     2
                     (Attributes 0 20 70 30 30)
                     (basicEquipment ItemData.Fangs ItemData.SoftHide)
                     |> setBodySize Types.Tiny
                     |> setAttackTypes [ Poison ]
 
-            Skeleton ->
-                make "Skeleton"
-                    3
-                    (Attributes 0 60 65 40 10)
-                    (basicEquipment ItemData.ShortSword ItemData.Bones)
+            GiantRedAnt ->
+                init GiantRedAnt
+                    4
+                    (Attributes 0 80 50 60 40)
+                    (basicEquipment ItemData.Pincers ItemData.Shell)
+                    |> setBodySize Types.Large
 
             WildDog ->
-                make "Wild Dog"
+                init WildDog
                     3
                     (Attributes 0 50 75 30 30)
                     (basicEquipment ItemData.SmallBite ItemData.SoftHide)
                     |> setBodySize Types.Small
 
+            Skeleton ->
+                init Skeleton
+                    3
+                    (Attributes 0 60 65 40 10)
+                    (basicEquipment ItemData.ShortSword ItemData.Bones)
+
+            GiantTrapdoorSpider ->
+                init GiantTrapdoorSpider
+                    5
+                    (Attributes 0 60 60 60 30)
+                    (basicEquipment ItemData.Pincers ItemData.Shell)
+                    |> setBodySize Types.Large
+
+            GiantBat ->
+                init GiantBat
+                    1
+                    (Attributes 0 30 70 40 10)
+                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+                    |> setBodySize Types.Small
+
+            CarrionCreeper ->
+                init CarrionCreeper
+                    7
+                    (Attributes 0 50 50 50 50)
+                    []
+
+            Goblin ->
+                init Goblin
+                    1
+                    (Attributes 0 40 60 50 20)
+                    (weaponSlot ItemData.Club :: leatherEquipment)
+                    |> setBodySize Types.Small
+
+            Hobgoblin ->
+                init Hobgoblin
+                    2
+                    (Attributes 0 50 60 50 50)
+                    (weaponSlot ItemData.Spear :: leatherEquipment)
+
             -- Special: "Poison"
             Viper ->
-                make "Viper"
+                init Viper
                     3
                     (Attributes 0 20 80 20 30)
                     (basicEquipment ItemData.Fangs ItemData.SoftHide)
                     |> setBodySize Types.Tiny
                     |> setAttackTypes [ Poison ]
 
-            GoblinFighter ->
-                make "Goblin Fighter"
-                    4
-                    (Attributes 0 50 75 50 50)
-                    (basicShieldEquipment ItemData.Axe ItemData.MediumIronShield ItemData.StuddedLeatherArmour)
-                    |> setBodySize Types.Small
-
-            GiantRedAnt ->
-                make "Giant Red Ant"
-                    4
-                    (Attributes 0 80 50 60 40)
-                    (basicEquipment ItemData.Pincers ItemData.Shell)
-                    |> setBodySize Types.Large
-
             WalkingCorpse ->
-                make "Walking Corpse"
+                init WalkingCorpse
                     4
                     (Attributes 0 100 40 95 20)
                     (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
 
             -- Special: "Arrow"
             Bandit ->
-                make "Bandit"
+                init Bandit
                     4
                     (Attributes 0 60 75 60 50)
                     (weaponSlot ItemData.Bow :: leatherEquipment)
                     |> setAttackTypes [ Ranged ]
 
-            GiantTrapdoorSpider ->
-                make "Giant Trapdoor Spider"
-                    5
-                    (Attributes 0 60 60 60 30)
-                    (basicEquipment ItemData.Pincers ItemData.Shell)
-                    |> setBodySize Types.Large
-
             HugeLizard ->
-                make "Huge Lizard"
+                init HugeLizard
                     5
                     (Attributes 0 70 65 60 30)
                     (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
                     |> setBodySize Types.Large
 
             RatMan ->
-                make "Rat Man"
+                init RatMan
                     5
                     (Attributes 0 60 60 60 60)
                     (basicEquipment ItemData.MorningStar ItemData.ToughHide)
 
             -- Special: "Immune to Weapons", "Acid"
-            Slime ->
-                make "Slime"
+            GreenSlime ->
+                init GreenSlime
                     6
                     (Attributes 0 50 50 90 50)
                     (basicEquipment ItemData.SmallBite ItemData.SoftHide)
@@ -284,7 +337,7 @@ init monsterType position =
 
             -- Special: "Poison"
             GiantScorpion ->
-                make "Giant Scorpion"
+                init GiantScorpion
                     6
                     (Attributes 0 75 50 60 50)
                     (basicEquipment ItemData.Pincers ItemData.Shell)
@@ -292,14 +345,14 @@ init monsterType position =
                     |> setAttackTypes [ Poison ]
 
             GrayWolf ->
-                make "Gray Wolf"
+                init GrayWolf
                     6
                     (Attributes 0 60 80 50 50)
                     (basicEquipment ItemData.SmallBite ItemData.ToughHide)
                     |> setBodySize Types.Small
 
             WhiteWolf ->
-                make "White Wolf"
+                init WhiteWolf
                     6
                     (Attributes 0 60 80 50 50)
                     (basicEquipment ItemData.SmallBite ItemData.ToughHide)
@@ -307,46 +360,40 @@ init monsterType position =
                     |> setAttacks 2
 
             -- Special: "Immune to Cold, Lightning"
-            GelantinousGlob ->
-                make "Gelantinous Glob"
+            GelatinousGlob ->
+                init GelatinousGlob
                     7
                     (Attributes 0 50 50 50 50)
                     []
 
             -- Special: "Steals from Belt and Purse, Teleports"
             SmirkingSneakThief ->
-                make "Smirking Sneak Thief"
+                init SmirkingSneakThief
                     7
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Steal ]
 
-            CarrionCreeper ->
-                make "Carrion Creeper"
-                    7
-                    (Attributes 0 50 50 50 50)
-                    []
-
             HugeOgre ->
-                make "Huge Ogre"
+                init HugeOgre
                     8
                     (Attributes 0 50 50 50 50)
                     []
 
             Shadow ->
-                make "Shadow"
+                init Shadow
                     8
                     (Attributes 0 50 50 50 50)
                     []
 
             AnimatedWoodenStatue ->
-                make "Animated Wooden Statue"
+                init AnimatedWoodenStatue
                     8
                     (Attributes 0 50 50 50 50)
                     []
 
             BrownBear ->
-                make "Brown Bear"
+                init BrownBear
                     9
                     (Attributes 0 50 50 50 50)
                     []
@@ -354,249 +401,145 @@ init monsterType position =
             -- Special: "Immune to Poison, Breathes Poison Gas"
             -- Special: "Needles"
             Manticore ->
-                make "Manticore"
+                init Manticore
                     10
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Melee, Poison ]
 
             EerieGhost ->
-                make "Eerie Ghost"
+                init EerieGhost
                     10
                     (Attributes 0 50 50 50 50)
                     []
 
             GruesomeTroll ->
-                make "Gruesome Troll"
+                init GruesomeTroll
                     10
                     (Attributes 0 50 50 50 50)
                     []
 
-            YoungGreenDragon ->
-                make "Young Green Dragon"
-                    11
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Acid ]
-
-            -- Special: "Immune to Cold, Breathes Ice"
-            YoungWhiteDragon ->
-                make "Young White Dragon"
-                    11
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Ice ]
-
-            -- Special: "Immune to Lightning, Breathes Lightning"
-            YoungBlueDragon ->
-                make "Young Blue Dragon"
-                    11
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Lightning ]
-
             -- Special: "Immune to Fire, Breathes Fire"
-            YoungRedDragon ->
-                make "Young Red Dragon"
-                    11
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Fire ]
-
             AnimatedBronzeStatue ->
-                make "Animated Bronze Statue"
+                init AnimatedBronzeStatue
                     11
                     (Attributes 0 50 50 50 50)
                     []
 
             -- Special: "Arrow"
             EvilWarrior ->
-                make "Evil Warrior"
+                init EvilWarrior
                     11
                     (Attributes 0 50 50 50 50)
                     []
 
             WolfMan ->
-                make "Wolf Man"
+                init WolfMan
                     12
                     (Attributes 0 50 50 50 50)
                     []
 
             CaveBear ->
-                make "Cave Bear"
+                init CaveBear
                     12
                     (Attributes 0 50 50 50 50)
                     []
 
-            Berserker ->
-                make "Berserker"
-                    13
-                    (Attributes 0 50 50 50 50)
-                    []
-
             AnimatedIronStatue ->
-                make "Animated Iron Statue"
+                init AnimatedIronStatue
                     13
                     (Attributes 0 50 50 50 50)
                     []
-
-            -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
-            TunnelWight ->
-                make "Tunnel Wight"
-                    13
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Drain ]
-
-            -- Special: "Immune to Lightning, Breathes Lightning"
-            YoungAdultBlueDragon ->
-                make "Young Adult Blue Dragon"
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Lightning ]
-
-            -- Special: "Immune to Poison, Breathes Poison Gas"
-            YoungAdultGreenDragon ->
-                make "Young Adult Green Dragon"
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Acid ]
-
-            -- Special: "Immune to Cold, Breathes Ice"
-            YoungAdultWhiteDragon ->
-                make "Young Adult White Dragon"
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Ice ]
-
-            -- Special: "Drains Intelligence and Mana Permanently"
-            PaleWraith ->
-                make "Pale Wraith"
-                    14
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Drain ]
 
             -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
             BarrowWight ->
-                make "Barrow Wight"
-                    14
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Drain ]
-
-            BearMan ->
-                make "Bear-Man"
-                    14
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            DustElemental ->
-                make "Dust Elemental"
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            -- Special: "Throws Stones"
-            HillGiant ->
-                make "Hill Giant"
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            -- Special: "Immune to Fire, Breathes Fire"
-            YoungAdultRedDragon ->
-                make "Young Adult Red Dragon"
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Fire ]
-
-            -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
-            Wizard ->
-                make "Wizard"
-                    18
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Spell ]
-
-            BullMan ->
-                make "Bull-Man"
-                    16
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            -- Special: "Drains Strength, Constitution, and Dexterity Permanently"
-            CastleWight ->
-                make "Castle Wight"
-                    14
+                init BarrowWight
+                    13
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Drain ]
 
             -- Special: "Drains Intelligence and Mana Permanently"
             DarkWraith ->
-                make "Dark Wraith"
+                init DarkWraith
+                    14
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Drain ]
+
+            BearMan ->
+                init BearMan
+                    14
+                    (Attributes 0 50 50 50 50)
+                    []
+
+            DustElemental ->
+                init DustElemental
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
+
+            -- Special: "Throws Stones"
+            HillGiant ->
+                init HillGiant
+                    15
+                    (Attributes 0 50 50 50 50)
+                    []
+
+            -- Special: "Immune to Fire, Breathes Fire"
+            -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
+            Wizard ->
+                init Wizard
+                    18
+                    (Attributes 0 50 50 50 50)
+                    []
+                    |> setAttackTypes [ Spell ]
+
+            BullMan ->
+                init BullMan
+                    16
+                    (Attributes 0 50 50 50 50)
+                    []
+
+            -- Special: "Drains Intelligence and Mana Permanently"
+            DarkWraith ->
+                init DarkWraith
                     15
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Drain ]
 
             IceElemental ->
-                make "Ice Elemental"
+                init IceElemental
                     16
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Ice ]
 
             Spectre ->
-                make "Spectre"
+                init Spectre
                     17
                     (Attributes 0 50 50 50 50)
                     []
 
             AnimatedMarbleStatue ->
-                make "Animated Marble Statue"
+                init AnimatedMarbleStatue
                     18
                     (Attributes 0 50 50 50 50)
                     []
 
             -- Special: "Immune to Lightning, Breathes Lightning"
-            AdultBlueDragon ->
-                make "Adult Blue Dragon"
-                    19
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Lightning ]
-
             -- Special: "Immune to Poison, Breathes Poison Gas"
-            AdultGreenDragon ->
-                make "Adult Green Dragon"
-                    19
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Acid ]
-
             -- Special: "Immune to Cold, Breathes Ice"
-            AdultWhiteDragon ->
-                make "Adult White Dragon"
-                    19
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Ice ]
-
-            AirElemental ->
-                make "Air Elemental"
+            WindElemental ->
+                init WindElemental
                     16
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Lightning ]
 
             MagmaElemental ->
-                make "Magma Elemental"
+                init MagmaElemental
                     18
                     (Attributes 0 50 50 50 50)
                     []
@@ -604,27 +547,20 @@ init monsterType position =
 
             -- Special: "Throws Stones"
             StoneGiant ->
-                make "Stone Giant"
+                init StoneGiant
                     19
                     (Attributes 0 50 50 50 50)
                     []
 
             TwoHeadedGiant ->
-                make "Two Headed Giant"
+                init TwoHeadedGiant
                     21
                     (Attributes 0 50 50 50 50)
                     []
 
             -- Special: "Immune to Fire, Breathes Fire"
-            AdultRedDragon ->
-                make "Adult Red Dragon"
-                    24
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Fire ]
-
             FireElemental ->
-                make "Fire Elemental"
+                init FireElemental
                     20
                     (Attributes 0 50 50 50 50)
                     []
@@ -632,7 +568,7 @@ init monsterType position =
 
             -- Special: "Throws Iceballs"
             FrostGiant ->
-                make "Frost Giant"
+                init FrostGiant
                     19
                     (Attributes 0 50 50 50 50)
                     []
@@ -640,27 +576,27 @@ init monsterType position =
 
             -- Special: "SuBaseons Spiked Devil"
             SpikedDevil ->
-                make "Spiked Devil"
+                init SpikedDevil
                     20
                     (Attributes 0 50 50 50 50)
                     []
 
             WaterElemental ->
-                make "Water Elemental"
+                init WaterElemental
                     19
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Ice ]
 
             EarthElemental ->
-                make "Earth Elemental"
+                init EarthElemental
                     19
                     (Attributes 0 50 50 50 50)
                     []
 
             -- Special: "Casts Bolt Spells, Slow, SuBaseon Monster, Phase Door, Teleport"
             Necromancer ->
-                make "Necromancer"
+                init Necromancer
                     16
                     (Attributes 0 50 50 50 50)
                     []
@@ -668,23 +604,23 @@ init monsterType position =
 
             -- Special: "Drains HP Permanently"
             Vampire ->
-                make "Vampire"
+                init Vampire
                     20
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Drain ]
 
             -- Special: "Drains Intelligence and Mana Permanently"
-            AbyssWraith ->
-                make "Abyss Wraith"
+            AbyssFiend ->
+                init AbyssFiend
                     21
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Drain ]
 
             -- Special: "Throws Boulders"
-            Utgardhalok ->
-                make "Utgardhalok"
+            TwoHeadedGiant ->
+                init TwoHeadedGiant
                     25
                     (Attributes 0 50 50 50 50)
                     []
@@ -692,158 +628,89 @@ init monsterType position =
 
             -- Special: "Throws Stones"
             FireGiant ->
-                make "Fire Giant"
+                init FireGiant
                     21
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Fire, Ranged ]
 
-            -- Special: "Immune to Lightning, Breathes Lightning"
-            OldBlueDragon ->
-                make "Old Blue Dragon"
-                    28
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Lightning ]
-
-            -- Special: "Immune to Poison, Breathes Poison Gas"
-            OldGreenDragon ->
-                make "Old Green Dragon"
-                    28
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Acid ]
-
-            -- Special: "Immune to Cold, Breathes Ice"
-            OldWhiteDragon ->
-                make "Old White Dragon"
-                    28
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Ice ]
-
             -- Special: "SuBaseons Horned Devil"
             HornedDevil ->
-                make "Horned Devil"
+                init HornedDevil
                     23
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Melee, Fire ]
 
-            -- Special: "Immune to Fire, Breathes Fire"
-            OldRedDragon ->
-                make "Old Red Dragon"
-                    28
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Fire ]
-
-            -- Special: "Throws stones"
-            Rungnir ->
-                make "Rungnir"
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Ranged ]
-
             -- Special: "SuBaseons Ice Devil"
             IceDevil ->
-                make "Ice Devil"
+                init IceDevil
                     23
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Ice ]
 
             -- Special: "Throws Iceballs"
-            Thrym ->
-                make "Thrym"
+            FrostGiantKing ->
+                init FrostGiantKing
                     25
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Ice ]
 
-            -- Special: "Immune to Poison, Breathes Poison Gas"
-            VeryOldGreenDragon ->
-                make "Very Old Green Dragon"
-                    32
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Acid ]
-
             -- Special: "Immune to Cold, Breathes Ice"
-            VeryOldWhiteDragon ->
-                make "Very Old White Dragon"
-                    32
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Ice ]
-
             -- Special: "Immune to Lightning, Breathes Lightning"
-            VeryOldBlueDragon ->
-                make "Very Old Blue Dragon"
-                    32
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Lightning ]
-
             -- Special: "SuBaseons Spiked Devil or Abyss Fiend"
             AbyssFiend ->
-                make "Abyss Fiend"
+                init AbyssFiend
                     26
                     (Attributes 0 50 50 50 50)
                     []
 
             -- Special: "Throws Stones"
-            Thiassa ->
-                make "Thiassa"
+            StoneGiantKing ->
+                init StoneGiantKing
                     26
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Ranged ]
 
             -- Special: "Immune to Fire, Breathes Fire"
-            VeryOldRedDragon ->
-                make "Very Old Red Dragon"
-                    32
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> setAttackTypes [ Fire ]
-
             -- Special: "Immune to Poison, Breathes Poison Gas"
-            AncientGreenDragon ->
-                make "Ancient Green Dragon"
+            GreenDragon ->
+                init GreenDragon
                     35
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Acid ]
 
             -- Special: "Immune to Cold, Breathes Ice"
-            AncientWhiteDragon ->
-                make "Ancient White Dragon"
+            WhiteDragon ->
+                init WhiteDragon
                     35
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Ice ]
 
             -- Special: "Immune to Lightning, Breathes Lightning"
-            AncientBlueDragon ->
-                make "Ancient Blue Dragon"
+            BlueDragon ->
+                init BlueDragon
                     35
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Lightning ]
 
             -- Special: "Immune to Fire, Breathes Fire"
-            AncientRedDragon ->
-                make "Ancient Red Dragon"
+            RedDragon ->
+                init RedDragon
                     35
                     (Attributes 0 50 50 50 50)
                     []
                     |> setAttackTypes [ Fire ]
 
             -- Special: "Casts Fire, Lighting, and Wind Spells"
-            Sultur ->
-                make "Sultur"
+            Surtur ->
+                init Surtur
                     40
                     (Attributes 0 50 50 50 50)
                     []
@@ -852,199 +719,146 @@ init monsterType position =
 
 types : List MonsterType
 types =
-    [ GiantRat
-    , Goblin
-    , GiantBat
-    , Hobgoblin
-    , Kobold
+    [ Kobold
+    , GiantRat
     , LargeSnake
-    , Skeleton
-    , WildDog
-    , Viper
-    , GoblinFighter
     , GiantRedAnt
-    , WalkingCorpse
-    , Bandit
+    , WildDog
+    , Skeleton
     , GiantTrapdoorSpider
-    , HugeLizard
-    , RatMan
-    , Slime
+    , GiantBat
+    , CarrionCreeper
     , GiantScorpion
+    , GreenSlime
+    , Viper
+    , HugeOgre
+    , WalkingCorpse
+    , HugeLizard
+    , Goblin
+    , Hobgoblin
+    , Shadow
+    , SmirkingSneakThief
     , GrayWolf
     , WhiteWolf
-    , GelantinousGlob
-    , SmirkingSneakThief
-    , CarrionCreeper
-    , HugeOgre
-    , Shadow
-    , AnimatedWoodenStatue
     , BrownBear
-    , YoungGreenDragon
-    , YoungWhiteDragon
-    , Manticore
-    , EerieGhost
-    , GruesomeTroll
-    , YoungBlueDragon
-    , YoungRedDragon
-    , AnimatedBronzeStatue
-    , EvilWarrior
-    , WolfMan
     , CaveBear
-      --    , WhiteWolf
-    , Berserker
+    , GelatinousGlob
+    , GruesomeTroll
+    , Manticore
+    , AnimatedBronzeStatue
     , AnimatedIronStatue
-    , TunnelWight
-    , YoungAdultBlueDragon
-    , YoungAdultGreenDragon
-    , YoungAdultWhiteDragon
-    , PaleWraith
-    , BarrowWight
-    , BearMan
-    , DustElemental
-    , HillGiant
-    , YoungAdultRedDragon
-    , Wizard
-    , BullMan
-    , CastleWight
-    , DarkWraith
-    , IceElemental
-    , Spectre
     , AnimatedMarbleStatue
-    , AdultBlueDragon
-    , AdultGreenDragon
-    , AdultWhiteDragon
-    , AirElemental
-    , MagmaElemental
-    , StoneGiant
-    , TwoHeadedGiant
-    , AdultRedDragon
-    , FireElemental
-    , FrostGiant
-    , SpikedDevil
-    , WaterElemental
-    , EarthElemental
+    , AnimatedWoodenStatue
+    , Bandit
+    , EvilWarrior
+    , Wizard
     , Necromancer
+    , BarrowWight
+    , DarkWraith
+    , EerieGhost
+    , Spectre
     , Vampire
-    , AbyssWraith
-    , Utgardhalok
-    , FireGiant
-    , OldBlueDragon
-    , OldGreenDragon
-    , OldWhiteDragon
-    , HornedDevil
-    , OldRedDragon
-    , Rungnir
     , IceDevil
-    , Thrym
-    , VeryOldGreenDragon
-    , VeryOldWhiteDragon
-    , VeryOldBlueDragon
+    , RatMan
+    , WolfMan
+    , BearMan
+    , BullMan
+    , SpikedDevil
+    , HornedDevil
     , AbyssFiend
-    , Thiassa
-    , VeryOldRedDragon
-    , AncientGreenDragon
-    , AncientWhiteDragon
-    , AncientBlueDragon
-    , AncientRedDragon
-    , Sultur
+    , WindElemental
+    , DustElemental
+    , FireElemental
+    , WaterElemental
+    , MagmaElemental
+    , IceElemental
+    , EarthElemental
+    , HillGiant
+    , TwoHeadedGiant
+    , FrostGiant
+    , StoneGiant
+    , FireGiant
+    , Surtur
+    , FireGiantKing
+    , FrostGiantKing
+    , HillGiantKing
+    , StoneGiantKing
+    , RedDragon
+    , BlueDragon
+    , WhiteDragon
+    , GreenDragon
     ]
 
 
 type MonsterType
-    = GiantRat
-    | Goblin
-    | GiantBat
-    | Hobgoblin
-    | Kobold
+    = Kobold
+    | GiantRat
     | LargeSnake
-    | Skeleton
-    | WildDog
-    | Viper
-    | GoblinFighter
     | GiantRedAnt
-    | WalkingCorpse
-    | Bandit
+    | WildDog
+    | Skeleton
     | GiantTrapdoorSpider
-    | HugeLizard
-    | RatMan
-    | Slime
-    | GiantScorpion
-    | GrayWolf
-    | GelantinousGlob
-    | SmirkingSneakThief
+    | GiantBat
     | CarrionCreeper
+    | GiantScorpion
+    | GreenSlime
+    | Viper
     | HugeOgre
+    | WalkingCorpse
+    | HugeLizard
+    | Goblin
+    | Hobgoblin
     | Shadow
-    | AnimatedWoodenStatue
-    | BrownBear
-    | YoungGreenDragon
-    | YoungWhiteDragon
-    | Manticore
-    | EerieGhost
-    | GruesomeTroll
-    | YoungBlueDragon
-    | YoungRedDragon
-    | AnimatedBronzeStatue
-    | EvilWarrior
-    | WolfMan
-    | CaveBear
+    | SmirkingSneakThief
+    | GrayWolf
     | WhiteWolf
-    | Berserker
+    | BrownBear
+    | CaveBear
+    | GelatinousGlob
+    | GruesomeTroll
+    | Manticore
+    | AnimatedBronzeStatue
     | AnimatedIronStatue
-    | TunnelWight
-    | YoungAdultBlueDragon
-    | YoungAdultGreenDragon
-    | YoungAdultWhiteDragon
-    | PaleWraith
-    | BarrowWight
-    | BearMan
-    | DustElemental
-    | HillGiant
-    | YoungAdultRedDragon
-    | Wizard
-    | BullMan
-    | CastleWight
-    | DarkWraith
-    | IceElemental
-    | Spectre
     | AnimatedMarbleStatue
-    | AdultBlueDragon
-    | AdultGreenDragon
-    | AdultWhiteDragon
-    | AirElemental
-    | MagmaElemental
-    | StoneGiant
-    | TwoHeadedGiant
-    | AdultRedDragon
-    | FireElemental
-    | FrostGiant
-    | SpikedDevil
-    | WaterElemental
-    | EarthElemental
+    | AnimatedWoodenStatue
+    | Bandit
+    | EvilWarrior
+    | Wizard
     | Necromancer
+    | BarrowWight
+    | DarkWraith
+    | EerieGhost
+    | Spectre
     | Vampire
-    | AbyssWraith
-    | Utgardhalok
-    | FireGiant
-    | OldBlueDragon
-    | OldGreenDragon
-    | OldWhiteDragon
-    | HornedDevil
-    | OldRedDragon
-    | Rungnir
     | IceDevil
-    | Thrym
-    | VeryOldGreenDragon
-    | VeryOldWhiteDragon
-    | VeryOldBlueDragon
+    | RatMan
+    | WolfMan
+    | BearMan
+    | BullMan
+    | SpikedDevil
+    | HornedDevil
     | AbyssFiend
-    | Thiassa
-    | VeryOldRedDragon
-    | AncientGreenDragon
-    | AncientWhiteDragon
-    | AncientBlueDragon
-    | AncientRedDragon
-    | Sultur
+    | WindElemental
+    | DustElemental
+    | FireElemental
+    | WaterElemental
+    | MagmaElemental
+    | IceElemental
+    | EarthElemental
+    | HillGiant
+    | TwoHeadedGiant
+    | FrostGiant
+    | StoneGiant
+    | FireGiant
+    | Surtur
+    | FireGiantKing
+    | FrostGiantKing
+    | HillGiantKing
+    | StoneGiantKing
+    | RedDragon
+    | BlueDragon
+    | WhiteDragon
+    | GreenDragon
 
 
 
@@ -1143,74 +957,211 @@ type MonsterType
 --120 name: "Ancient Red Dragon"          Special: "Immune to Fire, Breathes Fire"
 --344 name: "Sultur"                      Special: "Casts Fire, Lighting, and Wind Spells"
 --
---
---.maleHero
---.femaleHero
---.kobold
---.giantRat
---.largeSnake
---.giantAnt
---.wildDog
---.skeleton
---.giantTrapdoorSpider
---.giantBat
---.carrionCreeper
---.giantScorpion
---.greenSlime
---.viper
---.ogre
---.walkingCorpse
---.hugeLizard
---.goblin
---.hobgoblin
---.spectre
---.thief
---.wolf
---.direWolf
---.brownBear
---.caveBear
---.gelatinousGlob
---.troll
---.manticore
---.bronzeGolem
---.ironGolem
---.diamondGolem
---.woodenGolem
---.bandit
---.warrior
---.wizard
---.necromancer
---.wight
---.wraith
---.ghost
---.shadow
---.vampire
---.iceDevil
---.ratMan
---.wolfMan
---.bearMan
---.bullMan
---.spikedDevil
---.hornedDevil
---.abyssFiend
---.windElemental
---.dustElemental
---.fireElemental
---.waterElemental
---.magmaElemental
---.iceElemental
---.earthElemental
---.hillGiant
---.twoHeadGiant
---.frostGiant
---.stoneGiant
---.fireGiant
---.surtur
---.fireGiantKing
---.frostGiantKing
---.hillGiantKing
---.stoneGiantKing
---.redDragon
---.blueDragon
---.whiteDragon
---.greenDragon
+
+
+monsterToCSS : MonsterType -> String
+monsterToCSS monsterType =
+    case monsterType of
+        Kobold ->
+            "kobold"
+
+        GiantRat ->
+            "giant-rat"
+
+        LargeSnake ->
+            "large-snake"
+
+        GiantRedAnt ->
+            "giant-red-ant"
+
+        WildDog ->
+            "wild-dog"
+
+        Skeleton ->
+            "skeleton"
+
+        GiantTrapdoorSpider ->
+            "giant-trapdoor-spider"
+
+        GiantBat ->
+            "giant-bat"
+
+        CarrionCreeper ->
+            "carrion-creeper"
+
+        GiantScorpion ->
+            "giant-scorpion"
+
+        GreenSlime ->
+            "green-slime"
+
+        Viper ->
+            "viper"
+
+        HugeOgre ->
+            "huge-ogre"
+
+        WalkingCorpse ->
+            "walking-corpse"
+
+        HugeLizard ->
+            "huge-lizard"
+
+        Goblin ->
+            "goblin"
+
+        Hobgoblin ->
+            "hobgoblin"
+
+        Shadow ->
+            "shadow"
+
+        SmirkingSneakThief ->
+            "smirking-sneak-thief"
+
+        GrayWolf ->
+            "gray-wolf"
+
+        WhiteWolf ->
+            "white-wolf"
+
+        BrownBear ->
+            "brown-bear"
+
+        CaveBear ->
+            "cave-bear"
+
+        GelatinousGlob ->
+            "gelatinous-glob"
+
+        GruesomeTroll ->
+            "gruesome-troll"
+
+        Manticore ->
+            "manticore"
+
+        AnimatedBronzeStatue ->
+            "animated-bronze-statue"
+
+        AnimatedIronStatue ->
+            "animated-iron-statue"
+
+        AnimatedMarbleStatue ->
+            "animated-marble-statue"
+
+        AnimatedWoodenStatue ->
+            "animated-wooden-statue"
+
+        Bandit ->
+            "bandit"
+
+        EvilWarrior ->
+            "evil-warrior"
+
+        Wizard ->
+            "wizard"
+
+        Necromancer ->
+            "necromancer"
+
+        BarrowWight ->
+            "barrow-wight"
+
+        DarkWraith ->
+            "dark-wraith"
+
+        EerieGhost ->
+            "eerie-ghost"
+
+        Spectre ->
+            "spectre"
+
+        Vampire ->
+            "vampire"
+
+        IceDevil ->
+            "ice-devil"
+
+        RatMan ->
+            "rat-man"
+
+        WolfMan ->
+            "wolf-man"
+
+        BearMan ->
+            "bear-man"
+
+        BullMan ->
+            "bull-man"
+
+        SpikedDevil ->
+            "spiked-devil"
+
+        HornedDevil ->
+            "horned-devil"
+
+        AbyssFiend ->
+            "abyss-fiend"
+
+        WindElemental ->
+            "wind-elemental"
+
+        DustElemental ->
+            "dust-elemental"
+
+        FireElemental ->
+            "fire-elemental"
+
+        WaterElemental ->
+            "water-elemental"
+
+        MagmaElemental ->
+            "magma-elemental"
+
+        IceElemental ->
+            "ice-elemental"
+
+        EarthElemental ->
+            "earth-elemental"
+
+        HillGiant ->
+            "hill-giant"
+
+        TwoHeadedGiant ->
+            "two-headed-giant"
+
+        FrostGiant ->
+            "frost-giant"
+
+        StoneGiant ->
+            "stone-giant"
+
+        FireGiant ->
+            "fire-giant"
+
+        Surtur ->
+            "surtur"
+
+        FireGiantKing ->
+            "fire-giant-king"
+
+        FrostGiantKing ->
+            "frost-giant-king"
+
+        HillGiantKing ->
+            "hill-giant-king"
+
+        StoneGiantKing ->
+            "stone-giant-king"
+
+        RedDragon ->
+            "red-dragon"
+
+        BlueDragon ->
+            "blue-dragon"
+
+        WhiteDragon ->
+            "white-dragon"
+
+        GreenDragon ->
+            "green-dragon"

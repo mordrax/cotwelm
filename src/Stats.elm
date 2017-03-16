@@ -76,7 +76,8 @@ init attributes =
         sp =
             spBonus attributes
     in
-        Stats hp hp hp sp sp sp <| Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
+        Stats hp hp hp sp sp sp <|
+            Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
 
 
 initExperienced : Attributes -> Int -> Stats
