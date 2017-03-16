@@ -51,6 +51,9 @@ foldResult f acc list =
 
 {-| Removes all non alphabetical characters and condenses it into one hyphen.
     Then lowercases the whole string.
+    kobold -> kobold
+    GiantRat -> giant-rat
+    giant_Rat -> giant-rat
 -}
 toCSS : String -> String
 toCSS str =

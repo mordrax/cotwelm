@@ -709,7 +709,7 @@ initMatches : Dict Int Hero -> CustomEquipment -> List Match
 initMatches heroLookup ( weaponType, armourType ) =
     let
         newMonster monsterType =
-            Monster.initForArena monsterType
+            Monster.makeForArena monsterType
 
         newMatch monster =
             let
