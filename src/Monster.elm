@@ -5,7 +5,7 @@ module Monster
         , makeForArena
         , makeRandomMonsters
         , remove
-        , update
+        , replace
         , view
         )
 
@@ -60,8 +60,8 @@ view =
 -- base
 
 
-update : Monster -> List Monster -> List Monster
-update monster monsters =
+replace : Monster -> List Monster -> List Monster
+replace monster monsters =
     monster :: remove monster monsters
 
 
