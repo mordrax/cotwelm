@@ -10,7 +10,12 @@ module Attributes
         , set
         )
 
---where
+{-| Attributes form the basic building blocks of the hero/monsters. For any given humanoid, they range from 0 to 100 where 50 is 'average', 0 means disabled and 100 is the peak of
+what the humanoid form can sustain.
+
+This means that monsters such as giants, dragons, ghosts can go above or below these numbers, using 50 as a baseline for comparison.
+
+-}
 
 import Html exposing (..)
 import Html.Events as HE
