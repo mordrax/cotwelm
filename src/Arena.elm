@@ -16,6 +16,7 @@ import Item.Data as ItemData
 import Item.Item as Item exposing (Item)
 import Item.Weapon as Weapon
 import Monster exposing (Monster)
+import Monsters.Types
 import Process
 import Random.Extra as RandomX
 import Random.Pcg as Random exposing (Generator)
@@ -416,7 +417,7 @@ combatView { matchResults } =
                 ]
             ]
         , tbody []
-            (Monster.types
+            (Monsters.Types.monsterTypesToList
                 |> List.map toString
                 |> List.map (\monsterType -> Dict.get monsterType matchResults)
                 |> List.map matchView
@@ -742,6 +743,6 @@ initMatches heroLookup ( weaponType, armourType ) =
                 Match hero monster 0 0 [] [] [] [] []
     in
         --        List.map newMatch (List.take 20 Monster.types)
-        List.map newMonster Monster.types
+        List.map newMonster Monsters.Types.monsterTypesToList
             |> List.filter (.expLevel >> flip (>=) 5)
             |> List.map newMatch
