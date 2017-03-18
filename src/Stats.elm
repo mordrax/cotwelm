@@ -12,39 +12,14 @@ module Stats
         )
 
 import Attributes exposing (Attributes)
-
+import Types exposing (..)
 
 type Msg
     = Alive
     | Dead
 
 
-type Poison
-    = NotPoisoned
-    | MinorPoison
-    | MajorPoison
-    | AcutePoison
 
-
-type Adrenaline
-    = Calm
-    | Rush Int
-    | CoolOff Int
-
-
-type Burn
-    = NotBurning
-    | Burning Int
-
-
-type Frost
-    = NotFrozen
-    | Frozen Int
-
-
-type Shock
-    = NotShocked
-    | Shocked Int
 
 
 type alias Stats =
@@ -59,11 +34,11 @@ type alias Stats =
 
 
 type alias Effects =
-    { poison : Poison
-    , adrenaline : Adrenaline
-    , burn : Burn
-    , frost : Frost
-    , shock : Shock
+    { poison : PoisonStatus
+    , adrenaline : AdrenalineStatus
+    , burn : BurnStatus
+    , frost : FreezeStatus
+    , shock : ShockStatus
     }
 
 

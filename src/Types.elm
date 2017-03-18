@@ -45,3 +45,32 @@ type LightSource
     = Dark
     | Sun
     | Artificial
+
+
+-- Hero/Monster status effects
+type PoisonStatus
+    = NotPoisoned
+    | MinorPoison
+    | MajorPoison
+    | AcutePoison
+
+
+type AdrenalineStatus
+    = Calm
+    | Rush Int
+    | CoolOff Int
+
+
+type BurnStatus
+    = NotBurning
+    | Burning Int
+
+
+type FreezeStatus
+    = NotFrozen
+    | Frozen Int
+
+
+type ShockStatus
+    = NotShocked
+    | Shocked Int
