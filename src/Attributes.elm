@@ -3,11 +3,12 @@ module Attributes
         ( Attributes
         , Attribute(..)
         , Msg
-        , view
         , init
         , initCustom
-        , update
+        , multiplier
         , set
+        , update
+        , view
         )
 
 {-| Attributes form the basic building blocks of the hero/monsters. For any given humanoid, they range from 0 to 100 where 50 is 'average', 0 means disabled and 100 is the peak of
@@ -82,6 +83,24 @@ update msg model =
 
                 Dexterity ->
                     { model | dex = model.dex + value, ava = model.ava - value }
+
+multiplier : ( Attribute, Float ) -> Attributes -> Attributes
+multiplier ( attribute, value ) model =
+    case attribute of
+        Available ->
+            { model | ava = floor (toFloat model.ava * value) }
+
+        Strength ->
+            { model | str = floor (toFloat model.str * value) }
+
+        Intelligence ->
+            { model | int = floor (toFloat model.int * value) }
+
+        Constitution ->
+            { model | con = floor (toFloat model.con * value) }
+
+        Dexterity ->
+            { model | dex = floor (toFloat model.dex * value) }
 
 
 set : ( Attribute, Int ) -> Attributes -> Attributes

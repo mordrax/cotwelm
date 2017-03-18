@@ -44,555 +44,472 @@ randomMonster position =
         |> Random.map (flip make position)
 
 
+weaponSlot : ItemData.WeaponType -> ( Equipment.EquipmentSlot, Item )
+weaponSlot weaponType =
+    ( Equipment.WeaponSlot, Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty )
+
+
+armourSlot : ItemData.ArmourType -> ( Equipment.EquipmentSlot, Item )
+armourSlot armourType =
+    ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty )
+
+
+makeShield : ItemData.ShieldType -> Item
+makeShield shieldType =
+    Item.new (ItemData.ItemTypeShield shieldType) IdGenerator.empty
+
+
+basicEquipment : ItemData.WeaponType -> ItemData.ArmourType -> Equipment
+basicEquipment weapon armour =
+    Equipment.equipMany
+        [ weaponSlot weapon
+        , armourSlot armour
+        ]
+        Equipment.init
+
+
+basicShieldEquipment : ItemData.WeaponType -> ItemData.ShieldType -> ItemData.ArmourType -> Equipment
+basicShieldEquipment weapon shield armour =
+    let
+        equipment =
+            basicEquipment weapon armour
+    in
+        equipment
+            |> Equipment.equip ( Equipment.ShieldSlot, makeShield shield )
+            |> Result.withDefault equipment
+
+
 makeForArena : MonsterType -> Monster
 makeForArena monsterType =
     make monsterType ( 0, 0 )
 
 
+make_ : Attributes -> MonsterType -> Monster
+make_ attributes monsterType =
+    { name = StringX.toTitleCase (toString monsterType)
+    , type_ = Types.Monster
+    , monsterType = monsterType
+    , position = ( 0, 0 )
+    , stats = Stats.init attributes
+    , attributes = attributes
+    , equipment = Equipment.init
+    , expLevel = 1
+    , bodySize = Types.Medium
+    , attackTypes = [ Melee ]
+    , attacks = 1
+    , speed = 100
+    , visible = Hidden
+    }
+
+
+makeGiantInsect : MonsterType -> Monster
+makeGiantInsect =
+    make_ (Attributes 0 75 50 40 10)
+        >> Model.setEquipment (basicEquipment ItemData.Pincers ItemData.Shell)
+        >> Model.setBodySize Types.Large
+
+
 make : MonsterType -> Vector -> Monster
 make monsterType position =
     let
-        makeEquipment equipment =
-            Equipment.equipMany equipment Equipment.init
-
-        init monsterType level attributes itemSlotPair =
-            { name = StringX.toTitleCase (toString monsterType)
-            , type_ = Types.Monster
-            , monsterType = monsterType
-            , position = position
-            , stats = Stats.initExperienced attributes level
-            , attributes = attributes
-            , equipment = makeEquipment itemSlotPair
-            , expLevel = level
-            , bodySize = Types.Medium
-            , attackTypes = [ Melee ]
-            , attacks = 1
-            , speed = 100
-            , visible = Hidden
-            }
-
-        weaponSlot weaponType =
-            ( Equipment.WeaponSlot, Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty )
-
-        armourSlot armourType =
-            ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty )
-
-        makeShield shieldType =
-            Item.new (ItemData.ItemTypeShield shieldType) IdGenerator.empty
-
-        basicEquipment weapon armour =
-            [ weaponSlot weapon
-            , armourSlot armour
-            ]
+        init monsterType level attributes equipment =
+            make_ attributes monsterType
+                |> Model.setEquipment equipment
+                |> Model.setPosition position
+                |> Model.setExpLevel level
 
         leatherEquipment =
-            [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.LeatherArmour) IdGenerator.empty )
-            , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.LeatherHelmet) IdGenerator.empty )
-            , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
-            , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
-            ]
+            Equipment.equipMany
+                [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.LeatherArmour) IdGenerator.empty )
+                , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.LeatherHelmet) IdGenerator.empty )
+                , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
+                , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
+                ]
+                Equipment.init
 
         ironEquipment =
-            [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.ChainMail) IdGenerator.empty )
-            , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.IronHelmet) IdGenerator.empty )
-            , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
-            , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
-            ]
-
-        basicShieldEquipment weapon shield armour =
-            ( Equipment.ShieldSlot, makeShield shield ) :: basicEquipment weapon armour
+            Equipment.equipMany
+                [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.ChainMail) IdGenerator.empty )
+                , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.IronHelmet) IdGenerator.empty )
+                , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
+                , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
+                ]
+                Equipment.init
     in
         case monsterType of
-            -- Misc
-            GreenSlime ->
-                init GreenSlime
-                    6
-                    (Attributes 0 50 50 90 50)
-                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
-                    |> Model.setAttackTypes [ Acid ]
-
-            GelatinousGlob ->
-                init GelatinousGlob
-                    7
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            LargeSnake ->
-                init LargeSnake
-                    2
-                    (Attributes 0 20 70 30 30)
-                    (basicEquipment ItemData.Fangs ItemData.SoftHide)
-                    |> Model.setBodySize Types.Tiny
-                    |> Model.setAttackTypes [ Poison ]
-
-            Viper ->
-                init Viper
-                    3
-                    (Attributes 0 20 80 20 30)
-                    (basicEquipment ItemData.Fangs ItemData.SoftHide)
-                    |> Model.setBodySize Types.Tiny
-                    |> Model.setAttackTypes [ Poison ]
-
-            Manticore ->
-                init Manticore
-                    10
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Melee, Poison ]
-
-            GruesomeTroll ->
-                init GruesomeTroll
-                    10
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            -- Humanoids --
-            Kobold ->
-                init Kobold
-                    2
-                    (Attributes 0 30 60 30 50)
-                    (weaponSlot ItemData.Crossbow :: leatherEquipment)
-                    |> Model.setBodySize Types.Small
-                    |> Model.setAttackTypes [ Melee, Ranged ]
-
-            Goblin ->
-                init Goblin
-                    1
-                    (Attributes 0 40 60 50 20)
-                    (weaponSlot ItemData.Club :: leatherEquipment)
-                    |> Model.setBodySize Types.Small
-
-            Hobgoblin ->
-                init Hobgoblin
-                    2
-                    (Attributes 0 50 60 50 50)
-                    (weaponSlot ItemData.Spear :: leatherEquipment)
-
-            Bandit ->
-                init Bandit
-                    4
-                    (Attributes 0 60 75 60 50)
-                    (weaponSlot ItemData.Bow :: leatherEquipment)
-                    |> Model.setAttackTypes [ Ranged ]
-
-            SmirkingSneakThief ->
-                init SmirkingSneakThief
-                    7
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Steal ]
-
-            EvilWarrior ->
-                init EvilWarrior
-                    11
-                    (Attributes 0 50 50 50 50)
-                    []
-
+            --            -----------
+            --            -- Other --
+            --            -----------
+            --            GreenSlime ->
+            --                init GreenSlime
+            --                    (Attributes 0 50 50 90 50)
+            --                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
+            --                    |> Model.setAttackTypes [ Acid ]
+            --
+            --            GelatinousGlob ->
+            --                init GelatinousGlob
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            ------------
+            --            -- Statue --
+            --            ------------
+            --            AnimatedBronzeStatue ->
+            --                init AnimatedBronzeStatue
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            AnimatedWoodenStatue ->
+            --                init AnimatedWoodenStatue
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            AnimatedIronStatue ->
+            --                init AnimatedIronStatue
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            AnimatedMarbleStatue ->
+            --                init AnimatedMarbleStatue
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            ---------------
+            --            -- Humanoids --
+            --            ---------------
+            --            Kobold ->
+            --                init Kobold
+            --                    (Attributes 0 30 60 30 50)
+            --                    (weaponSlot ItemData.Crossbow :: leatherEquipment)
+            --                    |> Model.setBodySize Types.Small
+            --                    |> Model.setAttackTypes [ Melee, Ranged ]
+            --
+            --            Goblin ->
+            --                init Goblin
+            --                    (Attributes 0 40 60 50 20)
+            --                    (weaponSlot ItemData.Club :: leatherEquipment)
+            --                    |> Model.setBodySize Types.Small
+            --
+            --            Hobgoblin ->
+            --                init Hobgoblin
+            --                    (Attributes 0 50 60 50 50)
+            --                    (weaponSlot ItemData.Spear :: leatherEquipment)
+            --
+            --            Bandit ->
+            --                init Bandit
+            --                    (Attributes 0 60 75 60 50)
+            --                    (weaponSlot ItemData.Bow :: leatherEquipment)
+            --                    |> Model.setAttackTypes [ Ranged ]
+            --
+            --            SmirkingSneakThief ->
+            --                init SmirkingSneakThief
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Steal ]
+            --
+            --            GruesomeTroll ->
+            --                init GruesomeTroll
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            EvilWarrior ->
+            --                init EvilWarrior
+            --                    (Attributes 0 50 50 50 50)
             -------------
             -- Insects --
             -------------
             GiantScorpion ->
-                init GiantScorpion
-                    6
-                    (Attributes 0 75 50 60 50)
-                    (basicEquipment ItemData.Pincers ItemData.Shell)
-                    |> Model.setBodySize Types.Large
-                    |> Model.setAttackTypes [ Poison ]
+                makeGiantInsect GiantScorpion
+                    |> Model.setAttackTypes [ Poison, Melee ]
+                    |> Model.modifyAttributes Nothing (Just <| (*) 1.2) Nothing Nothing
 
             GiantTrapdoorSpider ->
-                init GiantTrapdoorSpider
-                    5
-                    (Attributes 0 60 60 60 30)
-                    (basicEquipment ItemData.Pincers ItemData.Shell)
-                    |> Model.setBodySize Types.Large
+                makeGiantInsect GiantTrapdoorSpider
 
             CarrionCreeper ->
-                init CarrionCreeper
-                    7
-                    (Attributes 0 50 50 50 50)
-                    []
+                makeGiantInsect CarrionCreeper
+                    |> Model.modifyAttributes Nothing Nothing (Just <| (*) 1.5) Nothing
 
             ------------
             -- Wolves --
             ------------
-            WildDog ->
-                init WildDog
-                    3
-                    (Attributes 0 50 75 30 30)
-                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
-                    |> Model.setBodySize Types.Small
-
-            GrayWolf ->
-                init GrayWolf
-                    6
-                    (Attributes 0 60 80 50 50)
-                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
-                    |> Model.setBodySize Types.Small
-
-            WhiteWolf ->
-                init WhiteWolf
-                    6
-                    (Attributes 0 60 80 50 50)
-                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
-                    |> Model.setBodySize Types.Small
-                    |> Model.setAttacks 2
-
-            -- Animals
-            GiantRat ->
-                init GiantRat
-                    1
-                    (Attributes 0 40 50 50 5)
-                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
-                    |> Model.setBodySize Types.Small
-
-            GiantBat ->
-                init GiantBat
-                    1
-                    (Attributes 0 30 70 40 10)
-                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
-                    |> Model.setBodySize Types.Small
-
-            HugeLizard ->
-                init HugeLizard
-                    5
-                    (Attributes 0 70 65 60 30)
-                    (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
-                    |> Model.setBodySize Types.Large
-
-            GiantRedAnt ->
-                init GiantRedAnt
-                    4
-                    (Attributes 0 80 50 60 40)
-                    (basicEquipment ItemData.Pincers ItemData.Shell)
-                    |> Model.setBodySize Types.Large
-
-            BrownBear ->
-                init BrownBear
-                    9
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            CaveBear ->
-                init CaveBear
-                    12
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            -------------
-            -- Statues --
-            -------------
-            AnimatedBronzeStatue ->
-                init AnimatedBronzeStatue
-                    11
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            AnimatedWoodenStatue ->
-                init AnimatedWoodenStatue
-                    8
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            AnimatedIronStatue ->
-                init AnimatedIronStatue
-                    13
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            AnimatedMarbleStatue ->
-                init AnimatedMarbleStatue
-                    18
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            -------------
-            -- Undeads --
-            -------------
-            Skeleton ->
-                init Skeleton
-                    3
-                    (Attributes 0 60 65 40 10)
-                    (basicEquipment ItemData.ShortSword ItemData.Bones)
-
-            WalkingCorpse ->
-                init WalkingCorpse
-                    4
-                    (Attributes 0 100 40 95 20)
-                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
-
-            Shadow ->
-                init Shadow
-                    8
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            EerieGhost ->
-                init EerieGhost
-                    10
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            BarrowWight ->
-                init BarrowWight
-                    13
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Drain ]
-
-            DarkWraith ->
-                init DarkWraith
-                    14
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Drain ]
-
-            Spectre ->
-                init Spectre
-                    17
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            -- Special: "Drains HP Permanently"
-            Vampire ->
-                init Vampire
-                    20
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Drain ]
-
-            ----------------
-            -- Animan men --
-            ----------------
-            RatMan ->
-                init RatMan
-                    5
-                    (Attributes 0 60 60 60 60)
-                    (basicEquipment ItemData.MorningStar ItemData.ToughHide)
-
-            BearMan ->
-                init BearMan
-                    14
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            BullMan ->
-                init BullMan
-                    16
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            WolfMan ->
-                init WolfMan
-                    12
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            -------------
-            -- Casters --
-            -------------
-            -- Special: "Casts Bolt Spells, Slow, summon Monster, Phase Door, Teleport"
-            Wizard ->
-                init Wizard
-                    18
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Spell ]
-
-            -- Special: "Casts Bolt Spells, Slow, summon Monster, Phase Door, Teleport"
-            Necromancer ->
-                init Necromancer
-                    16
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Spell ]
-
-            ----------------
-            -- Elementals --
-            ----------------
-            DustElemental ->
-                init DustElemental
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            IceElemental ->
-                init IceElemental
-                    16
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ice ]
-
-            WindElemental ->
-                init WindElemental
-                    16
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Lightning ]
-
-            MagmaElemental ->
-                init MagmaElemental
-                    18
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Fire ]
-
-            FireElemental ->
-                init FireElemental
-                    20
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Fire ]
-
-            WaterElemental ->
-                init WaterElemental
-                    19
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ice ]
-
-            EarthElemental ->
-                init EarthElemental
-                    19
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            ------------
-            -- Devils --
-            ------------
-            SpikedDevil ->
-                init SpikedDevil
-                    20
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            HornedDevil ->
-                init HornedDevil
-                    23
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Melee, Fire ]
-
-            IceDevil ->
-                init IceDevil
-                    23
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ice ]
-
-            AbyssFiend ->
-                init AbyssFiend
-                    26
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            ------------
-            -- Giants --
-            ------------
-            HugeOgre ->
-                init HugeOgre
-                    8
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            HillGiant ->
-                init HillGiant
-                    15
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            StoneGiant ->
-                init StoneGiant
-                    19
-                    (Attributes 0 50 50 50 50)
-                    []
-
-            FrostGiant ->
-                init FrostGiant
-                    19
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ice ]
-
-            TwoHeadedGiant ->
-                init TwoHeadedGiant
-                    25
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ranged ]
-
-            FireGiant ->
-                init FireGiant
-                    21
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Fire, Ranged ]
-
-            HillGiantKing ->
-                init HillGiantKing
-                    25
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ice ]
-
-            FireGiantKing ->
-                init FireGiantKing
-                    25
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Fire ]
-
-            FrostGiantKing ->
-                init FrostGiantKing
-                    25
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ice ]
-
-            StoneGiantKing ->
-                init StoneGiantKing
-                    26
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ranged ]
-
-            -------------
-            -- Dragons --
-            -------------
-            GreenDragon ->
-                init GreenDragon
-                    35
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Acid ]
-
-            WhiteDragon ->
-                init WhiteDragon
-                    35
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Ice ]
-
-            BlueDragon ->
-                init BlueDragon
-                    35
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Lightning ]
-
-            RedDragon ->
-                init RedDragon
-                    35
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Fire ]
-
-            -- Special: "Casts Fire, Lighting, and Wind Spells"
-            Surtur ->
-                init Surtur
-                    40
-                    (Attributes 0 50 50 50 50)
-                    []
-                    |> Model.setAttackTypes [ Melee, Spell, Fire, Lightning, Ice ]
+            --            WildDog ->
+            --                init WildDog
+            --                    (Attributes 0 50 75 30 30)
+            --                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
+            --                    |> Model.setBodySize Types.Small
+            --
+            --            GrayWolf ->
+            --                init GrayWolf
+            --                    (Attributes 0 60 80 50 50)
+            --                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
+            --                    |> Model.setBodySize Types.Small
+            --
+            --            WhiteWolf ->
+            --                init WhiteWolf
+            --                    (Attributes 0 60 80 50 50)
+            --                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
+            --                    |> Model.setBodySize Types.Small
+            --                    |> Model.setAttacks 2
+            --
+            --            -- Animals
+            --            GiantRat ->
+            --                init GiantRat
+            --                    (Attributes 0 40 50 50 5)
+            --                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+            --                    |> Model.setBodySize Types.Small
+            --
+            --            GiantBat ->
+            --                init GiantBat
+            --                    (Attributes 0 30 70 40 10)
+            --                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+            --                    |> Model.setBodySize Types.Small
+            --
+            --            LargeSnake ->
+            --                init LargeSnake
+            --                    (Attributes 0 20 70 30 30)
+            --                    (basicEquipment ItemData.Fangs ItemData.SoftHide)
+            --                    |> Model.setBodySize Types.Tiny
+            --                    |> Model.setAttackTypes [ Poison ]
+            --
+            --            Viper ->
+            --                init Viper
+            --                    (Attributes 0 20 80 20 30)
+            --                    (basicEquipment ItemData.Fangs ItemData.SoftHide)
+            --                    |> Model.setBodySize Types.Tiny
+            --                    |> Model.setAttackTypes [ Poison ]
+            --
+            --            HugeLizard ->
+            --                init HugeLizard
+            --                    (Attributes 0 70 65 60 30)
+            --                    (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
+            --                    |> Model.setBodySize Types.Large
+            --
+            --            GiantRedAnt ->
+            --                init GiantRedAnt
+            --                    (Attributes 0 80 50 60 40)
+            --                    (basicEquipment ItemData.Pincers ItemData.Shell)
+            --                    |> Model.setBodySize Types.Large
+            --
+            --            BrownBear ->
+            --                init BrownBear
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            CaveBear ->
+            --                init CaveBear
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            Manticore ->
+            --                init Manticore
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Melee, Poison ]
+            --
+            --            -------------
+            --            -- Undeads --
+            --            -------------
+            --            Skeleton ->
+            --                init Skeleton
+            --                    (Attributes 0 60 65 40 10)
+            --                    (basicEquipment ItemData.ShortSword ItemData.Bones)
+            --
+            --            WalkingCorpse ->
+            --                init WalkingCorpse
+            --                    (Attributes 0 100 40 95 20)
+            --                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+            --
+            --            Shadow ->
+            --                init Shadow
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            EerieGhost ->
+            --                init EerieGhost
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            BarrowWight ->
+            --                init BarrowWight
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Drain ]
+            --
+            --            DarkWraith ->
+            --                init DarkWraith
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Drain ]
+            --
+            --            Spectre ->
+            --                init Spectre
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            -- Special: "Drains HP Permanently"
+            --            Vampire ->
+            --                init Vampire
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Drain ]
+            --
+            --            ----------------
+            --            -- Animan men --
+            --            ----------------
+            --            RatMan ->
+            --                init RatMan
+            --                    (Attributes 0 60 60 60 60)
+            --                    (basicEquipment ItemData.MorningStar ItemData.ToughHide)
+            --
+            --            BearMan ->
+            --                init BearMan
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            BullMan ->
+            --                init BullMan
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            WolfMan ->
+            --                init WolfMan
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            -------------
+            --            -- Casters --
+            --            -------------
+            --            -- Special: "Casts Bolt Spells, Slow, summon Monster, Phase Door, Teleport"
+            --            Wizard ->
+            --                init Wizard
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Spell ]
+            --
+            --            -- Special: "Casts Bolt Spells, Slow, summon Monster, Phase Door, Teleport"
+            --            Necromancer ->
+            --                init Necromancer
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Spell ]
+            --
+            --            ----------------
+            --            -- Elementals --
+            --            ----------------
+            --            DustElemental ->
+            --                init DustElemental
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            IceElemental ->
+            --                init IceElemental
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ice ]
+            --
+            --            WindElemental ->
+            --                init WindElemental
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Lightning ]
+            --
+            --            MagmaElemental ->
+            --                init MagmaElemental
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Fire ]
+            --
+            --            FireElemental ->
+            --                init FireElemental
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Fire ]
+            --
+            --            WaterElemental ->
+            --                init WaterElemental
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ice ]
+            --
+            --            EarthElemental ->
+            --                init EarthElemental
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            ------------
+            --            -- Devils --
+            --            ------------
+            --            SpikedDevil ->
+            --                init SpikedDevil
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            HornedDevil ->
+            --                init HornedDevil
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Melee, Fire ]
+            --
+            --            IceDevil ->
+            --                init IceDevil
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ice ]
+            --
+            --            AbyssFiend ->
+            --                init AbyssFiend
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            ------------
+            --            -- Giants --
+            --            ------------
+            --            HugeOgre ->
+            --                init HugeOgre
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            HillGiant ->
+            --                init HillGiant
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            StoneGiant ->
+            --                init StoneGiant
+            --                    (Attributes 0 50 50 50 50)
+            --
+            --            FrostGiant ->
+            --                init FrostGiant
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ice ]
+            --
+            --            TwoHeadedGiant ->
+            --                init TwoHeadedGiant
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ranged ]
+            --
+            --            FireGiant ->
+            --                init FireGiant
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Fire, Ranged ]
+            --
+            --            HillGiantKing ->
+            --                init HillGiantKing
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ice ]
+            --
+            --            FireGiantKing ->
+            --                init FireGiantKing
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Fire ]
+            --
+            --            FrostGiantKing ->
+            --                init FrostGiantKing
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ice ]
+            --
+            --            StoneGiantKing ->
+            --                init StoneGiantKing
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ranged ]
+            --
+            --            -------------
+            --            -- Dragons --
+            --            -------------
+            --            GreenDragon ->
+            --                init GreenDragon
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Acid ]
+            --
+            --            WhiteDragon ->
+            --                init WhiteDragon
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Ice ]
+            --
+            --            BlueDragon ->
+            --                init BlueDragon
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Lightning ]
+            --
+            --            RedDragon ->
+            --                init RedDragon
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Fire ]
+            --
+            --            -- Special: "Casts Fire, Lighting, and Wind Spells"
+            --            Surtur ->
+            --                init Surtur
+            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.setAttackTypes [ Melee, Spell, Fire, Lightning, Ice ]
+            _ ->
+                init Kobold 1 Attributes.init Equipment.init
 
 
 

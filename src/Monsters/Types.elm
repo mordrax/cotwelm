@@ -1,5 +1,6 @@
 module Monsters.Types exposing (..)
 
+
 type AttackType
     = Melee
     | Ranged
@@ -11,6 +12,7 @@ type AttackType
     | Drain
     | Steal
     | Spell
+
 
 type MonsterType
     = Kobold
@@ -81,6 +83,22 @@ type MonsterType
     | BlueDragon
     | WhiteDragon
     | GreenDragon
+
+
+type MonsterKind
+    = GiantInsect
+    | Undead
+    | Humanoid
+    | Canine
+    | Animal
+    | AnimalMan
+    | Statue
+    | Other
+    | Dragon
+    | Elemental
+    | Giant
+    | Devil
+
 
 monsterTypesToList : List MonsterType
 monsterTypesToList =

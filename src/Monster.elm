@@ -4,6 +4,7 @@ module Monster
         , make
         , makeForArena
         , makeRandomMonsters
+        , monsterTypesToList
         , remove
         , replace
         , view
@@ -24,13 +25,21 @@ size and type.
 import Html exposing (Html)
 import Monsters.Factory exposing (make)
 import Monsters.Model
-import Monsters.Types exposing (..)
+import Monsters.Types
 import Monsters.View
 import Utils.Vector as Vector exposing (Vector)
 
 
+-- types
+
+
 type alias Monster =
     Monsters.Model.Monster
+
+
+monsterTypesToList =
+    Monsters.Types.monsterTypesToList
+
 
 
 -- maker functions
