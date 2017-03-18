@@ -50,6 +50,22 @@ setStats val monster =
     { monster | stats = val }
 
 
+modifyAttributes : Maybe (Float -> Float) -> Maybe (Float -> Float) -> Maybe (Float -> Float) -> Maybe (Float -> Float) -> Monster -> Monster
+modifyAttributes strFn dexFn conFn intFn ({ attributes } as monster) =
+    let
+        apply fn =
+            toFloat >> Maybe.withDefault identity fn >> floor
+    in
+        { monster
+            | attributes =
+                Attributes 0
+                    (apply strFn attributes.str)
+                    (apply dexFn attributes.dex)
+                    (apply conFn attributes.con)
+                    (apply intFn attributes.int)
+        }
+
+
 setAttributes : Attributes -> Monster -> Monster
 setAttributes val monster =
     { monster | attributes = val }

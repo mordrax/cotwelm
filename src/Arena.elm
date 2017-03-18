@@ -16,7 +16,6 @@ import Item.Data as ItemData
 import Item.Item as Item exposing (Item)
 import Item.Weapon as Weapon
 import Monster exposing (Monster)
-import Monsters.Types
 import Process
 import Random.Extra as RandomX
 import Random.Pcg as Random exposing (Generator)
@@ -381,48 +380,53 @@ heroEquipmentView hero =
 -- Combat table
 
 
+combatViewHeaders : Html msg
+combatViewHeaders =
+    thead []
+        [ tr []
+            [ th [] [ text "Type" ]
+            , th [] [ text "Level" ]
+            , th [] [ text "Attributes" ]
+            , th [] [ text "Weapon" ]
+            , th [] [ text "Armour" ]
+            , th [] [ text "Size" ]
+            , th [] [ text "Hp" ]
+            , th [] [ text "Win %" ]
+            , th [] [ text "HP" ]
+            , th [] [ text "Turns" ]
+            , th [ HA.colspan 2 ] [ text "Hits / Turn" ]
+            , th [ HA.colspan 2 ] [ text "CTH: base/wea/arm/size/crit = (total)" ]
+            ]
+        , tr []
+            [ th [] []
+            , th [] []
+            , th [] []
+            , th [] []
+            , th [] []
+            , th [] []
+            , th [] []
+            , th [] []
+            , th [] []
+            , th [] []
+            , th [] [ text "Hero" ]
+            , th [] [ text "Monster" ]
+            , th [] [ text "Hero" ]
+            , th [] [ text "Monster" ]
+            ]
+        ]
+
+
 combatView : Model -> Html Msg
 combatView { matchResults } =
-    table [ HA.class "ui striped celled table" ]
-        [ thead []
-            [ tr []
-                [ th [] [ text "Type" ]
-                , th [] [ text "Level" ]
-                , th [] [ text "Attributes" ]
-                , th [] [ text "Weapon" ]
-                , th [] [ text "Armour" ]
-                , th [] [ text "Size" ]
-                , th [] [ text "Hp" ]
-                , th [] [ text "Win %" ]
-                , th [] [ text "HP" ]
-                , th [] [ text "Turns" ]
-                , th [ HA.colspan 2 ] [ text "Hits / Turn" ]
-                , th [ HA.colspan 2 ] [ text "CTH: base/wea/arm/size/crit = (total)" ]
-                ]
-            , tr []
-                [ th [] []
-                , th [] []
-                , th [] []
-                , th [] []
-                , th [] []
-                , th [] []
-                , th [] []
-                , th [] []
-                , th [] []
-                , th [] []
-                , th [] [ text "Hero" ]
-                , th [] [ text "Monster" ]
-                , th [] [ text "Hero" ]
-                , th [] [ text "Monster" ]
-                ]
+    let
+        getMatchView =
+            toString >> flip Dict.get matchResults >> matchView
+    in
+        table [ HA.class "ui striped celled table" ]
+            [ combatViewHeaders
+            , tbody []
+                (List.map getMatchView Monster.monsterTypesToList)
             ]
-        , tbody []
-            (Monsters.Types.monsterTypesToList
-                |> List.map toString
-                |> List.map (\monsterType -> Dict.get monsterType matchResults)
-                |> List.map matchView
-            )
-        ]
 
 
 toOneDecimal : Float -> String
@@ -743,6 +747,6 @@ initMatches heroLookup ( weaponType, armourType ) =
                 Match hero monster 0 0 [] [] [] [] []
     in
         --        List.map newMatch (List.take 20 Monster.types)
-        List.map newMonster Monsters.Types.monsterTypesToList
+        List.map newMonster Monster.monsterTypesToList
             |> List.filter (.expLevel >> flip (>=) 5)
             |> List.map newMatch
