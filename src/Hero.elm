@@ -37,6 +37,7 @@ type alias Hero =
     , equipment : Equipment
     , expLevel : Int
     , bodySize : Types.BodySize
+    , attacks: Int
     }
 
 
@@ -55,6 +56,7 @@ init name ({ str, int, con } as attributes) gender =
     , equipment = Equipment.init
     , expLevel = 1
     , bodySize = Types.Medium
+    , attacks = 1
     }
 
 

@@ -1,17 +1,20 @@
-module Arena.Round exposing (init, Round, fight)
+module Arena.Round
+    exposing
+        ( RoundResult
+        , fight
+        )
 
 import Arena.Types exposing (..)
 import Random.Pcg as Random exposing (Generator, constant)
+import Combat
+import Stats
 
 
-type alias Round =
-    { blue : Blue
-    , red : Red
-    }
-
-
-type alias RoundResult =
-    { blueTurns : Int
+type alias RoundResult a b =
+    { blue : Blue a
+    , red : Red b
+    , isBlueAttacking : Bool
+    , blueTurns : Int
     , redTurns : Int
     , hpRemaining : Int
     , blueHitRed : Int
@@ -19,35 +22,29 @@ type alias RoundResult =
     }
 
 
-init : Combat.Fighter a -> Combat.Fighter b -> Round
-init blue red =
-    Round blue red
+fight : Combat.Fighter a -> Combat.Fighter b -> Generator (RoundResult a b)
+fight blue red =
+    fighting (RoundResult blue red True 0 0 0 0 0)
 
 
-fight : Round -> RoundResult
-fight round =
-    RoundResult 0 0 0 0 0
-
-
-round : Blue -> Red -> Bool -> RoundResult -> Generator RoundResult
-round blue red blueAttacking result =
+fighting : RoundResult a b -> Generator (RoundResult a b)
+fighting ({ blue, red, isBlueAttacking } as result) =
     let
-        resultNextRound blueAttacking =
-            case blueAttacking of
-                True ->
-                    { result | blueRounds = result.blueRounds + 1 }
+        updateRed newRed  =
+            { result
+                | red = newRed
+                , blueTurns = result.blueTurns + 1
+                , isBlueAttacking = False
+                , blueHitRed = result.blueHitRed + oneIfDamaged result.red newRed
+            }
 
-                False ->
-                    { result | redRounds = result.redRounds + 1 }
-
-        updateHitBlue h h_ roundResult =
-            { roundResult | redHitBlue = roundResult.redHitBlue + oneIfDamaged h h_ }
-
-        updateHitRed m m_ roundResult =
-            { roundResult | blueHitRed = roundResult.blueHitRed + oneIfDamaged m m_ }
-
-        nextAttacker =
-            not blueAttacking
+        updateBlue newBlue  =
+            { result
+                | blue = newBlue
+                , redTurns = result.redTurns + 1
+                , isBlueAttacking = True
+                , redHitBlue = result.redHitBlue + oneIfDamaged result.blue newBlue
+            }
 
         isDamaged a a_ =
             a.stats.currentHP > a_.stats.currentHP
@@ -62,19 +59,9 @@ round blue red blueAttacking result =
             Random.constant { result | hpRemaining = 0 }
         else if Stats.isDead red.stats then
             Random.constant { result | hpRemaining = blue.stats.currentHP }
-        else if blueAttacking == True then
+        else if isBlueAttacking == True then
             Combat.attack blue red
-                |> Random.andThen
-                    (\( _, red_ ) ->
-                        resultNextRound blueAttacking
-                            |> updateHitRed red red_
-                            |> round blue red_ nextAttacker
-                    )
+                |> Random.andThen (\( _, red_ ) -> fighting (updateRed red_ ))
         else
-            Combat.defend red blue
-                |> Random.andThen
-                    (\( _, blue_ ) ->
-                        resultNextRound blueAttacking
-                            |> updateHitBlue blue blue_
-                            |> round blue_ red nextAttacker
-                    )
+            Combat.attack red blue
+                |> Random.andThen (\( _, blue_ ) -> fighting (updateBlue blue_ ))

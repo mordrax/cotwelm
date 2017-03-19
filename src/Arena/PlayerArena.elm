@@ -1,5 +1,8 @@
 module Arena.PlayerArena exposing (..)
 
+import Arena.Types exposing (..)
+import Arena.Match as Match exposing (Match)
+import Arena.Round as Round exposing (RoundResult)
 import Attributes exposing (Attributes)
 import Char
 import Combat
@@ -26,31 +29,9 @@ import UI
 import Utils.IdGenerator as IdGenerator
 
 
-type alias Match =
-    { hero : Hero
-    , monster : Monster
-    , battles : Int
-    , wins : Int
-    , hpRemaining : List Int
-    , heroRounds : List Int
-    , monsterRounds : List Int
-    , heroHitMonster : List Int
-    , monsterHitHero : List Int
-    }
-
-
-type alias RoundResult =
-    { heroRounds : Int
-    , monsterRounds : Int
-    , hpRemaining : Int
-    , heroHitMonster : Int
-    , monsterHitHero : Int
-    }
-
-
 type alias Model =
-    { matches : List Match
-    , matchResults : Dict String Match
+    { matches : List (Match Hero Monster)
+    , matchResults : Dict String (Match Hero Monster)
     , heroAttributes : Attributes
     , heroLookup : Dict Int Hero
     , customEquipment : CustomEquipment
@@ -59,8 +40,8 @@ type alias Model =
 
 
 type Msg
-    = StartFight (List Match) Int
-    | Fight Match (List Match) Int
+    = StartFight (List (Match Hero Monster)) Int
+    | Fight (Match Hero Monster) (List (Match Hero Monster)) Int
     | Sleep (Cmd Msg) Int
     | Stop
     | SetAttribute Attributes.Attribute Int
@@ -189,7 +170,7 @@ update msg model =
 
 
 fights : Match -> Generator Match
-fights ({ hero, monster } as vs) =
+fights ({ hero, monster } as match) =
     let
         initRound =
             { heroRounds = 0
@@ -199,40 +180,12 @@ fights ({ hero, monster } as vs) =
             , monsterHitHero = 0
             }
     in
-        if vs.battles >= maxRounds then
-            Random.constant vs
+        if match.battles >= maxRounds then
+            Random.constant match
         else
-            round hero monster True initRound
-                |> Random.map (\res -> updateVSFromRoundResult res vs)
+            Round.fight hero monster
+                |> Random.map (\roundResult -> Match.updateMatch roundResult match)
                 |> Random.andThen fights
-
-
-updateVSFromRoundResult : RoundResult -> Match -> Match
-updateVSFromRoundResult { heroRounds, monsterRounds, hpRemaining, heroHitMonster, monsterHitHero } vs =
-    let
-        addWin vs =
-            if hpRemaining > 0 then
-                { vs | wins = vs.wins + 1 }
-            else
-                vs
-
-        addResult vs =
-            { vs
-                | hpRemaining = hpRemaining :: vs.hpRemaining
-                , heroRounds = heroRounds :: vs.heroRounds
-                , monsterRounds = monsterRounds :: vs.monsterRounds
-                , heroHitMonster = heroHitMonster :: vs.heroHitMonster
-                , monsterHitHero = monsterHitHero :: vs.monsterHitHero
-            }
-
-        incBattle vs =
-            { vs | battles = vs.battles + 1 }
-    in
-        vs
-            |> addWin
-            |> addResult
-            |> incBattle
-
 
 
 
@@ -370,152 +323,8 @@ combatView { matchResults } =
         ]
 
 
-toOneDecimal : Float -> String
-toOneDecimal num =
-    toNSignificantPlaces num 1
-        |> toString
 
 
-toNSignificantPlaces : Float -> Int -> Float
-toNSignificantPlaces num sig =
-    let
-        factor =
-            toFloat (10 ^ sig)
-    in
-        num
-            |> (*) factor
-            |> Basics.round
-            |> toFloat
-            |> flip (/) factor
-
-
-toPercentage : Float -> String
-toPercentage num =
-    num
-        |> (*) 100
-        |> toString
-        |> String.slice 0 4
-
-
-matchView : Maybe Match -> Html Msg
-matchView maybeMatch =
-    case maybeMatch of
-        Nothing ->
-            tr [] []
-
-        Just { monster, hpRemaining, heroRounds, monsterRounds, battles, wins, hero, heroHitMonster, monsterHitHero } ->
-            let
-                over a b =
-                    toString a ++ " / " ++ toString b
-
-                percent a =
-                    toString a ++ "%"
-
-                brackets a =
-                    "( " ++ a ++ " )"
-
-                weapon =
-                    monster.equipment
-                        |> Equipment.get Equipment.WeaponSlot
-                        |> ppWeapon
-
-                armour =
-                    monster.equipment
-                        |> Equipment.get Equipment.ArmourSlot
-                        |> ppArmour
-
-                totalArmour =
-                    Equipment.calculateAC monster.equipment
-                        |> toString
-                        |> brackets
-
-                avgHpRemaining =
-                    toOneDecimal (toFloat (List.sum hpRemaining) / toFloat battles)
-
-                avgTurnsTaken =
-                    toFloat (List.sum heroRounds + List.sum monsterRounds) / toFloat battles
-
-                avgHeroTurnsTaken =
-                    toFloat (List.sum heroRounds) / toFloat battles
-
-                cth =
-                    Combat.chanceToHit hero monster
-
-                cthText =
-                    toString cth.baseCTH
-                        ++ "/"
-                        ++ toString cth.weaponBulkPenalty
-                        ++ "/"
-                        ++ toString cth.armourPenalty
-                        ++ "/"
-                        ++ toString (cth.sizeModifier)
-                        ++ " = ("
-                        ++ toString heroCTHThreshold
-                        ++ ")"
-
-                monsterCTH =
-                    Combat.chanceToHit monster hero
-
-                monsterCTHText =
-                    toString monsterCTH.baseCTH
-                        ++ "/"
-                        ++ toString monsterCTH.weaponBulkPenalty
-                        ++ "/"
-                        ++ toString monsterCTH.armourPenalty
-                        ++ "/"
-                        ++ toString (monsterCTH.sizeModifier)
-                        ++ " = ("
-                        ++ toString monsterCTHThreshold
-                        ++ ")"
-
-                avgHeroHitMonster =
-                    toFloat (List.sum heroHitMonster) / toFloat (List.sum heroRounds)
-
-                avgMonsterHitHero =
-                    toFloat (List.sum monsterHitHero) / toFloat (List.sum monsterRounds)
-
-                heroCTHThreshold =
-                    Combat.chanceToHit hero monster |> Combat.cthThreshold
-
-                monsterCTHThreshold =
-                    Combat.chanceToHit monster hero |> Combat.cthThreshold
-            in
-                tr []
-                    [ td [] [ text <| monster.name ]
-                    , td [] [ text <| toString monster.expLevel ]
-                    , td [] [ text <| ppAttributes monster.attributes ]
-                    , td [] [ text <| weapon ]
-                    , td [] [ text <| (armour ++ " " ++ totalArmour) ]
-                    , td [] [ text <| toString monster.bodySize ]
-                    , td [] [ text <| toString monster.stats.maxHP ]
-                    , td [] [ text <| percent (toFloat wins * 100 / toFloat battles) ]
-                    , td [] [ text <| avgHpRemaining ++ " / " ++ toString hero.stats.maxHP ]
-                    , td [] [ text <| toOneDecimal avgTurnsTaken ++ " " ++ brackets (toOneDecimal avgHeroTurnsTaken) ]
-                    , td [] [ text <| toPercentage avgHeroHitMonster ++ "%" ]
-                    , td [] [ text <| toPercentage avgMonsterHitHero ++ "%" ]
-                    , td [] [ text <| cthText ]
-                    , td [] [ text <| monsterCTHText ]
-                    ]
-
-
-ppWeapon : Maybe Item -> String
-ppWeapon item =
-    case item of
-        Just (Item.ItemWeapon weapon) ->
-            weapon.base.name ++ " ( " ++ Dice.pp weapon.damage ++ " )"
-
-        _ ->
-            "No weapon"
-
-
-ppArmour : Maybe Item -> String
-ppArmour item =
-    case item of
-        Just (Item.ItemArmour armour) ->
-            armour.base.name ++ " ( " ++ toString armour.ac ++ " )"
-
-        _ ->
-            "No armour"
 
 
 menuView : Model -> Html Msg
@@ -543,16 +352,6 @@ welcomeView : Html Msg
 welcomeView =
     h1 [] [ text "Welcome to the arena!" ]
 
-
-ppAttributes : Attributes -> String
-ppAttributes { str, dex, int, con } =
-    toString str
-        ++ "/"
-        ++ toString dex
-        ++ "/"
-        ++ toString con
-        ++ "/"
-        ++ toString int
 
 
 
@@ -651,7 +450,7 @@ initHeroLookup hero =
         reducer Dict.empty hero 1
 
 
-initMatches : Dict Int Hero -> CustomEquipment -> List Match
+initMatches : Dict Int Hero -> CustomEquipment -> List (Match a b)
 initMatches heroLookup ( weaponType, armourType ) =
     let
         newMonster monsterType =
