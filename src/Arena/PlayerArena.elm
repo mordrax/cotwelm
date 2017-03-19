@@ -1,4 +1,4 @@
-module Arena exposing (..)
+module Arena.PlayerArena exposing (..)
 
 import Attributes exposing (Attributes)
 import Char
@@ -48,12 +48,8 @@ type alias RoundResult =
     }
 
 
-type alias Matches =
-    List Match
-
-
 type alias Model =
-    { matches : Matches
+    { matches : List Match
     , matchResults : Dict String Match
     , heroAttributes : Attributes
     , heroLookup : Dict Int Hero
@@ -63,8 +59,8 @@ type alias Model =
 
 
 type Msg
-    = StartFight Matches Int
-    | Fight Match Matches Int
+    = StartFight (List Match) Int
+    | Fight Match (List Match) Int
     | Sleep (Cmd Msg) Int
     | Stop
     | SetAttribute Attributes.Attribute Int
@@ -237,56 +233,6 @@ updateVSFromRoundResult { heroRounds, monsterRounds, hpRemaining, heroHitMonster
             |> addResult
             |> incBattle
 
-
-round : Hero -> Monster -> Bool -> RoundResult -> Generator RoundResult
-round hero monster heroAttacking result =
-    let
-        resultNextRound heroAttacking =
-            case heroAttacking of
-                True ->
-                    { result | heroRounds = result.heroRounds + 1 }
-
-                False ->
-                    { result | monsterRounds = result.monsterRounds + 1 }
-
-        updateHitHero h h_ roundResult =
-            { roundResult | monsterHitHero = roundResult.monsterHitHero + oneIfDamaged h h_ }
-
-        updateHitMonster m m_ roundResult =
-            { roundResult | heroHitMonster = roundResult.heroHitMonster + oneIfDamaged m m_ }
-
-        nextAttacker =
-            not heroAttacking
-
-        isDamaged a a_ =
-            a.stats.currentHP > a_.stats.currentHP
-
-        oneIfDamaged a a_ =
-            if isDamaged a a_ then
-                1
-            else
-                0
-    in
-        if Stats.isDead hero.stats then
-            Random.constant { result | hpRemaining = 0 }
-        else if Stats.isDead monster.stats then
-            Random.constant { result | hpRemaining = hero.stats.currentHP }
-        else if heroAttacking == True then
-            Combat.attack hero monster
-                |> Random.andThen
-                    (\( _, monster_ ) ->
-                        resultNextRound heroAttacking
-                            |> updateHitMonster monster monster_
-                            |> round hero monster_ nextAttacker
-                    )
-        else
-            Combat.defend monster hero
-                |> Random.andThen
-                    (\( _, hero_ ) ->
-                        resultNextRound heroAttacking
-                            |> updateHitHero hero hero_
-                            |> round hero_ monster nextAttacker
-                    )
 
 
 
