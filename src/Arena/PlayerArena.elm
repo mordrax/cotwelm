@@ -233,8 +233,8 @@ heroStatsView hero =
         div []
             [ div [] [ text ("Hero HP: " ++ toString hero.stats.maxHP) ]
             , div [] [ text ("Hero AC: " ++ toString ac) ]
-            , div [] [ text <| ppWeapon <| Equipment.get Equipment.WeaponSlot hero.equipment ]
-            , div [] [ text <| ppArmour <| Equipment.get Equipment.ArmourSlot hero.equipment ]
+            , div [] [ text <| Arena.View.weaponToString hero.equipment ]
+            , div [] [ text <| Arena.View.armourToString hero.equipment ]
             ]
 
 
@@ -323,10 +323,6 @@ combatView { matchResults } =
         ]
 
 
-
-
-
-
 menuView : Model -> Html Msg
 menuView model =
     let
@@ -351,7 +347,6 @@ startNewFight model =
 welcomeView : Html Msg
 welcomeView =
     h1 [] [ text "Welcome to the arena!" ]
-
 
 
 
