@@ -11,6 +11,7 @@ module Arena.Match
 
 import Combat
 import Arena.Round exposing (RoundResult)
+import Arena.View
 import Html exposing (..)
 import Attributes exposing (Attributes)
 import Item.Item as Item exposing (Item)
@@ -24,8 +25,8 @@ type alias Match a b =
     , rounds : Int
     , blueWins : Int
     , hpRemaining : List Int
-    , blueRounds : List Int
-    , redRounds : List Int
+    , blueTurnsInRounds : List Int
+    , redTurnsInRounds : List Int
     , blueHitRed : List Int
     , redHitBlue : List Int
     }
@@ -48,8 +49,8 @@ updateMatch { blueTurns, redTurns, hpRemaining, blueHitRed, redHitBlue } match =
         addResult match =
             { match
                 | hpRemaining = hpRemaining :: match.hpRemaining
-                , blueRounds = blueTurns :: match.blueRounds
-                , redRounds = redTurns :: match.redRounds
+                , blueTurnsInRounds = blueTurns :: match.blueTurnsInRounds
+                , redTurnsInRounds = redTurns :: match.redTurnsInRounds
                 , blueHitRed = blueHitRed :: match.blueHitRed
                 , redHitBlue = redHitBlue :: match.redHitBlue
             }
@@ -69,7 +70,7 @@ view maybeMatch =
         Nothing ->
             tr [] []
 
-        Just { monster, hpRemaining, heroRounds, monsterRounds, battles, wins, hero, heroHitMonster, monsterHitHero } ->
+        Just { red, hpRemaining, blueTurnsInRounds, redTurnsInRounds, rounds, blueWins, blue, blueHitRed, redHitBlue } ->
             let
                 over a b =
                     toString a ++ " / " ++ toString b
@@ -81,31 +82,27 @@ view maybeMatch =
                     "( " ++ a ++ " )"
 
                 weapon =
-                    monster.equipment
-                        |> Equipment.get Equipment.WeaponSlot
-                        |> ppWeapon
+                    Arena.View.weaponToString red.equipment
 
                 armour =
-                    monster.equipment
-                        |> Equipment.get Equipment.ArmourSlot
-                        |> ppArmour
+                    Arena.View.armourToString red.equipment
 
                 totalArmour =
-                    Equipment.calculateAC monster.equipment
+                    Equipment.calculateAC red.equipment
                         |> toString
                         |> brackets
 
                 avgHpRemaining =
-                    toOneDecimal (toFloat (List.sum hpRemaining) / toFloat battles)
+                    toOneDecimal (toFloat (List.sum hpRemaining) / toFloat rounds)
 
                 avgTurnsTaken =
-                    toFloat (List.sum heroRounds + List.sum monsterRounds) / toFloat battles
+                    toFloat (List.sum blueTurnsInRounds + List.sum redTurnsInRounds) / toFloat rounds
 
-                avgHeroTurnsTaken =
-                    toFloat (List.sum heroRounds) / toFloat battles
+                avgBlueTurnsTaken =
+                    toFloat (List.sum blueTurnsInRounds) / toFloat rounds
 
                 cth =
-                    Combat.chanceToHit hero monster
+                    Combat.chanceToHit blue red
 
                 cthText =
                     toString cth.baseCTH
@@ -116,51 +113,51 @@ view maybeMatch =
                         ++ "/"
                         ++ toString (cth.sizeModifier)
                         ++ " = ("
-                        ++ toString heroCTHThreshold
+                        ++ toString blueCTHThreshold
                         ++ ")"
 
-                monsterCTH =
-                    Combat.chanceToHit monster hero
+                redCTH =
+                    Combat.chanceToHit red blue
 
-                monsterCTHText =
-                    toString monsterCTH.baseCTH
+                redCTHText =
+                    toString redCTH.baseCTH
                         ++ "/"
-                        ++ toString monsterCTH.weaponBulkPenalty
+                        ++ toString redCTH.weaponBulkPenalty
                         ++ "/"
-                        ++ toString monsterCTH.armourPenalty
+                        ++ toString redCTH.armourPenalty
                         ++ "/"
-                        ++ toString (monsterCTH.sizeModifier)
+                        ++ toString (redCTH.sizeModifier)
                         ++ " = ("
-                        ++ toString monsterCTHThreshold
+                        ++ toString redCTHThreshold
                         ++ ")"
 
-                avgHeroHitMonster =
-                    toFloat (List.sum heroHitMonster) / toFloat (List.sum heroRounds)
+                avgBlueHitRed =
+                    toFloat (List.sum blueHitRed) / toFloat (List.sum blueTurnsInRounds)
 
-                avgMonsterHitHero =
-                    toFloat (List.sum monsterHitHero) / toFloat (List.sum monsterRounds)
+                avgRedHitBlue =
+                    toFloat (List.sum redHitBlue) / toFloat (List.sum redTurnsInRounds)
 
-                heroCTHThreshold =
-                    Combat.chanceToHit hero monster |> Combat.cthThreshold
+                blueCTHThreshold =
+                    Combat.chanceToHit blue red |> Combat.cthThreshold
 
-                monsterCTHThreshold =
-                    Combat.chanceToHit monster hero |> Combat.cthThreshold
+                redCTHThreshold =
+                    Combat.chanceToHit red blue |> Combat.cthThreshold
             in
                 tr []
-                    [ td [] [ text <| monster.name ]
-                    , td [] [ text <| toString monster.expLevel ]
-                    , td [] [ text <| ppAttributes monster.attributes ]
+                    [ td [] [ text <| red.name ]
+                    , td [] [ text <| toString red.expLevel ]
+                    , td [] [ text <| ppAttributes red.attributes ]
                     , td [] [ text <| weapon ]
                     , td [] [ text <| (armour ++ " " ++ totalArmour) ]
-                    , td [] [ text <| toString monster.bodySize ]
-                    , td [] [ text <| toString monster.stats.maxHP ]
-                    , td [] [ text <| percent (toFloat wins * 100 / toFloat battles) ]
-                    , td [] [ text <| avgHpRemaining ++ " / " ++ toString hero.stats.maxHP ]
-                    , td [] [ text <| toOneDecimal avgTurnsTaken ++ " " ++ brackets (toOneDecimal avgHeroTurnsTaken) ]
-                    , td [] [ text <| toPercentage avgHeroHitMonster ++ "%" ]
-                    , td [] [ text <| toPercentage avgMonsterHitHero ++ "%" ]
+                    , td [] [ text <| toString red.bodySize ]
+                    , td [] [ text <| toString red.stats.maxHP ]
+                    , td [] [ text <| percent (toFloat blueWins * 100 / toFloat rounds) ]
+                    , td [] [ text <| avgHpRemaining ++ " / " ++ toString blue.stats.maxHP ]
+                    , td [] [ text <| toOneDecimal avgTurnsTaken ++ " " ++ brackets (toOneDecimal avgBlueTurnsTaken) ]
+                    , td [] [ text <| toPercentage avgBlueHitRed ++ "%" ]
+                    , td [] [ text <| toPercentage avgRedHitBlue ++ "%" ]
                     , td [] [ text <| cthText ]
-                    , td [] [ text <| monsterCTHText ]
+                    , td [] [ text <| redCTHText ]
                     ]
 
 
@@ -200,23 +197,3 @@ toPercentage num =
         |> (*) 100
         |> toString
         |> String.slice 0 4
-
-
-ppWeapon : Maybe Item -> String
-ppWeapon item =
-    case item of
-        Just (Item.ItemWeapon weapon) ->
-            weapon.base.name ++ " ( " ++ Dice.pp weapon.damage ++ " )"
-
-        _ ->
-            "No weapon"
-
-
-ppArmour : Maybe Item -> String
-ppArmour item =
-    case item of
-        Just (Item.ItemArmour armour) ->
-            armour.base.name ++ " ( " ++ toString armour.ac ++ " )"
-
-        _ ->
-            "No armour"
