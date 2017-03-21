@@ -214,14 +214,14 @@ make monsterType position =
             GiantScorpion ->
                 makeGiantInsect GiantScorpion
                     |> Model.setAttackTypes [ Poison, Melee ]
-                    |> Model.modifyAttributes Nothing (Just <| (*) 1.2) Nothing Nothing
+                    |> Model.modifyAttributes identity ((*) 1.2) identity identity
 
             GiantTrapdoorSpider ->
                 makeGiantInsect GiantTrapdoorSpider
 
             CarrionCreeper ->
                 makeGiantInsect CarrionCreeper
-                    |> Model.modifyAttributes Nothing Nothing (Just <| (*) 1.5) Nothing
+                    |> Model.modifyAttributes identity identity ((*) 1.5) identity
 
             ------------
             -- Wolves --
