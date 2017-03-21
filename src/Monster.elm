@@ -2,6 +2,7 @@ module Monster
     exposing
         ( Monster
         , MonsterType(..)
+        , AttackType
         , make
         , makeForArena
         , types
