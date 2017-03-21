@@ -3,6 +3,7 @@ module Arena.PlayerArena exposing (..)
 import Arena.Types exposing (..)
 import Arena.Match as Match exposing (Match)
 import Arena.Round as Round exposing (RoundResult)
+import Arena.View as View
 import Attributes exposing (Attributes)
 import Char
 import Combat
@@ -27,11 +28,12 @@ import Task
 import Time exposing (Time)
 import UI
 import Utils.IdGenerator as IdGenerator
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Model =
-    { matches : List (Match Hero Monster)
-    , matchResults : Dict String (Match Hero Monster)
+    { matches : List ArenaMatch
+    , matchResults : Dict String ArenaMatch
     , heroAttributes : Attributes
     , heroLookup : Dict Int Hero
     , customEquipment : CustomEquipment
@@ -39,19 +41,17 @@ type alias Model =
     }
 
 
+type alias ArenaMatch =
+    Match (Blue Hero) (Red Monster)
+
 type Msg
-    = StartFight (List (Match Hero Monster)) Int
-    | Fight (Match Hero Monster) (List (Match Hero Monster)) Int
+    = StartFight (List ArenaMatch) Int
+    | Fight ArenaMatch (List ArenaMatch) Int
     | Sleep (Cmd Msg) Int
     | Stop
     | SetAttribute Attributes.Attribute Int
     | ChangeHeroWeapon ItemData.WeaponType
     | ChangeHeroArmour ItemData.ArmourType
-
-
-maxRounds : Int
-maxRounds =
-    2000
 
 
 init : Model
@@ -81,7 +81,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         asyncCmd match matches resetCounter =
-            Random.generate (\matchResult -> Fight matchResult matches resetCounter) (fights match)
+            Random.generate (\matchResult -> Fight matchResult matches resetCounter) (Match.fight match)
 
         fightResult match matches resetCounter =
             Task.perform (\_ -> Sleep (asyncCmd match matches resetCounter) resetCounter) (Process.sleep 150)
@@ -116,7 +116,7 @@ update msg model =
                 else
                     ( { model
                         | matchResults =
-                            Dict.insert (removeSpace match.monster.name) match model.matchResults
+                            Dict.insert (removeSpace match.red.name) match model.matchResults
                       }
                     , Cmd.none
                     )
@@ -126,7 +126,7 @@ update msg model =
                     ( model, Cmd.none )
                 else
                     ( { model
-                        | matchResults = Dict.insert (Debug.log "monstername: " (removeSpace match.monster.name)) match model.matchResults
+                        | matchResults = Dict.insert (removeSpace match.red.name) match model.matchResults
                       }
                     , fightResult nextMatch remainingMatches resetCounter
                     )
@@ -167,25 +167,6 @@ update msg model =
                         { model | customEquipment = customEquipment_ }
                 in
                     update (startNewFight model_) model_
-
-
-fights : Match -> Generator Match
-fights ({ hero, monster } as match) =
-    let
-        initRound =
-            { heroRounds = 0
-            , monsterRounds = 0
-            , hpRemaining = hero.stats.maxHP
-            , heroHitMonster = 0
-            , monsterHitHero = 0
-            }
-    in
-        if match.battles >= maxRounds then
-            Random.constant match
-        else
-            Round.fight hero monster
-                |> Random.map (\roundResult -> Match.updateMatch roundResult match)
-                |> Random.andThen fights
 
 
 
@@ -233,8 +214,8 @@ heroStatsView hero =
         div []
             [ div [] [ text ("Hero HP: " ++ toString hero.stats.maxHP) ]
             , div [] [ text ("Hero AC: " ++ toString ac) ]
-            , div [] [ text <| Arena.View.weaponToString hero.equipment ]
-            , div [] [ text <| Arena.View.armourToString hero.equipment ]
+            , div [] [ text <| View.weaponToString hero.equipment ]
+            , div [] [ text <| View.armourToString hero.equipment ]
             ]
 
 
@@ -318,7 +299,7 @@ combatView { matchResults } =
             (Monster.types
                 |> List.map toString
                 |> List.map (\monsterType -> Dict.get monsterType matchResults)
-                |> List.map matchView
+                |> List.map (Maybe.map Match.view >> Maybe.withDefault (div [] []))
             )
         ]
 
@@ -445,41 +426,32 @@ initHeroLookup hero =
         reducer Dict.empty hero 1
 
 
-initMatches : Dict Int Hero -> CustomEquipment -> List (Match a b)
+initMatches : Dict Int Hero -> CustomEquipment -> List ArenaMatch
 initMatches heroLookup ( weaponType, armourType ) =
     let
         newMonster monsterType =
             Monster.makeForArena monsterType
 
+        customEquipment =
+            Equipment.equipMany
+                [ ( Equipment.WeaponSlot, makeWeapon weaponType )
+                , ( Equipment.ArmourSlot, makeArmour armourType )
+                ]
+                Equipment.init
+
+        newMatch : Red Monster -> ArenaMatch
         newMatch monster =
             let
-                addCustomEquipment hero =
-                    { hero
-                        | equipment =
-                            hero.equipment
-                                |> Equipment.unequip Equipment.WeaponSlot
-                                |> Result.andThen (Equipment.unequip Equipment.ArmourSlot)
-                                |> Result.toMaybe
-                                |> Maybe.map
-                                    (\x ->
-                                        Equipment.equipMany
-                                            [ ( Equipment.WeaponSlot, makeWeapon weaponType )
-                                            , ( Equipment.ArmourSlot, makeArmour armourType )
-                                            ]
-                                            x
-                                    )
-                                |> Maybe.withDefault hero.equipment
-                    }
-
+                hero : Blue Hero
                 hero =
                     case Dict.get monster.expLevel heroLookup of
                         Just lookedUpHero ->
-                            addCustomEquipment lookedUpHero
+                            Hero.setEquipment customEquipment lookedUpHero
 
                         Nothing ->
                             Debug.crash "Could not look up a hero with exp level: " monster.expLevel
             in
-                Match hero monster 0 0 [] [] [] [] []
+                Match.init hero monster
     in
         --        List.map newMatch (List.take 20 Monster.types)
         List.map newMonster Monster.types

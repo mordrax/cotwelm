@@ -10,7 +10,7 @@ module Hero
         , stats
         , setStats
         , viewStats
-        , updateEquipment
+        , setEquipment
         , equip
         )
 
@@ -60,9 +60,9 @@ init name ({ str, int, con } as attributes) gender =
     }
 
 
-updateEquipment : Equipment -> Hero -> Hero
-updateEquipment equipment model =
-    { model | equipment = equipment }
+setEquipment : Equipment -> Hero -> Hero
+setEquipment equipment hero =
+    { hero | equipment = equipment }
 
 
 move : Direction -> Hero -> Hero

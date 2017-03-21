@@ -324,7 +324,7 @@ update msg model =
                             modelWithHeroAndInventory =
                                 { model
                                     | inventory = inventory_
-                                    , hero = Hero.updateEquipment equipment model.hero
+                                    , hero = Hero.setEquipment equipment model.hero
                                     , currentScreen = MapScreen
                                 }
                         in
