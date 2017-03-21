@@ -5,7 +5,7 @@ module Attributes
         , Msg
         , init
         , initCustom
-        , multiplier
+        , scale
         , set
         , update
         , view
@@ -84,23 +84,19 @@ update msg model =
                 Dexterity ->
                     { model | dex = model.dex + value, ava = model.ava - value }
 
-multiplier : ( Attribute, Float ) -> Attributes -> Attributes
-multiplier ( attribute, value ) model =
-    case attribute of
-        Available ->
-            { model | ava = floor (toFloat model.ava * value) }
 
-        Strength ->
-            { model | str = floor (toFloat model.str * value) }
-
-        Intelligence ->
-            { model | int = floor (toFloat model.int * value) }
-
-        Constitution ->
-            { model | con = floor (toFloat model.con * value) }
-
-        Dexterity ->
-            { model | dex = floor (toFloat model.dex * value) }
+scale : Float -> Float -> Float -> Float -> Attributes -> Attributes
+scale str dex con int attributes =
+    let
+        scaleFn factor attr =
+            floor (factor * toFloat attr)
+    in
+        { attributes
+            | str = scaleFn str attributes.str
+            , int = scaleFn int attributes.int
+            , con = scaleFn con attributes.con
+            , dex = scaleFn dex attributes.dex
+        }
 
 
 set : ( Attribute, Int ) -> Attributes -> Attributes
