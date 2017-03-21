@@ -116,6 +116,20 @@ makeCanine =
         >> Model.setBodySize Types.Small
 
 
+makeSmallAnimal : MonsterType -> Monster
+makeSmallAnimal =
+    make_ (Attributes 0 40 60 60 30)
+        >> Model.setEquipment (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+        >> Model.setBodySize Types.Small
+
+
+makeLargeAnimal : MonsterType -> Monster
+makeLargeAnimal =
+    make_ (Attributes 0 80 60 80 30)
+        >> Model.setEquipment (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
+        >> Model.setBodySize Types.Large
+
+
 make : MonsterType -> Vector -> Monster
 make monsterType position =
     let
@@ -221,87 +235,74 @@ make monsterType position =
             GiantScorpion ->
                 makeGiantInsect GiantScorpion
                     |> Model.setAttackTypes [ Poison, Melee ]
-                    |> Model.modifyAttributes identity ((*) 1.2) identity identity
+                    |> Model.scaleAttributes 1.0 1.2 1.0 1.0
 
             GiantTrapdoorSpider ->
                 makeGiantInsect GiantTrapdoorSpider
 
             CarrionCreeper ->
                 makeGiantInsect CarrionCreeper
-                    |> Model.modifyAttributes identity identity ((*) 1.5) identity
+                    |> Model.scaleAttributes 1.0 1.0 1.5 1.0
 
             ------------
             -- Wolves --
             ------------
             WildDog ->
                 makeCanine WildDog
+                    |> Model.scaleAttributes 0.8 0.8 0.5 1
 
-            --                    (Attributes 0 50 75 30 30)
-            --                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
             GrayWolf ->
                 makeCanine GrayWolf
 
-            --                    (Attributes 0 60 80 50 50)
-            --                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
             WhiteWolf ->
                 makeCanine WhiteWolf
-                    --                    (Attributes 0 60 80 50 50)
-                    --                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
-                    |>
-                        Model.setAttacks 2
+                    |> Model.setAttacks 2
 
             --
-            --            -- Animals
-            --            GiantRat ->
-            --                init GiantRat
-            --                    (Attributes 0 40 50 50 5)
-            --                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
-            --                    |> Model.setBodySize Types.Small
-            --
-            --            GiantBat ->
-            --                init GiantBat
-            --                    (Attributes 0 30 70 40 10)
-            --                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
-            --                    |> Model.setBodySize Types.Small
-            --
-            --            LargeSnake ->
-            --                init LargeSnake
-            --                    (Attributes 0 20 70 30 30)
-            --                    (basicEquipment ItemData.Fangs ItemData.SoftHide)
-            --                    |> Model.setBodySize Types.Tiny
-            --                    |> Model.setAttackTypes [ Poison ]
-            --
-            --            Viper ->
-            --                init Viper
-            --                    (Attributes 0 20 80 20 30)
-            --                    (basicEquipment ItemData.Fangs ItemData.SoftHide)
-            --                    |> Model.setBodySize Types.Tiny
-            --                    |> Model.setAttackTypes [ Poison ]
-            --
-            --            HugeLizard ->
-            --                init HugeLizard
-            --                    (Attributes 0 70 65 60 30)
-            --                    (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
-            --                    |> Model.setBodySize Types.Large
-            --
-            --            GiantRedAnt ->
-            --                init GiantRedAnt
-            --                    (Attributes 0 80 50 60 40)
-            --                    (basicEquipment ItemData.Pincers ItemData.Shell)
-            --                    |> Model.setBodySize Types.Large
-            --
-            --            BrownBear ->
-            --                init BrownBear
-            --                    (Attributes 0 50 50 50 50)
-            --
-            --            CaveBear ->
-            --                init CaveBear
-            --                    (Attributes 0 50 50 50 50)
-            --
-            --            Manticore ->
-            --                init Manticore
-            --                    (Attributes 0 50 50 50 50)
-            --                    |> Model.setAttackTypes [ Melee, Poison ]
+            -- Animals
+            GiantRat ->
+                makeSmallAnimal GiantRat
+
+            GiantBat ->
+                makeSmallAnimal GiantBat
+                    |> Model.scaleAttributes 0.8 1.2 1 1
+
+            LargeSnake ->
+                makeSmallAnimal LargeSnake
+                    |> Model.scaleAttributes 0.5 1 0.7 1
+                    |> Model.setEquipment (basicEquipment ItemData.Fangs ItemData.SoftHide)
+                    |> Model.setBodySize Types.Tiny
+                    |> Model.setAttackTypes [ Poison ]
+
+            Viper ->
+                makeSmallAnimal Viper
+                    |> Model.scaleAttributes 0.5 1.5 0.5 1.5
+                    |> Model.setEquipment (basicEquipment ItemData.Fangs ItemData.SoftHide)
+                    |> Model.setBodySize Types.Tiny
+                    |> Model.setAttackTypes [ Poison ]
+                    |> Model.setAttacks 2
+
+            HugeLizard ->
+                makeLargeAnimal HugeLizard
+
+            GiantRedAnt ->
+                makeLargeAnimal GiantRedAnt
+                    |> Model.setEquipment (basicEquipment ItemData.Pincers ItemData.Shell)
+
+            BrownBear ->
+                makeLargeAnimal BrownBear
+                    |> Model.scaleAttributes 0.8 1.2 1 1
+
+            CaveBear ->
+                makeLargeAnimal CaveBear
+                    |> Model.scaleAttributes 1.2 1.2 1.2 1
+
+            Manticore ->
+                makeLargeAnimal Manticore
+                    |> Model.scaleAttributes 2 1 1.5 1
+                    |> Model.setAttackTypes [ Melee, Poison ]
+                    |> Model.setAttacks 3
+
             --
             --            -------------
             --            -- Undeads --

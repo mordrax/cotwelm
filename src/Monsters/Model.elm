@@ -50,20 +50,9 @@ setStats val monster =
     { monster | stats = val }
 
 
-modifyAttributes : (Float -> Float) -> (Float -> Float) -> (Float -> Float) -> (Float -> Float) -> Monster -> Monster
-modifyAttributes strFn dexFn conFn intFn ({ attributes } as monster) =
-    let
-        apply fn =
-            toFloat >> fn >> floor
-    in
-        { monster
-            | attributes =
-                Attributes 0
-                    (apply strFn attributes.str)
-                    (apply dexFn attributes.dex)
-                    (apply conFn attributes.con)
-                    (apply intFn attributes.int)
-        }
+scaleAttributes : Float -> Float -> Float -> Float -> Monster -> Monster
+scaleAttributes str dex con int monster =
+    { monster | attributes = Attributes.scale str dex con int monster.attributes }
 
 
 setAttributes : Attributes -> Monster -> Monster
