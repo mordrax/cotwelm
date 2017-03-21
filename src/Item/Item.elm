@@ -14,6 +14,8 @@ module Item.Item
           -- comparisons
         , equals
         , containerBuilder
+        , ppWeapon
+        , ppArmour
         )
 
 import Container exposing (Container)
@@ -31,7 +33,7 @@ import Item.Shield
 import Item.Weapon
 import Utils.IdGenerator as IdGenerator exposing (..)
 import Utils.Mass as Mass exposing (..)
-
+import Dice
 
 type alias Items =
     List Item
@@ -292,3 +294,13 @@ newWithOptions itemType id status idStatus =
         --        Boots
         _ ->
             ItemWeapon <| Item.Weapon.init Dagger status idStatus id
+
+
+ppWeapon : Weapon -> String
+ppWeapon weapon =
+    weapon.base.name ++ " ( " ++ Dice.pp weapon.damage ++ " )"
+
+
+ppArmour : Armour -> String
+ppArmour armour =
+    armour.base.name ++ " ( " ++ toString armour.ac ++ " )"

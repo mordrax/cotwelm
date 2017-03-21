@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Arena
+import Arena.PlayerArena as PlayerArena
 import CharCreation exposing (CharCreation)
 import Dungeon.Editor as Editor exposing (..)
 import Game
@@ -20,7 +20,7 @@ type Msg
     | GameMsg Game.Msg
     | GenerateGame Random.Seed CharCreation
     | EditorMsg Editor.Msg
-    | ArenaMsg Arena.Msg
+    | ArenaMsg PlayerArena.Msg
     | ChangePage Page
 
 
@@ -43,7 +43,7 @@ init location =
             , charCreation = CharCreation.init
             , game = Nothing
             , editor = Editor.init
-            , arena = Arena.init
+            , arena = PlayerArena.init
             }
     in
         ( model, Cmd.none )
@@ -54,7 +54,7 @@ type alias Model =
     , charCreation : CharCreation
     , game : Maybe Game.Model
     , editor : Editor.Model
-    , arena : Arena.Model
+    , arena : PlayerArena.Model
     }
 
 
@@ -129,7 +129,7 @@ update msg model =
         ArenaMsg msg ->
             let
                 ( arena_, cmds ) =
-                    Arena.update msg model.arena
+                    PlayerArena.update msg model.arena
 
                 gameCmds =
                     Cmd.map ArenaMsg cmds
@@ -178,7 +178,7 @@ view model =
             Html.map EditorMsg (Editor.view model.editor)
 
         ArenaPage ->
-            Html.map ArenaMsg (Arena.view model.arena)
+            Html.map ArenaMsg (PlayerArena.view model.arena)
 
         _ ->
             h1 [] [ text "Page not implemented!" ]
