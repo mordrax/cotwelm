@@ -111,8 +111,8 @@ makeGiantInsect =
 
 makeCanine : MonsterType -> Monster
 makeCanine =
-    make (Attributes 0 50 80 40 40)
-        >> Model.setEquipment ( basicEquipment ItemData.SmallBag, ItemData.ToughHide )
+    make_ (Attributes 0 50 80 40 40)
+        >> Model.setEquipment (basicEquipment ItemData.SmallBite ItemData.ToughHide)
         >> Model.setBodySize Types.Small
 
 

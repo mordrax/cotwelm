@@ -324,7 +324,7 @@ update msg model =
                             modelWithHeroAndInventory =
                                 { model
                                     | inventory = inventory_
-                                    , hero = Hero.updateEquipment equipment model.hero
+                                    , hero = Hero.setEquipment equipment model.hero
                                     , currentScreen = MapScreen
                                 }
                         in
@@ -584,7 +584,7 @@ attackHero : Monster -> Model -> Model
 attackHero monster ({ hero, seed, messages } as model) =
     let
         ( ( msg, heroAfterHit ), seed_ ) =
-            Random.step (Combat.defend monster hero) seed
+            Random.step (Combat.attack monster hero) seed
     in
         { model
             | messages = msg :: messages

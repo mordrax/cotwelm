@@ -10,7 +10,7 @@ module Hero
         , stats
         , setStats
         , viewStats
-        , updateEquipment
+        , setEquipment
         , equip
         )
 
@@ -37,6 +37,7 @@ type alias Hero =
     , equipment : Equipment
     , expLevel : Int
     , bodySize : Types.BodySize
+    , attacks: Int
     }
 
 
@@ -55,12 +56,13 @@ init name ({ str, int, con } as attributes) gender =
     , equipment = Equipment.init
     , expLevel = 1
     , bodySize = Types.Medium
+    , attacks = 1
     }
 
 
-updateEquipment : Equipment -> Hero -> Hero
-updateEquipment equipment model =
-    { model | equipment = equipment }
+setEquipment : Equipment -> Hero -> Hero
+setEquipment equipment hero =
+    { hero | equipment = equipment }
 
 
 move : Direction -> Hero -> Hero
