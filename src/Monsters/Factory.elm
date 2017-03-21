@@ -109,6 +109,13 @@ makeGiantInsect =
         >> Model.setBodySize Types.Large
 
 
+makeCanine : MonsterType -> Monster
+makeCanine =
+    make (Attributes 0 50 80 40 40)
+        >> Model.setEquipment ( basicEquipment ItemData.SmallBag, ItemData.ToughHide )
+        >> Model.setBodySize Types.Small
+
+
 make : MonsterType -> Vector -> Monster
 make monsterType position =
     let
@@ -226,24 +233,23 @@ make monsterType position =
             ------------
             -- Wolves --
             ------------
-            --            WildDog ->
-            --                init WildDog
+            WildDog ->
+                makeCanine WildDog
+
             --                    (Attributes 0 50 75 30 30)
             --                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
-            --                    |> Model.setBodySize Types.Small
-            --
-            --            GrayWolf ->
-            --                init GrayWolf
+            GrayWolf ->
+                makeCanine GrayWolf
+
             --                    (Attributes 0 60 80 50 50)
             --                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
-            --                    |> Model.setBodySize Types.Small
-            --
-            --            WhiteWolf ->
-            --                init WhiteWolf
-            --                    (Attributes 0 60 80 50 50)
-            --                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
-            --                    |> Model.setBodySize Types.Small
-            --                    |> Model.setAttacks 2
+            WhiteWolf ->
+                makeCanine WhiteWolf
+                    --                    (Attributes 0 60 80 50 50)
+                    --                    (basicEquipment ItemData.SmallBite ItemData.ToughHide)
+                    |>
+                        Model.setAttacks 2
+
             --
             --            -- Animals
             --            GiantRat ->
