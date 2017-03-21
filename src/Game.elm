@@ -482,7 +482,7 @@ attackMonster monster ({ hero, seed, messages, maps } as model) =
                     Monster.remove monster monsters
 
                 Just monster ->
-                    Monster.update monster monsters
+                    Monster.replace monster monsters
 
         modelAfterCombat =
             { model

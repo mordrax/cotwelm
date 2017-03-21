@@ -296,7 +296,7 @@ combatView { matchResults } =
                 ]
             ]
         , tbody []
-            (Monster.types
+            (Monster.monsterTypesToList
                 |> List.map toString
                 |> List.map (\monsterType -> Dict.get monsterType matchResults)
                 |> List.map (Maybe.map Match.view >> Maybe.withDefault (div [] []))
@@ -454,6 +454,6 @@ initMatches heroLookup ( weaponType, armourType ) =
                 Match.init hero monster
     in
         --        List.map newMatch (List.take 20 Monster.types)
-        List.map newMonster Monster.types
+        List.map newMonster Monster.monsterTypesToList
             |> List.filter (.expLevel >> flip (>=) 5)
             |> List.map newMatch

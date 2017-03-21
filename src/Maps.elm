@@ -44,6 +44,7 @@ import Types exposing (..)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
+
 type alias Model =
     { currentArea : Area
     , village : Level
@@ -98,6 +99,7 @@ upstairs model =
         _ ->
             setCurrentArea Farm model
 
+
 downstairs : Model -> Generator Model
 downstairs model =
     let
@@ -139,7 +141,7 @@ addMonstersToLevel level =
     in
         Misc.shuffle floors
             |> Random.map (List.take 10)
-            |> Random.andThen Monster.randomMonsters
+            |> Random.andThen Monster.makeRandomMonsters
             |> Random.map (\monsters -> { level | monsters = monsters })
 
 
