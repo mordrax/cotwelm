@@ -74,7 +74,7 @@ type Prices
 
 {-| The common set of data for all items.
 -}
-type alias BaseItem =
+type alias Item =
     { name : String
     , prices : Prices
     , css : String
@@ -82,14 +82,36 @@ type alias BaseItem =
     , status : ItemStatus
     , isIdentified : IdentificationStatus
     , id : ID
+    , itemType :
+        ItemType
+        -- weapon
+    , weaponType : WeaponType
+    , wc : WC
+    , damage :
+        Dice
+        -- armour
+    , armourType : ArmourType
+    , ac :
+        AC
+        -- gauntlets
+    , gauntletsType :
+        GauntletsType
+        -- helmet
+    , helmetType :
+        HelmetType
+        -- bracers
+    , bracersType :
+        BracersType
+        -- shield
+    , shieldType : ShieldType
     }
 
 
 type alias Weapon =
-    { base : BaseItem
-    , weaponType : WeaponType
-    , wc : WC
-    , damage : Dice
+    { a
+        | weaponType : WeaponType
+        , wc : WC
+        , damage : Dice
     }
 
 
@@ -98,36 +120,31 @@ type WC
 
 
 type alias Armour =
-    { base : BaseItem
-    , armourType : ArmourType
+    { armourType : ArmourType
     , ac : AC
     }
 
 
 type alias Gauntlets =
-    { base : BaseItem
-    , gauntletsType : GauntletsType
+    { gauntletsType : GauntletsType
     , ac : AC
     }
 
 
 type alias Helmet =
-    { base : BaseItem
-    , helmetType : HelmetType
+    { helmetType : HelmetType
     , ac : AC
     }
 
 
 type alias Bracers =
-    { base : BaseItem
-    , bracersType : BracersType
+    { bracersType : BracersType
     , ac : AC
     }
 
 
 type alias Shield =
-    { base : BaseItem
-    , shieldType : ShieldType
+    { shieldType : ShieldType
     , ac : AC
     }
 
