@@ -68,7 +68,7 @@ import Debug exposing (log)
 import Dice exposing (Dice)
 import Equipment exposing (Equipment)
 import Hero exposing (Hero)
-import Item.Data
+import Item.Types
 import Item.Weapon as Weapon
 import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Seed, Generator)
@@ -251,7 +251,7 @@ chanceToHit attacker defender =
                 |> clamp -10 10
     in
         { baseCTH = attacker.attributes.dex + attacker.expLevel * 2
-        , ac = Item.Data.acToInt ac + defender.expLevel * 2
+        , ac = Item.Types.acToInt ac + defender.expLevel * 2
         , armourPenalty = armourPenalty
         , weaponBulkPenalty = weaponBulkPenalty
         , sizeModifier = sizeModifier
@@ -356,7 +356,7 @@ damageCalculator { attributes, equipment } =
 ------------------
 
 
-attackSpeed : Item.Data.Weapon -> Attributes -> Float
+attackSpeed : Item.Types.Weapon -> Attributes -> Float
 attackSpeed weapon { str, dex, int, con } =
     1
 

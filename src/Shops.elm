@@ -14,7 +14,7 @@ module Shops
         )
 
 import Dict exposing (Dict)
-import Item.Data exposing (..)
+import Item.Types exposing (..)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item exposing (Item)
 import Item.Purse as Purse exposing (Purse)
@@ -188,103 +188,103 @@ inventoryStock shop =
 
 weapons : ItemTypes
 weapons =
-    [ Item.Data.ItemTypeWeapon Club
-    , Item.Data.ItemTypeWeapon Dagger
-    , Item.Data.ItemTypeWeapon Hammer
-    , Item.Data.ItemTypeWeapon HandAxe
-    , Item.Data.ItemTypeWeapon Quarterstaff
-    , Item.Data.ItemTypeWeapon Spear
-    , Item.Data.ItemTypeWeapon ShortSword
-    , Item.Data.ItemTypeWeapon Mace
-    , Item.Data.ItemTypeWeapon Flail
-    , Item.Data.ItemTypeWeapon Axe
-    , Item.Data.ItemTypeWeapon WarHammer
-    , Item.Data.ItemTypeWeapon LongSword
-    , Item.Data.ItemTypeWeapon BattleAxe
-    , Item.Data.ItemTypeWeapon BroadSword
-    , Item.Data.ItemTypeWeapon MorningStar
-    , Item.Data.ItemTypeWeapon BastardSword
-    , Item.Data.ItemTypeWeapon TwoHandedSword
+    [ Item.Types.ItemTypeWeapon Club
+    , Item.Types.ItemTypeWeapon Dagger
+    , Item.Types.ItemTypeWeapon Hammer
+    , Item.Types.ItemTypeWeapon HandAxe
+    , Item.Types.ItemTypeWeapon Quarterstaff
+    , Item.Types.ItemTypeWeapon Spear
+    , Item.Types.ItemTypeWeapon ShortSword
+    , Item.Types.ItemTypeWeapon Mace
+    , Item.Types.ItemTypeWeapon Flail
+    , Item.Types.ItemTypeWeapon Axe
+    , Item.Types.ItemTypeWeapon WarHammer
+    , Item.Types.ItemTypeWeapon LongSword
+    , Item.Types.ItemTypeWeapon BattleAxe
+    , Item.Types.ItemTypeWeapon BroadSword
+    , Item.Types.ItemTypeWeapon MorningStar
+    , Item.Types.ItemTypeWeapon BastardSword
+    , Item.Types.ItemTypeWeapon TwoHandedSword
     ]
 
 
 armour : ItemTypes
 armour =
-    [ Item.Data.ItemTypeArmour RustyArmour
-    , Item.Data.ItemTypeArmour LeatherArmour
-    , Item.Data.ItemTypeArmour StuddedLeatherArmour
-    , Item.Data.ItemTypeArmour RingMail
-    , Item.Data.ItemTypeArmour ScaleMail
-    , Item.Data.ItemTypeArmour ChainMail
-    , Item.Data.ItemTypeArmour SplintMail
-    , Item.Data.ItemTypeArmour PlateMail
-    , Item.Data.ItemTypeArmour PlateArmour
-    , Item.Data.ItemTypeArmour MeteoricSteelPlate
-    , Item.Data.ItemTypeArmour ElvenChainMail
+    [ Item.Types.ItemTypeArmour RustyArmour
+    , Item.Types.ItemTypeArmour LeatherArmour
+    , Item.Types.ItemTypeArmour StuddedLeatherArmour
+    , Item.Types.ItemTypeArmour RingMail
+    , Item.Types.ItemTypeArmour ScaleMail
+    , Item.Types.ItemTypeArmour ChainMail
+    , Item.Types.ItemTypeArmour SplintMail
+    , Item.Types.ItemTypeArmour PlateMail
+    , Item.Types.ItemTypeArmour PlateArmour
+    , Item.Types.ItemTypeArmour MeteoricSteelPlate
+    , Item.Types.ItemTypeArmour ElvenChainMail
     ]
 
 
 belt : ItemTypes
 belt =
-    [ Item.Data.ItemTypeBelt TwoSlotBelt
-    , Item.Data.ItemTypeBelt ThreeSlotBelt
-    , Item.Data.ItemTypeBelt FourSlotBelt
-    , Item.Data.ItemTypeBelt UtilityBelt
-    , Item.Data.ItemTypeBelt WandQuiverBelt
+    [ Item.Types.ItemTypeBelt TwoSlotBelt
+    , Item.Types.ItemTypeBelt ThreeSlotBelt
+    , Item.Types.ItemTypeBelt FourSlotBelt
+    , Item.Types.ItemTypeBelt UtilityBelt
+    , Item.Types.ItemTypeBelt WandQuiverBelt
     ]
 
 
 bracers : ItemTypes
 bracers =
-    [ Item.Data.ItemTypeBracers NormalBracers ]
+    [ Item.Types.ItemTypeBracers NormalBracers ]
 
 
 gauntlets : ItemTypes
 gauntlets =
-    [ Item.Data.ItemTypeGauntlets NormalGauntlets ]
+    [ Item.Types.ItemTypeGauntlets NormalGauntlets ]
 
 
 helmet : ItemTypes
 helmet =
-    [ Item.Data.ItemTypeHelmet BrokenHelmet
-    , Item.Data.ItemTypeHelmet LeatherHelmet
-    , Item.Data.ItemTypeHelmet IronHelmet
-    , Item.Data.ItemTypeHelmet SteelHelmet
-    , Item.Data.ItemTypeHelmet MeteoricSteelHelmet
-    , Item.Data.ItemTypeHelmet HelmetOfDetectMonsters
+    [ Item.Types.ItemTypeHelmet BrokenHelmet
+    , Item.Types.ItemTypeHelmet LeatherHelmet
+    , Item.Types.ItemTypeHelmet IronHelmet
+    , Item.Types.ItemTypeHelmet SteelHelmet
+    , Item.Types.ItemTypeHelmet MeteoricSteelHelmet
+    , Item.Types.ItemTypeHelmet HelmetOfDetectMonsters
     ]
 
 
 pack : ItemTypes
 pack =
-    [ Item.Data.ItemTypePack SmallBag
-    , Item.Data.ItemTypePack MediumBag
-    , Item.Data.ItemTypePack LargeBag
-    , Item.Data.ItemTypePack SmallPack
-    , Item.Data.ItemTypePack MediumPack
-    , Item.Data.ItemTypePack LargePack
-    , Item.Data.ItemTypePack SmallChest
-    , Item.Data.ItemTypePack MediumChest
-    , Item.Data.ItemTypePack LargeChest
-    , Item.Data.ItemTypePack EnchantedSmallPackOfHolding
-    , Item.Data.ItemTypePack EnchantedMediumPackOfHolding
-    , Item.Data.ItemTypePack EnchantedLargePackOfHolding
+    [ Item.Types.ItemTypePack SmallBag
+    , Item.Types.ItemTypePack MediumBag
+    , Item.Types.ItemTypePack LargeBag
+    , Item.Types.ItemTypePack SmallPack
+    , Item.Types.ItemTypePack MediumPack
+    , Item.Types.ItemTypePack LargePack
+    , Item.Types.ItemTypePack SmallChest
+    , Item.Types.ItemTypePack MediumChest
+    , Item.Types.ItemTypePack LargeChest
+    , Item.Types.ItemTypePack EnchantedSmallPackOfHolding
+    , Item.Types.ItemTypePack EnchantedMediumPackOfHolding
+    , Item.Types.ItemTypePack EnchantedLargePackOfHolding
     ]
 
 
 shield : ItemTypes
 shield =
-    [ Item.Data.ItemTypeShield BrokenShield
-    , Item.Data.ItemTypeShield SmallWoodenShield
-    , Item.Data.ItemTypeShield MediumWoodenShield
-    , Item.Data.ItemTypeShield LargeWoodenShield
-    , Item.Data.ItemTypeShield SmallIronShield
-    , Item.Data.ItemTypeShield MediumIronShield
-    , Item.Data.ItemTypeShield LargeIronShield
-    , Item.Data.ItemTypeShield SmallSteelShield
-    , Item.Data.ItemTypeShield MediumSteelShield
-    , Item.Data.ItemTypeShield LargeSteelShield
-    , Item.Data.ItemTypeShield SmallMeteoricSteelShield
-    , Item.Data.ItemTypeShield MediumMeteoricSteelShield
-    , Item.Data.ItemTypeShield LargeMeteoricSteelShield
+    [ Item.Types.ItemTypeShield BrokenShield
+    , Item.Types.ItemTypeShield SmallWoodenShield
+    , Item.Types.ItemTypeShield MediumWoodenShield
+    , Item.Types.ItemTypeShield LargeWoodenShield
+    , Item.Types.ItemTypeShield SmallIronShield
+    , Item.Types.ItemTypeShield MediumIronShield
+    , Item.Types.ItemTypeShield LargeIronShield
+    , Item.Types.ItemTypeShield SmallSteelShield
+    , Item.Types.ItemTypeShield MediumSteelShield
+    , Item.Types.ItemTypeShield LargeSteelShield
+    , Item.Types.ItemTypeShield SmallMeteoricSteelShield
+    , Item.Types.ItemTypeShield MediumMeteoricSteelShield
+    , Item.Types.ItemTypeShield LargeMeteoricSteelShield
     ]

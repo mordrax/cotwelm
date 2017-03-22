@@ -1,4 +1,4 @@
-module Item.Data exposing (..)
+module Item.Types exposing (..)
 
 import Utils.Mass exposing (..)
 import Utils.IdGenerator exposing (..)
@@ -36,10 +36,6 @@ type IdentificationStatus
     | Unidentified
 
 
-type alias ItemTypes =
-    List ItemType
-
-
 type ItemType
     = ItemTypeWeapon WeaponType
     | ItemTypeArmour ArmourType
@@ -74,7 +70,7 @@ type Prices
 
 {-| The common set of data for all items.
 -}
-type alias BaseItem =
+type alias Item =
     { name : String
     , prices : Prices
     , css : String
@@ -82,14 +78,50 @@ type alias BaseItem =
     , status : ItemStatus
     , isIdentified : IdentificationStatus
     , id : ID
+    , itemType :
+        ItemType
+        -- weapon
+    , weaponType : WeaponType
+    , wc : WC
+    , damage :
+        Dice
+        -- common armour fields
+    , ac :
+        AC
+        -- armour
+    , armourType :
+        ArmourType
+        -- gauntlets
+    , gauntletsType :
+        GauntletsType
+        -- helmet
+    , helmetType :
+        HelmetType
+        -- bracers
+    , bracersType :
+        BracersType
+        -- shield
+    , shieldType :
+        ShieldType
+        -- boots
+    , bootsType :
+        BootsType
+        -- neckwear
+    , neckwearType :
+        NeckwearType
+        -- overgarment
+    , overgarmentType :
+        OvergarmentType
+        -- ring
+    , ringType : RingType
     }
 
 
 type alias Weapon =
-    { base : BaseItem
-    , weaponType : WeaponType
-    , wc : WC
-    , damage : Dice
+    { a
+        | weaponType : WeaponType
+        , wc : WC
+        , damage : Dice
     }
 
 
@@ -98,54 +130,54 @@ type WC
 
 
 type alias Armour =
-    { base : BaseItem
-    , armourType : ArmourType
-    , ac : AC
+    { a
+        | armourType : ArmourType
+        , ac : AC
     }
 
 
 type alias Gauntlets =
-    { base : BaseItem
-    , gauntletsType : GauntletsType
-    , ac : AC
+    { a
+        | gauntletsType : GauntletsType
+        , ac : AC
     }
 
 
 type alias Helmet =
-    { base : BaseItem
-    , helmetType : HelmetType
-    , ac : AC
+    { a
+        | helmetType : HelmetType
+        , ac : AC
     }
 
 
 type alias Bracers =
-    { base : BaseItem
-    , bracersType : BracersType
-    , ac : AC
+    { a
+        | bracersType : BracersType
+        , ac : AC
     }
 
 
 type alias Shield =
-    { base : BaseItem
-    , shieldType : ShieldType
-    , ac : AC
+    { a
+        | shieldType : ShieldType
+        , ac : AC
     }
 
 
 type alias Boots =
-    { base : BaseItem, bootsType : BootsType }
+    { a | bootsType : BootsType }
 
 
 type alias Neckwear =
-    { base : BaseItem, neckwearType : NeckwearType }
+    { a | neckwearType : NeckwearType }
 
 
 type alias Overgarment =
-    { base : BaseItem, overgarmentType : OvergarmentType }
+    { a | overgarmentType : OvergarmentType }
 
 
 type alias Ring =
-    { base : BaseItem, ringType : RingType }
+    { a | ringType : RingType }
 
 
 

@@ -8,7 +8,7 @@ module Item.Factory
 
 import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
 import Item.Item as Item exposing (Item, Items)
-import Item.Data
+import Item.Types
 
 
 type ItemFactory
@@ -25,7 +25,7 @@ init =
     A <| Model IdGenerator.init
 
 
-make : Item.Data.ItemType -> ItemFactory -> ( Item, ItemFactory )
+make : Item.Types.ItemType -> ItemFactory -> ( Item, ItemFactory )
 make itemType (A model) =
     let
         ( id, idGenerator_ ) =
@@ -34,7 +34,7 @@ make itemType (A model) =
         ( Item.new itemType id, A { model | idGenerator = idGenerator_ } )
 
 
-makeReducer : Item.Data.ItemType -> ( Items, ItemFactory ) -> ( Items, ItemFactory )
+makeReducer : Item.Types.ItemType -> ( Items, ItemFactory ) -> ( Items, ItemFactory )
 makeReducer itemType ( currentItems, itemFactory ) =
     let
         ( newItem, newItemFactory ) =

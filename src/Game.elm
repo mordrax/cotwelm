@@ -21,7 +21,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item exposing (Item)
-import Item.Data exposing (..)
+import Item.Types exposing (..)
 import Level exposing (Level)
 import Monster exposing (Monster)
 import Inventory exposing (Inventory)
@@ -829,14 +829,14 @@ donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
 donDefaultGarb itemFactory hero =
     let
         equipmentToMake =
-            [ ( Equipment.WeaponSlot, Item.Data.ItemTypeWeapon Dagger )
-            , ( Equipment.ArmourSlot, Item.Data.ItemTypeArmour ScaleMail )
-            , ( Equipment.ShieldSlot, Item.Data.ItemTypeShield LargeIronShield )
-            , ( Equipment.HelmetSlot, Item.Data.ItemTypeHelmet LeatherHelmet )
-            , ( Equipment.GauntletsSlot, Item.Data.ItemTypeGauntlets NormalGauntlets )
-            , ( Equipment.BeltSlot, Item.Data.ItemTypeBelt ThreeSlotBelt )
-            , ( Equipment.PurseSlot, Item.Data.ItemTypePurse )
-            , ( Equipment.PackSlot, Item.Data.ItemTypePack MediumPack )
+            [ ( Equipment.WeaponSlot, Item.Types.ItemTypeWeapon Dagger )
+            , ( Equipment.ArmourSlot, Item.Types.ItemTypeArmour ScaleMail )
+            , ( Equipment.ShieldSlot, Item.Types.ItemTypeShield LargeIronShield )
+            , ( Equipment.HelmetSlot, Item.Types.ItemTypeHelmet LeatherHelmet )
+            , ( Equipment.GauntletsSlot, Item.Types.ItemTypeGauntlets NormalGauntlets )
+            , ( Equipment.BeltSlot, Item.Types.ItemTypeBelt ThreeSlotBelt )
+            , ( Equipment.PurseSlot, Item.Types.ItemTypePurse )
+            , ( Equipment.PackSlot, Item.Types.ItemTypePack MediumPack )
             ]
 
         makeEquipment ( slot, itemType ) ( accEquipment, itemFactory ) =

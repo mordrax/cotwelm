@@ -1,6 +1,6 @@
 module Item.Armour exposing (init, listTypes, encode, decoder)
 
-import Item.Data exposing (..)
+import Item.Types exposing (..)
 import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 import Dict exposing (Dict)
