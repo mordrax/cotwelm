@@ -44,6 +44,7 @@ randomMonster position =
         |> Random.map (flip make position)
 
 
+replaceEquipmentSlot
 weaponSlot : ItemData.WeaponType -> ( Equipment.EquipmentSlot, Item )
 weaponSlot weaponType =
     ( Equipment.WeaponSlot, Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty )
@@ -84,6 +85,28 @@ makeForArena monsterType =
     make monsterType ( 0, 0 )
 
 
+leatherEquipment : Equipment
+leatherEquipment =
+    Equipment.equipMany
+        [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.LeatherArmour) IdGenerator.empty )
+        , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.LeatherHelmet) IdGenerator.empty )
+        , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
+        , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
+        ]
+        Equipment.init
+
+
+ironEquipment : Equipment
+ironEquipment =
+    Equipment.equipMany
+        [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.ChainMail) IdGenerator.empty )
+        , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.IronHelmet) IdGenerator.empty )
+        , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
+        , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
+        ]
+        Equipment.init
+
+
 make_ : Attributes -> MonsterType -> Monster
 make_ attributes monsterType =
     { name = StringX.toTitleCase (toString monsterType)
@@ -100,6 +123,13 @@ make_ attributes monsterType =
     , speed = 100
     , visible = Hidden
     }
+
+
+makeHumanoid : MonsterType -> Monster
+makeHumanoid =
+    make_ (Attributes 0 50 50 50 50)
+        >> Model.setBodySize Types.Medium
+        >> Model.setEquipment leatherEquipment
 
 
 makeGiantInsect : MonsterType -> Monster
@@ -138,24 +168,6 @@ make monsterType position =
                 |> Model.setEquipment equipment
                 |> Model.setPosition position
                 |> Model.setExpLevel level
-
-        leatherEquipment =
-            Equipment.equipMany
-                [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.LeatherArmour) IdGenerator.empty )
-                , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.LeatherHelmet) IdGenerator.empty )
-                , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
-                , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
-                ]
-                Equipment.init
-
-        ironEquipment =
-            Equipment.equipMany
-                [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.ChainMail) IdGenerator.empty )
-                , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.IronHelmet) IdGenerator.empty )
-                , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
-                , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
-                ]
-                Equipment.init
     in
         case monsterType of
             --            -----------
@@ -190,45 +202,46 @@ make monsterType position =
             --                init AnimatedMarbleStatue
             --                    (Attributes 0 50 50 50 50)
             --
-            --            ---------------
-            --            -- Humanoids --
-            --            ---------------
-            --            Kobold ->
-            --                init Kobold
-            --                    (Attributes 0 30 60 30 50)
-            --                    (weaponSlot ItemData.Crossbow :: leatherEquipment)
-            --                    |> Model.setBodySize Types.Small
-            --                    |> Model.setAttackTypes [ Melee, Ranged ]
-            --
-            --            Goblin ->
-            --                init Goblin
-            --                    (Attributes 0 40 60 50 20)
-            --                    (weaponSlot ItemData.Club :: leatherEquipment)
-            --                    |> Model.setBodySize Types.Small
-            --
-            --            Hobgoblin ->
-            --                init Hobgoblin
-            --                    (Attributes 0 50 60 50 50)
-            --                    (weaponSlot ItemData.Spear :: leatherEquipment)
-            --
-            --            Bandit ->
-            --                init Bandit
-            --                    (Attributes 0 60 75 60 50)
-            --                    (weaponSlot ItemData.Bow :: leatherEquipment)
-            --                    |> Model.setAttackTypes [ Ranged ]
-            --
-            --            SmirkingSneakThief ->
-            --                init SmirkingSneakThief
-            --                    (Attributes 0 50 50 50 50)
-            --                    |> Model.setAttackTypes [ Steal ]
-            --
-            --            GruesomeTroll ->
-            --                init GruesomeTroll
-            --                    (Attributes 0 50 50 50 50)
-            --
-            --            EvilWarrior ->
-            --                init EvilWarrior
-            --                    (Attributes 0 50 50 50 50)
+            ---------------
+            -- Humanoids --
+            ---------------
+            Kobold ->
+                makeHumanoid Kobold
+                    |> Model.scaleAttributes 0.5 1.5 0.5 1
+                    (weaponSlot ItemData.Crossbow :: leatherEquipment)
+                    |> Model.setBodySize Types.Small
+                    |> Model.setAttackTypes [ Melee, Ranged ]
+
+            Goblin ->
+                makeHumanoid Goblin
+                    (Attributes 0 40 60 50 20)
+                    (weaponSlot ItemData.Club :: leatherEquipment)
+                    |> Model.setBodySize Types.Small
+
+            Hobgoblin ->
+                makeHumanoid Hobgoblin
+                    (Attributes 0 50 60 50 50)
+                    (weaponSlot ItemData.Spear :: leatherEquipment)
+
+            Bandit ->
+                makeHumanoid Bandit
+                    (Attributes 0 60 75 60 50)
+                    (weaponSlot ItemData.Bow :: leatherEquipment)
+                    |> Model.setAttackTypes [ Ranged ]
+
+            SmirkingSneakThief ->
+                makeHumanoid SmirkingSneakThief
+                    (Attributes 0 50 50 50 50)
+                    |> Model.setAttackTypes [ Steal ]
+
+            GruesomeTroll ->
+                makeHumanoid GruesomeTroll
+                    (Attributes 0 50 50 50 50)
+
+            EvilWarrior ->
+                makeHumanoid EvilWarrior
+                    (Attributes 0 50 50 50 50)
+
             -------------
             -- Insects --
             -------------
@@ -258,8 +271,9 @@ make monsterType position =
                 makeCanine WhiteWolf
                     |> Model.setAttacks 2
 
-            --
-            -- Animals
+            -------------
+            -- Animals --
+            -------------
             GiantRat ->
                 makeSmallAnimal GiantRat
 
