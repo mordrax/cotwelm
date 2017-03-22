@@ -1,4 +1,4 @@
-module Item.Data exposing (..)
+module Item.Types exposing (..)
 
 import Utils.Mass exposing (..)
 import Utils.IdGenerator exposing (..)

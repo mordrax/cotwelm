@@ -10,7 +10,7 @@ module Monsters.Factory
 
 import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
-import Item.Data as ItemData
+import Item.Types
 import Item.Item as Item exposing (Item)
 import Monsters.Model as Model exposing (Monster)
 import Monsters.Types exposing (..)
@@ -44,22 +44,22 @@ randomMonster position =
         |> Random.map (flip make position)
 
 
-weaponSlot : ItemData.WeaponType -> ( Equipment.EquipmentSlot, Item )
+weaponSlot : Item.Types.WeaponType -> ( Equipment.EquipmentSlot, Item )
 weaponSlot weaponType =
-    ( Equipment.WeaponSlot, Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty )
+    ( Equipment.WeaponSlot, Item.new (Item.Types.ItemTypeWeapon weaponType) IdGenerator.empty )
 
 
-armourSlot : ItemData.ArmourType -> ( Equipment.EquipmentSlot, Item )
+armourSlot : Item.Types.ArmourType -> ( Equipment.EquipmentSlot, Item )
 armourSlot armourType =
-    ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty )
+    ( Equipment.ArmourSlot, Item.new (Item.Types.ItemTypeArmour armourType) IdGenerator.empty )
 
 
-makeShield : ItemData.ShieldType -> Item
+makeShield : Item.Types.ShieldType -> Item
 makeShield shieldType =
-    Item.new (ItemData.ItemTypeShield shieldType) IdGenerator.empty
+    Item.new (Item.Types.ItemTypeShield shieldType) IdGenerator.empty
 
 
-basicEquipment : ItemData.WeaponType -> ItemData.ArmourType -> Equipment
+basicEquipment : Item.Types.WeaponType -> Item.Types.ArmourType -> Equipment
 basicEquipment weapon armour =
     Equipment.equipMany
         [ weaponSlot weapon
@@ -68,7 +68,7 @@ basicEquipment weapon armour =
         Equipment.init
 
 
-basicShieldEquipment : ItemData.WeaponType -> ItemData.ShieldType -> ItemData.ArmourType -> Equipment
+basicShieldEquipment : Item.Types.WeaponType -> Item.Types.ShieldType -> Item.Types.ArmourType -> Equipment
 basicShieldEquipment weapon shield armour =
     let
         equipment =
@@ -105,28 +105,28 @@ make_ attributes monsterType =
 makeGiantInsect : MonsterType -> Monster
 makeGiantInsect =
     make_ (Attributes 0 75 50 40 10)
-        >> Model.setEquipment (basicEquipment ItemData.Pincers ItemData.Shell)
+        >> Model.setEquipment (basicEquipment Item.Types.Pincers Item.Types.Shell)
         >> Model.setBodySize Types.Large
 
 
 makeCanine : MonsterType -> Monster
 makeCanine =
     make_ (Attributes 0 50 80 40 40)
-        >> Model.setEquipment (basicEquipment ItemData.SmallBite ItemData.ToughHide)
+        >> Model.setEquipment (basicEquipment Item.Types.SmallBite Item.Types.ToughHide)
         >> Model.setBodySize Types.Small
 
 
 makeSmallAnimal : MonsterType -> Monster
 makeSmallAnimal =
     make_ (Attributes 0 40 60 60 30)
-        >> Model.setEquipment (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+        >> Model.setEquipment (basicEquipment Item.Types.SmallClaws Item.Types.SoftHide)
         >> Model.setBodySize Types.Small
 
 
 makeLargeAnimal : MonsterType -> Monster
 makeLargeAnimal =
     make_ (Attributes 0 80 60 80 30)
-        >> Model.setEquipment (basicEquipment ItemData.LargeClaws ItemData.ToughHide)
+        >> Model.setEquipment (basicEquipment Item.Types.LargeClaws Item.Types.ToughHide)
         >> Model.setBodySize Types.Large
 
 
@@ -141,19 +141,19 @@ make monsterType position =
 
         leatherEquipment =
             Equipment.equipMany
-                [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.LeatherArmour) IdGenerator.empty )
-                , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.LeatherHelmet) IdGenerator.empty )
-                , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
-                , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
+                [ ( Equipment.ArmourSlot, Item.new (Item.Types.ItemTypeArmour Item.Types.LeatherArmour) IdGenerator.empty )
+                , ( Equipment.HelmetSlot, Item.new (Item.Types.ItemTypeHelmet Item.Types.LeatherHelmet) IdGenerator.empty )
+                , ( Equipment.GauntletsSlot, Item.new (Item.Types.ItemTypeGauntlets Item.Types.NormalGauntlets) IdGenerator.empty )
+                , ( Equipment.BracersSlot, Item.new (Item.Types.ItemTypeBracers Item.Types.NormalBracers) IdGenerator.empty )
                 ]
                 Equipment.init
 
         ironEquipment =
             Equipment.equipMany
-                [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.ChainMail) IdGenerator.empty )
-                , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.IronHelmet) IdGenerator.empty )
-                , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
-                , ( Equipment.BracersSlot, Item.new (ItemData.ItemTypeBracers ItemData.NormalBracers) IdGenerator.empty )
+                [ ( Equipment.ArmourSlot, Item.new (Item.Types.ItemTypeArmour Item.Types.ChainMail) IdGenerator.empty )
+                , ( Equipment.HelmetSlot, Item.new (Item.Types.ItemTypeHelmet Item.Types.IronHelmet) IdGenerator.empty )
+                , ( Equipment.GauntletsSlot, Item.new (Item.Types.ItemTypeGauntlets Item.Types.NormalGauntlets) IdGenerator.empty )
+                , ( Equipment.BracersSlot, Item.new (Item.Types.ItemTypeBracers Item.Types.NormalBracers) IdGenerator.empty )
                 ]
                 Equipment.init
     in
@@ -164,7 +164,7 @@ make monsterType position =
             --            GreenSlime ->
             --                init GreenSlime
             --                    (Attributes 0 50 50 90 50)
-            --                    (basicEquipment ItemData.SmallBite ItemData.SoftHide)
+            --                    (basicEquipment Item.Types.SmallBite Item.Types.SoftHide)
             --                    |> Model.setAttackTypes [ Acid ]
             --
             --            GelatinousGlob ->
@@ -196,25 +196,25 @@ make monsterType position =
             --            Kobold ->
             --                init Kobold
             --                    (Attributes 0 30 60 30 50)
-            --                    (weaponSlot ItemData.Crossbow :: leatherEquipment)
+            --                    (weaponSlot Item.Types.Crossbow :: leatherEquipment)
             --                    |> Model.setBodySize Types.Small
             --                    |> Model.setAttackTypes [ Melee, Ranged ]
             --
             --            Goblin ->
             --                init Goblin
             --                    (Attributes 0 40 60 50 20)
-            --                    (weaponSlot ItemData.Club :: leatherEquipment)
+            --                    (weaponSlot Item.Types.Club :: leatherEquipment)
             --                    |> Model.setBodySize Types.Small
             --
             --            Hobgoblin ->
             --                init Hobgoblin
             --                    (Attributes 0 50 60 50 50)
-            --                    (weaponSlot ItemData.Spear :: leatherEquipment)
+            --                    (weaponSlot Item.Types.Spear :: leatherEquipment)
             --
             --            Bandit ->
             --                init Bandit
             --                    (Attributes 0 60 75 60 50)
-            --                    (weaponSlot ItemData.Bow :: leatherEquipment)
+            --                    (weaponSlot Item.Types.Bow :: leatherEquipment)
             --                    |> Model.setAttackTypes [ Ranged ]
             --
             --            SmirkingSneakThief ->
@@ -270,14 +270,14 @@ make monsterType position =
             LargeSnake ->
                 makeSmallAnimal LargeSnake
                     |> Model.scaleAttributes 0.5 1 0.7 1
-                    |> Model.setEquipment (basicEquipment ItemData.Fangs ItemData.SoftHide)
+                    |> Model.setEquipment (basicEquipment Item.Types.Fangs Item.Types.SoftHide)
                     |> Model.setBodySize Types.Tiny
                     |> Model.setAttackTypes [ Poison ]
 
             Viper ->
                 makeSmallAnimal Viper
                     |> Model.scaleAttributes 0.5 1.5 0.5 1.5
-                    |> Model.setEquipment (basicEquipment ItemData.Fangs ItemData.SoftHide)
+                    |> Model.setEquipment (basicEquipment Item.Types.Fangs Item.Types.SoftHide)
                     |> Model.setBodySize Types.Tiny
                     |> Model.setAttackTypes [ Poison ]
                     |> Model.setAttacks 2
@@ -287,7 +287,7 @@ make monsterType position =
 
             GiantRedAnt ->
                 makeLargeAnimal GiantRedAnt
-                    |> Model.setEquipment (basicEquipment ItemData.Pincers ItemData.Shell)
+                    |> Model.setEquipment (basicEquipment Item.Types.Pincers Item.Types.Shell)
 
             BrownBear ->
                 makeLargeAnimal BrownBear
@@ -310,12 +310,12 @@ make monsterType position =
             --            Skeleton ->
             --                init Skeleton
             --                    (Attributes 0 60 65 40 10)
-            --                    (basicEquipment ItemData.ShortSword ItemData.Bones)
+            --                    (basicEquipment Item.Types.ShortSword Item.Types.Bones)
             --
             --            WalkingCorpse ->
             --                init WalkingCorpse
             --                    (Attributes 0 100 40 95 20)
-            --                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
+            --                    (basicEquipment Item.Types.SmallClaws Item.Types.SoftHide)
             --
             --            Shadow ->
             --                init Shadow
@@ -351,7 +351,7 @@ make monsterType position =
             --            RatMan ->
             --                init RatMan
             --                    (Attributes 0 60 60 60 60)
-            --                    (basicEquipment ItemData.MorningStar ItemData.ToughHide)
+            --                    (basicEquipment Item.Types.MorningStar Item.Types.ToughHide)
             --
             --            BearMan ->
             --                init BearMan

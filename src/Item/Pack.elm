@@ -9,7 +9,7 @@ module Item.Pack
         )
 
 import Utils.Mass as Mass exposing (..)
-import Item.Data exposing (..)
+import Item.Types exposing (..)
 import Container exposing (..)
 import Utils.IdGenerator as IdGenerator
 

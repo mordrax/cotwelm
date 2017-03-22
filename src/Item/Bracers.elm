@@ -1,6 +1,6 @@
 module Item.Bracers exposing (..)
 
-import Item.Data exposing (..)
+import Item.Types exposing (..)
 import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 

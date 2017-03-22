@@ -24,7 +24,7 @@ import Html.Attributes exposing (..)
 import Item.Armour
 import Item.Belt as Belt exposing (Belt)
 import Item.Bracers
-import Item.Data exposing (..)
+import Item.Types exposing (..)
 import Item.Gauntlets
 import Item.Helmet
 import Item.Pack as Pack exposing (Pack)
