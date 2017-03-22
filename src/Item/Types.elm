@@ -36,10 +36,6 @@ type IdentificationStatus
     | Unidentified
 
 
-type alias ItemTypes =
-    List ItemType
-
-
 type ItemType
     = ItemTypeWeapon WeaponType
     | ItemTypeArmour ArmourType
@@ -89,10 +85,12 @@ type alias Item =
     , wc : WC
     , damage :
         Dice
-        -- armour
-    , armourType : ArmourType
+        -- common armour fields
     , ac :
         AC
+        -- armour
+    , armourType :
+        ArmourType
         -- gauntlets
     , gauntletsType :
         GauntletsType
@@ -103,7 +101,19 @@ type alias Item =
     , bracersType :
         BracersType
         -- shield
-    , shieldType : ShieldType
+    , shieldType :
+        ShieldType
+        -- boots
+    , bootsType :
+        BootsType
+        -- neckwear
+    , neckwearType :
+        NeckwearType
+        -- overgarment
+    , overgarmentType :
+        OvergarmentType
+        -- ring
+    , ringType : RingType
     }
 
 
@@ -120,49 +130,54 @@ type WC
 
 
 type alias Armour =
-    { armourType : ArmourType
-    , ac : AC
+    { a
+        | armourType : ArmourType
+        , ac : AC
     }
 
 
 type alias Gauntlets =
-    { gauntletsType : GauntletsType
-    , ac : AC
+    { a
+        | gauntletsType : GauntletsType
+        , ac : AC
     }
 
 
 type alias Helmet =
-    { helmetType : HelmetType
-    , ac : AC
+    { a
+        | helmetType : HelmetType
+        , ac : AC
     }
 
 
 type alias Bracers =
-    { bracersType : BracersType
-    , ac : AC
+    { a
+        | bracersType : BracersType
+        , ac : AC
     }
 
 
 type alias Shield =
-    { shieldType : ShieldType
-    , ac : AC
+    { a
+        | shieldType : ShieldType
+        , ac : AC
     }
 
 
 type alias Boots =
-    { base : BaseItem, bootsType : BootsType }
+    { a | bootsType : BootsType }
 
 
 type alias Neckwear =
-    { base : BaseItem, neckwearType : NeckwearType }
+    { a | neckwearType : NeckwearType }
 
 
 type alias Overgarment =
-    { base : BaseItem, overgarmentType : OvergarmentType }
+    { a | overgarmentType : OvergarmentType }
 
 
 type alias Ring =
-    { base : BaseItem, ringType : RingType }
+    { a | ringType : RingType }
 
 
 
