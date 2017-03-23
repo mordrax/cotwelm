@@ -113,43 +113,6 @@ init =
         }
 
 
-initFull :
-    Maybe Weapon
-    -> Maybe Item
-    -> Maybe Armour
-    -> Maybe Shield
-    -> Maybe Helmet
-    -> Maybe Bracers
-    -> Maybe Gauntlets
-    -> Maybe (Belt Item)
-    -> Maybe Purse
-    -> Maybe (Pack Item)
-    -> Maybe Neckwear
-    -> Maybe Overgarment
-    -> Maybe Ring
-    -> Maybe Ring
-    -> Maybe Boots
-    -> Equipment
-initFull weapon freehand armour shield helmet bracers gauntlets belt purse pack neckwear overgarment leftRing rightRing boots =
-    A
-        { weapon = weapon
-        , freehand = freehand
-        , armour = armour
-        , shield = shield
-        , helmet = helmet
-        , bracers = bracers
-        , gauntlets = gauntlets
-        , belt = belt
-        , purse = purse
-        , pack = pack
-        , neckwear = neckwear
-        , overgarment = overgarment
-        , leftRing = leftRing
-        , rightRing = rightRing
-        , boots = boots
-        }
-
-
 calculateAC : Equipment -> AC
 calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
     let
