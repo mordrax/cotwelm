@@ -44,6 +44,7 @@ type alias Model =
 type alias ArenaMatch =
     Match (Blue Hero) (Red Monster)
 
+
 type Msg
     = StartFight (List ArenaMatch) Int
     | Fight ArenaMatch (List ArenaMatch) Int
@@ -401,11 +402,11 @@ equipHero hero ( customWeaponType, customArmourType ) =
             ]
     in
         if hero.expLevel <= 10 then
-            { hero | equipment = Equipment.equipMany lowLevel hero.equipment }
+            { hero | equipment = Equipment.setMany lowLevel hero.equipment }
         else if hero.expLevel <= 20 then
-            { hero | equipment = Equipment.equipMany midLevel hero.equipment }
+            { hero | equipment = Equipment.setMany midLevel hero.equipment }
         else
-            { hero | equipment = Equipment.equipMany highLevel hero.equipment }
+            { hero | equipment = Equipment.setMany highLevel hero.equipment }
 
 
 initHeroLookup : Hero -> Dict Int Hero
@@ -433,7 +434,7 @@ initMatches heroLookup ( weaponType, armourType ) =
             Monster.makeForArena monsterType
 
         customEquipment =
-            Equipment.equipMany
+            Equipment.setMany
                 [ ( Equipment.WeaponSlot, makeWeapon weaponType )
                 , ( Equipment.ArmourSlot, makeArmour armourType )
                 ]

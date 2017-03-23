@@ -196,11 +196,11 @@ handleDrag draggable model =
                     Equipment.unequip slot model.equipment
             in
                 case unequipRes of
-                    Result.Ok equipment ->
+                    Result.Ok (equipment, _) ->
                         Result.Ok ( { model | equipment = equipment }, item )
 
                     Result.Err msg ->
-                        Result.Err msg
+                        Result.Err (toString msg)
 
         DragPack item pack ->
             let
@@ -291,8 +291,11 @@ handleDrop droppable item model =
 
         DropEquipment slot ->
             case Equipment.equip ( slot, item ) model.equipment of
-                Result.Ok equipment_ ->
+                Result.Ok ( equipment_, Nothing ) ->
                     Result.Ok { model | equipment = equipment_ }
+
+                Result.Ok ( _, Just _ ) ->
+                    Result.Err "The slot is not empty!"
 
                 Result.Err err ->
                     Result.Err (toString err)

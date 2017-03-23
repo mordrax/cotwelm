@@ -40,6 +40,7 @@ type alias ItemTypes =
     List ItemType
 
 
+
 type ItemType
     = ItemTypeWeapon WeaponType
     | ItemTypeArmour ArmourType

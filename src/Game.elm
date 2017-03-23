@@ -849,19 +849,12 @@ donDefaultGarb itemFactory hero =
         ( defaultEquipment, factoryAfterProduction ) =
             List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
 
-        equippingHero =
-            Misc.foldResult (\item -> Hero.equip item) (Ok hero) defaultEquipment
+        equippedHero =
+            defaultEquipment
+                |> (\eq -> Equipment.setMany eq Equipment.init)
+                |> (\eq -> Hero.setEquipment eq hero)
     in
-        case equippingHero of
-            Result.Ok heroEquipped ->
-                ( heroEquipped, factoryAfterProduction )
-
-            err ->
-                let
-                    _ =
-                        Debug.log "Game.donDefaultGarb" (toString err)
-                in
-                    ( hero, itemFactory )
+        ( equippedHero, factoryAfterProduction )
 
 
 

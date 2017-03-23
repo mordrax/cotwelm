@@ -6,6 +6,7 @@ import Monsters.Types exposing (..)
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Vector as Vector exposing (Vector)
+import Item.Item exposing (Item)
 
 
 type alias Monster =
@@ -63,6 +64,11 @@ setAttributes val monster =
 setEquipment : Equipment -> Monster -> Monster
 setEquipment val monster =
     { monster | equipment = val }
+
+
+setEquipmentSlot : ( Equipment.EquipmentSlot, Item ) -> Monster -> Monster
+setEquipmentSlot slot ({ equipment } as monster) =
+    { monster | equipment = Equipment.setSlot slot equipment }
 
 
 setExpLevel : Int -> Monster -> Monster

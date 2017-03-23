@@ -44,7 +44,6 @@ randomMonster position =
         |> Random.map (flip make position)
 
 
-replaceEquipmentSlot
 weaponSlot : ItemData.WeaponType -> ( Equipment.EquipmentSlot, Item )
 weaponSlot weaponType =
     ( Equipment.WeaponSlot, Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty )
@@ -62,22 +61,11 @@ makeShield shieldType =
 
 basicEquipment : ItemData.WeaponType -> ItemData.ArmourType -> Equipment
 basicEquipment weapon armour =
-    Equipment.equipMany
+    Equipment.setMany
         [ weaponSlot weapon
         , armourSlot armour
         ]
         Equipment.init
-
-
-basicShieldEquipment : ItemData.WeaponType -> ItemData.ShieldType -> ItemData.ArmourType -> Equipment
-basicShieldEquipment weapon shield armour =
-    let
-        equipment =
-            basicEquipment weapon armour
-    in
-        equipment
-            |> Equipment.equip ( Equipment.ShieldSlot, makeShield shield )
-            |> Result.withDefault equipment
 
 
 makeForArena : MonsterType -> Monster
@@ -87,7 +75,7 @@ makeForArena monsterType =
 
 leatherEquipment : Equipment
 leatherEquipment =
-    Equipment.equipMany
+    Equipment.setMany
         [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.LeatherArmour) IdGenerator.empty )
         , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.LeatherHelmet) IdGenerator.empty )
         , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
@@ -98,7 +86,7 @@ leatherEquipment =
 
 ironEquipment : Equipment
 ironEquipment =
-    Equipment.equipMany
+    Equipment.setMany
         [ ( Equipment.ArmourSlot, Item.new (ItemData.ItemTypeArmour ItemData.ChainMail) IdGenerator.empty )
         , ( Equipment.HelmetSlot, Item.new (ItemData.ItemTypeHelmet ItemData.IronHelmet) IdGenerator.empty )
         , ( Equipment.GauntletsSlot, Item.new (ItemData.ItemTypeGauntlets ItemData.NormalGauntlets) IdGenerator.empty )
@@ -208,39 +196,35 @@ make monsterType position =
             Kobold ->
                 makeHumanoid Kobold
                     |> Model.scaleAttributes 0.5 1.5 0.5 1
-                    (weaponSlot ItemData.Crossbow :: leatherEquipment)
                     |> Model.setBodySize Types.Small
                     |> Model.setAttackTypes [ Melee, Ranged ]
+                    |> Model.setEquipmentSlot (weaponSlot ItemData.Crossbow)
 
             Goblin ->
                 makeHumanoid Goblin
-                    (Attributes 0 40 60 50 20)
-                    (weaponSlot ItemData.Club :: leatherEquipment)
+                    |> Model.scaleAttributes 0.5 1 0.6 1
                     |> Model.setBodySize Types.Small
+                    |> Model.setEquipmentSlot (weaponSlot ItemData.Club)
 
             Hobgoblin ->
                 makeHumanoid Hobgoblin
-                    (Attributes 0 50 60 50 50)
-                    (weaponSlot ItemData.Spear :: leatherEquipment)
+                    |> Model.scaleAttributes 0.7 1 0.7 1
+                    |> Model.setEquipmentSlot (weaponSlot ItemData.Spear)
 
             Bandit ->
                 makeHumanoid Bandit
-                    (Attributes 0 60 75 60 50)
-                    (weaponSlot ItemData.Bow :: leatherEquipment)
+                    |> Model.setEquipmentSlot (weaponSlot ItemData.Bow)
                     |> Model.setAttackTypes [ Ranged ]
 
             SmirkingSneakThief ->
                 makeHumanoid SmirkingSneakThief
-                    (Attributes 0 50 50 50 50)
                     |> Model.setAttackTypes [ Steal ]
-
-            GruesomeTroll ->
-                makeHumanoid GruesomeTroll
-                    (Attributes 0 50 50 50 50)
 
             EvilWarrior ->
                 makeHumanoid EvilWarrior
-                    (Attributes 0 50 50 50 50)
+                    |> Model.scaleAttributes 1.5 1.5 1.5 1
+                    |> Model.setEquipment ironEquipment
+                    |> Model.setEquipmentSlot (weaponSlot ItemData.BastardSword)
 
             -------------
             -- Insects --
@@ -303,6 +287,10 @@ make monsterType position =
                 makeLargeAnimal GiantRedAnt
                     |> Model.setEquipment (basicEquipment ItemData.Pincers ItemData.Shell)
 
+            GruesomeTroll ->
+                makeLargeAnimal GruesomeTroll
+                    |> Model.scaleAttributes 1.5 1 1 1
+
             BrownBear ->
                 makeLargeAnimal BrownBear
                     |> Model.scaleAttributes 0.8 1.2 1 1
@@ -323,40 +311,40 @@ make monsterType position =
             --            -------------
             --            Skeleton ->
             --                init Skeleton
-            --                    (Attributes 0 60 65 40 10)
+            --                    |> Model.scaleAttributes 0 60 65 40 10
             --                    (basicEquipment ItemData.ShortSword ItemData.Bones)
             --
             --            WalkingCorpse ->
             --                init WalkingCorpse
-            --                    (Attributes 0 100 40 95 20)
+            --                    |> Model.scaleAttributes 0 100 40 95 20
             --                    (basicEquipment ItemData.SmallClaws ItemData.SoftHide)
             --
             --            Shadow ->
             --                init Shadow
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            EerieGhost ->
             --                init EerieGhost
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            BarrowWight ->
             --                init BarrowWight
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Drain ]
             --
             --            DarkWraith ->
             --                init DarkWraith
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Drain ]
             --
             --            Spectre ->
             --                init Spectre
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            -- Special: "Drains HP Permanently"
             --            Vampire ->
             --                init Vampire
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Drain ]
             --
             --            ----------------
@@ -364,20 +352,20 @@ make monsterType position =
             --            ----------------
             --            RatMan ->
             --                init RatMan
-            --                    (Attributes 0 60 60 60 60)
+            --                    |> Model.scaleAttributes 0 60 60 60 60
             --                    (basicEquipment ItemData.MorningStar ItemData.ToughHide)
             --
             --            BearMan ->
             --                init BearMan
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            BullMan ->
             --                init BullMan
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            WolfMan ->
             --                init WolfMan
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            -------------
             --            -- Casters --
@@ -385,13 +373,13 @@ make monsterType position =
             --            -- Special: "Casts Bolt Spells, Slow, summon Monster, Phase Door, Teleport"
             --            Wizard ->
             --                init Wizard
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Spell ]
             --
             --            -- Special: "Casts Bolt Spells, Slow, summon Monster, Phase Door, Teleport"
             --            Necromancer ->
             --                init Necromancer
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Spell ]
             --
             --            ----------------
@@ -399,106 +387,106 @@ make monsterType position =
             --            ----------------
             --            DustElemental ->
             --                init DustElemental
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            IceElemental ->
             --                init IceElemental
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ice ]
             --
             --            WindElemental ->
             --                init WindElemental
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Lightning ]
             --
             --            MagmaElemental ->
             --                init MagmaElemental
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Fire ]
             --
             --            FireElemental ->
             --                init FireElemental
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Fire ]
             --
             --            WaterElemental ->
             --                init WaterElemental
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ice ]
             --
             --            EarthElemental ->
             --                init EarthElemental
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            ------------
             --            -- Devils --
             --            ------------
             --            SpikedDevil ->
             --                init SpikedDevil
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            HornedDevil ->
             --                init HornedDevil
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Melee, Fire ]
             --
             --            IceDevil ->
             --                init IceDevil
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ice ]
             --
             --            AbyssFiend ->
             --                init AbyssFiend
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            ------------
             --            -- Giants --
             --            ------------
             --            HugeOgre ->
             --                init HugeOgre
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            HillGiant ->
             --                init HillGiant
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            StoneGiant ->
             --                init StoneGiant
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --
             --            FrostGiant ->
             --                init FrostGiant
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ice ]
             --
             --            TwoHeadedGiant ->
             --                init TwoHeadedGiant
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ranged ]
             --
             --            FireGiant ->
             --                init FireGiant
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Fire, Ranged ]
             --
             --            HillGiantKing ->
             --                init HillGiantKing
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ice ]
             --
             --            FireGiantKing ->
             --                init FireGiantKing
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Fire ]
             --
             --            FrostGiantKing ->
             --                init FrostGiantKing
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ice ]
             --
             --            StoneGiantKing ->
             --                init StoneGiantKing
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ranged ]
             --
             --            -------------
@@ -506,28 +494,28 @@ make monsterType position =
             --            -------------
             --            GreenDragon ->
             --                init GreenDragon
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Acid ]
             --
             --            WhiteDragon ->
             --                init WhiteDragon
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Ice ]
             --
             --            BlueDragon ->
             --                init BlueDragon
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Lightning ]
             --
             --            RedDragon ->
             --                init RedDragon
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Fire ]
             --
             --            -- Special: "Casts Fire, Lighting, and Wind Spells"
             --            Surtur ->
             --                init Surtur
-            --                    (Attributes 0 50 50 50 50)
+            --                    |> Model.scaleAttributes 0 50 50 50 50
             --                    |> Model.setAttackTypes [ Melee, Spell, Fire, Lightning, Ice ]
             _ ->
                 init Kobold 1 Attributes.init Equipment.init
