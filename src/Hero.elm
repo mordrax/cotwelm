@@ -2,16 +2,15 @@ module Hero
     exposing
         ( Hero
         , init
-        , view
-        , move
         , levelUp
-        , teleport
+        , move
         , position
-        , stats
-        , setStats
-        , viewStats
         , setEquipment
-        , equip
+        , setStats
+        , stats
+        , teleport
+        , view
+        , viewStats
         )
 
 import Attributes exposing (Attributes)
@@ -37,7 +36,7 @@ type alias Hero =
     , equipment : Equipment
     , expLevel : Int
     , bodySize : Types.BodySize
-    , attacks: Int
+    , attacks : Int
     }
 
 
@@ -96,16 +95,6 @@ setStats stats model =
 levelUp : Hero -> Hero
 levelUp hero =
     { hero | stats = Stats.incLevel 1 hero.attributes hero.stats }
-
-
-
--- Equipment
-
-
-equip : ( EquipmentSlot, Item ) -> Hero -> Result Equipment.Msg Hero
-equip ( slot, item ) model =
-    Equipment.equip ( slot, item ) model.equipment
-        |> Result.map (\equipment -> { model | equipment = equipment })
 
 
 

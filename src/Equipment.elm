@@ -3,20 +3,21 @@ module Equipment
         ( EquipmentSlot(..)
         , Equipment
         , Msg(..)
-        , get
-        , getPurse
-        , getPack
-        , getWeapon
-        , getArmour
         , calculateAC
-        , init
         , equip
-        , equipMany
-        , unequip
+        , setMany
+        , get
+        , getArmour
+        , getPack
+        , getPackContent
+        , getPurse
+        , getWeapon
+        , init
         , putInPack
         , removeFromPack
-        , getPackContent
         , setPurse
+        , setSlot
+        , unequip
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
@@ -88,6 +89,7 @@ type Msg
     | NoPackEquipped
     | WrongSlotForItemType
     | ItemAlreadyEquipped
+    | CannotUnequipCursedItem
 
 
 init : Equipment
@@ -111,6 +113,43 @@ init =
         }
 
 
+initFull :
+    Maybe Weapon
+    -> Maybe Item
+    -> Maybe Armour
+    -> Maybe Shield
+    -> Maybe Helmet
+    -> Maybe Bracers
+    -> Maybe Gauntlets
+    -> Maybe (Belt Item)
+    -> Maybe Purse
+    -> Maybe (Pack Item)
+    -> Maybe Neckwear
+    -> Maybe Overgarment
+    -> Maybe Ring
+    -> Maybe Ring
+    -> Maybe Boots
+    -> Equipment
+initFull weapon freehand armour shield helmet bracers gauntlets belt purse pack neckwear overgarment leftRing rightRing boots =
+    A
+        { weapon = weapon
+        , freehand = freehand
+        , armour = armour
+        , shield = shield
+        , helmet = helmet
+        , bracers = bracers
+        , gauntlets = gauntlets
+        , belt = belt
+        , purse = purse
+        , pack = pack
+        , neckwear = neckwear
+        , overgarment = overgarment
+        , leftRing = leftRing
+        , rightRing = rightRing
+        , boots = boots
+        }
+
+
 calculateAC : Equipment -> AC
 calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
     let
@@ -127,162 +166,91 @@ calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
             |> addAC (getAC gauntlets)
 
 
-equipMany : List ( EquipmentSlot, Item ) -> Equipment -> Equipment
-equipMany itemSlotPairs equipment =
-    let
-        equippingResult =
-            Misc.foldResult (\item -> equip item) (Result.Ok equipment) itemSlotPairs
-    in
-        case equippingResult of
-            Result.Ok equipment_ ->
-                equipment_
-
-            _ ->
-                equipment
+setMany : List ( EquipmentSlot, Item ) -> Equipment -> Equipment
+setMany itemSlotPairs equipment =
+    List.foldl (\itemSlotPair -> setSlot itemSlotPair) equipment itemSlotPairs
 
 
-equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
+equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg ( Equipment, Maybe Item )
 equip ( slot, item ) (A model) =
+    unequip slot (A model)
+        |> Result.map (\( equipmentAfterUnequip, unequippedItem ) -> ( setSlot ( slot, item ) equipmentAfterUnequip, unequippedItem ))
+
+
+{-| WARNING: This will destroy the item in the equipment slot.
+-}
+setSlot : ( EquipmentSlot, Item ) -> Equipment -> Equipment
+setSlot ( slot, item ) (A model) =
     case ( slot, item ) of
         ( WeaponSlot, Item.ItemWeapon weapon ) ->
-            case model.weapon of
-                Nothing ->
-                    Ok (A { model | weapon = Just weapon })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | weapon = Just weapon })
 
         ( FreehandSlot, item ) ->
-            case model.freehand of
-                Nothing ->
-                    Result.Ok (A { model | freehand = Just item })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | freehand = Just item })
 
         ( ArmourSlot, Item.ItemArmour armour ) ->
-            case model.armour of
-                Nothing ->
-                    Result.Ok (A { model | armour = Just armour })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | armour = Just armour })
 
         ( ShieldSlot, Item.ItemShield shield ) ->
-            case model.shield of
-                Nothing ->
-                    Result.Ok (A { model | shield = Just shield })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | shield = Just shield })
 
         ( HelmetSlot, Item.ItemHelmet helmet ) ->
-            case model.helmet of
-                Nothing ->
-                    Result.Ok (A { model | helmet = Just helmet })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | helmet = Just helmet })
 
         ( BracersSlot, Item.ItemBracers bracers ) ->
-            case model.bracers of
-                Nothing ->
-                    Result.Ok (A { model | bracers = Just bracers })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | bracers = Just bracers })
 
         ( GauntletsSlot, Item.ItemGauntlets gauntlets ) ->
-            case model.gauntlets of
-                Nothing ->
-                    Result.Ok (A { model | gauntlets = Just gauntlets })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | gauntlets = Just gauntlets })
 
         ( BeltSlot, Item.ItemBelt belt ) ->
-            case model.belt of
-                Nothing ->
-                    Result.Ok (A { model | belt = Just belt })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | belt = Just belt })
 
         ( PurseSlot, Item.ItemPurse purse ) ->
-            case model.purse of
-                Nothing ->
-                    Result.Ok (A { model | purse = Just purse })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | purse = Just purse })
 
         ( PackSlot, Item.ItemPack pack ) ->
-            case model.pack of
-                Nothing ->
-                    Result.Ok (A { model | pack = Just pack })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | pack = Just pack })
 
         ( NeckwearSlot, Item.ItemNeckwear neckwear ) ->
-            case model.neckwear of
-                Nothing ->
-                    Result.Ok (A { model | neckwear = Just neckwear })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | neckwear = Just neckwear })
 
         ( OvergarmentSlot, Item.ItemOvergarment overgarment ) ->
-            case model.overgarment of
-                Nothing ->
-                    Result.Ok (A { model | overgarment = Just overgarment })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | overgarment = Just overgarment })
 
         ( LeftRingSlot, Item.ItemRing leftRing ) ->
-            case model.leftRing of
-                Nothing ->
-                    Result.Ok (A { model | leftRing = Just leftRing })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | leftRing = Just leftRing })
 
         ( RightRingSlot, Item.ItemRing rightRing ) ->
-            case model.rightRing of
-                Nothing ->
-                    Result.Ok (A { model | rightRing = Just rightRing })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | rightRing = Just rightRing })
 
         ( BootsSlot, Item.ItemBoots boots ) ->
-            case model.boots of
-                Nothing ->
-                    Result.Ok (A { model | boots = Just boots })
-
-                _ ->
-                    Err ItemAlreadyEquipped
+            (A { model | boots = Just boots })
 
         _ ->
-            Result.Err WrongSlotForItemType
+            (A model)
 
 
-unequip : EquipmentSlot -> Equipment -> Result String Equipment
+unequip : EquipmentSlot -> Equipment -> Result Msg ( Equipment, Maybe Item )
 unequip slot (A model) =
     let
         maybeItem =
             get slot (A model)
-    in
-        case maybeItem of
-            Just item ->
-                if (Item.isCursed item) then
-                    Result.Err "You cannot remove a cursed item!"
-                else
-                    Result.Ok (A <| unequip_ slot model)
 
-            Nothing ->
-                Result.Ok (A model)
+        itemCursed =
+            maybeItem
+                |> Maybe.map Item.isCursed
+                |> Maybe.withDefault False
+    in
+        case ( maybeItem, itemCursed ) of
+            ( Just item, False ) ->
+                Result.Ok ( (A <| clearSlot slot model), Just item )
+
+            ( Just item, True ) ->
+                Result.Err CannotUnequipCursedItem
+
+            ( Nothing, _ ) ->
+                Result.Ok ( (A model), Nothing )
 
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
@@ -439,10 +407,8 @@ get slot (A model) =
             model.boots |> Maybe.map Item.ItemBoots
 
 
-{-| Sets the equipment slot to either an item or nothing
--}
-unequip_ : EquipmentSlot -> Model -> Model
-unequip_ slot model =
+clearSlot : EquipmentSlot -> Model -> Model
+clearSlot slot model =
     case slot of
         WeaponSlot ->
             { model | weapon = Nothing }
