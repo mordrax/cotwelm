@@ -68,8 +68,7 @@ type Prices
     = Prices Buy Sell
 
 
-{-| The common set of data for all items.
--}
+
 type alias Item =
     { name : String
     , prices : Prices
@@ -117,7 +116,7 @@ type alias Item =
     }
 
 
-type alias Weapon =
+type alias Weapon a =
     { a
         | weaponType : WeaponType
         , wc : WC
@@ -129,54 +128,54 @@ type WC
     = WC Int
 
 
-type alias Armour =
+type alias Armour a =
     { a
         | armourType : ArmourType
         , ac : AC
     }
 
 
-type alias Gauntlets =
+type alias Gauntlets a =
     { a
         | gauntletsType : GauntletsType
         , ac : AC
     }
 
 
-type alias Helmet =
+type alias Helmet a =
     { a
         | helmetType : HelmetType
         , ac : AC
     }
 
 
-type alias Bracers =
+type alias Bracers a =
     { a
         | bracersType : BracersType
         , ac : AC
     }
 
 
-type alias Shield =
+type alias Shield a =
     { a
         | shieldType : ShieldType
         , ac : AC
     }
 
 
-type alias Boots =
+type alias Boots a =
     { a | bootsType : BootsType }
 
 
-type alias Neckwear =
+type alias Neckwear a =
     { a | neckwearType : NeckwearType }
 
 
-type alias Overgarment =
+type alias Overgarment a =
     { a | overgarmentType : OvergarmentType }
 
 
-type alias Ring =
+type alias Ring a =
     { a | ringType : RingType }
 
 
