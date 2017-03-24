@@ -68,7 +68,7 @@ setEquipment val monster =
 
 setEquipmentSlot : ( Equipment.EquipmentSlot, Item ) -> Monster -> Monster
 setEquipmentSlot slot ({ equipment } as monster) =
-    { monster | equipment = Equipment.setSlot slot equipment }
+    { monster | equipment = Equipment.setSlot_ slot equipment }
 
 
 setExpLevel : Int -> Monster -> Monster

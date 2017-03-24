@@ -51,95 +51,112 @@ damage { damage } =
 init : WeaponType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Weapon
 init weaponType status idStatus id =
     let
-        make name ( weight, bulk ) css ( buy, sell ) wc damage =
+        make name ( weight, bulk ) css ( buy, sell ) damage =
             { base = BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus id
             , weaponType = weaponType
-            , wc = wc
             , damage = damage
             }
 
-        makeMonsterWeapon name wc damage =
-            make name ( 0, 0 ) "" ( 0, 0 ) wc damage
+        makeMonsterWeapon name damage =
+            make name ( 0, 0 ) "" ( 0, 0 ) damage
 
         d n faces bonus =
             Dice n faces bonus
     in
         case weaponType of
             BrokenSword ->
-                make "Broken Sword" ( 1000, 5000 ) "broken-sword" ( 0, 25 ) (WC 0) (d 1 6 -2)
+                make "Broken Sword" ( 1000, 5000 ) "broken-sword" ( 0, 25 ) (d 1 6 -2)
 
             Club ->
-                make "Club" ( 2500, 3000 ) "club" ( 105, 60 ) (WC 1) (d 3 2 0)
+                make "Club" ( 2500, 3000 ) "club" ( 105, 60 ) (d 3 2 0)
 
             Dagger ->
-                make "Dagger" ( 500, 500 ) "sword" ( 420, 240 ) (WC 2) (d 1 4 0)
+                make "Dagger" ( 500, 500 ) "sword" ( 420, 240 ) (d 1 4 0)
 
             Hammer ->
-                make "Hammer" ( 1500, 3000 ) "hammer" ( 420, 240 ) (WC 2) (d 2 2 0)
+                make "Hammer" ( 1500, 3000 ) "hammer" ( 420, 240 ) (d 2 2 0)
 
             HandAxe ->
-                make "Hand Axe" ( 1000, 3000 ) "axe" ( 472, 270 ) (WC 3) (d 1 5 0)
+                make "Hand Axe" ( 1000, 3000 ) "axe" ( 472, 270 ) (d 1 5 0)
 
             Quarterstaff ->
-                make "Quarterstaff" ( 1000, 5000 ) "spear" ( 648, 360 ) (WC 3) (d 3 1 0)
+                make "Quarterstaff" ( 1000, 5000 ) "spear" ( 648, 360 ) (d 3 1 0)
 
             Spear ->
-                make "Spear" ( 2500, 5000 ) "spear" ( 840, 480 ) (WC 4) (d 1 9 0)
+                make "Spear" ( 2500, 5000 ) "spear" ( 840, 480 ) (d 1 9 0)
 
             ShortSword ->
-                make "Short Sword" ( 1500, 5000 ) "sword" ( 1470, 840 ) (WC 5) (d 1 6 0)
+                make "Short Sword" ( 1500, 5000 ) "sword" ( 1470, 840 ) (d 1 6 0)
 
             Mace ->
-                make "Mace" ( 2500, 4375 ) "mace" ( 1728, 960 ) (WC 5) (d 3 2 0)
+                make "Mace" ( 2500, 4375 ) "mace" ( 1728, 960 ) (d 3 2 0)
 
             Flail ->
-                make "Flail" ( 4500, 3250 ) "flail" ( 1512, 840 ) (WC 6) (d 4 3 0)
+                make "Flail" ( 4500, 3250 ) "flail" ( 1512, 840 ) (d 4 3 0)
 
             Axe ->
-                make "Axe" ( 3000, 5000 ) "axe" ( 1944, 1080 ) (WC 6) (d 1 9 0)
+                make "Axe" ( 3000, 5000 ) "axe" ( 1944, 1080 ) (d 1 9 0)
 
             WarHammer ->
-                make "War Hammer" ( 4000, 7500 ) "hammer" ( 2160, 1200 ) (WC 7) (d 4 3 -1)
+                make "War Hammer" ( 4000, 7500 ) "hammer" ( 2160, 1200 ) (d 4 3 -1)
 
             LongSword ->
-                make "Long Sword" ( 2500, 8000 ) "sword" ( 3240, 1800 ) (WC 8) (d 1 8 0)
+                make "Long Sword" ( 2500, 8000 ) "sword" ( 3240, 1800 ) (d 1 8 0)
 
             BattleAxe ->
-                make "Battle Axe" ( 3500, 6000 ) "axe" ( 2160, 1200 ) (WC 8) (d 2 5 0)
+                make "Battle Axe" ( 3500, 6000 ) "axe" ( 2160, 1200 ) (d 2 5 0)
 
             BroadSword ->
-                make "Broad Sword" ( 3000, 9000 ) "sword" ( 3240, 1800 ) (WC 9) (d 1 9 0)
+                make "Broad Sword" ( 3000, 9000 ) "sword" ( 3240, 1800 ) (d 1 9 0)
 
             MorningStar ->
-                make "Morning Star" ( 3000, 9000 ) "morning-star" ( 2160, 1200 ) (WC 10) (d 4 2 0)
+                make "Morning Star" ( 3000, 9000 ) "morning-star" ( 2160, 1200 ) (d 4 2 0)
 
             BastardSword ->
-                make "Bastard Sword" ( 4500, 10000 ) "sword" ( 4320, 2400 ) (WC 11) (d 2 7 0)
+                make "Bastard Sword" ( 4500, 10000 ) "sword" ( 4320, 2400 ) (d 2 7 0)
 
             TwoHandedSword ->
-                make "Two Handed Sword" ( 5000, 12000 ) "sword" ( 6360, 3600 ) (WC 12) (d 2 8 0)
+                make "Two Handed Sword" ( 5000, 12000 ) "sword" ( 6360, 3600 ) (d 2 8 0)
 
             -- monster weapons
             SmallClaws ->
-                makeMonsterWeapon "Small Claws" (WC 1) (d 1 4 0)
+                makeMonsterWeapon "Small Claws" (d 1 4 0)
 
             SmallBite ->
-                makeMonsterWeapon "Small Bite" (WC 2) (d 1 5 0)
+                makeMonsterWeapon "Small Bite" (d 1 5 0)
 
             Crossbow ->
-                makeMonsterWeapon "Crossbow" (WC 5) (d 1 10 0)
+                makeMonsterWeapon "Crossbow" (d 1 10 0)
 
             Fangs ->
-                makeMonsterWeapon "Fangs" (WC 10) (d 1 4 0)
+                makeMonsterWeapon "Fangs" (d 1 4 0)
 
             Pincers ->
-                makeMonsterWeapon "Pincers" (WC 10) (d 4 2 0)
+                makeMonsterWeapon "Pincers" (d 4 2 0)
 
             Bow ->
-                makeMonsterWeapon "Bow" (WC 6) (d 1 6 0)
+                makeMonsterWeapon "Bow" (d 1 6 0)
 
             LargeClaws ->
-                makeMonsterWeapon "Large Claws" (WC 8) (d 1 8 0)
+                makeMonsterWeapon "Large Claws" (d 1 8 0)
+
+            LargeClub ->
+                makeMonsterWeapon "Large Club" (d 3 4 2)
+
+            Pike ->
+                makeMonsterWeapon "Pike" (d 1 15 2)
+
+            StoneClub ->
+                makeMonsterWeapon "Stone Club" (d 3 8 5)
+
+            GiantAxe ->
+                makeMonsterWeapon "Giant Axe" (d 2 10 5)
+
+            Boulder ->
+                makeMonsterWeapon "Boulder" (d 3 3 3)
+
+            GiantMaul ->
+                makeMonsterWeapon "Giant Maul" (d 4 6 10)
 
 
 listTypes : List WeaponType
@@ -162,6 +179,7 @@ listTypes =
     , MorningStar
     , BastardSword
     , TwoHandedSword
+      -- monster weapons
     , SmallClaws
     , SmallBite
     , Crossbow
@@ -169,6 +187,12 @@ listTypes =
     , Pincers
     , Bow
     , LargeClaws
+    , Pike
+    , LargeClub
+    , StoneClub
+    , GiantAxe
+    , Boulder
+    , GiantMaul
     ]
 
 

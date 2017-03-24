@@ -8,7 +8,7 @@ type BodySize
     | Small
     | Medium
     | Large
-    | Giant
+    | Huge
 
 
 type CreatureType

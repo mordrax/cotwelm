@@ -851,7 +851,7 @@ donDefaultGarb itemFactory hero =
 
         equippedHero =
             defaultEquipment
-                |> (\eq -> Equipment.setMany eq Equipment.init)
+                |> (\eq -> Equipment.setMany_ eq Equipment.init)
                 |> (\eq -> Hero.setEquipment eq hero)
     in
         ( equippedHero, factoryAfterProduction )

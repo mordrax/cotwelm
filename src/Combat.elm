@@ -275,7 +275,7 @@ bodySizeToDodge bodySize =
         Types.Large ->
             5
 
-        Types.Giant ->
+        Types.Huge ->
             10
 
 
