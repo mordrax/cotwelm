@@ -40,7 +40,6 @@ type alias ItemTypes =
     List ItemType
 
 
-
 type ItemType
     = ItemTypeWeapon WeaponType
     | ItemTypeArmour ArmourType
@@ -89,13 +88,8 @@ type alias BaseItem =
 type alias Weapon =
     { base : BaseItem
     , weaponType : WeaponType
-    , wc : WC
     , damage : Dice
     }
-
-
-type WC
-    = WC Int
 
 
 type alias Armour =
@@ -180,6 +174,12 @@ type WeaponType
     | Pincers
     | Bow
     | LargeClaws
+    | Pike
+    | LargeClub
+    | StoneClub
+    | GiantAxe
+    | Boulder
+    | GiantMaul
 
 
 type HelmetType

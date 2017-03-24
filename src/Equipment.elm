@@ -5,7 +5,7 @@ module Equipment
         , Msg(..)
         , calculateAC
         , equip
-        , setMany
+        , setMany_
         , get
         , getArmour
         , getPack
@@ -16,7 +16,7 @@ module Equipment
         , putInPack
         , removeFromPack
         , setPurse
-        , setSlot
+        , setSlot_
         , unequip
         )
 
@@ -129,21 +129,21 @@ calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
             |> addAC (getAC gauntlets)
 
 
-setMany : List ( EquipmentSlot, Item ) -> Equipment -> Equipment
-setMany itemSlotPairs equipment =
-    List.foldl (\itemSlotPair -> setSlot itemSlotPair) equipment itemSlotPairs
-
-
 equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg ( Equipment, Maybe Item )
 equip ( slot, item ) (A model) =
     unequip slot (A model)
-        |> Result.map (\( equipmentAfterUnequip, unequippedItem ) -> ( setSlot ( slot, item ) equipmentAfterUnequip, unequippedItem ))
+        |> Result.map (\( equipmentAfterUnequip, unequippedItem ) -> ( setSlot_ ( slot, item ) equipmentAfterUnequip, unequippedItem ))
+
+
+setMany_ : List ( EquipmentSlot, Item ) -> Equipment -> Equipment
+setMany_ itemSlotPairs equipment =
+    List.foldl (\itemSlotPair -> setSlot_ itemSlotPair) equipment itemSlotPairs
 
 
 {-| WARNING: This will destroy the item in the equipment slot.
 -}
-setSlot : ( EquipmentSlot, Item ) -> Equipment -> Equipment
-setSlot ( slot, item ) (A model) =
+setSlot_ : ( EquipmentSlot, Item ) -> Equipment -> Equipment
+setSlot_ ( slot, item ) (A model) =
     case ( slot, item ) of
         ( WeaponSlot, Item.ItemWeapon weapon ) ->
             (A { model | weapon = Just weapon })

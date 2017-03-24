@@ -402,11 +402,11 @@ equipHero hero ( customWeaponType, customArmourType ) =
             ]
     in
         if hero.expLevel <= 10 then
-            { hero | equipment = Equipment.setMany lowLevel hero.equipment }
+            { hero | equipment = Equipment.setMany_ lowLevel hero.equipment }
         else if hero.expLevel <= 20 then
-            { hero | equipment = Equipment.setMany midLevel hero.equipment }
+            { hero | equipment = Equipment.setMany_ midLevel hero.equipment }
         else
-            { hero | equipment = Equipment.setMany highLevel hero.equipment }
+            { hero | equipment = Equipment.setMany_ highLevel hero.equipment }
 
 
 initHeroLookup : Hero -> Dict Int Hero
@@ -434,7 +434,7 @@ initMatches heroLookup ( weaponType, armourType ) =
             Monster.makeForArena monsterType
 
         customEquipment =
-            Equipment.setMany
+            Equipment.setMany_
                 [ ( Equipment.WeaponSlot, makeWeapon weaponType )
                 , ( Equipment.ArmourSlot, makeArmour armourType )
                 ]
