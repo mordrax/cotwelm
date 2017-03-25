@@ -7,6 +7,14 @@ module Arena.MonsterArena
         , Model
         )
 
+{-| A round robin style tounament between all the monsters to determine the order in which
+the hero will face them.
+
+Each monster will face each other monster a number of times. The win % and the hp remaining (win ease)
+will be used to determine how many points they get from the combat. This will be used to rank
+the monsters relative to each other.
+-}
+
 import Html exposing (..)
 import Html.Attributes as HA
 import Monster exposing (Monster)
@@ -29,8 +37,12 @@ type alias Match =
     Match.Model Monster Monster
 
 
+type alias Matches =
+    AllDict ( Contestant, Contestant ) Match String
+
+
 type alias Model =
-    { matches : AllDict ( Contestant, Contestant ) Match String
+    { matches : Matches
     }
 
 
@@ -41,20 +53,18 @@ ord ( c1, c2 ) =
 
 init : Model
 init =
-    { matches =
-        AllDict.empty ord
-        --fromList ord initMatches
+    { matches = initMatches
     }
 
 
-initMatches : List ( ( Contestant, Contestant ), Match )
+initMatches : Matches
 initMatches =
     let
-        toKVP : Contestant -> Contestant -> ( ( Contestant, Contestant ), Match.Model Monster Monster )
         toKVP blue red =
             ( ( blue, red ), initMatch blue red )
     in
         List.map2 toKVP contestants contestants
+            |> AllDict.fromList ord
 
 
 initMatch : Monster -> Monster -> Match.Model Monster Monster
@@ -92,28 +102,34 @@ viewTournament model =
                 |> List.map .name
 
         headers =
-            "Name" :: contestantsAsStrings
+            "Combatants" :: contestantsAsStrings
 
         header headerText =
             th [] [ text headerText ]
     in
         table [ HA.class "ui striped celled table" ]
             [ thead [] [ tr [] (List.map header headers) ]
-            , tbody [] []
+            , tbody [] (List.map (viewMatches model.matches) contestants)
             ]
 
 
-viewContestantRow : Contestant -> Html msg
-viewContestantRow { name } =
-    tr [] [ text name ]
+viewMatches : Matches -> Contestant -> Html msg
+viewMatches matches contestant =
+    let
+        match opponent =
+            AllDict.get ( contestant, opponent ) matches
+                |> Maybe.withDefault (initMatch contestant opponent)
+                |> viewMatch
+    in
+        tr [] (text contestant.name :: List.map match contestants)
+
+
+viewMatch : Match -> Html msg
+viewMatch { red } =
+    td [] [ text red.name ]
 
 
 contestants : List Monster
 contestants =
     Monster.types
         |> List.map Monster.makeForArena
-
-
-toFighter : Monster -> Combat.Fighter Monster
-toFighter =
-    identity
