@@ -1,7 +1,7 @@
 module Arena.PlayerArena exposing (..)
 
 import Arena.Types exposing (..)
-import Arena.Match as Match exposing (Match)
+import Arena.Match as Match
 import Arena.Round as Round exposing (RoundResult)
 import Arena.View as View
 import Attributes exposing (Attributes)
@@ -42,7 +42,7 @@ type alias Model =
 
 
 type alias ArenaMatch =
-    Match (Blue Hero) (Red Monster)
+    Match.Model (Combat.Fighter Hero) (Combat.Fighter Monster)
 
 
 type Msg
@@ -297,7 +297,7 @@ combatView { matchResults } =
                 ]
             ]
         , tbody []
-            (Monster.monsterTypesToList
+            (Monster.types
                 |> List.map toString
                 |> List.map (\monsterType -> Dict.get monsterType matchResults)
                 |> List.map (Maybe.map Match.view >> Maybe.withDefault (div [] []))
@@ -440,10 +440,10 @@ initMatches heroLookup ( weaponType, armourType ) =
                 ]
                 Equipment.init
 
-        newMatch : Red Monster -> ArenaMatch
+        newMatch : Combat.Fighter Monster -> ArenaMatch
         newMatch monster =
             let
-                hero : Blue Hero
+                hero : Combat.Fighter Hero
                 hero =
                     case Dict.get monster.expLevel heroLookup of
                         Just lookedUpHero ->
@@ -455,6 +455,6 @@ initMatches heroLookup ( weaponType, armourType ) =
                 Match.init hero monster
     in
         --        List.map newMatch (List.take 20 Monster.types)
-        List.map newMonster Monster.monsterTypesToList
+        List.map newMonster Monster.types
             |> List.filter (.expLevel >> flip (>=) 5)
             |> List.map newMatch

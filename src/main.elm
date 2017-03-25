@@ -12,6 +12,7 @@ import Random.Pcg as Random exposing (initialSeed)
 import SplashView
 import Task exposing (perform)
 import Time exposing (inSeconds, now)
+import Arena.MonsterArena as MonsterArena
 
 
 type Msg
@@ -21,6 +22,7 @@ type Msg
     | GenerateGame Random.Seed CharCreation
     | EditorMsg Editor.Msg
     | ArenaMsg PlayerArena.Msg
+    | PitMsg MonsterArena.Msg
     | ChangePage Page
 
 
@@ -32,6 +34,7 @@ type Page
     | DungeonPage
     | EditorPage
     | ArenaPage
+    | PitPage
     | NotImplementedPage
 
 
@@ -44,6 +47,7 @@ init location =
             , game = Nothing
             , editor = Editor.init
             , arena = PlayerArena.init
+            , pit = MonsterArena.init
             }
     in
         ( model, Cmd.none )
@@ -55,6 +59,7 @@ type alias Model =
     , game : Maybe Game.Model
     , editor : Editor.Model
     , arena : PlayerArena.Model
+    , pit : MonsterArena.Model
     }
 
 
@@ -81,7 +86,7 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SplashMsg SplashView.NewGame ->
+        SplashMsg (SplashView.NewGame) ->
             ( model, Navigation.newUrl "#/charCreation" )
 
         SplashMsg _ ->
@@ -136,6 +141,13 @@ update msg model =
             in
                 ( { model | arena = arena_ }, gameCmds )
 
+        PitMsg msg ->
+            let
+                ( pit_, cmds ) =
+                    MonsterArena.update msg model.pit
+            in
+                ( { model | pit = pit_ }, Cmd.map PitMsg cmds )
+
         GenerateGame seed charCreation ->
             let
                 ( name, gender, difficulty, attributes ) =
@@ -180,6 +192,9 @@ view model =
         ArenaPage ->
             Html.map ArenaMsg (PlayerArena.view model.arena)
 
+        PitPage ->
+            Html.map PitMsg (MonsterArena.view model.pit)
+
         _ ->
             h1 [] [ text "Page not implemented!" ]
 
@@ -203,6 +218,8 @@ urlToPage { hash } =
         EditorPage
     else if hash == "#/arena" then
         ArenaPage
+    else if hash == "#/pit" then
+        PitPage
     else
         SplashPage
 

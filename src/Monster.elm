@@ -4,7 +4,7 @@ module Monster
         , make
         , makeForArena
         , makeRandomMonsters
-        , monsterTypesToList
+        , types
         , remove
         , replace
         , view
@@ -37,7 +37,7 @@ type alias Monster =
     Monsters.Model.Monster
 
 
-monsterTypesToList =
+types =
     Monsters.Types.monsterTypesToList
 
 
