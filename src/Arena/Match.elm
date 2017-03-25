@@ -3,6 +3,7 @@ module Arena.Match
         ( Model
         , init
         , fight
+        , fightSingleRound
         , updateMatch
         , view
         )
@@ -55,13 +56,18 @@ maxRounds =
     2000
 
 
+fightSingleRound : Model a b -> Generator (Model a b)
+fightSingleRound ({ blue, red } as match) =
+    Round.fight blue red
+        |> Random.map (\roundResult -> updateMatch roundResult match)
+
+
 fight : Model a b -> Generator (Model a b)
 fight ({ blue, red } as match) =
     if match.rounds >= maxRounds then
         Random.constant match
     else
-        Round.fight blue red
-            |> Random.map (\roundResult -> updateMatch roundResult match)
+        fightSingleRound match
             |> Random.andThen fight
 
 

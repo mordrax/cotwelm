@@ -75,12 +75,19 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.game of
-        Nothing ->
-            Sub.none
+    let
+        gameSub =
+            model.game
+                |> Maybe.map (Game.subscription >> Sub.map GameMsg)
+                |> Maybe.withDefault Sub.none
 
-        Just game ->
-            Sub.map GameMsg (Game.subscription game)
+    in
+        case model.currentPage of
+            PitPage ->
+                Sub.map PitMsg MonsterArena.subs
+
+            _ ->
+                gameSub
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
