@@ -11,8 +11,8 @@ import Stats
 
 
 type alias RoundResult a b =
-    { blue : Blue a
-    , red : Red b
+    { blue : Combat.Fighter a
+    , red : Combat.Fighter b
     , isBlueAttacking : Bool
     , blueTurns : Int
     , redTurns : Int

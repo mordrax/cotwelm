@@ -1,6 +1,6 @@
 module Arena.Match
     exposing
-        ( Match
+        ( Model
         , init
         , fight
         , updateMatch
@@ -23,9 +23,9 @@ import Random.Pcg as Random exposing (Generator)
 import Arena.Types exposing (..)
 
 
-type alias Match a b =
-    { blue : Blue a
-    , red : Red b
+type alias Model a b =
+    { blue : Combat.Fighter a
+    , red : Combat.Fighter b
     , rounds : Int
     , blueWins : Int
     , hpRemaining : List Int
@@ -36,7 +36,7 @@ type alias Match a b =
     }
 
 
-init : Blue a -> Red b -> Match a b
+init : Combat.Fighter a -> Combat.Fighter b -> Model a b
 init blue red =
     { blue = blue
     , red = red
@@ -55,7 +55,7 @@ maxRounds =
     2000
 
 
-fight : Match a b -> Generator (Match a b)
+fight : Model a b -> Generator (Model a b)
 fight ({ blue, red } as match) =
     if match.rounds >= maxRounds then
         Random.constant match
@@ -65,7 +65,7 @@ fight ({ blue, red } as match) =
             |> Random.andThen fight
 
 
-updateMatch : RoundResult a b -> Match a b -> Match a b
+updateMatch : RoundResult a b -> Model a b -> Model a b
 updateMatch { blueTurns, redTurns, hpRemaining, blueHitRed, redHitBlue } match =
     let
         addWin match =
@@ -92,7 +92,7 @@ updateMatch { blueTurns, redTurns, hpRemaining, blueHitRed, redHitBlue } match =
             |> incBattle
 
 
-view : Match a b -> Html msg
+view : Model a b -> Html msg
 view ({ red, hpRemaining, blueTurnsInRounds, redTurnsInRounds, rounds, blueWins, blue, blueHitRed, redHitBlue } as match) =
     let
         over a b =
