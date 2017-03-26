@@ -165,8 +165,8 @@ viewTournament model =
                 [ div [ divStyle ] [ text headerText ]
                 ]
     in
-        div [ HA.style [ ( "width", "6000px" ), ( "overflow-x", "scroll" ) ] ]
-            [ table [ HA.class "ui very basic compact striped celled table", HA.style [ ( "overflow-x", "scroll" ) ] ]
+        div [ HA.style [ ( "width", "100%" ), ( "overflow", "scroll" ), ( "height", "800px" ) ] ]
+            [ table [ HA.class "ui very basic compact striped celled table" ]
                 [ thead [] [ tr [] (List.map header headers) ]
                 , tbody [] (List.map (viewMatches model.matches) Monster.types)
                 ]

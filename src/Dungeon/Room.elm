@@ -38,7 +38,7 @@ import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
-
+import Tile.Types
 
 -- Model: Room
 
@@ -244,10 +244,10 @@ toTiles { floors, entrances, worldPos, lightSource } =
         roomTileTypes =
             case lightSource of
                 Dark ->
-                    [ ( Tile.DarkDgn, floors ) ]
+                    [ ( Tile.Types.DarkDgn, floors ) ]
 
                 _ ->
-                    [ ( Tile.LitDgn, floors ) ]
+                    [ ( Tile.Types.LitDgn, floors ) ]
 
         makeTiles ( tileType, positions ) =
             positions
