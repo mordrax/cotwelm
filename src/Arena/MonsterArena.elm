@@ -154,11 +154,19 @@ viewTournament model =
         headers =
             "Combatants" :: contestantsAsStrings
 
+        headStyle =
+            HA.style [ ( "height", "150px" ), ( "white-space", "nowrap" ), ( "padding", "0" ), ( "width", "10px" ) ]
+
+        divStyle =
+            HA.style [ ( "transform", "rotate(270deg)" ), ( "width", "10px" ) ]
+
         header headerText =
-            th [] [ text headerText ]
+            th [ headStyle ]
+                [ div [ divStyle ] [ text headerText ]
+                ]
     in
-        div [ HA.style [ ( "width", "4000px" ), ( "overflow-x", "scroll" ) ] ]
-            [ table [ HA.class "ui basic small compact striped celled table", HA.style [ ( "overflow-x", "scroll" ) ] ]
+        div [ HA.style [ ( "width", "6000px" ), ( "overflow-x", "scroll" ) ] ]
+            [ table [ HA.class "ui very basic compact striped celled table", HA.style [ ( "overflow-x", "scroll" ) ] ]
                 [ thead [] [ tr [] (List.map header headers) ]
                 , tbody [] (List.map (viewMatches model.matches) Monster.types)
                 ]
@@ -179,11 +187,29 @@ viewMatches matches contestant =
 viewMatch : Match -> Html msg
 viewMatch { blueWins, red, rounds } =
     let
-        winsToColor =
-            (toFloat blueWins / toFloat rounds)
-                * 255
+        pickHue x =
+            if x > 128 then
+                120
+            else
+                0
+
+        winsPercent =
+            toFloat blueWins / toFloat rounds
+
+        hue =
+            (winsPercent * 255)
                 |> floor
-                |> (\red -> ( "background-color", "rgb(" ++ (toString (255 - red)) ++ ", " ++ (toString red) ++ ", 128)" ))
+                |> pickHue
+                |> toString
+
+        lightness =
+            ((winsPercent * 100) - 50)
+                |> abs
+                |> (\x -> 100 - x)
+                |> toString
+
+        winsToColor =
+            ( "background-color", "hsl(" ++ hue ++ ", 100%, " ++ lightness ++ "%)" )
     in
         td [ HA.style [ winsToColor ] ] [ text <| toRoundedPercent blueWins rounds ]
 
