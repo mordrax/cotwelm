@@ -27,12 +27,14 @@ import Monsters.Types
 import Time exposing (Time)
 import Random.Pcg as Random exposing (Generator)
 import Utils.Misc as Misc
+import UI
 
 
 type Msg
     = StartTournament
     | Fight Time
     | FightResult Matches
+    | ChangeFightState FightState
 
 
 type alias Match =
@@ -43,9 +45,15 @@ type alias Matches =
     EveryDict VS Match
 
 
+type FightState
+    = Started
+    | Stopped
+
+
 type alias Model =
     { matches : Matches
     , vses : List VS
+    , fightState : FightState
     }
 
 
@@ -61,6 +69,7 @@ init =
     in
         { matches = initMatches vses
         , vses = vses
+        , fightState = Started
         }
 
 
@@ -93,6 +102,9 @@ update msg model =
         FightResult matches ->
             ( { model | matches = matches }, Cmd.none )
 
+        ChangeFightState fightState ->
+            ( { model | fightState = fightState }, Cmd.none )
+
         _ ->
             ( model, Cmd.none )
 
@@ -111,7 +123,7 @@ fight { matches } =
             |> Random.map EveryDict.fromList
 
 
-view : Model -> Html msg
+view : Model -> Html Msg
 view model =
     let
         title =
@@ -119,8 +131,17 @@ view model =
     in
         div []
             [ title
+            , viewUI
             , viewTournament model
             ]
+
+
+viewUI : Html Msg
+viewUI =
+    div []
+        [ UI.btn "Start" (ChangeFightState Started)
+        , UI.btn "Stop" (ChangeFightState Stopped)
+        ]
 
 
 viewTournament : Model -> Html msg
@@ -136,8 +157,8 @@ viewTournament model =
         header headerText =
             th [] [ text headerText ]
     in
-        div [ HA.style [ ( "width", " 2000px" ), ( "overflow-x", "scroll" ) ] ]
-            [ table [ HA.class "ui striped celled table", HA.style [ ( "overflow-x", "scroll" ) ] ]
+        div [ HA.style [ ( "width", "4000px" ), ( "overflow-x", "scroll" ) ] ]
+            [ table [ HA.class "ui basic small compact striped celled table", HA.style [ ( "overflow-x", "scroll" ) ] ]
                 [ thead [] [ tr [] (List.map header headers) ]
                 , tbody [] (List.map (viewMatches model.matches) Monster.types)
                 ]
@@ -157,13 +178,19 @@ viewMatches matches contestant =
 
 viewMatch : Match -> Html msg
 viewMatch { blueWins, red, rounds } =
-    td [] [ text <| toRoundedPercent blueWins rounds ]
+    let
+        winsToColor =
+            (toFloat blueWins / toFloat rounds)
+                * 255
+                |> floor
+                |> (\red -> ( "background-color", "rgb(" ++ (toString (255 - red)) ++ ", " ++ (toString red) ++ ", 128)" ))
+    in
+        td [ HA.style [ winsToColor ] ] [ text <| toRoundedPercent blueWins rounds ]
 
 
 toRoundedPercent : Int -> Int -> String
 toRoundedPercent a b =
-    (toFloat a)
-        / (toFloat b)
+    (toFloat a / toFloat b)
         |> (*) 100
         |> floor
         |> toString
@@ -189,9 +216,14 @@ generateVSes currentVSes remainingMonsters =
 
         m :: ms ->
             generateVSes currentVSes ms
-                |> (++) (List.map (\x -> ( m, x )) ms)
+                |> (++) (List.map (\x -> ( x, m )) ms)
 
 
-subs : Sub Msg
-subs =
-    Time.every (Time.millisecond * 500) Fight
+subs : Model -> Sub Msg
+subs { fightState } =
+    case fightState of
+        Started ->
+            Time.every (Time.millisecond * 500) Fight
+
+        _ ->
+            Sub.none

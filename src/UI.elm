@@ -114,6 +114,13 @@ changeEventDecoder =
         JP.decode Event
             |> JP.required "target" targetDecoder
 
+btn: String -> msg -> Html msg
+btn txt msg =
+    button
+        [ onClick msg
+        , class "ui button"
+        ]
+        [ text txt ]
 
 type alias Event =
     { target : Target
