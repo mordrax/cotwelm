@@ -84,7 +84,7 @@ subscriptions model =
     in
         case model.currentPage of
             PitPage ->
-                Sub.map PitMsg MonsterArena.subs
+                Sub.map PitMsg (MonsterArena.subs model.pit)
 
             _ ->
                 gameSub
