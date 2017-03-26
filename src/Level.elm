@@ -14,14 +14,15 @@ module Level
         , updateFOV
         )
 
+import Building exposing (Building)
 import Container exposing (Container)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
-import Building exposing (Building)
 import Item.Item as Item exposing (Item)
 import Monster exposing (Monster)
 import Tile exposing (Tile)
+import Tile.Types
 import Types exposing (..)
 import Utils.BresenhamLine as BresenhamLine
 import Utils.Vector as Vector exposing (Vector)
@@ -47,6 +48,7 @@ type Msg
 setMap : Level -> Map -> Level
 setMap level map =
     { level | map = map }
+
 
 initNonDungeon : List Tile -> List Building -> List Monster -> Level
 initNonDungeon tiles buildings monsters =
@@ -163,7 +165,7 @@ lineOfSight a b ({ map, rooms } as level) =
                 |> Maybe.withDefault Dark
 
         isSeeThroughOrEitherEndpoints tile =
-            ((not tile.solid) && (tile.type_ /= Tile.DoorClosed) && (roomLightSource tile /= Dark))
+            ((not tile.solid) && (tile.type_ /= Tile.Types.DoorClosed) && (roomLightSource tile /= Dark))
                 || (tile.position == a)
                 || (tile.position == b)
                 || (Vector.adjacent a b)

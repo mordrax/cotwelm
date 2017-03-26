@@ -11,7 +11,7 @@ module Dungeon.Entrance
 
 import Utils.Vector exposing (..)
 import Tile exposing (..)
-
+import Tile.Types exposing (..)
 
 type EntranceType
     = Door
@@ -46,12 +46,12 @@ toTile (A ( entranceType, pos )) =
         tileType =
             case entranceType of
                 Door ->
-                    Tile.DoorClosed
+                    DoorClosed
 
                 --BrokenDoor ->
                 --    Tile.DoorBroken
                 NoDoor ->
-                    Tile.DarkDgn
+                    DarkDgn
     in
         Tile.toTile pos tileType
 

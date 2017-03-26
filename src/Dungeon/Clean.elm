@@ -10,6 +10,7 @@ import Level
 import List.Extra
 import Maybe.Extra exposing (..)
 import Tile exposing (Tile)
+import Tile.Types
 import Utils.Direction exposing (Direction(..), Directions)
 import Utils.Vector as Vector exposing (Vector)
 
@@ -131,13 +132,13 @@ calculateTypeOfWall : Level.Map -> Vector -> Tile
 calculateTypeOfWall map position =
     case ( hasAdjacentFloors position map, hasThreeOrMoreNeighbourFloors position map ) of
         ( True, True ) ->
-            Tile.toTile position Tile.DarkDgn
+            Tile.toTile position Tile.Types.DarkDgn
 
         ( True, False ) ->
-            Tile.toTile position Tile.WallDarkDgn
+            Tile.toTile position Tile.Types.WallDarkDgn
 
         _ ->
-            Tile.toTile position Tile.Rock
+            Tile.toTile position Tile.Types.Rock
 
 
 adjacentNeighbourPairs : List Directions
@@ -179,7 +180,7 @@ allDirectionsAreFloors neighbourDirections position map =
 
         isFloorTiles maybeTiles =
             maybeTiles
-                |> List.map (Maybe.Extra.filter (\x -> x.type_ == Tile.DarkDgn))
+                |> List.map (Maybe.Extra.filter (\x -> x.type_ == Tile.Types.DarkDgn))
                 |> List.all ((/=) Nothing)
     in
         neighbourDirections

@@ -64,7 +64,7 @@ import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector, DirectedVector)
-
+import Tile.Types
 
 type Corridor
     = A Model
@@ -256,7 +256,7 @@ add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
 
         newPath =
             path (Tuple.first lastCorridorPoint) newVector
-                |> List.map (\x -> Tile.toTile x Tile.DarkDgn)
+                |> List.map (\x -> Tile.toTile x Tile.Types.DarkDgn)
     in
         A
             { model
@@ -267,7 +267,7 @@ add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
 
 addEntrance : Vector -> Corridor -> Corridor
 addEntrance position (A ({ paths } as model)) =
-    A { model | paths = Tile.toTile position Tile.DarkDgn :: paths }
+    A { model | paths = Tile.toTile position Tile.Types.DarkDgn :: paths }
 
 
 end : Corridor -> DirectedVector

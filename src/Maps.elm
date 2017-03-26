@@ -40,6 +40,7 @@ import Monster
 import Random.Pcg as Random exposing (Generator)
 import Shops
 import Tile exposing (Tile)
+import Tile.Types
 import Types exposing (..)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
@@ -288,7 +289,7 @@ getTile position model =
 
             _ ->
                 Debug.log ("Could not find the tile the hero" ++ toString position ++ " is standing on.")
-                    (Tile.toTile ( 0, 0 ) Tile.Grass)
+                    (Tile.toTile ( 0, 0 ) Tile.Types.Grass)
 
 
 
