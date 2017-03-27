@@ -1,15 +1,14 @@
 module Item.Shield exposing (..)
 
 import Item.Data exposing (..)
-import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : ShieldType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Shield
-init shieldType status idStatus id =
+init : ShieldType -> ItemStatus -> IdentificationStatus -> Shield
+init shieldType status idStatus =
     let
         make name mass css prices ac =
-            { base = BaseItem name prices css mass status idStatus id
+            { base = BaseItem name prices css mass status idStatus
             , shieldType = shieldType
             , ac = ac
             }

@@ -1,15 +1,14 @@
 module Item.Bracers exposing (..)
 
 import Item.Data exposing (..)
-import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : BracersType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Bracers
-init bracersType status idStatus id =
+init : BracersType -> ItemStatus -> IdentificationStatus -> Bracers
+init bracersType status idStatus =
     let
         make name mass css prices ac =
-            { base = BaseItem name prices css mass status idStatus id
+            { base = BaseItem name prices css mass status idStatus
             , bracersType = bracersType
             , ac = ac
             }
