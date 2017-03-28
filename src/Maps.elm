@@ -8,7 +8,6 @@ module Maps
         , draw
         , currentLevel
         , getASCIIMap
-        , tileNeighbours
         , toScreenCoords
         , downstairs
         , upstairs
@@ -200,7 +199,7 @@ draw :
 draw viewport map scale onClick =
     let
         neighbours center =
-            tileNeighbours map center
+            Level.neighbours map center
 
         mapTiles =
             toTiles map
@@ -342,29 +341,3 @@ buildingsOfArea area =
         _ ->
             []
 
-
-
-------------------------------------------
--- Draw map props (tiles and buildings) --
-------------------------------------------
-
-
-{-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
--}
-tileNeighbours : Level.Map -> Vector -> Tile.TileNeighbours
-tileNeighbours map center =
-    let
-        addTilePosition =
-            Vector.add center
-
-        getTile =
-            flip Dict.get map
-
-        getNeighbour =
-            addTilePosition >> getTile
-    in
-        ( getNeighbour ( 0, -1 )
-        , getNeighbour ( 1, 0 )
-        , getNeighbour ( 0, 1 )
-        , getNeighbour ( -1, 0 )
-        )

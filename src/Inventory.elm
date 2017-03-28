@@ -196,7 +196,7 @@ handleDrag draggable model =
                     Equipment.unequip slot model.equipment
             in
                 case unequipRes of
-                    Result.Ok (equipment, _) ->
+                    Result.Ok ( equipment, _ ) ->
                         Result.Ok ( { model | equipment = equipment }, item )
 
                     Result.Err msg ->

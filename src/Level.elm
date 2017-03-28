@@ -12,6 +12,7 @@ module Level
         , floors
         , drop
         , updateFOV
+        , neighbours
         )
 
 import Building exposing (Building)
@@ -213,3 +214,38 @@ unexploredTiles { map } =
         |> Dict.toList
         |> List.map Tuple.second
         |> List.filter (.visible >> (==) Hidden)
+
+
+{-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
+-}
+getTile : Map -> Vector -> Maybe Tile
+getTile map =
+    flip Dict.get map
+
+
+neighbours : Map -> Vector -> Tile.TileNeighbours
+neighbours map center =
+    let
+        addTilePosition =
+            Vector.add center
+
+        getNeighbour =
+            addTilePosition >> (getTile map)
+    in
+        ( getNeighbour ( 0, -1 )
+        , getNeighbour ( 1, 0 )
+        , getNeighbour ( 0, 1 )
+        , getNeighbour ( -1, 0 )
+        )
+
+
+allNeighbours : Map -> Vector -> List Tile
+allNeighbours map center =
+    List.foldl ((getTile map) >> addTileAtPositionIfNotEmpty) [] (Vector.neighbours center)
+
+
+addTileAtPositionIfNotEmpty : Maybe Tile -> List Tile -> List Tile
+addTileAtPositionIfNotEmpty tile tiles =
+    tile
+        |> Maybe.map (flip (::) tiles)
+        |> Maybe.withDefault tiles
