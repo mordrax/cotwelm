@@ -11,7 +11,6 @@ module Item.Pack
 import Utils.Mass as Mass exposing (..)
 import Item.Data exposing (..)
 import Container exposing (..)
-import Utils.IdGenerator as IdGenerator
 
 
 type alias Pack a =
@@ -54,12 +53,11 @@ init :
     -> (Capacity -> Container a)
     -> ItemStatus
     -> IdentificationStatus
-    -> IdGenerator.ID
     -> Pack a
-init packType toContainer status idStatus id =
+init packType toContainer status idStatus =
     let
         make name price css mass capacity =
-            { base = BaseItem name price css mass status idStatus id
+            { base = BaseItem name price css mass status idStatus
             , packType = packType
             , container = toContainer capacity
             }

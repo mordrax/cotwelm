@@ -27,7 +27,6 @@ import Stats
 import Task
 import Time exposing (Time)
 import UI
-import Utils.IdGenerator as IdGenerator
 import Utils.Vector as Vector exposing (Vector)
 
 
@@ -351,28 +350,28 @@ initHero attrs equipment =
 
 makeWeapon : ItemData.WeaponType -> Item
 makeWeapon weaponType =
-    Item.new (ItemData.ItemTypeWeapon weaponType) IdGenerator.empty
+    Item.new (ItemData.ItemTypeWeapon weaponType)
 
 
 makeArmour : ItemData.ArmourType -> Item
 makeArmour armourType =
-    Item.new (ItemData.ItemTypeArmour armourType) IdGenerator.empty
+    Item.new (ItemData.ItemTypeArmour armourType)
 
 
 equipHero : Hero -> ( ItemData.WeaponType, ItemData.ArmourType ) -> Hero
 equipHero hero ( customWeaponType, customArmourType ) =
     let
         makeShield shieldType =
-            Item.new (ItemData.ItemTypeShield shieldType) IdGenerator.empty
+            Item.new (ItemData.ItemTypeShield shieldType)
 
         makeHelmet helmetType =
-            Item.new (ItemData.ItemTypeHelmet helmetType) IdGenerator.empty
+            Item.new (ItemData.ItemTypeHelmet helmetType)
 
         makeGauntlets gauntletsType =
-            Item.new (ItemData.ItemTypeGauntlets gauntletsType) IdGenerator.empty
+            Item.new (ItemData.ItemTypeGauntlets gauntletsType)
 
         makeBracers bracersType =
-            Item.new (ItemData.ItemTypeBracers bracersType) IdGenerator.empty
+            Item.new (ItemData.ItemTypeBracers bracersType)
 
         lowLevel =
             [ ( Equipment.WeaponSlot, makeWeapon customWeaponType )
