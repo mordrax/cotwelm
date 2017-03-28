@@ -18,6 +18,7 @@ Items can also be containers, so containers can hold containers.
 -}
 
 import Utils.Mass as Mass exposing (Mass, Capacity)
+import Utils.Misc
 
 
 type Msg
@@ -60,9 +61,11 @@ list : Container a -> List a
 list (ContainerModel model) =
     model.items
 
-set: List a -> Container a -> Container a
+
+set : List a -> Container a -> Container a
 set items (ContainerModel model) =
     ContainerModel { model | items = items }
+
 
 {-| Try to add a new item to the container. Makes sure that the item obeys mass/capacity rules.
 -}
@@ -75,16 +78,11 @@ add item (ContainerModel model) =
         containerMassWithItem =
             Mass.add mass model.currentMass
 
-        log x = Debug.log "comparing " x
-
-        isNested =
-            List.any (\x -> model.equals (log x) (log item)) model.items
-
         isWithinCapacity =
             Mass.withinCapacity containerMassWithItem model.capacity
     in
-        case ( isWithinCapacity, isNested ) of
-            ( Mass.Success, False ) ->
+        case isWithinCapacity of
+            Mass.Success ->
                 ( ContainerModel
                     { model
                         | currentMass = containerMassWithItem
@@ -93,10 +91,7 @@ add item (ContainerModel model) =
                 , Ok
                 )
 
-            ( _, True ) ->
-                ( ContainerModel model, NestedItem )
-
-            ( massMsg, _ ) ->
+            massMsg ->
                 ( ContainerModel model, MassMsg massMsg )
 
 
@@ -105,11 +100,8 @@ add item (ContainerModel model) =
 remove : a -> Container a -> Container a
 remove item (ContainerModel model) =
     let
-        notEquals x =
-            not <| model.equals item x
-
-        itemsWithoutIdItem =
-            List.filter notEquals model.items
+        itemsWithItemRemoved =
+            Utils.Misc.removeFirst item model.equals model.items
 
         itemMass =
             model.getMass item
@@ -117,4 +109,4 @@ remove item (ContainerModel model) =
         mass_ =
             Mass.subtract model.currentMass itemMass
     in
-        ContainerModel { model | items = itemsWithoutIdItem, currentMass = mass_ }
+        ContainerModel { model | items = itemsWithItemRemoved, currentMass = mass_ }

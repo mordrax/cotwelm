@@ -1,15 +1,14 @@
 module Item.Helmet exposing (..)
 
 import Item.Data exposing (..)
-import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : HelmetType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Helmet
-init helmetType status idStatus id =
+init : HelmetType -> ItemStatus -> IdentificationStatus -> Helmet
+init helmetType status idStatus =
     let
         make name mass css prices ac =
-            { base = BaseItem name prices css mass status idStatus id
+            { base = BaseItem name prices css mass status idStatus
             , helmetType = helmetType
             , ac = ac
             }

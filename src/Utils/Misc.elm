@@ -49,6 +49,24 @@ foldResult f acc list =
                 foldResult f nextAcc xs
 
 
+removeFirst : a -> (a -> a -> Bool) -> List a -> List a
+removeFirst target equals list =
+    removeFirst_ target equals list []
+
+
+removeFirst_ : a -> (a -> a -> Bool) -> List a -> List a -> List a
+removeFirst_ target equals list searched =
+    case list of
+        [] ->
+            searched
+
+        x :: xs ->
+            if equals x target then
+                searched ++ xs
+            else
+                removeFirst_ target equals xs (x :: searched)
+
+
 {-| Removes all non alphabetical characters and condenses it into one hyphen.
     Then lowercases the whole string.
     kobold -> kobold

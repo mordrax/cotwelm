@@ -8,6 +8,7 @@ module Utils.DragDrop
         , draggable
         , droppable
         , subscription
+        , getSource
         )
 
 import Mouse
@@ -55,7 +56,12 @@ init =
         }
 
 
-update : Msg s t -> DragDrop s t -> ( DragDrop s t, Maybe ( Maybe s, Maybe t ) )
+getSource : DragDrop s t -> Maybe s
+getSource (A { source }) =
+    source
+
+
+update : Msg s t -> DragDrop s t -> ( DragDrop s t, Maybe ( Maybe s, Maybe t ))
 update msg (A model) =
     let
         startDrag source html pos =
@@ -69,18 +75,18 @@ update msg (A model) =
                 ( A (startDrag source html pos), Nothing )
 
             At source html pos ->
-                ( A <| atDrag source html pos, Nothing )
+                ( A <| atDrag source html pos, Nothing)
 
             -- on drag end, check if it's over a droppable container
             End s t _ ->
-                ( A model, Just ( s, t ) )
+                ( A model, Just ( s, t ))
 
             --(handleMouseUp model)
             MouseOver target ->
-                ( A { model | target = target }, Nothing )
+                ( A { model | target = target }, Nothing)
 
             MouseLeave ->
-                ( A { model | target = Nothing }, Nothing )
+                ( A { model | target = Nothing }, Nothing)
 
 
 view : DragDrop s t -> Html (Msg s t)

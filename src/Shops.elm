@@ -15,14 +15,12 @@ module Shops
 
 import Dict exposing (Dict)
 import Item.Data exposing (..)
-import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item exposing (Item)
 import Item.Purse as Purse exposing (Purse)
 import Random.Pcg as Random exposing (step, initialSeed, list, Seed)
 import Task exposing (perform)
 import Time exposing (now)
-import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
-
+import Utils.Misc
 
 type alias Items =
     List Item.Item
@@ -66,19 +64,18 @@ shop shopType (A model) =
     B (list shopType model.stores) shopType
 
 
-init : Seed -> ItemFactory -> ( Shops, ItemFactory, Seed )
-init seed itemFactory =
+init : Seed -> ( Shops, Seed )
+init seed =
     let
         emptyStores =
             Dict.fromList []
 
-        ( stores, itemFactory_, seed_ ) =
+        ( stores, seed_ ) =
             List.foldl replenishReducer
-                ( emptyStores, itemFactory, seed )
+                ( emptyStores, seed )
                 [ WeaponSmith, GeneralStore, PotionStore, JunkShop ]
     in
         ( A { stores = stores }
-        , itemFactory_
         , seed_
         )
 
@@ -92,7 +89,7 @@ sell item purse (B items shopType) =
             Debug.log "Item purchase price:" (Item.priceOf item)
 
         itemsWithout item =
-            List.filter (\x -> (not (Item.equals item x))) items
+            Utils.Misc.removeFirst item Item.equals items
     in
         case Purse.remove price purse of
             Result.Ok purseMinusPriceOfItem ->
@@ -113,20 +110,20 @@ buy item purse (B items shopType) =
         ( B (item :: items) shopType, Purse.add cost purse )
 
 
-replenishReducer : ShopType -> ( Dict ShopTypeString Items, ItemFactory, Seed ) -> ( Dict ShopTypeString Items, ItemFactory, Seed )
-replenishReducer shopType ( currentStores, itemFactory, seed ) =
+replenishReducer : ShopType -> ( Dict ShopTypeString Items, Seed ) -> ( Dict ShopTypeString Items, Seed )
+replenishReducer shopType ( currentStores, seed ) =
     let
-        ( newItems, itemFactory_, seed_ ) =
-            replenish (inventoryStock shopType) itemFactory seed
+        ( newItems, seed_ ) =
+            replenish (inventoryStock shopType) seed
 
         newStores =
             Dict.insert (toString shopType) newItems currentStores
     in
-        ( newStores, itemFactory_, seed_ )
+        ( newStores, seed_ )
 
 
-replenish : ItemTypes -> ItemFactory -> Seed -> ( Items, ItemFactory, Seed )
-replenish itemTypes itemFactory seed =
+replenish : ItemTypes -> Seed -> ( Items, Seed )
+replenish itemTypes seed =
     let
         defaultProduct =
             Maybe.withDefault (ItemTypeWeapon BroadSword)
@@ -137,10 +134,10 @@ replenish itemTypes itemFactory seed =
                 |> Random.list 10
                 |> \x -> Random.step x seed
 
-        ( products, newItemFactory ) =
-            List.foldl ItemFactory.makeReducer ( [], itemFactory ) generatedItemTypes
+        products =
+            List.map Item.new generatedItemTypes
     in
-        ( products, newItemFactory, seed_ )
+        ( products, seed_ )
 
 
 getSeed : Cmd Msg

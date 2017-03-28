@@ -1,7 +1,6 @@
 module Item.Belt exposing (..)
 
 import Item.Data exposing (..)
-import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 
 
@@ -18,11 +17,11 @@ type alias Belt a =
     }
 
 
-init : BeltType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Belt a
-init beltType status idStatus id =
+init : BeltType -> ItemStatus -> IdentificationStatus -> Belt a
+init beltType status idStatus =
     let
         make name mass css prices container =
-            { base = BaseItem name prices css mass status idStatus id
+            { base = BaseItem name prices css mass status idStatus
             , beltType = beltType
             , beltContainer = initBeltContainer beltType
             }
