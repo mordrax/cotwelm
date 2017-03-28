@@ -295,7 +295,7 @@ pickupReducer item ( hero, messages, remainingItems ) =
                 success
 
             other ->
-                ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, remainingItems )
+                ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, item :: remainingItems )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
