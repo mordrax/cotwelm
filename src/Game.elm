@@ -414,13 +414,17 @@ updateCurrentLevelFOV model =
         |> (\level -> { model | maps = Maps.updateCurrentLevel level model.maps })
 
 
-moveHero : Direction -> Model -> ( Model, Bool )
+type alias HeroPositionChanged =
+    Bool
+
+
+moveHero : Direction -> Model -> ( Model, HeroPositionChanged )
 moveHero dir model =
     let
-        ( modelWithHeroMoved, hasMoved ) =
+        ( modelWithHeroMoved, heroPositionChanged ) =
             moveHero_ dir model
     in
-        case hasMoved of
+        case heroPositionChanged of
             False ->
                 ( updateViewportOffset modelWithHeroMoved
                     |> (\m -> moveMonsters (monstersOnLevel m) [] m)
