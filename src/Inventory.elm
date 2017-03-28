@@ -464,9 +464,20 @@ viewPack maybePack ({ dnd } as model) =
 
         droppableHtml pack =
             (div [ packStyle ] [ viewContainer pack model ])
+
+        isDraggingPack =
+            case DragDrop.getSource dnd of
+                Just (DragSlot _ PackSlot) ->
+                    True
+
+                _ ->
+                    False
     in
-        case maybePack of
-            Just pack ->
+        case ( maybePack, isDraggingPack ) of
+            ( _, True ) ->
+                div [] [ text "Pack being dragged." ]
+
+            ( Just pack, _ ) ->
                 DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
 
             _ ->
