@@ -31,7 +31,6 @@ import Stats exposing (Stats)
 import Task exposing (perform)
 import Tile exposing (Tile)
 import Utils.Direction as Direction exposing (Direction)
-import Utils.IdGenerator as IdGenerator exposing (IdGenerator)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
@@ -44,7 +43,6 @@ type alias Model =
     , maps : Maps.Model
     , currentScreen : Screen
     , shops : Shops
-    , idGen : IdGenerator
     , seed : Random.Seed
     , windowSize : Window.Size
     , messages : List String
@@ -71,8 +69,6 @@ type Msg
 init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
 init seed hero difficulty =
     let
-        idGenerator =
-            IdGenerator.init
 
         heroWithDefaultEquipment =
             donDefaultGarb hero
@@ -97,7 +93,6 @@ init seed hero difficulty =
           , maps = maps
           , currentScreen = MapScreen
           , shops = shops
-          , idGen = idGenerator
           , inventory = Inventory.init (Inventory.Ground ground) heroWithDefaultEquipment.equipment
           , seed = seed__
           , messages = [ "Welcome to castle of the winds!" ]
