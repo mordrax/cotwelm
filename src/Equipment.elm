@@ -17,6 +17,7 @@ module Equipment
         , removeFromPack
         , setPurse
         , setSlot_
+        , clearSlot_
         , unequip
         )
 
@@ -207,7 +208,7 @@ unequip slot (A model) =
     in
         case ( maybeItem, itemCursed ) of
             ( Just item, False ) ->
-                Result.Ok ( (A <| clearSlot slot model), Just item )
+                Result.Ok ( (A <| clearSlot_ slot model), Just item )
 
             ( Just item, True ) ->
                 Result.Err CannotUnequipCursedItem
@@ -370,8 +371,8 @@ get slot (A model) =
             model.boots |> Maybe.map Item.ItemBoots
 
 
-clearSlot : EquipmentSlot -> Model -> Model
-clearSlot slot model =
+clearSlot_ : EquipmentSlot -> Model -> Model
+clearSlot_ slot model =
     case slot of
         WeaponSlot ->
             { model | weapon = Nothing }
