@@ -3,7 +3,6 @@ module Item.Item
         ( Item(..)
         , Items
         , new
-        , newFoldableItem
         , view
         , viewSlot
         , css
@@ -31,9 +30,9 @@ import Item.Pack as Pack exposing (Pack)
 import Item.Purse as Purse exposing (Purse)
 import Item.Shield
 import Item.Weapon
-import Utils.IdGenerator as IdGenerator exposing (..)
 import Utils.Mass as Mass exposing (..)
 import Dice
+
 
 type alias Items =
     List Item
@@ -118,15 +117,12 @@ isCursed =
 
 
 equals : Item -> Item -> Bool
-equals anItemA anItemB =
+equals a b =
     let
-        modelA =
-            getModel anItemA
-
-        modelB =
-            getModel anItemB
+        ( baseA, baseB ) =
+            ( getModel a, getModel b )
     in
-        IdGenerator.equals modelA.id modelB.id
+        baseA.name == baseB.name
 
 
 getModel : Item -> BaseItem
@@ -236,64 +232,59 @@ containerBuilder capacity =
     Container.init capacity mass equals
 
 
-newFoldableItem : ( key, ID -> Item ) -> ID -> ( key, Item )
-newFoldableItem ( key, itemFactory ) id =
-    ( key, itemFactory id )
+new : ItemType -> Item
+new itemType =
+    newWithOptions itemType Normal Identified
 
 
-new : ItemType -> ID -> Item
-new itemType id =
-    newWithOptions itemType id Normal Identified
-
-
-newWithOptions : ItemType -> ID -> ItemStatus -> IdentificationStatus -> Item
-newWithOptions itemType id status idStatus =
+newWithOptions : ItemType -> ItemStatus -> IdentificationStatus -> Item
+newWithOptions itemType status idStatus =
     case itemType of
         ItemTypeWeapon weaponType ->
-            ItemWeapon <| Item.Weapon.init weaponType status idStatus id
+            ItemWeapon <| Item.Weapon.init weaponType status idStatus
 
         ItemTypeArmour armourType ->
-            ItemArmour <| Item.Armour.init armourType status idStatus id
+            ItemArmour <| Item.Armour.init armourType status idStatus
 
         ItemTypeShield shieldType ->
-            ItemShield <| Item.Shield.init shieldType status idStatus id
+            ItemShield <| Item.Shield.init shieldType status idStatus
 
         ItemTypeHelmet helmetType ->
-            ItemHelmet <| Item.Helmet.init helmetType status idStatus id
+            ItemHelmet <| Item.Helmet.init helmetType status idStatus
 
         ItemTypeBracers bracersType ->
-            ItemBracers <| Item.Bracers.init bracersType status idStatus id
+            ItemBracers <| Item.Bracers.init bracersType status idStatus
 
         ItemTypeGauntlets gauntletsType ->
-            ItemGauntlets <| Item.Gauntlets.init gauntletsType status idStatus id
+            ItemGauntlets <| Item.Gauntlets.init gauntletsType status idStatus
 
         ItemTypeBelt beltType ->
-            ItemBelt <| Belt.init beltType status idStatus id
+            ItemBelt <| Belt.init beltType status idStatus
 
         ItemTypePack packType ->
-            ItemPack <| Pack.init packType containerBuilder status idStatus id
+            ItemPack <| Pack.init packType containerBuilder status idStatus
 
         ItemTypePurse ->
             ItemPurse Purse.init
 
         ItemTypeCopper value ->
-            ItemCopper <| Purse.initCoppers id value
+            ItemCopper <| Purse.initCoppers value
 
         ItemTypeSilver value ->
-            ItemSilver <| Purse.initSilvers id value
+            ItemSilver <| Purse.initSilvers value
 
         ItemTypeGold value ->
-            ItemGold <| Purse.initGolds id value
+            ItemGold <| Purse.initGolds value
 
         ItemTypePlatinum value ->
-            ItemPlatinum <| Purse.initPlatinums id value
+            ItemPlatinum <| Purse.initPlatinums value
 
         -- Neckwear
         --        Overgarment
         --        Ring
         --        Boots
         _ ->
-            ItemWeapon <| Item.Weapon.init Dagger status idStatus id
+            ItemWeapon <| Item.Weapon.init Dagger status idStatus
 
 
 ppWeapon : Weapon -> String

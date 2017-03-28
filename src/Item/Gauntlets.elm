@@ -1,15 +1,14 @@
 module Item.Gauntlets exposing (..)
 
 import Item.Data exposing (..)
-import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : GauntletsType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Gauntlets
-init gauntletsType status idStatus id =
+init : GauntletsType -> ItemStatus -> IdentificationStatus -> Gauntlets
+init gauntletsType status idStatus =
     let
         make name mass css prices ac =
-            { base = BaseItem name prices css mass status idStatus id
+            { base = BaseItem name prices css mass status idStatus
             , gauntletsType = gauntletsType
             , ac = ac
             }

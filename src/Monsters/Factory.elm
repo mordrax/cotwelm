@@ -18,7 +18,6 @@ import Random.Pcg as Random exposing (Generator)
 import Stats exposing (Stats)
 import String.Extra as StringX
 import Types exposing (..)
-import Utils.IdGenerator as IdGenerator exposing (ID)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
@@ -46,17 +45,17 @@ randomMonster position =
 
 weaponSlot : WeaponType -> ( Equipment.EquipmentSlot, Item )
 weaponSlot weaponType =
-    ( Equipment.WeaponSlot, Item.new (ItemTypeWeapon weaponType) IdGenerator.empty )
+    ( Equipment.WeaponSlot, Item.new (ItemTypeWeapon weaponType) )
 
 
 armourSlot : ArmourType -> ( Equipment.EquipmentSlot, Item )
 armourSlot armourType =
-    ( Equipment.ArmourSlot, Item.new (ItemTypeArmour armourType) IdGenerator.empty )
+    ( Equipment.ArmourSlot, Item.new (ItemTypeArmour armourType) )
 
 
 makeShield : ShieldType -> Item
 makeShield shieldType =
-    Item.new (ItemTypeShield shieldType) IdGenerator.empty
+    Item.new (ItemTypeShield shieldType)
 
 
 basicEquipment : WeaponType -> ArmourType -> Equipment
@@ -76,10 +75,10 @@ makeForArena monsterType =
 leatherEquipment : Equipment
 leatherEquipment =
     Equipment.setMany_
-        [ ( Equipment.ArmourSlot, Item.new (ItemTypeArmour LeatherArmour) IdGenerator.empty )
-        , ( Equipment.HelmetSlot, Item.new (ItemTypeHelmet LeatherHelmet) IdGenerator.empty )
-        , ( Equipment.GauntletsSlot, Item.new (ItemTypeGauntlets NormalGauntlets) IdGenerator.empty )
-        , ( Equipment.BracersSlot, Item.new (ItemTypeBracers NormalBracers) IdGenerator.empty )
+        [ ( Equipment.ArmourSlot, Item.new (ItemTypeArmour LeatherArmour) )
+        , ( Equipment.HelmetSlot, Item.new (ItemTypeHelmet LeatherHelmet) )
+        , ( Equipment.GauntletsSlot, Item.new (ItemTypeGauntlets NormalGauntlets) )
+        , ( Equipment.BracersSlot, Item.new (ItemTypeBracers NormalBracers) )
         ]
         Equipment.init
 
@@ -87,10 +86,10 @@ leatherEquipment =
 ironEquipment : Equipment
 ironEquipment =
     Equipment.setMany_
-        [ ( Equipment.ArmourSlot, Item.new (ItemTypeArmour ChainMail) IdGenerator.empty )
-        , ( Equipment.HelmetSlot, Item.new (ItemTypeHelmet IronHelmet) IdGenerator.empty )
-        , ( Equipment.GauntletsSlot, Item.new (ItemTypeGauntlets NormalGauntlets) IdGenerator.empty )
-        , ( Equipment.BracersSlot, Item.new (ItemTypeBracers NormalBracers) IdGenerator.empty )
+        [ ( Equipment.ArmourSlot, Item.new (ItemTypeArmour ChainMail) )
+        , ( Equipment.HelmetSlot, Item.new (ItemTypeHelmet IronHelmet) )
+        , ( Equipment.GauntletsSlot, Item.new (ItemTypeGauntlets NormalGauntlets) )
+        , ( Equipment.BracersSlot, Item.new (ItemTypeBracers NormalBracers) )
         ]
         Equipment.init
 
@@ -98,10 +97,10 @@ ironEquipment =
 plateEquipment : Equipment
 plateEquipment =
     Equipment.setMany_
-        [ ( Equipment.ArmourSlot, Item.new (ItemTypeArmour PlateArmour) IdGenerator.empty )
-        , ( Equipment.HelmetSlot, Item.new (ItemTypeHelmet MeteoricSteelHelmet) IdGenerator.empty )
-        , ( Equipment.GauntletsSlot, Item.new (ItemTypeGauntlets NormalGauntlets) IdGenerator.empty )
-        , ( Equipment.BracersSlot, Item.new (ItemTypeBracers NormalBracers) IdGenerator.empty )
+        [ ( Equipment.ArmourSlot, Item.new (ItemTypeArmour PlateArmour) )
+        , ( Equipment.HelmetSlot, Item.new (ItemTypeHelmet MeteoricSteelHelmet) )
+        , ( Equipment.GauntletsSlot, Item.new (ItemTypeGauntlets NormalGauntlets) )
+        , ( Equipment.BracersSlot, Item.new (ItemTypeBracers NormalBracers) )
         ]
         Equipment.init
 

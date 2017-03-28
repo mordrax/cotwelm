@@ -19,7 +19,6 @@ import Types exposing (..)
 import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
-import Item.Factory as ItemFactory exposing (ItemFactory)
 import Item.Item as Item exposing (Item)
 import Item.Data exposing (..)
 import Level exposing (Level)
@@ -52,7 +51,6 @@ type alias Model =
     , viewport : { x : Int, y : Int }
     , difficulty : Difficulty
     , inventory : Inventory
-    , itemFactory : ItemFactory
     }
 
 
@@ -76,17 +74,14 @@ init seed hero difficulty =
         idGenerator =
             IdGenerator.init
 
-        itemFactory =
-            ItemFactory.init
+        heroWithDefaultEquipment =
+            donDefaultGarb hero
 
-        ( heroWithDefaultEquipment, itemFactoryAfterHeroEquipment ) =
-            donDefaultGarb itemFactory hero
+        ( shops, seed_ ) =
+            Shops.init seed
 
-        ( shops, itemFactoryAfterShop, seed_ ) =
-            Shops.init seed itemFactoryAfterHeroEquipment
-
-        ( leatherArmour, itemFactory_ ) =
-            ItemFactory.make (ItemTypeArmour LeatherArmour) itemFactoryAfterShop
+        leatherArmour =
+            Item.new (ItemTypeArmour LeatherArmour)
 
         ( maps, seed__ ) =
             Maps.init leatherArmour seed_
@@ -109,7 +104,6 @@ init seed hero difficulty =
           , difficulty = difficulty
           , windowSize = { width = 640, height = 640 }
           , viewport = { x = 0, y = 0 }
-          , itemFactory = itemFactory_
           }
         , cmd
         )
@@ -301,7 +295,7 @@ pickupReducer item ( hero, messages, remainingItems ) =
                 success
 
             other ->
-                ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, remainingItems )
+                ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, item :: remainingItems )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -531,8 +525,8 @@ addLoot monster model =
         currentLevel =
             Maps.currentLevel model.maps
 
-        ( loot, itemFactory_ ) =
-            ItemFactory.make (ItemTypeCopper 1234) model.itemFactory
+        loot =
+            Item.new (ItemTypeCopper 1234)
 
         currentLevel_ =
             Level.drop ( monster.position, loot ) currentLevel
@@ -540,7 +534,6 @@ addLoot monster model =
         { model
             | seed = model.seed
             , maps = Maps.updateCurrentLevel currentLevel_ model.maps
-            , itemFactory = itemFactory_
         }
 
 
@@ -829,36 +822,23 @@ updateViewportOffset ({ windowSize, viewport, maps, hero } as model) =
         { model | viewport = { x = newX, y = newY } }
 
 
-donDefaultGarb : ItemFactory -> Hero -> ( Hero, ItemFactory )
-donDefaultGarb itemFactory hero =
+donDefaultGarb : Hero -> Hero
+donDefaultGarb hero =
     let
-        equipmentToMake =
-            [ ( Equipment.WeaponSlot, Item.Data.ItemTypeWeapon Dagger )
-            , ( Equipment.ArmourSlot, Item.Data.ItemTypeArmour ScaleMail )
-            , ( Equipment.ShieldSlot, Item.Data.ItemTypeShield LargeIronShield )
-            , ( Equipment.HelmetSlot, Item.Data.ItemTypeHelmet LeatherHelmet )
-            , ( Equipment.GauntletsSlot, Item.Data.ItemTypeGauntlets NormalGauntlets )
-            , ( Equipment.BeltSlot, Item.Data.ItemTypeBelt ThreeSlotBelt )
-            , ( Equipment.PurseSlot, Item.Data.ItemTypePurse )
-            , ( Equipment.PackSlot, Item.Data.ItemTypePack MediumPack )
-            ]
-
-        makeEquipment ( slot, itemType ) ( accEquipment, itemFactory ) =
-            let
-                ( item, itemFactory_ ) =
-                    ItemFactory.make itemType itemFactory
-            in
-                ( ( slot, item ) :: accEquipment, itemFactory_ )
-
-        ( defaultEquipment, factoryAfterProduction ) =
-            List.foldl makeEquipment ( [], itemFactory ) equipmentToMake
-
-        equippedHero =
-            defaultEquipment
-                |> (\eq -> Equipment.setMany_ eq Equipment.init)
-                |> (\eq -> Hero.setEquipment eq hero)
+        defaultEquipment =
+            Equipment.setMany_
+                [ ( Equipment.WeaponSlot, Item.new <| Item.Data.ItemTypeWeapon Dagger )
+                , ( Equipment.ArmourSlot, Item.new <| Item.Data.ItemTypeArmour ScaleMail )
+                , ( Equipment.ShieldSlot, Item.new <| Item.Data.ItemTypeShield LargeIronShield )
+                , ( Equipment.HelmetSlot, Item.new <| Item.Data.ItemTypeHelmet LeatherHelmet )
+                , ( Equipment.GauntletsSlot, Item.new <| Item.Data.ItemTypeGauntlets NormalGauntlets )
+                , ( Equipment.BeltSlot, Item.new <| Item.Data.ItemTypeBelt ThreeSlotBelt )
+                , ( Equipment.PurseSlot, Item.new <| Item.Data.ItemTypePurse )
+                , ( Equipment.PackSlot, Item.new <| Item.Data.ItemTypePack MediumPack )
+                ]
+                Equipment.init
     in
-        ( equippedHero, factoryAfterProduction )
+        { hero | equipment = defaultEquipment }
 
 
 

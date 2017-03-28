@@ -128,6 +128,22 @@ keyboardToInventoryMsg msg =
 ---------------------
 
 
+dragSourceSameAsDropTarget : Draggable -> Droppable -> Bool
+dragSourceSameAsDropTarget dragSource dropTarget =
+    case ( dragSource, dropTarget ) of
+        ( DragSlot _ dragSlot, DropEquipment dropSlot ) ->
+            dragSlot == dropSlot
+
+        ( DragPack _ _, DropPack _ ) ->
+            True
+
+        ( DragMerchant _ _, DropMerchant _ ) ->
+            True
+
+        _ ->
+            False
+
+
 {-| Top level of drag/drop transaction.
 Algorithm:
 - Resolve dragging the item away from the dragSource, return the modelWithDrag and the item being dragged.
@@ -165,16 +181,19 @@ handleDragDrop dragSource dropTarget model =
                     in
                         noChange
     in
-        case dragResult of
-            Result.Ok ( modelWithDrag, item ) ->
-                handleDrop_ item modelWithDrag
+        if dragSourceSameAsDropTarget dragSource dropTarget then
+            noChange
+        else
+            case dragResult of
+                Result.Ok ( modelWithDrag, item ) ->
+                    handleDrop_ item modelWithDrag
 
-            Err msg ->
-                let
-                    _ =
-                        Debug.log "Drag failed: " msg
-                in
-                    noChange
+                Err msg ->
+                    let
+                        _ =
+                            Debug.log "Drag failed: " msg
+                    in
+                        noChange
 
 
 {-| handleDrag
@@ -464,9 +483,20 @@ viewPack maybePack ({ dnd } as model) =
 
         droppableHtml pack =
             (div [ packStyle ] [ viewContainer pack model ])
+
+        isDraggingPack =
+            case DragDrop.getSource dnd of
+                Just (DragSlot _ PackSlot) ->
+                    True
+
+                _ ->
+                    False
     in
-        case maybePack of
-            Just pack ->
+        case ( maybePack, isDraggingPack ) of
+            ( _, True ) ->
+                div [] [ text "Pack being dragged." ]
+
+            ( Just pack, _ ) ->
                 DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
 
             _ ->

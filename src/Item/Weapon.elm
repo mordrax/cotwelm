@@ -36,7 +36,6 @@ module Item.Weapon
 -}
 
 import Item.Data exposing (..)
-import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 import Dice exposing (Dice)
 import Json.Decode as JD
@@ -48,11 +47,11 @@ damage { damage } =
     damage
 
 
-init : WeaponType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Weapon
-init weaponType status idStatus id =
+init : WeaponType -> ItemStatus -> IdentificationStatus -> Weapon
+init weaponType status idStatus =
     let
         make name ( weight, bulk ) css ( buy, sell ) damage =
-            { base = BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus id
+            { base = BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus
             , weaponType = weaponType
             , damage = damage
             }
