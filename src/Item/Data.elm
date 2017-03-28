@@ -1,7 +1,6 @@
 module Item.Data exposing (..)
 
 import Utils.Mass exposing (..)
-import Utils.IdGenerator exposing (..)
 import Dice exposing (Dice)
 
 
@@ -81,7 +80,6 @@ type alias BaseItem =
     , mass : Mass
     , status : ItemStatus
     , isIdentified : IdentificationStatus
-    , id : ID
     }
 
 

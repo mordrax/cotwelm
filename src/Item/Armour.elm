@@ -1,16 +1,15 @@
 module Item.Armour exposing (init, listTypes, encode, decoder)
 
 import Item.Data exposing (..)
-import Utils.IdGenerator as IdGenerator
 import Utils.Mass as Mass exposing (Mass)
 import Dict exposing (Dict)
 
 
-init : ArmourType -> ItemStatus -> IdentificationStatus -> IdGenerator.ID -> Armour
-init armourType status idStatus id =
+init : ArmourType -> ItemStatus -> IdentificationStatus -> Armour
+init armourType status idStatus =
     let
         make name ( weight, bulk ) css ( buy, sell ) ac =
-            { base = BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus id
+            { base = BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus
             , armourType = armourType
             , ac = ac
             }
