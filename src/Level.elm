@@ -28,6 +28,7 @@ import Types exposing (..)
 import Utils.BresenhamLine as BresenhamLine
 import Utils.Vector as Vector exposing (Vector)
 import Utils.FieldOfView
+import Set
 
 
 type alias Map =
@@ -195,14 +196,11 @@ updateFOV : Vector -> Level -> Level
 updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
     let
         newMap =
-            Utils.FieldOfView.fov heroPosition (isSeeThrough level) (Vector.neighbours)
+            Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList)
+                |> Set.toList
                 |> List.foldl addToMapAsVisibleTile map
 
-        --                level
-        --                |> unexploredTiles
-        --                |> List.filter (\tile -> lineOfSight heroPosition tile.position level)
-        --                |> List.map (Tile.setVisibility Known)
-        addToMapAsVisibleTile: Vector -> Map -> Map
+        addToMapAsVisibleTile : Vector -> Map -> Map
         addToMapAsVisibleTile tilePosition map =
             tilePosition
                 |> getTile map
