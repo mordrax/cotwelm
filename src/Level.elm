@@ -27,6 +27,8 @@ import Tile.Types
 import Types exposing (..)
 import Utils.BresenhamLine as BresenhamLine
 import Utils.Vector as Vector exposing (Vector)
+import Utils.FieldOfView
+import Set
 
 
 type alias Map =
@@ -157,63 +159,60 @@ floors { map } =
 ------
 
 
-lineOfSight : Vector -> Vector -> Level -> Bool
-lineOfSight a b ({ map, rooms } as level) =
-    let
-        roomLightSource tile =
-            roomAtPosition tile.position rooms
-                |> Maybe.map .lightSource
-                |> Maybe.withDefault Dark
-
-        isSeeThroughOrEitherEndpoints tile =
-            ((not tile.solid) && (tile.type_ /= Tile.Types.DoorClosed) && (roomLightSource tile /= Dark))
-                || (tile.position == a)
-                || (tile.position == b)
-                || (Vector.adjacent a b)
-    in
-        BresenhamLine.line a b
-            |> List.map (\point -> Dict.get point map)
-            |> List.map (Maybe.map isSeeThroughOrEitherEndpoints)
-            |> List.map (Maybe.withDefault False)
-            |> List.all identity
-
-
 calculateMonsterVisibility : Monster -> Vector -> Level -> Monster
 calculateMonsterVisibility monster heroPosition ({ map } as level) =
-    if lineOfSight monster.position heroPosition level then
+    if Utils.FieldOfView.los monster.position heroPosition (isSeeThrough level) then
         { monster | visible = LineOfSight }
     else
         monster
 
 
+roomAndDark : List Room -> Vector -> Bool
+roomAndDark rooms position =
+    roomAtPosition position rooms
+        |> Maybe.map .lightSource
+        |> Maybe.withDefault Dark
+        |> (==) Dark
+
+
+isSeeThrough : Level -> Vector -> Bool
+isSeeThrough { map, rooms } target =
+    let
+        notSolid =
+            .solid >> not
+
+        notClosedDoor =
+            .type_ >> ((/=) Tile.Types.DoorClosed)
+
+        notDarkRoom =
+            roomAndDark rooms >> not
+    in
+        getTile map target
+            |> Maybe.map (\tile -> (notSolid tile && notClosedDoor tile && notDarkRoom target))
+            |> Maybe.withDefault False
+
+
 updateFOV : Vector -> Level -> Level
 updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
     let
-        newExploredTiles =
-            level
-                |> unexploredTiles
-                |> List.filter (\tile -> lineOfSight heroPosition tile.position level)
-                |> List.map (Tile.setVisibility Known)
-
-        addToMap tile map =
-            Dict.insert tile.position tile map
-
         newMap =
-            List.foldl addToMap map newExploredTiles
+            Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList)
+                |> Set.toList
+                |> List.foldl addToMapAsVisibleTile map
+
+        addToMapAsVisibleTile : Vector -> Map -> Map
+        addToMapAsVisibleTile tilePosition map =
+            tilePosition
+                |> getTile map
+                |> Maybe.map (Tile.setVisibility Known)
+                |> Maybe.map (\x -> Dict.insert x.position x map)
+                |> Maybe.withDefault map
 
         newMonsters =
             monsters
                 |> List.map (\monster -> calculateMonsterVisibility monster heroPosition level)
     in
         { level | map = newMap, monsters = newMonsters }
-
-
-unexploredTiles : Level -> List Tile
-unexploredTiles { map } =
-    map
-        |> Dict.toList
-        |> List.map Tuple.second
-        |> List.filter (.visible >> (==) Hidden)
 
 
 {-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
