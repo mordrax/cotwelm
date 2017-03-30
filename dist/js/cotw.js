@@ -6529,6 +6529,988 @@ var _Skinney$elm_array_exploration$Array_Hamt$slice = F3(
 		}
 	});
 
+var _eeue56$elm_all_dict$EveryDict$foldr = F3(
+	function (f, acc, t) {
+		foldr:
+		while (true) {
+			var _p0 = t;
+			if (_p0.ctor === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var _v1 = f,
+					_v2 = A3(
+					f,
+					_p0._1,
+					_p0._2,
+					A3(_eeue56$elm_all_dict$EveryDict$foldr, f, acc, _p0._4)),
+					_v3 = _p0._3;
+				f = _v1;
+				acc = _v2;
+				t = _v3;
+				continue foldr;
+			}
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$keys = function (dict) {
+	return A3(
+		_eeue56$elm_all_dict$EveryDict$foldr,
+		F3(
+			function (key, value, keyList) {
+				return {ctor: '::', _0: key, _1: keyList};
+			}),
+		{ctor: '[]'},
+		dict);
+};
+var _eeue56$elm_all_dict$EveryDict$values = function (dict) {
+	return A3(
+		_eeue56$elm_all_dict$EveryDict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return {ctor: '::', _0: value, _1: valueList};
+			}),
+		{ctor: '[]'},
+		dict);
+};
+var _eeue56$elm_all_dict$EveryDict$toList = function (dict) {
+	return A3(
+		_eeue56$elm_all_dict$EveryDict$foldr,
+		F3(
+			function (key, value, list) {
+				return {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: key, _1: value},
+					_1: list
+				};
+			}),
+		{ctor: '[]'},
+		dict);
+};
+var _eeue56$elm_all_dict$EveryDict$foldl = F3(
+	function (f, acc, dict) {
+		foldl:
+		while (true) {
+			var _p1 = dict;
+			if (_p1.ctor === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var _v5 = f,
+					_v6 = A3(
+					f,
+					_p1._1,
+					_p1._2,
+					A3(_eeue56$elm_all_dict$EveryDict$foldl, f, acc, _p1._3)),
+					_v7 = _p1._4;
+				f = _v5;
+				acc = _v6;
+				dict = _v7;
+				continue foldl;
+			}
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$isBBlack = function (dict) {
+	var _p2 = dict;
+	_v8_2:
+	do {
+		if (_p2.ctor === 'RBNode_elm_builtin') {
+			if (_p2._0.ctor === 'BBlack') {
+				return true;
+			} else {
+				break _v8_2;
+			}
+		} else {
+			if (_p2._0.ctor === 'LBBlack') {
+				return true;
+			} else {
+				break _v8_2;
+			}
+		}
+	} while(false);
+	return false;
+};
+var _eeue56$elm_all_dict$EveryDict$showFlag = function (f) {
+	var _p3 = f;
+	switch (_p3.ctor) {
+		case 'Insert':
+			return 'Insert';
+		case 'Remove':
+			return 'Remove';
+		default:
+			return 'Same';
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			var _p4 = dict;
+			if (_p4.ctor === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var _v11 = A2(_eeue56$elm_all_dict$EveryDict$sizeHelp, n + 1, _p4._4),
+					_v12 = _p4._3;
+				n = _v11;
+				dict = _v12;
+				continue sizeHelp;
+			}
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$size = function (dict) {
+	return A2(_eeue56$elm_all_dict$EveryDict$sizeHelp, 0, dict);
+};
+var _eeue56$elm_all_dict$EveryDict$isEmpty = function (dict) {
+	var _p5 = dict;
+	if (_p5.ctor === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$max = function (dict) {
+	max:
+	while (true) {
+		var _p6 = dict;
+		if (_p6.ctor === 'RBNode_elm_builtin') {
+			if (_p6._4.ctor === 'RBEmpty_elm_builtin') {
+				return {ctor: '_Tuple2', _0: _p6._1, _1: _p6._2};
+			} else {
+				var _v15 = _p6._4;
+				dict = _v15;
+				continue max;
+			}
+		} else {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'EveryDict',
+				{
+					start: {line: 127, column: 5},
+					end: {line: 135, column: 51}
+				},
+				_p6)('(max Empty) is not defined');
+		}
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$min = function (dict) {
+	min:
+	while (true) {
+		var _p8 = dict;
+		if (_p8.ctor === 'RBNode_elm_builtin') {
+			if ((_p8._3.ctor === 'RBEmpty_elm_builtin') && (_p8._3._0.ctor === 'LBlack')) {
+				return {ctor: '_Tuple2', _0: _p8._1, _1: _p8._2};
+			} else {
+				var _v17 = _p8._3;
+				dict = _v17;
+				continue min;
+			}
+		} else {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'EveryDict',
+				{
+					start: {line: 115, column: 5},
+					end: {line: 123, column: 51}
+				},
+				_p8)('(min Empty) is not defined');
+		}
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$eq = F2(
+	function (first, second) {
+		return _elm_lang$core$Native_Utils.eq(
+			_eeue56$elm_all_dict$EveryDict$toList(first),
+			_eeue56$elm_all_dict$EveryDict$toList(second));
+	});
+var _eeue56$elm_all_dict$EveryDict$ord = _elm_lang$core$Basics$toString;
+var _eeue56$elm_all_dict$EveryDict$get_ = F2(
+	function (targetKey, dict) {
+		get_:
+		while (true) {
+			var _p10 = dict;
+			if (_p10.ctor === 'RBEmpty_elm_builtin') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p11 = A2(
+					_elm_lang$core$Basics$compare,
+					_eeue56$elm_all_dict$EveryDict$ord(targetKey),
+					_eeue56$elm_all_dict$EveryDict$ord(_p10._1));
+				switch (_p11.ctor) {
+					case 'LT':
+						var _v20 = targetKey,
+							_v21 = _p10._3;
+						targetKey = _v20;
+						dict = _v21;
+						continue get_;
+					case 'EQ':
+						return _elm_lang$core$Maybe$Just(_p10._2);
+					default:
+						var _v22 = targetKey,
+							_v23 = _p10._4;
+						targetKey = _v22;
+						dict = _v23;
+						continue get_;
+				}
+			}
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$get = F2(
+	function (targetKey, dict) {
+		return A2(_eeue56$elm_all_dict$EveryDict$get_, targetKey, dict);
+	});
+var _eeue56$elm_all_dict$EveryDict$member = F2(
+	function (key, dict) {
+		var _p12 = A2(_eeue56$elm_all_dict$EveryDict$get_, key, dict);
+		if (_p12.ctor === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$showLColor = function (color) {
+	var _p13 = color;
+	if (_p13.ctor === 'LBlack') {
+		return 'LBlack';
+	} else {
+		return 'LBBlack';
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$showNColor = function (c) {
+	var _p14 = c;
+	switch (_p14.ctor) {
+		case 'Red':
+			return 'Red';
+		case 'Black':
+			return 'Black';
+		case 'BBlack':
+			return 'BBlack';
+		default:
+			return 'NBlack';
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$reportRemBug = F4(
+	function (msg, c, lgot, rgot) {
+		return _elm_lang$core$Native_Utils.crash(
+			'EveryDict',
+			{
+				start: {line: 320, column: 3},
+				end: {line: 320, column: 14}
+			})(
+			_elm_lang$core$String$concat(
+				{
+					ctor: '::',
+					_0: 'Internal red-black tree invariant violated, expected ',
+					_1: {
+						ctor: '::',
+						_0: msg,
+						_1: {
+							ctor: '::',
+							_0: ' and got ',
+							_1: {
+								ctor: '::',
+								_0: _eeue56$elm_all_dict$EveryDict$showNColor(c),
+								_1: {
+									ctor: '::',
+									_0: '/',
+									_1: {
+										ctor: '::',
+										_0: lgot,
+										_1: {
+											ctor: '::',
+											_0: '/',
+											_1: {
+												ctor: '::',
+												_0: rgot,
+												_1: {
+													ctor: '::',
+													_0: '\nPlease report this bug to <https://github.com/elm-lang/Elm/issues>',
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}));
+	});
+var _eeue56$elm_all_dict$EveryDict$NBlack = {ctor: 'NBlack'};
+var _eeue56$elm_all_dict$EveryDict$BBlack = {ctor: 'BBlack'};
+var _eeue56$elm_all_dict$EveryDict$Black = {ctor: 'Black'};
+var _eeue56$elm_all_dict$EveryDict$blackish = function (t) {
+	var _p15 = t;
+	if (_p15.ctor === 'RBNode_elm_builtin') {
+		var _p16 = _p15._0;
+		return _elm_lang$core$Native_Utils.eq(_p16, _eeue56$elm_all_dict$EveryDict$Black) || _elm_lang$core$Native_Utils.eq(_p16, _eeue56$elm_all_dict$EveryDict$BBlack);
+	} else {
+		return true;
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$Red = {ctor: 'Red'};
+var _eeue56$elm_all_dict$EveryDict$moreBlack = function (color) {
+	var _p17 = color;
+	switch (_p17.ctor) {
+		case 'Black':
+			return _eeue56$elm_all_dict$EveryDict$BBlack;
+		case 'Red':
+			return _eeue56$elm_all_dict$EveryDict$Black;
+		case 'NBlack':
+			return _eeue56$elm_all_dict$EveryDict$Red;
+		default:
+			return _elm_lang$core$Native_Utils.crashCase(
+				'EveryDict',
+				{
+					start: {line: 294, column: 5},
+					end: {line: 298, column: 73}
+				},
+				_p17)('Can\'t make a double black node more black!');
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$lessBlack = function (color) {
+	var _p19 = color;
+	switch (_p19.ctor) {
+		case 'BBlack':
+			return _eeue56$elm_all_dict$EveryDict$Black;
+		case 'Black':
+			return _eeue56$elm_all_dict$EveryDict$Red;
+		case 'Red':
+			return _eeue56$elm_all_dict$EveryDict$NBlack;
+		default:
+			return _elm_lang$core$Native_Utils.crashCase(
+				'EveryDict',
+				{
+					start: {line: 303, column: 5},
+					end: {line: 307, column: 75}
+				},
+				_p19)('Can\'t make a negative black node less black!');
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$LBBlack = {ctor: 'LBBlack'};
+var _eeue56$elm_all_dict$EveryDict$LBlack = {ctor: 'LBlack'};
+var _eeue56$elm_all_dict$EveryDict$RBEmpty_elm_builtin = function (a) {
+	return {ctor: 'RBEmpty_elm_builtin', _0: a};
+};
+var _eeue56$elm_all_dict$EveryDict$empty = _eeue56$elm_all_dict$EveryDict$RBEmpty_elm_builtin(_eeue56$elm_all_dict$EveryDict$LBlack);
+var _eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {ctor: 'RBNode_elm_builtin', _0: a, _1: b, _2: c, _3: d, _4: e};
+	});
+var _eeue56$elm_all_dict$EveryDict$ensureBlackRoot = function (dict) {
+	var _p21 = dict;
+	if (_p21.ctor === 'RBNode_elm_builtin') {
+		switch (_p21._0.ctor) {
+			case 'Red':
+				return A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Black, _p21._1, _p21._2, _p21._3, _p21._4);
+			case 'Black':
+				return dict;
+			default:
+				return dict;
+		}
+	} else {
+		return dict;
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$lessBlackTree = function (dict) {
+	var _p22 = dict;
+	if (_p22.ctor === 'RBNode_elm_builtin') {
+		return A5(
+			_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin,
+			_eeue56$elm_all_dict$EveryDict$lessBlack(_p22._0),
+			_p22._1,
+			_p22._2,
+			_p22._3,
+			_p22._4);
+	} else {
+		if (_p22._0.ctor === 'LBBlack') {
+			return _eeue56$elm_all_dict$EveryDict$RBEmpty_elm_builtin(_eeue56$elm_all_dict$EveryDict$LBlack);
+		} else {
+			return dict;
+		}
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$blacken = function (t) {
+	var _p23 = t;
+	if (_p23.ctor === 'RBEmpty_elm_builtin') {
+		return _eeue56$elm_all_dict$EveryDict$RBEmpty_elm_builtin(_eeue56$elm_all_dict$EveryDict$LBlack);
+	} else {
+		return A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Black, _p23._1, _p23._2, _p23._3, _p23._4);
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$redden = function (t) {
+	var _p24 = t;
+	if (_p24.ctor === 'RBEmpty_elm_builtin') {
+		return _elm_lang$core$Native_Utils.crashCase(
+			'EveryDict',
+			{
+				start: {line: 440, column: 5},
+				end: {line: 442, column: 69}
+			},
+			_p24)('can\'t make a Leaf red');
+	} else {
+		return A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Red, _p24._1, _p24._2, _p24._3, _p24._4);
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$balance_node = function (t) {
+	var assemble = function (col) {
+		return function (xk) {
+			return function (xv) {
+				return function (yk) {
+					return function (yv) {
+						return function (zk) {
+							return function (zv) {
+								return function (a) {
+									return function (b) {
+										return function (c) {
+											return function (d) {
+												return A5(
+													_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin,
+													_eeue56$elm_all_dict$EveryDict$lessBlack(col),
+													yk,
+													yv,
+													A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Black, xk, xv, a, b),
+													A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Black, zk, zv, c, d));
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+	if (_eeue56$elm_all_dict$EveryDict$blackish(t)) {
+		var _p26 = t;
+		_v34_6:
+		do {
+			_v34_5:
+			do {
+				_v34_4:
+				do {
+					_v34_3:
+					do {
+						_v34_2:
+						do {
+							_v34_1:
+							do {
+								_v34_0:
+								do {
+									if (_p26.ctor === 'RBNode_elm_builtin') {
+										if (_p26._3.ctor === 'RBNode_elm_builtin') {
+											if (_p26._4.ctor === 'RBNode_elm_builtin') {
+												switch (_p26._3._0.ctor) {
+													case 'Red':
+														switch (_p26._4._0.ctor) {
+															case 'Red':
+																if ((_p26._3._3.ctor === 'RBNode_elm_builtin') && (_p26._3._3._0.ctor === 'Red')) {
+																	break _v34_0;
+																} else {
+																	if ((_p26._3._4.ctor === 'RBNode_elm_builtin') && (_p26._3._4._0.ctor === 'Red')) {
+																		break _v34_1;
+																	} else {
+																		if ((_p26._4._3.ctor === 'RBNode_elm_builtin') && (_p26._4._3._0.ctor === 'Red')) {
+																			break _v34_2;
+																		} else {
+																			if ((_p26._4._4.ctor === 'RBNode_elm_builtin') && (_p26._4._4._0.ctor === 'Red')) {
+																				break _v34_3;
+																			} else {
+																				break _v34_6;
+																			}
+																		}
+																	}
+																}
+															case 'NBlack':
+																if ((_p26._3._3.ctor === 'RBNode_elm_builtin') && (_p26._3._3._0.ctor === 'Red')) {
+																	break _v34_0;
+																} else {
+																	if ((_p26._3._4.ctor === 'RBNode_elm_builtin') && (_p26._3._4._0.ctor === 'Red')) {
+																		break _v34_1;
+																	} else {
+																		if (((_p26._0.ctor === 'BBlack') && (_p26._4._3.ctor === 'RBNode_elm_builtin')) && (_p26._4._3._0.ctor === 'Black')) {
+																			break _v34_4;
+																		} else {
+																			break _v34_6;
+																		}
+																	}
+																}
+															default:
+																if ((_p26._3._3.ctor === 'RBNode_elm_builtin') && (_p26._3._3._0.ctor === 'Red')) {
+																	break _v34_0;
+																} else {
+																	if ((_p26._3._4.ctor === 'RBNode_elm_builtin') && (_p26._3._4._0.ctor === 'Red')) {
+																		break _v34_1;
+																	} else {
+																		break _v34_6;
+																	}
+																}
+														}
+													case 'NBlack':
+														switch (_p26._4._0.ctor) {
+															case 'Red':
+																if ((_p26._4._3.ctor === 'RBNode_elm_builtin') && (_p26._4._3._0.ctor === 'Red')) {
+																	break _v34_2;
+																} else {
+																	if ((_p26._4._4.ctor === 'RBNode_elm_builtin') && (_p26._4._4._0.ctor === 'Red')) {
+																		break _v34_3;
+																	} else {
+																		if (((_p26._0.ctor === 'BBlack') && (_p26._3._4.ctor === 'RBNode_elm_builtin')) && (_p26._3._4._0.ctor === 'Black')) {
+																			break _v34_5;
+																		} else {
+																			break _v34_6;
+																		}
+																	}
+																}
+															case 'NBlack':
+																if (_p26._0.ctor === 'BBlack') {
+																	if ((_p26._4._3.ctor === 'RBNode_elm_builtin') && (_p26._4._3._0.ctor === 'Black')) {
+																		break _v34_4;
+																	} else {
+																		if ((_p26._3._4.ctor === 'RBNode_elm_builtin') && (_p26._3._4._0.ctor === 'Black')) {
+																			break _v34_5;
+																		} else {
+																			break _v34_6;
+																		}
+																	}
+																} else {
+																	break _v34_6;
+																}
+															default:
+																if (((_p26._0.ctor === 'BBlack') && (_p26._3._4.ctor === 'RBNode_elm_builtin')) && (_p26._3._4._0.ctor === 'Black')) {
+																	break _v34_5;
+																} else {
+																	break _v34_6;
+																}
+														}
+													default:
+														switch (_p26._4._0.ctor) {
+															case 'Red':
+																if ((_p26._4._3.ctor === 'RBNode_elm_builtin') && (_p26._4._3._0.ctor === 'Red')) {
+																	break _v34_2;
+																} else {
+																	if ((_p26._4._4.ctor === 'RBNode_elm_builtin') && (_p26._4._4._0.ctor === 'Red')) {
+																		break _v34_3;
+																	} else {
+																		break _v34_6;
+																	}
+																}
+															case 'NBlack':
+																if (((_p26._0.ctor === 'BBlack') && (_p26._4._3.ctor === 'RBNode_elm_builtin')) && (_p26._4._3._0.ctor === 'Black')) {
+																	break _v34_4;
+																} else {
+																	break _v34_6;
+																}
+															default:
+																break _v34_6;
+														}
+												}
+											} else {
+												switch (_p26._3._0.ctor) {
+													case 'Red':
+														if ((_p26._3._3.ctor === 'RBNode_elm_builtin') && (_p26._3._3._0.ctor === 'Red')) {
+															break _v34_0;
+														} else {
+															if ((_p26._3._4.ctor === 'RBNode_elm_builtin') && (_p26._3._4._0.ctor === 'Red')) {
+																break _v34_1;
+															} else {
+																break _v34_6;
+															}
+														}
+													case 'NBlack':
+														if (((_p26._0.ctor === 'BBlack') && (_p26._3._4.ctor === 'RBNode_elm_builtin')) && (_p26._3._4._0.ctor === 'Black')) {
+															break _v34_5;
+														} else {
+															break _v34_6;
+														}
+													default:
+														break _v34_6;
+												}
+											}
+										} else {
+											if (_p26._4.ctor === 'RBNode_elm_builtin') {
+												switch (_p26._4._0.ctor) {
+													case 'Red':
+														if ((_p26._4._3.ctor === 'RBNode_elm_builtin') && (_p26._4._3._0.ctor === 'Red')) {
+															break _v34_2;
+														} else {
+															if ((_p26._4._4.ctor === 'RBNode_elm_builtin') && (_p26._4._4._0.ctor === 'Red')) {
+																break _v34_3;
+															} else {
+																break _v34_6;
+															}
+														}
+													case 'NBlack':
+														if (((_p26._0.ctor === 'BBlack') && (_p26._4._3.ctor === 'RBNode_elm_builtin')) && (_p26._4._3._0.ctor === 'Black')) {
+															break _v34_4;
+														} else {
+															break _v34_6;
+														}
+													default:
+														break _v34_6;
+												}
+											} else {
+												break _v34_6;
+											}
+										}
+									} else {
+										break _v34_6;
+									}
+								} while(false);
+								return assemble(_p26._0)(_p26._3._3._1)(_p26._3._3._2)(_p26._3._1)(_p26._3._2)(_p26._1)(_p26._2)(_p26._3._3._3)(_p26._3._3._4)(_p26._3._4)(_p26._4);
+							} while(false);
+							return assemble(_p26._0)(_p26._3._1)(_p26._3._2)(_p26._3._4._1)(_p26._3._4._2)(_p26._1)(_p26._2)(_p26._3._3)(_p26._3._4._3)(_p26._3._4._4)(_p26._4);
+						} while(false);
+						return assemble(_p26._0)(_p26._1)(_p26._2)(_p26._4._3._1)(_p26._4._3._2)(_p26._4._1)(_p26._4._2)(_p26._3)(_p26._4._3._3)(_p26._4._3._4)(_p26._4._4);
+					} while(false);
+					return assemble(_p26._0)(_p26._1)(_p26._2)(_p26._4._1)(_p26._4._2)(_p26._4._4._1)(_p26._4._4._2)(_p26._3)(_p26._4._3)(_p26._4._4._3)(_p26._4._4._4);
+				} while(false);
+				var _p28 = _p26._4._4;
+				var _p27 = _p28;
+				if ((_p27.ctor === 'RBNode_elm_builtin') && (_p27._0.ctor === 'Black')) {
+					return A5(
+						_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin,
+						_eeue56$elm_all_dict$EveryDict$Black,
+						_p26._4._3._1,
+						_p26._4._3._2,
+						A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Black, _p26._1, _p26._2, _p26._3, _p26._4._3._3),
+						A5(
+							_eeue56$elm_all_dict$EveryDict$balance,
+							_eeue56$elm_all_dict$EveryDict$Black,
+							_p26._4._1,
+							_p26._4._2,
+							_p26._4._3._4,
+							_eeue56$elm_all_dict$EveryDict$redden(_p28)));
+				} else {
+					return t;
+				}
+			} while(false);
+			var _p30 = _p26._3._3;
+			var _p29 = _p30;
+			if ((_p29.ctor === 'RBNode_elm_builtin') && (_p29._0.ctor === 'Black')) {
+				return A5(
+					_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin,
+					_eeue56$elm_all_dict$EveryDict$Black,
+					_p26._3._4._1,
+					_p26._3._4._2,
+					A5(
+						_eeue56$elm_all_dict$EveryDict$balance,
+						_eeue56$elm_all_dict$EveryDict$Black,
+						_p26._3._1,
+						_p26._3._2,
+						_eeue56$elm_all_dict$EveryDict$redden(_p30),
+						_p26._3._4._3),
+					A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Black, _p26._1, _p26._2, _p26._3._4._4, _p26._4));
+			} else {
+				return t;
+			}
+		} while(false);
+		return t;
+	} else {
+		return t;
+	}
+};
+var _eeue56$elm_all_dict$EveryDict$balance = F5(
+	function (c, k, v, l, r) {
+		return _eeue56$elm_all_dict$EveryDict$balance_node(
+			A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, c, k, v, l, r));
+	});
+var _eeue56$elm_all_dict$EveryDict$bubble = F5(
+	function (c, k, v, l, r) {
+		return (_eeue56$elm_all_dict$EveryDict$isBBlack(l) || _eeue56$elm_all_dict$EveryDict$isBBlack(r)) ? A5(
+			_eeue56$elm_all_dict$EveryDict$balance,
+			_eeue56$elm_all_dict$EveryDict$moreBlack(c),
+			k,
+			v,
+			_eeue56$elm_all_dict$EveryDict$lessBlackTree(l),
+			_eeue56$elm_all_dict$EveryDict$lessBlackTree(r)) : A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, c, k, v, l, r);
+	});
+var _eeue56$elm_all_dict$EveryDict$remove_max = F5(
+	function (c, k, v, l, r) {
+		var _p31 = r;
+		if (_p31.ctor === 'RBEmpty_elm_builtin') {
+			return A3(_eeue56$elm_all_dict$EveryDict$rem, c, l, r);
+		} else {
+			return A5(
+				_eeue56$elm_all_dict$EveryDict$bubble,
+				c,
+				k,
+				v,
+				l,
+				A5(_eeue56$elm_all_dict$EveryDict$remove_max, _p31._0, _p31._1, _p31._2, _p31._3, _p31._4));
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$rem = F3(
+	function (c, l, r) {
+		var _p32 = {ctor: '_Tuple2', _0: l, _1: r};
+		if (_p32._0.ctor === 'RBEmpty_elm_builtin') {
+			if (_p32._1.ctor === 'RBEmpty_elm_builtin') {
+				var _p33 = c;
+				switch (_p33.ctor) {
+					case 'Red':
+						return _eeue56$elm_all_dict$EveryDict$RBEmpty_elm_builtin(_eeue56$elm_all_dict$EveryDict$LBlack);
+					case 'Black':
+						return _eeue56$elm_all_dict$EveryDict$RBEmpty_elm_builtin(_eeue56$elm_all_dict$EveryDict$LBBlack);
+					default:
+						return _eeue56$elm_all_dict$Native_Debug.crash('cannot have bblack or nblack nodes at this point');
+				}
+			} else {
+				var _p36 = _p32._1._0;
+				var _p35 = _p32._0._0;
+				var _p34 = {ctor: '_Tuple3', _0: c, _1: _p35, _2: _p36};
+				if ((((_p34.ctor === '_Tuple3') && (_p34._0.ctor === 'Black')) && (_p34._1.ctor === 'LBlack')) && (_p34._2.ctor === 'Red')) {
+					return A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Black, _p32._1._1, _p32._1._2, _p32._1._3, _p32._1._4);
+				} else {
+					return A4(
+						_eeue56$elm_all_dict$EveryDict$reportRemBug,
+						'Black/LBlack/Red',
+						c,
+						_eeue56$elm_all_dict$EveryDict$showLColor(_p35),
+						_eeue56$elm_all_dict$EveryDict$showNColor(_p36));
+				}
+			}
+		} else {
+			if (_p32._1.ctor === 'RBEmpty_elm_builtin') {
+				var _p39 = _p32._1._0;
+				var _p38 = _p32._0._0;
+				var _p37 = {ctor: '_Tuple3', _0: c, _1: _p38, _2: _p39};
+				if ((((_p37.ctor === '_Tuple3') && (_p37._0.ctor === 'Black')) && (_p37._1.ctor === 'Red')) && (_p37._2.ctor === 'LBlack')) {
+					return A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Black, _p32._0._1, _p32._0._2, _p32._0._3, _p32._0._4);
+				} else {
+					return A4(
+						_eeue56$elm_all_dict$EveryDict$reportRemBug,
+						'Black/Red/LBlack',
+						c,
+						_eeue56$elm_all_dict$EveryDict$showNColor(_p38),
+						_eeue56$elm_all_dict$EveryDict$showLColor(_p39));
+				}
+			} else {
+				var _p45 = _p32._0._2;
+				var _p44 = _p32._0._4;
+				var _p43 = _p32._0._3;
+				var _p42 = _p32._0._1;
+				var _p41 = _p32._0._0;
+				var l_ = A5(_eeue56$elm_all_dict$EveryDict$remove_max, _p41, _p42, _p45, _p43, _p44);
+				var r = A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _p32._1._0, _p32._1._1, _p32._1._2, _p32._1._3, _p32._1._4);
+				var l = A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _p41, _p42, _p45, _p43, _p44);
+				var _p40 = _eeue56$elm_all_dict$EveryDict$max(l);
+				var k = _p40._0;
+				var v = _p40._1;
+				return A5(_eeue56$elm_all_dict$EveryDict$bubble, c, k, v, l_, r);
+			}
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$map = F2(
+	function (f, dict) {
+		var _p46 = dict;
+		if (_p46.ctor === 'RBEmpty_elm_builtin') {
+			return _eeue56$elm_all_dict$EveryDict$RBEmpty_elm_builtin(_p46._0);
+		} else {
+			var _p47 = _p46._1;
+			return A5(
+				_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin,
+				_p46._0,
+				_p47,
+				A2(f, _p47, _p46._2),
+				A2(_eeue56$elm_all_dict$EveryDict$map, f, _p46._3),
+				A2(_eeue56$elm_all_dict$EveryDict$map, f, _p46._4));
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$Same = {ctor: 'Same'};
+var _eeue56$elm_all_dict$EveryDict$Remove = {ctor: 'Remove'};
+var _eeue56$elm_all_dict$EveryDict$Insert = {ctor: 'Insert'};
+var _eeue56$elm_all_dict$EveryDict$update = F3(
+	function (k, alter, dict) {
+		var up = function (dict) {
+			var _p48 = dict;
+			if (_p48.ctor === 'RBEmpty_elm_builtin') {
+				var _p49 = alter(_elm_lang$core$Maybe$Nothing);
+				if (_p49.ctor === 'Nothing') {
+					return {ctor: '_Tuple2', _0: _eeue56$elm_all_dict$EveryDict$Same, _1: _eeue56$elm_all_dict$EveryDict$empty};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _eeue56$elm_all_dict$EveryDict$Insert,
+						_1: A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _eeue56$elm_all_dict$EveryDict$Red, k, _p49._0, _eeue56$elm_all_dict$EveryDict$empty, _eeue56$elm_all_dict$EveryDict$empty)
+					};
+				}
+			} else {
+				var _p60 = _p48._2;
+				var _p59 = _p48._4;
+				var _p58 = _p48._3;
+				var _p57 = _p48._1;
+				var _p56 = _p48._0;
+				var _p50 = A2(
+					_elm_lang$core$Basics$compare,
+					_eeue56$elm_all_dict$EveryDict$ord(k),
+					_eeue56$elm_all_dict$EveryDict$ord(_p57));
+				switch (_p50.ctor) {
+					case 'EQ':
+						var _p51 = alter(
+							_elm_lang$core$Maybe$Just(_p60));
+						if (_p51.ctor === 'Nothing') {
+							return {
+								ctor: '_Tuple2',
+								_0: _eeue56$elm_all_dict$EveryDict$Remove,
+								_1: A3(_eeue56$elm_all_dict$EveryDict$rem, _p56, _p58, _p59)
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: _eeue56$elm_all_dict$EveryDict$Same,
+								_1: A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _p56, _p57, _p51._0, _p58, _p59)
+							};
+						}
+					case 'LT':
+						var _p52 = up(_p58);
+						var flag = _p52._0;
+						var newLeft = _p52._1;
+						var _p53 = flag;
+						switch (_p53.ctor) {
+							case 'Same':
+								return {
+									ctor: '_Tuple2',
+									_0: _eeue56$elm_all_dict$EveryDict$Same,
+									_1: A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _p56, _p57, _p60, newLeft, _p59)
+								};
+							case 'Insert':
+								return {
+									ctor: '_Tuple2',
+									_0: _eeue56$elm_all_dict$EveryDict$Insert,
+									_1: A5(_eeue56$elm_all_dict$EveryDict$balance, _p56, _p57, _p60, newLeft, _p59)
+								};
+							default:
+								return {
+									ctor: '_Tuple2',
+									_0: _eeue56$elm_all_dict$EveryDict$Remove,
+									_1: A5(_eeue56$elm_all_dict$EveryDict$bubble, _p56, _p57, _p60, newLeft, _p59)
+								};
+						}
+					default:
+						var _p54 = up(_p59);
+						var flag = _p54._0;
+						var newRight = _p54._1;
+						var _p55 = flag;
+						switch (_p55.ctor) {
+							case 'Same':
+								return {
+									ctor: '_Tuple2',
+									_0: _eeue56$elm_all_dict$EveryDict$Same,
+									_1: A5(_eeue56$elm_all_dict$EveryDict$RBNode_elm_builtin, _p56, _p57, _p60, _p58, newRight)
+								};
+							case 'Insert':
+								return {
+									ctor: '_Tuple2',
+									_0: _eeue56$elm_all_dict$EveryDict$Insert,
+									_1: A5(_eeue56$elm_all_dict$EveryDict$balance, _p56, _p57, _p60, _p58, newRight)
+								};
+							default:
+								return {
+									ctor: '_Tuple2',
+									_0: _eeue56$elm_all_dict$EveryDict$Remove,
+									_1: A5(_eeue56$elm_all_dict$EveryDict$bubble, _p56, _p57, _p60, _p58, newRight)
+								};
+						}
+				}
+			}
+		};
+		var _p61 = up(dict);
+		var flag = _p61._0;
+		var updatedDict = _p61._1;
+		var _p62 = flag;
+		switch (_p62.ctor) {
+			case 'Same':
+				return updatedDict;
+			case 'Insert':
+				return _eeue56$elm_all_dict$EveryDict$ensureBlackRoot(updatedDict);
+			default:
+				return _eeue56$elm_all_dict$EveryDict$blacken(updatedDict);
+		}
+	});
+var _eeue56$elm_all_dict$EveryDict$insert = F3(
+	function (key, value, dict) {
+		return A3(
+			_eeue56$elm_all_dict$EveryDict$update,
+			key,
+			_elm_lang$core$Basics$always(
+				_elm_lang$core$Maybe$Just(value)),
+			dict);
+	});
+var _eeue56$elm_all_dict$EveryDict$singleton = F2(
+	function (key, value) {
+		return A3(_eeue56$elm_all_dict$EveryDict$insert, key, value, _eeue56$elm_all_dict$EveryDict$empty);
+	});
+var _eeue56$elm_all_dict$EveryDict$union = F2(
+	function (t1, t2) {
+		return A3(_eeue56$elm_all_dict$EveryDict$foldl, _eeue56$elm_all_dict$EveryDict$insert, t2, t1);
+	});
+var _eeue56$elm_all_dict$EveryDict$fromList = function (assocs) {
+	return A3(
+		_elm_lang$core$List$foldl,
+		F2(
+			function (_p63, dict) {
+				var _p64 = _p63;
+				return A3(_eeue56$elm_all_dict$EveryDict$insert, _p64._0, _p64._1, dict);
+			}),
+		_eeue56$elm_all_dict$EveryDict$empty,
+		assocs);
+};
+var _eeue56$elm_all_dict$EveryDict$filter = F2(
+	function (predicate, dictionary) {
+		var add = F3(
+			function (key, value, dict) {
+				return A2(predicate, key, value) ? A3(_eeue56$elm_all_dict$EveryDict$insert, key, value, dict) : dict;
+			});
+		return A3(_eeue56$elm_all_dict$EveryDict$foldl, add, _eeue56$elm_all_dict$EveryDict$empty, dictionary);
+	});
+var _eeue56$elm_all_dict$EveryDict$intersect = F2(
+	function (t1, t2) {
+		return A2(
+			_eeue56$elm_all_dict$EveryDict$filter,
+			F2(
+				function (k, _p65) {
+					return A2(_eeue56$elm_all_dict$EveryDict$member, k, t2);
+				}),
+			t1);
+	});
+var _eeue56$elm_all_dict$EveryDict$partition = F2(
+	function (predicate, dict) {
+		var add = F3(
+			function (key, value, _p66) {
+				var _p67 = _p66;
+				var _p69 = _p67._1;
+				var _p68 = _p67._0;
+				return A2(predicate, key, value) ? {
+					ctor: '_Tuple2',
+					_0: A3(_eeue56$elm_all_dict$EveryDict$insert, key, value, _p68),
+					_1: _p69
+				} : {
+					ctor: '_Tuple2',
+					_0: _p68,
+					_1: A3(_eeue56$elm_all_dict$EveryDict$insert, key, value, _p69)
+				};
+			});
+		return A3(
+			_eeue56$elm_all_dict$EveryDict$foldl,
+			add,
+			{ctor: '_Tuple2', _0: _eeue56$elm_all_dict$EveryDict$empty, _1: _eeue56$elm_all_dict$EveryDict$empty},
+			dict);
+	});
+var _eeue56$elm_all_dict$EveryDict$remove = F2(
+	function (key, dict) {
+		return A3(
+			_eeue56$elm_all_dict$EveryDict$update,
+			key,
+			_elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing),
+			dict);
+	});
+var _eeue56$elm_all_dict$EveryDict$diff = F2(
+	function (t1, t2) {
+		return A3(
+			_eeue56$elm_all_dict$EveryDict$foldl,
+			F3(
+				function (k, v, t) {
+					return A2(_eeue56$elm_all_dict$EveryDict$remove, k, t);
+				}),
+			t1,
+			t2);
+	});
+
 var _elm_lang$core$Set$foldr = F3(
 	function (f, b, _p0) {
 		var _p1 = _p0;
@@ -9690,6 +10672,172 @@ var _elm_community$random_extra$Random_Extra$maybe = F2(
 			},
 			genBool);
 	});
+
+var _elm_lang$core$Color$fmod = F2(
+	function (f, n) {
+		var integer = _elm_lang$core$Basics$floor(f);
+		return (_elm_lang$core$Basics$toFloat(
+			A2(_elm_lang$core$Basics_ops['%'], integer, n)) + f) - _elm_lang$core$Basics$toFloat(integer);
+	});
+var _elm_lang$core$Color$rgbToHsl = F3(
+	function (red, green, blue) {
+		var b = _elm_lang$core$Basics$toFloat(blue) / 255;
+		var g = _elm_lang$core$Basics$toFloat(green) / 255;
+		var r = _elm_lang$core$Basics$toFloat(red) / 255;
+		var cMax = A2(
+			_elm_lang$core$Basics$max,
+			A2(_elm_lang$core$Basics$max, r, g),
+			b);
+		var cMin = A2(
+			_elm_lang$core$Basics$min,
+			A2(_elm_lang$core$Basics$min, r, g),
+			b);
+		var c = cMax - cMin;
+		var lightness = (cMax + cMin) / 2;
+		var saturation = _elm_lang$core$Native_Utils.eq(lightness, 0) ? 0 : (c / (1 - _elm_lang$core$Basics$abs((2 * lightness) - 1)));
+		var hue = _elm_lang$core$Basics$degrees(60) * (_elm_lang$core$Native_Utils.eq(cMax, r) ? A2(_elm_lang$core$Color$fmod, (g - b) / c, 6) : (_elm_lang$core$Native_Utils.eq(cMax, g) ? (((b - r) / c) + 2) : (((r - g) / c) + 4)));
+		return {ctor: '_Tuple3', _0: hue, _1: saturation, _2: lightness};
+	});
+var _elm_lang$core$Color$hslToRgb = F3(
+	function (hue, saturation, lightness) {
+		var normHue = hue / _elm_lang$core$Basics$degrees(60);
+		var chroma = (1 - _elm_lang$core$Basics$abs((2 * lightness) - 1)) * saturation;
+		var x = chroma * (1 - _elm_lang$core$Basics$abs(
+			A2(_elm_lang$core$Color$fmod, normHue, 2) - 1));
+		var _p0 = (_elm_lang$core$Native_Utils.cmp(normHue, 0) < 0) ? {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 1) < 0) ? {ctor: '_Tuple3', _0: chroma, _1: x, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 2) < 0) ? {ctor: '_Tuple3', _0: x, _1: chroma, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 3) < 0) ? {ctor: '_Tuple3', _0: 0, _1: chroma, _2: x} : ((_elm_lang$core$Native_Utils.cmp(normHue, 4) < 0) ? {ctor: '_Tuple3', _0: 0, _1: x, _2: chroma} : ((_elm_lang$core$Native_Utils.cmp(normHue, 5) < 0) ? {ctor: '_Tuple3', _0: x, _1: 0, _2: chroma} : ((_elm_lang$core$Native_Utils.cmp(normHue, 6) < 0) ? {ctor: '_Tuple3', _0: chroma, _1: 0, _2: x} : {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0}))))));
+		var r = _p0._0;
+		var g = _p0._1;
+		var b = _p0._2;
+		var m = lightness - (chroma / 2);
+		return {ctor: '_Tuple3', _0: r + m, _1: g + m, _2: b + m};
+	});
+var _elm_lang$core$Color$toRgb = function (color) {
+	var _p1 = color;
+	if (_p1.ctor === 'RGBA') {
+		return {red: _p1._0, green: _p1._1, blue: _p1._2, alpha: _p1._3};
+	} else {
+		var _p2 = A3(_elm_lang$core$Color$hslToRgb, _p1._0, _p1._1, _p1._2);
+		var r = _p2._0;
+		var g = _p2._1;
+		var b = _p2._2;
+		return {
+			red: _elm_lang$core$Basics$round(255 * r),
+			green: _elm_lang$core$Basics$round(255 * g),
+			blue: _elm_lang$core$Basics$round(255 * b),
+			alpha: _p1._3
+		};
+	}
+};
+var _elm_lang$core$Color$toHsl = function (color) {
+	var _p3 = color;
+	if (_p3.ctor === 'HSLA') {
+		return {hue: _p3._0, saturation: _p3._1, lightness: _p3._2, alpha: _p3._3};
+	} else {
+		var _p4 = A3(_elm_lang$core$Color$rgbToHsl, _p3._0, _p3._1, _p3._2);
+		var h = _p4._0;
+		var s = _p4._1;
+		var l = _p4._2;
+		return {hue: h, saturation: s, lightness: l, alpha: _p3._3};
+	}
+};
+var _elm_lang$core$Color$HSLA = F4(
+	function (a, b, c, d) {
+		return {ctor: 'HSLA', _0: a, _1: b, _2: c, _3: d};
+	});
+var _elm_lang$core$Color$hsla = F4(
+	function (hue, saturation, lightness, alpha) {
+		return A4(
+			_elm_lang$core$Color$HSLA,
+			hue - _elm_lang$core$Basics$turns(
+				_elm_lang$core$Basics$toFloat(
+					_elm_lang$core$Basics$floor(hue / (2 * _elm_lang$core$Basics$pi)))),
+			saturation,
+			lightness,
+			alpha);
+	});
+var _elm_lang$core$Color$hsl = F3(
+	function (hue, saturation, lightness) {
+		return A4(_elm_lang$core$Color$hsla, hue, saturation, lightness, 1);
+	});
+var _elm_lang$core$Color$complement = function (color) {
+	var _p5 = color;
+	if (_p5.ctor === 'HSLA') {
+		return A4(
+			_elm_lang$core$Color$hsla,
+			_p5._0 + _elm_lang$core$Basics$degrees(180),
+			_p5._1,
+			_p5._2,
+			_p5._3);
+	} else {
+		var _p6 = A3(_elm_lang$core$Color$rgbToHsl, _p5._0, _p5._1, _p5._2);
+		var h = _p6._0;
+		var s = _p6._1;
+		var l = _p6._2;
+		return A4(
+			_elm_lang$core$Color$hsla,
+			h + _elm_lang$core$Basics$degrees(180),
+			s,
+			l,
+			_p5._3);
+	}
+};
+var _elm_lang$core$Color$grayscale = function (p) {
+	return A4(_elm_lang$core$Color$HSLA, 0, 0, 1 - p, 1);
+};
+var _elm_lang$core$Color$greyscale = function (p) {
+	return A4(_elm_lang$core$Color$HSLA, 0, 0, 1 - p, 1);
+};
+var _elm_lang$core$Color$RGBA = F4(
+	function (a, b, c, d) {
+		return {ctor: 'RGBA', _0: a, _1: b, _2: c, _3: d};
+	});
+var _elm_lang$core$Color$rgba = _elm_lang$core$Color$RGBA;
+var _elm_lang$core$Color$rgb = F3(
+	function (r, g, b) {
+		return A4(_elm_lang$core$Color$RGBA, r, g, b, 1);
+	});
+var _elm_lang$core$Color$lightRed = A4(_elm_lang$core$Color$RGBA, 239, 41, 41, 1);
+var _elm_lang$core$Color$red = A4(_elm_lang$core$Color$RGBA, 204, 0, 0, 1);
+var _elm_lang$core$Color$darkRed = A4(_elm_lang$core$Color$RGBA, 164, 0, 0, 1);
+var _elm_lang$core$Color$lightOrange = A4(_elm_lang$core$Color$RGBA, 252, 175, 62, 1);
+var _elm_lang$core$Color$orange = A4(_elm_lang$core$Color$RGBA, 245, 121, 0, 1);
+var _elm_lang$core$Color$darkOrange = A4(_elm_lang$core$Color$RGBA, 206, 92, 0, 1);
+var _elm_lang$core$Color$lightYellow = A4(_elm_lang$core$Color$RGBA, 255, 233, 79, 1);
+var _elm_lang$core$Color$yellow = A4(_elm_lang$core$Color$RGBA, 237, 212, 0, 1);
+var _elm_lang$core$Color$darkYellow = A4(_elm_lang$core$Color$RGBA, 196, 160, 0, 1);
+var _elm_lang$core$Color$lightGreen = A4(_elm_lang$core$Color$RGBA, 138, 226, 52, 1);
+var _elm_lang$core$Color$green = A4(_elm_lang$core$Color$RGBA, 115, 210, 22, 1);
+var _elm_lang$core$Color$darkGreen = A4(_elm_lang$core$Color$RGBA, 78, 154, 6, 1);
+var _elm_lang$core$Color$lightBlue = A4(_elm_lang$core$Color$RGBA, 114, 159, 207, 1);
+var _elm_lang$core$Color$blue = A4(_elm_lang$core$Color$RGBA, 52, 101, 164, 1);
+var _elm_lang$core$Color$darkBlue = A4(_elm_lang$core$Color$RGBA, 32, 74, 135, 1);
+var _elm_lang$core$Color$lightPurple = A4(_elm_lang$core$Color$RGBA, 173, 127, 168, 1);
+var _elm_lang$core$Color$purple = A4(_elm_lang$core$Color$RGBA, 117, 80, 123, 1);
+var _elm_lang$core$Color$darkPurple = A4(_elm_lang$core$Color$RGBA, 92, 53, 102, 1);
+var _elm_lang$core$Color$lightBrown = A4(_elm_lang$core$Color$RGBA, 233, 185, 110, 1);
+var _elm_lang$core$Color$brown = A4(_elm_lang$core$Color$RGBA, 193, 125, 17, 1);
+var _elm_lang$core$Color$darkBrown = A4(_elm_lang$core$Color$RGBA, 143, 89, 2, 1);
+var _elm_lang$core$Color$black = A4(_elm_lang$core$Color$RGBA, 0, 0, 0, 1);
+var _elm_lang$core$Color$white = A4(_elm_lang$core$Color$RGBA, 255, 255, 255, 1);
+var _elm_lang$core$Color$lightGrey = A4(_elm_lang$core$Color$RGBA, 238, 238, 236, 1);
+var _elm_lang$core$Color$grey = A4(_elm_lang$core$Color$RGBA, 211, 215, 207, 1);
+var _elm_lang$core$Color$darkGrey = A4(_elm_lang$core$Color$RGBA, 186, 189, 182, 1);
+var _elm_lang$core$Color$lightGray = A4(_elm_lang$core$Color$RGBA, 238, 238, 236, 1);
+var _elm_lang$core$Color$gray = A4(_elm_lang$core$Color$RGBA, 211, 215, 207, 1);
+var _elm_lang$core$Color$darkGray = A4(_elm_lang$core$Color$RGBA, 186, 189, 182, 1);
+var _elm_lang$core$Color$lightCharcoal = A4(_elm_lang$core$Color$RGBA, 136, 138, 133, 1);
+var _elm_lang$core$Color$charcoal = A4(_elm_lang$core$Color$RGBA, 85, 87, 83, 1);
+var _elm_lang$core$Color$darkCharcoal = A4(_elm_lang$core$Color$RGBA, 46, 52, 54, 1);
+var _elm_lang$core$Color$Radial = F5(
+	function (a, b, c, d, e) {
+		return {ctor: 'Radial', _0: a, _1: b, _2: c, _3: d, _4: e};
+	});
+var _elm_lang$core$Color$radial = _elm_lang$core$Color$Radial;
+var _elm_lang$core$Color$Linear = F3(
+	function (a, b, c) {
+		return {ctor: 'Linear', _0: a, _1: b, _2: c};
+	});
+var _elm_lang$core$Color$linear = _elm_lang$core$Color$Linear;
 
 //import Maybe, Native.List //
 
@@ -15062,6 +16210,22 @@ var _mordrax$cotwelm$Attributes$set = F2(
 					{dex: _p7});
 		}
 	});
+var _mordrax$cotwelm$Attributes$scale = F5(
+	function (str, dex, con, $int, attributes) {
+		var scaleFn = F2(
+			function (factor, attr) {
+				return _elm_lang$core$Basics$floor(
+					factor * _elm_lang$core$Basics$toFloat(attr));
+			});
+		return _elm_lang$core$Native_Utils.update(
+			attributes,
+			{
+				str: A2(scaleFn, str, attributes.str),
+				$int: A2(scaleFn, $int, attributes.$int),
+				con: A2(scaleFn, con, attributes.con),
+				dex: A2(scaleFn, dex, attributes.dex)
+			});
+	});
 var _mordrax$cotwelm$Attributes$update = F2(
 	function (msg, model) {
 		var _p8 = msg;
@@ -15484,2118 +16648,6 @@ var _mordrax$cotwelm$Utils_Mass$withinCapacity = F2(
 		return _mordrax$cotwelm$Utils_Mass$Success;
 	});
 
-var _mordrax$cotwelm$Container$list = function (_p0) {
-	var _p1 = _p0;
-	return _p1._0.items;
-};
-var _mordrax$cotwelm$Container$mass = function (_p2) {
-	var _p3 = _p2;
-	return _p3._0.currentMass;
-};
-var _mordrax$cotwelm$Container$capacity = function (_p4) {
-	var _p5 = _p4;
-	return _p5._0.capacity;
-};
-var _mordrax$cotwelm$Container$Model = F5(
-	function (a, b, c, d, e) {
-		return {capacity: a, currentMass: b, items: c, getMass: d, equals: e};
-	});
-var _mordrax$cotwelm$Container$NestedItem = {ctor: 'NestedItem'};
-var _mordrax$cotwelm$Container$MassMsg = function (a) {
-	return {ctor: 'MassMsg', _0: a};
-};
-var _mordrax$cotwelm$Container$Ok = {ctor: 'Ok'};
-var _mordrax$cotwelm$Container$ContainerModel = function (a) {
-	return {ctor: 'ContainerModel', _0: a};
-};
-var _mordrax$cotwelm$Container$init = F3(
-	function (capacity, getMass, equals) {
-		return _mordrax$cotwelm$Container$ContainerModel(
-			A5(
-				_mordrax$cotwelm$Container$Model,
-				capacity,
-				A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-				{ctor: '[]'},
-				getMass,
-				equals));
-	});
-var _mordrax$cotwelm$Container$set = F2(
-	function (items, _p6) {
-		var _p7 = _p6;
-		return _mordrax$cotwelm$Container$ContainerModel(
-			_elm_lang$core$Native_Utils.update(
-				_p7._0,
-				{items: items}));
-	});
-var _mordrax$cotwelm$Container$add = F2(
-	function (item, _p8) {
-		var _p9 = _p8;
-		var _p11 = _p9._0;
-		var log = function (x) {
-			return A2(_elm_lang$core$Debug$log, 'comparing ', x);
-		};
-		var isNested = A2(
-			_elm_lang$core$List$any,
-			function (x) {
-				return A2(
-					_p11.equals,
-					log(x),
-					log(item));
-			},
-			_p11.items);
-		var mass = _p11.getMass(item);
-		var containerMassWithItem = A2(_mordrax$cotwelm$Utils_Mass$add, mass, _p11.currentMass);
-		var isWithinCapacity = A2(_mordrax$cotwelm$Utils_Mass$withinCapacity, containerMassWithItem, _p11.capacity);
-		var _p10 = {ctor: '_Tuple2', _0: isWithinCapacity, _1: isNested};
-		if (_p10._1 === false) {
-			if (_p10._0.ctor === 'Success') {
-				return {
-					ctor: '_Tuple2',
-					_0: _mordrax$cotwelm$Container$ContainerModel(
-						_elm_lang$core$Native_Utils.update(
-							_p11,
-							{
-								currentMass: containerMassWithItem,
-								items: {ctor: '::', _0: item, _1: _p11.items}
-							})),
-					_1: _mordrax$cotwelm$Container$Ok
-				};
-			} else {
-				return {
-					ctor: '_Tuple2',
-					_0: _mordrax$cotwelm$Container$ContainerModel(_p11),
-					_1: _mordrax$cotwelm$Container$MassMsg(_p10._0)
-				};
-			}
-		} else {
-			return {
-				ctor: '_Tuple2',
-				_0: _mordrax$cotwelm$Container$ContainerModel(_p11),
-				_1: _mordrax$cotwelm$Container$NestedItem
-			};
-		}
-	});
-var _mordrax$cotwelm$Container$remove = F2(
-	function (item, _p12) {
-		var _p13 = _p12;
-		var _p14 = _p13._0;
-		var itemMass = _p14.getMass(item);
-		var mass_ = A2(_mordrax$cotwelm$Utils_Mass$subtract, _p14.currentMass, itemMass);
-		var notEquals = function (x) {
-			return !A2(_p14.equals, item, x);
-		};
-		var itemsWithoutIdItem = A2(_elm_lang$core$List$filter, notEquals, _p14.items);
-		return _mordrax$cotwelm$Container$ContainerModel(
-			_elm_lang$core$Native_Utils.update(
-				_p14,
-				{items: itemsWithoutIdItem, currentMass: mass_}));
-	});
-
-var _mordrax$cotwelm$Utils_IdGenerator$equals = F2(
-	function (_p1, _p0) {
-		var _p2 = _p1;
-		var _p3 = _p0;
-		return _elm_lang$core$Native_Utils.eq(_p2._0, _p3._0);
-	});
-var _mordrax$cotwelm$Utils_IdGenerator$IDModel = function (a) {
-	return {ctor: 'IDModel', _0: a};
-};
-var _mordrax$cotwelm$Utils_IdGenerator$init = _mordrax$cotwelm$Utils_IdGenerator$IDModel(0);
-var _mordrax$cotwelm$Utils_IdGenerator$ID = function (a) {
-	return {ctor: 'ID', _0: a};
-};
-var _mordrax$cotwelm$Utils_IdGenerator$empty = _mordrax$cotwelm$Utils_IdGenerator$ID(-1);
-var _mordrax$cotwelm$Utils_IdGenerator$getUniqueId = function (_p4) {
-	var _p5 = _p4;
-	var _p6 = _p5._0;
-	return {
-		ctor: '_Tuple2',
-		_0: _mordrax$cotwelm$Utils_IdGenerator$ID(_p6 + 1),
-		_1: _mordrax$cotwelm$Utils_IdGenerator$IDModel(_p6 + 1)
-	};
-};
-var _mordrax$cotwelm$Utils_IdGenerator$assignId = F2(
-	function (toA, _p7) {
-		var _p8 = _p7;
-		var _p9 = _mordrax$cotwelm$Utils_IdGenerator$getUniqueId(_p8._1);
-		var id = _p9._0;
-		var generator_ = _p9._1;
-		return {
-			ctor: '_Tuple2',
-			_0: {
-				ctor: '::',
-				_0: toA(id),
-				_1: _p8._0
-			},
-			_1: generator_
-		};
-	});
-
-var _mordrax$cotwelm$Item_Data$acToInt = function (_p0) {
-	var _p1 = _p0;
-	return _p1._0;
-};
-var _mordrax$cotwelm$Item_Data$BaseItem = F7(
-	function (a, b, c, d, e, f, g) {
-		return {name: a, prices: b, css: c, mass: d, status: e, isIdentified: f, id: g};
-	});
-var _mordrax$cotwelm$Item_Data$Weapon = F4(
-	function (a, b, c, d) {
-		return {base: a, weaponType: b, wc: c, damage: d};
-	});
-var _mordrax$cotwelm$Item_Data$Armour = F3(
-	function (a, b, c) {
-		return {base: a, armourType: b, ac: c};
-	});
-var _mordrax$cotwelm$Item_Data$Gauntlets = F3(
-	function (a, b, c) {
-		return {base: a, gauntletsType: b, ac: c};
-	});
-var _mordrax$cotwelm$Item_Data$Helmet = F3(
-	function (a, b, c) {
-		return {base: a, helmetType: b, ac: c};
-	});
-var _mordrax$cotwelm$Item_Data$Bracers = F3(
-	function (a, b, c) {
-		return {base: a, bracersType: b, ac: c};
-	});
-var _mordrax$cotwelm$Item_Data$Shield = F3(
-	function (a, b, c) {
-		return {base: a, shieldType: b, ac: c};
-	});
-var _mordrax$cotwelm$Item_Data$Boots = F2(
-	function (a, b) {
-		return {base: a, bootsType: b};
-	});
-var _mordrax$cotwelm$Item_Data$Neckwear = F2(
-	function (a, b) {
-		return {base: a, neckwearType: b};
-	});
-var _mordrax$cotwelm$Item_Data$Overgarment = F2(
-	function (a, b) {
-		return {base: a, overgarmentType: b};
-	});
-var _mordrax$cotwelm$Item_Data$Ring = F2(
-	function (a, b) {
-		return {base: a, ringType: b};
-	});
-var _mordrax$cotwelm$Item_Data$MassMsg = function (a) {
-	return {ctor: 'MassMsg', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$NestedItem = {ctor: 'NestedItem'};
-var _mordrax$cotwelm$Item_Data$ItemOk = {ctor: 'ItemOk'};
-var _mordrax$cotwelm$Item_Data$Enchanted = {ctor: 'Enchanted'};
-var _mordrax$cotwelm$Item_Data$Cursed = {ctor: 'Cursed'};
-var _mordrax$cotwelm$Item_Data$Normal = {ctor: 'Normal'};
-var _mordrax$cotwelm$Item_Data$AC = function (a) {
-	return {ctor: 'AC', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$addAC = F2(
-	function (_p3, _p2) {
-		var _p4 = _p3;
-		var _p5 = _p2;
-		return _mordrax$cotwelm$Item_Data$AC(_p4._0 + _p5._0);
-	});
-var _mordrax$cotwelm$Item_Data$Unidentified = {ctor: 'Unidentified'};
-var _mordrax$cotwelm$Item_Data$Identified = {ctor: 'Identified'};
-var _mordrax$cotwelm$Item_Data$ItemTypePlatinum = function (a) {
-	return {ctor: 'ItemTypePlatinum', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeGold = function (a) {
-	return {ctor: 'ItemTypeGold', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeSilver = function (a) {
-	return {ctor: 'ItemTypeSilver', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeCopper = function (a) {
-	return {ctor: 'ItemTypeCopper', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeBoots = function (a) {
-	return {ctor: 'ItemTypeBoots', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeRing = function (a) {
-	return {ctor: 'ItemTypeRing', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeOvergarment = function (a) {
-	return {ctor: 'ItemTypeOvergarment', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeNeckwear = function (a) {
-	return {ctor: 'ItemTypeNeckwear', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypePurse = {ctor: 'ItemTypePurse'};
-var _mordrax$cotwelm$Item_Data$ItemTypePack = function (a) {
-	return {ctor: 'ItemTypePack', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeBelt = function (a) {
-	return {ctor: 'ItemTypeBelt', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeGauntlets = function (a) {
-	return {ctor: 'ItemTypeGauntlets', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeBracers = function (a) {
-	return {ctor: 'ItemTypeBracers', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeHelmet = function (a) {
-	return {ctor: 'ItemTypeHelmet', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeShield = function (a) {
-	return {ctor: 'ItemTypeShield', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeArmour = function (a) {
-	return {ctor: 'ItemTypeArmour', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$ItemTypeWeapon = function (a) {
-	return {ctor: 'ItemTypeWeapon', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$Prices = F2(
-	function (a, b) {
-		return {ctor: 'Prices', _0: a, _1: b};
-	});
-var _mordrax$cotwelm$Item_Data$WC = function (a) {
-	return {ctor: 'WC', _0: a};
-};
-var _mordrax$cotwelm$Item_Data$LargeClaws = {ctor: 'LargeClaws'};
-var _mordrax$cotwelm$Item_Data$Bow = {ctor: 'Bow'};
-var _mordrax$cotwelm$Item_Data$Pincers = {ctor: 'Pincers'};
-var _mordrax$cotwelm$Item_Data$Fangs = {ctor: 'Fangs'};
-var _mordrax$cotwelm$Item_Data$Crossbow = {ctor: 'Crossbow'};
-var _mordrax$cotwelm$Item_Data$SmallBite = {ctor: 'SmallBite'};
-var _mordrax$cotwelm$Item_Data$SmallClaws = {ctor: 'SmallClaws'};
-var _mordrax$cotwelm$Item_Data$TwoHandedSword = {ctor: 'TwoHandedSword'};
-var _mordrax$cotwelm$Item_Data$BastardSword = {ctor: 'BastardSword'};
-var _mordrax$cotwelm$Item_Data$MorningStar = {ctor: 'MorningStar'};
-var _mordrax$cotwelm$Item_Data$BroadSword = {ctor: 'BroadSword'};
-var _mordrax$cotwelm$Item_Data$BattleAxe = {ctor: 'BattleAxe'};
-var _mordrax$cotwelm$Item_Data$LongSword = {ctor: 'LongSword'};
-var _mordrax$cotwelm$Item_Data$WarHammer = {ctor: 'WarHammer'};
-var _mordrax$cotwelm$Item_Data$Axe = {ctor: 'Axe'};
-var _mordrax$cotwelm$Item_Data$Flail = {ctor: 'Flail'};
-var _mordrax$cotwelm$Item_Data$Mace = {ctor: 'Mace'};
-var _mordrax$cotwelm$Item_Data$ShortSword = {ctor: 'ShortSword'};
-var _mordrax$cotwelm$Item_Data$Spear = {ctor: 'Spear'};
-var _mordrax$cotwelm$Item_Data$Quarterstaff = {ctor: 'Quarterstaff'};
-var _mordrax$cotwelm$Item_Data$HandAxe = {ctor: 'HandAxe'};
-var _mordrax$cotwelm$Item_Data$Hammer = {ctor: 'Hammer'};
-var _mordrax$cotwelm$Item_Data$Dagger = {ctor: 'Dagger'};
-var _mordrax$cotwelm$Item_Data$Club = {ctor: 'Club'};
-var _mordrax$cotwelm$Item_Data$BrokenSword = {ctor: 'BrokenSword'};
-var _mordrax$cotwelm$Item_Data$EnchantedHelmOfStorms = {ctor: 'EnchantedHelmOfStorms'};
-var _mordrax$cotwelm$Item_Data$HelmetOfDetectMonsters = {ctor: 'HelmetOfDetectMonsters'};
-var _mordrax$cotwelm$Item_Data$MeteoricSteelHelmet = {ctor: 'MeteoricSteelHelmet'};
-var _mordrax$cotwelm$Item_Data$SteelHelmet = {ctor: 'SteelHelmet'};
-var _mordrax$cotwelm$Item_Data$IronHelmet = {ctor: 'IronHelmet'};
-var _mordrax$cotwelm$Item_Data$LeatherHelmet = {ctor: 'LeatherHelmet'};
-var _mordrax$cotwelm$Item_Data$BrokenHelmet = {ctor: 'BrokenHelmet'};
-var _mordrax$cotwelm$Item_Data$ToughHide = {ctor: 'ToughHide'};
-var _mordrax$cotwelm$Item_Data$Shell = {ctor: 'Shell'};
-var _mordrax$cotwelm$Item_Data$Bones = {ctor: 'Bones'};
-var _mordrax$cotwelm$Item_Data$SoftHide = {ctor: 'SoftHide'};
-var _mordrax$cotwelm$Item_Data$ElvenChainMail = {ctor: 'ElvenChainMail'};
-var _mordrax$cotwelm$Item_Data$MeteoricSteelPlate = {ctor: 'MeteoricSteelPlate'};
-var _mordrax$cotwelm$Item_Data$PlateArmour = {ctor: 'PlateArmour'};
-var _mordrax$cotwelm$Item_Data$PlateMail = {ctor: 'PlateMail'};
-var _mordrax$cotwelm$Item_Data$SplintMail = {ctor: 'SplintMail'};
-var _mordrax$cotwelm$Item_Data$ChainMail = {ctor: 'ChainMail'};
-var _mordrax$cotwelm$Item_Data$ScaleMail = {ctor: 'ScaleMail'};
-var _mordrax$cotwelm$Item_Data$RingMail = {ctor: 'RingMail'};
-var _mordrax$cotwelm$Item_Data$StuddedLeatherArmour = {ctor: 'StuddedLeatherArmour'};
-var _mordrax$cotwelm$Item_Data$LeatherArmour = {ctor: 'LeatherArmour'};
-var _mordrax$cotwelm$Item_Data$RustyArmour = {ctor: 'RustyArmour'};
-var _mordrax$cotwelm$Item_Data$LargeMeteoricSteelShield = {ctor: 'LargeMeteoricSteelShield'};
-var _mordrax$cotwelm$Item_Data$MediumMeteoricSteelShield = {ctor: 'MediumMeteoricSteelShield'};
-var _mordrax$cotwelm$Item_Data$SmallMeteoricSteelShield = {ctor: 'SmallMeteoricSteelShield'};
-var _mordrax$cotwelm$Item_Data$LargeSteelShield = {ctor: 'LargeSteelShield'};
-var _mordrax$cotwelm$Item_Data$MediumSteelShield = {ctor: 'MediumSteelShield'};
-var _mordrax$cotwelm$Item_Data$SmallSteelShield = {ctor: 'SmallSteelShield'};
-var _mordrax$cotwelm$Item_Data$LargeIronShield = {ctor: 'LargeIronShield'};
-var _mordrax$cotwelm$Item_Data$MediumIronShield = {ctor: 'MediumIronShield'};
-var _mordrax$cotwelm$Item_Data$SmallIronShield = {ctor: 'SmallIronShield'};
-var _mordrax$cotwelm$Item_Data$LargeWoodenShield = {ctor: 'LargeWoodenShield'};
-var _mordrax$cotwelm$Item_Data$MediumWoodenShield = {ctor: 'MediumWoodenShield'};
-var _mordrax$cotwelm$Item_Data$SmallWoodenShield = {ctor: 'SmallWoodenShield'};
-var _mordrax$cotwelm$Item_Data$BrokenShield = {ctor: 'BrokenShield'};
-var _mordrax$cotwelm$Item_Data$BracersOfDefenseVS = {ctor: 'BracersOfDefenseVS'};
-var _mordrax$cotwelm$Item_Data$BracersOfDefenseS = {ctor: 'BracersOfDefenseS'};
-var _mordrax$cotwelm$Item_Data$BracersOfDefenseNormal = {ctor: 'BracersOfDefenseNormal'};
-var _mordrax$cotwelm$Item_Data$NormalBracers = {ctor: 'NormalBracers'};
-var _mordrax$cotwelm$Item_Data$GauntletOfStrengthVS = {ctor: 'GauntletOfStrengthVS'};
-var _mordrax$cotwelm$Item_Data$GauntletOfStrengthS = {ctor: 'GauntletOfStrengthS'};
-var _mordrax$cotwelm$Item_Data$GauntletOfStrength = {ctor: 'GauntletOfStrength'};
-var _mordrax$cotwelm$Item_Data$GauntletOfDexterityVS = {ctor: 'GauntletOfDexterityVS'};
-var _mordrax$cotwelm$Item_Data$GauntletOfDexterityS = {ctor: 'GauntletOfDexterityS'};
-var _mordrax$cotwelm$Item_Data$GauntletOfDexterity = {ctor: 'GauntletOfDexterity'};
-var _mordrax$cotwelm$Item_Data$GauntletOfSlayingVS_VS = {ctor: 'GauntletOfSlayingVS_VS'};
-var _mordrax$cotwelm$Item_Data$GauntletOfSlayingS_S = {ctor: 'GauntletOfSlayingS_S'};
-var _mordrax$cotwelm$Item_Data$GauntletOfSlaying = {ctor: 'GauntletOfSlaying'};
-var _mordrax$cotwelm$Item_Data$GauntletOfProtectionVS = {ctor: 'GauntletOfProtectionVS'};
-var _mordrax$cotwelm$Item_Data$GauntletOfProtectionS = {ctor: 'GauntletOfProtectionS'};
-var _mordrax$cotwelm$Item_Data$GauntletOfProtection = {ctor: 'GauntletOfProtection'};
-var _mordrax$cotwelm$Item_Data$NormalGauntlets = {ctor: 'NormalGauntlets'};
-var _mordrax$cotwelm$Item_Data$EnchantedLargePackOfHolding = {ctor: 'EnchantedLargePackOfHolding'};
-var _mordrax$cotwelm$Item_Data$EnchantedMediumPackOfHolding = {ctor: 'EnchantedMediumPackOfHolding'};
-var _mordrax$cotwelm$Item_Data$EnchantedSmallPackOfHolding = {ctor: 'EnchantedSmallPackOfHolding'};
-var _mordrax$cotwelm$Item_Data$LargeChest = {ctor: 'LargeChest'};
-var _mordrax$cotwelm$Item_Data$MediumChest = {ctor: 'MediumChest'};
-var _mordrax$cotwelm$Item_Data$SmallChest = {ctor: 'SmallChest'};
-var _mordrax$cotwelm$Item_Data$LargePack = {ctor: 'LargePack'};
-var _mordrax$cotwelm$Item_Data$MediumPack = {ctor: 'MediumPack'};
-var _mordrax$cotwelm$Item_Data$SmallPack = {ctor: 'SmallPack'};
-var _mordrax$cotwelm$Item_Data$LargeBag = {ctor: 'LargeBag'};
-var _mordrax$cotwelm$Item_Data$MediumBag = {ctor: 'MediumBag'};
-var _mordrax$cotwelm$Item_Data$SmallBag = {ctor: 'SmallBag'};
-var _mordrax$cotwelm$Item_Data$WandQuiverBelt = {ctor: 'WandQuiverBelt'};
-var _mordrax$cotwelm$Item_Data$UtilityBelt = {ctor: 'UtilityBelt'};
-var _mordrax$cotwelm$Item_Data$FourSlotBelt = {ctor: 'FourSlotBelt'};
-var _mordrax$cotwelm$Item_Data$ThreeSlotBelt = {ctor: 'ThreeSlotBelt'};
-var _mordrax$cotwelm$Item_Data$TwoSlotBelt = {ctor: 'TwoSlotBelt'};
-var _mordrax$cotwelm$Item_Data$NoOp1 = {ctor: 'NoOp1'};
-var _mordrax$cotwelm$Item_Data$NoOp2 = {ctor: 'NoOp2'};
-var _mordrax$cotwelm$Item_Data$NoOp3 = {ctor: 'NoOp3'};
-var _mordrax$cotwelm$Item_Data$NoOp4 = {ctor: 'NoOp4'};
-
-var _mordrax$cotwelm$Item_Belt$Belt = F3(
-	function (a, b, c) {
-		return {base: a, beltType: b, beltContainer: c};
-	});
-var _mordrax$cotwelm$Item_Belt$FourSlot = function (a) {
-	return {ctor: 'FourSlot', _0: a};
-};
-var _mordrax$cotwelm$Item_Belt$ThreeSlot = function (a) {
-	return {ctor: 'ThreeSlot', _0: a};
-};
-var _mordrax$cotwelm$Item_Belt$TwoSlot = function (a) {
-	return {ctor: 'TwoSlot', _0: a};
-};
-var _mordrax$cotwelm$Item_Belt$initBeltContainer = function (beltType) {
-	var _p0 = beltType;
-	switch (_p0.ctor) {
-		case 'TwoSlotBelt':
-			return _mordrax$cotwelm$Item_Belt$TwoSlot(
-				{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing});
-		case 'ThreeSlotBelt':
-			return _mordrax$cotwelm$Item_Belt$ThreeSlot(
-				{ctor: '_Tuple3', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing, _2: _elm_lang$core$Maybe$Nothing});
-		case 'FourSlotBelt':
-			return _mordrax$cotwelm$Item_Belt$FourSlot(
-				{ctor: '_Tuple4', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing, _2: _elm_lang$core$Maybe$Nothing, _3: _elm_lang$core$Maybe$Nothing});
-		case 'UtilityBelt':
-			return _mordrax$cotwelm$Item_Belt$TwoSlot(
-				{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing});
-		default:
-			return _mordrax$cotwelm$Item_Belt$TwoSlot(
-				{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing});
-	}
-};
-var _mordrax$cotwelm$Item_Belt$init = F4(
-	function (beltType, status, idStatus, id) {
-		var make = F5(
-			function (name, mass, css, prices, container) {
-				return {
-					base: A7(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus, id),
-					beltType: beltType,
-					beltContainer: _mordrax$cotwelm$Item_Belt$initBeltContainer(beltType)
-				};
-			});
-		var _p1 = beltType;
-		switch (_p1.ctor) {
-			case 'TwoSlotBelt':
-				return A5(
-					make,
-					'Two Slot Belt',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					'slot-belt',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 300),
-					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$TwoSlotBelt));
-			case 'ThreeSlotBelt':
-				return A5(
-					make,
-					'Three Slot Belt',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					'slot-belt',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 300),
-					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$ThreeSlotBelt));
-			case 'FourSlotBelt':
-				return A5(
-					make,
-					'Four Slot Belt',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					'slot-belt',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 300),
-					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$FourSlotBelt));
-			case 'UtilityBelt':
-				return A5(
-					make,
-					'Utility Belt',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					'utility-belt',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 1350, 1800),
-					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$UtilityBelt));
-			default:
-				return A5(
-					make,
-					'Wand Quiver Belt',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					'wand-quiver-belt',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 300),
-					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$WandQuiverBelt));
-		}
-	});
-
-var _mordrax$cotwelm$Item_Armour$encode = _elm_lang$core$Basics$toString;
-var _mordrax$cotwelm$Item_Armour$listTypes = {
-	ctor: '::',
-	_0: _mordrax$cotwelm$Item_Data$RustyArmour,
-	_1: {
-		ctor: '::',
-		_0: _mordrax$cotwelm$Item_Data$LeatherArmour,
-		_1: {
-			ctor: '::',
-			_0: _mordrax$cotwelm$Item_Data$StuddedLeatherArmour,
-			_1: {
-				ctor: '::',
-				_0: _mordrax$cotwelm$Item_Data$RingMail,
-				_1: {
-					ctor: '::',
-					_0: _mordrax$cotwelm$Item_Data$ScaleMail,
-					_1: {
-						ctor: '::',
-						_0: _mordrax$cotwelm$Item_Data$ChainMail,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Item_Data$SplintMail,
-							_1: {
-								ctor: '::',
-								_0: _mordrax$cotwelm$Item_Data$PlateMail,
-								_1: {
-									ctor: '::',
-									_0: _mordrax$cotwelm$Item_Data$PlateArmour,
-									_1: {
-										ctor: '::',
-										_0: _mordrax$cotwelm$Item_Data$MeteoricSteelPlate,
-										_1: {
-											ctor: '::',
-											_0: _mordrax$cotwelm$Item_Data$ElvenChainMail,
-											_1: {
-												ctor: '::',
-												_0: _mordrax$cotwelm$Item_Data$SoftHide,
-												_1: {
-													ctor: '::',
-													_0: _mordrax$cotwelm$Item_Data$Bones,
-													_1: {
-														ctor: '::',
-														_0: _mordrax$cotwelm$Item_Data$Shell,
-														_1: {
-															ctor: '::',
-															_0: _mordrax$cotwelm$Item_Data$ToughHide,
-															_1: {ctor: '[]'}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-};
-var _mordrax$cotwelm$Item_Armour$armourTypeDict = function () {
-	var makeKVP = function (x) {
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Basics$toString(x),
-			_1: x
-		};
-	};
-	return _elm_lang$core$Dict$fromList(
-		A2(_elm_lang$core$List$map, makeKVP, _mordrax$cotwelm$Item_Armour$listTypes));
-}();
-var _mordrax$cotwelm$Item_Armour$decoder = function (value) {
-	return A2(
-		_elm_lang$core$Maybe$withDefault,
-		_mordrax$cotwelm$Item_Data$RustyArmour,
-		A2(_elm_lang$core$Dict$get, value, _mordrax$cotwelm$Item_Armour$armourTypeDict));
-};
-var _mordrax$cotwelm$Item_Armour$init = F4(
-	function (armourType, status, idStatus, id) {
-		var make = F5(
-			function (name, _p1, css, _p0, ac) {
-				var _p2 = _p1;
-				var _p3 = _p0;
-				return {
-					base: A7(
-						_mordrax$cotwelm$Item_Data$BaseItem,
-						name,
-						A2(_mordrax$cotwelm$Item_Data$Prices, _p3._0, _p3._1),
-						css,
-						A2(_mordrax$cotwelm$Utils_Mass$Mass, _p2._0, _p2._1),
-						status,
-						idStatus,
-						id),
-					armourType: armourType,
-					ac: ac
-				};
-			});
-		var makeMonsterArmour = F2(
-			function (name, ac) {
-				return A5(
-					make,
-					name,
-					{ctor: '_Tuple2', _0: 0, _1: 0},
-					'',
-					{ctor: '_Tuple2', _0: 0, _1: 0},
-					ac);
-			});
-		var _p4 = armourType;
-		switch (_p4.ctor) {
-			case 'RustyArmour':
-				return A5(
-					make,
-					'Rusty Armour',
-					{ctor: '_Tuple2', _0: 10000, _1: 30000},
-					'broken-armour',
-					{ctor: '_Tuple2', _0: 0, _1: 25},
-					_mordrax$cotwelm$Item_Data$AC(0));
-			case 'LeatherArmour':
-				return A5(
-					make,
-					'Leather Armour',
-					{ctor: '_Tuple2', _0: 5000, _1: 2400},
-					'leather-armour',
-					{ctor: '_Tuple2', _0: 1080, _1: 600},
-					_mordrax$cotwelm$Item_Data$AC(6));
-			case 'StuddedLeatherArmour':
-				return A5(
-					make,
-					'Studded Leather Armour',
-					{ctor: '_Tuple2', _0: 7000, _1: 25000},
-					'leather-armour',
-					{ctor: '_Tuple2', _0: 3150, _1: 1800},
-					_mordrax$cotwelm$Item_Data$AC(12));
-			case 'RingMail':
-				return A5(
-					make,
-					'Ring Mail',
-					{ctor: '_Tuple2', _0: 8000, _1: 30000},
-					'metal-armour',
-					{ctor: '_Tuple2', _0: 6300, _1: 3600},
-					_mordrax$cotwelm$Item_Data$AC(18));
-			case 'ScaleMail':
-				return A5(
-					make,
-					'Scale Mail',
-					{ctor: '_Tuple2', _0: 9000, _1: 30000},
-					'metal-armour',
-					{ctor: '_Tuple2', _0: 10800, _1: 6000},
-					_mordrax$cotwelm$Item_Data$AC(24));
-			case 'ChainMail':
-				return A5(
-					make,
-					'Chain Mail',
-					{ctor: '_Tuple2', _0: 10000, _1: 30000},
-					'metal-armour',
-					{ctor: '_Tuple2', _0: 16200, _1: 9000},
-					_mordrax$cotwelm$Item_Data$AC(30));
-			case 'SplintMail':
-				return A5(
-					make,
-					'Splint Mail',
-					{ctor: '_Tuple2', _0: 12000, _1: 40000},
-					'metal-armour',
-					{ctor: '_Tuple2', _0: 27000, _1: 15000},
-					_mordrax$cotwelm$Item_Data$AC(36));
-			case 'PlateMail':
-				return A5(
-					make,
-					'Plate Mail',
-					{ctor: '_Tuple2', _0: 15000, _1: 40000},
-					'metal-armour',
-					{ctor: '_Tuple2', _0: 42000, _1: 24000},
-					_mordrax$cotwelm$Item_Data$AC(42));
-			case 'PlateArmour':
-				return A5(
-					make,
-					'Plate Armour',
-					{ctor: '_Tuple2', _0: 15000, _1: 60000},
-					'metal-armour',
-					{ctor: '_Tuple2', _0: 42000, _1: 24000},
-					_mordrax$cotwelm$Item_Data$AC(48));
-			case 'MeteoricSteelPlate':
-				return A5(
-					make,
-					'Meteoric Steel Plate',
-					{ctor: '_Tuple2', _0: 5000, _1: 30000},
-					'metal-armour',
-					{ctor: '_Tuple2', _0: 105000, _1: 60000},
-					_mordrax$cotwelm$Item_Data$AC(54));
-			case 'ElvenChainMail':
-				return A5(
-					make,
-					'Elven Chain Mail',
-					{ctor: '_Tuple2', _0: 5000, _1: 24000},
-					'metal-armour',
-					{ctor: '_Tuple2', _0: 162000, _1: 90000},
-					_mordrax$cotwelm$Item_Data$AC(52));
-			case 'SoftHide':
-				return A2(
-					makeMonsterArmour,
-					'Soft Hide',
-					_mordrax$cotwelm$Item_Data$AC(10));
-			case 'Bones':
-				return A2(
-					makeMonsterArmour,
-					'Bones',
-					_mordrax$cotwelm$Item_Data$AC(15));
-			case 'Shell':
-				return A2(
-					makeMonsterArmour,
-					'Shell',
-					_mordrax$cotwelm$Item_Data$AC(20));
-			default:
-				return A2(
-					makeMonsterArmour,
-					'Tough Hide',
-					_mordrax$cotwelm$Item_Data$AC(20));
-		}
-	});
-
-var _mordrax$cotwelm$Item_Bracers$init = F4(
-	function (bracersType, status, idStatus, id) {
-		var make = F5(
-			function (name, mass, css, prices, ac) {
-				return {
-					base: A7(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus, id),
-					bracersType: bracersType,
-					ac: ac
-				};
-			});
-		var _p0 = bracersType;
-		switch (_p0.ctor) {
-			case 'NormalBracers':
-				return A5(
-					make,
-					'Bracers',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'bracers',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 108, 60),
-					_mordrax$cotwelm$Item_Data$AC(3));
-			case 'BracersOfDefenseNormal':
-				return A5(
-					make,
-					'Bracers Of Defense Normal',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'bracers-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 1836, 1020),
-					_mordrax$cotwelm$Item_Data$AC(8));
-			case 'BracersOfDefenseS':
-				return A5(
-					make,
-					'Bracers Of Defense Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'bracers-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 5616, 3120),
-					_mordrax$cotwelm$Item_Data$AC(13));
-			default:
-				return A5(
-					make,
-					'Bracers Of Defense Very Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'bracers-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 11556, 6420),
-					_mordrax$cotwelm$Item_Data$AC(18));
-		}
-	});
-
-var _mordrax$cotwelm$Item_Gauntlets$init = F4(
-	function (gauntletsType, status, idStatus, id) {
-		var make = F5(
-			function (name, mass, css, prices, ac) {
-				return {
-					base: A7(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus, id),
-					gauntletsType: gauntletsType,
-					ac: ac
-				};
-			});
-		var _p0 = gauntletsType;
-		switch (_p0.ctor) {
-			case 'NormalGauntlets':
-				return A5(
-					make,
-					'Gauntlet',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 105, 60),
-					_mordrax$cotwelm$Item_Data$AC(5));
-			case 'GauntletOfProtection':
-				return A5(
-					make,
-					'Gauntlet Of Protection',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 2625, 1500),
-					_mordrax$cotwelm$Item_Data$AC(10));
-			case 'GauntletOfProtectionS':
-				return A5(
-					make,
-					'Gauntlet Of Protection Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 6300, 3600),
-					_mordrax$cotwelm$Item_Data$AC(15));
-			case 'GauntletOfProtectionVS':
-				return A5(
-					make,
-					'Gauntlet Of Protection Very Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 12420, 6900),
-					_mordrax$cotwelm$Item_Data$AC(20));
-			case 'GauntletOfSlaying':
-				return A5(
-					make,
-					'Gauntlet Of Slaying',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-of-slaying',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 3780, 2100),
-					_mordrax$cotwelm$Item_Data$AC(0));
-			case 'GauntletOfSlayingS_S':
-				return A5(
-					make,
-					'Gauntlet Of Slaying Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-of-slaying',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 7560, 4200),
-					_mordrax$cotwelm$Item_Data$AC(0));
-			case 'GauntletOfSlayingVS_VS':
-				return A5(
-					make,
-					'Gauntlet Of Slaying Very Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-of-slaying',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 13125, 7500),
-					_mordrax$cotwelm$Item_Data$AC(0));
-			case 'GauntletOfDexterity':
-				return A5(
-					make,
-					'Gauntlet Of Dexterity',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 3240, 1800),
-					_mordrax$cotwelm$Item_Data$AC(5));
-			case 'GauntletOfDexterityS':
-				return A5(
-					make,
-					'Gauntlet Of Dexterity Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 7020, 3900),
-					_mordrax$cotwelm$Item_Data$AC(5));
-			case 'GauntletOfDexterityVS':
-				return A5(
-					make,
-					'Gauntlet Of Dexterity Very Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 12960, 7200),
-					_mordrax$cotwelm$Item_Data$AC(5));
-			case 'GauntletOfStrength':
-				return A5(
-					make,
-					'Gauntlet Of Strength',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 3240, 1800),
-					_mordrax$cotwelm$Item_Data$AC(5));
-			case 'GauntletOfStrengthS':
-				return A5(
-					make,
-					'Gauntlet Of Strength Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 0, 0),
-					_mordrax$cotwelm$Item_Data$AC(5));
-			default:
-				return A5(
-					make,
-					'Gauntlet Of Strength Very Strong',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
-					'gauntlet-enchanted',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 12960, 7200),
-					_mordrax$cotwelm$Item_Data$AC(5));
-		}
-	});
-
-var _mordrax$cotwelm$Item_Helmet$init = F4(
-	function (helmetType, status, idStatus, id) {
-		var make = F5(
-			function (name, mass, css, prices, ac) {
-				return {
-					base: A7(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus, id),
-					helmetType: helmetType,
-					ac: ac
-				};
-			});
-		var _p0 = helmetType;
-		switch (_p0.ctor) {
-			case 'BrokenHelmet':
-				return A5(
-					make,
-					'Broken Helmet',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 1000, 1000),
-					'broken-helmet',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 0, 25),
-					_mordrax$cotwelm$Item_Data$AC(0));
-			case 'LeatherHelmet':
-				return A5(
-					make,
-					'Leather Helmet',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 500),
-					'leather-helmet',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 525, 300),
-					_mordrax$cotwelm$Item_Data$AC(3));
-			case 'IronHelmet':
-				return A5(
-					make,
-					'Iron Helmet',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 2000, 2000),
-					'metal-helmet',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 1050, 600),
-					_mordrax$cotwelm$Item_Data$AC(6));
-			case 'SteelHelmet':
-				return A5(
-					make,
-					'Steel Helmet',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 2500, 2000),
-					'metal-helmet',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 3150, 1800),
-					_mordrax$cotwelm$Item_Data$AC(9));
-			case 'MeteoricSteelHelmet':
-				return A5(
-					make,
-					'Meteoric Steel Helmet',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 1000, 2000),
-					'metal-helmet',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 10500, 6000),
-					_mordrax$cotwelm$Item_Data$AC(15));
-			case 'HelmetOfDetectMonsters':
-				return A5(
-					make,
-					'Helmet Of Detect Monsters',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 2500, 2000),
-					'helmet-of-detect-monsters',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 42000, 24000),
-					_mordrax$cotwelm$Item_Data$AC(9));
-			default:
-				return A5(
-					make,
-					'Enchanted Helm Of Storms',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 1000, 2000),
-					'enchanted-helm-of-storms',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 1050000, 600000),
-					_mordrax$cotwelm$Item_Data$AC(25));
-		}
-	});
-
-var _mordrax$cotwelm$Item_Pack$init = F5(
-	function (packType, toContainer, status, idStatus, id) {
-		var make = F5(
-			function (name, price, css, mass, capacity) {
-				return {
-					base: A7(_mordrax$cotwelm$Item_Data$BaseItem, name, price, css, mass, status, idStatus, id),
-					packType: packType,
-					container: toContainer(capacity)
-				};
-			});
-		var _p0 = packType;
-		switch (_p0.ctor) {
-			case 'SmallBag':
-				return A5(
-					make,
-					'Small Bag',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 500),
-					'bag',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 5000, 6000));
-			case 'MediumBag':
-				return A5(
-					make,
-					'Medium Bag',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 500, 700),
-					'bag',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 10000, 12000));
-			case 'LargeBag':
-				return A5(
-					make,
-					'Large Bag',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 900, 900),
-					'bag',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 15000, 18000));
-			case 'SmallPack':
-				return A5(
-					make,
-					'Small Pack',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 1000, 1000),
-					'pack',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 12000, 50000));
-			case 'MediumPack':
-				return A5(
-					make,
-					'Medium Pack',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 2000, 1500),
-					'pack',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 22000, 75000));
-			case 'LargePack':
-				return A5(
-					make,
-					'Large Pack',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 4000, 100000),
-					'pack',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 35000, 100000));
-			case 'SmallChest':
-				return A5(
-					make,
-					'Small Chest',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 5000, 100000),
-					'chest',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 100000, 50000));
-			case 'MediumChest':
-				return A5(
-					make,
-					'Medium Chest',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 15000, 150000),
-					'chest',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 100000, 150000));
-			case 'LargeChest':
-				return A5(
-					make,
-					'Large Chest',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 25000, 250000),
-					'chest',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 100000, 250000));
-			case 'EnchantedSmallPackOfHolding':
-				return A5(
-					make,
-					'Enchanted Small Pack Of Holding',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 5000, 75000),
-					'enchanted-pack',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 50000, 150000));
-			case 'EnchantedMediumPackOfHolding':
-				return A5(
-					make,
-					'Enchanted Medium Pack Of Holding',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 7500, 100000),
-					'enchanted-pack',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 75000, 200000));
-			default:
-				return A5(
-					make,
-					'Enchanted Large Pack Of Holding',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 10000, 125000),
-					'enchanted-pack',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 100000, 250000));
-		}
-	});
-var _mordrax$cotwelm$Item_Pack$remove = F2(
-	function (item, pack) {
-		var newContainer = A2(_mordrax$cotwelm$Container$remove, item, pack.container);
-		return _elm_lang$core$Native_Utils.update(
-			pack,
-			{container: newContainer});
-	});
-var _mordrax$cotwelm$Item_Pack$add = F2(
-	function (item, pack) {
-		var _p1 = A2(_mordrax$cotwelm$Container$add, item, pack.container);
-		var newContainer = _p1._0;
-		var msgs = _p1._1;
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Native_Utils.update(
-				pack,
-				{container: newContainer}),
-			_1: msgs
-		};
-	});
-var _mordrax$cotwelm$Item_Pack$contents = function (_p2) {
-	var _p3 = _p2;
-	return _mordrax$cotwelm$Container$list(_p3.container);
-};
-var _mordrax$cotwelm$Item_Pack$info = function (_p4) {
-	var _p5 = _p4;
-	var _p6 = _p5.container;
-	return {
-		ctor: '_Tuple2',
-		_0: _mordrax$cotwelm$Container$mass(_p6),
-		_1: _mordrax$cotwelm$Container$capacity(_p6)
-	};
-};
-var _mordrax$cotwelm$Item_Pack$Pack = F3(
-	function (a, b, c) {
-		return {base: a, packType: b, container: c};
-	});
-
-var _mordrax$cotwelm$Item_Purse$toLeastSilvers = function (coins) {
-	return {
-		ctor: '_Tuple2',
-		_0: A2(_elm_lang$core$Basics_ops['%'], coins, 100),
-		_1: (coins / 100) | 0
-	};
-};
-var _mordrax$cotwelm$Item_Purse$toLeastGold = function (coins) {
-	var _p0 = _mordrax$cotwelm$Item_Purse$toLeastSilvers(coins);
-	var copper = _p0._0;
-	var silver = _p0._1;
-	return {
-		ctor: '_Tuple3',
-		_0: copper,
-		_1: A2(_elm_lang$core$Basics_ops['%'], silver, 100),
-		_2: (silver / 100) | 0
-	};
-};
-var _mordrax$cotwelm$Item_Purse$initCoinBaseItem = F4(
-	function (name, css, id, value) {
-		return A7(
-			_mordrax$cotwelm$Item_Data$BaseItem,
-			name,
-			A2(_mordrax$cotwelm$Item_Data$Prices, value, value),
-			css,
-			A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-			_mordrax$cotwelm$Item_Data$Normal,
-			_mordrax$cotwelm$Item_Data$Identified,
-			id);
-	});
-var _mordrax$cotwelm$Item_Purse$initCoppers = F2(
-	function (id, value) {
-		return {
-			base: A4(_mordrax$cotwelm$Item_Purse$initCoinBaseItem, 'Copper', 'coins-copper', id, value),
-			value: value
-		};
-	});
-var _mordrax$cotwelm$Item_Purse$initSilvers = F2(
-	function (id, value) {
-		return {
-			base: A4(_mordrax$cotwelm$Item_Purse$initCoinBaseItem, 'Silver', 'coins-silver', id, value),
-			value: value
-		};
-	});
-var _mordrax$cotwelm$Item_Purse$initGolds = F2(
-	function (id, value) {
-		return {
-			base: A4(_mordrax$cotwelm$Item_Purse$initCoinBaseItem, 'Gold', 'coins-gold', id, value),
-			value: value
-		};
-	});
-var _mordrax$cotwelm$Item_Purse$initPlatinums = F2(
-	function (id, value) {
-		return {
-			base: A4(_mordrax$cotwelm$Item_Purse$initCoinBaseItem, 'Platinum', 'coins-platinum', id, value),
-			value: value
-		};
-	});
-var _mordrax$cotwelm$Item_Purse$CopperCoins = F2(
-	function (a, b) {
-		return {base: a, value: b};
-	});
-var _mordrax$cotwelm$Item_Purse$SilverCoins = F2(
-	function (a, b) {
-		return {base: a, value: b};
-	});
-var _mordrax$cotwelm$Item_Purse$GoldCoins = F2(
-	function (a, b) {
-		return {base: a, value: b};
-	});
-var _mordrax$cotwelm$Item_Purse$PlatinumCoins = F2(
-	function (a, b) {
-		return {base: a, value: b};
-	});
-var _mordrax$cotwelm$Item_Purse$Coins = F4(
-	function (a, b, c, d) {
-		return {copper: a, silver: b, gold: c, platinum: d};
-	});
-var _mordrax$cotwelm$Item_Purse$init = {
-	base: A7(
-		_mordrax$cotwelm$Item_Data$BaseItem,
-		'Purse',
-		A2(_mordrax$cotwelm$Item_Data$Prices, 0, 0),
-		'Purse',
-		A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
-		_mordrax$cotwelm$Item_Data$Normal,
-		_mordrax$cotwelm$Item_Data$Identified,
-		_mordrax$cotwelm$Utils_IdGenerator$empty),
-	coins: A4(_mordrax$cotwelm$Item_Purse$Coins, 100, 10, 1, 1)
-};
-var _mordrax$cotwelm$Item_Purse$merge_ = F3(
-	function (op, c1, c2) {
-		return A4(
-			_mordrax$cotwelm$Item_Purse$Coins,
-			A2(op, c1.copper, c2.copper),
-			A2(op, c1.silver, c2.silver),
-			A2(op, c1.gold, c2.gold),
-			A2(op, c1.platinum, c2.platinum));
-	});
-var _mordrax$cotwelm$Item_Purse$toLeastCoins = function (coppers) {
-	var _p1 = _mordrax$cotwelm$Item_Purse$toLeastGold(coppers);
-	var copper = _p1._0;
-	var silver = _p1._1;
-	var gold = _p1._2;
-	return A4(
-		_mordrax$cotwelm$Item_Purse$Coins,
-		copper,
-		silver,
-		A2(_elm_lang$core$Basics_ops['%'], gold, 100),
-		(gold / 100) | 0);
-};
-var _mordrax$cotwelm$Item_Purse$add = F2(
-	function (coppers, _p2) {
-		var _p3 = _p2;
-		var _p4 = _p3.coins;
-		var leastCoins = _mordrax$cotwelm$Item_Purse$toLeastCoins(coppers);
-		return _elm_lang$core$Native_Utils.update(
-			_p3,
-			{
-				coins: A4(_mordrax$cotwelm$Item_Purse$Coins, _p4.copper + leastCoins.copper, _p4.silver + leastCoins.silver, _p4.gold + leastCoins.gold, _p4.platinum + leastCoins.platinum)
-			});
-	});
-var _mordrax$cotwelm$Item_Purse$remove = F2(
-	function (copperToRemove, _p5) {
-		var _p6 = _p5;
-		var _p10 = _p6;
-		var _p9 = _p6.coins;
-		var totalSilvers = _p9.copper + (_p9.silver * 100);
-		var totalGold = totalSilvers + (_p9.gold * 10000);
-		var totalPlatinum = totalGold + (_p9.platinum * 1000000);
-		if (_elm_lang$core$Native_Utils.cmp(copperToRemove, _p9.copper) < 1) {
-			return _elm_lang$core$Result$Ok(
-				_elm_lang$core$Native_Utils.update(
-					_p10,
-					{
-						coins: _elm_lang$core$Native_Utils.update(
-							_p9,
-							{copper: _p9.copper - copperToRemove})
-					}));
-		} else {
-			if (_elm_lang$core$Native_Utils.cmp(copperToRemove, totalSilvers) < 1) {
-				var _p7 = _mordrax$cotwelm$Item_Purse$toLeastSilvers(totalSilvers - copperToRemove);
-				var copper_ = _p7._0;
-				var silver_ = _p7._1;
-				return _elm_lang$core$Result$Ok(
-					_elm_lang$core$Native_Utils.update(
-						_p10,
-						{
-							coins: _elm_lang$core$Native_Utils.update(
-								_p9,
-								{copper: copper_, silver: silver_})
-						}));
-			} else {
-				if (_elm_lang$core$Native_Utils.cmp(copperToRemove, totalGold) < 1) {
-					var _p8 = _mordrax$cotwelm$Item_Purse$toLeastGold(totalGold - copperToRemove);
-					var copper_ = _p8._0;
-					var silver_ = _p8._1;
-					var gold_ = _p8._2;
-					return _elm_lang$core$Result$Ok(
-						_elm_lang$core$Native_Utils.update(
-							_p10,
-							{
-								coins: _elm_lang$core$Native_Utils.update(
-									_p9,
-									{copper: copper_, silver: silver_, gold: gold_})
-							}));
-				} else {
-					if (_elm_lang$core$Native_Utils.cmp(copperToRemove, totalPlatinum) < 1) {
-						var coins = _mordrax$cotwelm$Item_Purse$toLeastCoins(totalPlatinum - copperToRemove);
-						return _elm_lang$core$Result$Ok(
-							_elm_lang$core$Native_Utils.update(
-								_p10,
-								{
-									coins: _elm_lang$core$Native_Utils.update(
-										coins,
-										{copper: coins.copper, silver: coins.silver, gold: coins.gold, platinum: coins.platinum})
-								}));
-					} else {
-						return _elm_lang$core$Result$Err('Not enough coins to remove!');
-					}
-				}
-			}
-		}
-	});
-var _mordrax$cotwelm$Item_Purse$Purse = F2(
-	function (a, b) {
-		return {base: a, coins: b};
-	});
-var _mordrax$cotwelm$Item_Purse$addCoins = F2(
-	function (coins, purse) {
-		return A2(
-			_mordrax$cotwelm$Item_Purse$Purse,
-			purse.base,
-			A3(
-				_mordrax$cotwelm$Item_Purse$merge_,
-				F2(
-					function (x, y) {
-						return x + y;
-					}),
-				coins,
-				purse.coins));
-	});
-var _mordrax$cotwelm$Item_Purse$merge = F2(
-	function (p1, p2) {
-		return A2(
-			_mordrax$cotwelm$Item_Purse$Purse,
-			p1.base,
-			A3(
-				_mordrax$cotwelm$Item_Purse$merge_,
-				F2(
-					function (x, y) {
-						return x + y;
-					}),
-				p1.coins,
-				p2.coins));
-	});
-var _mordrax$cotwelm$Item_Purse$NotEnoughCoins = {ctor: 'NotEnoughCoins'};
-var _mordrax$cotwelm$Item_Purse$Ok = {ctor: 'Ok'};
-
-var _mordrax$cotwelm$Item_Shield$init = F4(
-	function (shieldType, status, idStatus, id) {
-		var make = F5(
-			function (name, mass, css, prices, ac) {
-				return {
-					base: A7(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus, id),
-					shieldType: shieldType,
-					ac: ac
-				};
-			});
-		var _p0 = shieldType;
-		switch (_p0.ctor) {
-			case 'BrokenShield':
-				return A5(
-					make,
-					'Broken Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4000, 35000),
-					'broken-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 0, 25),
-					_mordrax$cotwelm$Item_Data$AC(0));
-			case 'SmallWoodenShield':
-				return A5(
-					make,
-					'Small Wooden Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 3000, 15000),
-					'wood-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 525, 300),
-					_mordrax$cotwelm$Item_Data$AC(3));
-			case 'MediumWoodenShield':
-				return A5(
-					make,
-					'Medium Wooden Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4000, 35000),
-					'wood-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 1050, 600),
-					_mordrax$cotwelm$Item_Data$AC(6));
-			case 'LargeWoodenShield':
-				return A5(
-					make,
-					'Large Wooden Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 5000, 50000),
-					'wood-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 2100, 1200),
-					_mordrax$cotwelm$Item_Data$AC(9));
-			case 'SmallIronShield':
-				return A5(
-					make,
-					'Small Iron Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4000, 15000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 1260, 720),
-					_mordrax$cotwelm$Item_Data$AC(6));
-			case 'MediumIronShield':
-				return A5(
-					make,
-					'Medium Iron Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 5000, 35000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 2592, 1440),
-					_mordrax$cotwelm$Item_Data$AC(9));
-			case 'LargeIronShield':
-				return A5(
-					make,
-					'Large Iron Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 6000, 50000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 3150, 1800),
-					_mordrax$cotwelm$Item_Data$AC(12));
-			case 'SmallSteelShield':
-				return A5(
-					make,
-					'Small Steel Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4000, 15000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 2730, 1560),
-					_mordrax$cotwelm$Item_Data$AC(9));
-			case 'MediumSteelShield':
-				return A5(
-					make,
-					'Medium Steel Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 5000, 35000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 3360, 1920),
-					_mordrax$cotwelm$Item_Data$AC(12));
-			case 'LargeSteelShield':
-				return A5(
-					make,
-					'Large Steel Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 6000, 50000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 4200, 2400),
-					_mordrax$cotwelm$Item_Data$AC(15));
-			case 'SmallMeteoricSteelShield':
-				return A5(
-					make,
-					'Small Meteoric Steel Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 2500, 10000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 4620, 2640),
-					_mordrax$cotwelm$Item_Data$AC(15));
-			case 'MediumMeteoricSteelShield':
-				return A5(
-					make,
-					'Medium Meteoric Steel Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 3500, 25000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 5940, 3300),
-					_mordrax$cotwelm$Item_Data$AC(18));
-			default:
-				return A5(
-					make,
-					'Large Meteoric Steel Shield',
-					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4500, 35000),
-					'metal-shield',
-					A2(_mordrax$cotwelm$Item_Data$Prices, 7560, 4200),
-					_mordrax$cotwelm$Item_Data$AC(21));
-		}
-	});
-
-var _mordrax$cotwelm$Item_Weapon$encode = _elm_lang$core$Basics$toString;
-var _mordrax$cotwelm$Item_Weapon$listTypes = {
-	ctor: '::',
-	_0: _mordrax$cotwelm$Item_Data$BrokenSword,
-	_1: {
-		ctor: '::',
-		_0: _mordrax$cotwelm$Item_Data$Club,
-		_1: {
-			ctor: '::',
-			_0: _mordrax$cotwelm$Item_Data$Dagger,
-			_1: {
-				ctor: '::',
-				_0: _mordrax$cotwelm$Item_Data$Hammer,
-				_1: {
-					ctor: '::',
-					_0: _mordrax$cotwelm$Item_Data$HandAxe,
-					_1: {
-						ctor: '::',
-						_0: _mordrax$cotwelm$Item_Data$Quarterstaff,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Item_Data$Spear,
-							_1: {
-								ctor: '::',
-								_0: _mordrax$cotwelm$Item_Data$ShortSword,
-								_1: {
-									ctor: '::',
-									_0: _mordrax$cotwelm$Item_Data$Mace,
-									_1: {
-										ctor: '::',
-										_0: _mordrax$cotwelm$Item_Data$Flail,
-										_1: {
-											ctor: '::',
-											_0: _mordrax$cotwelm$Item_Data$Axe,
-											_1: {
-												ctor: '::',
-												_0: _mordrax$cotwelm$Item_Data$WarHammer,
-												_1: {
-													ctor: '::',
-													_0: _mordrax$cotwelm$Item_Data$LongSword,
-													_1: {
-														ctor: '::',
-														_0: _mordrax$cotwelm$Item_Data$BattleAxe,
-														_1: {
-															ctor: '::',
-															_0: _mordrax$cotwelm$Item_Data$BroadSword,
-															_1: {
-																ctor: '::',
-																_0: _mordrax$cotwelm$Item_Data$MorningStar,
-																_1: {
-																	ctor: '::',
-																	_0: _mordrax$cotwelm$Item_Data$BastardSword,
-																	_1: {
-																		ctor: '::',
-																		_0: _mordrax$cotwelm$Item_Data$TwoHandedSword,
-																		_1: {
-																			ctor: '::',
-																			_0: _mordrax$cotwelm$Item_Data$SmallClaws,
-																			_1: {
-																				ctor: '::',
-																				_0: _mordrax$cotwelm$Item_Data$SmallBite,
-																				_1: {
-																					ctor: '::',
-																					_0: _mordrax$cotwelm$Item_Data$Crossbow,
-																					_1: {
-																						ctor: '::',
-																						_0: _mordrax$cotwelm$Item_Data$Fangs,
-																						_1: {
-																							ctor: '::',
-																							_0: _mordrax$cotwelm$Item_Data$Pincers,
-																							_1: {
-																								ctor: '::',
-																								_0: _mordrax$cotwelm$Item_Data$Bow,
-																								_1: {
-																									ctor: '::',
-																									_0: _mordrax$cotwelm$Item_Data$LargeClaws,
-																									_1: {ctor: '[]'}
-																								}
-																							}
-																						}
-																					}
-																				}
-																			}
-																		}
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-};
-var _mordrax$cotwelm$Item_Weapon$weaponTypeDict = function () {
-	var makeKVP = function (x) {
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Basics$toString(x),
-			_1: x
-		};
-	};
-	return _elm_lang$core$Dict$fromList(
-		A2(_elm_lang$core$List$map, makeKVP, _mordrax$cotwelm$Item_Weapon$listTypes));
-}();
-var _mordrax$cotwelm$Item_Weapon$decoder = function (value) {
-	return A2(
-		_elm_lang$core$Maybe$withDefault,
-		_mordrax$cotwelm$Item_Data$BrokenSword,
-		A2(_elm_lang$core$Dict$get, value, _mordrax$cotwelm$Item_Weapon$weaponTypeDict));
-};
-var _mordrax$cotwelm$Item_Weapon$init = F4(
-	function (weaponType, status, idStatus, id) {
-		var d = F3(
-			function (n, faces, bonus) {
-				return A3(_mordrax$cotwelm$Dice$Dice, n, faces, bonus);
-			});
-		var make = F6(
-			function (name, _p1, css, _p0, wc, damage) {
-				var _p2 = _p1;
-				var _p3 = _p0;
-				return {
-					base: A7(
-						_mordrax$cotwelm$Item_Data$BaseItem,
-						name,
-						A2(_mordrax$cotwelm$Item_Data$Prices, _p3._0, _p3._1),
-						css,
-						A2(_mordrax$cotwelm$Utils_Mass$Mass, _p2._0, _p2._1),
-						status,
-						idStatus,
-						id),
-					weaponType: weaponType,
-					wc: wc,
-					damage: damage
-				};
-			});
-		var makeMonsterWeapon = F3(
-			function (name, wc, damage) {
-				return A6(
-					make,
-					name,
-					{ctor: '_Tuple2', _0: 0, _1: 0},
-					'',
-					{ctor: '_Tuple2', _0: 0, _1: 0},
-					wc,
-					damage);
-			});
-		var _p4 = weaponType;
-		switch (_p4.ctor) {
-			case 'BrokenSword':
-				return A6(
-					make,
-					'Broken Sword',
-					{ctor: '_Tuple2', _0: 1000, _1: 5000},
-					'broken-sword',
-					{ctor: '_Tuple2', _0: 0, _1: 25},
-					_mordrax$cotwelm$Item_Data$WC(0),
-					A3(d, 1, 6, -2));
-			case 'Club':
-				return A6(
-					make,
-					'Club',
-					{ctor: '_Tuple2', _0: 2500, _1: 3000},
-					'club',
-					{ctor: '_Tuple2', _0: 105, _1: 60},
-					_mordrax$cotwelm$Item_Data$WC(1),
-					A3(d, 3, 2, 0));
-			case 'Dagger':
-				return A6(
-					make,
-					'Dagger',
-					{ctor: '_Tuple2', _0: 500, _1: 500},
-					'sword',
-					{ctor: '_Tuple2', _0: 420, _1: 240},
-					_mordrax$cotwelm$Item_Data$WC(2),
-					A3(d, 1, 4, 0));
-			case 'Hammer':
-				return A6(
-					make,
-					'Hammer',
-					{ctor: '_Tuple2', _0: 1500, _1: 3000},
-					'hammer',
-					{ctor: '_Tuple2', _0: 420, _1: 240},
-					_mordrax$cotwelm$Item_Data$WC(2),
-					A3(d, 2, 2, 0));
-			case 'HandAxe':
-				return A6(
-					make,
-					'Hand Axe',
-					{ctor: '_Tuple2', _0: 1000, _1: 3000},
-					'axe',
-					{ctor: '_Tuple2', _0: 472, _1: 270},
-					_mordrax$cotwelm$Item_Data$WC(3),
-					A3(d, 1, 5, 0));
-			case 'Quarterstaff':
-				return A6(
-					make,
-					'Quarterstaff',
-					{ctor: '_Tuple2', _0: 1000, _1: 5000},
-					'spear',
-					{ctor: '_Tuple2', _0: 648, _1: 360},
-					_mordrax$cotwelm$Item_Data$WC(3),
-					A3(d, 3, 1, 0));
-			case 'Spear':
-				return A6(
-					make,
-					'Spear',
-					{ctor: '_Tuple2', _0: 2500, _1: 5000},
-					'spear',
-					{ctor: '_Tuple2', _0: 840, _1: 480},
-					_mordrax$cotwelm$Item_Data$WC(4),
-					A3(d, 1, 9, 0));
-			case 'ShortSword':
-				return A6(
-					make,
-					'Short Sword',
-					{ctor: '_Tuple2', _0: 1500, _1: 5000},
-					'sword',
-					{ctor: '_Tuple2', _0: 1470, _1: 840},
-					_mordrax$cotwelm$Item_Data$WC(5),
-					A3(d, 1, 6, 0));
-			case 'Mace':
-				return A6(
-					make,
-					'Mace',
-					{ctor: '_Tuple2', _0: 2500, _1: 4375},
-					'mace',
-					{ctor: '_Tuple2', _0: 1728, _1: 960},
-					_mordrax$cotwelm$Item_Data$WC(5),
-					A3(d, 3, 2, 0));
-			case 'Flail':
-				return A6(
-					make,
-					'Flail',
-					{ctor: '_Tuple2', _0: 4500, _1: 3250},
-					'flail',
-					{ctor: '_Tuple2', _0: 1512, _1: 840},
-					_mordrax$cotwelm$Item_Data$WC(6),
-					A3(d, 4, 3, 0));
-			case 'Axe':
-				return A6(
-					make,
-					'Axe',
-					{ctor: '_Tuple2', _0: 3000, _1: 5000},
-					'axe',
-					{ctor: '_Tuple2', _0: 1944, _1: 1080},
-					_mordrax$cotwelm$Item_Data$WC(6),
-					A3(d, 1, 9, 0));
-			case 'WarHammer':
-				return A6(
-					make,
-					'War Hammer',
-					{ctor: '_Tuple2', _0: 4000, _1: 7500},
-					'hammer',
-					{ctor: '_Tuple2', _0: 2160, _1: 1200},
-					_mordrax$cotwelm$Item_Data$WC(7),
-					A3(d, 4, 3, -1));
-			case 'LongSword':
-				return A6(
-					make,
-					'Long Sword',
-					{ctor: '_Tuple2', _0: 2500, _1: 8000},
-					'sword',
-					{ctor: '_Tuple2', _0: 3240, _1: 1800},
-					_mordrax$cotwelm$Item_Data$WC(8),
-					A3(d, 1, 8, 0));
-			case 'BattleAxe':
-				return A6(
-					make,
-					'Battle Axe',
-					{ctor: '_Tuple2', _0: 3500, _1: 6000},
-					'axe',
-					{ctor: '_Tuple2', _0: 2160, _1: 1200},
-					_mordrax$cotwelm$Item_Data$WC(8),
-					A3(d, 2, 5, 0));
-			case 'BroadSword':
-				return A6(
-					make,
-					'Broad Sword',
-					{ctor: '_Tuple2', _0: 3000, _1: 9000},
-					'sword',
-					{ctor: '_Tuple2', _0: 3240, _1: 1800},
-					_mordrax$cotwelm$Item_Data$WC(9),
-					A3(d, 1, 9, 0));
-			case 'MorningStar':
-				return A6(
-					make,
-					'Morning Star',
-					{ctor: '_Tuple2', _0: 3000, _1: 9000},
-					'morning-star',
-					{ctor: '_Tuple2', _0: 2160, _1: 1200},
-					_mordrax$cotwelm$Item_Data$WC(10),
-					A3(d, 4, 2, 0));
-			case 'BastardSword':
-				return A6(
-					make,
-					'Bastard Sword',
-					{ctor: '_Tuple2', _0: 4500, _1: 10000},
-					'sword',
-					{ctor: '_Tuple2', _0: 4320, _1: 2400},
-					_mordrax$cotwelm$Item_Data$WC(11),
-					A3(d, 2, 7, 0));
-			case 'TwoHandedSword':
-				return A6(
-					make,
-					'Two Handed Sword',
-					{ctor: '_Tuple2', _0: 5000, _1: 12000},
-					'sword',
-					{ctor: '_Tuple2', _0: 6360, _1: 3600},
-					_mordrax$cotwelm$Item_Data$WC(12),
-					A3(d, 2, 8, 0));
-			case 'SmallClaws':
-				return A3(
-					makeMonsterWeapon,
-					'Small Claws',
-					_mordrax$cotwelm$Item_Data$WC(1),
-					A3(d, 1, 4, 0));
-			case 'SmallBite':
-				return A3(
-					makeMonsterWeapon,
-					'Small Bite',
-					_mordrax$cotwelm$Item_Data$WC(2),
-					A3(d, 1, 5, 0));
-			case 'Crossbow':
-				return A3(
-					makeMonsterWeapon,
-					'Crossbow',
-					_mordrax$cotwelm$Item_Data$WC(5),
-					A3(d, 1, 10, 0));
-			case 'Fangs':
-				return A3(
-					makeMonsterWeapon,
-					'Fangs',
-					_mordrax$cotwelm$Item_Data$WC(10),
-					A3(d, 1, 4, 0));
-			case 'Pincers':
-				return A3(
-					makeMonsterWeapon,
-					'Pincers',
-					_mordrax$cotwelm$Item_Data$WC(10),
-					A3(d, 4, 2, 0));
-			case 'Bow':
-				return A3(
-					makeMonsterWeapon,
-					'Bow',
-					_mordrax$cotwelm$Item_Data$WC(6),
-					A3(d, 1, 6, 0));
-			default:
-				return A3(
-					makeMonsterWeapon,
-					'Large Claws',
-					_mordrax$cotwelm$Item_Data$WC(8),
-					A3(d, 1, 8, 0));
-		}
-	});
-var _mordrax$cotwelm$Item_Weapon$damage = function (_p5) {
-	var _p6 = _p5;
-	return _p6.damage;
-};
-
-var _mordrax$cotwelm$Item_Item$newFoldableItem = F2(
-	function (_p0, id) {
-		var _p1 = _p0;
-		return {
-			ctor: '_Tuple2',
-			_0: _p1._0,
-			_1: _p1._1(id)
-		};
-	});
-var _mordrax$cotwelm$Item_Item$getModel = function (anItem) {
-	var _p2 = anItem;
-	switch (_p2.ctor) {
-		case 'ItemWeapon':
-			return _p2._0.base;
-		case 'ItemArmour':
-			return _p2._0.base;
-		case 'ItemShield':
-			return _p2._0.base;
-		case 'ItemHelmet':
-			return _p2._0.base;
-		case 'ItemBracers':
-			return _p2._0.base;
-		case 'ItemGauntlets':
-			return _p2._0.base;
-		case 'ItemBelt':
-			return _p2._0.base;
-		case 'ItemPack':
-			return _p2._0.base;
-		case 'ItemPurse':
-			return _p2._0.base;
-		case 'ItemNeckwear':
-			return _p2._0.base;
-		case 'ItemOvergarment':
-			return _p2._0.base;
-		case 'ItemRing':
-			return _p2._0.base;
-		case 'ItemBoots':
-			return _p2._0.base;
-		case 'ItemCopper':
-			return _p2._0.base;
-		case 'ItemSilver':
-			return _p2._0.base;
-		case 'ItemGold':
-			return _p2._0.base;
-		default:
-			return _p2._0.base;
-	}
-};
-var _mordrax$cotwelm$Item_Item$css = function (_p3) {
-	return function (_) {
-		return _.css;
-	}(
-		_mordrax$cotwelm$Item_Item$getModel(_p3));
-};
-var _mordrax$cotwelm$Item_Item$viewSlot = F2(
-	function (item, extraContent) {
-		var model = _mordrax$cotwelm$Item_Item$getModel(item);
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('card'),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('image'),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$i,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class(
-											A2(_elm_lang$core$Basics_ops['++'], 'cotw-item ', model.css)),
-										_1: {ctor: '[]'}
-									},
-									{ctor: '[]'}),
-								_1: {ctor: '[]'}
-							}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('content'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$a,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('header'),
-											_1: {ctor: '[]'}
-										},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text(model.name),
-											_1: {ctor: '[]'}
-										}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$div,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$class('meta'),
-												_1: {ctor: '[]'}
-											},
-											{
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$span,
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$class('date'),
-														_1: {ctor: '[]'}
-													},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text(''),
-														_1: {ctor: '[]'}
-													}),
-												_1: {ctor: '[]'}
-											}),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$div,
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$class('description'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$style(
-															{
-																ctor: '::',
-																_0: {ctor: '_Tuple2', _0: 'maxWidth', _1: '7em'},
-																_1: {ctor: '[]'}
-															}),
-														_1: {ctor: '[]'}
-													}
-												},
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html$text(''),
-													_1: {ctor: '[]'}
-												}),
-											_1: {ctor: '[]'}
-										}
-									}
-								}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$div,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('extra content'),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text(extraContent),
-										_1: {ctor: '[]'}
-									}),
-								_1: {ctor: '[]'}
-							}
-						}
-					}),
-				_1: {ctor: '[]'}
-			});
-	});
-var _mordrax$cotwelm$Item_Item$view = function (item) {
-	return A2(_mordrax$cotwelm$Item_Item$viewSlot, item, '');
-};
-var _mordrax$cotwelm$Item_Item$equals = F2(
-	function (anItemA, anItemB) {
-		var modelB = _mordrax$cotwelm$Item_Item$getModel(anItemB);
-		var modelA = _mordrax$cotwelm$Item_Item$getModel(anItemA);
-		return A2(_mordrax$cotwelm$Utils_IdGenerator$equals, modelA.id, modelB.id);
-	});
-var _mordrax$cotwelm$Item_Item$isCursed = function () {
-	var isCursed = function (status) {
-		return _elm_lang$core$Native_Utils.eq(status, _mordrax$cotwelm$Item_Data$Cursed);
-	};
-	return function (_p4) {
-		return isCursed(
-			function (_) {
-				return _.status;
-			}(
-				_mordrax$cotwelm$Item_Item$getModel(_p4)));
-	};
-}();
-var _mordrax$cotwelm$Item_Item$baseItemMass = function (_p5) {
-	var _p6 = _p5;
-	return _p6.mass;
-};
-var _mordrax$cotwelm$Item_Item$mass = function (_p7) {
-	return function (_) {
-		return _.mass;
-	}(
-		_mordrax$cotwelm$Item_Item$getModel(_p7));
-};
-var _mordrax$cotwelm$Item_Item$containerBuilder = function (capacity) {
-	return A3(_mordrax$cotwelm$Container$init, capacity, _mordrax$cotwelm$Item_Item$mass, _mordrax$cotwelm$Item_Item$equals);
-};
-var _mordrax$cotwelm$Item_Item$costOf = function (item) {
-	var _p8 = function (_) {
-		return _.prices;
-	}(
-		_mordrax$cotwelm$Item_Item$getModel(item));
-	var buy = _p8._0;
-	var sell = _p8._1;
-	return buy;
-};
-var _mordrax$cotwelm$Item_Item$priceOf = function (item) {
-	var _p9 = function (_) {
-		return _.prices;
-	}(
-		_mordrax$cotwelm$Item_Item$getModel(item));
-	var buy = _p9._0;
-	var sell = _p9._1;
-	return sell;
-};
-var _mordrax$cotwelm$Item_Item$ItemPlatinum = function (a) {
-	return {ctor: 'ItemPlatinum', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemGold = function (a) {
-	return {ctor: 'ItemGold', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemSilver = function (a) {
-	return {ctor: 'ItemSilver', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemCopper = function (a) {
-	return {ctor: 'ItemCopper', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemBoots = function (a) {
-	return {ctor: 'ItemBoots', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemRing = function (a) {
-	return {ctor: 'ItemRing', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemOvergarment = function (a) {
-	return {ctor: 'ItemOvergarment', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemNeckwear = function (a) {
-	return {ctor: 'ItemNeckwear', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemPurse = function (a) {
-	return {ctor: 'ItemPurse', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemPack = function (a) {
-	return {ctor: 'ItemPack', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemBelt = function (a) {
-	return {ctor: 'ItemBelt', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemGauntlets = function (a) {
-	return {ctor: 'ItemGauntlets', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemBracers = function (a) {
-	return {ctor: 'ItemBracers', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemHelmet = function (a) {
-	return {ctor: 'ItemHelmet', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemShield = function (a) {
-	return {ctor: 'ItemShield', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemArmour = function (a) {
-	return {ctor: 'ItemArmour', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$ItemWeapon = function (a) {
-	return {ctor: 'ItemWeapon', _0: a};
-};
-var _mordrax$cotwelm$Item_Item$newWithOptions = F4(
-	function (itemType, id, status, idStatus) {
-		var _p10 = itemType;
-		switch (_p10.ctor) {
-			case 'ItemTypeWeapon':
-				return _mordrax$cotwelm$Item_Item$ItemWeapon(
-					A4(_mordrax$cotwelm$Item_Weapon$init, _p10._0, status, idStatus, id));
-			case 'ItemTypeArmour':
-				return _mordrax$cotwelm$Item_Item$ItemArmour(
-					A4(_mordrax$cotwelm$Item_Armour$init, _p10._0, status, idStatus, id));
-			case 'ItemTypeShield':
-				return _mordrax$cotwelm$Item_Item$ItemShield(
-					A4(_mordrax$cotwelm$Item_Shield$init, _p10._0, status, idStatus, id));
-			case 'ItemTypeHelmet':
-				return _mordrax$cotwelm$Item_Item$ItemHelmet(
-					A4(_mordrax$cotwelm$Item_Helmet$init, _p10._0, status, idStatus, id));
-			case 'ItemTypeBracers':
-				return _mordrax$cotwelm$Item_Item$ItemBracers(
-					A4(_mordrax$cotwelm$Item_Bracers$init, _p10._0, status, idStatus, id));
-			case 'ItemTypeGauntlets':
-				return _mordrax$cotwelm$Item_Item$ItemGauntlets(
-					A4(_mordrax$cotwelm$Item_Gauntlets$init, _p10._0, status, idStatus, id));
-			case 'ItemTypeBelt':
-				return _mordrax$cotwelm$Item_Item$ItemBelt(
-					A4(_mordrax$cotwelm$Item_Belt$init, _p10._0, status, idStatus, id));
-			case 'ItemTypePack':
-				return _mordrax$cotwelm$Item_Item$ItemPack(
-					A5(_mordrax$cotwelm$Item_Pack$init, _p10._0, _mordrax$cotwelm$Item_Item$containerBuilder, status, idStatus, id));
-			case 'ItemTypePurse':
-				return _mordrax$cotwelm$Item_Item$ItemPurse(_mordrax$cotwelm$Item_Purse$init);
-			case 'ItemTypeCopper':
-				return _mordrax$cotwelm$Item_Item$ItemCopper(
-					A2(_mordrax$cotwelm$Item_Purse$initCoppers, id, _p10._0));
-			case 'ItemTypeSilver':
-				return _mordrax$cotwelm$Item_Item$ItemSilver(
-					A2(_mordrax$cotwelm$Item_Purse$initSilvers, id, _p10._0));
-			case 'ItemTypeGold':
-				return _mordrax$cotwelm$Item_Item$ItemGold(
-					A2(_mordrax$cotwelm$Item_Purse$initGolds, id, _p10._0));
-			case 'ItemTypePlatinum':
-				return _mordrax$cotwelm$Item_Item$ItemPlatinum(
-					A2(_mordrax$cotwelm$Item_Purse$initPlatinums, id, _p10._0));
-			default:
-				return _mordrax$cotwelm$Item_Item$ItemWeapon(
-					A4(_mordrax$cotwelm$Item_Weapon$init, _mordrax$cotwelm$Item_Data$Dagger, status, idStatus, id));
-		}
-	});
-var _mordrax$cotwelm$Item_Item$new = F2(
-	function (itemType, id) {
-		return A4(_mordrax$cotwelm$Item_Item$newWithOptions, itemType, id, _mordrax$cotwelm$Item_Data$Normal, _mordrax$cotwelm$Item_Data$Identified);
-	});
-
 var _mordrax$cotwelm$Utils_Direction$SW = {ctor: 'SW'};
 var _mordrax$cotwelm$Utils_Direction$SE = {ctor: 'SE'};
 var _mordrax$cotwelm$Utils_Direction$NW = {ctor: 'NW'};
@@ -17805,15 +16857,25 @@ var _mordrax$cotwelm$Utils_Vector$map = F2(
 			_1: f(_p16._1)
 		};
 	});
+var _mordrax$cotwelm$Utils_Vector$adjacent = F2(
+	function (_p18, _p17) {
+		var _p19 = _p18;
+		var _p20 = _p17;
+		return (_elm_lang$core$Native_Utils.cmp(
+			_elm_lang$core$Basics$abs(_p19._0 - _p20._0),
+			1) < 1) && (_elm_lang$core$Native_Utils.cmp(
+			_elm_lang$core$Basics$abs(_p19._1 - _p20._1),
+			1) < 1);
+	});
 var _mordrax$cotwelm$Utils_Vector$scale = F2(
-	function (magnitude, _p17) {
-		var _p18 = _p17;
+	function (magnitude, _p21) {
+		var _p22 = _p21;
 		return {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$Basics$round(
-				_elm_lang$core$Basics$toFloat(_p18._0) * magnitude),
+				_elm_lang$core$Basics$toFloat(_p22._0) * magnitude),
 			_1: _elm_lang$core$Basics$round(
-				_elm_lang$core$Basics$toFloat(_p18._1) * magnitude)
+				_elm_lang$core$Basics$toFloat(_p22._1) * magnitude)
 		};
 	});
 var _mordrax$cotwelm$Utils_Vector$scaleInt = function (magnitude) {
@@ -17821,30 +16883,30 @@ var _mordrax$cotwelm$Utils_Vector$scaleInt = function (magnitude) {
 		_elm_lang$core$Basics$toFloat(magnitude));
 };
 var _mordrax$cotwelm$Utils_Vector$sub = F2(
-	function (_p20, _p19) {
-		var _p21 = _p20;
-		var _p22 = _p19;
-		return {ctor: '_Tuple2', _0: _p21._0 - _p22._0, _1: _p21._1 - _p22._1};
-	});
-var _mordrax$cotwelm$Utils_Vector$distance = F2(
 	function (_p24, _p23) {
 		var _p25 = _p24;
 		var _p26 = _p23;
-		var _p27 = A2(
+		return {ctor: '_Tuple2', _0: _p25._0 - _p26._0, _1: _p25._1 - _p26._1};
+	});
+var _mordrax$cotwelm$Utils_Vector$distance = F2(
+	function (_p28, _p27) {
+		var _p29 = _p28;
+		var _p30 = _p27;
+		var _p31 = A2(
 			_mordrax$cotwelm$Utils_Vector$sub,
-			{ctor: '_Tuple2', _0: _p25._0, _1: _p25._1},
-			{ctor: '_Tuple2', _0: _p26._0, _1: _p26._1});
-		var dx = _p27._0;
-		var dy = _p27._1;
+			{ctor: '_Tuple2', _0: _p29._0, _1: _p29._1},
+			{ctor: '_Tuple2', _0: _p30._0, _1: _p30._1});
+		var dx = _p31._0;
+		var dy = _p31._1;
 		return _elm_lang$core$Basics$sqrt(
 			_elm_lang$core$Basics$toFloat(
 				Math.pow(dx, 2) + Math.pow(dy, 2)));
 	});
 var _mordrax$cotwelm$Utils_Vector$add = F2(
-	function (_p29, _p28) {
-		var _p30 = _p29;
-		var _p31 = _p28;
-		return {ctor: '_Tuple2', _0: _p30._0 + _p31._0, _1: _p30._1 + _p31._1};
+	function (_p33, _p32) {
+		var _p34 = _p33;
+		var _p35 = _p32;
+		return {ctor: '_Tuple2', _0: _p34._0 + _p35._0, _1: _p34._1 + _p35._1};
 	});
 var _mordrax$cotwelm$Utils_Vector$neighbourInDirection = F2(
 	function (vector, direction) {
@@ -17859,33 +16921,33 @@ var _mordrax$cotwelm$Utils_Vector$neighbours = function (position) {
 		_mordrax$cotwelm$Utils_Vector$neighbourInDirection(position),
 		_mordrax$cotwelm$Utils_Direction$directions);
 };
-var _mordrax$cotwelm$Utils_Vector$cardinalNeighbours = function (_p32) {
-	var _p33 = _p32;
+var _mordrax$cotwelm$Utils_Vector$cardinalNeighbours = function (_p36) {
+	var _p37 = _p36;
 	return A2(
 		_elm_lang$core$List$map,
 		_mordrax$cotwelm$Utils_Vector$add(
-			{ctor: '_Tuple2', _0: _p33._0, _1: _p33._1}),
+			{ctor: '_Tuple2', _0: _p37._0, _1: _p37._1}),
 		A2(_elm_lang$core$List$map, _mordrax$cotwelm$Utils_Vector$fromDirection, _mordrax$cotwelm$Utils_Direction$cardinalDirections));
 };
-var _mordrax$cotwelm$Utils_Vector$unit = function (_p34) {
-	var _p35 = _p34;
-	var _p37 = _p35._1;
-	var _p36 = _p35._0;
+var _mordrax$cotwelm$Utils_Vector$unit = function (_p38) {
+	var _p39 = _p38;
+	var _p41 = _p39._1;
+	var _p40 = _p39._0;
 	return {
 		ctor: '_Tuple2',
-		_0: (_p36 / _elm_lang$core$Basics$abs(_p36)) | 0,
-		_1: (_p37 / _elm_lang$core$Basics$abs(_p37)) | 0
+		_0: (_p40 / _elm_lang$core$Basics$abs(_p40)) | 0,
+		_1: (_p41 / _elm_lang$core$Basics$abs(_p41)) | 0
 	};
 };
 var _mordrax$cotwelm$Utils_Vector$toDirection = function (vector) {
-	var _p38 = A2(
+	var _p42 = A2(
 		_elm_lang$core$Dict$get,
 		_mordrax$cotwelm$Utils_Vector$unit(vector),
 		_mordrax$cotwelm$Utils_Vector$directions);
-	if (_p38.ctor === 'Just') {
-		return _p38._0;
+	if (_p42.ctor === 'Just') {
+		return _p42._0;
 	} else {
-		var _p39 = A2(
+		var _p43 = A2(
 			_elm_lang$core$Debug$log,
 			'ERROR: Could not get a direction from the unit vector: ',
 			_mordrax$cotwelm$Utils_Vector$unit(vector));
@@ -17918,35 +16980,217 @@ var _mordrax$cotwelm$Utils_Vector$zero = {ctor: '_Tuple2', _0: 0, _1: 0};
 var _mordrax$cotwelm$Utils_Vector$Right = {ctor: 'Right'};
 var _mordrax$cotwelm$Utils_Vector$Left = {ctor: 'Left'};
 
+var _mordrax$cotwelm$Utils_Misc$combine = function (generators) {
+	var _p0 = generators;
+	if (_p0.ctor === '[]') {
+		return _mgold$elm_random_pcg$Random_Pcg$constant(
+			{ctor: '[]'});
+	} else {
+		return A3(
+			_mgold$elm_random_pcg$Random_Pcg$map2,
+			F2(
+				function (x, y) {
+					return {ctor: '::', _0: x, _1: y};
+				}),
+			_p0._0,
+			_mordrax$cotwelm$Utils_Misc$combine(_p0._1));
+	}
+};
+var _mordrax$cotwelm$Utils_Misc$sample2 = function () {
+	var find = F2(
+		function (k, ys) {
+			find:
+			while (true) {
+				var _p1 = ys;
+				if (_p1.ctor === '[]') {
+					return _elm_lang$core$Maybe$Nothing;
+				} else {
+					if (_elm_lang$core$Native_Utils.eq(k, 0)) {
+						return _elm_lang$core$Maybe$Just(_p1._0);
+					} else {
+						var _v2 = k - 1,
+							_v3 = _p1._1;
+						k = _v2;
+						ys = _v3;
+						continue find;
+					}
+				}
+			}
+		});
+	return function (xs) {
+		return A2(
+			_mgold$elm_random_pcg$Random_Pcg$map,
+			function (i) {
+				return A2(find, i, xs);
+			},
+			A2(
+				_mgold$elm_random_pcg$Random_Pcg$int,
+				0,
+				_elm_lang$core$List$length(xs) - 1));
+	};
+}();
+var _mordrax$cotwelm$Utils_Misc$choose = function (arr) {
+	if (_elm_lang$core$Array$isEmpty(arr)) {
+		return _mgold$elm_random_pcg$Random_Pcg$constant(
+			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: arr});
+	} else {
+		var front = function (i) {
+			return A3(_elm_lang$core$Array$slice, 0, i, arr);
+		};
+		var lastIndex = _elm_lang$core$Array$length(arr) - 1;
+		var back = function (i) {
+			return _elm_lang$core$Native_Utils.eq(i, lastIndex) ? _elm_lang$core$Array$empty : A3(_elm_lang$core$Array$slice, i + 1, lastIndex + 1, arr);
+		};
+		var gen = A2(_mgold$elm_random_pcg$Random_Pcg$int, 0, lastIndex);
+		return A2(
+			_mgold$elm_random_pcg$Random_Pcg$map,
+			function (index) {
+				return {
+					ctor: '_Tuple2',
+					_0: A2(_elm_lang$core$Array$get, index, arr),
+					_1: A2(
+						_elm_lang$core$Array$append,
+						front(index),
+						back(index))
+				};
+			},
+			gen);
+	}
+};
+var _mordrax$cotwelm$Utils_Misc$shuffle_ = function (arr) {
+	if (_elm_lang$core$Array$isEmpty(arr)) {
+		return _mgold$elm_random_pcg$Random_Pcg$constant(arr);
+	} else {
+		var helper = function (_p2) {
+			var _p3 = _p2;
+			var _p8 = _p3._0;
+			return A2(
+				_mgold$elm_random_pcg$Random_Pcg$andThen,
+				function (_p4) {
+					var _p5 = _p4;
+					var _p7 = _p5._1;
+					var _p6 = _p5._0;
+					if (_p6.ctor === 'Nothing') {
+						return _mgold$elm_random_pcg$Random_Pcg$constant(
+							{ctor: '_Tuple2', _0: _p8, _1: _p7});
+					} else {
+						return helper(
+							{
+								ctor: '_Tuple2',
+								_0: {ctor: '::', _0: _p6._0, _1: _p8},
+								_1: _p7
+							});
+					}
+				},
+				_mordrax$cotwelm$Utils_Misc$choose(_p3._1));
+		};
+		return A2(
+			_mgold$elm_random_pcg$Random_Pcg$map,
+			function (_p9) {
+				return _elm_lang$core$Array$fromList(
+					_elm_lang$core$Tuple$first(_p9));
+			},
+			helper(
+				{
+					ctor: '_Tuple2',
+					_0: {ctor: '[]'},
+					_1: arr
+				}));
+	}
+};
+var _mordrax$cotwelm$Utils_Misc$range = F2(
+	function (x, y) {
+		return (_elm_lang$core$Native_Utils.cmp(x, y) < 0) ? A2(_elm_lang$core$List$range, x, y) : _elm_lang$core$List$reverse(
+			A2(_elm_lang$core$List$range, y, x));
+	});
+var _mordrax$cotwelm$Utils_Misc$without = F2(
+	function (x, xs) {
+		return A2(
+			_elm_lang$core$List$filter,
+			F2(
+				function (x, y) {
+					return !_elm_lang$core$Native_Utils.eq(x, y);
+				})(x),
+			xs);
+	});
+var _mordrax$cotwelm$Utils_Misc$headWithDefault = F2(
+	function ($default, xs) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			$default,
+			_elm_lang$core$List$head(xs));
+	});
+var _mordrax$cotwelm$Utils_Misc$shuffle = function (list) {
+	return A2(
+		_mgold$elm_random_pcg$Random_Pcg$map,
+		_elm_lang$core$Array$toList,
+		_mordrax$cotwelm$Utils_Misc$shuffle_(
+			_elm_lang$core$Array$fromList(list)));
+};
 var _mordrax$cotwelm$Utils_Misc$toCSS = function (str) {
 	return _elm_lang$core$String$toLower(
 		A4(
 			_elm_lang$core$Regex$replace,
 			_elm_lang$core$Regex$All,
 			_elm_lang$core$Regex$regex('[^a-zA-Z]+'),
-			function (_p0) {
+			function (_p10) {
 				return '-';
 			},
 			str));
 };
+var _mordrax$cotwelm$Utils_Misc$removeFirst_ = F4(
+	function (target, equals, list, searched) {
+		removeFirst_:
+		while (true) {
+			var _p11 = list;
+			if (_p11.ctor === '[]') {
+				return searched;
+			} else {
+				var _p13 = _p11._1;
+				var _p12 = _p11._0;
+				if (A2(equals, _p12, target)) {
+					return A2(_elm_lang$core$Basics_ops['++'], searched, _p13);
+				} else {
+					var _v8 = target,
+						_v9 = equals,
+						_v10 = _p13,
+						_v11 = {ctor: '::', _0: _p12, _1: searched};
+					target = _v8;
+					equals = _v9;
+					list = _v10;
+					searched = _v11;
+					continue removeFirst_;
+				}
+			}
+		}
+	});
+var _mordrax$cotwelm$Utils_Misc$removeFirst = F3(
+	function (target, equals, list) {
+		return A4(
+			_mordrax$cotwelm$Utils_Misc$removeFirst_,
+			target,
+			equals,
+			list,
+			{ctor: '[]'});
+	});
 var _mordrax$cotwelm$Utils_Misc$foldResult = F3(
 	function (f, acc, list) {
 		foldResult:
 		while (true) {
-			var _p1 = list;
-			if (_p1.ctor === '[]') {
+			var _p14 = list;
+			if (_p14.ctor === '[]') {
 				return acc;
 			} else {
 				var nextAcc = A2(
 					_elm_lang$core$Result$andThen,
-					f(_p1._0),
+					f(_p14._0),
 					acc);
-				var _v1 = f,
-					_v2 = nextAcc,
-					_v3 = _p1._1;
-				f = _v1;
-				acc = _v2;
-				list = _v3;
+				var _v13 = f,
+					_v14 = nextAcc,
+					_v15 = _p14._1;
+				f = _v13;
+				acc = _v14;
+				list = _v15;
 				continue foldResult;
 			}
 		}
@@ -17957,29 +17201,29 @@ var _mordrax$cotwelm$Utils_Misc$px = function (a) {
 		_elm_lang$core$Basics$toString(a),
 		'px');
 };
-var _mordrax$cotwelm$Utils_Misc$vectorToHtmlStyle = function (_p2) {
-	var _p3 = _p2;
+var _mordrax$cotwelm$Utils_Misc$vectorToHtmlStyle = function (_p15) {
+	var _p16 = _p15;
 	return {
 		ctor: '::',
 		_0: {
 			ctor: '_Tuple2',
 			_0: 'top',
-			_1: _mordrax$cotwelm$Utils_Misc$px(_p3._1 * 32)
+			_1: _mordrax$cotwelm$Utils_Misc$px(_p16._1 * 32)
 		},
 		_1: {
 			ctor: '::',
 			_0: {
 				ctor: '_Tuple2',
 				_0: 'left',
-				_1: _mordrax$cotwelm$Utils_Misc$px(_p3._0 * 32)
+				_1: _mordrax$cotwelm$Utils_Misc$px(_p16._0 * 32)
 			},
 			_1: {ctor: '[]'}
 		}
 	};
 };
 var _mordrax$cotwelm$Utils_Misc$toScaledTilePosition = F2(
-	function (_p4, scale) {
-		var _p5 = _p4;
+	function (_p17, scale) {
+		var _p18 = _p17;
 		var size = _elm_lang$core$Basics$round(scale * 32);
 		return _elm_lang$html$Html_Attributes$style(
 			{
@@ -17987,21 +17231,2111 @@ var _mordrax$cotwelm$Utils_Misc$toScaledTilePosition = F2(
 				_0: {
 					ctor: '_Tuple2',
 					_0: 'top',
-					_1: _mordrax$cotwelm$Utils_Misc$px(_p5._1 * size)
+					_1: _mordrax$cotwelm$Utils_Misc$px(_p18._1 * size)
 				},
 				_1: {
 					ctor: '::',
 					_0: {
 						ctor: '_Tuple2',
 						_0: 'left',
-						_1: _mordrax$cotwelm$Utils_Misc$px(_p5._0 * size)
+						_1: _mordrax$cotwelm$Utils_Misc$px(_p18._0 * size)
 					},
 					_1: {ctor: '[]'}
 				}
 			});
 	});
 
-var _mordrax$cotwelm$Equipment$unequip_ = F2(
+var _mordrax$cotwelm$Container$list = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0.items;
+};
+var _mordrax$cotwelm$Container$mass = function (_p2) {
+	var _p3 = _p2;
+	return _p3._0.currentMass;
+};
+var _mordrax$cotwelm$Container$capacity = function (_p4) {
+	var _p5 = _p4;
+	return _p5._0.capacity;
+};
+var _mordrax$cotwelm$Container$Model = F5(
+	function (a, b, c, d, e) {
+		return {capacity: a, currentMass: b, items: c, getMass: d, equals: e};
+	});
+var _mordrax$cotwelm$Container$NestedItem = {ctor: 'NestedItem'};
+var _mordrax$cotwelm$Container$MassMsg = function (a) {
+	return {ctor: 'MassMsg', _0: a};
+};
+var _mordrax$cotwelm$Container$Ok = {ctor: 'Ok'};
+var _mordrax$cotwelm$Container$ContainerModel = function (a) {
+	return {ctor: 'ContainerModel', _0: a};
+};
+var _mordrax$cotwelm$Container$init = F3(
+	function (capacity, getMass, equals) {
+		return _mordrax$cotwelm$Container$ContainerModel(
+			A5(
+				_mordrax$cotwelm$Container$Model,
+				capacity,
+				A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+				{ctor: '[]'},
+				getMass,
+				equals));
+	});
+var _mordrax$cotwelm$Container$set = F2(
+	function (items, _p6) {
+		var _p7 = _p6;
+		return _mordrax$cotwelm$Container$ContainerModel(
+			_elm_lang$core$Native_Utils.update(
+				_p7._0,
+				{items: items}));
+	});
+var _mordrax$cotwelm$Container$add = F2(
+	function (item, _p8) {
+		var _p9 = _p8;
+		var _p11 = _p9._0;
+		var mass = _p11.getMass(item);
+		var containerMassWithItem = A2(_mordrax$cotwelm$Utils_Mass$add, mass, _p11.currentMass);
+		var isWithinCapacity = A2(_mordrax$cotwelm$Utils_Mass$withinCapacity, containerMassWithItem, _p11.capacity);
+		var _p10 = isWithinCapacity;
+		if (_p10.ctor === 'Success') {
+			return {
+				ctor: '_Tuple2',
+				_0: _mordrax$cotwelm$Container$ContainerModel(
+					_elm_lang$core$Native_Utils.update(
+						_p11,
+						{
+							currentMass: containerMassWithItem,
+							items: {ctor: '::', _0: item, _1: _p11.items}
+						})),
+				_1: _mordrax$cotwelm$Container$Ok
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: _mordrax$cotwelm$Container$ContainerModel(_p11),
+				_1: _mordrax$cotwelm$Container$MassMsg(_p10)
+			};
+		}
+	});
+var _mordrax$cotwelm$Container$remove = F2(
+	function (item, _p12) {
+		var _p13 = _p12;
+		var _p14 = _p13._0;
+		var itemMass = _p14.getMass(item);
+		var mass_ = A2(_mordrax$cotwelm$Utils_Mass$subtract, _p14.currentMass, itemMass);
+		var itemsWithItemRemoved = A3(_mordrax$cotwelm$Utils_Misc$removeFirst, item, _p14.equals, _p14.items);
+		return _mordrax$cotwelm$Container$ContainerModel(
+			_elm_lang$core$Native_Utils.update(
+				_p14,
+				{items: itemsWithItemRemoved, currentMass: mass_}));
+	});
+
+var _mordrax$cotwelm$Item_Data$acToInt = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0;
+};
+var _mordrax$cotwelm$Item_Data$BaseItem = F6(
+	function (a, b, c, d, e, f) {
+		return {name: a, prices: b, css: c, mass: d, status: e, isIdentified: f};
+	});
+var _mordrax$cotwelm$Item_Data$Weapon = F3(
+	function (a, b, c) {
+		return {base: a, weaponType: b, damage: c};
+	});
+var _mordrax$cotwelm$Item_Data$Armour = F3(
+	function (a, b, c) {
+		return {base: a, armourType: b, ac: c};
+	});
+var _mordrax$cotwelm$Item_Data$Gauntlets = F3(
+	function (a, b, c) {
+		return {base: a, gauntletsType: b, ac: c};
+	});
+var _mordrax$cotwelm$Item_Data$Helmet = F3(
+	function (a, b, c) {
+		return {base: a, helmetType: b, ac: c};
+	});
+var _mordrax$cotwelm$Item_Data$Bracers = F3(
+	function (a, b, c) {
+		return {base: a, bracersType: b, ac: c};
+	});
+var _mordrax$cotwelm$Item_Data$Shield = F3(
+	function (a, b, c) {
+		return {base: a, shieldType: b, ac: c};
+	});
+var _mordrax$cotwelm$Item_Data$Boots = F2(
+	function (a, b) {
+		return {base: a, bootsType: b};
+	});
+var _mordrax$cotwelm$Item_Data$Neckwear = F2(
+	function (a, b) {
+		return {base: a, neckwearType: b};
+	});
+var _mordrax$cotwelm$Item_Data$Overgarment = F2(
+	function (a, b) {
+		return {base: a, overgarmentType: b};
+	});
+var _mordrax$cotwelm$Item_Data$Ring = F2(
+	function (a, b) {
+		return {base: a, ringType: b};
+	});
+var _mordrax$cotwelm$Item_Data$MassMsg = function (a) {
+	return {ctor: 'MassMsg', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$NestedItem = {ctor: 'NestedItem'};
+var _mordrax$cotwelm$Item_Data$ItemOk = {ctor: 'ItemOk'};
+var _mordrax$cotwelm$Item_Data$Enchanted = {ctor: 'Enchanted'};
+var _mordrax$cotwelm$Item_Data$Cursed = {ctor: 'Cursed'};
+var _mordrax$cotwelm$Item_Data$Normal = {ctor: 'Normal'};
+var _mordrax$cotwelm$Item_Data$AC = function (a) {
+	return {ctor: 'AC', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$addAC = F2(
+	function (_p3, _p2) {
+		var _p4 = _p3;
+		var _p5 = _p2;
+		return _mordrax$cotwelm$Item_Data$AC(_p4._0 + _p5._0);
+	});
+var _mordrax$cotwelm$Item_Data$Unidentified = {ctor: 'Unidentified'};
+var _mordrax$cotwelm$Item_Data$Identified = {ctor: 'Identified'};
+var _mordrax$cotwelm$Item_Data$ItemTypePlatinum = function (a) {
+	return {ctor: 'ItemTypePlatinum', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeGold = function (a) {
+	return {ctor: 'ItemTypeGold', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeSilver = function (a) {
+	return {ctor: 'ItemTypeSilver', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeCopper = function (a) {
+	return {ctor: 'ItemTypeCopper', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeBoots = function (a) {
+	return {ctor: 'ItemTypeBoots', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeRing = function (a) {
+	return {ctor: 'ItemTypeRing', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeOvergarment = function (a) {
+	return {ctor: 'ItemTypeOvergarment', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeNeckwear = function (a) {
+	return {ctor: 'ItemTypeNeckwear', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypePurse = {ctor: 'ItemTypePurse'};
+var _mordrax$cotwelm$Item_Data$ItemTypePack = function (a) {
+	return {ctor: 'ItemTypePack', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeBelt = function (a) {
+	return {ctor: 'ItemTypeBelt', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeGauntlets = function (a) {
+	return {ctor: 'ItemTypeGauntlets', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeBracers = function (a) {
+	return {ctor: 'ItemTypeBracers', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeHelmet = function (a) {
+	return {ctor: 'ItemTypeHelmet', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeShield = function (a) {
+	return {ctor: 'ItemTypeShield', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeArmour = function (a) {
+	return {ctor: 'ItemTypeArmour', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$ItemTypeWeapon = function (a) {
+	return {ctor: 'ItemTypeWeapon', _0: a};
+};
+var _mordrax$cotwelm$Item_Data$Prices = F2(
+	function (a, b) {
+		return {ctor: 'Prices', _0: a, _1: b};
+	});
+var _mordrax$cotwelm$Item_Data$GiantMaul = {ctor: 'GiantMaul'};
+var _mordrax$cotwelm$Item_Data$Boulder = {ctor: 'Boulder'};
+var _mordrax$cotwelm$Item_Data$GiantAxe = {ctor: 'GiantAxe'};
+var _mordrax$cotwelm$Item_Data$StoneClub = {ctor: 'StoneClub'};
+var _mordrax$cotwelm$Item_Data$LargeClub = {ctor: 'LargeClub'};
+var _mordrax$cotwelm$Item_Data$Pike = {ctor: 'Pike'};
+var _mordrax$cotwelm$Item_Data$LargeClaws = {ctor: 'LargeClaws'};
+var _mordrax$cotwelm$Item_Data$Bow = {ctor: 'Bow'};
+var _mordrax$cotwelm$Item_Data$Pincers = {ctor: 'Pincers'};
+var _mordrax$cotwelm$Item_Data$Fangs = {ctor: 'Fangs'};
+var _mordrax$cotwelm$Item_Data$Crossbow = {ctor: 'Crossbow'};
+var _mordrax$cotwelm$Item_Data$SmallBite = {ctor: 'SmallBite'};
+var _mordrax$cotwelm$Item_Data$SmallClaws = {ctor: 'SmallClaws'};
+var _mordrax$cotwelm$Item_Data$TwoHandedSword = {ctor: 'TwoHandedSword'};
+var _mordrax$cotwelm$Item_Data$BastardSword = {ctor: 'BastardSword'};
+var _mordrax$cotwelm$Item_Data$MorningStar = {ctor: 'MorningStar'};
+var _mordrax$cotwelm$Item_Data$BroadSword = {ctor: 'BroadSword'};
+var _mordrax$cotwelm$Item_Data$BattleAxe = {ctor: 'BattleAxe'};
+var _mordrax$cotwelm$Item_Data$LongSword = {ctor: 'LongSword'};
+var _mordrax$cotwelm$Item_Data$WarHammer = {ctor: 'WarHammer'};
+var _mordrax$cotwelm$Item_Data$Axe = {ctor: 'Axe'};
+var _mordrax$cotwelm$Item_Data$Flail = {ctor: 'Flail'};
+var _mordrax$cotwelm$Item_Data$Mace = {ctor: 'Mace'};
+var _mordrax$cotwelm$Item_Data$ShortSword = {ctor: 'ShortSword'};
+var _mordrax$cotwelm$Item_Data$Spear = {ctor: 'Spear'};
+var _mordrax$cotwelm$Item_Data$Quarterstaff = {ctor: 'Quarterstaff'};
+var _mordrax$cotwelm$Item_Data$HandAxe = {ctor: 'HandAxe'};
+var _mordrax$cotwelm$Item_Data$Hammer = {ctor: 'Hammer'};
+var _mordrax$cotwelm$Item_Data$Dagger = {ctor: 'Dagger'};
+var _mordrax$cotwelm$Item_Data$Club = {ctor: 'Club'};
+var _mordrax$cotwelm$Item_Data$BrokenSword = {ctor: 'BrokenSword'};
+var _mordrax$cotwelm$Item_Data$EnchantedHelmOfStorms = {ctor: 'EnchantedHelmOfStorms'};
+var _mordrax$cotwelm$Item_Data$HelmetOfDetectMonsters = {ctor: 'HelmetOfDetectMonsters'};
+var _mordrax$cotwelm$Item_Data$MeteoricSteelHelmet = {ctor: 'MeteoricSteelHelmet'};
+var _mordrax$cotwelm$Item_Data$SteelHelmet = {ctor: 'SteelHelmet'};
+var _mordrax$cotwelm$Item_Data$IronHelmet = {ctor: 'IronHelmet'};
+var _mordrax$cotwelm$Item_Data$LeatherHelmet = {ctor: 'LeatherHelmet'};
+var _mordrax$cotwelm$Item_Data$BrokenHelmet = {ctor: 'BrokenHelmet'};
+var _mordrax$cotwelm$Item_Data$ToughHide = {ctor: 'ToughHide'};
+var _mordrax$cotwelm$Item_Data$Shell = {ctor: 'Shell'};
+var _mordrax$cotwelm$Item_Data$Bones = {ctor: 'Bones'};
+var _mordrax$cotwelm$Item_Data$SoftHide = {ctor: 'SoftHide'};
+var _mordrax$cotwelm$Item_Data$ElvenChainMail = {ctor: 'ElvenChainMail'};
+var _mordrax$cotwelm$Item_Data$MeteoricSteelPlate = {ctor: 'MeteoricSteelPlate'};
+var _mordrax$cotwelm$Item_Data$PlateArmour = {ctor: 'PlateArmour'};
+var _mordrax$cotwelm$Item_Data$PlateMail = {ctor: 'PlateMail'};
+var _mordrax$cotwelm$Item_Data$SplintMail = {ctor: 'SplintMail'};
+var _mordrax$cotwelm$Item_Data$ChainMail = {ctor: 'ChainMail'};
+var _mordrax$cotwelm$Item_Data$ScaleMail = {ctor: 'ScaleMail'};
+var _mordrax$cotwelm$Item_Data$RingMail = {ctor: 'RingMail'};
+var _mordrax$cotwelm$Item_Data$StuddedLeatherArmour = {ctor: 'StuddedLeatherArmour'};
+var _mordrax$cotwelm$Item_Data$LeatherArmour = {ctor: 'LeatherArmour'};
+var _mordrax$cotwelm$Item_Data$RustyArmour = {ctor: 'RustyArmour'};
+var _mordrax$cotwelm$Item_Data$LargeMeteoricSteelShield = {ctor: 'LargeMeteoricSteelShield'};
+var _mordrax$cotwelm$Item_Data$MediumMeteoricSteelShield = {ctor: 'MediumMeteoricSteelShield'};
+var _mordrax$cotwelm$Item_Data$SmallMeteoricSteelShield = {ctor: 'SmallMeteoricSteelShield'};
+var _mordrax$cotwelm$Item_Data$LargeSteelShield = {ctor: 'LargeSteelShield'};
+var _mordrax$cotwelm$Item_Data$MediumSteelShield = {ctor: 'MediumSteelShield'};
+var _mordrax$cotwelm$Item_Data$SmallSteelShield = {ctor: 'SmallSteelShield'};
+var _mordrax$cotwelm$Item_Data$LargeIronShield = {ctor: 'LargeIronShield'};
+var _mordrax$cotwelm$Item_Data$MediumIronShield = {ctor: 'MediumIronShield'};
+var _mordrax$cotwelm$Item_Data$SmallIronShield = {ctor: 'SmallIronShield'};
+var _mordrax$cotwelm$Item_Data$LargeWoodenShield = {ctor: 'LargeWoodenShield'};
+var _mordrax$cotwelm$Item_Data$MediumWoodenShield = {ctor: 'MediumWoodenShield'};
+var _mordrax$cotwelm$Item_Data$SmallWoodenShield = {ctor: 'SmallWoodenShield'};
+var _mordrax$cotwelm$Item_Data$BrokenShield = {ctor: 'BrokenShield'};
+var _mordrax$cotwelm$Item_Data$BracersOfDefenseVS = {ctor: 'BracersOfDefenseVS'};
+var _mordrax$cotwelm$Item_Data$BracersOfDefenseS = {ctor: 'BracersOfDefenseS'};
+var _mordrax$cotwelm$Item_Data$BracersOfDefenseNormal = {ctor: 'BracersOfDefenseNormal'};
+var _mordrax$cotwelm$Item_Data$NormalBracers = {ctor: 'NormalBracers'};
+var _mordrax$cotwelm$Item_Data$GauntletOfStrengthVS = {ctor: 'GauntletOfStrengthVS'};
+var _mordrax$cotwelm$Item_Data$GauntletOfStrengthS = {ctor: 'GauntletOfStrengthS'};
+var _mordrax$cotwelm$Item_Data$GauntletOfStrength = {ctor: 'GauntletOfStrength'};
+var _mordrax$cotwelm$Item_Data$GauntletOfDexterityVS = {ctor: 'GauntletOfDexterityVS'};
+var _mordrax$cotwelm$Item_Data$GauntletOfDexterityS = {ctor: 'GauntletOfDexterityS'};
+var _mordrax$cotwelm$Item_Data$GauntletOfDexterity = {ctor: 'GauntletOfDexterity'};
+var _mordrax$cotwelm$Item_Data$GauntletOfSlayingVS_VS = {ctor: 'GauntletOfSlayingVS_VS'};
+var _mordrax$cotwelm$Item_Data$GauntletOfSlayingS_S = {ctor: 'GauntletOfSlayingS_S'};
+var _mordrax$cotwelm$Item_Data$GauntletOfSlaying = {ctor: 'GauntletOfSlaying'};
+var _mordrax$cotwelm$Item_Data$GauntletOfProtectionVS = {ctor: 'GauntletOfProtectionVS'};
+var _mordrax$cotwelm$Item_Data$GauntletOfProtectionS = {ctor: 'GauntletOfProtectionS'};
+var _mordrax$cotwelm$Item_Data$GauntletOfProtection = {ctor: 'GauntletOfProtection'};
+var _mordrax$cotwelm$Item_Data$NormalGauntlets = {ctor: 'NormalGauntlets'};
+var _mordrax$cotwelm$Item_Data$EnchantedLargePackOfHolding = {ctor: 'EnchantedLargePackOfHolding'};
+var _mordrax$cotwelm$Item_Data$EnchantedMediumPackOfHolding = {ctor: 'EnchantedMediumPackOfHolding'};
+var _mordrax$cotwelm$Item_Data$EnchantedSmallPackOfHolding = {ctor: 'EnchantedSmallPackOfHolding'};
+var _mordrax$cotwelm$Item_Data$LargeChest = {ctor: 'LargeChest'};
+var _mordrax$cotwelm$Item_Data$MediumChest = {ctor: 'MediumChest'};
+var _mordrax$cotwelm$Item_Data$SmallChest = {ctor: 'SmallChest'};
+var _mordrax$cotwelm$Item_Data$LargePack = {ctor: 'LargePack'};
+var _mordrax$cotwelm$Item_Data$MediumPack = {ctor: 'MediumPack'};
+var _mordrax$cotwelm$Item_Data$SmallPack = {ctor: 'SmallPack'};
+var _mordrax$cotwelm$Item_Data$LargeBag = {ctor: 'LargeBag'};
+var _mordrax$cotwelm$Item_Data$MediumBag = {ctor: 'MediumBag'};
+var _mordrax$cotwelm$Item_Data$SmallBag = {ctor: 'SmallBag'};
+var _mordrax$cotwelm$Item_Data$WandQuiverBelt = {ctor: 'WandQuiverBelt'};
+var _mordrax$cotwelm$Item_Data$UtilityBelt = {ctor: 'UtilityBelt'};
+var _mordrax$cotwelm$Item_Data$FourSlotBelt = {ctor: 'FourSlotBelt'};
+var _mordrax$cotwelm$Item_Data$ThreeSlotBelt = {ctor: 'ThreeSlotBelt'};
+var _mordrax$cotwelm$Item_Data$TwoSlotBelt = {ctor: 'TwoSlotBelt'};
+var _mordrax$cotwelm$Item_Data$NoOp1 = {ctor: 'NoOp1'};
+var _mordrax$cotwelm$Item_Data$NoOp2 = {ctor: 'NoOp2'};
+var _mordrax$cotwelm$Item_Data$NoOp3 = {ctor: 'NoOp3'};
+var _mordrax$cotwelm$Item_Data$NoOp4 = {ctor: 'NoOp4'};
+
+var _mordrax$cotwelm$Item_Belt$Belt = F3(
+	function (a, b, c) {
+		return {base: a, beltType: b, beltContainer: c};
+	});
+var _mordrax$cotwelm$Item_Belt$FourSlot = function (a) {
+	return {ctor: 'FourSlot', _0: a};
+};
+var _mordrax$cotwelm$Item_Belt$ThreeSlot = function (a) {
+	return {ctor: 'ThreeSlot', _0: a};
+};
+var _mordrax$cotwelm$Item_Belt$TwoSlot = function (a) {
+	return {ctor: 'TwoSlot', _0: a};
+};
+var _mordrax$cotwelm$Item_Belt$initBeltContainer = function (beltType) {
+	var _p0 = beltType;
+	switch (_p0.ctor) {
+		case 'TwoSlotBelt':
+			return _mordrax$cotwelm$Item_Belt$TwoSlot(
+				{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing});
+		case 'ThreeSlotBelt':
+			return _mordrax$cotwelm$Item_Belt$ThreeSlot(
+				{ctor: '_Tuple3', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing, _2: _elm_lang$core$Maybe$Nothing});
+		case 'FourSlotBelt':
+			return _mordrax$cotwelm$Item_Belt$FourSlot(
+				{ctor: '_Tuple4', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing, _2: _elm_lang$core$Maybe$Nothing, _3: _elm_lang$core$Maybe$Nothing});
+		case 'UtilityBelt':
+			return _mordrax$cotwelm$Item_Belt$TwoSlot(
+				{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing});
+		default:
+			return _mordrax$cotwelm$Item_Belt$TwoSlot(
+				{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: _elm_lang$core$Maybe$Nothing});
+	}
+};
+var _mordrax$cotwelm$Item_Belt$init = F3(
+	function (beltType, status, idStatus) {
+		var make = F5(
+			function (name, mass, css, prices, container) {
+				return {
+					base: A6(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus),
+					beltType: beltType,
+					beltContainer: _mordrax$cotwelm$Item_Belt$initBeltContainer(beltType)
+				};
+			});
+		var _p1 = beltType;
+		switch (_p1.ctor) {
+			case 'TwoSlotBelt':
+				return A5(
+					make,
+					'Two Slot Belt',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					'slot-belt',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 300),
+					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$TwoSlotBelt));
+			case 'ThreeSlotBelt':
+				return A5(
+					make,
+					'Three Slot Belt',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					'slot-belt',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 300),
+					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$ThreeSlotBelt));
+			case 'FourSlotBelt':
+				return A5(
+					make,
+					'Four Slot Belt',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					'slot-belt',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 300),
+					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$FourSlotBelt));
+			case 'UtilityBelt':
+				return A5(
+					make,
+					'Utility Belt',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					'utility-belt',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 1350, 1800),
+					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$UtilityBelt));
+			default:
+				return A5(
+					make,
+					'Wand Quiver Belt',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					'wand-quiver-belt',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 300),
+					_mordrax$cotwelm$Item_Belt$initBeltContainer(_mordrax$cotwelm$Item_Data$WandQuiverBelt));
+		}
+	});
+
+var _mordrax$cotwelm$Item_Armour$encode = _elm_lang$core$Basics$toString;
+var _mordrax$cotwelm$Item_Armour$listTypes = {
+	ctor: '::',
+	_0: _mordrax$cotwelm$Item_Data$RustyArmour,
+	_1: {
+		ctor: '::',
+		_0: _mordrax$cotwelm$Item_Data$LeatherArmour,
+		_1: {
+			ctor: '::',
+			_0: _mordrax$cotwelm$Item_Data$StuddedLeatherArmour,
+			_1: {
+				ctor: '::',
+				_0: _mordrax$cotwelm$Item_Data$RingMail,
+				_1: {
+					ctor: '::',
+					_0: _mordrax$cotwelm$Item_Data$ScaleMail,
+					_1: {
+						ctor: '::',
+						_0: _mordrax$cotwelm$Item_Data$ChainMail,
+						_1: {
+							ctor: '::',
+							_0: _mordrax$cotwelm$Item_Data$SplintMail,
+							_1: {
+								ctor: '::',
+								_0: _mordrax$cotwelm$Item_Data$PlateMail,
+								_1: {
+									ctor: '::',
+									_0: _mordrax$cotwelm$Item_Data$PlateArmour,
+									_1: {
+										ctor: '::',
+										_0: _mordrax$cotwelm$Item_Data$MeteoricSteelPlate,
+										_1: {
+											ctor: '::',
+											_0: _mordrax$cotwelm$Item_Data$ElvenChainMail,
+											_1: {
+												ctor: '::',
+												_0: _mordrax$cotwelm$Item_Data$SoftHide,
+												_1: {
+													ctor: '::',
+													_0: _mordrax$cotwelm$Item_Data$Bones,
+													_1: {
+														ctor: '::',
+														_0: _mordrax$cotwelm$Item_Data$Shell,
+														_1: {
+															ctor: '::',
+															_0: _mordrax$cotwelm$Item_Data$ToughHide,
+															_1: {ctor: '[]'}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+};
+var _mordrax$cotwelm$Item_Armour$armourTypeDict = function () {
+	var makeKVP = function (x) {
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$toString(x),
+			_1: x
+		};
+	};
+	return _elm_lang$core$Dict$fromList(
+		A2(_elm_lang$core$List$map, makeKVP, _mordrax$cotwelm$Item_Armour$listTypes));
+}();
+var _mordrax$cotwelm$Item_Armour$decoder = function (value) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		_mordrax$cotwelm$Item_Data$RustyArmour,
+		A2(_elm_lang$core$Dict$get, value, _mordrax$cotwelm$Item_Armour$armourTypeDict));
+};
+var _mordrax$cotwelm$Item_Armour$init = F3(
+	function (armourType, status, idStatus) {
+		var make = F5(
+			function (name, _p1, css, _p0, ac) {
+				var _p2 = _p1;
+				var _p3 = _p0;
+				return {
+					base: A6(
+						_mordrax$cotwelm$Item_Data$BaseItem,
+						name,
+						A2(_mordrax$cotwelm$Item_Data$Prices, _p3._0, _p3._1),
+						css,
+						A2(_mordrax$cotwelm$Utils_Mass$Mass, _p2._0, _p2._1),
+						status,
+						idStatus),
+					armourType: armourType,
+					ac: ac
+				};
+			});
+		var makeMonsterArmour = F2(
+			function (name, ac) {
+				return A5(
+					make,
+					name,
+					{ctor: '_Tuple2', _0: 0, _1: 0},
+					'',
+					{ctor: '_Tuple2', _0: 0, _1: 0},
+					ac);
+			});
+		var _p4 = armourType;
+		switch (_p4.ctor) {
+			case 'RustyArmour':
+				return A5(
+					make,
+					'Rusty Armour',
+					{ctor: '_Tuple2', _0: 10000, _1: 30000},
+					'broken-armour',
+					{ctor: '_Tuple2', _0: 0, _1: 25},
+					_mordrax$cotwelm$Item_Data$AC(0));
+			case 'LeatherArmour':
+				return A5(
+					make,
+					'Leather Armour',
+					{ctor: '_Tuple2', _0: 5000, _1: 2400},
+					'leather-armour',
+					{ctor: '_Tuple2', _0: 1080, _1: 600},
+					_mordrax$cotwelm$Item_Data$AC(6));
+			case 'StuddedLeatherArmour':
+				return A5(
+					make,
+					'Studded Leather Armour',
+					{ctor: '_Tuple2', _0: 7000, _1: 25000},
+					'leather-armour',
+					{ctor: '_Tuple2', _0: 3150, _1: 1800},
+					_mordrax$cotwelm$Item_Data$AC(12));
+			case 'RingMail':
+				return A5(
+					make,
+					'Ring Mail',
+					{ctor: '_Tuple2', _0: 8000, _1: 30000},
+					'metal-armour',
+					{ctor: '_Tuple2', _0: 6300, _1: 3600},
+					_mordrax$cotwelm$Item_Data$AC(18));
+			case 'ScaleMail':
+				return A5(
+					make,
+					'Scale Mail',
+					{ctor: '_Tuple2', _0: 9000, _1: 30000},
+					'metal-armour',
+					{ctor: '_Tuple2', _0: 10800, _1: 6000},
+					_mordrax$cotwelm$Item_Data$AC(24));
+			case 'ChainMail':
+				return A5(
+					make,
+					'Chain Mail',
+					{ctor: '_Tuple2', _0: 10000, _1: 30000},
+					'metal-armour',
+					{ctor: '_Tuple2', _0: 16200, _1: 9000},
+					_mordrax$cotwelm$Item_Data$AC(30));
+			case 'SplintMail':
+				return A5(
+					make,
+					'Splint Mail',
+					{ctor: '_Tuple2', _0: 12000, _1: 40000},
+					'metal-armour',
+					{ctor: '_Tuple2', _0: 27000, _1: 15000},
+					_mordrax$cotwelm$Item_Data$AC(36));
+			case 'PlateMail':
+				return A5(
+					make,
+					'Plate Mail',
+					{ctor: '_Tuple2', _0: 15000, _1: 40000},
+					'metal-armour',
+					{ctor: '_Tuple2', _0: 42000, _1: 24000},
+					_mordrax$cotwelm$Item_Data$AC(42));
+			case 'PlateArmour':
+				return A5(
+					make,
+					'Plate Armour',
+					{ctor: '_Tuple2', _0: 15000, _1: 60000},
+					'metal-armour',
+					{ctor: '_Tuple2', _0: 42000, _1: 24000},
+					_mordrax$cotwelm$Item_Data$AC(48));
+			case 'MeteoricSteelPlate':
+				return A5(
+					make,
+					'Meteoric Steel Plate',
+					{ctor: '_Tuple2', _0: 5000, _1: 30000},
+					'metal-armour',
+					{ctor: '_Tuple2', _0: 105000, _1: 60000},
+					_mordrax$cotwelm$Item_Data$AC(54));
+			case 'ElvenChainMail':
+				return A5(
+					make,
+					'Elven Chain Mail',
+					{ctor: '_Tuple2', _0: 5000, _1: 24000},
+					'metal-armour',
+					{ctor: '_Tuple2', _0: 162000, _1: 90000},
+					_mordrax$cotwelm$Item_Data$AC(52));
+			case 'SoftHide':
+				return A2(
+					makeMonsterArmour,
+					'Soft Hide',
+					_mordrax$cotwelm$Item_Data$AC(10));
+			case 'Bones':
+				return A2(
+					makeMonsterArmour,
+					'Bones',
+					_mordrax$cotwelm$Item_Data$AC(15));
+			case 'Shell':
+				return A2(
+					makeMonsterArmour,
+					'Shell',
+					_mordrax$cotwelm$Item_Data$AC(20));
+			default:
+				return A2(
+					makeMonsterArmour,
+					'Tough Hide',
+					_mordrax$cotwelm$Item_Data$AC(20));
+		}
+	});
+
+var _mordrax$cotwelm$Item_Bracers$init = F3(
+	function (bracersType, status, idStatus) {
+		var make = F5(
+			function (name, mass, css, prices, ac) {
+				return {
+					base: A6(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus),
+					bracersType: bracersType,
+					ac: ac
+				};
+			});
+		var _p0 = bracersType;
+		switch (_p0.ctor) {
+			case 'NormalBracers':
+				return A5(
+					make,
+					'Bracers',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'bracers',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 108, 60),
+					_mordrax$cotwelm$Item_Data$AC(3));
+			case 'BracersOfDefenseNormal':
+				return A5(
+					make,
+					'Bracers Of Defense Normal',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'bracers-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 1836, 1020),
+					_mordrax$cotwelm$Item_Data$AC(8));
+			case 'BracersOfDefenseS':
+				return A5(
+					make,
+					'Bracers Of Defense Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'bracers-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 5616, 3120),
+					_mordrax$cotwelm$Item_Data$AC(13));
+			default:
+				return A5(
+					make,
+					'Bracers Of Defense Very Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'bracers-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 11556, 6420),
+					_mordrax$cotwelm$Item_Data$AC(18));
+		}
+	});
+
+var _mordrax$cotwelm$Item_Gauntlets$init = F3(
+	function (gauntletsType, status, idStatus) {
+		var make = F5(
+			function (name, mass, css, prices, ac) {
+				return {
+					base: A6(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus),
+					gauntletsType: gauntletsType,
+					ac: ac
+				};
+			});
+		var _p0 = gauntletsType;
+		switch (_p0.ctor) {
+			case 'NormalGauntlets':
+				return A5(
+					make,
+					'Gauntlet',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 105, 60),
+					_mordrax$cotwelm$Item_Data$AC(5));
+			case 'GauntletOfProtection':
+				return A5(
+					make,
+					'Gauntlet Of Protection',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 2625, 1500),
+					_mordrax$cotwelm$Item_Data$AC(10));
+			case 'GauntletOfProtectionS':
+				return A5(
+					make,
+					'Gauntlet Of Protection Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 6300, 3600),
+					_mordrax$cotwelm$Item_Data$AC(15));
+			case 'GauntletOfProtectionVS':
+				return A5(
+					make,
+					'Gauntlet Of Protection Very Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 12420, 6900),
+					_mordrax$cotwelm$Item_Data$AC(20));
+			case 'GauntletOfSlaying':
+				return A5(
+					make,
+					'Gauntlet Of Slaying',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-of-slaying',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 3780, 2100),
+					_mordrax$cotwelm$Item_Data$AC(0));
+			case 'GauntletOfSlayingS_S':
+				return A5(
+					make,
+					'Gauntlet Of Slaying Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-of-slaying',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 7560, 4200),
+					_mordrax$cotwelm$Item_Data$AC(0));
+			case 'GauntletOfSlayingVS_VS':
+				return A5(
+					make,
+					'Gauntlet Of Slaying Very Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-of-slaying',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 13125, 7500),
+					_mordrax$cotwelm$Item_Data$AC(0));
+			case 'GauntletOfDexterity':
+				return A5(
+					make,
+					'Gauntlet Of Dexterity',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 3240, 1800),
+					_mordrax$cotwelm$Item_Data$AC(5));
+			case 'GauntletOfDexterityS':
+				return A5(
+					make,
+					'Gauntlet Of Dexterity Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 7020, 3900),
+					_mordrax$cotwelm$Item_Data$AC(5));
+			case 'GauntletOfDexterityVS':
+				return A5(
+					make,
+					'Gauntlet Of Dexterity Very Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 12960, 7200),
+					_mordrax$cotwelm$Item_Data$AC(5));
+			case 'GauntletOfStrength':
+				return A5(
+					make,
+					'Gauntlet Of Strength',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 3240, 1800),
+					_mordrax$cotwelm$Item_Data$AC(5));
+			case 'GauntletOfStrengthS':
+				return A5(
+					make,
+					'Gauntlet Of Strength Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 0, 0),
+					_mordrax$cotwelm$Item_Data$AC(5));
+			default:
+				return A5(
+					make,
+					'Gauntlet Of Strength Very Strong',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 2000),
+					'gauntlet-enchanted',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 12960, 7200),
+					_mordrax$cotwelm$Item_Data$AC(5));
+		}
+	});
+
+var _mordrax$cotwelm$Item_Helmet$init = F3(
+	function (helmetType, status, idStatus) {
+		var make = F5(
+			function (name, mass, css, prices, ac) {
+				return {
+					base: A6(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus),
+					helmetType: helmetType,
+					ac: ac
+				};
+			});
+		var _p0 = helmetType;
+		switch (_p0.ctor) {
+			case 'BrokenHelmet':
+				return A5(
+					make,
+					'Broken Helmet',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 1000, 1000),
+					'broken-helmet',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 0, 25),
+					_mordrax$cotwelm$Item_Data$AC(0));
+			case 'LeatherHelmet':
+				return A5(
+					make,
+					'Leather Helmet',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 500, 500),
+					'leather-helmet',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 525, 300),
+					_mordrax$cotwelm$Item_Data$AC(3));
+			case 'IronHelmet':
+				return A5(
+					make,
+					'Iron Helmet',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 2000, 2000),
+					'metal-helmet',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 1050, 600),
+					_mordrax$cotwelm$Item_Data$AC(6));
+			case 'SteelHelmet':
+				return A5(
+					make,
+					'Steel Helmet',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 2500, 2000),
+					'metal-helmet',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 3150, 1800),
+					_mordrax$cotwelm$Item_Data$AC(9));
+			case 'MeteoricSteelHelmet':
+				return A5(
+					make,
+					'Meteoric Steel Helmet',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 1000, 2000),
+					'metal-helmet',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 10500, 6000),
+					_mordrax$cotwelm$Item_Data$AC(15));
+			case 'HelmetOfDetectMonsters':
+				return A5(
+					make,
+					'Helmet Of Detect Monsters',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 2500, 2000),
+					'helmet-of-detect-monsters',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 42000, 24000),
+					_mordrax$cotwelm$Item_Data$AC(9));
+			default:
+				return A5(
+					make,
+					'Enchanted Helm Of Storms',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 1000, 2000),
+					'enchanted-helm-of-storms',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 1050000, 600000),
+					_mordrax$cotwelm$Item_Data$AC(25));
+		}
+	});
+
+var _mordrax$cotwelm$Item_Pack$init = F4(
+	function (packType, toContainer, status, idStatus) {
+		var make = F5(
+			function (name, price, css, mass, capacity) {
+				return {
+					base: A6(_mordrax$cotwelm$Item_Data$BaseItem, name, price, css, mass, status, idStatus),
+					packType: packType,
+					container: toContainer(capacity)
+				};
+			});
+		var _p0 = packType;
+		switch (_p0.ctor) {
+			case 'SmallBag':
+				return A5(
+					make,
+					'Small Bag',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 300, 500),
+					'bag',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 5000, 6000));
+			case 'MediumBag':
+				return A5(
+					make,
+					'Medium Bag',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 500, 700),
+					'bag',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 10000, 12000));
+			case 'LargeBag':
+				return A5(
+					make,
+					'Large Bag',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 900, 900),
+					'bag',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 15000, 18000));
+			case 'SmallPack':
+				return A5(
+					make,
+					'Small Pack',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 1000, 1000),
+					'pack',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 12000, 50000));
+			case 'MediumPack':
+				return A5(
+					make,
+					'Medium Pack',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 2000, 1500),
+					'pack',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 22000, 75000));
+			case 'LargePack':
+				return A5(
+					make,
+					'Large Pack',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 4000, 100000),
+					'pack',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 35000, 100000));
+			case 'SmallChest':
+				return A5(
+					make,
+					'Small Chest',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 5000, 100000),
+					'chest',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 100000, 50000));
+			case 'MediumChest':
+				return A5(
+					make,
+					'Medium Chest',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 15000, 150000),
+					'chest',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 100000, 150000));
+			case 'LargeChest':
+				return A5(
+					make,
+					'Large Chest',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 25000, 250000),
+					'chest',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 100000, 250000));
+			case 'EnchantedSmallPackOfHolding':
+				return A5(
+					make,
+					'Enchanted Small Pack Of Holding',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 5000, 75000),
+					'enchanted-pack',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 50000, 150000));
+			case 'EnchantedMediumPackOfHolding':
+				return A5(
+					make,
+					'Enchanted Medium Pack Of Holding',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 7500, 100000),
+					'enchanted-pack',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 75000, 200000));
+			default:
+				return A5(
+					make,
+					'Enchanted Large Pack Of Holding',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 10000, 125000),
+					'enchanted-pack',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+					A2(_mordrax$cotwelm$Utils_Mass$Capacity, 100000, 250000));
+		}
+	});
+var _mordrax$cotwelm$Item_Pack$remove = F2(
+	function (item, pack) {
+		var newContainer = A2(_mordrax$cotwelm$Container$remove, item, pack.container);
+		return _elm_lang$core$Native_Utils.update(
+			pack,
+			{container: newContainer});
+	});
+var _mordrax$cotwelm$Item_Pack$add = F2(
+	function (item, pack) {
+		var _p1 = A2(_mordrax$cotwelm$Container$add, item, pack.container);
+		var newContainer = _p1._0;
+		var msgs = _p1._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				pack,
+				{container: newContainer}),
+			_1: msgs
+		};
+	});
+var _mordrax$cotwelm$Item_Pack$contents = function (_p2) {
+	var _p3 = _p2;
+	return _mordrax$cotwelm$Container$list(_p3.container);
+};
+var _mordrax$cotwelm$Item_Pack$info = function (_p4) {
+	var _p5 = _p4;
+	var _p6 = _p5.container;
+	return {
+		ctor: '_Tuple2',
+		_0: _mordrax$cotwelm$Container$mass(_p6),
+		_1: _mordrax$cotwelm$Container$capacity(_p6)
+	};
+};
+var _mordrax$cotwelm$Item_Pack$Pack = F3(
+	function (a, b, c) {
+		return {base: a, packType: b, container: c};
+	});
+
+var _mordrax$cotwelm$Item_Purse$toLeastSilvers = function (coins) {
+	return {
+		ctor: '_Tuple2',
+		_0: A2(_elm_lang$core$Basics_ops['%'], coins, 100),
+		_1: (coins / 100) | 0
+	};
+};
+var _mordrax$cotwelm$Item_Purse$toLeastGold = function (coins) {
+	var _p0 = _mordrax$cotwelm$Item_Purse$toLeastSilvers(coins);
+	var copper = _p0._0;
+	var silver = _p0._1;
+	return {
+		ctor: '_Tuple3',
+		_0: copper,
+		_1: A2(_elm_lang$core$Basics_ops['%'], silver, 100),
+		_2: (silver / 100) | 0
+	};
+};
+var _mordrax$cotwelm$Item_Purse$initCoinBaseItem = F3(
+	function (name, css, value) {
+		return A6(
+			_mordrax$cotwelm$Item_Data$BaseItem,
+			name,
+			A2(_mordrax$cotwelm$Item_Data$Prices, value, value),
+			css,
+			A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+			_mordrax$cotwelm$Item_Data$Normal,
+			_mordrax$cotwelm$Item_Data$Identified);
+	});
+var _mordrax$cotwelm$Item_Purse$initCoppers = function (value) {
+	return {
+		base: A3(_mordrax$cotwelm$Item_Purse$initCoinBaseItem, 'Copper', 'coins-copper', value),
+		value: value
+	};
+};
+var _mordrax$cotwelm$Item_Purse$initSilvers = function (value) {
+	return {
+		base: A3(_mordrax$cotwelm$Item_Purse$initCoinBaseItem, 'Silver', 'coins-silver', value),
+		value: value
+	};
+};
+var _mordrax$cotwelm$Item_Purse$initGolds = function (value) {
+	return {
+		base: A3(_mordrax$cotwelm$Item_Purse$initCoinBaseItem, 'Gold', 'coins-gold', value),
+		value: value
+	};
+};
+var _mordrax$cotwelm$Item_Purse$initPlatinums = function (value) {
+	return {
+		base: A3(_mordrax$cotwelm$Item_Purse$initCoinBaseItem, 'Platinum', 'coins-platinum', value),
+		value: value
+	};
+};
+var _mordrax$cotwelm$Item_Purse$CopperCoins = F2(
+	function (a, b) {
+		return {base: a, value: b};
+	});
+var _mordrax$cotwelm$Item_Purse$SilverCoins = F2(
+	function (a, b) {
+		return {base: a, value: b};
+	});
+var _mordrax$cotwelm$Item_Purse$GoldCoins = F2(
+	function (a, b) {
+		return {base: a, value: b};
+	});
+var _mordrax$cotwelm$Item_Purse$PlatinumCoins = F2(
+	function (a, b) {
+		return {base: a, value: b};
+	});
+var _mordrax$cotwelm$Item_Purse$Coins = F4(
+	function (a, b, c, d) {
+		return {copper: a, silver: b, gold: c, platinum: d};
+	});
+var _mordrax$cotwelm$Item_Purse$init = {
+	base: A6(
+		_mordrax$cotwelm$Item_Data$BaseItem,
+		'Purse',
+		A2(_mordrax$cotwelm$Item_Data$Prices, 0, 0),
+		'Purse',
+		A2(_mordrax$cotwelm$Utils_Mass$Mass, 0, 0),
+		_mordrax$cotwelm$Item_Data$Normal,
+		_mordrax$cotwelm$Item_Data$Identified),
+	coins: A4(_mordrax$cotwelm$Item_Purse$Coins, 100, 10, 1, 1)
+};
+var _mordrax$cotwelm$Item_Purse$merge_ = F3(
+	function (op, c1, c2) {
+		return A4(
+			_mordrax$cotwelm$Item_Purse$Coins,
+			A2(op, c1.copper, c2.copper),
+			A2(op, c1.silver, c2.silver),
+			A2(op, c1.gold, c2.gold),
+			A2(op, c1.platinum, c2.platinum));
+	});
+var _mordrax$cotwelm$Item_Purse$toLeastCoins = function (coppers) {
+	var _p1 = _mordrax$cotwelm$Item_Purse$toLeastGold(coppers);
+	var copper = _p1._0;
+	var silver = _p1._1;
+	var gold = _p1._2;
+	return A4(
+		_mordrax$cotwelm$Item_Purse$Coins,
+		copper,
+		silver,
+		A2(_elm_lang$core$Basics_ops['%'], gold, 100),
+		(gold / 100) | 0);
+};
+var _mordrax$cotwelm$Item_Purse$add = F2(
+	function (coppers, _p2) {
+		var _p3 = _p2;
+		var _p4 = _p3.coins;
+		var leastCoins = _mordrax$cotwelm$Item_Purse$toLeastCoins(coppers);
+		return _elm_lang$core$Native_Utils.update(
+			_p3,
+			{
+				coins: A4(_mordrax$cotwelm$Item_Purse$Coins, _p4.copper + leastCoins.copper, _p4.silver + leastCoins.silver, _p4.gold + leastCoins.gold, _p4.platinum + leastCoins.platinum)
+			});
+	});
+var _mordrax$cotwelm$Item_Purse$remove = F2(
+	function (copperToRemove, _p5) {
+		var _p6 = _p5;
+		var _p10 = _p6;
+		var _p9 = _p6.coins;
+		var totalSilvers = _p9.copper + (_p9.silver * 100);
+		var totalGold = totalSilvers + (_p9.gold * 10000);
+		var totalPlatinum = totalGold + (_p9.platinum * 1000000);
+		if (_elm_lang$core$Native_Utils.cmp(copperToRemove, _p9.copper) < 1) {
+			return _elm_lang$core$Result$Ok(
+				_elm_lang$core$Native_Utils.update(
+					_p10,
+					{
+						coins: _elm_lang$core$Native_Utils.update(
+							_p9,
+							{copper: _p9.copper - copperToRemove})
+					}));
+		} else {
+			if (_elm_lang$core$Native_Utils.cmp(copperToRemove, totalSilvers) < 1) {
+				var _p7 = _mordrax$cotwelm$Item_Purse$toLeastSilvers(totalSilvers - copperToRemove);
+				var copper_ = _p7._0;
+				var silver_ = _p7._1;
+				return _elm_lang$core$Result$Ok(
+					_elm_lang$core$Native_Utils.update(
+						_p10,
+						{
+							coins: _elm_lang$core$Native_Utils.update(
+								_p9,
+								{copper: copper_, silver: silver_})
+						}));
+			} else {
+				if (_elm_lang$core$Native_Utils.cmp(copperToRemove, totalGold) < 1) {
+					var _p8 = _mordrax$cotwelm$Item_Purse$toLeastGold(totalGold - copperToRemove);
+					var copper_ = _p8._0;
+					var silver_ = _p8._1;
+					var gold_ = _p8._2;
+					return _elm_lang$core$Result$Ok(
+						_elm_lang$core$Native_Utils.update(
+							_p10,
+							{
+								coins: _elm_lang$core$Native_Utils.update(
+									_p9,
+									{copper: copper_, silver: silver_, gold: gold_})
+							}));
+				} else {
+					if (_elm_lang$core$Native_Utils.cmp(copperToRemove, totalPlatinum) < 1) {
+						var coins = _mordrax$cotwelm$Item_Purse$toLeastCoins(totalPlatinum - copperToRemove);
+						return _elm_lang$core$Result$Ok(
+							_elm_lang$core$Native_Utils.update(
+								_p10,
+								{
+									coins: _elm_lang$core$Native_Utils.update(
+										coins,
+										{copper: coins.copper, silver: coins.silver, gold: coins.gold, platinum: coins.platinum})
+								}));
+					} else {
+						return _elm_lang$core$Result$Err('Not enough coins to remove!');
+					}
+				}
+			}
+		}
+	});
+var _mordrax$cotwelm$Item_Purse$Purse = F2(
+	function (a, b) {
+		return {base: a, coins: b};
+	});
+var _mordrax$cotwelm$Item_Purse$addCoins = F2(
+	function (coins, purse) {
+		return A2(
+			_mordrax$cotwelm$Item_Purse$Purse,
+			purse.base,
+			A3(
+				_mordrax$cotwelm$Item_Purse$merge_,
+				F2(
+					function (x, y) {
+						return x + y;
+					}),
+				coins,
+				purse.coins));
+	});
+var _mordrax$cotwelm$Item_Purse$merge = F2(
+	function (p1, p2) {
+		return A2(
+			_mordrax$cotwelm$Item_Purse$Purse,
+			p1.base,
+			A3(
+				_mordrax$cotwelm$Item_Purse$merge_,
+				F2(
+					function (x, y) {
+						return x + y;
+					}),
+				p1.coins,
+				p2.coins));
+	});
+var _mordrax$cotwelm$Item_Purse$NotEnoughCoins = {ctor: 'NotEnoughCoins'};
+var _mordrax$cotwelm$Item_Purse$Ok = {ctor: 'Ok'};
+
+var _mordrax$cotwelm$Item_Shield$init = F3(
+	function (shieldType, status, idStatus) {
+		var make = F5(
+			function (name, mass, css, prices, ac) {
+				return {
+					base: A6(_mordrax$cotwelm$Item_Data$BaseItem, name, prices, css, mass, status, idStatus),
+					shieldType: shieldType,
+					ac: ac
+				};
+			});
+		var _p0 = shieldType;
+		switch (_p0.ctor) {
+			case 'BrokenShield':
+				return A5(
+					make,
+					'Broken Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4000, 35000),
+					'broken-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 0, 25),
+					_mordrax$cotwelm$Item_Data$AC(0));
+			case 'SmallWoodenShield':
+				return A5(
+					make,
+					'Small Wooden Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 3000, 15000),
+					'wood-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 525, 300),
+					_mordrax$cotwelm$Item_Data$AC(3));
+			case 'MediumWoodenShield':
+				return A5(
+					make,
+					'Medium Wooden Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4000, 35000),
+					'wood-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 1050, 600),
+					_mordrax$cotwelm$Item_Data$AC(6));
+			case 'LargeWoodenShield':
+				return A5(
+					make,
+					'Large Wooden Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 5000, 50000),
+					'wood-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 2100, 1200),
+					_mordrax$cotwelm$Item_Data$AC(9));
+			case 'SmallIronShield':
+				return A5(
+					make,
+					'Small Iron Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4000, 15000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 1260, 720),
+					_mordrax$cotwelm$Item_Data$AC(6));
+			case 'MediumIronShield':
+				return A5(
+					make,
+					'Medium Iron Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 5000, 35000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 2592, 1440),
+					_mordrax$cotwelm$Item_Data$AC(9));
+			case 'LargeIronShield':
+				return A5(
+					make,
+					'Large Iron Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 6000, 50000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 3150, 1800),
+					_mordrax$cotwelm$Item_Data$AC(12));
+			case 'SmallSteelShield':
+				return A5(
+					make,
+					'Small Steel Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4000, 15000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 2730, 1560),
+					_mordrax$cotwelm$Item_Data$AC(9));
+			case 'MediumSteelShield':
+				return A5(
+					make,
+					'Medium Steel Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 5000, 35000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 3360, 1920),
+					_mordrax$cotwelm$Item_Data$AC(12));
+			case 'LargeSteelShield':
+				return A5(
+					make,
+					'Large Steel Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 6000, 50000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 4200, 2400),
+					_mordrax$cotwelm$Item_Data$AC(15));
+			case 'SmallMeteoricSteelShield':
+				return A5(
+					make,
+					'Small Meteoric Steel Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 2500, 10000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 4620, 2640),
+					_mordrax$cotwelm$Item_Data$AC(15));
+			case 'MediumMeteoricSteelShield':
+				return A5(
+					make,
+					'Medium Meteoric Steel Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 3500, 25000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 5940, 3300),
+					_mordrax$cotwelm$Item_Data$AC(18));
+			default:
+				return A5(
+					make,
+					'Large Meteoric Steel Shield',
+					A2(_mordrax$cotwelm$Utils_Mass$Mass, 4500, 35000),
+					'metal-shield',
+					A2(_mordrax$cotwelm$Item_Data$Prices, 7560, 4200),
+					_mordrax$cotwelm$Item_Data$AC(21));
+		}
+	});
+
+var _mordrax$cotwelm$Item_Weapon$encode = _elm_lang$core$Basics$toString;
+var _mordrax$cotwelm$Item_Weapon$listTypes = {
+	ctor: '::',
+	_0: _mordrax$cotwelm$Item_Data$BrokenSword,
+	_1: {
+		ctor: '::',
+		_0: _mordrax$cotwelm$Item_Data$Club,
+		_1: {
+			ctor: '::',
+			_0: _mordrax$cotwelm$Item_Data$Dagger,
+			_1: {
+				ctor: '::',
+				_0: _mordrax$cotwelm$Item_Data$Hammer,
+				_1: {
+					ctor: '::',
+					_0: _mordrax$cotwelm$Item_Data$HandAxe,
+					_1: {
+						ctor: '::',
+						_0: _mordrax$cotwelm$Item_Data$Quarterstaff,
+						_1: {
+							ctor: '::',
+							_0: _mordrax$cotwelm$Item_Data$Spear,
+							_1: {
+								ctor: '::',
+								_0: _mordrax$cotwelm$Item_Data$ShortSword,
+								_1: {
+									ctor: '::',
+									_0: _mordrax$cotwelm$Item_Data$Mace,
+									_1: {
+										ctor: '::',
+										_0: _mordrax$cotwelm$Item_Data$Flail,
+										_1: {
+											ctor: '::',
+											_0: _mordrax$cotwelm$Item_Data$Axe,
+											_1: {
+												ctor: '::',
+												_0: _mordrax$cotwelm$Item_Data$WarHammer,
+												_1: {
+													ctor: '::',
+													_0: _mordrax$cotwelm$Item_Data$LongSword,
+													_1: {
+														ctor: '::',
+														_0: _mordrax$cotwelm$Item_Data$BattleAxe,
+														_1: {
+															ctor: '::',
+															_0: _mordrax$cotwelm$Item_Data$BroadSword,
+															_1: {
+																ctor: '::',
+																_0: _mordrax$cotwelm$Item_Data$MorningStar,
+																_1: {
+																	ctor: '::',
+																	_0: _mordrax$cotwelm$Item_Data$BastardSword,
+																	_1: {
+																		ctor: '::',
+																		_0: _mordrax$cotwelm$Item_Data$TwoHandedSword,
+																		_1: {
+																			ctor: '::',
+																			_0: _mordrax$cotwelm$Item_Data$SmallClaws,
+																			_1: {
+																				ctor: '::',
+																				_0: _mordrax$cotwelm$Item_Data$SmallBite,
+																				_1: {
+																					ctor: '::',
+																					_0: _mordrax$cotwelm$Item_Data$Crossbow,
+																					_1: {
+																						ctor: '::',
+																						_0: _mordrax$cotwelm$Item_Data$Fangs,
+																						_1: {
+																							ctor: '::',
+																							_0: _mordrax$cotwelm$Item_Data$Pincers,
+																							_1: {
+																								ctor: '::',
+																								_0: _mordrax$cotwelm$Item_Data$Bow,
+																								_1: {
+																									ctor: '::',
+																									_0: _mordrax$cotwelm$Item_Data$LargeClaws,
+																									_1: {
+																										ctor: '::',
+																										_0: _mordrax$cotwelm$Item_Data$Pike,
+																										_1: {
+																											ctor: '::',
+																											_0: _mordrax$cotwelm$Item_Data$LargeClub,
+																											_1: {
+																												ctor: '::',
+																												_0: _mordrax$cotwelm$Item_Data$StoneClub,
+																												_1: {
+																													ctor: '::',
+																													_0: _mordrax$cotwelm$Item_Data$GiantAxe,
+																													_1: {
+																														ctor: '::',
+																														_0: _mordrax$cotwelm$Item_Data$Boulder,
+																														_1: {
+																															ctor: '::',
+																															_0: _mordrax$cotwelm$Item_Data$GiantMaul,
+																															_1: {ctor: '[]'}
+																														}
+																													}
+																												}
+																											}
+																										}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+};
+var _mordrax$cotwelm$Item_Weapon$weaponTypeDict = function () {
+	var makeKVP = function (x) {
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$toString(x),
+			_1: x
+		};
+	};
+	return _elm_lang$core$Dict$fromList(
+		A2(_elm_lang$core$List$map, makeKVP, _mordrax$cotwelm$Item_Weapon$listTypes));
+}();
+var _mordrax$cotwelm$Item_Weapon$decoder = function (value) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		_mordrax$cotwelm$Item_Data$BrokenSword,
+		A2(_elm_lang$core$Dict$get, value, _mordrax$cotwelm$Item_Weapon$weaponTypeDict));
+};
+var _mordrax$cotwelm$Item_Weapon$init = F3(
+	function (weaponType, status, idStatus) {
+		var d = F3(
+			function (n, faces, bonus) {
+				return A3(_mordrax$cotwelm$Dice$Dice, n, faces, bonus);
+			});
+		var make = F5(
+			function (name, _p1, css, _p0, damage) {
+				var _p2 = _p1;
+				var _p3 = _p0;
+				return {
+					base: A6(
+						_mordrax$cotwelm$Item_Data$BaseItem,
+						name,
+						A2(_mordrax$cotwelm$Item_Data$Prices, _p3._0, _p3._1),
+						css,
+						A2(_mordrax$cotwelm$Utils_Mass$Mass, _p2._0, _p2._1),
+						status,
+						idStatus),
+					weaponType: weaponType,
+					damage: damage
+				};
+			});
+		var makeMonsterWeapon = F2(
+			function (name, damage) {
+				return A5(
+					make,
+					name,
+					{ctor: '_Tuple2', _0: 0, _1: 0},
+					'',
+					{ctor: '_Tuple2', _0: 0, _1: 0},
+					damage);
+			});
+		var _p4 = weaponType;
+		switch (_p4.ctor) {
+			case 'BrokenSword':
+				return A5(
+					make,
+					'Broken Sword',
+					{ctor: '_Tuple2', _0: 1000, _1: 5000},
+					'broken-sword',
+					{ctor: '_Tuple2', _0: 0, _1: 25},
+					A3(d, 1, 6, -2));
+			case 'Club':
+				return A5(
+					make,
+					'Club',
+					{ctor: '_Tuple2', _0: 2500, _1: 3000},
+					'club',
+					{ctor: '_Tuple2', _0: 105, _1: 60},
+					A3(d, 3, 2, 0));
+			case 'Dagger':
+				return A5(
+					make,
+					'Dagger',
+					{ctor: '_Tuple2', _0: 500, _1: 500},
+					'sword',
+					{ctor: '_Tuple2', _0: 420, _1: 240},
+					A3(d, 1, 4, 0));
+			case 'Hammer':
+				return A5(
+					make,
+					'Hammer',
+					{ctor: '_Tuple2', _0: 1500, _1: 3000},
+					'hammer',
+					{ctor: '_Tuple2', _0: 420, _1: 240},
+					A3(d, 2, 2, 0));
+			case 'HandAxe':
+				return A5(
+					make,
+					'Hand Axe',
+					{ctor: '_Tuple2', _0: 1000, _1: 3000},
+					'axe',
+					{ctor: '_Tuple2', _0: 472, _1: 270},
+					A3(d, 1, 5, 0));
+			case 'Quarterstaff':
+				return A5(
+					make,
+					'Quarterstaff',
+					{ctor: '_Tuple2', _0: 1000, _1: 5000},
+					'spear',
+					{ctor: '_Tuple2', _0: 648, _1: 360},
+					A3(d, 3, 1, 0));
+			case 'Spear':
+				return A5(
+					make,
+					'Spear',
+					{ctor: '_Tuple2', _0: 2500, _1: 5000},
+					'spear',
+					{ctor: '_Tuple2', _0: 840, _1: 480},
+					A3(d, 1, 9, 0));
+			case 'ShortSword':
+				return A5(
+					make,
+					'Short Sword',
+					{ctor: '_Tuple2', _0: 1500, _1: 5000},
+					'sword',
+					{ctor: '_Tuple2', _0: 1470, _1: 840},
+					A3(d, 1, 6, 0));
+			case 'Mace':
+				return A5(
+					make,
+					'Mace',
+					{ctor: '_Tuple2', _0: 2500, _1: 4375},
+					'mace',
+					{ctor: '_Tuple2', _0: 1728, _1: 960},
+					A3(d, 3, 2, 0));
+			case 'Flail':
+				return A5(
+					make,
+					'Flail',
+					{ctor: '_Tuple2', _0: 4500, _1: 3250},
+					'flail',
+					{ctor: '_Tuple2', _0: 1512, _1: 840},
+					A3(d, 4, 3, 0));
+			case 'Axe':
+				return A5(
+					make,
+					'Axe',
+					{ctor: '_Tuple2', _0: 3000, _1: 5000},
+					'axe',
+					{ctor: '_Tuple2', _0: 1944, _1: 1080},
+					A3(d, 1, 9, 0));
+			case 'WarHammer':
+				return A5(
+					make,
+					'War Hammer',
+					{ctor: '_Tuple2', _0: 4000, _1: 7500},
+					'hammer',
+					{ctor: '_Tuple2', _0: 2160, _1: 1200},
+					A3(d, 4, 3, -1));
+			case 'LongSword':
+				return A5(
+					make,
+					'Long Sword',
+					{ctor: '_Tuple2', _0: 2500, _1: 8000},
+					'sword',
+					{ctor: '_Tuple2', _0: 3240, _1: 1800},
+					A3(d, 1, 8, 0));
+			case 'BattleAxe':
+				return A5(
+					make,
+					'Battle Axe',
+					{ctor: '_Tuple2', _0: 3500, _1: 6000},
+					'axe',
+					{ctor: '_Tuple2', _0: 2160, _1: 1200},
+					A3(d, 2, 5, 0));
+			case 'BroadSword':
+				return A5(
+					make,
+					'Broad Sword',
+					{ctor: '_Tuple2', _0: 3000, _1: 9000},
+					'sword',
+					{ctor: '_Tuple2', _0: 3240, _1: 1800},
+					A3(d, 1, 9, 0));
+			case 'MorningStar':
+				return A5(
+					make,
+					'Morning Star',
+					{ctor: '_Tuple2', _0: 3000, _1: 9000},
+					'morning-star',
+					{ctor: '_Tuple2', _0: 2160, _1: 1200},
+					A3(d, 4, 2, 0));
+			case 'BastardSword':
+				return A5(
+					make,
+					'Bastard Sword',
+					{ctor: '_Tuple2', _0: 4500, _1: 10000},
+					'sword',
+					{ctor: '_Tuple2', _0: 4320, _1: 2400},
+					A3(d, 2, 7, 0));
+			case 'TwoHandedSword':
+				return A5(
+					make,
+					'Two Handed Sword',
+					{ctor: '_Tuple2', _0: 5000, _1: 12000},
+					'sword',
+					{ctor: '_Tuple2', _0: 6360, _1: 3600},
+					A3(d, 2, 8, 0));
+			case 'SmallClaws':
+				return A2(
+					makeMonsterWeapon,
+					'Small Claws',
+					A3(d, 1, 4, 0));
+			case 'SmallBite':
+				return A2(
+					makeMonsterWeapon,
+					'Small Bite',
+					A3(d, 1, 5, 0));
+			case 'Crossbow':
+				return A2(
+					makeMonsterWeapon,
+					'Crossbow',
+					A3(d, 1, 10, 0));
+			case 'Fangs':
+				return A2(
+					makeMonsterWeapon,
+					'Fangs',
+					A3(d, 1, 4, 0));
+			case 'Pincers':
+				return A2(
+					makeMonsterWeapon,
+					'Pincers',
+					A3(d, 4, 2, 0));
+			case 'Bow':
+				return A2(
+					makeMonsterWeapon,
+					'Bow',
+					A3(d, 1, 6, 0));
+			case 'LargeClaws':
+				return A2(
+					makeMonsterWeapon,
+					'Large Claws',
+					A3(d, 1, 8, 0));
+			case 'LargeClub':
+				return A2(
+					makeMonsterWeapon,
+					'Large Club',
+					A3(d, 3, 4, 2));
+			case 'Pike':
+				return A2(
+					makeMonsterWeapon,
+					'Pike',
+					A3(d, 1, 15, 2));
+			case 'StoneClub':
+				return A2(
+					makeMonsterWeapon,
+					'Stone Club',
+					A3(d, 3, 8, 5));
+			case 'GiantAxe':
+				return A2(
+					makeMonsterWeapon,
+					'Giant Axe',
+					A3(d, 2, 10, 5));
+			case 'Boulder':
+				return A2(
+					makeMonsterWeapon,
+					'Boulder',
+					A3(d, 3, 3, 3));
+			default:
+				return A2(
+					makeMonsterWeapon,
+					'Giant Maul',
+					A3(d, 4, 6, 10));
+		}
+	});
+var _mordrax$cotwelm$Item_Weapon$damage = function (_p5) {
+	var _p6 = _p5;
+	return _p6.damage;
+};
+
+var _mordrax$cotwelm$Item_Item$ppArmour = function (armour) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		armour.base.name,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			' ( ',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(armour.ac),
+				' )')));
+};
+var _mordrax$cotwelm$Item_Item$ppWeapon = function (weapon) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		weapon.base.name,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			' ( ',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_mordrax$cotwelm$Dice$pp(weapon.damage),
+				' )')));
+};
+var _mordrax$cotwelm$Item_Item$getModel = function (anItem) {
+	var _p0 = anItem;
+	switch (_p0.ctor) {
+		case 'ItemWeapon':
+			return _p0._0.base;
+		case 'ItemArmour':
+			return _p0._0.base;
+		case 'ItemShield':
+			return _p0._0.base;
+		case 'ItemHelmet':
+			return _p0._0.base;
+		case 'ItemBracers':
+			return _p0._0.base;
+		case 'ItemGauntlets':
+			return _p0._0.base;
+		case 'ItemBelt':
+			return _p0._0.base;
+		case 'ItemPack':
+			return _p0._0.base;
+		case 'ItemPurse':
+			return _p0._0.base;
+		case 'ItemNeckwear':
+			return _p0._0.base;
+		case 'ItemOvergarment':
+			return _p0._0.base;
+		case 'ItemRing':
+			return _p0._0.base;
+		case 'ItemBoots':
+			return _p0._0.base;
+		case 'ItemCopper':
+			return _p0._0.base;
+		case 'ItemSilver':
+			return _p0._0.base;
+		case 'ItemGold':
+			return _p0._0.base;
+		default:
+			return _p0._0.base;
+	}
+};
+var _mordrax$cotwelm$Item_Item$css = function (_p1) {
+	return function (_) {
+		return _.css;
+	}(
+		_mordrax$cotwelm$Item_Item$getModel(_p1));
+};
+var _mordrax$cotwelm$Item_Item$viewSlot = F2(
+	function (item, extraContent) {
+		var model = _mordrax$cotwelm$Item_Item$getModel(item);
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('card'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('image'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$i,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class(
+											A2(_elm_lang$core$Basics_ops['++'], 'cotw-item ', model.css)),
+										_1: {ctor: '[]'}
+									},
+									{ctor: '[]'}),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('content'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$a,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('header'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(model.name),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$div,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('meta'),
+												_1: {ctor: '[]'}
+											},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$span,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$class('date'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text(''),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$div,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$class('description'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$style(
+															{
+																ctor: '::',
+																_0: {ctor: '_Tuple2', _0: 'maxWidth', _1: '7em'},
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text(''),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('extra content'),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(extraContent),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _mordrax$cotwelm$Item_Item$view = function (item) {
+	return A2(_mordrax$cotwelm$Item_Item$viewSlot, item, '');
+};
+var _mordrax$cotwelm$Item_Item$equals = F2(
+	function (a, b) {
+		var _p2 = {
+			ctor: '_Tuple2',
+			_0: _mordrax$cotwelm$Item_Item$getModel(a),
+			_1: _mordrax$cotwelm$Item_Item$getModel(b)
+		};
+		var baseA = _p2._0;
+		var baseB = _p2._1;
+		return _elm_lang$core$Native_Utils.eq(baseA.name, baseB.name);
+	});
+var _mordrax$cotwelm$Item_Item$isCursed = function () {
+	var isCursed = function (status) {
+		return _elm_lang$core$Native_Utils.eq(status, _mordrax$cotwelm$Item_Data$Cursed);
+	};
+	return function (_p3) {
+		return isCursed(
+			function (_) {
+				return _.status;
+			}(
+				_mordrax$cotwelm$Item_Item$getModel(_p3)));
+	};
+}();
+var _mordrax$cotwelm$Item_Item$baseItemMass = function (_p4) {
+	var _p5 = _p4;
+	return _p5.mass;
+};
+var _mordrax$cotwelm$Item_Item$mass = function (_p6) {
+	return function (_) {
+		return _.mass;
+	}(
+		_mordrax$cotwelm$Item_Item$getModel(_p6));
+};
+var _mordrax$cotwelm$Item_Item$containerBuilder = function (capacity) {
+	return A3(_mordrax$cotwelm$Container$init, capacity, _mordrax$cotwelm$Item_Item$mass, _mordrax$cotwelm$Item_Item$equals);
+};
+var _mordrax$cotwelm$Item_Item$costOf = function (item) {
+	var _p7 = function (_) {
+		return _.prices;
+	}(
+		_mordrax$cotwelm$Item_Item$getModel(item));
+	var buy = _p7._0;
+	var sell = _p7._1;
+	return buy;
+};
+var _mordrax$cotwelm$Item_Item$priceOf = function (item) {
+	var _p8 = function (_) {
+		return _.prices;
+	}(
+		_mordrax$cotwelm$Item_Item$getModel(item));
+	var buy = _p8._0;
+	var sell = _p8._1;
+	return sell;
+};
+var _mordrax$cotwelm$Item_Item$ItemPlatinum = function (a) {
+	return {ctor: 'ItemPlatinum', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemGold = function (a) {
+	return {ctor: 'ItemGold', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemSilver = function (a) {
+	return {ctor: 'ItemSilver', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemCopper = function (a) {
+	return {ctor: 'ItemCopper', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemBoots = function (a) {
+	return {ctor: 'ItemBoots', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemRing = function (a) {
+	return {ctor: 'ItemRing', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemOvergarment = function (a) {
+	return {ctor: 'ItemOvergarment', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemNeckwear = function (a) {
+	return {ctor: 'ItemNeckwear', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemPurse = function (a) {
+	return {ctor: 'ItemPurse', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemPack = function (a) {
+	return {ctor: 'ItemPack', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemBelt = function (a) {
+	return {ctor: 'ItemBelt', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemGauntlets = function (a) {
+	return {ctor: 'ItemGauntlets', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemBracers = function (a) {
+	return {ctor: 'ItemBracers', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemHelmet = function (a) {
+	return {ctor: 'ItemHelmet', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemShield = function (a) {
+	return {ctor: 'ItemShield', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemArmour = function (a) {
+	return {ctor: 'ItemArmour', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$ItemWeapon = function (a) {
+	return {ctor: 'ItemWeapon', _0: a};
+};
+var _mordrax$cotwelm$Item_Item$newWithOptions = F3(
+	function (itemType, status, idStatus) {
+		var _p9 = itemType;
+		switch (_p9.ctor) {
+			case 'ItemTypeWeapon':
+				return _mordrax$cotwelm$Item_Item$ItemWeapon(
+					A3(_mordrax$cotwelm$Item_Weapon$init, _p9._0, status, idStatus));
+			case 'ItemTypeArmour':
+				return _mordrax$cotwelm$Item_Item$ItemArmour(
+					A3(_mordrax$cotwelm$Item_Armour$init, _p9._0, status, idStatus));
+			case 'ItemTypeShield':
+				return _mordrax$cotwelm$Item_Item$ItemShield(
+					A3(_mordrax$cotwelm$Item_Shield$init, _p9._0, status, idStatus));
+			case 'ItemTypeHelmet':
+				return _mordrax$cotwelm$Item_Item$ItemHelmet(
+					A3(_mordrax$cotwelm$Item_Helmet$init, _p9._0, status, idStatus));
+			case 'ItemTypeBracers':
+				return _mordrax$cotwelm$Item_Item$ItemBracers(
+					A3(_mordrax$cotwelm$Item_Bracers$init, _p9._0, status, idStatus));
+			case 'ItemTypeGauntlets':
+				return _mordrax$cotwelm$Item_Item$ItemGauntlets(
+					A3(_mordrax$cotwelm$Item_Gauntlets$init, _p9._0, status, idStatus));
+			case 'ItemTypeBelt':
+				return _mordrax$cotwelm$Item_Item$ItemBelt(
+					A3(_mordrax$cotwelm$Item_Belt$init, _p9._0, status, idStatus));
+			case 'ItemTypePack':
+				return _mordrax$cotwelm$Item_Item$ItemPack(
+					A4(_mordrax$cotwelm$Item_Pack$init, _p9._0, _mordrax$cotwelm$Item_Item$containerBuilder, status, idStatus));
+			case 'ItemTypePurse':
+				return _mordrax$cotwelm$Item_Item$ItemPurse(_mordrax$cotwelm$Item_Purse$init);
+			case 'ItemTypeCopper':
+				return _mordrax$cotwelm$Item_Item$ItemCopper(
+					_mordrax$cotwelm$Item_Purse$initCoppers(_p9._0));
+			case 'ItemTypeSilver':
+				return _mordrax$cotwelm$Item_Item$ItemSilver(
+					_mordrax$cotwelm$Item_Purse$initSilvers(_p9._0));
+			case 'ItemTypeGold':
+				return _mordrax$cotwelm$Item_Item$ItemGold(
+					_mordrax$cotwelm$Item_Purse$initGolds(_p9._0));
+			case 'ItemTypePlatinum':
+				return _mordrax$cotwelm$Item_Item$ItemPlatinum(
+					_mordrax$cotwelm$Item_Purse$initPlatinums(_p9._0));
+			default:
+				return _mordrax$cotwelm$Item_Item$ItemWeapon(
+					A3(_mordrax$cotwelm$Item_Weapon$init, _mordrax$cotwelm$Item_Data$Dagger, status, idStatus));
+		}
+	});
+var _mordrax$cotwelm$Item_Item$new = function (itemType) {
+	return A3(_mordrax$cotwelm$Item_Item$newWithOptions, itemType, _mordrax$cotwelm$Item_Data$Normal, _mordrax$cotwelm$Item_Data$Identified);
+};
+
+var _mordrax$cotwelm$Equipment$clearSlot_ = F2(
 	function (slot, model) {
 		var _p0 = slot;
 		switch (_p0.ctor) {
@@ -18193,48 +19527,218 @@ var _mordrax$cotwelm$Equipment$A = function (a) {
 };
 var _mordrax$cotwelm$Equipment$init = _mordrax$cotwelm$Equipment$A(
 	{weapon: _elm_lang$core$Maybe$Nothing, freehand: _elm_lang$core$Maybe$Nothing, armour: _elm_lang$core$Maybe$Nothing, shield: _elm_lang$core$Maybe$Nothing, helmet: _elm_lang$core$Maybe$Nothing, bracers: _elm_lang$core$Maybe$Nothing, gauntlets: _elm_lang$core$Maybe$Nothing, belt: _elm_lang$core$Maybe$Nothing, purse: _elm_lang$core$Maybe$Nothing, pack: _elm_lang$core$Maybe$Nothing, neckwear: _elm_lang$core$Maybe$Nothing, overgarment: _elm_lang$core$Maybe$Nothing, leftRing: _elm_lang$core$Maybe$Nothing, rightRing: _elm_lang$core$Maybe$Nothing, boots: _elm_lang$core$Maybe$Nothing});
-var _mordrax$cotwelm$Equipment$unequip = F2(
-	function (slot, _p18) {
-		var _p19 = _p18;
-		var _p21 = _p19._0;
-		var maybeItem = A2(
-			_mordrax$cotwelm$Equipment$get,
-			slot,
-			_mordrax$cotwelm$Equipment$A(_p21));
-		var _p20 = maybeItem;
-		if (_p20.ctor === 'Just') {
-			return _mordrax$cotwelm$Item_Item$isCursed(_p20._0) ? _elm_lang$core$Result$Err('You cannot remove a cursed item!') : _elm_lang$core$Result$Ok(
-				_mordrax$cotwelm$Equipment$A(
-					A2(_mordrax$cotwelm$Equipment$unequip_, slot, _p21)));
-		} else {
-			return _elm_lang$core$Result$Ok(
-				_mordrax$cotwelm$Equipment$A(_p21));
-		}
+var _mordrax$cotwelm$Equipment$setSlot_ = F2(
+	function (_p19, _p18) {
+		var _p20 = _p19;
+		var _p21 = _p18;
+		var _p23 = _p21._0;
+		var _p22 = {ctor: '_Tuple2', _0: _p20._0, _1: _p20._1};
+		_v12_15:
+		do {
+			if (_p22.ctor === '_Tuple2') {
+				switch (_p22._0.ctor) {
+					case 'WeaponSlot':
+						if (_p22._1.ctor === 'ItemWeapon') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										weapon: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'FreehandSlot':
+						return _mordrax$cotwelm$Equipment$A(
+							_elm_lang$core$Native_Utils.update(
+								_p23,
+								{
+									freehand: _elm_lang$core$Maybe$Just(_p22._1)
+								}));
+					case 'ArmourSlot':
+						if (_p22._1.ctor === 'ItemArmour') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										armour: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'ShieldSlot':
+						if (_p22._1.ctor === 'ItemShield') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										shield: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'HelmetSlot':
+						if (_p22._1.ctor === 'ItemHelmet') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										helmet: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'BracersSlot':
+						if (_p22._1.ctor === 'ItemBracers') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										bracers: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'GauntletsSlot':
+						if (_p22._1.ctor === 'ItemGauntlets') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										gauntlets: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'BeltSlot':
+						if (_p22._1.ctor === 'ItemBelt') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										belt: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'PurseSlot':
+						if (_p22._1.ctor === 'ItemPurse') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										purse: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'PackSlot':
+						if (_p22._1.ctor === 'ItemPack') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										pack: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'NeckwearSlot':
+						if (_p22._1.ctor === 'ItemNeckwear') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										neckwear: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'OvergarmentSlot':
+						if (_p22._1.ctor === 'ItemOvergarment') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										overgarment: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'LeftRingSlot':
+						if (_p22._1.ctor === 'ItemRing') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										leftRing: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					case 'RightRingSlot':
+						if (_p22._1.ctor === 'ItemRing') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										rightRing: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+					default:
+						if (_p22._1.ctor === 'ItemBoots') {
+							return _mordrax$cotwelm$Equipment$A(
+								_elm_lang$core$Native_Utils.update(
+									_p23,
+									{
+										boots: _elm_lang$core$Maybe$Just(_p22._1._0)
+									}));
+						} else {
+							break _v12_15;
+						}
+				}
+			} else {
+				break _v12_15;
+			}
+		} while(false);
+		return _mordrax$cotwelm$Equipment$A(_p23);
+	});
+var _mordrax$cotwelm$Equipment$setMany_ = F2(
+	function (itemSlotPairs, equipment) {
+		return A3(
+			_elm_lang$core$List$foldl,
+			function (itemSlotPair) {
+				return _mordrax$cotwelm$Equipment$setSlot_(itemSlotPair);
+			},
+			equipment,
+			itemSlotPairs);
 	});
 var _mordrax$cotwelm$Equipment$removeFromPack = F2(
-	function (item, _p22) {
-		var _p23 = _p22;
-		var _p25 = _p23._0;
-		var noChange = _mordrax$cotwelm$Equipment$A(_p25);
-		var _p24 = _p25.pack;
-		if (_p24.ctor === 'Nothing') {
+	function (item, _p24) {
+		var _p25 = _p24;
+		var _p27 = _p25._0;
+		var noChange = _mordrax$cotwelm$Equipment$A(_p27);
+		var _p26 = _p27.pack;
+		if (_p26.ctor === 'Nothing') {
 			return noChange;
 		} else {
 			return _mordrax$cotwelm$Equipment$A(
 				_elm_lang$core$Native_Utils.update(
-					_p25,
+					_p27,
 					{
 						pack: _elm_lang$core$Maybe$Just(
-							A2(_mordrax$cotwelm$Item_Pack$remove, item, _p24._0))
+							A2(_mordrax$cotwelm$Item_Pack$remove, item, _p26._0))
 					}));
 		}
 	});
 var _mordrax$cotwelm$Equipment$setPurse = F2(
-	function (purse, _p26) {
-		var _p27 = _p26;
+	function (purse, _p28) {
+		var _p29 = _p28;
 		return _mordrax$cotwelm$Equipment$A(
 			_elm_lang$core$Native_Utils.update(
-				_p27._0,
+				_p29._0,
 				{
 					purse: _elm_lang$core$Maybe$Just(purse)
 				}));
@@ -18265,292 +19769,66 @@ var _mordrax$cotwelm$Equipment$ShieldSlot = {ctor: 'ShieldSlot'};
 var _mordrax$cotwelm$Equipment$ArmourSlot = {ctor: 'ArmourSlot'};
 var _mordrax$cotwelm$Equipment$FreehandSlot = {ctor: 'FreehandSlot'};
 var _mordrax$cotwelm$Equipment$WeaponSlot = {ctor: 'WeaponSlot'};
-var _mordrax$cotwelm$Equipment$ItemAlreadyEquipped = {ctor: 'ItemAlreadyEquipped'};
-var _mordrax$cotwelm$Equipment$WrongSlotForItemType = {ctor: 'WrongSlotForItemType'};
-var _mordrax$cotwelm$Equipment$equip = F2(
-	function (_p29, _p28) {
-		var _p30 = _p29;
-		var _p31 = _p28;
-		var _p48 = _p31._0;
-		var _p32 = {ctor: '_Tuple2', _0: _p30._0, _1: _p30._1};
-		_v17_15:
-		do {
-			if (_p32.ctor === '_Tuple2') {
-				switch (_p32._0.ctor) {
-					case 'WeaponSlot':
-						if (_p32._1.ctor === 'ItemWeapon') {
-							var _p33 = _p48.weapon;
-							if (_p33.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												weapon: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'FreehandSlot':
-						var _p34 = _p48.freehand;
-						if (_p34.ctor === 'Nothing') {
-							return _elm_lang$core$Result$Ok(
-								_mordrax$cotwelm$Equipment$A(
-									_elm_lang$core$Native_Utils.update(
-										_p48,
-										{
-											freehand: _elm_lang$core$Maybe$Just(_p32._1)
-										})));
-						} else {
-							return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-						}
-					case 'ArmourSlot':
-						if (_p32._1.ctor === 'ItemArmour') {
-							var _p35 = _p48.armour;
-							if (_p35.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												armour: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'ShieldSlot':
-						if (_p32._1.ctor === 'ItemShield') {
-							var _p36 = _p48.shield;
-							if (_p36.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												shield: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'HelmetSlot':
-						if (_p32._1.ctor === 'ItemHelmet') {
-							var _p37 = _p48.helmet;
-							if (_p37.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												helmet: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'BracersSlot':
-						if (_p32._1.ctor === 'ItemBracers') {
-							var _p38 = _p48.bracers;
-							if (_p38.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												bracers: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'GauntletsSlot':
-						if (_p32._1.ctor === 'ItemGauntlets') {
-							var _p39 = _p48.gauntlets;
-							if (_p39.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												gauntlets: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'BeltSlot':
-						if (_p32._1.ctor === 'ItemBelt') {
-							var _p40 = _p48.belt;
-							if (_p40.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												belt: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'PurseSlot':
-						if (_p32._1.ctor === 'ItemPurse') {
-							var _p41 = _p48.purse;
-							if (_p41.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												purse: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'PackSlot':
-						if (_p32._1.ctor === 'ItemPack') {
-							var _p42 = _p48.pack;
-							if (_p42.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												pack: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'NeckwearSlot':
-						if (_p32._1.ctor === 'ItemNeckwear') {
-							var _p43 = _p48.neckwear;
-							if (_p43.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												neckwear: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'OvergarmentSlot':
-						if (_p32._1.ctor === 'ItemOvergarment') {
-							var _p44 = _p48.overgarment;
-							if (_p44.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												overgarment: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'LeftRingSlot':
-						if (_p32._1.ctor === 'ItemRing') {
-							var _p45 = _p48.leftRing;
-							if (_p45.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												leftRing: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					case 'RightRingSlot':
-						if (_p32._1.ctor === 'ItemRing') {
-							var _p46 = _p48.rightRing;
-							if (_p46.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												rightRing: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-					default:
-						if (_p32._1.ctor === 'ItemBoots') {
-							var _p47 = _p48.boots;
-							if (_p47.ctor === 'Nothing') {
-								return _elm_lang$core$Result$Ok(
-									_mordrax$cotwelm$Equipment$A(
-										_elm_lang$core$Native_Utils.update(
-											_p48,
-											{
-												boots: _elm_lang$core$Maybe$Just(_p32._1._0)
-											})));
-							} else {
-								return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$ItemAlreadyEquipped);
-							}
-						} else {
-							break _v17_15;
-						}
-				}
+var _mordrax$cotwelm$Equipment$CannotUnequipCursedItem = {ctor: 'CannotUnequipCursedItem'};
+var _mordrax$cotwelm$Equipment$unequip = F2(
+	function (slot, _p30) {
+		var _p31 = _p30;
+		var _p33 = _p31._0;
+		var maybeItem = A2(
+			_mordrax$cotwelm$Equipment$get,
+			slot,
+			_mordrax$cotwelm$Equipment$A(_p33));
+		var itemCursed = A2(
+			_elm_lang$core$Maybe$withDefault,
+			false,
+			A2(_elm_lang$core$Maybe$map, _mordrax$cotwelm$Item_Item$isCursed, maybeItem));
+		var _p32 = {ctor: '_Tuple2', _0: maybeItem, _1: itemCursed};
+		if (_p32._0.ctor === 'Just') {
+			if (_p32._1 === false) {
+				return _elm_lang$core$Result$Ok(
+					{
+						ctor: '_Tuple2',
+						_0: _mordrax$cotwelm$Equipment$A(
+							A2(_mordrax$cotwelm$Equipment$clearSlot_, slot, _p33)),
+						_1: _elm_lang$core$Maybe$Just(_p32._0._0)
+					});
 			} else {
-				break _v17_15;
+				return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$CannotUnequipCursedItem);
 			}
-		} while(false);
-		return _elm_lang$core$Result$Err(_mordrax$cotwelm$Equipment$WrongSlotForItemType);
-	});
-var _mordrax$cotwelm$Equipment$equipMany = F2(
-	function (itemSlotPairs, equipment) {
-		var equippingResult = A3(
-			_mordrax$cotwelm$Utils_Misc$foldResult,
-			function (item) {
-				return _mordrax$cotwelm$Equipment$equip(item);
-			},
-			_elm_lang$core$Result$Ok(equipment),
-			itemSlotPairs);
-		var _p49 = equippingResult;
-		if (_p49.ctor === 'Ok') {
-			return _p49._0;
 		} else {
-			return equipment;
+			return _elm_lang$core$Result$Ok(
+				{
+					ctor: '_Tuple2',
+					_0: _mordrax$cotwelm$Equipment$A(_p33),
+					_1: _elm_lang$core$Maybe$Nothing
+				});
 		}
 	});
+var _mordrax$cotwelm$Equipment$equip = F2(
+	function (_p35, _p34) {
+		var _p36 = _p35;
+		var _p40 = _p36._0;
+		var _p37 = _p34;
+		return A2(
+			_elm_lang$core$Result$map,
+			function (_p38) {
+				var _p39 = _p38;
+				return {
+					ctor: '_Tuple2',
+					_0: A2(
+						_mordrax$cotwelm$Equipment$setSlot_,
+						{ctor: '_Tuple2', _0: _p40, _1: _p36._1},
+						_p39._0),
+					_1: _p39._1
+				};
+			},
+			A2(
+				_mordrax$cotwelm$Equipment$unequip,
+				_p40,
+				_mordrax$cotwelm$Equipment$A(_p37._0)));
+	});
+var _mordrax$cotwelm$Equipment$ItemAlreadyEquipped = {ctor: 'ItemAlreadyEquipped'};
+var _mordrax$cotwelm$Equipment$WrongSlotForItemType = {ctor: 'WrongSlotForItemType'};
 var _mordrax$cotwelm$Equipment$NoPackEquipped = {ctor: 'NoPackEquipped'};
 var _mordrax$cotwelm$Equipment$ContainerMsg = function (a) {
 	return {ctor: 'ContainerMsg', _0: a};
@@ -18560,30 +19838,30 @@ var _mordrax$cotwelm$Equipment$MassResult = function (a) {
 };
 var _mordrax$cotwelm$Equipment$Success = {ctor: 'Success'};
 var _mordrax$cotwelm$Equipment$putInPack_ = F2(
-	function (item, _p50) {
-		var _p51 = _p50;
-		var _p54 = _p51._0;
+	function (item, _p41) {
+		var _p42 = _p41;
+		var _p45 = _p42._0;
 		var noChange = {
 			ctor: '_Tuple2',
-			_0: _mordrax$cotwelm$Equipment$A(_p54),
+			_0: _mordrax$cotwelm$Equipment$A(_p45),
 			_1: _mordrax$cotwelm$Equipment$Success
 		};
-		var _p52 = _p54.pack;
-		if (_p52.ctor === 'Nothing') {
+		var _p43 = _p45.pack;
+		if (_p43.ctor === 'Nothing') {
 			return {
 				ctor: '_Tuple2',
-				_0: _mordrax$cotwelm$Equipment$A(_p54),
+				_0: _mordrax$cotwelm$Equipment$A(_p45),
 				_1: _mordrax$cotwelm$Equipment$NoPackEquipped
 			};
 		} else {
-			var _p53 = A2(_mordrax$cotwelm$Item_Pack$add, item, _p52._0);
-			var packWithItem = _p53._0;
-			var msg = _p53._1;
+			var _p44 = A2(_mordrax$cotwelm$Item_Pack$add, item, _p43._0);
+			var packWithItem = _p44._0;
+			var msg = _p44._1;
 			return {
 				ctor: '_Tuple2',
 				_0: _mordrax$cotwelm$Equipment$A(
 					_elm_lang$core$Native_Utils.update(
-						_p54,
+						_p45,
 						{
 							pack: _elm_lang$core$Maybe$Just(packWithItem)
 						})),
@@ -18593,14 +19871,14 @@ var _mordrax$cotwelm$Equipment$putInPack_ = F2(
 	});
 var _mordrax$cotwelm$Equipment$putInPack = F2(
 	function (item, equipment) {
-		var _p55 = item;
-		switch (_p55.ctor) {
+		var _p46 = item;
+		switch (_p46.ctor) {
 			case 'ItemCopper':
 				return {
 					ctor: '_Tuple2',
 					_0: A2(
 						_mordrax$cotwelm$Equipment$putInPurse,
-						A4(_mordrax$cotwelm$Item_Purse$Coins, _p55._0.value, 0, 0, 0),
+						A4(_mordrax$cotwelm$Item_Purse$Coins, _p46._0.value, 0, 0, 0),
 						equipment),
 					_1: _mordrax$cotwelm$Equipment$Success
 				};
@@ -18609,7 +19887,7 @@ var _mordrax$cotwelm$Equipment$putInPack = F2(
 					ctor: '_Tuple2',
 					_0: A2(
 						_mordrax$cotwelm$Equipment$putInPurse,
-						A4(_mordrax$cotwelm$Item_Purse$Coins, 0, _p55._0.value, 0, 0),
+						A4(_mordrax$cotwelm$Item_Purse$Coins, 0, _p46._0.value, 0, 0),
 						equipment),
 					_1: _mordrax$cotwelm$Equipment$Success
 				};
@@ -18618,7 +19896,7 @@ var _mordrax$cotwelm$Equipment$putInPack = F2(
 					ctor: '_Tuple2',
 					_0: A2(
 						_mordrax$cotwelm$Equipment$putInPurse,
-						A4(_mordrax$cotwelm$Item_Purse$Coins, 0, 0, _p55._0.value, 0),
+						A4(_mordrax$cotwelm$Item_Purse$Coins, 0, 0, _p46._0.value, 0),
 						equipment),
 					_1: _mordrax$cotwelm$Equipment$Success
 				};
@@ -18627,7 +19905,7 @@ var _mordrax$cotwelm$Equipment$putInPack = F2(
 					ctor: '_Tuple2',
 					_0: A2(
 						_mordrax$cotwelm$Equipment$putInPurse,
-						A4(_mordrax$cotwelm$Item_Purse$Coins, 0, 0, 0, _p55._0.value),
+						A4(_mordrax$cotwelm$Item_Purse$Coins, 0, 0, 0, _p46._0.value),
 						equipment),
 					_1: _mordrax$cotwelm$Equipment$Success
 				};
@@ -18636,7 +19914,7 @@ var _mordrax$cotwelm$Equipment$putInPack = F2(
 		}
 	});
 
-var _mordrax$cotwelm$Types$Giant = {ctor: 'Giant'};
+var _mordrax$cotwelm$Types$Huge = {ctor: 'Huge'};
 var _mordrax$cotwelm$Types$Large = {ctor: 'Large'};
 var _mordrax$cotwelm$Types$Medium = {ctor: 'Medium'};
 var _mordrax$cotwelm$Types$Small = {ctor: 'Small'};
@@ -18655,6 +19933,35 @@ var _mordrax$cotwelm$Types$Impossible = {ctor: 'Impossible'};
 var _mordrax$cotwelm$Types$Hard = {ctor: 'Hard'};
 var _mordrax$cotwelm$Types$Intermediate = {ctor: 'Intermediate'};
 var _mordrax$cotwelm$Types$Easy = {ctor: 'Easy'};
+var _mordrax$cotwelm$Types$LineOfSight = {ctor: 'LineOfSight'};
+var _mordrax$cotwelm$Types$Known = {ctor: 'Known'};
+var _mordrax$cotwelm$Types$Hidden = {ctor: 'Hidden'};
+var _mordrax$cotwelm$Types$Artificial = {ctor: 'Artificial'};
+var _mordrax$cotwelm$Types$Sun = {ctor: 'Sun'};
+var _mordrax$cotwelm$Types$Dark = {ctor: 'Dark'};
+var _mordrax$cotwelm$Types$AcutePoison = {ctor: 'AcutePoison'};
+var _mordrax$cotwelm$Types$MajorPoison = {ctor: 'MajorPoison'};
+var _mordrax$cotwelm$Types$MinorPoison = {ctor: 'MinorPoison'};
+var _mordrax$cotwelm$Types$NotPoisoned = {ctor: 'NotPoisoned'};
+var _mordrax$cotwelm$Types$CoolOff = function (a) {
+	return {ctor: 'CoolOff', _0: a};
+};
+var _mordrax$cotwelm$Types$Rush = function (a) {
+	return {ctor: 'Rush', _0: a};
+};
+var _mordrax$cotwelm$Types$Calm = {ctor: 'Calm'};
+var _mordrax$cotwelm$Types$Burning = function (a) {
+	return {ctor: 'Burning', _0: a};
+};
+var _mordrax$cotwelm$Types$NotBurning = {ctor: 'NotBurning'};
+var _mordrax$cotwelm$Types$Frozen = function (a) {
+	return {ctor: 'Frozen', _0: a};
+};
+var _mordrax$cotwelm$Types$NotFrozen = {ctor: 'NotFrozen'};
+var _mordrax$cotwelm$Types$Shocked = function (a) {
+	return {ctor: 'Shocked', _0: a};
+};
+var _mordrax$cotwelm$Types$NotShocked = {ctor: 'NotShocked'};
 
 var _mordrax$cotwelm$Stats$printAOverB = F2(
 	function (a, b) {
@@ -18705,31 +20012,6 @@ var _mordrax$cotwelm$Stats$Effects = F5(
 	function (a, b, c, d, e) {
 		return {poison: a, adrenaline: b, burn: c, frost: d, shock: e};
 	});
-var _mordrax$cotwelm$Stats$Dead = {ctor: 'Dead'};
-var _mordrax$cotwelm$Stats$Alive = {ctor: 'Alive'};
-var _mordrax$cotwelm$Stats$AcutePoison = {ctor: 'AcutePoison'};
-var _mordrax$cotwelm$Stats$MajorPoison = {ctor: 'MajorPoison'};
-var _mordrax$cotwelm$Stats$MinorPoison = {ctor: 'MinorPoison'};
-var _mordrax$cotwelm$Stats$NotPoisoned = {ctor: 'NotPoisoned'};
-var _mordrax$cotwelm$Stats$CoolOff = function (a) {
-	return {ctor: 'CoolOff', _0: a};
-};
-var _mordrax$cotwelm$Stats$Rush = function (a) {
-	return {ctor: 'Rush', _0: a};
-};
-var _mordrax$cotwelm$Stats$Calm = {ctor: 'Calm'};
-var _mordrax$cotwelm$Stats$Burning = function (a) {
-	return {ctor: 'Burning', _0: a};
-};
-var _mordrax$cotwelm$Stats$NotBurning = {ctor: 'NotBurning'};
-var _mordrax$cotwelm$Stats$Frozen = function (a) {
-	return {ctor: 'Frozen', _0: a};
-};
-var _mordrax$cotwelm$Stats$NotFrozen = {ctor: 'NotFrozen'};
-var _mordrax$cotwelm$Stats$Shocked = function (a) {
-	return {ctor: 'Shocked', _0: a};
-};
-var _mordrax$cotwelm$Stats$NotShocked = {ctor: 'NotShocked'};
 var _mordrax$cotwelm$Stats$init = function (attributes) {
 	var sp = _mordrax$cotwelm$Stats$spBonus(attributes);
 	var hp = _mordrax$cotwelm$Stats$hpBonus(attributes);
@@ -18741,7 +20023,7 @@ var _mordrax$cotwelm$Stats$init = function (attributes) {
 		sp,
 		sp,
 		sp,
-		A5(_mordrax$cotwelm$Stats$Effects, _mordrax$cotwelm$Stats$NotPoisoned, _mordrax$cotwelm$Stats$Calm, _mordrax$cotwelm$Stats$NotBurning, _mordrax$cotwelm$Stats$NotFrozen, _mordrax$cotwelm$Stats$NotShocked));
+		A5(_mordrax$cotwelm$Stats$Effects, _mordrax$cotwelm$Types$NotPoisoned, _mordrax$cotwelm$Types$Calm, _mordrax$cotwelm$Types$NotBurning, _mordrax$cotwelm$Types$NotFrozen, _mordrax$cotwelm$Types$NotShocked));
 };
 var _mordrax$cotwelm$Stats$initExperienced = F2(
 	function (attributes, level) {
@@ -18751,6 +20033,8 @@ var _mordrax$cotwelm$Stats$initExperienced = F2(
 			attributes,
 			_mordrax$cotwelm$Stats$init(attributes));
 	});
+var _mordrax$cotwelm$Stats$Dead = {ctor: 'Dead'};
+var _mordrax$cotwelm$Stats$Alive = {ctor: 'Alive'};
 
 var _mordrax$cotwelm$Hero$viewStats = function (model) {
 	return A2(
@@ -18816,21 +20100,6 @@ var _mordrax$cotwelm$Hero$view = function (model) {
 		},
 		{ctor: '[]'});
 };
-var _mordrax$cotwelm$Hero$equip = F2(
-	function (_p0, model) {
-		var _p1 = _p0;
-		return A2(
-			_elm_lang$core$Result$map,
-			function (equipment) {
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{equipment: equipment});
-			},
-			A2(
-				_mordrax$cotwelm$Equipment$equip,
-				{ctor: '_Tuple2', _0: _p1._0, _1: _p1._1},
-				model.equipment));
-	});
 var _mordrax$cotwelm$Hero$levelUp = function (hero) {
 	return _elm_lang$core$Native_Utils.update(
 		hero,
@@ -18868,216 +20137,30 @@ var _mordrax$cotwelm$Hero$move = F2(
 				model.position,
 				_mordrax$cotwelm$Utils_Vector$fromDirection(direction)));
 	});
-var _mordrax$cotwelm$Hero$updateEquipment = F2(
-	function (equipment, model) {
+var _mordrax$cotwelm$Hero$setEquipment = F2(
+	function (equipment, hero) {
 		return _elm_lang$core$Native_Utils.update(
-			model,
+			hero,
 			{equipment: equipment});
 	});
 var _mordrax$cotwelm$Hero$init = F3(
-	function (name, _p2, gender) {
-		var _p3 = _p2;
-		var _p4 = _p3;
+	function (name, _p0, gender) {
+		var _p1 = _p0;
+		var _p2 = _p1;
 		return {
 			name: name,
 			type_: _mordrax$cotwelm$Types$Hero,
 			position: {ctor: '_Tuple2', _0: 11, _1: 17},
-			stats: _mordrax$cotwelm$Stats$init(_p4),
+			stats: _mordrax$cotwelm$Stats$init(_p2),
 			gender: gender,
-			attributes: _p4,
+			attributes: _p2,
 			equipment: _mordrax$cotwelm$Equipment$init,
 			expLevel: 1,
-			bodySize: _mordrax$cotwelm$Types$Medium
+			bodySize: _mordrax$cotwelm$Types$Medium,
+			attacks: 1
 		};
 	});
-var _mordrax$cotwelm$Hero$Hero = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {name: a, type_: b, position: c, stats: d, gender: e, attributes: f, equipment: g, expLevel: h, bodySize: i};
-	});
-
-var _mordrax$cotwelm$Lodash$combine = function (generators) {
-	var _p0 = generators;
-	if (_p0.ctor === '[]') {
-		return _mgold$elm_random_pcg$Random_Pcg$constant(
-			{ctor: '[]'});
-	} else {
-		return A3(
-			_mgold$elm_random_pcg$Random_Pcg$map2,
-			F2(
-				function (x, y) {
-					return {ctor: '::', _0: x, _1: y};
-				}),
-			_p0._0,
-			_mordrax$cotwelm$Lodash$combine(_p0._1));
-	}
-};
-var _mordrax$cotwelm$Lodash$sample2 = function () {
-	var find = F2(
-		function (k, ys) {
-			find:
-			while (true) {
-				var _p1 = ys;
-				if (_p1.ctor === '[]') {
-					return _elm_lang$core$Maybe$Nothing;
-				} else {
-					if (_elm_lang$core$Native_Utils.eq(k, 0)) {
-						return _elm_lang$core$Maybe$Just(_p1._0);
-					} else {
-						var _v2 = k - 1,
-							_v3 = _p1._1;
-						k = _v2;
-						ys = _v3;
-						continue find;
-					}
-				}
-			}
-		});
-	return function (xs) {
-		return A2(
-			_mgold$elm_random_pcg$Random_Pcg$map,
-			function (i) {
-				return A2(find, i, xs);
-			},
-			A2(
-				_mgold$elm_random_pcg$Random_Pcg$int,
-				0,
-				_elm_lang$core$List$length(xs) - 1));
-	};
-}();
-var _mordrax$cotwelm$Lodash$choose = function (arr) {
-	if (_elm_lang$core$Array$isEmpty(arr)) {
-		return _mgold$elm_random_pcg$Random_Pcg$constant(
-			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: arr});
-	} else {
-		var front = function (i) {
-			return A3(_elm_lang$core$Array$slice, 0, i, arr);
-		};
-		var lastIndex = _elm_lang$core$Array$length(arr) - 1;
-		var back = function (i) {
-			return _elm_lang$core$Native_Utils.eq(i, lastIndex) ? _elm_lang$core$Array$empty : A3(_elm_lang$core$Array$slice, i + 1, lastIndex + 1, arr);
-		};
-		var gen = A2(_mgold$elm_random_pcg$Random_Pcg$int, 0, lastIndex);
-		return A2(
-			_mgold$elm_random_pcg$Random_Pcg$map,
-			function (index) {
-				return {
-					ctor: '_Tuple2',
-					_0: A2(_elm_lang$core$Array$get, index, arr),
-					_1: A2(
-						_elm_lang$core$Array$append,
-						front(index),
-						back(index))
-				};
-			},
-			gen);
-	}
-};
-var _mordrax$cotwelm$Lodash$shuffle_ = function (arr) {
-	if (_elm_lang$core$Array$isEmpty(arr)) {
-		return _mgold$elm_random_pcg$Random_Pcg$constant(arr);
-	} else {
-		var helper = function (_p2) {
-			var _p3 = _p2;
-			var _p8 = _p3._0;
-			return A2(
-				_mgold$elm_random_pcg$Random_Pcg$andThen,
-				function (_p4) {
-					var _p5 = _p4;
-					var _p7 = _p5._1;
-					var _p6 = _p5._0;
-					if (_p6.ctor === 'Nothing') {
-						return _mgold$elm_random_pcg$Random_Pcg$constant(
-							{ctor: '_Tuple2', _0: _p8, _1: _p7});
-					} else {
-						return helper(
-							{
-								ctor: '_Tuple2',
-								_0: {ctor: '::', _0: _p6._0, _1: _p8},
-								_1: _p7
-							});
-					}
-				},
-				_mordrax$cotwelm$Lodash$choose(_p3._1));
-		};
-		return A2(
-			_mgold$elm_random_pcg$Random_Pcg$map,
-			function (_p9) {
-				return _elm_lang$core$Array$fromList(
-					_elm_lang$core$Tuple$first(_p9));
-			},
-			helper(
-				{
-					ctor: '_Tuple2',
-					_0: {ctor: '[]'},
-					_1: arr
-				}));
-	}
-};
-var _mordrax$cotwelm$Lodash$range = F2(
-	function (x, y) {
-		return (_elm_lang$core$Native_Utils.cmp(x, y) < 0) ? A2(_elm_lang$core$List$range, x, y) : _elm_lang$core$List$reverse(
-			A2(_elm_lang$core$List$range, y, x));
-	});
-var _mordrax$cotwelm$Lodash$without = F2(
-	function (x, xs) {
-		return A2(
-			_elm_lang$core$List$filter,
-			F2(
-				function (x, y) {
-					return !_elm_lang$core$Native_Utils.eq(x, y);
-				})(x),
-			xs);
-	});
-var _mordrax$cotwelm$Lodash$headWithDefault = F2(
-	function ($default, xs) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			$default,
-			_elm_lang$core$List$head(xs));
-	});
-var _mordrax$cotwelm$Lodash$shuffle = function (list) {
-	return A2(
-		_mgold$elm_random_pcg$Random_Pcg$map,
-		_elm_lang$core$Array$toList,
-		_mordrax$cotwelm$Lodash$shuffle_(
-			_elm_lang$core$Array$fromList(list)));
-};
-
-var _mordrax$cotwelm$Monster$remove = F2(
-	function (monster, monsters) {
-		return A2(
-			_elm_lang$core$List$filter,
-			function (x) {
-				return !_elm_lang$core$Native_Utils.eq(monster.position, x.position);
-			},
-			monsters);
-	});
-var _mordrax$cotwelm$Monster$update = F2(
-	function (monster, monsters) {
-		return {
-			ctor: '::',
-			_0: monster,
-			_1: A2(_mordrax$cotwelm$Monster$remove, monster, monsters)
-		};
-	});
-var _mordrax$cotwelm$Monster$view = function (_p0) {
-	var _p1 = _p0;
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$style(
-				_mordrax$cotwelm$Utils_Misc$vectorToHtmlStyle(_p1.position)),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class(
-					A2(_elm_lang$core$Basics_ops['++'], 'tile monster ', _p1.css)),
-				_1: {ctor: '[]'}
-			}
-		},
-		{ctor: '[]'});
-};
-var _mordrax$cotwelm$Monster$Monster = function (a) {
+var _mordrax$cotwelm$Hero$Hero = function (a) {
 	return function (b) {
 		return function (c) {
 			return function (d) {
@@ -19087,11 +20170,7 @@ var _mordrax$cotwelm$Monster$Monster = function (a) {
 							return function (h) {
 								return function (i) {
 									return function (j) {
-										return function (k) {
-											return function (l) {
-												return {name: a, type_: b, css: c, position: d, stats: e, attributes: f, equipment: g, expLevel: h, bodySize: i, attackTypes: j, attacks: k, speed: l};
-											};
-										};
+										return {name: a, type_: b, position: c, stats: d, gender: e, attributes: f, equipment: g, expLevel: h, bodySize: i, attacks: j};
 									};
 								};
 							};
@@ -19102,1755 +20181,290 @@ var _mordrax$cotwelm$Monster$Monster = function (a) {
 		};
 	};
 };
-var _mordrax$cotwelm$Monster$Spell = {ctor: 'Spell'};
-var _mordrax$cotwelm$Monster$Steal = {ctor: 'Steal'};
-var _mordrax$cotwelm$Monster$Drain = {ctor: 'Drain'};
-var _mordrax$cotwelm$Monster$Lightning = {ctor: 'Lightning'};
-var _mordrax$cotwelm$Monster$Ice = {ctor: 'Ice'};
-var _mordrax$cotwelm$Monster$Fire = {ctor: 'Fire'};
-var _mordrax$cotwelm$Monster$Acid = {ctor: 'Acid'};
-var _mordrax$cotwelm$Monster$Poison = {ctor: 'Poison'};
-var _mordrax$cotwelm$Monster$Ranged = {ctor: 'Ranged'};
-var _mordrax$cotwelm$Monster$Melee = {ctor: 'Melee'};
-var _mordrax$cotwelm$Monster$init = F2(
-	function (monsterType, position) {
-		var ironEquipment = {
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: _mordrax$cotwelm$Equipment$ArmourSlot,
-				_1: A2(
-					_mordrax$cotwelm$Item_Item$new,
-					_mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$ChainMail),
-					_mordrax$cotwelm$Utils_IdGenerator$empty)
-			},
-			_1: {
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: _mordrax$cotwelm$Equipment$HelmetSlot,
-					_1: A2(
-						_mordrax$cotwelm$Item_Item$new,
-						_mordrax$cotwelm$Item_Data$ItemTypeHelmet(_mordrax$cotwelm$Item_Data$IronHelmet),
-						_mordrax$cotwelm$Utils_IdGenerator$empty)
-				},
-				_1: {
-					ctor: '::',
-					_0: {
-						ctor: '_Tuple2',
-						_0: _mordrax$cotwelm$Equipment$GauntletsSlot,
-						_1: A2(
-							_mordrax$cotwelm$Item_Item$new,
-							_mordrax$cotwelm$Item_Data$ItemTypeGauntlets(_mordrax$cotwelm$Item_Data$NormalGauntlets),
-							_mordrax$cotwelm$Utils_IdGenerator$empty)
-					},
-					_1: {
-						ctor: '::',
-						_0: {
-							ctor: '_Tuple2',
-							_0: _mordrax$cotwelm$Equipment$BracersSlot,
-							_1: A2(
-								_mordrax$cotwelm$Item_Item$new,
-								_mordrax$cotwelm$Item_Data$ItemTypeBracers(_mordrax$cotwelm$Item_Data$NormalBracers),
-								_mordrax$cotwelm$Utils_IdGenerator$empty)
-						},
-						_1: {ctor: '[]'}
-					}
-				}
-			}
-		};
-		var leatherEquipment = {
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: _mordrax$cotwelm$Equipment$ArmourSlot,
-				_1: A2(
-					_mordrax$cotwelm$Item_Item$new,
-					_mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$LeatherArmour),
-					_mordrax$cotwelm$Utils_IdGenerator$empty)
-			},
-			_1: {
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: _mordrax$cotwelm$Equipment$HelmetSlot,
-					_1: A2(
-						_mordrax$cotwelm$Item_Item$new,
-						_mordrax$cotwelm$Item_Data$ItemTypeHelmet(_mordrax$cotwelm$Item_Data$LeatherHelmet),
-						_mordrax$cotwelm$Utils_IdGenerator$empty)
-				},
-				_1: {
-					ctor: '::',
-					_0: {
-						ctor: '_Tuple2',
-						_0: _mordrax$cotwelm$Equipment$GauntletsSlot,
-						_1: A2(
-							_mordrax$cotwelm$Item_Item$new,
-							_mordrax$cotwelm$Item_Data$ItemTypeGauntlets(_mordrax$cotwelm$Item_Data$NormalGauntlets),
-							_mordrax$cotwelm$Utils_IdGenerator$empty)
-					},
-					_1: {
-						ctor: '::',
-						_0: {
-							ctor: '_Tuple2',
-							_0: _mordrax$cotwelm$Equipment$BracersSlot,
-							_1: A2(
-								_mordrax$cotwelm$Item_Item$new,
-								_mordrax$cotwelm$Item_Data$ItemTypeBracers(_mordrax$cotwelm$Item_Data$NormalBracers),
-								_mordrax$cotwelm$Utils_IdGenerator$empty)
-						},
-						_1: {ctor: '[]'}
-					}
-				}
-			}
-		};
-		var makeShield = function (shieldType) {
-			return A2(
-				_mordrax$cotwelm$Item_Item$new,
-				_mordrax$cotwelm$Item_Data$ItemTypeShield(shieldType),
-				_mordrax$cotwelm$Utils_IdGenerator$empty);
-		};
-		var armourSlot = function (armourType) {
-			return {
-				ctor: '_Tuple2',
-				_0: _mordrax$cotwelm$Equipment$ArmourSlot,
-				_1: A2(
-					_mordrax$cotwelm$Item_Item$new,
-					_mordrax$cotwelm$Item_Data$ItemTypeArmour(armourType),
-					_mordrax$cotwelm$Utils_IdGenerator$empty)
-			};
-		};
-		var weaponSlot = function (weaponType) {
-			return {
-				ctor: '_Tuple2',
-				_0: _mordrax$cotwelm$Equipment$WeaponSlot,
-				_1: A2(
-					_mordrax$cotwelm$Item_Item$new,
-					_mordrax$cotwelm$Item_Data$ItemTypeWeapon(weaponType),
-					_mordrax$cotwelm$Utils_IdGenerator$empty)
-			};
-		};
-		var basicEquipment = F2(
-			function (weapon, armour) {
-				return {
-					ctor: '::',
-					_0: weaponSlot(weapon),
-					_1: {
-						ctor: '::',
-						_0: armourSlot(armour),
-						_1: {ctor: '[]'}
-					}
-				};
-			});
-		var basicShieldEquipment = F3(
-			function (weapon, shield, armour) {
-				return {
-					ctor: '::',
-					_0: {
-						ctor: '_Tuple2',
-						_0: _mordrax$cotwelm$Equipment$ShieldSlot,
-						_1: makeShield(shield)
-					},
-					_1: A2(basicEquipment, weapon, armour)
-				};
-			});
-		var setBodySize = F2(
-			function (size, monster) {
-				return _elm_lang$core$Native_Utils.update(
-					monster,
-					{bodySize: size});
-			});
-		var setAttackTypes = F2(
-			function (attackTypes, monster) {
-				return _elm_lang$core$Native_Utils.update(
-					monster,
-					{attackTypes: attackTypes});
-			});
-		var setSpeed = F2(
-			function (speed, monster) {
-				return _elm_lang$core$Native_Utils.update(
-					monster,
-					{speed: speed});
-			});
-		var setAttacks = F2(
-			function (attacks, monster) {
-				return _elm_lang$core$Native_Utils.update(
-					monster,
-					{attacks: attacks});
-			});
-		var makeEquipment = function (equipment) {
-			return A2(_mordrax$cotwelm$Equipment$equipMany, equipment, _mordrax$cotwelm$Equipment$init);
-		};
-		var make = F4(
-			function (name, level, attributes, itemSlotPair) {
-				return {
-					name: name,
-					type_: _mordrax$cotwelm$Types$Monster,
-					css: _mordrax$cotwelm$Utils_Misc$toCSS(name),
-					position: position,
-					stats: A2(_mordrax$cotwelm$Stats$initExperienced, attributes, level),
-					attributes: attributes,
-					equipment: makeEquipment(itemSlotPair),
-					expLevel: level,
-					bodySize: _mordrax$cotwelm$Types$Medium,
-					attackTypes: {
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Melee,
-						_1: {ctor: '[]'}
-					},
-					attacks: 1,
-					speed: 100
-				};
-			});
-		var _p2 = monsterType;
-		switch (_p2.ctor) {
-			case 'GiantRat':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Small,
-					A4(
-						make,
-						'Giant Rat',
-						1,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 40, 50, 50, 5),
-						A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallClaws, _mordrax$cotwelm$Item_Data$SoftHide)));
-			case 'Goblin':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Small,
-					A4(
-						make,
-						'Goblin',
-						1,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 40, 60, 50, 20),
-						{
-							ctor: '::',
-							_0: weaponSlot(_mordrax$cotwelm$Item_Data$Club),
-							_1: leatherEquipment
-						}));
-			case 'GiantBat':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Small,
-					A4(
-						make,
-						'Giant Bat',
-						1,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 30, 70, 40, 10),
-						A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallClaws, _mordrax$cotwelm$Item_Data$SoftHide)));
-			case 'Kobold':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Melee,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Monster$Ranged,
-							_1: {ctor: '[]'}
-						}
-					},
-					A2(
-						setBodySize,
-						_mordrax$cotwelm$Types$Small,
-						A4(
-							make,
-							'Kobold',
-							2,
-							A5(_mordrax$cotwelm$Attributes$Attributes, 0, 30, 60, 30, 50),
-							{
-								ctor: '::',
-								_0: weaponSlot(_mordrax$cotwelm$Item_Data$Crossbow),
-								_1: leatherEquipment
-							})));
-			case 'Hobgoblin':
-				return A4(
-					make,
-					'Hobgoblin',
-					2,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 60, 50, 50),
-					{
-						ctor: '::',
-						_0: weaponSlot(_mordrax$cotwelm$Item_Data$Spear),
-						_1: leatherEquipment
-					});
-			case 'LargeSnake':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Poison,
-						_1: {ctor: '[]'}
-					},
-					A2(
-						setBodySize,
-						_mordrax$cotwelm$Types$Tiny,
-						A4(
-							make,
-							'Large Snake',
-							2,
-							A5(_mordrax$cotwelm$Attributes$Attributes, 0, 20, 70, 30, 30),
-							A2(basicEquipment, _mordrax$cotwelm$Item_Data$Fangs, _mordrax$cotwelm$Item_Data$SoftHide))));
-			case 'Skeleton':
-				return A4(
-					make,
-					'Skeleton',
-					3,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 60, 65, 40, 10),
-					A2(basicEquipment, _mordrax$cotwelm$Item_Data$ShortSword, _mordrax$cotwelm$Item_Data$Bones));
-			case 'WildDog':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Small,
-					A4(
-						make,
-						'Wild Dog',
-						3,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 75, 30, 30),
-						A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallBite, _mordrax$cotwelm$Item_Data$SoftHide)));
-			case 'Viper':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Poison,
-						_1: {ctor: '[]'}
-					},
-					A2(
-						setBodySize,
-						_mordrax$cotwelm$Types$Tiny,
-						A4(
-							make,
-							'Viper',
-							3,
-							A5(_mordrax$cotwelm$Attributes$Attributes, 0, 20, 80, 20, 30),
-							A2(basicEquipment, _mordrax$cotwelm$Item_Data$Fangs, _mordrax$cotwelm$Item_Data$SoftHide))));
-			case 'GoblinFighter':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Small,
-					A4(
-						make,
-						'Goblin Fighter',
-						4,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 75, 50, 50),
-						A3(basicShieldEquipment, _mordrax$cotwelm$Item_Data$Axe, _mordrax$cotwelm$Item_Data$MediumIronShield, _mordrax$cotwelm$Item_Data$StuddedLeatherArmour)));
-			case 'GiantRedAnt':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Large,
-					A4(
-						make,
-						'Giant Red Ant',
-						4,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 80, 50, 60, 40),
-						A2(basicEquipment, _mordrax$cotwelm$Item_Data$Pincers, _mordrax$cotwelm$Item_Data$Shell)));
-			case 'WalkingCorpse':
-				return A4(
-					make,
-					'Walking Corpse',
-					4,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 100, 40, 95, 20),
-					A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallClaws, _mordrax$cotwelm$Item_Data$SoftHide));
-			case 'Bandit':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ranged,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Bandit',
-						4,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 60, 75, 60, 50),
-						{
-							ctor: '::',
-							_0: weaponSlot(_mordrax$cotwelm$Item_Data$Bow),
-							_1: leatherEquipment
-						}));
-			case 'GiantTrapdoorSpider':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Large,
-					A4(
-						make,
-						'Giant Trapdoor Spider',
-						5,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 60, 60, 60, 30),
-						A2(basicEquipment, _mordrax$cotwelm$Item_Data$Pincers, _mordrax$cotwelm$Item_Data$Shell)));
-			case 'HugeLizard':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Large,
-					A4(
-						make,
-						'Huge Lizard',
-						5,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 70, 65, 60, 30),
-						A2(basicEquipment, _mordrax$cotwelm$Item_Data$LargeClaws, _mordrax$cotwelm$Item_Data$ToughHide)));
-			case 'RatMan':
-				return A4(
-					make,
-					'Rat Man',
-					5,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 60, 60, 60, 60),
-					A2(basicEquipment, _mordrax$cotwelm$Item_Data$MorningStar, _mordrax$cotwelm$Item_Data$ToughHide));
-			case 'Slime':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Acid,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Slime',
-						6,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 90, 50),
-						A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallBite, _mordrax$cotwelm$Item_Data$SoftHide)));
-			case 'GiantScorpion':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Poison,
-						_1: {ctor: '[]'}
-					},
-					A2(
-						setBodySize,
-						_mordrax$cotwelm$Types$Large,
-						A4(
-							make,
-							'Giant Scorpion',
-							6,
-							A5(_mordrax$cotwelm$Attributes$Attributes, 0, 75, 50, 60, 50),
-							A2(basicEquipment, _mordrax$cotwelm$Item_Data$Pincers, _mordrax$cotwelm$Item_Data$Shell))));
-			case 'GrayWolf':
-				return A2(
-					setBodySize,
-					_mordrax$cotwelm$Types$Small,
-					A4(
-						make,
-						'Gray Wolf',
-						6,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 60, 80, 50, 50),
-						A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallBite, _mordrax$cotwelm$Item_Data$ToughHide)));
-			case 'WhiteWolf':
-				return A2(
-					setAttacks,
-					2,
-					A2(
-						setBodySize,
-						_mordrax$cotwelm$Types$Small,
-						A4(
-							make,
-							'White Wolf',
-							6,
-							A5(_mordrax$cotwelm$Attributes$Attributes, 0, 60, 80, 50, 50),
-							A2(basicEquipment, _mordrax$cotwelm$Item_Data$SmallBite, _mordrax$cotwelm$Item_Data$ToughHide))));
-			case 'GelantinousGlob':
-				return A4(
-					make,
-					'Gelantinous Glob',
-					7,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'SmirkingSneakThief':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Steal,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Smirking Sneak Thief',
-						7,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'CarrionCreeper':
-				return A4(
-					make,
-					'Carrion Creeper',
-					7,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'HugeOgre':
-				return A4(
-					make,
-					'Huge Ogre',
-					8,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'Shadow':
-				return A4(
-					make,
-					'Shadow',
-					8,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'AnimatedWoodenStatue':
-				return A4(
-					make,
-					'Animated Wooden Statue',
-					8,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'BrownBear':
-				return A4(
-					make,
-					'Brown Bear',
-					9,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'Manticore':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Melee,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Monster$Poison,
-							_1: {ctor: '[]'}
-						}
-					},
-					A4(
-						make,
-						'Manticore',
-						10,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'EerieGhost':
-				return A4(
-					make,
-					'Eerie Ghost',
-					10,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'GruesomeTroll':
-				return A4(
-					make,
-					'Gruesome Troll',
-					10,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'YoungGreenDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Acid,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Young Green Dragon',
-						11,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'YoungWhiteDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Young White Dragon',
-						11,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'YoungBlueDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Lightning,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Young Blue Dragon',
-						11,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'YoungRedDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Young Red Dragon',
-						11,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AnimatedBronzeStatue':
-				return A4(
-					make,
-					'Animated Bronze Statue',
-					11,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'EvilWarrior':
-				return A4(
-					make,
-					'Evil Warrior',
-					11,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'WolfMan':
-				return A4(
-					make,
-					'Wolf Man',
-					12,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'CaveBear':
-				return A4(
-					make,
-					'Cave Bear',
-					12,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'Berserker':
-				return A4(
-					make,
-					'Berserker',
-					13,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'AnimatedIronStatue':
-				return A4(
-					make,
-					'Animated Iron Statue',
-					13,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'TunnelWight':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Drain,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Tunnel Wight',
-						13,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'YoungAdultBlueDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Lightning,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Young Adult Blue Dragon',
-						15,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'YoungAdultGreenDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Acid,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Young Adult Green Dragon',
-						15,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'YoungAdultWhiteDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Young Adult White Dragon',
-						15,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'PaleWraith':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Drain,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Pale Wraith',
-						14,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'BarrowWight':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Drain,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Barrow Wight',
-						14,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'BearMan':
-				return A4(
-					make,
-					'Bear-Man',
-					14,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'DustElemental':
-				return A4(
-					make,
-					'Dust Elemental',
-					15,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'HillGiant':
-				return A4(
-					make,
-					'Hill Giant',
-					15,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'YoungAdultRedDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Young Adult Red Dragon',
-						15,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'Wizard':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Spell,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Wizard',
-						18,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'BullMan':
-				return A4(
-					make,
-					'Bull-Man',
-					16,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'CastleWight':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Drain,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Castle Wight',
-						14,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'DarkWraith':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Drain,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Dark Wraith',
-						15,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'IceElemental':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Ice Elemental',
-						16,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'Spectre':
-				return A4(
-					make,
-					'Spectre',
-					17,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'AnimatedMarbleStatue':
-				return A4(
-					make,
-					'Animated Marble Statue',
-					18,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'AdultBlueDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Lightning,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Adult Blue Dragon',
-						19,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AdultGreenDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Acid,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Adult Green Dragon',
-						19,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AdultWhiteDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Adult White Dragon',
-						19,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AirElemental':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Lightning,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Air Elemental',
-						16,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'MagmaElemental':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Magma Elemental',
-						18,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'StoneGiant':
-				return A4(
-					make,
-					'Stone Giant',
-					19,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'TwoHeadedGiant':
-				return A4(
-					make,
-					'Two Headed Giant',
-					21,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'AdultRedDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Adult Red Dragon',
-						24,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'FireElemental':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Fire Elemental',
-						20,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'FrostGiant':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Frost Giant',
-						19,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'SpikedDevil':
-				return A4(
-					make,
-					'Spiked Devil',
-					20,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'WaterElemental':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Water Elemental',
-						19,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'EarthElemental':
-				return A4(
-					make,
-					'Earth Elemental',
-					19,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'Necromancer':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Spell,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Necromancer',
-						16,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'Vampire':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Drain,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Vampire',
-						20,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AbyssWraith':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Drain,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Abyss Wraith',
-						21,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'Utgardhalok':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ranged,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Utgardhalok',
-						25,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'FireGiant':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Monster$Ranged,
-							_1: {ctor: '[]'}
-						}
-					},
-					A4(
-						make,
-						'Fire Giant',
-						21,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'OldBlueDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Lightning,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Old Blue Dragon',
-						28,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'OldGreenDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Acid,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Old Green Dragon',
-						28,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'OldWhiteDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Old White Dragon',
-						28,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'HornedDevil':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Melee,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Monster$Fire,
-							_1: {ctor: '[]'}
-						}
-					},
-					A4(
-						make,
-						'Horned Devil',
-						23,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'OldRedDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Old Red Dragon',
-						28,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'Rungnir':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ranged,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Rungnir',
-						15,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'IceDevil':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Ice Devil',
-						23,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'Thrym':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Thrym',
-						25,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'VeryOldGreenDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Acid,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Very Old Green Dragon',
-						32,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'VeryOldWhiteDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Very Old White Dragon',
-						32,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'VeryOldBlueDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Lightning,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Very Old Blue Dragon',
-						32,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AbyssFiend':
-				return A4(
-					make,
-					'Abyss Fiend',
-					26,
-					A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-					{ctor: '[]'});
-			case 'Thiassa':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ranged,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Thiassa',
-						26,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'VeryOldRedDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Very Old Red Dragon',
-						32,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AncientGreenDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Acid,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Ancient Green Dragon',
-						35,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AncientWhiteDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Ice,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Ancient White Dragon',
-						35,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AncientBlueDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Lightning,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Ancient Blue Dragon',
-						35,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			case 'AncientRedDragon':
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Fire,
-						_1: {ctor: '[]'}
-					},
-					A4(
-						make,
-						'Ancient Red Dragon',
-						35,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-			default:
-				return A2(
-					setAttackTypes,
-					{
-						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$Melee,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Monster$Spell,
-							_1: {
-								ctor: '::',
-								_0: _mordrax$cotwelm$Monster$Fire,
-								_1: {
-									ctor: '::',
-									_0: _mordrax$cotwelm$Monster$Lightning,
-									_1: {
-										ctor: '::',
-										_0: _mordrax$cotwelm$Monster$Ice,
-										_1: {ctor: '[]'}
-									}
-								}
-							}
-						}
-					},
-					A4(
-						make,
-						'Sultur',
-						40,
-						A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
-						{ctor: '[]'}));
-		}
-	});
-var _mordrax$cotwelm$Monster$initForArena = function (monsterType) {
-	return A2(
-		_mordrax$cotwelm$Monster$init,
-		monsterType,
-		{ctor: '_Tuple2', _0: 0, _1: 0});
-};
-var _mordrax$cotwelm$Monster$Sultur = {ctor: 'Sultur'};
-var _mordrax$cotwelm$Monster$AncientRedDragon = {ctor: 'AncientRedDragon'};
-var _mordrax$cotwelm$Monster$AncientBlueDragon = {ctor: 'AncientBlueDragon'};
-var _mordrax$cotwelm$Monster$AncientWhiteDragon = {ctor: 'AncientWhiteDragon'};
-var _mordrax$cotwelm$Monster$AncientGreenDragon = {ctor: 'AncientGreenDragon'};
-var _mordrax$cotwelm$Monster$VeryOldRedDragon = {ctor: 'VeryOldRedDragon'};
-var _mordrax$cotwelm$Monster$Thiassa = {ctor: 'Thiassa'};
-var _mordrax$cotwelm$Monster$AbyssFiend = {ctor: 'AbyssFiend'};
-var _mordrax$cotwelm$Monster$VeryOldBlueDragon = {ctor: 'VeryOldBlueDragon'};
-var _mordrax$cotwelm$Monster$VeryOldWhiteDragon = {ctor: 'VeryOldWhiteDragon'};
-var _mordrax$cotwelm$Monster$VeryOldGreenDragon = {ctor: 'VeryOldGreenDragon'};
-var _mordrax$cotwelm$Monster$Thrym = {ctor: 'Thrym'};
-var _mordrax$cotwelm$Monster$IceDevil = {ctor: 'IceDevil'};
-var _mordrax$cotwelm$Monster$Rungnir = {ctor: 'Rungnir'};
-var _mordrax$cotwelm$Monster$OldRedDragon = {ctor: 'OldRedDragon'};
-var _mordrax$cotwelm$Monster$HornedDevil = {ctor: 'HornedDevil'};
-var _mordrax$cotwelm$Monster$OldWhiteDragon = {ctor: 'OldWhiteDragon'};
-var _mordrax$cotwelm$Monster$OldGreenDragon = {ctor: 'OldGreenDragon'};
-var _mordrax$cotwelm$Monster$OldBlueDragon = {ctor: 'OldBlueDragon'};
-var _mordrax$cotwelm$Monster$FireGiant = {ctor: 'FireGiant'};
-var _mordrax$cotwelm$Monster$Utgardhalok = {ctor: 'Utgardhalok'};
-var _mordrax$cotwelm$Monster$AbyssWraith = {ctor: 'AbyssWraith'};
-var _mordrax$cotwelm$Monster$Vampire = {ctor: 'Vampire'};
-var _mordrax$cotwelm$Monster$Necromancer = {ctor: 'Necromancer'};
-var _mordrax$cotwelm$Monster$EarthElemental = {ctor: 'EarthElemental'};
-var _mordrax$cotwelm$Monster$WaterElemental = {ctor: 'WaterElemental'};
-var _mordrax$cotwelm$Monster$SpikedDevil = {ctor: 'SpikedDevil'};
-var _mordrax$cotwelm$Monster$FrostGiant = {ctor: 'FrostGiant'};
-var _mordrax$cotwelm$Monster$FireElemental = {ctor: 'FireElemental'};
-var _mordrax$cotwelm$Monster$AdultRedDragon = {ctor: 'AdultRedDragon'};
-var _mordrax$cotwelm$Monster$TwoHeadedGiant = {ctor: 'TwoHeadedGiant'};
-var _mordrax$cotwelm$Monster$StoneGiant = {ctor: 'StoneGiant'};
-var _mordrax$cotwelm$Monster$MagmaElemental = {ctor: 'MagmaElemental'};
-var _mordrax$cotwelm$Monster$AirElemental = {ctor: 'AirElemental'};
-var _mordrax$cotwelm$Monster$AdultWhiteDragon = {ctor: 'AdultWhiteDragon'};
-var _mordrax$cotwelm$Monster$AdultGreenDragon = {ctor: 'AdultGreenDragon'};
-var _mordrax$cotwelm$Monster$AdultBlueDragon = {ctor: 'AdultBlueDragon'};
-var _mordrax$cotwelm$Monster$AnimatedMarbleStatue = {ctor: 'AnimatedMarbleStatue'};
-var _mordrax$cotwelm$Monster$Spectre = {ctor: 'Spectre'};
-var _mordrax$cotwelm$Monster$IceElemental = {ctor: 'IceElemental'};
-var _mordrax$cotwelm$Monster$DarkWraith = {ctor: 'DarkWraith'};
-var _mordrax$cotwelm$Monster$CastleWight = {ctor: 'CastleWight'};
-var _mordrax$cotwelm$Monster$BullMan = {ctor: 'BullMan'};
-var _mordrax$cotwelm$Monster$Wizard = {ctor: 'Wizard'};
-var _mordrax$cotwelm$Monster$YoungAdultRedDragon = {ctor: 'YoungAdultRedDragon'};
-var _mordrax$cotwelm$Monster$HillGiant = {ctor: 'HillGiant'};
-var _mordrax$cotwelm$Monster$DustElemental = {ctor: 'DustElemental'};
-var _mordrax$cotwelm$Monster$BearMan = {ctor: 'BearMan'};
-var _mordrax$cotwelm$Monster$BarrowWight = {ctor: 'BarrowWight'};
-var _mordrax$cotwelm$Monster$PaleWraith = {ctor: 'PaleWraith'};
-var _mordrax$cotwelm$Monster$YoungAdultWhiteDragon = {ctor: 'YoungAdultWhiteDragon'};
-var _mordrax$cotwelm$Monster$YoungAdultGreenDragon = {ctor: 'YoungAdultGreenDragon'};
-var _mordrax$cotwelm$Monster$YoungAdultBlueDragon = {ctor: 'YoungAdultBlueDragon'};
-var _mordrax$cotwelm$Monster$TunnelWight = {ctor: 'TunnelWight'};
-var _mordrax$cotwelm$Monster$AnimatedIronStatue = {ctor: 'AnimatedIronStatue'};
-var _mordrax$cotwelm$Monster$Berserker = {ctor: 'Berserker'};
-var _mordrax$cotwelm$Monster$WhiteWolf = {ctor: 'WhiteWolf'};
-var _mordrax$cotwelm$Monster$CaveBear = {ctor: 'CaveBear'};
-var _mordrax$cotwelm$Monster$WolfMan = {ctor: 'WolfMan'};
-var _mordrax$cotwelm$Monster$EvilWarrior = {ctor: 'EvilWarrior'};
-var _mordrax$cotwelm$Monster$AnimatedBronzeStatue = {ctor: 'AnimatedBronzeStatue'};
-var _mordrax$cotwelm$Monster$YoungRedDragon = {ctor: 'YoungRedDragon'};
-var _mordrax$cotwelm$Monster$YoungBlueDragon = {ctor: 'YoungBlueDragon'};
-var _mordrax$cotwelm$Monster$GruesomeTroll = {ctor: 'GruesomeTroll'};
-var _mordrax$cotwelm$Monster$EerieGhost = {ctor: 'EerieGhost'};
-var _mordrax$cotwelm$Monster$Manticore = {ctor: 'Manticore'};
-var _mordrax$cotwelm$Monster$YoungWhiteDragon = {ctor: 'YoungWhiteDragon'};
-var _mordrax$cotwelm$Monster$YoungGreenDragon = {ctor: 'YoungGreenDragon'};
-var _mordrax$cotwelm$Monster$BrownBear = {ctor: 'BrownBear'};
-var _mordrax$cotwelm$Monster$AnimatedWoodenStatue = {ctor: 'AnimatedWoodenStatue'};
-var _mordrax$cotwelm$Monster$Shadow = {ctor: 'Shadow'};
-var _mordrax$cotwelm$Monster$HugeOgre = {ctor: 'HugeOgre'};
-var _mordrax$cotwelm$Monster$CarrionCreeper = {ctor: 'CarrionCreeper'};
-var _mordrax$cotwelm$Monster$SmirkingSneakThief = {ctor: 'SmirkingSneakThief'};
-var _mordrax$cotwelm$Monster$GelantinousGlob = {ctor: 'GelantinousGlob'};
-var _mordrax$cotwelm$Monster$GrayWolf = {ctor: 'GrayWolf'};
-var _mordrax$cotwelm$Monster$GiantScorpion = {ctor: 'GiantScorpion'};
-var _mordrax$cotwelm$Monster$Slime = {ctor: 'Slime'};
-var _mordrax$cotwelm$Monster$RatMan = {ctor: 'RatMan'};
-var _mordrax$cotwelm$Monster$HugeLizard = {ctor: 'HugeLizard'};
-var _mordrax$cotwelm$Monster$GiantTrapdoorSpider = {ctor: 'GiantTrapdoorSpider'};
-var _mordrax$cotwelm$Monster$Bandit = {ctor: 'Bandit'};
-var _mordrax$cotwelm$Monster$WalkingCorpse = {ctor: 'WalkingCorpse'};
-var _mordrax$cotwelm$Monster$GiantRedAnt = {ctor: 'GiantRedAnt'};
-var _mordrax$cotwelm$Monster$GoblinFighter = {ctor: 'GoblinFighter'};
-var _mordrax$cotwelm$Monster$Viper = {ctor: 'Viper'};
-var _mordrax$cotwelm$Monster$WildDog = {ctor: 'WildDog'};
-var _mordrax$cotwelm$Monster$Skeleton = {ctor: 'Skeleton'};
-var _mordrax$cotwelm$Monster$LargeSnake = {ctor: 'LargeSnake'};
-var _mordrax$cotwelm$Monster$Kobold = {ctor: 'Kobold'};
-var _mordrax$cotwelm$Monster$Hobgoblin = {ctor: 'Hobgoblin'};
-var _mordrax$cotwelm$Monster$GiantBat = {ctor: 'GiantBat'};
-var _mordrax$cotwelm$Monster$Goblin = {ctor: 'Goblin'};
-var _mordrax$cotwelm$Monster$GiantRat = {ctor: 'GiantRat'};
-var _mordrax$cotwelm$Monster$types = {
+
+var _mordrax$cotwelm$Monsters_Types$Spell = {ctor: 'Spell'};
+var _mordrax$cotwelm$Monsters_Types$Steal = {ctor: 'Steal'};
+var _mordrax$cotwelm$Monsters_Types$Drain = {ctor: 'Drain'};
+var _mordrax$cotwelm$Monsters_Types$Lightning = {ctor: 'Lightning'};
+var _mordrax$cotwelm$Monsters_Types$Ice = {ctor: 'Ice'};
+var _mordrax$cotwelm$Monsters_Types$Fire = {ctor: 'Fire'};
+var _mordrax$cotwelm$Monsters_Types$Acid = {ctor: 'Acid'};
+var _mordrax$cotwelm$Monsters_Types$Poison = {ctor: 'Poison'};
+var _mordrax$cotwelm$Monsters_Types$Ranged = {ctor: 'Ranged'};
+var _mordrax$cotwelm$Monsters_Types$Melee = {ctor: 'Melee'};
+var _mordrax$cotwelm$Monsters_Types$GreenDragon = {ctor: 'GreenDragon'};
+var _mordrax$cotwelm$Monsters_Types$WhiteDragon = {ctor: 'WhiteDragon'};
+var _mordrax$cotwelm$Monsters_Types$BlueDragon = {ctor: 'BlueDragon'};
+var _mordrax$cotwelm$Monsters_Types$RedDragon = {ctor: 'RedDragon'};
+var _mordrax$cotwelm$Monsters_Types$StoneGiantKing = {ctor: 'StoneGiantKing'};
+var _mordrax$cotwelm$Monsters_Types$HillGiantKing = {ctor: 'HillGiantKing'};
+var _mordrax$cotwelm$Monsters_Types$FrostGiantKing = {ctor: 'FrostGiantKing'};
+var _mordrax$cotwelm$Monsters_Types$FireGiantKing = {ctor: 'FireGiantKing'};
+var _mordrax$cotwelm$Monsters_Types$Surtur = {ctor: 'Surtur'};
+var _mordrax$cotwelm$Monsters_Types$FireGiant = {ctor: 'FireGiant'};
+var _mordrax$cotwelm$Monsters_Types$StoneGiant = {ctor: 'StoneGiant'};
+var _mordrax$cotwelm$Monsters_Types$FrostGiant = {ctor: 'FrostGiant'};
+var _mordrax$cotwelm$Monsters_Types$TwoHeadedGiant = {ctor: 'TwoHeadedGiant'};
+var _mordrax$cotwelm$Monsters_Types$HillGiant = {ctor: 'HillGiant'};
+var _mordrax$cotwelm$Monsters_Types$EarthElemental = {ctor: 'EarthElemental'};
+var _mordrax$cotwelm$Monsters_Types$IceElemental = {ctor: 'IceElemental'};
+var _mordrax$cotwelm$Monsters_Types$MagmaElemental = {ctor: 'MagmaElemental'};
+var _mordrax$cotwelm$Monsters_Types$WaterElemental = {ctor: 'WaterElemental'};
+var _mordrax$cotwelm$Monsters_Types$FireElemental = {ctor: 'FireElemental'};
+var _mordrax$cotwelm$Monsters_Types$DustElemental = {ctor: 'DustElemental'};
+var _mordrax$cotwelm$Monsters_Types$WindElemental = {ctor: 'WindElemental'};
+var _mordrax$cotwelm$Monsters_Types$AbyssFiend = {ctor: 'AbyssFiend'};
+var _mordrax$cotwelm$Monsters_Types$HornedDevil = {ctor: 'HornedDevil'};
+var _mordrax$cotwelm$Monsters_Types$SpikedDevil = {ctor: 'SpikedDevil'};
+var _mordrax$cotwelm$Monsters_Types$BullMan = {ctor: 'BullMan'};
+var _mordrax$cotwelm$Monsters_Types$BearMan = {ctor: 'BearMan'};
+var _mordrax$cotwelm$Monsters_Types$WolfMan = {ctor: 'WolfMan'};
+var _mordrax$cotwelm$Monsters_Types$RatMan = {ctor: 'RatMan'};
+var _mordrax$cotwelm$Monsters_Types$IceDevil = {ctor: 'IceDevil'};
+var _mordrax$cotwelm$Monsters_Types$Vampire = {ctor: 'Vampire'};
+var _mordrax$cotwelm$Monsters_Types$Spectre = {ctor: 'Spectre'};
+var _mordrax$cotwelm$Monsters_Types$EerieGhost = {ctor: 'EerieGhost'};
+var _mordrax$cotwelm$Monsters_Types$DarkWraith = {ctor: 'DarkWraith'};
+var _mordrax$cotwelm$Monsters_Types$BarrowWight = {ctor: 'BarrowWight'};
+var _mordrax$cotwelm$Monsters_Types$Necromancer = {ctor: 'Necromancer'};
+var _mordrax$cotwelm$Monsters_Types$Wizard = {ctor: 'Wizard'};
+var _mordrax$cotwelm$Monsters_Types$EvilWarrior = {ctor: 'EvilWarrior'};
+var _mordrax$cotwelm$Monsters_Types$Bandit = {ctor: 'Bandit'};
+var _mordrax$cotwelm$Monsters_Types$AnimatedWoodenStatue = {ctor: 'AnimatedWoodenStatue'};
+var _mordrax$cotwelm$Monsters_Types$AnimatedMarbleStatue = {ctor: 'AnimatedMarbleStatue'};
+var _mordrax$cotwelm$Monsters_Types$AnimatedIronStatue = {ctor: 'AnimatedIronStatue'};
+var _mordrax$cotwelm$Monsters_Types$AnimatedBronzeStatue = {ctor: 'AnimatedBronzeStatue'};
+var _mordrax$cotwelm$Monsters_Types$Manticore = {ctor: 'Manticore'};
+var _mordrax$cotwelm$Monsters_Types$GruesomeTroll = {ctor: 'GruesomeTroll'};
+var _mordrax$cotwelm$Monsters_Types$GelatinousGlob = {ctor: 'GelatinousGlob'};
+var _mordrax$cotwelm$Monsters_Types$CaveBear = {ctor: 'CaveBear'};
+var _mordrax$cotwelm$Monsters_Types$BrownBear = {ctor: 'BrownBear'};
+var _mordrax$cotwelm$Monsters_Types$WhiteWolf = {ctor: 'WhiteWolf'};
+var _mordrax$cotwelm$Monsters_Types$GrayWolf = {ctor: 'GrayWolf'};
+var _mordrax$cotwelm$Monsters_Types$SmirkingSneakThief = {ctor: 'SmirkingSneakThief'};
+var _mordrax$cotwelm$Monsters_Types$Shadow = {ctor: 'Shadow'};
+var _mordrax$cotwelm$Monsters_Types$Hobgoblin = {ctor: 'Hobgoblin'};
+var _mordrax$cotwelm$Monsters_Types$Goblin = {ctor: 'Goblin'};
+var _mordrax$cotwelm$Monsters_Types$HugeLizard = {ctor: 'HugeLizard'};
+var _mordrax$cotwelm$Monsters_Types$WalkingCorpse = {ctor: 'WalkingCorpse'};
+var _mordrax$cotwelm$Monsters_Types$HugeOgre = {ctor: 'HugeOgre'};
+var _mordrax$cotwelm$Monsters_Types$Viper = {ctor: 'Viper'};
+var _mordrax$cotwelm$Monsters_Types$GreenSlime = {ctor: 'GreenSlime'};
+var _mordrax$cotwelm$Monsters_Types$GiantScorpion = {ctor: 'GiantScorpion'};
+var _mordrax$cotwelm$Monsters_Types$CarrionCreeper = {ctor: 'CarrionCreeper'};
+var _mordrax$cotwelm$Monsters_Types$GiantBat = {ctor: 'GiantBat'};
+var _mordrax$cotwelm$Monsters_Types$GiantTrapdoorSpider = {ctor: 'GiantTrapdoorSpider'};
+var _mordrax$cotwelm$Monsters_Types$Skeleton = {ctor: 'Skeleton'};
+var _mordrax$cotwelm$Monsters_Types$WildDog = {ctor: 'WildDog'};
+var _mordrax$cotwelm$Monsters_Types$GiantRedAnt = {ctor: 'GiantRedAnt'};
+var _mordrax$cotwelm$Monsters_Types$LargeSnake = {ctor: 'LargeSnake'};
+var _mordrax$cotwelm$Monsters_Types$GiantRat = {ctor: 'GiantRat'};
+var _mordrax$cotwelm$Monsters_Types$Kobold = {ctor: 'Kobold'};
+var _mordrax$cotwelm$Monsters_Types$monsterTypesToList = {
 	ctor: '::',
-	_0: _mordrax$cotwelm$Monster$GiantRat,
+	_0: _mordrax$cotwelm$Monsters_Types$Kobold,
 	_1: {
 		ctor: '::',
-		_0: _mordrax$cotwelm$Monster$Goblin,
+		_0: _mordrax$cotwelm$Monsters_Types$GiantRat,
 		_1: {
 			ctor: '::',
-			_0: _mordrax$cotwelm$Monster$GiantBat,
+			_0: _mordrax$cotwelm$Monsters_Types$LargeSnake,
 			_1: {
 				ctor: '::',
-				_0: _mordrax$cotwelm$Monster$Hobgoblin,
+				_0: _mordrax$cotwelm$Monsters_Types$GiantRedAnt,
 				_1: {
 					ctor: '::',
-					_0: _mordrax$cotwelm$Monster$Kobold,
+					_0: _mordrax$cotwelm$Monsters_Types$WildDog,
 					_1: {
 						ctor: '::',
-						_0: _mordrax$cotwelm$Monster$LargeSnake,
+						_0: _mordrax$cotwelm$Monsters_Types$Skeleton,
 						_1: {
 							ctor: '::',
-							_0: _mordrax$cotwelm$Monster$Skeleton,
+							_0: _mordrax$cotwelm$Monsters_Types$GiantTrapdoorSpider,
 							_1: {
 								ctor: '::',
-								_0: _mordrax$cotwelm$Monster$WildDog,
+								_0: _mordrax$cotwelm$Monsters_Types$GiantBat,
 								_1: {
 									ctor: '::',
-									_0: _mordrax$cotwelm$Monster$Viper,
+									_0: _mordrax$cotwelm$Monsters_Types$CarrionCreeper,
 									_1: {
 										ctor: '::',
-										_0: _mordrax$cotwelm$Monster$GoblinFighter,
+										_0: _mordrax$cotwelm$Monsters_Types$GiantScorpion,
 										_1: {
 											ctor: '::',
-											_0: _mordrax$cotwelm$Monster$GiantRedAnt,
+											_0: _mordrax$cotwelm$Monsters_Types$GreenSlime,
 											_1: {
 												ctor: '::',
-												_0: _mordrax$cotwelm$Monster$WalkingCorpse,
+												_0: _mordrax$cotwelm$Monsters_Types$Viper,
 												_1: {
 													ctor: '::',
-													_0: _mordrax$cotwelm$Monster$Bandit,
+													_0: _mordrax$cotwelm$Monsters_Types$HugeOgre,
 													_1: {
 														ctor: '::',
-														_0: _mordrax$cotwelm$Monster$GiantTrapdoorSpider,
+														_0: _mordrax$cotwelm$Monsters_Types$WalkingCorpse,
 														_1: {
 															ctor: '::',
-															_0: _mordrax$cotwelm$Monster$HugeLizard,
+															_0: _mordrax$cotwelm$Monsters_Types$HugeLizard,
 															_1: {
 																ctor: '::',
-																_0: _mordrax$cotwelm$Monster$RatMan,
+																_0: _mordrax$cotwelm$Monsters_Types$Goblin,
 																_1: {
 																	ctor: '::',
-																	_0: _mordrax$cotwelm$Monster$Slime,
+																	_0: _mordrax$cotwelm$Monsters_Types$Hobgoblin,
 																	_1: {
 																		ctor: '::',
-																		_0: _mordrax$cotwelm$Monster$GiantScorpion,
+																		_0: _mordrax$cotwelm$Monsters_Types$Shadow,
 																		_1: {
 																			ctor: '::',
-																			_0: _mordrax$cotwelm$Monster$GrayWolf,
+																			_0: _mordrax$cotwelm$Monsters_Types$SmirkingSneakThief,
 																			_1: {
 																				ctor: '::',
-																				_0: _mordrax$cotwelm$Monster$WhiteWolf,
+																				_0: _mordrax$cotwelm$Monsters_Types$GrayWolf,
 																				_1: {
 																					ctor: '::',
-																					_0: _mordrax$cotwelm$Monster$GelantinousGlob,
+																					_0: _mordrax$cotwelm$Monsters_Types$WhiteWolf,
 																					_1: {
 																						ctor: '::',
-																						_0: _mordrax$cotwelm$Monster$SmirkingSneakThief,
+																						_0: _mordrax$cotwelm$Monsters_Types$BrownBear,
 																						_1: {
 																							ctor: '::',
-																							_0: _mordrax$cotwelm$Monster$CarrionCreeper,
+																							_0: _mordrax$cotwelm$Monsters_Types$CaveBear,
 																							_1: {
 																								ctor: '::',
-																								_0: _mordrax$cotwelm$Monster$HugeOgre,
+																								_0: _mordrax$cotwelm$Monsters_Types$GelatinousGlob,
 																								_1: {
 																									ctor: '::',
-																									_0: _mordrax$cotwelm$Monster$Shadow,
+																									_0: _mordrax$cotwelm$Monsters_Types$GruesomeTroll,
 																									_1: {
 																										ctor: '::',
-																										_0: _mordrax$cotwelm$Monster$AnimatedWoodenStatue,
+																										_0: _mordrax$cotwelm$Monsters_Types$Manticore,
 																										_1: {
 																											ctor: '::',
-																											_0: _mordrax$cotwelm$Monster$BrownBear,
+																											_0: _mordrax$cotwelm$Monsters_Types$AnimatedBronzeStatue,
 																											_1: {
 																												ctor: '::',
-																												_0: _mordrax$cotwelm$Monster$YoungGreenDragon,
+																												_0: _mordrax$cotwelm$Monsters_Types$AnimatedIronStatue,
 																												_1: {
 																													ctor: '::',
-																													_0: _mordrax$cotwelm$Monster$YoungWhiteDragon,
+																													_0: _mordrax$cotwelm$Monsters_Types$AnimatedMarbleStatue,
 																													_1: {
 																														ctor: '::',
-																														_0: _mordrax$cotwelm$Monster$Manticore,
+																														_0: _mordrax$cotwelm$Monsters_Types$AnimatedWoodenStatue,
 																														_1: {
 																															ctor: '::',
-																															_0: _mordrax$cotwelm$Monster$EerieGhost,
+																															_0: _mordrax$cotwelm$Monsters_Types$Bandit,
 																															_1: {
 																																ctor: '::',
-																																_0: _mordrax$cotwelm$Monster$GruesomeTroll,
+																																_0: _mordrax$cotwelm$Monsters_Types$EvilWarrior,
 																																_1: {
 																																	ctor: '::',
-																																	_0: _mordrax$cotwelm$Monster$YoungBlueDragon,
+																																	_0: _mordrax$cotwelm$Monsters_Types$Wizard,
 																																	_1: {
 																																		ctor: '::',
-																																		_0: _mordrax$cotwelm$Monster$YoungRedDragon,
+																																		_0: _mordrax$cotwelm$Monsters_Types$Necromancer,
 																																		_1: {
 																																			ctor: '::',
-																																			_0: _mordrax$cotwelm$Monster$AnimatedBronzeStatue,
+																																			_0: _mordrax$cotwelm$Monsters_Types$BarrowWight,
 																																			_1: {
 																																				ctor: '::',
-																																				_0: _mordrax$cotwelm$Monster$EvilWarrior,
+																																				_0: _mordrax$cotwelm$Monsters_Types$DarkWraith,
 																																				_1: {
 																																					ctor: '::',
-																																					_0: _mordrax$cotwelm$Monster$WolfMan,
+																																					_0: _mordrax$cotwelm$Monsters_Types$EerieGhost,
 																																					_1: {
 																																						ctor: '::',
-																																						_0: _mordrax$cotwelm$Monster$CaveBear,
+																																						_0: _mordrax$cotwelm$Monsters_Types$Spectre,
 																																						_1: {
 																																							ctor: '::',
-																																							_0: _mordrax$cotwelm$Monster$Berserker,
+																																							_0: _mordrax$cotwelm$Monsters_Types$Vampire,
 																																							_1: {
 																																								ctor: '::',
-																																								_0: _mordrax$cotwelm$Monster$AnimatedIronStatue,
+																																								_0: _mordrax$cotwelm$Monsters_Types$IceDevil,
 																																								_1: {
 																																									ctor: '::',
-																																									_0: _mordrax$cotwelm$Monster$TunnelWight,
+																																									_0: _mordrax$cotwelm$Monsters_Types$RatMan,
 																																									_1: {
 																																										ctor: '::',
-																																										_0: _mordrax$cotwelm$Monster$YoungAdultBlueDragon,
+																																										_0: _mordrax$cotwelm$Monsters_Types$WolfMan,
 																																										_1: {
 																																											ctor: '::',
-																																											_0: _mordrax$cotwelm$Monster$YoungAdultGreenDragon,
+																																											_0: _mordrax$cotwelm$Monsters_Types$BearMan,
 																																											_1: {
 																																												ctor: '::',
-																																												_0: _mordrax$cotwelm$Monster$YoungAdultWhiteDragon,
+																																												_0: _mordrax$cotwelm$Monsters_Types$BullMan,
 																																												_1: {
 																																													ctor: '::',
-																																													_0: _mordrax$cotwelm$Monster$PaleWraith,
+																																													_0: _mordrax$cotwelm$Monsters_Types$SpikedDevil,
 																																													_1: {
 																																														ctor: '::',
-																																														_0: _mordrax$cotwelm$Monster$BarrowWight,
+																																														_0: _mordrax$cotwelm$Monsters_Types$HornedDevil,
 																																														_1: {
 																																															ctor: '::',
-																																															_0: _mordrax$cotwelm$Monster$BearMan,
+																																															_0: _mordrax$cotwelm$Monsters_Types$AbyssFiend,
 																																															_1: {
 																																																ctor: '::',
-																																																_0: _mordrax$cotwelm$Monster$DustElemental,
+																																																_0: _mordrax$cotwelm$Monsters_Types$WindElemental,
 																																																_1: {
 																																																	ctor: '::',
-																																																	_0: _mordrax$cotwelm$Monster$HillGiant,
+																																																	_0: _mordrax$cotwelm$Monsters_Types$DustElemental,
 																																																	_1: {
 																																																		ctor: '::',
-																																																		_0: _mordrax$cotwelm$Monster$YoungAdultRedDragon,
+																																																		_0: _mordrax$cotwelm$Monsters_Types$FireElemental,
 																																																		_1: {
 																																																			ctor: '::',
-																																																			_0: _mordrax$cotwelm$Monster$Wizard,
+																																																			_0: _mordrax$cotwelm$Monsters_Types$WaterElemental,
 																																																			_1: {
 																																																				ctor: '::',
-																																																				_0: _mordrax$cotwelm$Monster$BullMan,
+																																																				_0: _mordrax$cotwelm$Monsters_Types$MagmaElemental,
 																																																				_1: {
 																																																					ctor: '::',
-																																																					_0: _mordrax$cotwelm$Monster$CastleWight,
+																																																					_0: _mordrax$cotwelm$Monsters_Types$IceElemental,
 																																																					_1: {
 																																																						ctor: '::',
-																																																						_0: _mordrax$cotwelm$Monster$DarkWraith,
+																																																						_0: _mordrax$cotwelm$Monsters_Types$EarthElemental,
 																																																						_1: {
 																																																							ctor: '::',
-																																																							_0: _mordrax$cotwelm$Monster$IceElemental,
+																																																							_0: _mordrax$cotwelm$Monsters_Types$HillGiant,
 																																																							_1: {
 																																																								ctor: '::',
-																																																								_0: _mordrax$cotwelm$Monster$Spectre,
+																																																								_0: _mordrax$cotwelm$Monsters_Types$TwoHeadedGiant,
 																																																								_1: {
 																																																									ctor: '::',
-																																																									_0: _mordrax$cotwelm$Monster$AnimatedMarbleStatue,
+																																																									_0: _mordrax$cotwelm$Monsters_Types$FrostGiant,
 																																																									_1: {
 																																																										ctor: '::',
-																																																										_0: _mordrax$cotwelm$Monster$AdultBlueDragon,
+																																																										_0: _mordrax$cotwelm$Monsters_Types$StoneGiant,
 																																																										_1: {
 																																																											ctor: '::',
-																																																											_0: _mordrax$cotwelm$Monster$AdultGreenDragon,
+																																																											_0: _mordrax$cotwelm$Monsters_Types$FireGiant,
 																																																											_1: {
 																																																												ctor: '::',
-																																																												_0: _mordrax$cotwelm$Monster$AdultWhiteDragon,
+																																																												_0: _mordrax$cotwelm$Monsters_Types$Surtur,
 																																																												_1: {
 																																																													ctor: '::',
-																																																													_0: _mordrax$cotwelm$Monster$AirElemental,
+																																																													_0: _mordrax$cotwelm$Monsters_Types$FireGiantKing,
 																																																													_1: {
 																																																														ctor: '::',
-																																																														_0: _mordrax$cotwelm$Monster$MagmaElemental,
+																																																														_0: _mordrax$cotwelm$Monsters_Types$FrostGiantKing,
 																																																														_1: {
 																																																															ctor: '::',
-																																																															_0: _mordrax$cotwelm$Monster$StoneGiant,
+																																																															_0: _mordrax$cotwelm$Monsters_Types$HillGiantKing,
 																																																															_1: {
 																																																																ctor: '::',
-																																																																_0: _mordrax$cotwelm$Monster$TwoHeadedGiant,
+																																																																_0: _mordrax$cotwelm$Monsters_Types$StoneGiantKing,
 																																																																_1: {
 																																																																	ctor: '::',
-																																																																	_0: _mordrax$cotwelm$Monster$AdultRedDragon,
+																																																																	_0: _mordrax$cotwelm$Monsters_Types$RedDragon,
 																																																																	_1: {
 																																																																		ctor: '::',
-																																																																		_0: _mordrax$cotwelm$Monster$FireElemental,
+																																																																		_0: _mordrax$cotwelm$Monsters_Types$BlueDragon,
 																																																																		_1: {
 																																																																			ctor: '::',
-																																																																			_0: _mordrax$cotwelm$Monster$FrostGiant,
+																																																																			_0: _mordrax$cotwelm$Monsters_Types$WhiteDragon,
 																																																																			_1: {
 																																																																				ctor: '::',
-																																																																				_0: _mordrax$cotwelm$Monster$SpikedDevil,
-																																																																				_1: {
-																																																																					ctor: '::',
-																																																																					_0: _mordrax$cotwelm$Monster$WaterElemental,
-																																																																					_1: {
-																																																																						ctor: '::',
-																																																																						_0: _mordrax$cotwelm$Monster$EarthElemental,
-																																																																						_1: {
-																																																																							ctor: '::',
-																																																																							_0: _mordrax$cotwelm$Monster$Necromancer,
-																																																																							_1: {
-																																																																								ctor: '::',
-																																																																								_0: _mordrax$cotwelm$Monster$Vampire,
-																																																																								_1: {
-																																																																									ctor: '::',
-																																																																									_0: _mordrax$cotwelm$Monster$AbyssWraith,
-																																																																									_1: {
-																																																																										ctor: '::',
-																																																																										_0: _mordrax$cotwelm$Monster$Utgardhalok,
-																																																																										_1: {
-																																																																											ctor: '::',
-																																																																											_0: _mordrax$cotwelm$Monster$FireGiant,
-																																																																											_1: {
-																																																																												ctor: '::',
-																																																																												_0: _mordrax$cotwelm$Monster$OldBlueDragon,
-																																																																												_1: {
-																																																																													ctor: '::',
-																																																																													_0: _mordrax$cotwelm$Monster$OldGreenDragon,
-																																																																													_1: {
-																																																																														ctor: '::',
-																																																																														_0: _mordrax$cotwelm$Monster$OldWhiteDragon,
-																																																																														_1: {
-																																																																															ctor: '::',
-																																																																															_0: _mordrax$cotwelm$Monster$HornedDevil,
-																																																																															_1: {
-																																																																																ctor: '::',
-																																																																																_0: _mordrax$cotwelm$Monster$OldRedDragon,
-																																																																																_1: {
-																																																																																	ctor: '::',
-																																																																																	_0: _mordrax$cotwelm$Monster$Rungnir,
-																																																																																	_1: {
-																																																																																		ctor: '::',
-																																																																																		_0: _mordrax$cotwelm$Monster$IceDevil,
-																																																																																		_1: {
-																																																																																			ctor: '::',
-																																																																																			_0: _mordrax$cotwelm$Monster$Thrym,
-																																																																																			_1: {
-																																																																																				ctor: '::',
-																																																																																				_0: _mordrax$cotwelm$Monster$VeryOldGreenDragon,
-																																																																																				_1: {
-																																																																																					ctor: '::',
-																																																																																					_0: _mordrax$cotwelm$Monster$VeryOldWhiteDragon,
-																																																																																					_1: {
-																																																																																						ctor: '::',
-																																																																																						_0: _mordrax$cotwelm$Monster$VeryOldBlueDragon,
-																																																																																						_1: {
-																																																																																							ctor: '::',
-																																																																																							_0: _mordrax$cotwelm$Monster$AbyssFiend,
-																																																																																							_1: {
-																																																																																								ctor: '::',
-																																																																																								_0: _mordrax$cotwelm$Monster$Thiassa,
-																																																																																								_1: {
-																																																																																									ctor: '::',
-																																																																																									_0: _mordrax$cotwelm$Monster$VeryOldRedDragon,
-																																																																																									_1: {
-																																																																																										ctor: '::',
-																																																																																										_0: _mordrax$cotwelm$Monster$AncientGreenDragon,
-																																																																																										_1: {
-																																																																																											ctor: '::',
-																																																																																											_0: _mordrax$cotwelm$Monster$AncientWhiteDragon,
-																																																																																											_1: {
-																																																																																												ctor: '::',
-																																																																																												_0: _mordrax$cotwelm$Monster$AncientBlueDragon,
-																																																																																												_1: {
-																																																																																													ctor: '::',
-																																																																																													_0: _mordrax$cotwelm$Monster$AncientRedDragon,
-																																																																																													_1: {
-																																																																																														ctor: '::',
-																																																																																														_0: _mordrax$cotwelm$Monster$Sultur,
-																																																																																														_1: {ctor: '[]'}
-																																																																																													}
-																																																																																												}
-																																																																																											}
-																																																																																										}
-																																																																																									}
-																																																																																								}
-																																																																																							}
-																																																																																						}
-																																																																																					}
-																																																																																				}
-																																																																																			}
-																																																																																		}
-																																																																																	}
-																																																																																}
-																																																																															}
-																																																																														}
-																																																																													}
-																																																																												}
-																																																																											}
-																																																																										}
-																																																																									}
-																																																																								}
-																																																																							}
-																																																																						}
-																																																																					}
-																																																																				}
+																																																																				_0: _mordrax$cotwelm$Monsters_Types$GreenDragon,
+																																																																				_1: {ctor: '[]'}
 																																																																			}
 																																																																		}
 																																																																	}
@@ -20919,19 +20533,1355 @@ var _mordrax$cotwelm$Monster$types = {
 		}
 	}
 };
-var _mordrax$cotwelm$Monster$randomMonster = function (position) {
+var _mordrax$cotwelm$Monsters_Types$Devil = {ctor: 'Devil'};
+var _mordrax$cotwelm$Monsters_Types$Giant = {ctor: 'Giant'};
+var _mordrax$cotwelm$Monsters_Types$Elemental = {ctor: 'Elemental'};
+var _mordrax$cotwelm$Monsters_Types$Dragon = {ctor: 'Dragon'};
+var _mordrax$cotwelm$Monsters_Types$Other = {ctor: 'Other'};
+var _mordrax$cotwelm$Monsters_Types$Statue = {ctor: 'Statue'};
+var _mordrax$cotwelm$Monsters_Types$AnimalMan = {ctor: 'AnimalMan'};
+var _mordrax$cotwelm$Monsters_Types$Animal = {ctor: 'Animal'};
+var _mordrax$cotwelm$Monsters_Types$Canine = {ctor: 'Canine'};
+var _mordrax$cotwelm$Monsters_Types$Humanoid = {ctor: 'Humanoid'};
+var _mordrax$cotwelm$Monsters_Types$Undead = {ctor: 'Undead'};
+var _mordrax$cotwelm$Monsters_Types$GiantInsect = {ctor: 'GiantInsect'};
+
+var _mordrax$cotwelm$Monsters_Model$setVisible = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{visible: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setSpeed = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{speed: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setAttacks = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{attacks: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setAttackTypes = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{attackTypes: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setBodySize = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{bodySize: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setExpLevel = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{expLevel: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setEquipmentSlot = F2(
+	function (slot, _p0) {
+		var _p1 = _p0;
+		return _elm_lang$core$Native_Utils.update(
+			_p1,
+			{
+				equipment: A2(_mordrax$cotwelm$Equipment$setSlot_, slot, _p1.equipment)
+			});
+	});
+var _mordrax$cotwelm$Monsters_Model$setEquipment = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{equipment: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setAttributes = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{attributes: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$scaleAttributes = F5(
+	function (str, dex, con, $int, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{
+				attributes: A5(_mordrax$cotwelm$Attributes$scale, str, dex, con, $int, monster.attributes)
+			});
+	});
+var _mordrax$cotwelm$Monsters_Model$setStats = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{stats: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setPosition = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{position: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setMonsterType = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{monsterType: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setType_ = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{type_: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$setName = F2(
+	function (val, monster) {
+		return _elm_lang$core$Native_Utils.update(
+			monster,
+			{name: val});
+	});
+var _mordrax$cotwelm$Monsters_Model$Monster = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return function (l) {
+												return function (m) {
+													return {name: a, type_: b, monsterType: c, position: d, stats: e, attributes: f, equipment: g, expLevel: h, bodySize: i, attackTypes: j, attacks: k, speed: l, visible: m};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+
+var _mordrax$cotwelm$Monsters_Factory$make_ = F2(
+	function (attributes, monsterType) {
+		return {
+			name: _elm_community$string_extra$String_Extra$toTitleCase(
+				_elm_lang$core$Basics$toString(monsterType)),
+			type_: _mordrax$cotwelm$Types$Monster,
+			monsterType: monsterType,
+			position: {ctor: '_Tuple2', _0: 0, _1: 0},
+			stats: _mordrax$cotwelm$Stats$init(attributes),
+			attributes: attributes,
+			equipment: _mordrax$cotwelm$Equipment$init,
+			expLevel: 1,
+			bodySize: _mordrax$cotwelm$Types$Medium,
+			attackTypes: {
+				ctor: '::',
+				_0: _mordrax$cotwelm$Monsters_Types$Melee,
+				_1: {ctor: '[]'}
+			},
+			attacks: 1,
+			speed: 100,
+			visible: _mordrax$cotwelm$Types$Hidden
+		};
+	});
+var _mordrax$cotwelm$Monsters_Factory$makeUndead = _mordrax$cotwelm$Monsters_Factory$make_(
+	A5(_mordrax$cotwelm$Attributes$Attributes, 0, 100, 50, 100, 50));
+var _mordrax$cotwelm$Monsters_Factory$makeCaster = function (_p0) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+		{
+			ctor: '::',
+			_0: _mordrax$cotwelm$Monsters_Types$Spell,
+			_1: {ctor: '[]'}
+		},
+		A2(
+			_mordrax$cotwelm$Monsters_Factory$make_,
+			A5(_mordrax$cotwelm$Attributes$Attributes, 0, 25, 50, 50, 150),
+			_p0));
+};
+var _mordrax$cotwelm$Monsters_Factory$makeElemental = _mordrax$cotwelm$Monsters_Factory$make_(
+	A5(_mordrax$cotwelm$Attributes$Attributes, 0, 100, 60, 100, 50));
+var _mordrax$cotwelm$Monsters_Factory$makeDevil = _mordrax$cotwelm$Monsters_Factory$make_(
+	A5(_mordrax$cotwelm$Attributes$Attributes, 0, 90, 75, 90, 80));
+var _mordrax$cotwelm$Monsters_Factory$makeDragon = function (_p1) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setBodySize,
+		_mordrax$cotwelm$Types$Huge,
+		A2(
+			_mordrax$cotwelm$Monsters_Factory$make_,
+			A5(_mordrax$cotwelm$Attributes$Attributes, 0, 300, 100, 300, 100),
+			_p1));
+};
+var _mordrax$cotwelm$Monsters_Factory$makeStatue = _mordrax$cotwelm$Monsters_Factory$make_(
+	A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 75, 50));
+var _mordrax$cotwelm$Monsters_Factory$plateEquipment = A2(
+	_mordrax$cotwelm$Equipment$setMany_,
+	{
+		ctor: '::',
+		_0: {
+			ctor: '_Tuple2',
+			_0: _mordrax$cotwelm$Equipment$ArmourSlot,
+			_1: _mordrax$cotwelm$Item_Item$new(
+				_mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$PlateArmour))
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: _mordrax$cotwelm$Equipment$HelmetSlot,
+				_1: _mordrax$cotwelm$Item_Item$new(
+					_mordrax$cotwelm$Item_Data$ItemTypeHelmet(_mordrax$cotwelm$Item_Data$MeteoricSteelHelmet))
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: _mordrax$cotwelm$Equipment$GauntletsSlot,
+					_1: _mordrax$cotwelm$Item_Item$new(
+						_mordrax$cotwelm$Item_Data$ItemTypeGauntlets(_mordrax$cotwelm$Item_Data$NormalGauntlets))
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: _mordrax$cotwelm$Equipment$BracersSlot,
+						_1: _mordrax$cotwelm$Item_Item$new(
+							_mordrax$cotwelm$Item_Data$ItemTypeBracers(_mordrax$cotwelm$Item_Data$NormalBracers))
+					},
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	},
+	_mordrax$cotwelm$Equipment$init);
+var _mordrax$cotwelm$Monsters_Factory$ironEquipment = A2(
+	_mordrax$cotwelm$Equipment$setMany_,
+	{
+		ctor: '::',
+		_0: {
+			ctor: '_Tuple2',
+			_0: _mordrax$cotwelm$Equipment$ArmourSlot,
+			_1: _mordrax$cotwelm$Item_Item$new(
+				_mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$ChainMail))
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: _mordrax$cotwelm$Equipment$HelmetSlot,
+				_1: _mordrax$cotwelm$Item_Item$new(
+					_mordrax$cotwelm$Item_Data$ItemTypeHelmet(_mordrax$cotwelm$Item_Data$IronHelmet))
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: _mordrax$cotwelm$Equipment$GauntletsSlot,
+					_1: _mordrax$cotwelm$Item_Item$new(
+						_mordrax$cotwelm$Item_Data$ItemTypeGauntlets(_mordrax$cotwelm$Item_Data$NormalGauntlets))
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: _mordrax$cotwelm$Equipment$BracersSlot,
+						_1: _mordrax$cotwelm$Item_Item$new(
+							_mordrax$cotwelm$Item_Data$ItemTypeBracers(_mordrax$cotwelm$Item_Data$NormalBracers))
+					},
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	},
+	_mordrax$cotwelm$Equipment$init);
+var _mordrax$cotwelm$Monsters_Factory$leatherEquipment = A2(
+	_mordrax$cotwelm$Equipment$setMany_,
+	{
+		ctor: '::',
+		_0: {
+			ctor: '_Tuple2',
+			_0: _mordrax$cotwelm$Equipment$ArmourSlot,
+			_1: _mordrax$cotwelm$Item_Item$new(
+				_mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$LeatherArmour))
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: _mordrax$cotwelm$Equipment$HelmetSlot,
+				_1: _mordrax$cotwelm$Item_Item$new(
+					_mordrax$cotwelm$Item_Data$ItemTypeHelmet(_mordrax$cotwelm$Item_Data$LeatherHelmet))
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: _mordrax$cotwelm$Equipment$GauntletsSlot,
+					_1: _mordrax$cotwelm$Item_Item$new(
+						_mordrax$cotwelm$Item_Data$ItemTypeGauntlets(_mordrax$cotwelm$Item_Data$NormalGauntlets))
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: _mordrax$cotwelm$Equipment$BracersSlot,
+						_1: _mordrax$cotwelm$Item_Item$new(
+							_mordrax$cotwelm$Item_Data$ItemTypeBracers(_mordrax$cotwelm$Item_Data$NormalBracers))
+					},
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	},
+	_mordrax$cotwelm$Equipment$init);
+var _mordrax$cotwelm$Monsters_Factory$makeHumanoid = function (_p2) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setEquipment,
+		_mordrax$cotwelm$Monsters_Factory$leatherEquipment,
+		A2(
+			_mordrax$cotwelm$Monsters_Model$setBodySize,
+			_mordrax$cotwelm$Types$Medium,
+			A2(
+				_mordrax$cotwelm$Monsters_Factory$make_,
+				A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 50, 50),
+				_p2)));
+};
+var _mordrax$cotwelm$Monsters_Factory$makeAnimalMen = function (_p3) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setEquipment,
+		_mordrax$cotwelm$Monsters_Factory$leatherEquipment,
+		A2(
+			_mordrax$cotwelm$Monsters_Factory$make_,
+			A5(_mordrax$cotwelm$Attributes$Attributes, 0, 75, 60, 60, 30),
+			_p3));
+};
+var _mordrax$cotwelm$Monsters_Factory$makeGiant = function (_p4) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setEquipment,
+		_mordrax$cotwelm$Monsters_Factory$leatherEquipment,
+		A2(
+			_mordrax$cotwelm$Monsters_Model$setBodySize,
+			_mordrax$cotwelm$Types$Huge,
+			A2(
+				_mordrax$cotwelm$Monsters_Factory$make_,
+				A5(_mordrax$cotwelm$Attributes$Attributes, 0, 200, 40, 200, 50),
+				_p4)));
+};
+var _mordrax$cotwelm$Monsters_Factory$makeShield = function (shieldType) {
+	return _mordrax$cotwelm$Item_Item$new(
+		_mordrax$cotwelm$Item_Data$ItemTypeShield(shieldType));
+};
+var _mordrax$cotwelm$Monsters_Factory$armourSlot = function (armourType) {
+	return {
+		ctor: '_Tuple2',
+		_0: _mordrax$cotwelm$Equipment$ArmourSlot,
+		_1: _mordrax$cotwelm$Item_Item$new(
+			_mordrax$cotwelm$Item_Data$ItemTypeArmour(armourType))
+	};
+};
+var _mordrax$cotwelm$Monsters_Factory$weaponSlot = function (weaponType) {
+	return {
+		ctor: '_Tuple2',
+		_0: _mordrax$cotwelm$Equipment$WeaponSlot,
+		_1: _mordrax$cotwelm$Item_Item$new(
+			_mordrax$cotwelm$Item_Data$ItemTypeWeapon(weaponType))
+	};
+};
+var _mordrax$cotwelm$Monsters_Factory$basicEquipment = F2(
+	function (weapon, armour) {
+		return A2(
+			_mordrax$cotwelm$Equipment$setMany_,
+			{
+				ctor: '::',
+				_0: _mordrax$cotwelm$Monsters_Factory$weaponSlot(weapon),
+				_1: {
+					ctor: '::',
+					_0: _mordrax$cotwelm$Monsters_Factory$armourSlot(armour),
+					_1: {ctor: '[]'}
+				}
+			},
+			_mordrax$cotwelm$Equipment$init);
+	});
+var _mordrax$cotwelm$Monsters_Factory$makeGiantInsect = function (_p5) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setBodySize,
+		_mordrax$cotwelm$Types$Large,
+		A2(
+			_mordrax$cotwelm$Monsters_Model$setEquipment,
+			A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$Pincers, _mordrax$cotwelm$Item_Data$Shell),
+			A2(
+				_mordrax$cotwelm$Monsters_Factory$make_,
+				A5(_mordrax$cotwelm$Attributes$Attributes, 0, 75, 50, 40, 10),
+				_p5)));
+};
+var _mordrax$cotwelm$Monsters_Factory$makeCanine = function (_p6) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setBodySize,
+		_mordrax$cotwelm$Types$Small,
+		A2(
+			_mordrax$cotwelm$Monsters_Model$setEquipment,
+			A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$SmallBite, _mordrax$cotwelm$Item_Data$ToughHide),
+			A2(
+				_mordrax$cotwelm$Monsters_Factory$make_,
+				A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 80, 40, 40),
+				_p6)));
+};
+var _mordrax$cotwelm$Monsters_Factory$makeSmallAnimal = function (_p7) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setBodySize,
+		_mordrax$cotwelm$Types$Small,
+		A2(
+			_mordrax$cotwelm$Monsters_Model$setEquipment,
+			A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$SmallClaws, _mordrax$cotwelm$Item_Data$SoftHide),
+			A2(
+				_mordrax$cotwelm$Monsters_Factory$make_,
+				A5(_mordrax$cotwelm$Attributes$Attributes, 0, 40, 60, 60, 30),
+				_p7)));
+};
+var _mordrax$cotwelm$Monsters_Factory$makeLargeAnimal = function (_p8) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Model$setBodySize,
+		_mordrax$cotwelm$Types$Large,
+		A2(
+			_mordrax$cotwelm$Monsters_Model$setEquipment,
+			A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$LargeClaws, _mordrax$cotwelm$Item_Data$ToughHide),
+			A2(
+				_mordrax$cotwelm$Monsters_Factory$make_,
+				A5(_mordrax$cotwelm$Attributes$Attributes, 0, 80, 60, 80, 30),
+				_p8)));
+};
+var _mordrax$cotwelm$Monsters_Factory$make = F2(
+	function (monsterType, position) {
+		var addPosition = F2(
+			function (makeFn, monsterType) {
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setPosition,
+					position,
+					makeFn(monsterType));
+			});
+		var _p9 = monsterType;
+		switch (_p9.ctor) {
+			case 'GreenSlime':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setPosition,
+					position,
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Acid,
+							_1: {ctor: '[]'}
+						},
+						A2(
+							_mordrax$cotwelm$Monsters_Factory$make_,
+							A5(_mordrax$cotwelm$Attributes$Attributes, 0, 50, 50, 75, 50),
+							_mordrax$cotwelm$Monsters_Types$GreenSlime)));
+			case 'GelatinousGlob':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setPosition,
+					position,
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Steal,
+							_1: {ctor: '[]'}
+						},
+						A2(
+							_mordrax$cotwelm$Monsters_Factory$make_,
+							A5(_mordrax$cotwelm$Attributes$Attributes, 0, 75, 75, 100, 50),
+							_mordrax$cotwelm$Monsters_Types$GelatinousGlob)));
+			case 'AnimatedWoodenStatue':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					0.75,
+					1,
+					0.75,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeStatue, _mordrax$cotwelm$Monsters_Types$AnimatedWoodenStatue));
+			case 'AnimatedBronzeStatue':
+				return A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeStatue, _mordrax$cotwelm$Monsters_Types$AnimatedBronzeStatue);
+			case 'AnimatedIronStatue':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1.5,
+					1,
+					1,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeStatue, _mordrax$cotwelm$Monsters_Types$AnimatedIronStatue));
+			case 'AnimatedMarbleStatue':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1.5,
+					0.8,
+					2,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeStatue, _mordrax$cotwelm$Monsters_Types$AnimatedMarbleStatue));
+			case 'Kobold':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$Crossbow),
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Melee,
+							_1: {
+								ctor: '::',
+								_0: _mordrax$cotwelm$Monsters_Types$Ranged,
+								_1: {ctor: '[]'}
+							}
+						},
+						A2(
+							_mordrax$cotwelm$Monsters_Model$setBodySize,
+							_mordrax$cotwelm$Types$Small,
+							A5(
+								_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+								0.5,
+								1.5,
+								0.5,
+								1,
+								A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeHumanoid, _mordrax$cotwelm$Monsters_Types$Kobold)))));
+			case 'Goblin':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$Club),
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setBodySize,
+						_mordrax$cotwelm$Types$Small,
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							0.5,
+							1,
+							0.6,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeHumanoid, _mordrax$cotwelm$Monsters_Types$Goblin))));
+			case 'Hobgoblin':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$Spear),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						0.7,
+						1,
+						0.7,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeHumanoid, _mordrax$cotwelm$Monsters_Types$Hobgoblin)));
+			case 'Bandit':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Ranged,
+						_1: {ctor: '[]'}
+					},
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+						_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$Bow),
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeHumanoid, _mordrax$cotwelm$Monsters_Types$Bandit)));
+			case 'SmirkingSneakThief':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Steal,
+						_1: {ctor: '[]'}
+					},
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeHumanoid, _mordrax$cotwelm$Monsters_Types$SmirkingSneakThief));
+			case 'EvilWarrior':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$BastardSword),
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setEquipment,
+						_mordrax$cotwelm$Monsters_Factory$ironEquipment,
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							1.5,
+							1.5,
+							1.5,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeHumanoid, _mordrax$cotwelm$Monsters_Types$EvilWarrior))));
+			case 'GiantScorpion':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1.0,
+					1.2,
+					1.0,
+					1.0,
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Poison,
+							_1: {
+								ctor: '::',
+								_0: _mordrax$cotwelm$Monsters_Types$Melee,
+								_1: {ctor: '[]'}
+							}
+						},
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiantInsect, _mordrax$cotwelm$Monsters_Types$GiantScorpion)));
+			case 'GiantTrapdoorSpider':
+				return A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiantInsect, _mordrax$cotwelm$Monsters_Types$GiantTrapdoorSpider);
+			case 'CarrionCreeper':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1.0,
+					1.0,
+					1.5,
+					1.0,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiantInsect, _mordrax$cotwelm$Monsters_Types$CarrionCreeper));
+			case 'WildDog':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					0.8,
+					0.8,
+					0.5,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeCanine, _mordrax$cotwelm$Monsters_Types$WildDog));
+			case 'GrayWolf':
+				return A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeCanine, _mordrax$cotwelm$Monsters_Types$GrayWolf);
+			case 'WhiteWolf':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttacks,
+					2,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeCanine, _mordrax$cotwelm$Monsters_Types$WhiteWolf));
+			case 'GiantRat':
+				return A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeSmallAnimal, _mordrax$cotwelm$Monsters_Types$GiantRat);
+			case 'GiantBat':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					0.8,
+					1.2,
+					1,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeSmallAnimal, _mordrax$cotwelm$Monsters_Types$GiantBat));
+			case 'LargeSnake':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Poison,
+						_1: {ctor: '[]'}
+					},
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setBodySize,
+						_mordrax$cotwelm$Types$Tiny,
+						A2(
+							_mordrax$cotwelm$Monsters_Model$setEquipment,
+							A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$Fangs, _mordrax$cotwelm$Item_Data$SoftHide),
+							A5(
+								_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+								0.5,
+								1,
+								0.7,
+								1,
+								A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeSmallAnimal, _mordrax$cotwelm$Monsters_Types$LargeSnake)))));
+			case 'Viper':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttacks,
+					2,
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Poison,
+							_1: {ctor: '[]'}
+						},
+						A2(
+							_mordrax$cotwelm$Monsters_Model$setBodySize,
+							_mordrax$cotwelm$Types$Tiny,
+							A2(
+								_mordrax$cotwelm$Monsters_Model$setEquipment,
+								A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$Fangs, _mordrax$cotwelm$Item_Data$SoftHide),
+								A5(
+									_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+									0.5,
+									1.5,
+									0.5,
+									1.5,
+									A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeSmallAnimal, _mordrax$cotwelm$Monsters_Types$Viper))))));
+			case 'HugeLizard':
+				return A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeLargeAnimal, _mordrax$cotwelm$Monsters_Types$HugeLizard);
+			case 'GiantRedAnt':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$Pincers, _mordrax$cotwelm$Item_Data$Shell),
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeLargeAnimal, _mordrax$cotwelm$Monsters_Types$GiantRedAnt));
+			case 'GruesomeTroll':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1.5,
+					1,
+					1,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeLargeAnimal, _mordrax$cotwelm$Monsters_Types$GruesomeTroll));
+			case 'BrownBear':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					0.8,
+					1.2,
+					1,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeLargeAnimal, _mordrax$cotwelm$Monsters_Types$BrownBear));
+			case 'CaveBear':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1.2,
+					1.2,
+					1.2,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeLargeAnimal, _mordrax$cotwelm$Monsters_Types$CaveBear));
+			case 'Manticore':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttacks,
+					3,
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Melee,
+							_1: {
+								ctor: '::',
+								_0: _mordrax$cotwelm$Monsters_Types$Poison,
+								_1: {ctor: '[]'}
+							}
+						},
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							2,
+							1,
+							1.5,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeLargeAnimal, _mordrax$cotwelm$Monsters_Types$Manticore))));
+			case 'Skeleton':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$ShortSword, _mordrax$cotwelm$Item_Data$Bones),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						0.6,
+						0.8,
+						0.5,
+						0.2,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeUndead, _mordrax$cotwelm$Monsters_Types$Skeleton)));
+			case 'WalkingCorpse':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$SmallClaws, _mordrax$cotwelm$Item_Data$SoftHide),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						0.6,
+						0.8,
+						0.75,
+						0.2,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeUndead, _mordrax$cotwelm$Monsters_Types$WalkingCorpse)));
+			case 'Shadow':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$BroadSword),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						0.8,
+						1,
+						1,
+						0.5,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeUndead, _mordrax$cotwelm$Monsters_Types$Shadow)));
+			case 'EerieGhost':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1,
+					1.2,
+					1.2,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeUndead, _mordrax$cotwelm$Monsters_Types$EerieGhost));
+			case 'BarrowWight':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Drain,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1.2,
+						1.2,
+						1.2,
+						0.8,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeUndead, _mordrax$cotwelm$Monsters_Types$BarrowWight)));
+			case 'DarkWraith':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Drain,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						50,
+						50,
+						50,
+						50,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeUndead, _mordrax$cotwelm$Monsters_Types$DarkWraith)));
+			case 'Spectre':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1.5,
+					1.5,
+					2,
+					1.2,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeUndead, _mordrax$cotwelm$Monsters_Types$Spectre));
+			case 'Vampire':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Drain,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						2,
+						2,
+						2,
+						2,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeUndead, _mordrax$cotwelm$Monsters_Types$Vampire)));
+			case 'RatMan':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$LargeClaws, _mordrax$cotwelm$Item_Data$ToughHide),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1,
+						1.2,
+						1,
+						2,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeAnimalMen, _mordrax$cotwelm$Monsters_Types$RatMan)));
+			case 'BearMan':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$Flail, _mordrax$cotwelm$Item_Data$ToughHide),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1.5,
+						1,
+						1.5,
+						0.5,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeAnimalMen, _mordrax$cotwelm$Monsters_Types$BearMan)));
+			case 'BullMan':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$BattleAxe, _mordrax$cotwelm$Item_Data$ToughHide),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						2,
+						1,
+						2,
+						0.5,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeAnimalMen, _mordrax$cotwelm$Monsters_Types$BullMan)));
+			case 'WolfMan':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$MorningStar, _mordrax$cotwelm$Item_Data$ToughHide),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1,
+						1.5,
+						1,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeAnimalMen, _mordrax$cotwelm$Monsters_Types$WolfMan)));
+			case 'Wizard':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Spell,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						50,
+						50,
+						50,
+						50,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeCaster, _mordrax$cotwelm$Monsters_Types$Wizard)));
+			case 'Necromancer':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Spell,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						50,
+						50,
+						50,
+						50,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeCaster, _mordrax$cotwelm$Monsters_Types$Necromancer)));
+			case 'DustElemental':
+				return A5(
+					_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+					1,
+					2,
+					1,
+					1,
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeElemental, _mordrax$cotwelm$Monsters_Types$DustElemental));
+			case 'IceElemental':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Ice,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1.5,
+						1,
+						1.5,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeElemental, _mordrax$cotwelm$Monsters_Types$IceElemental)));
+			case 'WindElemental':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Lightning,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1,
+						2,
+						1,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeElemental, _mordrax$cotwelm$Monsters_Types$WindElemental)));
+			case 'MagmaElemental':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Fire,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						2,
+						1,
+						1,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeElemental, _mordrax$cotwelm$Monsters_Types$MagmaElemental)));
+			case 'FireElemental':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Fire,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						2,
+						1,
+						1,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeElemental, _mordrax$cotwelm$Monsters_Types$FireElemental)));
+			case 'WaterElemental':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Ice,
+						_1: {ctor: '[]'}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1,
+						1,
+						2,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeElemental, _mordrax$cotwelm$Monsters_Types$WaterElemental)));
+			case 'EarthElemental':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setBodySize,
+					_mordrax$cotwelm$Types$Large,
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						2,
+						1,
+						2,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeElemental, _mordrax$cotwelm$Monsters_Types$EarthElemental)));
+			case 'SpikedDevil':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Spell,
+						_1: {
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Melee,
+							_1: {ctor: '[]'}
+						}
+					},
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setBodySize,
+						_mordrax$cotwelm$Types$Small,
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							1,
+							1,
+							1,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeDevil, _mordrax$cotwelm$Monsters_Types$SpikedDevil))));
+			case 'HornedDevil':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Fire,
+						_1: {
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Spell,
+							_1: {ctor: '[]'}
+						}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1,
+						1,
+						1,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeDevil, _mordrax$cotwelm$Monsters_Types$HornedDevil)));
+			case 'IceDevil':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Ice,
+						_1: {
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Spell,
+							_1: {ctor: '[]'}
+						}
+					},
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1,
+						1,
+						1,
+						1,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeDevil, _mordrax$cotwelm$Monsters_Types$IceDevil)));
+			case 'AbyssFiend':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Fire,
+						_1: {
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Lightning,
+							_1: {
+								ctor: '::',
+								_0: _mordrax$cotwelm$Monsters_Types$Spell,
+								_1: {ctor: '[]'}
+							}
+						}
+					},
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttacks,
+						2,
+						A2(
+							_mordrax$cotwelm$Monsters_Model$setEquipment,
+							A2(_mordrax$cotwelm$Monsters_Factory$basicEquipment, _mordrax$cotwelm$Item_Data$LargeClaws, _mordrax$cotwelm$Item_Data$ToughHide),
+							A5(
+								_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+								2,
+								2,
+								2,
+								2,
+								A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeDevil, _mordrax$cotwelm$Monsters_Types$AbyssFiend)))));
+			case 'HugeOgre':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$Pike),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						0.9,
+						1,
+						0.8,
+						0.5,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$HugeOgre)));
+			case 'HillGiant':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$LargeClub),
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$HillGiant));
+			case 'StoneGiant':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$StoneClub),
+					A5(
+						_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+						1.2,
+						1,
+						1.5,
+						0.5,
+						A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$StoneGiant)));
+			case 'FrostGiant':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$GiantAxe),
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Ice,
+							_1: {ctor: '[]'}
+						},
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							1,
+							1.5,
+							1,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$FrostGiant))));
+			case 'TwoHeadedGiant':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$Boulder),
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Ranged,
+							_1: {
+								ctor: '::',
+								_0: _mordrax$cotwelm$Monsters_Types$Melee,
+								_1: {ctor: '[]'}
+							}
+						},
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							1,
+							2,
+							2,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$TwoHeadedGiant))));
+			case 'FireGiant':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$TwoHandedSword),
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setEquipment,
+						_mordrax$cotwelm$Monsters_Factory$ironEquipment,
+						A2(
+							_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+							{
+								ctor: '::',
+								_0: _mordrax$cotwelm$Monsters_Types$Fire,
+								_1: {ctor: '[]'}
+							},
+							A5(
+								_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+								1,
+								1,
+								1,
+								1,
+								A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$FireGiant)))));
+			case 'HillGiantKing':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$GiantMaul),
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setEquipment,
+						_mordrax$cotwelm$Monsters_Factory$plateEquipment,
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							2,
+							1,
+							2,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$HillGiantKing))));
+			case 'FireGiantKing':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					_mordrax$cotwelm$Monsters_Factory$plateEquipment,
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Fire,
+							_1: {ctor: '[]'}
+						},
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							2,
+							1,
+							2,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$FireGiantKing))));
+			case 'FrostGiantKing':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipment,
+					_mordrax$cotwelm$Monsters_Factory$plateEquipment,
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+						{
+							ctor: '::',
+							_0: _mordrax$cotwelm$Monsters_Types$Ice,
+							_1: {ctor: '[]'}
+						},
+						A5(
+							_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+							2,
+							1,
+							2,
+							1,
+							A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$FrostGiantKing))));
+			case 'StoneGiantKing':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setEquipmentSlot,
+					_mordrax$cotwelm$Monsters_Factory$weaponSlot(_mordrax$cotwelm$Item_Data$Boulder),
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setEquipment,
+						_mordrax$cotwelm$Monsters_Factory$plateEquipment,
+						A2(
+							_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+							{
+								ctor: '::',
+								_0: _mordrax$cotwelm$Monsters_Types$Ranged,
+								_1: {ctor: '[]'}
+							},
+							A5(
+								_mordrax$cotwelm$Monsters_Model$scaleAttributes,
+								3,
+								1,
+								4,
+								1,
+								A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeGiant, _mordrax$cotwelm$Monsters_Types$StoneGiantKing)))));
+			case 'GreenDragon':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Acid,
+						_1: {ctor: '[]'}
+					},
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeDragon, _mordrax$cotwelm$Monsters_Types$GreenDragon));
+			case 'WhiteDragon':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Ice,
+						_1: {ctor: '[]'}
+					},
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeDragon, _mordrax$cotwelm$Monsters_Types$WhiteDragon));
+			case 'BlueDragon':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Lightning,
+						_1: {ctor: '[]'}
+					},
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeDragon, _mordrax$cotwelm$Monsters_Types$BlueDragon));
+			case 'RedDragon':
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+					{
+						ctor: '::',
+						_0: _mordrax$cotwelm$Monsters_Types$Fire,
+						_1: {ctor: '[]'}
+					},
+					A2(addPosition, _mordrax$cotwelm$Monsters_Factory$makeDragon, _mordrax$cotwelm$Monsters_Types$RedDragon));
+			default:
+				return A2(
+					_mordrax$cotwelm$Monsters_Model$setPosition,
+					position,
+					A2(
+						_mordrax$cotwelm$Monsters_Model$setAttacks,
+						3,
+						A2(
+							_mordrax$cotwelm$Monsters_Model$setAttackTypes,
+							{
+								ctor: '::',
+								_0: _mordrax$cotwelm$Monsters_Types$Melee,
+								_1: {
+									ctor: '::',
+									_0: _mordrax$cotwelm$Monsters_Types$Spell,
+									_1: {
+										ctor: '::',
+										_0: _mordrax$cotwelm$Monsters_Types$Fire,
+										_1: {
+											ctor: '::',
+											_0: _mordrax$cotwelm$Monsters_Types$Lightning,
+											_1: {
+												ctor: '::',
+												_0: _mordrax$cotwelm$Monsters_Types$Ice,
+												_1: {
+													ctor: '::',
+													_0: _mordrax$cotwelm$Monsters_Types$Acid,
+													_1: {
+														ctor: '::',
+														_0: _mordrax$cotwelm$Monsters_Types$Drain,
+														_1: {
+															ctor: '::',
+															_0: _mordrax$cotwelm$Monsters_Types$Ranged,
+															_1: {
+																ctor: '::',
+																_0: _mordrax$cotwelm$Monsters_Types$Poison,
+																_1: {ctor: '[]'}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							},
+							A2(
+								_mordrax$cotwelm$Monsters_Model$setEquipment,
+								_mordrax$cotwelm$Monsters_Factory$plateEquipment,
+								A2(
+									_mordrax$cotwelm$Monsters_Factory$make_,
+									A5(_mordrax$cotwelm$Attributes$Attributes, 0, 400, 100, 1000, 200),
+									_mordrax$cotwelm$Monsters_Types$Surtur)))));
+		}
+	});
+var _mordrax$cotwelm$Monsters_Factory$makeForArena = function (monsterType) {
+	return A2(
+		_mordrax$cotwelm$Monsters_Factory$make,
+		monsterType,
+		{ctor: '_Tuple2', _0: 0, _1: 0});
+};
+var _mordrax$cotwelm$Monsters_Factory$randomMonster = function (position) {
 	return A2(
 		_mgold$elm_random_pcg$Random_Pcg$map,
-		A2(_elm_lang$core$Basics$flip, _mordrax$cotwelm$Monster$init, position),
+		A2(_elm_lang$core$Basics$flip, _mordrax$cotwelm$Monsters_Factory$make, position),
 		A2(
 			_mgold$elm_random_pcg$Random_Pcg$map,
-			_elm_lang$core$Maybe$withDefault(_mordrax$cotwelm$Monster$GiantRat),
+			_elm_lang$core$Maybe$withDefault(_mordrax$cotwelm$Monsters_Types$GiantRat),
 			A2(
 				_mgold$elm_random_pcg$Random_Pcg$map,
 				_elm_lang$core$List$head,
-				_mordrax$cotwelm$Lodash$shuffle(_mordrax$cotwelm$Monster$types))));
+				_mordrax$cotwelm$Utils_Misc$shuffle(_mordrax$cotwelm$Monsters_Types$monsterTypesToList))));
 };
-var _mordrax$cotwelm$Monster$randomMonstersReducer = F2(
+var _mordrax$cotwelm$Monsters_Factory$randomMonstersReducer = F2(
 	function (position, monsters) {
 		return function (monster) {
 			return A3(
@@ -20943,16 +21893,227 @@ var _mordrax$cotwelm$Monster$randomMonstersReducer = F2(
 				monster,
 				monsters);
 		}(
-			_mordrax$cotwelm$Monster$randomMonster(position));
+			_mordrax$cotwelm$Monsters_Factory$randomMonster(position));
 	});
-var _mordrax$cotwelm$Monster$randomMonsters = function (positions) {
+var _mordrax$cotwelm$Monsters_Factory$makeRandomMonsters = function (positions) {
 	return A3(
 		_elm_lang$core$List$foldl,
-		_mordrax$cotwelm$Monster$randomMonstersReducer,
+		_mordrax$cotwelm$Monsters_Factory$randomMonstersReducer,
 		_mgold$elm_random_pcg$Random_Pcg$constant(
 			{ctor: '[]'}),
 		positions);
 };
+
+var _mordrax$cotwelm$Monsters_View$monsterTypeToCSS = function (monsterType) {
+	var _p0 = monsterType;
+	switch (_p0.ctor) {
+		case 'Kobold':
+			return 'kobold';
+		case 'GiantRat':
+			return 'giant-rat';
+		case 'LargeSnake':
+			return 'large-snake';
+		case 'GiantRedAnt':
+			return 'giant-red-ant';
+		case 'WildDog':
+			return 'wild-dog';
+		case 'Skeleton':
+			return 'skeleton';
+		case 'GiantTrapdoorSpider':
+			return 'giant-trapdoor-spider';
+		case 'GiantBat':
+			return 'giant-bat';
+		case 'CarrionCreeper':
+			return 'carrion-creeper';
+		case 'GiantScorpion':
+			return 'giant-scorpion';
+		case 'GreenSlime':
+			return 'green-slime';
+		case 'Viper':
+			return 'viper';
+		case 'HugeOgre':
+			return 'huge-ogre';
+		case 'WalkingCorpse':
+			return 'walking-corpse';
+		case 'HugeLizard':
+			return 'huge-lizard';
+		case 'Goblin':
+			return 'goblin';
+		case 'Hobgoblin':
+			return 'hobgoblin';
+		case 'Shadow':
+			return 'shadow';
+		case 'SmirkingSneakThief':
+			return 'smirking-sneak-thief';
+		case 'GrayWolf':
+			return 'gray-wolf';
+		case 'WhiteWolf':
+			return 'white-wolf';
+		case 'BrownBear':
+			return 'brown-bear';
+		case 'CaveBear':
+			return 'cave-bear';
+		case 'GelatinousGlob':
+			return 'gelatinous-glob';
+		case 'GruesomeTroll':
+			return 'gruesome-troll';
+		case 'Manticore':
+			return 'manticore';
+		case 'AnimatedBronzeStatue':
+			return 'animated-bronze-statue';
+		case 'AnimatedIronStatue':
+			return 'animated-iron-statue';
+		case 'AnimatedMarbleStatue':
+			return 'animated-marble-statue';
+		case 'AnimatedWoodenStatue':
+			return 'animated-wooden-statue';
+		case 'Bandit':
+			return 'bandit';
+		case 'EvilWarrior':
+			return 'evil-warrior';
+		case 'Wizard':
+			return 'wizard';
+		case 'Necromancer':
+			return 'necromancer';
+		case 'BarrowWight':
+			return 'barrow-wight';
+		case 'DarkWraith':
+			return 'dark-wraith';
+		case 'EerieGhost':
+			return 'eerie-ghost';
+		case 'Spectre':
+			return 'spectre';
+		case 'Vampire':
+			return 'vampire';
+		case 'IceDevil':
+			return 'ice-devil';
+		case 'RatMan':
+			return 'rat-man';
+		case 'WolfMan':
+			return 'wolf-man';
+		case 'BearMan':
+			return 'bear-man';
+		case 'BullMan':
+			return 'bull-man';
+		case 'SpikedDevil':
+			return 'spiked-devil';
+		case 'HornedDevil':
+			return 'horned-devil';
+		case 'AbyssFiend':
+			return 'abyss-fiend';
+		case 'WindElemental':
+			return 'wind-elemental';
+		case 'DustElemental':
+			return 'dust-elemental';
+		case 'FireElemental':
+			return 'fire-elemental';
+		case 'WaterElemental':
+			return 'water-elemental';
+		case 'MagmaElemental':
+			return 'magma-elemental';
+		case 'IceElemental':
+			return 'ice-elemental';
+		case 'EarthElemental':
+			return 'earth-elemental';
+		case 'HillGiant':
+			return 'hill-giant';
+		case 'TwoHeadedGiant':
+			return 'two-headed-giant';
+		case 'FrostGiant':
+			return 'frost-giant';
+		case 'StoneGiant':
+			return 'stone-giant';
+		case 'FireGiant':
+			return 'fire-giant';
+		case 'Surtur':
+			return 'surtur';
+		case 'FireGiantKing':
+			return 'fire-giant-king';
+		case 'FrostGiantKing':
+			return 'frost-giant-king';
+		case 'HillGiantKing':
+			return 'hill-giant-king';
+		case 'StoneGiantKing':
+			return 'stone-giant-king';
+		case 'RedDragon':
+			return 'red-dragon';
+		case 'BlueDragon':
+			return 'blue-dragon';
+		case 'WhiteDragon':
+			return 'white-dragon';
+		default:
+			return 'green-dragon';
+	}
+};
+var _mordrax$cotwelm$Monsters_View$px = function (a) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(a),
+		'px');
+};
+var _mordrax$cotwelm$Monsters_View$vectorToHtmlStyle = function (_p1) {
+	var _p2 = _p1;
+	return {
+		ctor: '::',
+		_0: {
+			ctor: '_Tuple2',
+			_0: 'top',
+			_1: _mordrax$cotwelm$Monsters_View$px(_p2._1 * 32)
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'left',
+				_1: _mordrax$cotwelm$Monsters_View$px(_p2._0 * 32)
+			},
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _mordrax$cotwelm$Monsters_View$view = function (_p3) {
+	var _p4 = _p3;
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$style(
+				_mordrax$cotwelm$Monsters_View$vectorToHtmlStyle(_p4.position)),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'tile monster ',
+						_mordrax$cotwelm$Monsters_View$monsterTypeToCSS(_p4.monsterType))),
+				_1: {ctor: '[]'}
+			}
+		},
+		{ctor: '[]'});
+};
+
+var _mordrax$cotwelm$Monster$remove = F2(
+	function (monster, monsters) {
+		return A2(
+			_elm_lang$core$List$filter,
+			function (x) {
+				return !_elm_lang$core$Native_Utils.eq(monster.position, x.position);
+			},
+			monsters);
+	});
+var _mordrax$cotwelm$Monster$replace = F2(
+	function (monster, monsters) {
+		return {
+			ctor: '::',
+			_0: monster,
+			_1: A2(_mordrax$cotwelm$Monster$remove, monster, monsters)
+		};
+	});
+var _mordrax$cotwelm$Monster$view = _mordrax$cotwelm$Monsters_View$view;
+var _mordrax$cotwelm$Monster$make = _mordrax$cotwelm$Monsters_Factory$make;
+var _mordrax$cotwelm$Monster$makeRandomMonsters = _mordrax$cotwelm$Monsters_Factory$makeRandomMonsters;
+var _mordrax$cotwelm$Monster$makeForArena = _mordrax$cotwelm$Monsters_Factory$makeForArena;
+var _mordrax$cotwelm$Monster$types = _mordrax$cotwelm$Monsters_Types$monsterTypesToList;
 
 var _mordrax$cotwelm$Combat$defenderName = F2(
 	function (_p0, adjective) {
@@ -21367,7 +22528,7 @@ var _mordrax$cotwelm$Combat$makeNames = F2(
 		};
 	});
 var _mordrax$cotwelm$Combat$attack_ = F3(
-	function (attacker, defender, attacksRemaining) {
+	function (attacker, defender, numAttacks) {
 		var attackAgain = function (_p37) {
 			var _p38 = _p37;
 			return A2(
@@ -21380,7 +22541,7 @@ var _mordrax$cotwelm$Combat$attack_ = F3(
 						_1: _p40._1
 					};
 				},
-				A3(_mordrax$cotwelm$Combat$attack_, attacker, _p38._1, attacksRemaining - 1));
+				A3(_mordrax$cotwelm$Combat$attack_, attacker, _p38._1, numAttacks - 1));
 		};
 		var names = A2(_mordrax$cotwelm$Combat$makeNames, attacker, defender);
 		var damageDie = _mordrax$cotwelm$Combat$damageCalculator(attacker);
@@ -21399,7 +22560,7 @@ var _mordrax$cotwelm$Combat$attack_ = F3(
 					}),
 				hitDie,
 				damageDie));
-		var _p41 = attacksRemaining;
+		var _p41 = numAttacks;
 		if (_p41 === 1) {
 			return genResult;
 		} else {
@@ -21407,14 +22568,543 @@ var _mordrax$cotwelm$Combat$attack_ = F3(
 		}
 	});
 var _mordrax$cotwelm$Combat$attack = F2(
-	function (hero, monster) {
-		return A3(_mordrax$cotwelm$Combat$attack_, hero, monster, 1);
-	});
-var _mordrax$cotwelm$Combat$defend = F2(
-	function (monster, hero) {
-		return A3(_mordrax$cotwelm$Combat$attack_, monster, hero, monster.attacks);
+	function (attacker, defender) {
+		return A3(_mordrax$cotwelm$Combat$attack_, attacker, defender, attacker.attacks);
 	});
 
+var _mordrax$cotwelm$Arena_Types$init = {ctor: '_Tuple0'};
+
+var _mordrax$cotwelm$Arena_Round$fighting = function (_p0) {
+	var _p1 = _p0;
+	var _p8 = _p1;
+	var _p7 = _p1.red;
+	var _p6 = _p1.blue;
+	var isDamaged = F2(
+		function (a, a_) {
+			return _elm_lang$core$Native_Utils.cmp(a.stats.currentHP, a_.stats.currentHP) > 0;
+		});
+	var oneIfDamaged = F2(
+		function (a, a_) {
+			return A2(isDamaged, a, a_) ? 1 : 0;
+		});
+	var updateBlue = function (newBlue) {
+		return _elm_lang$core$Native_Utils.update(
+			_p8,
+			{
+				blue: newBlue,
+				redTurns: _p8.redTurns + 1,
+				isBlueAttacking: true,
+				redHitBlue: _p8.redHitBlue + A2(oneIfDamaged, _p8.blue, newBlue)
+			});
+	};
+	var updateRed = function (newRed) {
+		return _elm_lang$core$Native_Utils.update(
+			_p8,
+			{
+				red: newRed,
+				blueTurns: _p8.blueTurns + 1,
+				isBlueAttacking: false,
+				blueHitRed: _p8.blueHitRed + A2(oneIfDamaged, _p8.red, newRed)
+			});
+	};
+	return _mordrax$cotwelm$Stats$isDead(_p6.stats) ? _mgold$elm_random_pcg$Random_Pcg$constant(
+		_elm_lang$core$Native_Utils.update(
+			_p8,
+			{hpRemaining: 0})) : (_mordrax$cotwelm$Stats$isDead(_p7.stats) ? _mgold$elm_random_pcg$Random_Pcg$constant(
+		_elm_lang$core$Native_Utils.update(
+			_p8,
+			{hpRemaining: _p6.stats.currentHP})) : (_elm_lang$core$Native_Utils.eq(_p1.isBlueAttacking, true) ? A2(
+		_mgold$elm_random_pcg$Random_Pcg$andThen,
+		function (_p2) {
+			var _p3 = _p2;
+			return _mordrax$cotwelm$Arena_Round$fighting(
+				updateRed(_p3._1));
+		},
+		A2(_mordrax$cotwelm$Combat$attack, _p6, _p7)) : A2(
+		_mgold$elm_random_pcg$Random_Pcg$andThen,
+		function (_p4) {
+			var _p5 = _p4;
+			return _mordrax$cotwelm$Arena_Round$fighting(
+				updateBlue(_p5._1));
+		},
+		A2(_mordrax$cotwelm$Combat$attack, _p7, _p6))));
+};
+var _mordrax$cotwelm$Arena_Round$RoundResult = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {blue: a, red: b, isBlueAttacking: c, blueTurns: d, redTurns: e, hpRemaining: f, blueHitRed: g, redHitBlue: h};
+	});
+var _mordrax$cotwelm$Arena_Round$fight = F2(
+	function (blue, red) {
+		return _mordrax$cotwelm$Arena_Round$fighting(
+			A8(_mordrax$cotwelm$Arena_Round$RoundResult, blue, red, true, 0, 0, 0, 0, 0));
+	});
+
+var _mordrax$cotwelm$Arena_View$armourToString = function (equipment) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		'No Armour',
+		A2(
+			_elm_lang$core$Maybe$map,
+			_mordrax$cotwelm$Item_Item$ppArmour,
+			_mordrax$cotwelm$Equipment$getArmour(equipment)));
+};
+var _mordrax$cotwelm$Arena_View$weaponToString = function (equipment) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		'No Weapon',
+		A2(
+			_elm_lang$core$Maybe$map,
+			_mordrax$cotwelm$Item_Item$ppWeapon,
+			_mordrax$cotwelm$Equipment$getWeapon(equipment)));
+};
+
+var _mordrax$cotwelm$Arena_Match$toPercentage = function (num) {
+	return A3(
+		_elm_lang$core$String$slice,
+		0,
+		4,
+		_elm_lang$core$Basics$toString(
+			A2(
+				F2(
+					function (x, y) {
+						return x * y;
+					}),
+				100,
+				num)));
+};
+var _mordrax$cotwelm$Arena_Match$toNSignificantPlaces = F2(
+	function (num, sig) {
+		var factor = _elm_lang$core$Basics$toFloat(
+			Math.pow(10, sig));
+		return A3(
+			_elm_lang$core$Basics$flip,
+			F2(
+				function (x, y) {
+					return x / y;
+				}),
+			factor,
+			_elm_lang$core$Basics$toFloat(
+				_elm_lang$core$Basics$round(
+					A2(
+						F2(
+							function (x, y) {
+								return x * y;
+							}),
+						factor,
+						num))));
+	});
+var _mordrax$cotwelm$Arena_Match$toOneDecimal = function (num) {
+	return _elm_lang$core$Basics$toString(
+		A2(_mordrax$cotwelm$Arena_Match$toNSignificantPlaces, num, 1));
+};
+var _mordrax$cotwelm$Arena_Match$ppAttributes = function (_p0) {
+	var _p1 = _p0;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(_p1.str),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'/',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(_p1.dex),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'/',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(_p1.con),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'/',
+							_elm_lang$core$Basics$toString(_p1.$int)))))));
+};
+var _mordrax$cotwelm$Arena_Match$view = function (_p2) {
+	var _p3 = _p2;
+	var _p8 = _p3.rounds;
+	var _p7 = _p3.redTurnsInRounds;
+	var _p6 = _p3.red;
+	var _p5 = _p3.blueTurnsInRounds;
+	var _p4 = _p3.blue;
+	var redCTHThreshold = _mordrax$cotwelm$Combat$cthThreshold(
+		A2(_mordrax$cotwelm$Combat$chanceToHit, _p6, _p4));
+	var blueCTHThreshold = _mordrax$cotwelm$Combat$cthThreshold(
+		A2(_mordrax$cotwelm$Combat$chanceToHit, _p4, _p6));
+	var avgRedHitBlue = _elm_lang$core$Basics$toFloat(
+		_elm_lang$core$List$sum(_p3.redHitBlue)) / _elm_lang$core$Basics$toFloat(
+		_elm_lang$core$List$sum(_p7));
+	var avgBlueHitRed = _elm_lang$core$Basics$toFloat(
+		_elm_lang$core$List$sum(_p3.blueHitRed)) / _elm_lang$core$Basics$toFloat(
+		_elm_lang$core$List$sum(_p5));
+	var redCTH = A2(_mordrax$cotwelm$Combat$chanceToHit, _p6, _p4);
+	var redCTHText = A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(redCTH.baseCTH),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'/',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(redCTH.weaponBulkPenalty),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'/',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(redCTH.armourPenalty),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'/',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Basics$toString(redCTH.sizeModifier),
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									' = (',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_elm_lang$core$Basics$toString(redCTHThreshold),
+										')')))))))));
+	var cth = A2(_mordrax$cotwelm$Combat$chanceToHit, _p4, _p6);
+	var cthText = A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(cth.baseCTH),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'/',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(cth.weaponBulkPenalty),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'/',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(cth.armourPenalty),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'/',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Basics$toString(cth.sizeModifier),
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									' = (',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_elm_lang$core$Basics$toString(blueCTHThreshold),
+										')')))))))));
+	var avgBlueTurnsTaken = _elm_lang$core$Basics$toFloat(
+		_elm_lang$core$List$sum(_p5)) / _elm_lang$core$Basics$toFloat(_p8);
+	var avgTurnsTaken = _elm_lang$core$Basics$toFloat(
+		_elm_lang$core$List$sum(_p5) + _elm_lang$core$List$sum(_p7)) / _elm_lang$core$Basics$toFloat(_p8);
+	var avgHpRemaining = _mordrax$cotwelm$Arena_Match$toOneDecimal(
+		_elm_lang$core$Basics$toFloat(
+			_elm_lang$core$List$sum(_p3.hpRemaining)) / _elm_lang$core$Basics$toFloat(_p8));
+	var armour = _mordrax$cotwelm$Arena_View$armourToString(_p6.equipment);
+	var weapon = _mordrax$cotwelm$Arena_View$weaponToString(_p6.equipment);
+	var brackets = function (a) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			'( ',
+			A2(_elm_lang$core$Basics_ops['++'], a, ' )'));
+	};
+	var totalArmour = brackets(
+		_elm_lang$core$Basics$toString(
+			_mordrax$cotwelm$Equipment$calculateAC(_p6.equipment)));
+	var percent = function (a) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Basics$toString(a),
+			'%');
+	};
+	var over = F2(
+		function (a, b) {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(a),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					' / ',
+					_elm_lang$core$Basics$toString(b)));
+		});
+	return A2(
+		_elm_lang$html$Html$tr,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$td,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(_p6.name),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$td,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							_elm_lang$core$Basics$toString(_p6.expLevel)),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$td,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(
+								_mordrax$cotwelm$Arena_Match$ppAttributes(_p6.attributes)),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$td,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(weapon),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$td,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											armour,
+											A2(_elm_lang$core$Basics_ops['++'], ' ', totalArmour))),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(
+											_elm_lang$core$Basics$toString(_p6.bodySize)),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(
+												_elm_lang$core$Basics$toString(_p6.stats.maxHP)),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text(
+													percent(
+														(_elm_lang$core$Basics$toFloat(_p3.blueWins) * 100) / _elm_lang$core$Basics$toFloat(_p8))),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text(
+														A2(
+															_elm_lang$core$Basics_ops['++'],
+															avgHpRemaining,
+															A2(
+																_elm_lang$core$Basics_ops['++'],
+																' / ',
+																_elm_lang$core$Basics$toString(_p4.stats.maxHP)))),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text(
+															A2(
+																_elm_lang$core$Basics_ops['++'],
+																_mordrax$cotwelm$Arena_Match$toOneDecimal(avgTurnsTaken),
+																A2(
+																	_elm_lang$core$Basics_ops['++'],
+																	' ',
+																	brackets(
+																		_mordrax$cotwelm$Arena_Match$toOneDecimal(avgBlueTurnsTaken))))),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$td,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text(
+																A2(
+																	_elm_lang$core$Basics_ops['++'],
+																	_mordrax$cotwelm$Arena_Match$toPercentage(avgBlueHitRed),
+																	'%')),
+															_1: {ctor: '[]'}
+														}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$td,
+															{ctor: '[]'},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text(
+																	A2(
+																		_elm_lang$core$Basics_ops['++'],
+																		_mordrax$cotwelm$Arena_Match$toPercentage(avgRedHitBlue),
+																		'%')),
+																_1: {ctor: '[]'}
+															}),
+														_1: {
+															ctor: '::',
+															_0: A2(
+																_elm_lang$html$Html$td,
+																{ctor: '[]'},
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html$text(cthText),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {
+																ctor: '::',
+																_0: A2(
+																	_elm_lang$html$Html$td,
+																	{ctor: '[]'},
+																	{
+																		ctor: '::',
+																		_0: _elm_lang$html$Html$text(redCTHText),
+																		_1: {ctor: '[]'}
+																	}),
+																_1: {ctor: '[]'}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+};
+var _mordrax$cotwelm$Arena_Match$updateMatch = F2(
+	function (_p9, match) {
+		var _p10 = _p9;
+		var _p11 = _p10.hpRemaining;
+		var incBattle = function (match) {
+			return _elm_lang$core$Native_Utils.update(
+				match,
+				{rounds: match.rounds + 1});
+		};
+		var addResult = function (match) {
+			return _elm_lang$core$Native_Utils.update(
+				match,
+				{
+					hpRemaining: {ctor: '::', _0: _p11, _1: match.hpRemaining},
+					blueTurnsInRounds: {ctor: '::', _0: _p10.blueTurns, _1: match.blueTurnsInRounds},
+					redTurnsInRounds: {ctor: '::', _0: _p10.redTurns, _1: match.redTurnsInRounds},
+					blueHitRed: {ctor: '::', _0: _p10.blueHitRed, _1: match.blueHitRed},
+					redHitBlue: {ctor: '::', _0: _p10.redHitBlue, _1: match.redHitBlue}
+				});
+		};
+		var addWin = function (match) {
+			return (_elm_lang$core$Native_Utils.cmp(_p11, 0) > 0) ? _elm_lang$core$Native_Utils.update(
+				match,
+				{blueWins: match.blueWins + 1}) : match;
+		};
+		return incBattle(
+			addResult(
+				addWin(match)));
+	});
+var _mordrax$cotwelm$Arena_Match$fightSingleRound = function (_p12) {
+	var _p13 = _p12;
+	return A2(
+		_mgold$elm_random_pcg$Random_Pcg$map,
+		function (roundResult) {
+			return A2(_mordrax$cotwelm$Arena_Match$updateMatch, roundResult, _p13);
+		},
+		A2(_mordrax$cotwelm$Arena_Round$fight, _p13.blue, _p13.red));
+};
+var _mordrax$cotwelm$Arena_Match$maxRounds = 2000;
+var _mordrax$cotwelm$Arena_Match$fight = function (_p14) {
+	var _p15 = _p14;
+	var _p16 = _p15;
+	return (_elm_lang$core$Native_Utils.cmp(_p16.rounds, _mordrax$cotwelm$Arena_Match$maxRounds) > -1) ? _mgold$elm_random_pcg$Random_Pcg$constant(_p16) : A2(
+		_mgold$elm_random_pcg$Random_Pcg$andThen,
+		_mordrax$cotwelm$Arena_Match$fight,
+		_mordrax$cotwelm$Arena_Match$fightSingleRound(_p16));
+};
+var _mordrax$cotwelm$Arena_Match$init = F2(
+	function (blue, red) {
+		return {
+			blue: blue,
+			red: red,
+			rounds: 0,
+			blueWins: 0,
+			hpRemaining: {ctor: '[]'},
+			blueTurnsInRounds: {ctor: '[]'},
+			redTurnsInRounds: {ctor: '[]'},
+			blueHitRed: {ctor: '[]'},
+			redHitBlue: {ctor: '[]'}
+		};
+	});
+var _mordrax$cotwelm$Arena_Match$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {blue: a, red: b, rounds: c, blueWins: d, hpRemaining: e, blueTurnsInRounds: f, redTurnsInRounds: g, blueHitRed: h, redHitBlue: i};
+	});
+
+var _mordrax$cotwelm$UI$btn = F2(
+	function (txt, msg) {
+		return A2(
+			_elm_lang$html$Html$button,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onClick(msg),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('ui button'),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(txt),
+				_1: {ctor: '[]'}
+			});
+	});
 var _mordrax$cotwelm$UI$inputWithIncDec = F2(
 	function (val, msg) {
 		return A2(
@@ -21671,7 +23361,395 @@ var _mordrax$cotwelm$UI$list = F4(
 			A2(_elm_lang$core$List$map, renderItem, items));
 	});
 
-var _mordrax$cotwelm$Arena$initHeroLookup = function (hero) {
+var _mordrax$cotwelm$Arena_MonsterArena$generateVSes = F2(
+	function (currentVSes, remainingMonsters) {
+		var _p0 = remainingMonsters;
+		if (_p0.ctor === '[]') {
+			return currentVSes;
+		} else {
+			var _p1 = _p0._1;
+			return A2(
+				F2(
+					function (x, y) {
+						return A2(_elm_lang$core$Basics_ops['++'], x, y);
+					}),
+				A2(
+					_elm_lang$core$List$map,
+					function (x) {
+						return {ctor: '_Tuple2', _0: x, _1: _p0._0};
+					},
+					_p1),
+				A2(_mordrax$cotwelm$Arena_MonsterArena$generateVSes, currentVSes, _p1));
+		}
+	});
+var _mordrax$cotwelm$Arena_MonsterArena$monsterTypes = _mordrax$cotwelm$Monster$types;
+var _mordrax$cotwelm$Arena_MonsterArena$contestants = A2(_elm_lang$core$List$map, _mordrax$cotwelm$Monster$makeForArena, _mordrax$cotwelm$Monster$types);
+var _mordrax$cotwelm$Arena_MonsterArena$toRoundedPercent = F2(
+	function (a, b) {
+		return A3(
+			_elm_lang$core$Basics$flip,
+			F2(
+				function (x, y) {
+					return A2(_elm_lang$core$Basics_ops['++'], x, y);
+				}),
+			'%',
+			_elm_lang$core$Basics$toString(
+				_elm_lang$core$Basics$floor(
+					A2(
+						F2(
+							function (x, y) {
+								return x * y;
+							}),
+						100,
+						_elm_lang$core$Basics$toFloat(a) / _elm_lang$core$Basics$toFloat(b)))));
+	});
+var _mordrax$cotwelm$Arena_MonsterArena$viewMatch = function (_p2) {
+	var _p3 = _p2;
+	var _p5 = _p3.rounds;
+	var _p4 = _p3.blueWins;
+	var winsPercent = _elm_lang$core$Basics$toFloat(_p4) / _elm_lang$core$Basics$toFloat(_p5);
+	var lightness = _elm_lang$core$Basics$toString(
+		function (x) {
+			return 100 - x;
+		}(
+			_elm_lang$core$Basics$abs((winsPercent * 100) - 50)));
+	var pickHue = function (x) {
+		return (_elm_lang$core$Native_Utils.cmp(x, 128) > 0) ? 120 : 0;
+	};
+	var hue = _elm_lang$core$Basics$toString(
+		pickHue(
+			_elm_lang$core$Basics$floor(winsPercent * 255)));
+	var winsToColor = {
+		ctor: '_Tuple2',
+		_0: 'background-color',
+		_1: A2(
+			_elm_lang$core$Basics_ops['++'],
+			'hsl(',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				hue,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					', 100%, ',
+					A2(_elm_lang$core$Basics_ops['++'], lightness, '%)'))))
+	};
+	return A2(
+		_elm_lang$html$Html$td,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$style(
+				{
+					ctor: '::',
+					_0: winsToColor,
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(
+				A2(_mordrax$cotwelm$Arena_MonsterArena$toRoundedPercent, _p4, _p5)),
+			_1: {ctor: '[]'}
+		});
+};
+var _mordrax$cotwelm$Arena_MonsterArena$viewMatches = F2(
+	function (matches, contestant) {
+		var match = function (opponent) {
+			return A2(
+				_elm_lang$core$Maybe$withDefault,
+				A2(
+					_elm_lang$html$Html$td,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('N/A'),
+						_1: {ctor: '[]'}
+					}),
+				A2(
+					_elm_lang$core$Maybe$map,
+					_mordrax$cotwelm$Arena_MonsterArena$viewMatch,
+					A2(
+						_eeue56$elm_all_dict$EveryDict$get,
+						{ctor: '_Tuple2', _0: contestant, _1: opponent},
+						matches)));
+		};
+		return A2(
+			_elm_lang$html$Html$tr,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					_elm_lang$core$Basics$toString(contestant)),
+				_1: A2(_elm_lang$core$List$map, match, _mordrax$cotwelm$Arena_MonsterArena$monsterTypes)
+			});
+	});
+var _mordrax$cotwelm$Arena_MonsterArena$viewTournament = function (model) {
+	var divStyle = _elm_lang$html$Html_Attributes$style(
+		{
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'transform', _1: 'rotate(270deg)'},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'width', _1: '10px'},
+				_1: {ctor: '[]'}
+			}
+		});
+	var headStyle = _elm_lang$html$Html_Attributes$style(
+		{
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'height', _1: '150px'},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'white-space', _1: 'nowrap'},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'padding', _1: '0'},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'width', _1: '10px'},
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		});
+	var header = function (headerText) {
+		return A2(
+			_elm_lang$html$Html$th,
+			{
+				ctor: '::',
+				_0: headStyle,
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: divStyle,
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(headerText),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+	};
+	var contestantsAsStrings = A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, _mordrax$cotwelm$Arena_MonsterArena$monsterTypes);
+	var headers = {ctor: '::', _0: 'Combatants', _1: contestantsAsStrings};
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$style(
+				{
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'overflow', _1: 'scroll'},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'height', _1: '800px'},
+							_1: {ctor: '[]'}
+						}
+					}
+				}),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$table,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('ui very basic compact striped celled table'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$thead,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$tr,
+								{ctor: '[]'},
+								A2(_elm_lang$core$List$map, header, headers)),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$tbody,
+							{ctor: '[]'},
+							A2(
+								_elm_lang$core$List$map,
+								_mordrax$cotwelm$Arena_MonsterArena$viewMatches(model.matches),
+								_mordrax$cotwelm$Monster$types)),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		});
+};
+var _mordrax$cotwelm$Arena_MonsterArena$fight = function (_p6) {
+	var _p7 = _p6;
+	var toGeneratorKVP = function (_p8) {
+		var _p9 = _p8;
+		return A2(
+			_mgold$elm_random_pcg$Random_Pcg$map,
+			function (match) {
+				return {ctor: '_Tuple2', _0: _p9._0, _1: match};
+			},
+			_mordrax$cotwelm$Arena_Match$fightSingleRound(_p9._1));
+	};
+	return A2(
+		_mgold$elm_random_pcg$Random_Pcg$map,
+		_eeue56$elm_all_dict$EveryDict$fromList,
+		_mordrax$cotwelm$Utils_Misc$combine(
+			A2(
+				_elm_lang$core$List$map,
+				toGeneratorKVP,
+				_eeue56$elm_all_dict$EveryDict$toList(_p7.matches))));
+};
+var _mordrax$cotwelm$Arena_MonsterArena$initMatch = function (_p10) {
+	var _p11 = _p10;
+	var createFighter = _mordrax$cotwelm$Monster$makeForArena;
+	return A2(
+		_mordrax$cotwelm$Arena_Match$init,
+		createFighter(_p11._0),
+		createFighter(_p11._1));
+};
+var _mordrax$cotwelm$Arena_MonsterArena$initMatches = function (vses) {
+	var toKVP = function (vs) {
+		return {
+			ctor: '_Tuple2',
+			_0: vs,
+			_1: _mordrax$cotwelm$Arena_MonsterArena$initMatch(vs)
+		};
+	};
+	return _eeue56$elm_all_dict$EveryDict$fromList(
+		A2(_elm_lang$core$List$map, toKVP, vses));
+};
+var _mordrax$cotwelm$Arena_MonsterArena$Model = F3(
+	function (a, b, c) {
+		return {matches: a, vses: b, fightState: c};
+	});
+var _mordrax$cotwelm$Arena_MonsterArena$ChangeFightState = function (a) {
+	return {ctor: 'ChangeFightState', _0: a};
+};
+var _mordrax$cotwelm$Arena_MonsterArena$FightResult = function (a) {
+	return {ctor: 'FightResult', _0: a};
+};
+var _mordrax$cotwelm$Arena_MonsterArena$update = F2(
+	function (msg, model) {
+		var _p12 = msg;
+		switch (_p12.ctor) {
+			case 'Fight':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A2(
+						_mgold$elm_random_pcg$Random_Pcg$generate,
+						_mordrax$cotwelm$Arena_MonsterArena$FightResult,
+						_mordrax$cotwelm$Arena_MonsterArena$fight(model))
+				};
+			case 'FightResult':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{matches: _p12._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ChangeFightState':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{fightState: _p12._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _mordrax$cotwelm$Arena_MonsterArena$Fight = function (a) {
+	return {ctor: 'Fight', _0: a};
+};
+var _mordrax$cotwelm$Arena_MonsterArena$subs = function (_p13) {
+	var _p14 = _p13;
+	var _p15 = _p14.fightState;
+	if (_p15.ctor === 'Started') {
+		return A2(_elm_lang$core$Time$every, _elm_lang$core$Time$millisecond * 500, _mordrax$cotwelm$Arena_MonsterArena$Fight);
+	} else {
+		return _elm_lang$core$Platform_Sub$none;
+	}
+};
+var _mordrax$cotwelm$Arena_MonsterArena$StartTournament = {ctor: 'StartTournament'};
+var _mordrax$cotwelm$Arena_MonsterArena$Stopped = {ctor: 'Stopped'};
+var _mordrax$cotwelm$Arena_MonsterArena$Started = {ctor: 'Started'};
+var _mordrax$cotwelm$Arena_MonsterArena$init = function () {
+	var vses = A2(
+		_mordrax$cotwelm$Arena_MonsterArena$generateVSes,
+		{ctor: '[]'},
+		_mordrax$cotwelm$Arena_MonsterArena$monsterTypes);
+	return {
+		matches: _mordrax$cotwelm$Arena_MonsterArena$initMatches(vses),
+		vses: vses,
+		fightState: _mordrax$cotwelm$Arena_MonsterArena$Started
+	};
+}();
+var _mordrax$cotwelm$Arena_MonsterArena$viewUI = A2(
+	_elm_lang$html$Html$div,
+	{ctor: '[]'},
+	{
+		ctor: '::',
+		_0: A2(
+			_mordrax$cotwelm$UI$btn,
+			'Start',
+			_mordrax$cotwelm$Arena_MonsterArena$ChangeFightState(_mordrax$cotwelm$Arena_MonsterArena$Started)),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_mordrax$cotwelm$UI$btn,
+				'Stop',
+				_mordrax$cotwelm$Arena_MonsterArena$ChangeFightState(_mordrax$cotwelm$Arena_MonsterArena$Stopped)),
+			_1: {ctor: '[]'}
+		}
+	});
+var _mordrax$cotwelm$Arena_MonsterArena$view = function (model) {
+	var title = A2(
+		_elm_lang$html$Html$h1,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Welcome to the pit!'),
+			_1: {ctor: '[]'}
+		});
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: title,
+			_1: {
+				ctor: '::',
+				_0: _mordrax$cotwelm$Arena_MonsterArena$viewUI,
+				_1: {
+					ctor: '::',
+					_0: _mordrax$cotwelm$Arena_MonsterArena$viewTournament(model),
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+};
+
+var _mordrax$cotwelm$Arena_PlayerArena$initHeroLookup = function (hero) {
 	var reducer = F3(
 		function (dict, hero, lvl) {
 			reducer:
@@ -21694,60 +23772,48 @@ var _mordrax$cotwelm$Arena$initHeroLookup = function (hero) {
 		});
 	return A3(reducer, _elm_lang$core$Dict$empty, hero, 1);
 };
-var _mordrax$cotwelm$Arena$makeArmour = function (armourType) {
-	return A2(
-		_mordrax$cotwelm$Item_Item$new,
-		_mordrax$cotwelm$Item_Data$ItemTypeArmour(armourType),
-		_mordrax$cotwelm$Utils_IdGenerator$empty);
+var _mordrax$cotwelm$Arena_PlayerArena$makeArmour = function (armourType) {
+	return _mordrax$cotwelm$Item_Item$new(
+		_mordrax$cotwelm$Item_Data$ItemTypeArmour(armourType));
 };
-var _mordrax$cotwelm$Arena$makeWeapon = function (weaponType) {
-	return A2(
-		_mordrax$cotwelm$Item_Item$new,
-		_mordrax$cotwelm$Item_Data$ItemTypeWeapon(weaponType),
-		_mordrax$cotwelm$Utils_IdGenerator$empty);
+var _mordrax$cotwelm$Arena_PlayerArena$makeWeapon = function (weaponType) {
+	return _mordrax$cotwelm$Item_Item$new(
+		_mordrax$cotwelm$Item_Data$ItemTypeWeapon(weaponType));
 };
-var _mordrax$cotwelm$Arena$equipHero = F2(
+var _mordrax$cotwelm$Arena_PlayerArena$equipHero = F2(
 	function (hero, _p2) {
 		var _p3 = _p2;
 		var _p5 = _p3._0;
 		var _p4 = _p3._1;
 		var makeBracers = function (bracersType) {
-			return A2(
-				_mordrax$cotwelm$Item_Item$new,
-				_mordrax$cotwelm$Item_Data$ItemTypeBracers(bracersType),
-				_mordrax$cotwelm$Utils_IdGenerator$empty);
+			return _mordrax$cotwelm$Item_Item$new(
+				_mordrax$cotwelm$Item_Data$ItemTypeBracers(bracersType));
 		};
 		var makeGauntlets = function (gauntletsType) {
-			return A2(
-				_mordrax$cotwelm$Item_Item$new,
-				_mordrax$cotwelm$Item_Data$ItemTypeGauntlets(gauntletsType),
-				_mordrax$cotwelm$Utils_IdGenerator$empty);
+			return _mordrax$cotwelm$Item_Item$new(
+				_mordrax$cotwelm$Item_Data$ItemTypeGauntlets(gauntletsType));
 		};
 		var makeHelmet = function (helmetType) {
-			return A2(
-				_mordrax$cotwelm$Item_Item$new,
-				_mordrax$cotwelm$Item_Data$ItemTypeHelmet(helmetType),
-				_mordrax$cotwelm$Utils_IdGenerator$empty);
+			return _mordrax$cotwelm$Item_Item$new(
+				_mordrax$cotwelm$Item_Data$ItemTypeHelmet(helmetType));
 		};
 		var makeShield = function (shieldType) {
-			return A2(
-				_mordrax$cotwelm$Item_Item$new,
-				_mordrax$cotwelm$Item_Data$ItemTypeShield(shieldType),
-				_mordrax$cotwelm$Utils_IdGenerator$empty);
+			return _mordrax$cotwelm$Item_Item$new(
+				_mordrax$cotwelm$Item_Data$ItemTypeShield(shieldType));
 		};
 		var lowLevel = {
 			ctor: '::',
 			_0: {
 				ctor: '_Tuple2',
 				_0: _mordrax$cotwelm$Equipment$WeaponSlot,
-				_1: _mordrax$cotwelm$Arena$makeWeapon(_p5)
+				_1: _mordrax$cotwelm$Arena_PlayerArena$makeWeapon(_p5)
 			},
 			_1: {
 				ctor: '::',
 				_0: {
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Equipment$ArmourSlot,
-					_1: _mordrax$cotwelm$Arena$makeArmour(_p4)
+					_1: _mordrax$cotwelm$Arena_PlayerArena$makeArmour(_p4)
 				},
 				_1: {
 					ctor: '::',
@@ -21789,14 +23855,14 @@ var _mordrax$cotwelm$Arena$equipHero = F2(
 			_0: {
 				ctor: '_Tuple2',
 				_0: _mordrax$cotwelm$Equipment$WeaponSlot,
-				_1: _mordrax$cotwelm$Arena$makeWeapon(_p5)
+				_1: _mordrax$cotwelm$Arena_PlayerArena$makeWeapon(_p5)
 			},
 			_1: {
 				ctor: '::',
 				_0: {
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Equipment$ArmourSlot,
-					_1: _mordrax$cotwelm$Arena$makeArmour(_p4)
+					_1: _mordrax$cotwelm$Arena_PlayerArena$makeArmour(_p4)
 				},
 				_1: {
 					ctor: '::',
@@ -21838,14 +23904,14 @@ var _mordrax$cotwelm$Arena$equipHero = F2(
 			_0: {
 				ctor: '_Tuple2',
 				_0: _mordrax$cotwelm$Equipment$WeaponSlot,
-				_1: _mordrax$cotwelm$Arena$makeWeapon(_p5)
+				_1: _mordrax$cotwelm$Arena_PlayerArena$makeWeapon(_p5)
 			},
 			_1: {
 				ctor: '::',
 				_0: {
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Equipment$ArmourSlot,
-					_1: _mordrax$cotwelm$Arena$makeArmour(_p4)
+					_1: _mordrax$cotwelm$Arena_PlayerArena$makeArmour(_p4)
 				},
 				_1: {
 					ctor: '::',
@@ -21885,48 +23951,90 @@ var _mordrax$cotwelm$Arena$equipHero = F2(
 		return (_elm_lang$core$Native_Utils.cmp(hero.expLevel, 10) < 1) ? _elm_lang$core$Native_Utils.update(
 			hero,
 			{
-				equipment: A2(_mordrax$cotwelm$Equipment$equipMany, lowLevel, hero.equipment)
+				equipment: A2(_mordrax$cotwelm$Equipment$setMany_, lowLevel, hero.equipment)
 			}) : ((_elm_lang$core$Native_Utils.cmp(hero.expLevel, 20) < 1) ? _elm_lang$core$Native_Utils.update(
 			hero,
 			{
-				equipment: A2(_mordrax$cotwelm$Equipment$equipMany, midLevel, hero.equipment)
+				equipment: A2(_mordrax$cotwelm$Equipment$setMany_, midLevel, hero.equipment)
 			}) : _elm_lang$core$Native_Utils.update(
 			hero,
 			{
-				equipment: A2(_mordrax$cotwelm$Equipment$equipMany, highLevel, hero.equipment)
+				equipment: A2(_mordrax$cotwelm$Equipment$setMany_, highLevel, hero.equipment)
 			}));
 	});
-var _mordrax$cotwelm$Arena$initHero = F2(
+var _mordrax$cotwelm$Arena_PlayerArena$initMatches = F2(
+	function (heroLookup, _p6) {
+		var _p7 = _p6;
+		var customEquipment = A2(
+			_mordrax$cotwelm$Equipment$setMany_,
+			{
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: _mordrax$cotwelm$Equipment$WeaponSlot,
+					_1: _mordrax$cotwelm$Arena_PlayerArena$makeWeapon(_p7._0)
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: _mordrax$cotwelm$Equipment$ArmourSlot,
+						_1: _mordrax$cotwelm$Arena_PlayerArena$makeArmour(_p7._1)
+					},
+					_1: {ctor: '[]'}
+				}
+			},
+			_mordrax$cotwelm$Equipment$init);
+		var newMatch = function (monster) {
+			var hero = function () {
+				var _p8 = A2(_elm_lang$core$Dict$get, monster.expLevel, heroLookup);
+				if (_p8.ctor === 'Just') {
+					return A2(_mordrax$cotwelm$Hero$setEquipment, customEquipment, _p8._0);
+				} else {
+					return A2(
+						_elm_lang$core$Native_Utils.crash(
+							'Arena.PlayerArena',
+							{
+								start: {line: 452, column: 29},
+								end: {line: 452, column: 40}
+							}),
+						'Could not look up a hero with exp level: ',
+						monster.expLevel);
+				}
+			}();
+			return A2(_mordrax$cotwelm$Arena_Match$init, hero, monster);
+		};
+		var newMonster = function (monsterType) {
+			return _mordrax$cotwelm$Monster$makeForArena(monsterType);
+		};
+		return A2(
+			_elm_lang$core$List$map,
+			newMatch,
+			A2(
+				_elm_lang$core$List$filter,
+				function (_p9) {
+					return A3(
+						_elm_lang$core$Basics$flip,
+						F2(
+							function (x, y) {
+								return _elm_lang$core$Native_Utils.cmp(x, y) > -1;
+							}),
+						5,
+						function (_) {
+							return _.expLevel;
+						}(_p9));
+				},
+				A2(_elm_lang$core$List$map, newMonster, _mordrax$cotwelm$Monster$types)));
+	});
+var _mordrax$cotwelm$Arena_PlayerArena$initHero = F2(
 	function (attrs, equipment) {
 		return function (x) {
-			return A2(_mordrax$cotwelm$Arena$equipHero, x, equipment);
+			return A2(_mordrax$cotwelm$Arena_PlayerArena$equipHero, x, equipment);
 		}(
 			A3(_mordrax$cotwelm$Hero$init, 'Heox', attrs, _mordrax$cotwelm$Types$Male));
 	});
-var _mordrax$cotwelm$Arena$customAttributes = A4(_mordrax$cotwelm$Attributes$initCustom, 70, 70, 70, 50);
-var _mordrax$cotwelm$Arena$ppAttributes = function (_p6) {
-	var _p7 = _p6;
-	return A2(
-		_elm_lang$core$Basics_ops['++'],
-		_elm_lang$core$Basics$toString(_p7.str),
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			'/',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(_p7.dex),
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					'/',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(_p7.con),
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'/',
-							_elm_lang$core$Basics$toString(_p7.$int)))))));
-};
-var _mordrax$cotwelm$Arena$welcomeView = A2(
+var _mordrax$cotwelm$Arena_PlayerArena$customAttributes = A4(_mordrax$cotwelm$Attributes$initCustom, 70, 70, 70, 50);
+var _mordrax$cotwelm$Arena_PlayerArena$welcomeView = A2(
 	_elm_lang$html$Html$h1,
 	{ctor: '[]'},
 	{
@@ -21934,393 +24042,8 @@ var _mordrax$cotwelm$Arena$welcomeView = A2(
 		_0: _elm_lang$html$Html$text('Welcome to the arena!'),
 		_1: {ctor: '[]'}
 	});
-var _mordrax$cotwelm$Arena$ppArmour = function (item) {
-	var _p8 = item;
-	if ((_p8.ctor === 'Just') && (_p8._0.ctor === 'ItemArmour')) {
-		var _p9 = _p8._0._0;
-		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			_p9.base.name,
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				' ( ',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(_p9.ac),
-					' )')));
-	} else {
-		return 'No armour';
-	}
-};
-var _mordrax$cotwelm$Arena$ppWeapon = function (item) {
-	var _p10 = item;
-	if ((_p10.ctor === 'Just') && (_p10._0.ctor === 'ItemWeapon')) {
-		var _p11 = _p10._0._0;
-		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			_p11.base.name,
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				' ( ',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_mordrax$cotwelm$Dice$pp(_p11.damage),
-					' )')));
-	} else {
-		return 'No weapon';
-	}
-};
-var _mordrax$cotwelm$Arena$toPercentage = function (num) {
-	return A3(
-		_elm_lang$core$String$slice,
-		0,
-		4,
-		_elm_lang$core$Basics$toString(
-			A2(
-				F2(
-					function (x, y) {
-						return x * y;
-					}),
-				100,
-				num)));
-};
-var _mordrax$cotwelm$Arena$toNSignificantPlaces = F2(
-	function (num, sig) {
-		var factor = _elm_lang$core$Basics$toFloat(
-			Math.pow(10, sig));
-		return A3(
-			_elm_lang$core$Basics$flip,
-			F2(
-				function (x, y) {
-					return x / y;
-				}),
-			factor,
-			_elm_lang$core$Basics$toFloat(
-				_elm_lang$core$Basics$round(
-					A2(
-						F2(
-							function (x, y) {
-								return x * y;
-							}),
-						factor,
-						num))));
-	});
-var _mordrax$cotwelm$Arena$toOneDecimal = function (num) {
-	return _elm_lang$core$Basics$toString(
-		A2(_mordrax$cotwelm$Arena$toNSignificantPlaces, num, 1));
-};
-var _mordrax$cotwelm$Arena$matchView = function (maybeMatch) {
-	var _p12 = maybeMatch;
-	if (_p12.ctor === 'Nothing') {
-		return A2(
-			_elm_lang$html$Html$tr,
-			{ctor: '[]'},
-			{ctor: '[]'});
-	} else {
-		var _p17 = _p12._0.monsterRounds;
-		var _p16 = _p12._0.monster;
-		var _p15 = _p12._0.heroRounds;
-		var _p14 = _p12._0.hero;
-		var _p13 = _p12._0.battles;
-		var monsterCTHThreshold = _mordrax$cotwelm$Combat$cthThreshold(
-			A2(_mordrax$cotwelm$Combat$chanceToHit, _p16, _p14));
-		var heroCTHThreshold = _mordrax$cotwelm$Combat$cthThreshold(
-			A2(_mordrax$cotwelm$Combat$chanceToHit, _p14, _p16));
-		var avgMonsterHitHero = _elm_lang$core$Basics$toFloat(
-			_elm_lang$core$List$sum(_p12._0.monsterHitHero)) / _elm_lang$core$Basics$toFloat(
-			_elm_lang$core$List$sum(_p17));
-		var avgHeroHitMonster = _elm_lang$core$Basics$toFloat(
-			_elm_lang$core$List$sum(_p12._0.heroHitMonster)) / _elm_lang$core$Basics$toFloat(
-			_elm_lang$core$List$sum(_p15));
-		var monsterCTH = A2(_mordrax$cotwelm$Combat$chanceToHit, _p16, _p14);
-		var monsterCTHText = A2(
-			_elm_lang$core$Basics_ops['++'],
-			_elm_lang$core$Basics$toString(monsterCTH.baseCTH),
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				'/',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(monsterCTH.weaponBulkPenalty),
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						'/',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(monsterCTH.armourPenalty),
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								'/',
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									_elm_lang$core$Basics$toString(monsterCTH.sizeModifier),
-									A2(
-										_elm_lang$core$Basics_ops['++'],
-										' = (',
-										A2(
-											_elm_lang$core$Basics_ops['++'],
-											_elm_lang$core$Basics$toString(monsterCTHThreshold),
-											')')))))))));
-		var cth = A2(_mordrax$cotwelm$Combat$chanceToHit, _p14, _p16);
-		var cthText = A2(
-			_elm_lang$core$Basics_ops['++'],
-			_elm_lang$core$Basics$toString(cth.baseCTH),
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				'/',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(cth.weaponBulkPenalty),
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						'/',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(cth.armourPenalty),
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								'/',
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									_elm_lang$core$Basics$toString(cth.sizeModifier),
-									A2(
-										_elm_lang$core$Basics_ops['++'],
-										' = (',
-										A2(
-											_elm_lang$core$Basics_ops['++'],
-											_elm_lang$core$Basics$toString(heroCTHThreshold),
-											')')))))))));
-		var avgHeroTurnsTaken = _elm_lang$core$Basics$toFloat(
-			_elm_lang$core$List$sum(_p15)) / _elm_lang$core$Basics$toFloat(_p13);
-		var avgTurnsTaken = _elm_lang$core$Basics$toFloat(
-			_elm_lang$core$List$sum(_p15) + _elm_lang$core$List$sum(_p17)) / _elm_lang$core$Basics$toFloat(_p13);
-		var avgHpRemaining = _mordrax$cotwelm$Arena$toOneDecimal(
-			_elm_lang$core$Basics$toFloat(
-				_elm_lang$core$List$sum(_p12._0.hpRemaining)) / _elm_lang$core$Basics$toFloat(_p13));
-		var armour = _mordrax$cotwelm$Arena$ppArmour(
-			A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$ArmourSlot, _p16.equipment));
-		var weapon = _mordrax$cotwelm$Arena$ppWeapon(
-			A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$WeaponSlot, _p16.equipment));
-		var brackets = function (a) {
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				'( ',
-				A2(_elm_lang$core$Basics_ops['++'], a, ' )'));
-		};
-		var totalArmour = brackets(
-			_elm_lang$core$Basics$toString(
-				_mordrax$cotwelm$Equipment$calculateAC(_p16.equipment)));
-		var percent = function (a) {
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(a),
-				'%');
-		};
-		var over = F2(
-			function (a, b) {
-				return A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(a),
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						' / ',
-						_elm_lang$core$Basics$toString(b)));
-			});
-		return A2(
-			_elm_lang$html$Html$tr,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$td,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p16.name),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$td,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(
-								_elm_lang$core$Basics$toString(_p16.expLevel)),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$td,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text(
-									_mordrax$cotwelm$Arena$ppAttributes(_p16.attributes)),
-								_1: {ctor: '[]'}
-							}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$td,
-								{ctor: '[]'},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text(weapon),
-									_1: {ctor: '[]'}
-								}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$td,
-									{ctor: '[]'},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text(
-											A2(
-												_elm_lang$core$Basics_ops['++'],
-												armour,
-												A2(_elm_lang$core$Basics_ops['++'], ' ', totalArmour))),
-										_1: {ctor: '[]'}
-									}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$td,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text(
-												_elm_lang$core$Basics$toString(_p16.bodySize)),
-											_1: {ctor: '[]'}
-										}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$td,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html$text(
-													_elm_lang$core$Basics$toString(_p16.stats.maxHP)),
-												_1: {ctor: '[]'}
-											}),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$td,
-												{ctor: '[]'},
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html$text(
-														percent(
-															(_elm_lang$core$Basics$toFloat(_p12._0.wins) * 100) / _elm_lang$core$Basics$toFloat(_p13))),
-													_1: {ctor: '[]'}
-												}),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$td,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text(
-															A2(
-																_elm_lang$core$Basics_ops['++'],
-																avgHpRemaining,
-																A2(
-																	_elm_lang$core$Basics_ops['++'],
-																	' / ',
-																	_elm_lang$core$Basics$toString(_p14.stats.maxHP)))),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_elm_lang$html$Html$td,
-														{ctor: '[]'},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text(
-																A2(
-																	_elm_lang$core$Basics_ops['++'],
-																	_mordrax$cotwelm$Arena$toOneDecimal(avgTurnsTaken),
-																	A2(
-																		_elm_lang$core$Basics_ops['++'],
-																		' ',
-																		brackets(
-																			_mordrax$cotwelm$Arena$toOneDecimal(avgHeroTurnsTaken))))),
-															_1: {ctor: '[]'}
-														}),
-													_1: {
-														ctor: '::',
-														_0: A2(
-															_elm_lang$html$Html$td,
-															{ctor: '[]'},
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html$text(
-																	A2(
-																		_elm_lang$core$Basics_ops['++'],
-																		_mordrax$cotwelm$Arena$toPercentage(avgHeroHitMonster),
-																		'%')),
-																_1: {ctor: '[]'}
-															}),
-														_1: {
-															ctor: '::',
-															_0: A2(
-																_elm_lang$html$Html$td,
-																{ctor: '[]'},
-																{
-																	ctor: '::',
-																	_0: _elm_lang$html$Html$text(
-																		A2(
-																			_elm_lang$core$Basics_ops['++'],
-																			_mordrax$cotwelm$Arena$toPercentage(avgMonsterHitHero),
-																			'%')),
-																	_1: {ctor: '[]'}
-																}),
-															_1: {
-																ctor: '::',
-																_0: A2(
-																	_elm_lang$html$Html$td,
-																	{ctor: '[]'},
-																	{
-																		ctor: '::',
-																		_0: _elm_lang$html$Html$text(cthText),
-																		_1: {ctor: '[]'}
-																	}),
-																_1: {
-																	ctor: '::',
-																	_0: A2(
-																		_elm_lang$html$Html$td,
-																		{ctor: '[]'},
-																		{
-																			ctor: '::',
-																			_0: _elm_lang$html$Html$text(monsterCTHText),
-																			_1: {ctor: '[]'}
-																		}),
-																	_1: {ctor: '[]'}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			});
-	}
-};
-var _mordrax$cotwelm$Arena$combatView = function (_p18) {
-	var _p19 = _p18;
+var _mordrax$cotwelm$Arena_PlayerArena$combatView = function (_p10) {
+	var _p11 = _p10;
 	return A2(
 		_elm_lang$html$Html$table,
 		{
@@ -22609,18 +24332,26 @@ var _mordrax$cotwelm$Arena$combatView = function (_p18) {
 					{ctor: '[]'},
 					A2(
 						_elm_lang$core$List$map,
-						_mordrax$cotwelm$Arena$matchView,
+						function (_p12) {
+							return A2(
+								_elm_lang$core$Maybe$withDefault,
+								A2(
+									_elm_lang$html$Html$div,
+									{ctor: '[]'},
+									{ctor: '[]'}),
+								A2(_elm_lang$core$Maybe$map, _mordrax$cotwelm$Arena_Match$view, _p12));
+						},
 						A2(
 							_elm_lang$core$List$map,
 							function (monsterType) {
-								return A2(_elm_lang$core$Dict$get, monsterType, _p19.matchResults);
+								return A2(_elm_lang$core$Dict$get, monsterType, _p11.matchResults);
 							},
 							A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, _mordrax$cotwelm$Monster$types)))),
 				_1: {ctor: '[]'}
 			}
 		});
 };
-var _mordrax$cotwelm$Arena$heroStatsView = function (hero) {
+var _mordrax$cotwelm$Arena_PlayerArena$heroStatsView = function (hero) {
 	var ac = _mordrax$cotwelm$Item_Data$acToInt(
 		_mordrax$cotwelm$Equipment$calculateAC(hero.equipment));
 	return A2(
@@ -22662,8 +24393,7 @@ var _mordrax$cotwelm$Arena$heroStatsView = function (hero) {
 						{
 							ctor: '::',
 							_0: _elm_lang$html$Html$text(
-								_mordrax$cotwelm$Arena$ppWeapon(
-									A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$WeaponSlot, hero.equipment))),
+								_mordrax$cotwelm$Arena_View$weaponToString(hero.equipment)),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
@@ -22674,8 +24404,7 @@ var _mordrax$cotwelm$Arena$heroStatsView = function (hero) {
 							{
 								ctor: '::',
 								_0: _elm_lang$html$Html$text(
-									_mordrax$cotwelm$Arena$ppArmour(
-										A2(_mordrax$cotwelm$Equipment$get, _mordrax$cotwelm$Equipment$ArmourSlot, hero.equipment))),
+									_mordrax$cotwelm$Arena_View$armourToString(hero.equipment)),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -22684,230 +24413,10 @@ var _mordrax$cotwelm$Arena$heroStatsView = function (hero) {
 			}
 		});
 };
-var _mordrax$cotwelm$Arena$round = F4(
-	function (hero, monster, heroAttacking, result) {
-		var isDamaged = F2(
-			function (a, a_) {
-				return _elm_lang$core$Native_Utils.cmp(a.stats.currentHP, a_.stats.currentHP) > 0;
-			});
-		var oneIfDamaged = F2(
-			function (a, a_) {
-				return A2(isDamaged, a, a_) ? 1 : 0;
-			});
-		var nextAttacker = !heroAttacking;
-		var updateHitMonster = F3(
-			function (m, m_, roundResult) {
-				return _elm_lang$core$Native_Utils.update(
-					roundResult,
-					{
-						heroHitMonster: roundResult.heroHitMonster + A2(oneIfDamaged, m, m_)
-					});
-			});
-		var updateHitHero = F3(
-			function (h, h_, roundResult) {
-				return _elm_lang$core$Native_Utils.update(
-					roundResult,
-					{
-						monsterHitHero: roundResult.monsterHitHero + A2(oneIfDamaged, h, h_)
-					});
-			});
-		var resultNextRound = function (heroAttacking) {
-			var _p20 = heroAttacking;
-			if (_p20 === true) {
-				return _elm_lang$core$Native_Utils.update(
-					result,
-					{heroRounds: result.heroRounds + 1});
-			} else {
-				return _elm_lang$core$Native_Utils.update(
-					result,
-					{monsterRounds: result.monsterRounds + 1});
-			}
-		};
-		return _mordrax$cotwelm$Stats$isDead(hero.stats) ? _mgold$elm_random_pcg$Random_Pcg$constant(
-			_elm_lang$core$Native_Utils.update(
-				result,
-				{hpRemaining: 0})) : (_mordrax$cotwelm$Stats$isDead(monster.stats) ? _mgold$elm_random_pcg$Random_Pcg$constant(
-			_elm_lang$core$Native_Utils.update(
-				result,
-				{hpRemaining: hero.stats.currentHP})) : (_elm_lang$core$Native_Utils.eq(heroAttacking, true) ? A2(
-			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			function (_p21) {
-				var _p22 = _p21;
-				var _p23 = _p22._1;
-				return A4(
-					_mordrax$cotwelm$Arena$round,
-					hero,
-					_p23,
-					nextAttacker,
-					A3(
-						updateHitMonster,
-						monster,
-						_p23,
-						resultNextRound(heroAttacking)));
-			},
-			A2(_mordrax$cotwelm$Combat$attack, hero, monster)) : A2(
-			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			function (_p24) {
-				var _p25 = _p24;
-				var _p26 = _p25._1;
-				return A4(
-					_mordrax$cotwelm$Arena$round,
-					_p26,
-					monster,
-					nextAttacker,
-					A3(
-						updateHitHero,
-						hero,
-						_p26,
-						resultNextRound(heroAttacking)));
-			},
-			A2(_mordrax$cotwelm$Combat$defend, monster, hero))));
-	});
-var _mordrax$cotwelm$Arena$updateVSFromRoundResult = F2(
-	function (_p27, vs) {
-		var _p28 = _p27;
-		var _p29 = _p28.hpRemaining;
-		var incBattle = function (vs) {
-			return _elm_lang$core$Native_Utils.update(
-				vs,
-				{battles: vs.battles + 1});
-		};
-		var addResult = function (vs) {
-			return _elm_lang$core$Native_Utils.update(
-				vs,
-				{
-					hpRemaining: {ctor: '::', _0: _p29, _1: vs.hpRemaining},
-					heroRounds: {ctor: '::', _0: _p28.heroRounds, _1: vs.heroRounds},
-					monsterRounds: {ctor: '::', _0: _p28.monsterRounds, _1: vs.monsterRounds},
-					heroHitMonster: {ctor: '::', _0: _p28.heroHitMonster, _1: vs.heroHitMonster},
-					monsterHitHero: {ctor: '::', _0: _p28.monsterHitHero, _1: vs.monsterHitHero}
-				});
-		};
-		var addWin = function (vs) {
-			return (_elm_lang$core$Native_Utils.cmp(_p29, 0) > 0) ? _elm_lang$core$Native_Utils.update(
-				vs,
-				{wins: vs.wins + 1}) : vs;
-		};
-		return incBattle(
-			addResult(
-				addWin(vs)));
-	});
-var _mordrax$cotwelm$Arena$maxRounds = 2000;
-var _mordrax$cotwelm$Arena$fights = function (_p30) {
-	var _p31 = _p30;
-	var _p33 = _p31;
-	var _p32 = _p31.hero;
-	var initRound = {heroRounds: 0, monsterRounds: 0, hpRemaining: _p32.stats.maxHP, heroHitMonster: 0, monsterHitHero: 0};
-	return (_elm_lang$core$Native_Utils.cmp(_p33.battles, _mordrax$cotwelm$Arena$maxRounds) > -1) ? _mgold$elm_random_pcg$Random_Pcg$constant(_p33) : A2(
-		_mgold$elm_random_pcg$Random_Pcg$andThen,
-		_mordrax$cotwelm$Arena$fights,
-		A2(
-			_mgold$elm_random_pcg$Random_Pcg$map,
-			function (res) {
-				return A2(_mordrax$cotwelm$Arena$updateVSFromRoundResult, res, _p33);
-			},
-			A4(_mordrax$cotwelm$Arena$round, _p32, _p31.monster, true, initRound)));
-};
-var _mordrax$cotwelm$Arena$Match = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {hero: a, monster: b, battles: c, wins: d, hpRemaining: e, heroRounds: f, monsterRounds: g, heroHitMonster: h, monsterHitHero: i};
-	});
-var _mordrax$cotwelm$Arena$initMatches = F2(
-	function (heroLookup, _p34) {
-		var _p35 = _p34;
-		var newMatch = function (monster) {
-			var addCustomEquipment = function (hero) {
-				return _elm_lang$core$Native_Utils.update(
-					hero,
-					{
-						equipment: A2(
-							_elm_lang$core$Maybe$withDefault,
-							hero.equipment,
-							A2(
-								_elm_lang$core$Maybe$map,
-								function (x) {
-									return A2(
-										_mordrax$cotwelm$Equipment$equipMany,
-										{
-											ctor: '::',
-											_0: {
-												ctor: '_Tuple2',
-												_0: _mordrax$cotwelm$Equipment$WeaponSlot,
-												_1: _mordrax$cotwelm$Arena$makeWeapon(_p35._0)
-											},
-											_1: {
-												ctor: '::',
-												_0: {
-													ctor: '_Tuple2',
-													_0: _mordrax$cotwelm$Equipment$ArmourSlot,
-													_1: _mordrax$cotwelm$Arena$makeArmour(_p35._1)
-												},
-												_1: {ctor: '[]'}
-											}
-										},
-										x);
-								},
-								_elm_lang$core$Result$toMaybe(
-									A2(
-										_elm_lang$core$Result$andThen,
-										_mordrax$cotwelm$Equipment$unequip(_mordrax$cotwelm$Equipment$ArmourSlot),
-										A2(_mordrax$cotwelm$Equipment$unequip, _mordrax$cotwelm$Equipment$WeaponSlot, hero.equipment)))))
-					});
-			};
-			var hero = function () {
-				var _p36 = A2(_elm_lang$core$Dict$get, monster.expLevel, heroLookup);
-				if (_p36.ctor === 'Just') {
-					return addCustomEquipment(_p36._0);
-				} else {
-					return A2(
-						_elm_lang$core$Native_Utils.crash(
-							'Arena',
-							{
-								start: {line: 741, column: 29},
-								end: {line: 741, column: 40}
-							}),
-						'Could not look up a hero with exp level: ',
-						monster.expLevel);
-				}
-			}();
-			return A9(
-				_mordrax$cotwelm$Arena$Match,
-				hero,
-				monster,
-				0,
-				0,
-				{ctor: '[]'},
-				{ctor: '[]'},
-				{ctor: '[]'},
-				{ctor: '[]'},
-				{ctor: '[]'});
-		};
-		var newMonster = function (monsterType) {
-			return _mordrax$cotwelm$Monster$initForArena(monsterType);
-		};
-		return A2(
-			_elm_lang$core$List$map,
-			newMatch,
-			A2(
-				_elm_lang$core$List$filter,
-				function (_p37) {
-					return A3(
-						_elm_lang$core$Basics$flip,
-						F2(
-							function (x, y) {
-								return _elm_lang$core$Native_Utils.cmp(x, y) > -1;
-							}),
-						5,
-						function (_) {
-							return _.expLevel;
-						}(_p37));
-				},
-				A2(_elm_lang$core$List$map, newMonster, _mordrax$cotwelm$Monster$types)));
-	});
-var _mordrax$cotwelm$Arena$init = function () {
+var _mordrax$cotwelm$Arena_PlayerArena$init = function () {
 	var customEquipment = {ctor: '_Tuple2', _0: _mordrax$cotwelm$Item_Data$ShortSword, _1: _mordrax$cotwelm$Item_Data$LeatherArmour};
-	var heroLookup = _mordrax$cotwelm$Arena$initHeroLookup(
-		A2(_mordrax$cotwelm$Arena$initHero, _mordrax$cotwelm$Arena$customAttributes, customEquipment));
+	var heroLookup = _mordrax$cotwelm$Arena_PlayerArena$initHeroLookup(
+		A2(_mordrax$cotwelm$Arena_PlayerArena$initHero, _mordrax$cotwelm$Arena_PlayerArena$customAttributes, customEquipment));
 	var attributesAtLevelOne = A2(
 		_elm_lang$core$Maybe$withDefault,
 		A4(_mordrax$cotwelm$Attributes$initCustom, 0, 0, 0, 0),
@@ -22918,7 +24427,7 @@ var _mordrax$cotwelm$Arena$init = function () {
 			},
 			A2(_elm_lang$core$Dict$get, 1, heroLookup)));
 	return {
-		matches: A2(_mordrax$cotwelm$Arena$initMatches, heroLookup, customEquipment),
+		matches: A2(_mordrax$cotwelm$Arena_PlayerArena$initMatches, heroLookup, customEquipment),
 		heroAttributes: attributesAtLevelOne,
 		heroLookup: heroLookup,
 		matchResults: _elm_lang$core$Dict$fromList(
@@ -22927,21 +24436,17 @@ var _mordrax$cotwelm$Arena$init = function () {
 		customEquipment: customEquipment
 	};
 }();
-var _mordrax$cotwelm$Arena$RoundResult = F5(
-	function (a, b, c, d, e) {
-		return {heroRounds: a, monsterRounds: b, hpRemaining: c, heroHitMonster: d, monsterHitHero: e};
-	});
-var _mordrax$cotwelm$Arena$Model = F6(
+var _mordrax$cotwelm$Arena_PlayerArena$Model = F6(
 	function (a, b, c, d, e, f) {
 		return {matches: a, matchResults: b, heroAttributes: c, heroLookup: d, customEquipment: e, resetCounter: f};
 	});
-var _mordrax$cotwelm$Arena$ChangeHeroArmour = function (a) {
+var _mordrax$cotwelm$Arena_PlayerArena$ChangeHeroArmour = function (a) {
 	return {ctor: 'ChangeHeroArmour', _0: a};
 };
-var _mordrax$cotwelm$Arena$ChangeHeroWeapon = function (a) {
+var _mordrax$cotwelm$Arena_PlayerArena$ChangeHeroWeapon = function (a) {
 	return {ctor: 'ChangeHeroWeapon', _0: a};
 };
-var _mordrax$cotwelm$Arena$heroEquipmentView = function (hero) {
+var _mordrax$cotwelm$Arena_PlayerArena$heroEquipmentView = function (hero) {
 	var armourTypeMatches = function (armourType) {
 		return A2(
 			_elm_lang$core$Maybe$withDefault,
@@ -23003,35 +24508,35 @@ var _mordrax$cotwelm$Arena$heroEquipmentView = function (hero) {
 			ctor: '::',
 			_0: A4(
 				_mordrax$cotwelm$UI$list,
-				function (_p38) {
+				function (_p13) {
 					return _elm_lang$html$Html$text(
-						_elm_lang$core$Basics$toString(_p38));
+						_elm_lang$core$Basics$toString(_p13));
 				},
-				_mordrax$cotwelm$Arena$ChangeHeroWeapon,
+				_mordrax$cotwelm$Arena_PlayerArena$ChangeHeroWeapon,
 				{ctor: '_Tuple2', _0: _mordrax$cotwelm$Item_Weapon$encode, _1: _mordrax$cotwelm$Item_Weapon$decoder},
 				weapons),
 			_1: {
 				ctor: '::',
 				_0: A4(
 					_mordrax$cotwelm$UI$list,
-					function (_p39) {
+					function (_p14) {
 						return _elm_lang$html$Html$text(
-							_elm_lang$core$Basics$toString(_p39));
+							_elm_lang$core$Basics$toString(_p14));
 					},
-					_mordrax$cotwelm$Arena$ChangeHeroArmour,
+					_mordrax$cotwelm$Arena_PlayerArena$ChangeHeroArmour,
 					{ctor: '_Tuple2', _0: _mordrax$cotwelm$Item_Armour$encode, _1: _mordrax$cotwelm$Item_Armour$decoder},
 					armour),
 				_1: {ctor: '[]'}
 			}
 		});
 };
-var _mordrax$cotwelm$Arena$SetAttribute = F2(
+var _mordrax$cotwelm$Arena_PlayerArena$SetAttribute = F2(
 	function (a, b) {
 		return {ctor: 'SetAttribute', _0: a, _1: b};
 	});
-var _mordrax$cotwelm$Arena$heroAttributesView = function (_p40) {
-	var _p41 = _p40;
-	var _p42 = _p41.attributes;
+var _mordrax$cotwelm$Arena_PlayerArena$heroAttributesView = function (_p15) {
+	var _p16 = _p15;
+	var _p17 = _p16.attributes;
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -23040,36 +24545,36 @@ var _mordrax$cotwelm$Arena$heroAttributesView = function (_p40) {
 			_0: A3(
 				_mordrax$cotwelm$UI$labeledNumber,
 				'Str: ',
-				_p42.str,
-				_mordrax$cotwelm$Arena$SetAttribute(_mordrax$cotwelm$Attributes$Strength)),
+				_p17.str,
+				_mordrax$cotwelm$Arena_PlayerArena$SetAttribute(_mordrax$cotwelm$Attributes$Strength)),
 			_1: {
 				ctor: '::',
 				_0: A3(
 					_mordrax$cotwelm$UI$labeledNumber,
 					'Dex: ',
-					_p42.dex,
-					_mordrax$cotwelm$Arena$SetAttribute(_mordrax$cotwelm$Attributes$Dexterity)),
+					_p17.dex,
+					_mordrax$cotwelm$Arena_PlayerArena$SetAttribute(_mordrax$cotwelm$Attributes$Dexterity)),
 				_1: {
 					ctor: '::',
 					_0: A3(
 						_mordrax$cotwelm$UI$labeledNumber,
 						'Con: ',
-						_p42.con,
-						_mordrax$cotwelm$Arena$SetAttribute(_mordrax$cotwelm$Attributes$Constitution)),
+						_p17.con,
+						_mordrax$cotwelm$Arena_PlayerArena$SetAttribute(_mordrax$cotwelm$Attributes$Constitution)),
 					_1: {
 						ctor: '::',
 						_0: A3(
 							_mordrax$cotwelm$UI$labeledNumber,
 							'Int: ',
-							_p42.$int,
-							_mordrax$cotwelm$Arena$SetAttribute(_mordrax$cotwelm$Attributes$Intelligence)),
+							_p17.$int,
+							_mordrax$cotwelm$Arena_PlayerArena$SetAttribute(_mordrax$cotwelm$Attributes$Intelligence)),
 						_1: {ctor: '[]'}
 					}
 				}
 			}
 		});
 };
-var _mordrax$cotwelm$Arena$heroView = function (hero) {
+var _mordrax$cotwelm$Arena_PlayerArena$heroView = function (hero) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -23085,10 +24590,10 @@ var _mordrax$cotwelm$Arena$heroView = function (hero) {
 				}),
 			_1: {
 				ctor: '::',
-				_0: _mordrax$cotwelm$Arena$heroStatsView(hero),
+				_0: _mordrax$cotwelm$Arena_PlayerArena$heroStatsView(hero),
 				_1: {
 					ctor: '::',
-					_0: _mordrax$cotwelm$Arena$heroAttributesView(hero),
+					_0: _mordrax$cotwelm$Arena_PlayerArena$heroAttributesView(hero),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -23101,7 +24606,7 @@ var _mordrax$cotwelm$Arena$heroView = function (hero) {
 							}),
 						_1: {
 							ctor: '::',
-							_0: _mordrax$cotwelm$Arena$heroEquipmentView(hero),
+							_0: _mordrax$cotwelm$Arena_PlayerArena$heroEquipmentView(hero),
 							_1: {ctor: '[]'}
 						}
 					}
@@ -23109,26 +24614,26 @@ var _mordrax$cotwelm$Arena$heroView = function (hero) {
 			}
 		});
 };
-var _mordrax$cotwelm$Arena$Stop = {ctor: 'Stop'};
-var _mordrax$cotwelm$Arena$Sleep = F2(
+var _mordrax$cotwelm$Arena_PlayerArena$Stop = {ctor: 'Stop'};
+var _mordrax$cotwelm$Arena_PlayerArena$Sleep = F2(
 	function (a, b) {
 		return {ctor: 'Sleep', _0: a, _1: b};
 	});
-var _mordrax$cotwelm$Arena$Fight = F3(
+var _mordrax$cotwelm$Arena_PlayerArena$Fight = F3(
 	function (a, b, c) {
 		return {ctor: 'Fight', _0: a, _1: b, _2: c};
 	});
-var _mordrax$cotwelm$Arena$StartFight = F2(
+var _mordrax$cotwelm$Arena_PlayerArena$StartFight = F2(
 	function (a, b) {
 		return {ctor: 'StartFight', _0: a, _1: b};
 	});
-var _mordrax$cotwelm$Arena$startNewFight = function (model) {
+var _mordrax$cotwelm$Arena_PlayerArena$startNewFight = function (model) {
 	return A2(
-		_mordrax$cotwelm$Arena$StartFight,
-		A2(_mordrax$cotwelm$Arena$initMatches, model.heroLookup, model.customEquipment),
+		_mordrax$cotwelm$Arena_PlayerArena$StartFight,
+		A2(_mordrax$cotwelm$Arena_PlayerArena$initMatches, model.heroLookup, model.customEquipment),
 		model.resetCounter + 1);
 };
-var _mordrax$cotwelm$Arena$update = F2(
+var _mordrax$cotwelm$Arena_PlayerArena$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
@@ -23136,14 +24641,14 @@ var _mordrax$cotwelm$Arena$update = F2(
 			var removeSpace = function (str) {
 				return A2(
 					_elm_lang$core$String$filter,
-					function (_p43) {
+					function (_p18) {
 						return !A2(
 							F2(
 								function (x, y) {
 									return _elm_lang$core$Native_Utils.eq(x, y);
 								}),
 							spaceChar,
-							_p43);
+							_p18);
 					},
 					str);
 			};
@@ -23152,24 +24657,24 @@ var _mordrax$cotwelm$Arena$update = F2(
 					return A2(
 						_mgold$elm_random_pcg$Random_Pcg$generate,
 						function (matchResult) {
-							return A3(_mordrax$cotwelm$Arena$Fight, matchResult, matches, resetCounter);
+							return A3(_mordrax$cotwelm$Arena_PlayerArena$Fight, matchResult, matches, resetCounter);
 						},
-						_mordrax$cotwelm$Arena$fights(match));
+						_mordrax$cotwelm$Arena_Match$fight(match));
 				});
 			var fightResult = F3(
 				function (match, matches, resetCounter) {
 					return A2(
 						_elm_lang$core$Task$perform,
-						function (_p44) {
+						function (_p19) {
 							return A2(
-								_mordrax$cotwelm$Arena$Sleep,
+								_mordrax$cotwelm$Arena_PlayerArena$Sleep,
 								A3(asyncCmd, match, matches, resetCounter),
 								resetCounter);
 						},
 						_elm_lang$core$Process$sleep(150));
 				});
-			var _p45 = msg;
-			switch (_p45.ctor) {
+			var _p20 = msg;
+			switch (_p20.ctor) {
 				case 'Stop':
 					return {
 						ctor: '_Tuple2',
@@ -23179,12 +24684,12 @@ var _mordrax$cotwelm$Arena$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'Sleep':
-					return _elm_lang$core$Native_Utils.eq(_p45._1, model.resetCounter) ? {ctor: '_Tuple2', _0: model, _1: _p45._0} : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+					return _elm_lang$core$Native_Utils.eq(_p20._1, model.resetCounter) ? {ctor: '_Tuple2', _0: model, _1: _p20._0} : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				case 'StartFight':
-					if (_p45._0.ctor === '[]') {
+					if (_p20._0.ctor === '[]') {
 						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					} else {
-						var _p46 = _p45._1;
+						var _p21 = _p20._1;
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -23192,94 +24697,91 @@ var _mordrax$cotwelm$Arena$update = F2(
 								{
 									matchResults: _elm_lang$core$Dict$fromList(
 										{ctor: '[]'}),
-									resetCounter: _p46
+									resetCounter: _p21
 								}),
-							_1: A3(fightResult, _p45._0._0, _p45._0._1, _p46)
+							_1: A3(fightResult, _p20._0._0, _p20._0._1, _p21)
 						};
 					}
 				case 'Fight':
-					if (_p45._1.ctor === '[]') {
-						var _p47 = _p45._0;
-						return (!_elm_lang$core$Native_Utils.eq(model.resetCounter, _p45._2)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
+					if (_p20._1.ctor === '[]') {
+						var _p22 = _p20._0;
+						return (!_elm_lang$core$Native_Utils.eq(model.resetCounter, _p20._2)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
 								{
 									matchResults: A3(
 										_elm_lang$core$Dict$insert,
-										removeSpace(_p47.monster.name),
-										_p47,
+										removeSpace(_p22.red.name),
+										_p22,
 										model.matchResults)
 								}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					} else {
-						var _p49 = _p45._2;
-						var _p48 = _p45._0;
-						return (!_elm_lang$core$Native_Utils.eq(model.resetCounter, _p49)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
+						var _p24 = _p20._2;
+						var _p23 = _p20._0;
+						return (!_elm_lang$core$Native_Utils.eq(model.resetCounter, _p24)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
 								{
 									matchResults: A3(
 										_elm_lang$core$Dict$insert,
-										A2(
-											_elm_lang$core$Debug$log,
-											'monstername: ',
-											removeSpace(_p48.monster.name)),
-										_p48,
+										removeSpace(_p23.red.name),
+										_p23,
 										model.matchResults)
 								}),
-							_1: A3(fightResult, _p45._1._0, _p45._1._1, _p49)
+							_1: A3(fightResult, _p20._1._0, _p20._1._1, _p24)
 						};
 					}
 				case 'SetAttribute':
 					var attributes_ = A2(
 						_mordrax$cotwelm$Attributes$set,
-						{ctor: '_Tuple2', _0: _p45._0, _1: _p45._1},
+						{ctor: '_Tuple2', _0: _p20._0, _1: _p20._1},
 						model.heroAttributes);
-					var heroLookup_ = _mordrax$cotwelm$Arena$initHeroLookup(
-						A2(_mordrax$cotwelm$Arena$initHero, attributes_, model.customEquipment));
+					var heroLookup_ = _mordrax$cotwelm$Arena_PlayerArena$initHeroLookup(
+						A2(_mordrax$cotwelm$Arena_PlayerArena$initHero, attributes_, model.customEquipment));
 					var model_ = _elm_lang$core$Native_Utils.update(
 						model,
 						{
 							heroLookup: heroLookup_,
-							matches: A2(_mordrax$cotwelm$Arena$initMatches, heroLookup_, model.customEquipment),
+							matches: A2(_mordrax$cotwelm$Arena_PlayerArena$initMatches, heroLookup_, model.customEquipment),
 							heroAttributes: attributes_
 						});
 					return {ctor: '_Tuple2', _0: model_, _1: _elm_lang$core$Platform_Cmd$none};
 				case 'ChangeHeroWeapon':
 					var customEquipment_ = {
 						ctor: '_Tuple2',
-						_0: _p45._0,
+						_0: _p20._0,
 						_1: _elm_lang$core$Tuple$second(model.customEquipment)
 					};
 					var model_ = _elm_lang$core$Native_Utils.update(
 						model,
 						{customEquipment: customEquipment_});
-					var _v19 = _mordrax$cotwelm$Arena$startNewFight(model_),
-						_v20 = model_;
-					msg = _v19;
-					model = _v20;
+					var _v10 = _mordrax$cotwelm$Arena_PlayerArena$startNewFight(model_),
+						_v11 = model_;
+					msg = _v10;
+					model = _v11;
 					continue update;
 				default:
 					var customEquipment_ = {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Tuple$first(model.customEquipment),
-						_1: _p45._0
+						_1: _p20._0
 					};
 					var model_ = _elm_lang$core$Native_Utils.update(
 						model,
 						{customEquipment: customEquipment_});
-					var _v21 = _mordrax$cotwelm$Arena$startNewFight(model_),
-						_v22 = model_;
-					msg = _v21;
-					model = _v22;
+					var _v12 = _mordrax$cotwelm$Arena_PlayerArena$startNewFight(model_),
+						_v13 = model_;
+					msg = _v12;
+					model = _v13;
 					continue update;
 			}
 		}
 	});
-var _mordrax$cotwelm$Arena$menuView = function (model) {
+var _mordrax$cotwelm$Arena_PlayerArena$menuView = function (model) {
 	var btn = F2(
 		function (txt, msg) {
 			return A2(
@@ -23307,77 +24809,40 @@ var _mordrax$cotwelm$Arena$menuView = function (model) {
 			_0: A2(
 				btn,
 				'Fight!',
-				_mordrax$cotwelm$Arena$startNewFight(model)),
+				_mordrax$cotwelm$Arena_PlayerArena$startNewFight(model)),
 			_1: {
 				ctor: '::',
-				_0: A2(btn, 'Stop', _mordrax$cotwelm$Arena$Stop),
+				_0: A2(btn, 'Stop', _mordrax$cotwelm$Arena_PlayerArena$Stop),
 				_1: {ctor: '[]'}
 			}
 		});
 };
-var _mordrax$cotwelm$Arena$view = function (model) {
+var _mordrax$cotwelm$Arena_PlayerArena$view = function (model) {
 	var hero = A2(
 		_elm_lang$core$Maybe$withDefault,
-		A2(_mordrax$cotwelm$Arena$initHero, _mordrax$cotwelm$Arena$customAttributes, model.customEquipment),
+		A2(_mordrax$cotwelm$Arena_PlayerArena$initHero, _mordrax$cotwelm$Arena_PlayerArena$customAttributes, model.customEquipment),
 		A2(_elm_lang$core$Dict$get, 1, model.heroLookup));
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _mordrax$cotwelm$Arena$welcomeView,
+			_0: _mordrax$cotwelm$Arena_PlayerArena$welcomeView,
 			_1: {
 				ctor: '::',
-				_0: _mordrax$cotwelm$Arena$menuView(model),
+				_0: _mordrax$cotwelm$Arena_PlayerArena$menuView(model),
 				_1: {
 					ctor: '::',
-					_0: _mordrax$cotwelm$Arena$heroView(hero),
+					_0: _mordrax$cotwelm$Arena_PlayerArena$heroView(hero),
 					_1: {
 						ctor: '::',
-						_0: _mordrax$cotwelm$Arena$combatView(model),
+						_0: _mordrax$cotwelm$Arena_PlayerArena$combatView(model),
 						_1: {ctor: '[]'}
 					}
 				}
 			}
 		});
 };
-
-var _mordrax$cotwelm$Item_Factory$Model = function (a) {
-	return {idGenerator: a};
-};
-var _mordrax$cotwelm$Item_Factory$A = function (a) {
-	return {ctor: 'A', _0: a};
-};
-var _mordrax$cotwelm$Item_Factory$init = _mordrax$cotwelm$Item_Factory$A(
-	_mordrax$cotwelm$Item_Factory$Model(_mordrax$cotwelm$Utils_IdGenerator$init));
-var _mordrax$cotwelm$Item_Factory$make = F2(
-	function (itemType, _p0) {
-		var _p1 = _p0;
-		var _p3 = _p1._0;
-		var _p2 = _mordrax$cotwelm$Utils_IdGenerator$getUniqueId(_p3.idGenerator);
-		var id = _p2._0;
-		var idGenerator_ = _p2._1;
-		return {
-			ctor: '_Tuple2',
-			_0: A2(_mordrax$cotwelm$Item_Item$new, itemType, id),
-			_1: _mordrax$cotwelm$Item_Factory$A(
-				_elm_lang$core$Native_Utils.update(
-					_p3,
-					{idGenerator: idGenerator_}))
-		};
-	});
-var _mordrax$cotwelm$Item_Factory$makeReducer = F2(
-	function (itemType, _p4) {
-		var _p5 = _p4;
-		var _p6 = A2(_mordrax$cotwelm$Item_Factory$make, itemType, _p5._1);
-		var newItem = _p6._0;
-		var newItemFactory = _p6._1;
-		return {
-			ctor: '_Tuple2',
-			_0: {ctor: '::', _0: newItem, _1: _p5._0},
-			_1: newItemFactory
-		};
-	});
 
 var _mordrax$cotwelm$Shops$shield = {
 	ctor: '::',
@@ -23707,8 +25172,8 @@ var _mordrax$cotwelm$Shops$wares = function (_p1) {
 	var _p2 = _p1;
 	return _p2._0;
 };
-var _mordrax$cotwelm$Shops$replenish = F3(
-	function (itemTypes, itemFactory, seed) {
+var _mordrax$cotwelm$Shops$replenish = F2(
+	function (itemTypes, seed) {
 		var defaultProduct = _elm_lang$core$Maybe$withDefault(
 			_mordrax$cotwelm$Item_Data$ItemTypeWeapon(_mordrax$cotwelm$Item_Data$BroadSword));
 		var _p3 = function (x) {
@@ -23723,36 +25188,24 @@ var _mordrax$cotwelm$Shops$replenish = F3(
 					_mgold$elm_random_pcg$Random_Pcg$sample(itemTypes))));
 		var generatedItemTypes = _p3._0;
 		var seed_ = _p3._1;
-		var _p4 = A3(
-			_elm_lang$core$List$foldl,
-			_mordrax$cotwelm$Item_Factory$makeReducer,
-			{
-				ctor: '_Tuple2',
-				_0: {ctor: '[]'},
-				_1: itemFactory
-			},
-			generatedItemTypes);
-		var products = _p4._0;
-		var newItemFactory = _p4._1;
-		return {ctor: '_Tuple3', _0: products, _1: newItemFactory, _2: seed_};
+		var products = A2(_elm_lang$core$List$map, _mordrax$cotwelm$Item_Item$new, generatedItemTypes);
+		return {ctor: '_Tuple2', _0: products, _1: seed_};
 	});
 var _mordrax$cotwelm$Shops$replenishReducer = F2(
-	function (shopType, _p5) {
-		var _p6 = _p5;
-		var _p7 = A3(
+	function (shopType, _p4) {
+		var _p5 = _p4;
+		var _p6 = A2(
 			_mordrax$cotwelm$Shops$replenish,
 			_mordrax$cotwelm$Shops$inventoryStock(shopType),
-			_p6._1,
-			_p6._2);
-		var newItems = _p7._0;
-		var itemFactory_ = _p7._1;
-		var seed_ = _p7._2;
+			_p5._1);
+		var newItems = _p6._0;
+		var seed_ = _p6._1;
 		var newStores = A3(
 			_elm_lang$core$Dict$insert,
 			_elm_lang$core$Basics$toString(shopType),
 			newItems,
-			_p6._0);
-		return {ctor: '_Tuple3', _0: newStores, _1: itemFactory_, _2: seed_};
+			_p5._0);
+		return {ctor: '_Tuple2', _0: newStores, _1: seed_};
 	});
 var _mordrax$cotwelm$Shops$Model = function (a) {
 	return {stores: a};
@@ -23774,106 +25227,98 @@ var _mordrax$cotwelm$Shops$A = function (a) {
 	return {ctor: 'A', _0: a};
 };
 var _mordrax$cotwelm$Shops$updateShop = F2(
-	function (_p9, _p8) {
-		var _p10 = _p9;
-		var _p11 = _p8;
-		var _p12 = _p11._0;
+	function (_p8, _p7) {
+		var _p9 = _p8;
+		var _p10 = _p7;
+		var _p11 = _p10._0;
 		return _mordrax$cotwelm$Shops$A(
 			_elm_lang$core$Native_Utils.update(
-				_p12,
+				_p11,
 				{
 					stores: A3(
 						_elm_lang$core$Dict$insert,
-						_elm_lang$core$Basics$toString(_p10._1),
-						_p10._0,
-						_p12.stores)
+						_elm_lang$core$Basics$toString(_p9._1),
+						_p9._0,
+						_p11.stores)
 				}));
 	});
 var _mordrax$cotwelm$Shops$JunkShop = {ctor: 'JunkShop'};
 var _mordrax$cotwelm$Shops$PotionStore = {ctor: 'PotionStore'};
 var _mordrax$cotwelm$Shops$GeneralStore = {ctor: 'GeneralStore'};
 var _mordrax$cotwelm$Shops$WeaponSmith = {ctor: 'WeaponSmith'};
-var _mordrax$cotwelm$Shops$init = F2(
-	function (seed, itemFactory) {
-		var emptyStores = _elm_lang$core$Dict$fromList(
-			{ctor: '[]'});
-		var _p13 = A3(
-			_elm_lang$core$List$foldl,
-			_mordrax$cotwelm$Shops$replenishReducer,
-			{ctor: '_Tuple3', _0: emptyStores, _1: itemFactory, _2: seed},
-			{
+var _mordrax$cotwelm$Shops$init = function (seed) {
+	var emptyStores = _elm_lang$core$Dict$fromList(
+		{ctor: '[]'});
+	var _p12 = A3(
+		_elm_lang$core$List$foldl,
+		_mordrax$cotwelm$Shops$replenishReducer,
+		{ctor: '_Tuple2', _0: emptyStores, _1: seed},
+		{
+			ctor: '::',
+			_0: _mordrax$cotwelm$Shops$WeaponSmith,
+			_1: {
 				ctor: '::',
-				_0: _mordrax$cotwelm$Shops$WeaponSmith,
+				_0: _mordrax$cotwelm$Shops$GeneralStore,
 				_1: {
 					ctor: '::',
-					_0: _mordrax$cotwelm$Shops$GeneralStore,
+					_0: _mordrax$cotwelm$Shops$PotionStore,
 					_1: {
 						ctor: '::',
-						_0: _mordrax$cotwelm$Shops$PotionStore,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Shops$JunkShop,
-							_1: {ctor: '[]'}
-						}
+						_0: _mordrax$cotwelm$Shops$JunkShop,
+						_1: {ctor: '[]'}
 					}
 				}
-			});
-		var stores = _p13._0;
-		var itemFactory_ = _p13._1;
-		var seed_ = _p13._2;
-		return {
-			ctor: '_Tuple3',
-			_0: _mordrax$cotwelm$Shops$A(
-				{stores: stores}),
-			_1: itemFactory_,
-			_2: seed_
-		};
-	});
+			}
+		});
+	var stores = _p12._0;
+	var seed_ = _p12._1;
+	return {
+		ctor: '_Tuple2',
+		_0: _mordrax$cotwelm$Shops$A(
+			{stores: stores}),
+		_1: seed_
+	};
+};
 var _mordrax$cotwelm$Shops$B = F2(
 	function (a, b) {
 		return {ctor: 'B', _0: a, _1: b};
 	});
 var _mordrax$cotwelm$Shops$shop = F2(
-	function (shopType, _p14) {
-		var _p15 = _p14;
+	function (shopType, _p13) {
+		var _p14 = _p13;
 		return A2(
 			_mordrax$cotwelm$Shops$B,
-			A2(_mordrax$cotwelm$Shops$list, shopType, _p15._0.stores),
+			A2(_mordrax$cotwelm$Shops$list, shopType, _p14._0.stores),
 			shopType);
 	});
 var _mordrax$cotwelm$Shops$sell = F3(
-	function (item, purse, _p16) {
-		var _p17 = _p16;
+	function (item, purse, _p15) {
+		var _p16 = _p15;
 		var itemsWithout = function (item) {
-			return A2(
-				_elm_lang$core$List$filter,
-				function (x) {
-					return !A2(_mordrax$cotwelm$Item_Item$equals, item, x);
-				},
-				_p17._0);
+			return A3(_mordrax$cotwelm$Utils_Misc$removeFirst, item, _mordrax$cotwelm$Item_Item$equals, _p16._0);
 		};
 		var price = A2(
 			_elm_lang$core$Debug$log,
 			'Item purchase price:',
 			_mordrax$cotwelm$Item_Item$priceOf(item));
-		var _p18 = A2(_mordrax$cotwelm$Item_Purse$remove, price, purse);
-		if (_p18.ctor === 'Ok') {
+		var _p17 = A2(_mordrax$cotwelm$Item_Purse$remove, price, purse);
+		if (_p17.ctor === 'Ok') {
 			return _elm_lang$core$Result$Ok(
 				{
 					ctor: '_Tuple2',
 					_0: A2(
 						_mordrax$cotwelm$Shops$B,
 						itemsWithout(item),
-						_p17._1),
-					_1: _p18._0
+						_p16._1),
+					_1: _p17._0
 				});
 		} else {
 			return _elm_lang$core$Result$Err('Cannot afford item!');
 		}
 	});
 var _mordrax$cotwelm$Shops$buy = F3(
-	function (item, purse, _p19) {
-		var _p20 = _p19;
+	function (item, purse, _p18) {
+		var _p19 = _p18;
 		var cost = A2(
 			_elm_lang$core$Debug$log,
 			'Item sell price:',
@@ -23882,8 +25327,8 @@ var _mordrax$cotwelm$Shops$buy = F3(
 			ctor: '_Tuple2',
 			_0: A2(
 				_mordrax$cotwelm$Shops$B,
-				{ctor: '::', _0: item, _1: _p20._0},
-				_p20._1),
+				{ctor: '::', _0: item, _1: _p19._0},
+				_p19._1),
 			_1: A2(_mordrax$cotwelm$Item_Purse$add, cost, purse)
 		};
 	});
@@ -24643,7 +26088,5017 @@ var _mordrax$cotwelm$CharCreation$view = function (_p7) {
 		});
 };
 
-var _mordrax$cotwelm$Tile$rotateHalfTiles = F3(
+var _mordrax$cotwelm$Tile_Types$TreasurePile = {ctor: 'TreasurePile'};
+var _mordrax$cotwelm$Tile_Types$White90Cave10 = {ctor: 'White90Cave10'};
+var _mordrax$cotwelm$Tile_Types$White50Cave50 = {ctor: 'White50Cave50'};
+var _mordrax$cotwelm$Tile_Types$Grass10Cave90 = {ctor: 'Grass10Cave90'};
+var _mordrax$cotwelm$Tile_Types$Grass50Cave50 = {ctor: 'Grass50Cave50'};
+var _mordrax$cotwelm$Tile_Types$Pillar = {ctor: 'Pillar'};
+var _mordrax$cotwelm$Tile_Types$Cobweb = {ctor: 'Cobweb'};
+var _mordrax$cotwelm$Tile_Types$DoorBroken = {ctor: 'DoorBroken'};
+var _mordrax$cotwelm$Tile_Types$DoorOpen = {ctor: 'DoorOpen'};
+var _mordrax$cotwelm$Tile_Types$DoorClosed = {ctor: 'DoorClosed'};
+var _mordrax$cotwelm$Tile_Types$WallLitDgn = {ctor: 'WallLitDgn'};
+var _mordrax$cotwelm$Tile_Types$LitDgn = {ctor: 'LitDgn'};
+var _mordrax$cotwelm$Tile_Types$TownWall = {ctor: 'TownWall'};
+var _mordrax$cotwelm$Tile_Types$TownWallStop = {ctor: 'TownWallStop'};
+var _mordrax$cotwelm$Tile_Types$TownWallCorner = {ctor: 'TownWallCorner'};
+var _mordrax$cotwelm$Tile_Types$StairsDown = {ctor: 'StairsDown'};
+var _mordrax$cotwelm$Tile_Types$StairsUp = {ctor: 'StairsUp'};
+var _mordrax$cotwelm$Tile_Types$WaterPath = {ctor: 'WaterPath'};
+var _mordrax$cotwelm$Tile_Types$Path = {ctor: 'Path'};
+var _mordrax$cotwelm$Tile_Types$Throne = {ctor: 'Throne'};
+var _mordrax$cotwelm$Tile_Types$Status = {ctor: 'Status'};
+var _mordrax$cotwelm$Tile_Types$Altar = {ctor: 'Altar'};
+var _mordrax$cotwelm$Tile_Types$Fountain = {ctor: 'Fountain'};
+var _mordrax$cotwelm$Tile_Types$BlueSquare = {ctor: 'BlueSquare'};
+var _mordrax$cotwelm$Tile_Types$WaterGrass = {ctor: 'WaterGrass'};
+var _mordrax$cotwelm$Tile_Types$Water = {ctor: 'Water'};
+var _mordrax$cotwelm$Tile_Types$Ashes = {ctor: 'Ashes'};
+var _mordrax$cotwelm$Tile_Types$GreenWell = {ctor: 'GreenWell'};
+var _mordrax$cotwelm$Tile_Types$CastleParapet = {ctor: 'CastleParapet'};
+var _mordrax$cotwelm$Tile_Types$CastleWall = {ctor: 'CastleWall'};
+var _mordrax$cotwelm$Tile_Types$CastleCornerParapet = {ctor: 'CastleCornerParapet'};
+var _mordrax$cotwelm$Tile_Types$WallDarkDgn = {ctor: 'WallDarkDgn'};
+var _mordrax$cotwelm$Tile_Types$DarkDgn = {ctor: 'DarkDgn'};
+var _mordrax$cotwelm$Tile_Types$Wagon = {ctor: 'Wagon'};
+var _mordrax$cotwelm$Tile_Types$Well = {ctor: 'Well'};
+var _mordrax$cotwelm$Tile_Types$VegePatch = {ctor: 'VegePatch'};
+var _mordrax$cotwelm$Tile_Types$DestoyedVegePatch = {ctor: 'DestoyedVegePatch'};
+var _mordrax$cotwelm$Tile_Types$Crop = {ctor: 'Crop'};
+var _mordrax$cotwelm$Tile_Types$PathGrass = {ctor: 'PathGrass'};
+var _mordrax$cotwelm$Tile_Types$Grass = {ctor: 'Grass'};
+var _mordrax$cotwelm$Tile_Types$Favicon = {ctor: 'Favicon'};
+var _mordrax$cotwelm$Tile_Types$Sign = {ctor: 'Sign'};
+var _mordrax$cotwelm$Tile_Types$PortcullisOpen = {ctor: 'PortcullisOpen'};
+var _mordrax$cotwelm$Tile_Types$PortcullisClosed = {ctor: 'PortcullisClosed'};
+var _mordrax$cotwelm$Tile_Types$MineEntrance = {ctor: 'MineEntrance'};
+var _mordrax$cotwelm$Tile_Types$PathRock = {ctor: 'PathRock'};
+var _mordrax$cotwelm$Tile_Types$Rock = {ctor: 'Rock'};
+
+var _mordrax$cotwelm$Tile_Model$solidTiles = {
+	ctor: '::',
+	_0: _mordrax$cotwelm$Tile_Types$Rock,
+	_1: {
+		ctor: '::',
+		_0: _mordrax$cotwelm$Tile_Types$Grass10Cave90,
+		_1: {
+			ctor: '::',
+			_0: _mordrax$cotwelm$Tile_Types$White50Cave50,
+			_1: {
+				ctor: '::',
+				_0: _mordrax$cotwelm$Tile_Types$Crop,
+				_1: {
+					ctor: '::',
+					_0: _mordrax$cotwelm$Tile_Types$Well,
+					_1: {
+						ctor: '::',
+						_0: _mordrax$cotwelm$Tile_Types$PathRock,
+						_1: {
+							ctor: '::',
+							_0: _mordrax$cotwelm$Tile_Types$WallDarkDgn,
+							_1: {
+								ctor: '::',
+								_0: _mordrax$cotwelm$Tile_Types$WallLitDgn,
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+};
+var _mordrax$cotwelm$Tile_Model$asciiTileMap = _elm_lang$core$Dict$fromList(
+	{
+		ctor: '::',
+		_0: {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.chr('^'),
+			_1: _mordrax$cotwelm$Tile_Types$Rock
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.chr(','),
+				_1: _mordrax$cotwelm$Tile_Types$Grass
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.chr('o'),
+					_1: _mordrax$cotwelm$Tile_Types$DarkDgn
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.chr('~'),
+						_1: _mordrax$cotwelm$Tile_Types$Water
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.chr('.'),
+							_1: _mordrax$cotwelm$Tile_Types$Path
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.chr('O'),
+								_1: _mordrax$cotwelm$Tile_Types$LitDgn
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Native_Utils.chr('_'),
+									_1: _mordrax$cotwelm$Tile_Types$PathRock
+								},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: _elm_lang$core$Native_Utils.chr(';'),
+										_1: _mordrax$cotwelm$Tile_Types$PathGrass
+									},
+									_1: {
+										ctor: '::',
+										_0: {
+											ctor: '_Tuple2',
+											_0: _elm_lang$core$Native_Utils.chr('d'),
+											_1: _mordrax$cotwelm$Tile_Types$WallDarkDgn
+										},
+										_1: {
+											ctor: '::',
+											_0: {
+												ctor: '_Tuple2',
+												_0: _elm_lang$core$Native_Utils.chr('w'),
+												_1: _mordrax$cotwelm$Tile_Types$WaterGrass
+											},
+											_1: {
+												ctor: '::',
+												_0: {
+													ctor: '_Tuple2',
+													_0: _elm_lang$core$Native_Utils.chr('W'),
+													_1: _mordrax$cotwelm$Tile_Types$WaterPath
+												},
+												_1: {
+													ctor: '::',
+													_0: {
+														ctor: '_Tuple2',
+														_0: _elm_lang$core$Native_Utils.chr('D'),
+														_1: _mordrax$cotwelm$Tile_Types$WallLitDgn
+													},
+													_1: {
+														ctor: '::',
+														_0: {
+															ctor: '_Tuple2',
+															_0: _elm_lang$core$Native_Utils.chr('g'),
+															_1: _mordrax$cotwelm$Tile_Types$Grass50Cave50
+														},
+														_1: {
+															ctor: '::',
+															_0: {
+																ctor: '_Tuple2',
+																_0: _elm_lang$core$Native_Utils.chr('G'),
+																_1: _mordrax$cotwelm$Tile_Types$Grass10Cave90
+															},
+															_1: {
+																ctor: '::',
+																_0: {
+																	ctor: '_Tuple2',
+																	_0: _elm_lang$core$Native_Utils.chr('c'),
+																	_1: _mordrax$cotwelm$Tile_Types$White50Cave50
+																},
+																_1: {
+																	ctor: '::',
+																	_0: {
+																		ctor: '_Tuple2',
+																		_0: _elm_lang$core$Native_Utils.chr('C'),
+																		_1: _mordrax$cotwelm$Tile_Types$White90Cave10
+																	},
+																	_1: {
+																		ctor: '::',
+																		_0: {
+																			ctor: '_Tuple2',
+																			_0: _elm_lang$core$Native_Utils.chr('='),
+																			_1: _mordrax$cotwelm$Tile_Types$Crop
+																		},
+																		_1: {
+																			ctor: '::',
+																			_0: {
+																				ctor: '_Tuple2',
+																				_0: _elm_lang$core$Native_Utils.chr('e'),
+																				_1: _mordrax$cotwelm$Tile_Types$Well
+																			},
+																			_1: {
+																				ctor: '::',
+																				_0: {
+																					ctor: '_Tuple2',
+																					_0: _elm_lang$core$Native_Utils.chr('>'),
+																					_1: _mordrax$cotwelm$Tile_Types$StairsDown
+																				},
+																				_1: {ctor: '[]'}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	});
+var _mordrax$cotwelm$Tile_Model$Tile = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {type_: a, solid: b, items: c, occupant: d, position: e, ground: f, visible: g, isLit: h};
+	});
+var _mordrax$cotwelm$Tile_Model$Empty = {ctor: 'Empty'};
+var _mordrax$cotwelm$Tile_Model$M = function (a) {
+	return {ctor: 'M', _0: a};
+};
+var _mordrax$cotwelm$Tile_Model$H = function (a) {
+	return {ctor: 'H', _0: a};
+};
+var _mordrax$cotwelm$Tile_Model$B = function (a) {
+	return {ctor: 'B', _0: a};
+};
+
+var _rtfeldman$elm_css_util$Css_Helpers$toCssIdentifier = function (identifier) {
+	return A4(
+		_elm_lang$core$Regex$replace,
+		_elm_lang$core$Regex$All,
+		_elm_lang$core$Regex$regex('[^a-zA-Z0-9_-]'),
+		function (_p0) {
+			return '';
+		},
+		A4(
+			_elm_lang$core$Regex$replace,
+			_elm_lang$core$Regex$All,
+			_elm_lang$core$Regex$regex('\\s+'),
+			function (_p1) {
+				return '-';
+			},
+			_elm_lang$core$String$trim(
+				_elm_lang$core$Basics$toString(identifier))));
+};
+var _rtfeldman$elm_css_util$Css_Helpers$identifierToString = F2(
+	function (name, identifier) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_rtfeldman$elm_css_util$Css_Helpers$toCssIdentifier(name),
+			_rtfeldman$elm_css_util$Css_Helpers$toCssIdentifier(identifier));
+	});
+
+var _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations = function (declarations) {
+	dropEmptyDeclarations:
+	while (true) {
+		var _p0 = declarations;
+		if (_p0.ctor === '[]') {
+			return {ctor: '[]'};
+		} else {
+			switch (_p0._0.ctor) {
+				case 'StyleBlockDeclaration':
+					var _p1 = _p0._1;
+					if (_elm_lang$core$List$isEmpty(_p0._0._0._2)) {
+						var _v1 = _p1;
+						declarations = _v1;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p1)
+						};
+					}
+				case 'MediaRule':
+					var _p4 = _p0._1;
+					if (A2(
+						_elm_lang$core$List$all,
+						function (_p2) {
+							var _p3 = _p2;
+							return _elm_lang$core$List$isEmpty(_p3._2);
+						},
+						_p0._0._1)) {
+						var _v3 = _p4;
+						declarations = _v3;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p4)
+						};
+					}
+				case 'SupportsRule':
+					var _p5 = _p0._1;
+					if (_elm_lang$core$List$isEmpty(_p0._0._1)) {
+						var _v4 = _p5;
+						declarations = _v4;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p5)
+						};
+					}
+				case 'DocumentRule':
+					return {
+						ctor: '::',
+						_0: _p0._0,
+						_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p0._1)
+					};
+				case 'PageRule':
+					var _p6 = _p0._1;
+					if (_elm_lang$core$List$isEmpty(_p0._0._1)) {
+						var _v5 = _p6;
+						declarations = _v5;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p6)
+						};
+					}
+				case 'FontFace':
+					var _p7 = _p0._1;
+					if (_elm_lang$core$List$isEmpty(_p0._0._0)) {
+						var _v6 = _p7;
+						declarations = _v6;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p7)
+						};
+					}
+				case 'Keyframes':
+					var _p8 = _p0._1;
+					if (_elm_lang$core$List$isEmpty(_p0._0._1)) {
+						var _v7 = _p8;
+						declarations = _v7;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p8)
+						};
+					}
+				case 'Viewport':
+					var _p9 = _p0._1;
+					if (_elm_lang$core$List$isEmpty(_p0._0._0)) {
+						var _v8 = _p9;
+						declarations = _v8;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p9)
+						};
+					}
+				case 'CounterStyle':
+					var _p10 = _p0._1;
+					if (_elm_lang$core$List$isEmpty(_p0._0._0)) {
+						var _v9 = _p10;
+						declarations = _v9;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p10)
+						};
+					}
+				default:
+					var _p13 = _p0._1;
+					if (A2(
+						_elm_lang$core$List$all,
+						function (_p11) {
+							var _p12 = _p11;
+							return _elm_lang$core$List$isEmpty(_p12._1);
+						},
+						_p0._0._0)) {
+						var _v11 = _p13;
+						declarations = _v11;
+						continue dropEmptyDeclarations;
+					} else {
+						return {
+							ctor: '::',
+							_0: _p0._0,
+							_1: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p13)
+						};
+					}
+			}
+		}
+	}
+};
+var _rtfeldman$elm_css$Css_Structure$dropEmpty = function (_p14) {
+	var _p15 = _p14;
+	return {
+		charset: _p15.charset,
+		imports: _p15.imports,
+		namespaces: _p15.namespaces,
+		declarations: _rtfeldman$elm_css$Css_Structure$dropEmptyDeclarations(_p15.declarations)
+	};
+};
+var _rtfeldman$elm_css$Css_Structure$concatMapLast = F2(
+	function (update, list) {
+		var _p16 = list;
+		if (_p16.ctor === '[]') {
+			return list;
+		} else {
+			if (_p16._1.ctor === '[]') {
+				return update(_p16._0);
+			} else {
+				return {
+					ctor: '::',
+					_0: _p16._0,
+					_1: A2(_rtfeldman$elm_css$Css_Structure$concatMapLast, update, _p16._1)
+				};
+			}
+		}
+	});
+var _rtfeldman$elm_css$Css_Structure$mapLast = F2(
+	function (update, list) {
+		var _p17 = list;
+		if (_p17.ctor === '[]') {
+			return list;
+		} else {
+			if (_p17._1.ctor === '[]') {
+				return {
+					ctor: '::',
+					_0: update(_p17._0),
+					_1: {ctor: '[]'}
+				};
+			} else {
+				return {
+					ctor: '::',
+					_0: _p17._0,
+					_1: A2(_rtfeldman$elm_css$Css_Structure$mapLast, update, _p17._1)
+				};
+			}
+		}
+	});
+var _rtfeldman$elm_css$Css_Structure$Property = F3(
+	function (a, b, c) {
+		return {important: a, key: b, value: c};
+	});
+var _rtfeldman$elm_css$Css_Structure$Stylesheet = F4(
+	function (a, b, c, d) {
+		return {charset: a, imports: b, namespaces: c, declarations: d};
+	});
+var _rtfeldman$elm_css$Css_Structure$FontFeatureValues = function (a) {
+	return {ctor: 'FontFeatureValues', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$CounterStyle = function (a) {
+	return {ctor: 'CounterStyle', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$Viewport = function (a) {
+	return {ctor: 'Viewport', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$Keyframes = F2(
+	function (a, b) {
+		return {ctor: 'Keyframes', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Structure$FontFace = function (a) {
+	return {ctor: 'FontFace', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$PageRule = F2(
+	function (a, b) {
+		return {ctor: 'PageRule', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Structure$DocumentRule = F5(
+	function (a, b, c, d, e) {
+		return {ctor: 'DocumentRule', _0: a, _1: b, _2: c, _3: d, _4: e};
+	});
+var _rtfeldman$elm_css$Css_Structure$SupportsRule = F2(
+	function (a, b) {
+		return {ctor: 'SupportsRule', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Structure$MediaRule = F2(
+	function (a, b) {
+		return {ctor: 'MediaRule', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Structure$StyleBlockDeclaration = function (a) {
+	return {ctor: 'StyleBlockDeclaration', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$concatMapLastStyleBlock = F2(
+	function (update, declarations) {
+		var _p18 = declarations;
+		_v15_12:
+		do {
+			if (_p18.ctor === '[]') {
+				return declarations;
+			} else {
+				if (_p18._1.ctor === '[]') {
+					switch (_p18._0.ctor) {
+						case 'StyleBlockDeclaration':
+							return A2(
+								_elm_lang$core$List$map,
+								_rtfeldman$elm_css$Css_Structure$StyleBlockDeclaration,
+								update(_p18._0._0));
+						case 'MediaRule':
+							if (_p18._0._1.ctor === '::') {
+								if (_p18._0._1._1.ctor === '[]') {
+									return {
+										ctor: '::',
+										_0: A2(
+											_rtfeldman$elm_css$Css_Structure$MediaRule,
+											_p18._0._0,
+											update(_p18._0._1._0)),
+										_1: {ctor: '[]'}
+									};
+								} else {
+									var _p19 = A2(
+										_rtfeldman$elm_css$Css_Structure$concatMapLastStyleBlock,
+										update,
+										{
+											ctor: '::',
+											_0: A2(_rtfeldman$elm_css$Css_Structure$MediaRule, _p18._0._0, _p18._0._1._1),
+											_1: {ctor: '[]'}
+										});
+									if (((_p19.ctor === '::') && (_p19._0.ctor === 'MediaRule')) && (_p19._1.ctor === '[]')) {
+										return {
+											ctor: '::',
+											_0: A2(
+												_rtfeldman$elm_css$Css_Structure$MediaRule,
+												_p19._0._0,
+												{ctor: '::', _0: _p18._0._1._0, _1: _p19._0._1}),
+											_1: {ctor: '[]'}
+										};
+									} else {
+										return _p19;
+									}
+								}
+							} else {
+								break _v15_12;
+							}
+						case 'SupportsRule':
+							return {
+								ctor: '::',
+								_0: A2(
+									_rtfeldman$elm_css$Css_Structure$SupportsRule,
+									_p18._0._0,
+									A2(_rtfeldman$elm_css$Css_Structure$concatMapLastStyleBlock, update, _p18._0._1)),
+								_1: {ctor: '[]'}
+							};
+						case 'DocumentRule':
+							return A2(
+								_elm_lang$core$List$map,
+								A4(_rtfeldman$elm_css$Css_Structure$DocumentRule, _p18._0._0, _p18._0._1, _p18._0._2, _p18._0._3),
+								update(_p18._0._4));
+						case 'PageRule':
+							return declarations;
+						case 'FontFace':
+							return declarations;
+						case 'Keyframes':
+							return declarations;
+						case 'Viewport':
+							return declarations;
+						case 'CounterStyle':
+							return declarations;
+						default:
+							return declarations;
+					}
+				} else {
+					break _v15_12;
+				}
+			}
+		} while(false);
+		return {
+			ctor: '::',
+			_0: _p18._0,
+			_1: A2(_rtfeldman$elm_css$Css_Structure$concatMapLastStyleBlock, update, _p18._1)
+		};
+	});
+var _rtfeldman$elm_css$Css_Structure$StyleBlock = F3(
+	function (a, b, c) {
+		return {ctor: 'StyleBlock', _0: a, _1: b, _2: c};
+	});
+var _rtfeldman$elm_css$Css_Structure$withPropertyAppended = F2(
+	function (property, _p20) {
+		var _p21 = _p20;
+		return A3(
+			_rtfeldman$elm_css$Css_Structure$StyleBlock,
+			_p21._0,
+			_p21._1,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_p21._2,
+				{
+					ctor: '::',
+					_0: property,
+					_1: {ctor: '[]'}
+				}));
+	});
+var _rtfeldman$elm_css$Css_Structure$appendProperty = F2(
+	function (property, declarations) {
+		var _p22 = declarations;
+		if (_p22.ctor === '[]') {
+			return declarations;
+		} else {
+			if (_p22._1.ctor === '[]') {
+				switch (_p22._0.ctor) {
+					case 'StyleBlockDeclaration':
+						return {
+							ctor: '::',
+							_0: _rtfeldman$elm_css$Css_Structure$StyleBlockDeclaration(
+								A2(_rtfeldman$elm_css$Css_Structure$withPropertyAppended, property, _p22._0._0)),
+							_1: {ctor: '[]'}
+						};
+					case 'MediaRule':
+						return {
+							ctor: '::',
+							_0: A2(
+								_rtfeldman$elm_css$Css_Structure$MediaRule,
+								_p22._0._0,
+								A2(
+									_rtfeldman$elm_css$Css_Structure$mapLast,
+									_rtfeldman$elm_css$Css_Structure$withPropertyAppended(property),
+									_p22._0._1)),
+							_1: {ctor: '[]'}
+						};
+					default:
+						return declarations;
+				}
+			} else {
+				return {
+					ctor: '::',
+					_0: _p22._0,
+					_1: A2(_rtfeldman$elm_css$Css_Structure$appendProperty, property, _p22._1)
+				};
+			}
+		}
+	});
+var _rtfeldman$elm_css$Css_Structure$appendToLastSelector = F2(
+	function (f, styleBlock) {
+		var _p23 = styleBlock;
+		if (_p23._1.ctor === '[]') {
+			var _p24 = _p23._0;
+			return {
+				ctor: '::',
+				_0: A3(
+					_rtfeldman$elm_css$Css_Structure$StyleBlock,
+					_p24,
+					{ctor: '[]'},
+					_p23._2),
+				_1: {
+					ctor: '::',
+					_0: A3(
+						_rtfeldman$elm_css$Css_Structure$StyleBlock,
+						f(_p24),
+						{ctor: '[]'},
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
+			};
+		} else {
+			var _p26 = _p23._1;
+			var _p25 = _p23._0;
+			var newFirst = f(_p25);
+			var newRest = A2(_elm_lang$core$List$map, f, _p26);
+			return {
+				ctor: '::',
+				_0: A3(_rtfeldman$elm_css$Css_Structure$StyleBlock, _p25, _p26, _p23._2),
+				_1: {
+					ctor: '::',
+					_0: A3(
+						_rtfeldman$elm_css$Css_Structure$StyleBlock,
+						newFirst,
+						newRest,
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
+			};
+		}
+	});
+var _rtfeldman$elm_css$Css_Structure$MediaQuery = function (a) {
+	return {ctor: 'MediaQuery', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$Selector = F3(
+	function (a, b, c) {
+		return {ctor: 'Selector', _0: a, _1: b, _2: c};
+	});
+var _rtfeldman$elm_css$Css_Structure$applyPseudoElement = F2(
+	function (pseudo, _p27) {
+		var _p28 = _p27;
+		return A3(
+			_rtfeldman$elm_css$Css_Structure$Selector,
+			_p28._0,
+			_p28._1,
+			_elm_lang$core$Maybe$Just(pseudo));
+	});
+var _rtfeldman$elm_css$Css_Structure$appendPseudoElementToLastSelector = F2(
+	function (pseudo, styleBlock) {
+		return A2(
+			_rtfeldman$elm_css$Css_Structure$appendToLastSelector,
+			_rtfeldman$elm_css$Css_Structure$applyPseudoElement(pseudo),
+			styleBlock);
+	});
+var _rtfeldman$elm_css$Css_Structure$CustomSelector = F2(
+	function (a, b) {
+		return {ctor: 'CustomSelector', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Structure$UniversalSelectorSequence = function (a) {
+	return {ctor: 'UniversalSelectorSequence', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$TypeSelectorSequence = F2(
+	function (a, b) {
+		return {ctor: 'TypeSelectorSequence', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Structure$appendRepeatable = F2(
+	function (selector, sequence) {
+		var _p29 = sequence;
+		switch (_p29.ctor) {
+			case 'TypeSelectorSequence':
+				return A2(
+					_rtfeldman$elm_css$Css_Structure$TypeSelectorSequence,
+					_p29._0,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p29._1,
+						{
+							ctor: '::',
+							_0: selector,
+							_1: {ctor: '[]'}
+						}));
+			case 'UniversalSelectorSequence':
+				return _rtfeldman$elm_css$Css_Structure$UniversalSelectorSequence(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p29._0,
+						{
+							ctor: '::',
+							_0: selector,
+							_1: {ctor: '[]'}
+						}));
+			default:
+				return A2(
+					_rtfeldman$elm_css$Css_Structure$CustomSelector,
+					_p29._0,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p29._1,
+						{
+							ctor: '::',
+							_0: selector,
+							_1: {ctor: '[]'}
+						}));
+		}
+	});
+var _rtfeldman$elm_css$Css_Structure$appendRepeatableWithCombinator = F2(
+	function (selector, list) {
+		var _p30 = list;
+		if (_p30.ctor === '[]') {
+			return {ctor: '[]'};
+		} else {
+			if ((_p30._0.ctor === '_Tuple2') && (_p30._1.ctor === '[]')) {
+				return {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: _p30._0._0,
+						_1: A2(_rtfeldman$elm_css$Css_Structure$appendRepeatable, selector, _p30._0._1)
+					},
+					_1: {ctor: '[]'}
+				};
+			} else {
+				return {
+					ctor: '::',
+					_0: _p30._0,
+					_1: A2(_rtfeldman$elm_css$Css_Structure$appendRepeatableWithCombinator, selector, _p30._1)
+				};
+			}
+		}
+	});
+var _rtfeldman$elm_css$Css_Structure$appendRepeatableSelector = F2(
+	function (repeatableSimpleSelector, selector) {
+		var _p31 = selector;
+		if (_p31._1.ctor === '[]') {
+			return A3(
+				_rtfeldman$elm_css$Css_Structure$Selector,
+				A2(_rtfeldman$elm_css$Css_Structure$appendRepeatable, repeatableSimpleSelector, _p31._0),
+				{ctor: '[]'},
+				_p31._2);
+		} else {
+			return A3(
+				_rtfeldman$elm_css$Css_Structure$Selector,
+				_p31._0,
+				A2(_rtfeldman$elm_css$Css_Structure$appendRepeatableWithCombinator, repeatableSimpleSelector, _p31._1),
+				_p31._2);
+		}
+	});
+var _rtfeldman$elm_css$Css_Structure$extendLastSelector = F2(
+	function (selector, declarations) {
+		var _p32 = declarations;
+		_v24_15:
+		do {
+			if (_p32.ctor === '[]') {
+				return declarations;
+			} else {
+				if (_p32._1.ctor === '[]') {
+					switch (_p32._0.ctor) {
+						case 'StyleBlockDeclaration':
+							if (_p32._0._0._1.ctor === '[]') {
+								return {
+									ctor: '::',
+									_0: _rtfeldman$elm_css$Css_Structure$StyleBlockDeclaration(
+										A3(
+											_rtfeldman$elm_css$Css_Structure$StyleBlock,
+											A2(_rtfeldman$elm_css$Css_Structure$appendRepeatableSelector, selector, _p32._0._0._0),
+											{ctor: '[]'},
+											_p32._0._0._2)),
+									_1: {ctor: '[]'}
+								};
+							} else {
+								var newRest = A2(
+									_rtfeldman$elm_css$Css_Structure$mapLast,
+									_rtfeldman$elm_css$Css_Structure$appendRepeatableSelector(selector),
+									_p32._0._0._1);
+								return {
+									ctor: '::',
+									_0: _rtfeldman$elm_css$Css_Structure$StyleBlockDeclaration(
+										A3(_rtfeldman$elm_css$Css_Structure$StyleBlock, _p32._0._0._0, newRest, _p32._0._0._2)),
+									_1: {ctor: '[]'}
+								};
+							}
+						case 'MediaRule':
+							if (_p32._0._1.ctor === '::') {
+								if (_p32._0._1._1.ctor === '[]') {
+									if (_p32._0._1._0._1.ctor === '[]') {
+										var newStyleBlock = A3(
+											_rtfeldman$elm_css$Css_Structure$StyleBlock,
+											A2(_rtfeldman$elm_css$Css_Structure$appendRepeatableSelector, selector, _p32._0._1._0._0),
+											{ctor: '[]'},
+											_p32._0._1._0._2);
+										return {
+											ctor: '::',
+											_0: A2(
+												_rtfeldman$elm_css$Css_Structure$MediaRule,
+												_p32._0._0,
+												{
+													ctor: '::',
+													_0: newStyleBlock,
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										};
+									} else {
+										var newRest = A2(
+											_rtfeldman$elm_css$Css_Structure$mapLast,
+											_rtfeldman$elm_css$Css_Structure$appendRepeatableSelector(selector),
+											_p32._0._1._0._1);
+										var newStyleBlock = A3(_rtfeldman$elm_css$Css_Structure$StyleBlock, _p32._0._1._0._0, newRest, _p32._0._1._0._2);
+										return {
+											ctor: '::',
+											_0: A2(
+												_rtfeldman$elm_css$Css_Structure$MediaRule,
+												_p32._0._0,
+												{
+													ctor: '::',
+													_0: newStyleBlock,
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										};
+									}
+								} else {
+									var _p33 = A2(
+										_rtfeldman$elm_css$Css_Structure$extendLastSelector,
+										selector,
+										{
+											ctor: '::',
+											_0: A2(_rtfeldman$elm_css$Css_Structure$MediaRule, _p32._0._0, _p32._0._1._1),
+											_1: {ctor: '[]'}
+										});
+									if (((_p33.ctor === '::') && (_p33._0.ctor === 'MediaRule')) && (_p33._1.ctor === '[]')) {
+										return {
+											ctor: '::',
+											_0: A2(
+												_rtfeldman$elm_css$Css_Structure$MediaRule,
+												_p33._0._0,
+												{ctor: '::', _0: _p32._0._1._0, _1: _p33._0._1}),
+											_1: {ctor: '[]'}
+										};
+									} else {
+										return _p33;
+									}
+								}
+							} else {
+								break _v24_15;
+							}
+						case 'SupportsRule':
+							return {
+								ctor: '::',
+								_0: A2(
+									_rtfeldman$elm_css$Css_Structure$SupportsRule,
+									_p32._0._0,
+									A2(_rtfeldman$elm_css$Css_Structure$extendLastSelector, selector, _p32._0._1)),
+								_1: {ctor: '[]'}
+							};
+						case 'DocumentRule':
+							if (_p32._0._4._1.ctor === '[]') {
+								var newStyleBlock = A3(
+									_rtfeldman$elm_css$Css_Structure$StyleBlock,
+									A2(_rtfeldman$elm_css$Css_Structure$appendRepeatableSelector, selector, _p32._0._4._0),
+									{ctor: '[]'},
+									_p32._0._4._2);
+								return {
+									ctor: '::',
+									_0: A5(_rtfeldman$elm_css$Css_Structure$DocumentRule, _p32._0._0, _p32._0._1, _p32._0._2, _p32._0._3, newStyleBlock),
+									_1: {ctor: '[]'}
+								};
+							} else {
+								var newRest = A2(
+									_rtfeldman$elm_css$Css_Structure$mapLast,
+									_rtfeldman$elm_css$Css_Structure$appendRepeatableSelector(selector),
+									_p32._0._4._1);
+								var newStyleBlock = A3(_rtfeldman$elm_css$Css_Structure$StyleBlock, _p32._0._4._0, newRest, _p32._0._4._2);
+								return {
+									ctor: '::',
+									_0: A5(_rtfeldman$elm_css$Css_Structure$DocumentRule, _p32._0._0, _p32._0._1, _p32._0._2, _p32._0._3, newStyleBlock),
+									_1: {ctor: '[]'}
+								};
+							}
+						case 'PageRule':
+							return declarations;
+						case 'FontFace':
+							return declarations;
+						case 'Keyframes':
+							return declarations;
+						case 'Viewport':
+							return declarations;
+						case 'CounterStyle':
+							return declarations;
+						default:
+							return declarations;
+					}
+				} else {
+					break _v24_15;
+				}
+			}
+		} while(false);
+		return {
+			ctor: '::',
+			_0: _p32._0,
+			_1: A2(_rtfeldman$elm_css$Css_Structure$extendLastSelector, selector, _p32._1)
+		};
+	});
+var _rtfeldman$elm_css$Css_Structure$appendRepeatableToLastSelector = F2(
+	function (selector, styleBlock) {
+		return A2(
+			_rtfeldman$elm_css$Css_Structure$appendToLastSelector,
+			_rtfeldman$elm_css$Css_Structure$appendRepeatableSelector(selector),
+			styleBlock);
+	});
+var _rtfeldman$elm_css$Css_Structure$PseudoClassSelector = function (a) {
+	return {ctor: 'PseudoClassSelector', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$IdSelector = function (a) {
+	return {ctor: 'IdSelector', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$ClassSelector = function (a) {
+	return {ctor: 'ClassSelector', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$TypeSelector = function (a) {
+	return {ctor: 'TypeSelector', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$PseudoElement = function (a) {
+	return {ctor: 'PseudoElement', _0: a};
+};
+var _rtfeldman$elm_css$Css_Structure$Descendant = {ctor: 'Descendant'};
+var _rtfeldman$elm_css$Css_Structure$Child = {ctor: 'Child'};
+var _rtfeldman$elm_css$Css_Structure$GeneralSibling = {ctor: 'GeneralSibling'};
+var _rtfeldman$elm_css$Css_Structure$AdjacentSibling = {ctor: 'AdjacentSibling'};
+
+var _rtfeldman$elm_css$Css_Preprocess$propertyToPair = function (property) {
+	var value = property.important ? A2(_elm_lang$core$Basics_ops['++'], property.value, ' !important') : property.value;
+	return {ctor: '_Tuple2', _0: property.key, _1: value};
+};
+var _rtfeldman$elm_css$Css_Preprocess$toPropertyPairs = function (mixins) {
+	toPropertyPairs:
+	while (true) {
+		var _p0 = mixins;
+		if (_p0.ctor === '[]') {
+			return {ctor: '[]'};
+		} else {
+			switch (_p0._0.ctor) {
+				case 'AppendProperty':
+					return {
+						ctor: '::',
+						_0: _rtfeldman$elm_css$Css_Preprocess$propertyToPair(_p0._0._0),
+						_1: _rtfeldman$elm_css$Css_Preprocess$toPropertyPairs(_p0._1)
+					};
+				case 'ApplyMixins':
+					return A2(
+						_elm_lang$core$Basics_ops['++'],
+						_rtfeldman$elm_css$Css_Preprocess$toPropertyPairs(_p0._0._0),
+						_rtfeldman$elm_css$Css_Preprocess$toPropertyPairs(_p0._1));
+				default:
+					var _v1 = _p0._1;
+					mixins = _v1;
+					continue toPropertyPairs;
+			}
+		}
+	}
+};
+var _rtfeldman$elm_css$Css_Preprocess$unwrapSnippet = function (_p1) {
+	var _p2 = _p1;
+	return _p2._0;
+};
+var _rtfeldman$elm_css$Css_Preprocess$toMediaRule = F2(
+	function (mediaQueries, declaration) {
+		var _p3 = declaration;
+		switch (_p3.ctor) {
+			case 'StyleBlockDeclaration':
+				return A2(
+					_rtfeldman$elm_css$Css_Structure$MediaRule,
+					mediaQueries,
+					{
+						ctor: '::',
+						_0: _p3._0,
+						_1: {ctor: '[]'}
+					});
+			case 'MediaRule':
+				return A2(
+					_rtfeldman$elm_css$Css_Structure$MediaRule,
+					A2(_elm_lang$core$Basics_ops['++'], mediaQueries, _p3._0),
+					_p3._1);
+			case 'SupportsRule':
+				return A2(
+					_rtfeldman$elm_css$Css_Structure$SupportsRule,
+					_p3._0,
+					A2(
+						_elm_lang$core$List$map,
+						_rtfeldman$elm_css$Css_Preprocess$toMediaRule(mediaQueries),
+						_p3._1));
+			case 'DocumentRule':
+				return A5(_rtfeldman$elm_css$Css_Structure$DocumentRule, _p3._0, _p3._1, _p3._2, _p3._3, _p3._4);
+			case 'PageRule':
+				return declaration;
+			case 'FontFace':
+				return declaration;
+			case 'Keyframes':
+				return declaration;
+			case 'Viewport':
+				return declaration;
+			case 'CounterStyle':
+				return declaration;
+			default:
+				return declaration;
+		}
+	});
+var _rtfeldman$elm_css$Css_Preprocess$stylesheet = function (snippets) {
+	return {
+		charset: _elm_lang$core$Maybe$Nothing,
+		imports: {ctor: '[]'},
+		namespaces: {ctor: '[]'},
+		snippets: snippets
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess$Property = F4(
+	function (a, b, c, d) {
+		return {key: a, value: b, important: c, warnings: d};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$Stylesheet = F4(
+	function (a, b, c, d) {
+		return {charset: a, imports: b, namespaces: c, snippets: d};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$ApplyMixins = function (a) {
+	return {ctor: 'ApplyMixins', _0: a};
+};
+var _rtfeldman$elm_css$Css_Preprocess$WithMedia = F2(
+	function (a, b) {
+		return {ctor: 'WithMedia', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$WithPseudoElement = F2(
+	function (a, b) {
+		return {ctor: 'WithPseudoElement', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$NestSnippet = F2(
+	function (a, b) {
+		return {ctor: 'NestSnippet', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$ExtendSelector = F2(
+	function (a, b) {
+		return {ctor: 'ExtendSelector', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$AppendProperty = function (a) {
+	return {ctor: 'AppendProperty', _0: a};
+};
+var _rtfeldman$elm_css$Css_Preprocess$mapLastProperty = F2(
+	function (update, mixin) {
+		var _p4 = mixin;
+		switch (_p4.ctor) {
+			case 'AppendProperty':
+				return _rtfeldman$elm_css$Css_Preprocess$AppendProperty(
+					update(_p4._0));
+			case 'ExtendSelector':
+				return A2(
+					_rtfeldman$elm_css$Css_Preprocess$ExtendSelector,
+					_p4._0,
+					A2(_rtfeldman$elm_css$Css_Preprocess$mapAllLastProperty, update, _p4._1));
+			case 'NestSnippet':
+				return mixin;
+			case 'WithPseudoElement':
+				return mixin;
+			case 'WithMedia':
+				return mixin;
+			default:
+				return _rtfeldman$elm_css$Css_Preprocess$ApplyMixins(
+					A2(
+						_rtfeldman$elm_css$Css_Structure$mapLast,
+						_rtfeldman$elm_css$Css_Preprocess$mapLastProperty(update),
+						_p4._0));
+		}
+	});
+var _rtfeldman$elm_css$Css_Preprocess$mapAllLastProperty = F2(
+	function (update, mixins) {
+		var _p5 = mixins;
+		if (_p5.ctor === '[]') {
+			return mixins;
+		} else {
+			if (_p5._1.ctor === '[]') {
+				return {
+					ctor: '::',
+					_0: A2(_rtfeldman$elm_css$Css_Preprocess$mapLastProperty, update, _p5._0),
+					_1: {ctor: '[]'}
+				};
+			} else {
+				return {
+					ctor: '::',
+					_0: _p5._0,
+					_1: A2(_rtfeldman$elm_css$Css_Preprocess$mapAllLastProperty, update, _p5._1)
+				};
+			}
+		}
+	});
+var _rtfeldman$elm_css$Css_Preprocess$Snippet = function (a) {
+	return {ctor: 'Snippet', _0: a};
+};
+var _rtfeldman$elm_css$Css_Preprocess$FontFeatureValues = function (a) {
+	return {ctor: 'FontFeatureValues', _0: a};
+};
+var _rtfeldman$elm_css$Css_Preprocess$CounterStyle = function (a) {
+	return {ctor: 'CounterStyle', _0: a};
+};
+var _rtfeldman$elm_css$Css_Preprocess$Viewport = function (a) {
+	return {ctor: 'Viewport', _0: a};
+};
+var _rtfeldman$elm_css$Css_Preprocess$Keyframes = F2(
+	function (a, b) {
+		return {ctor: 'Keyframes', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$FontFace = function (a) {
+	return {ctor: 'FontFace', _0: a};
+};
+var _rtfeldman$elm_css$Css_Preprocess$PageRule = F2(
+	function (a, b) {
+		return {ctor: 'PageRule', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$DocumentRule = F5(
+	function (a, b, c, d, e) {
+		return {ctor: 'DocumentRule', _0: a, _1: b, _2: c, _3: d, _4: e};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$SupportsRule = F2(
+	function (a, b) {
+		return {ctor: 'SupportsRule', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$MediaRule = F2(
+	function (a, b) {
+		return {ctor: 'MediaRule', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css_Preprocess$StyleBlockDeclaration = function (a) {
+	return {ctor: 'StyleBlockDeclaration', _0: a};
+};
+var _rtfeldman$elm_css$Css_Preprocess$StyleBlock = F3(
+	function (a, b, c) {
+		return {ctor: 'StyleBlock', _0: a, _1: b, _2: c};
+	});
+
+var _rtfeldman$elm_css$Css_Structure_Output$indent = function (str) {
+	return A2(_elm_lang$core$Basics_ops['++'], '    ', str);
+};
+var _rtfeldman$elm_css$Css_Structure_Output$prettyPrintProperty = function (_p0) {
+	var _p1 = _p0;
+	var suffix = _p1.important ? ' !important;' : ';';
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_p1.key,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			': ',
+			A2(_elm_lang$core$Basics_ops['++'], _p1.value, suffix)));
+};
+var _rtfeldman$elm_css$Css_Structure_Output$prettyPrintProperties = function (properties) {
+	return A2(
+		_elm_lang$core$String$join,
+		'\n',
+		A2(
+			_elm_lang$core$List$map,
+			function (_p2) {
+				return _rtfeldman$elm_css$Css_Structure_Output$indent(
+					_rtfeldman$elm_css$Css_Structure_Output$prettyPrintProperty(_p2));
+			},
+			properties));
+};
+var _rtfeldman$elm_css$Css_Structure_Output$combinatorToString = function (combinator) {
+	var _p3 = combinator;
+	switch (_p3.ctor) {
+		case 'AdjacentSibling':
+			return '+';
+		case 'GeneralSibling':
+			return '~';
+		case 'Child':
+			return '>';
+		default:
+			return '';
+	}
+};
+var _rtfeldman$elm_css$Css_Structure_Output$pseudoElementToString = function (_p4) {
+	var _p5 = _p4;
+	return A2(_elm_lang$core$Basics_ops['++'], '::', _p5._0);
+};
+var _rtfeldman$elm_css$Css_Structure_Output$repeatableSimpleSelectorToString = function (repeatableSimpleSelector) {
+	var _p6 = repeatableSimpleSelector;
+	switch (_p6.ctor) {
+		case 'ClassSelector':
+			return A2(_elm_lang$core$Basics_ops['++'], '.', _p6._0);
+		case 'IdSelector':
+			return A2(_elm_lang$core$Basics_ops['++'], '#', _p6._0);
+		default:
+			return A2(_elm_lang$core$Basics_ops['++'], ':', _p6._0);
+	}
+};
+var _rtfeldman$elm_css$Css_Structure_Output$simpleSelectorSequenceToString = function (simpleSelectorSequence) {
+	var _p7 = simpleSelectorSequence;
+	switch (_p7.ctor) {
+		case 'TypeSelectorSequence':
+			return A2(
+				_elm_lang$core$String$join,
+				'',
+				{
+					ctor: '::',
+					_0: _p7._0._0,
+					_1: A2(_elm_lang$core$List$map, _rtfeldman$elm_css$Css_Structure_Output$repeatableSimpleSelectorToString, _p7._1)
+				});
+		case 'UniversalSelectorSequence':
+			var _p8 = _p7._0;
+			return _elm_lang$core$List$isEmpty(_p8) ? '*' : A2(
+				_elm_lang$core$String$join,
+				'',
+				A2(_elm_lang$core$List$map, _rtfeldman$elm_css$Css_Structure_Output$repeatableSimpleSelectorToString, _p8));
+		default:
+			return A2(
+				_elm_lang$core$String$join,
+				'',
+				{
+					ctor: '::',
+					_0: _p7._0,
+					_1: A2(_elm_lang$core$List$map, _rtfeldman$elm_css$Css_Structure_Output$repeatableSimpleSelectorToString, _p7._1)
+				});
+	}
+};
+var _rtfeldman$elm_css$Css_Structure_Output$selectorChainToString = function (_p9) {
+	var _p10 = _p9;
+	return A2(
+		_elm_lang$core$String$join,
+		' ',
+		{
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css_Structure_Output$combinatorToString(_p10._0),
+			_1: {
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css_Structure_Output$simpleSelectorSequenceToString(_p10._1),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _rtfeldman$elm_css$Css_Structure_Output$selectorToString = function (_p11) {
+	var _p12 = _p11;
+	var pseudoElementsString = A2(
+		_elm_lang$core$String$join,
+		'',
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$core$Maybe$withDefault,
+				'',
+				A2(_elm_lang$core$Maybe$map, _rtfeldman$elm_css$Css_Structure_Output$pseudoElementToString, _p12._2)),
+			_1: {ctor: '[]'}
+		});
+	var segments = A2(
+		_elm_lang$core$Basics_ops['++'],
+		{
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css_Structure_Output$simpleSelectorSequenceToString(_p12._0),
+			_1: {ctor: '[]'}
+		},
+		A2(_elm_lang$core$List$map, _rtfeldman$elm_css$Css_Structure_Output$selectorChainToString, _p12._1));
+	return A3(
+		_elm_lang$core$Basics$flip,
+		F2(
+			function (x, y) {
+				return A2(_elm_lang$core$Basics_ops['++'], x, y);
+			}),
+		pseudoElementsString,
+		A2(
+			_elm_lang$core$String$join,
+			' ',
+			A2(
+				_elm_lang$core$List$filter,
+				function (_p13) {
+					return !_elm_lang$core$String$isEmpty(_p13);
+				},
+				segments)));
+};
+var _rtfeldman$elm_css$Css_Structure_Output$prettyPrintStyleBlock = function (_p14) {
+	var _p15 = _p14;
+	var selectorStr = A2(
+		_elm_lang$core$String$join,
+		', ',
+		A2(
+			_elm_lang$core$List$map,
+			_rtfeldman$elm_css$Css_Structure_Output$selectorToString,
+			{ctor: '::', _0: _p15._0, _1: _p15._1}));
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		selectorStr,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			' {\n',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_rtfeldman$elm_css$Css_Structure_Output$prettyPrintProperties(_p15._2),
+				'\n}')));
+};
+var _rtfeldman$elm_css$Css_Structure_Output$prettyPrintDeclaration = function (declaration) {
+	var _p16 = declaration;
+	switch (_p16.ctor) {
+		case 'StyleBlockDeclaration':
+			return _rtfeldman$elm_css$Css_Structure_Output$prettyPrintStyleBlock(_p16._0);
+		case 'MediaRule':
+			var query = A2(
+				_elm_lang$core$String$join,
+				' ',
+				A2(
+					_elm_lang$core$List$map,
+					function (_p17) {
+						var _p18 = _p17;
+						return _p18._0;
+					},
+					_p16._0));
+			var blocks = A2(
+				_elm_lang$core$String$join,
+				'\n\n',
+				A2(
+					_elm_lang$core$List$map,
+					function (_p19) {
+						return _rtfeldman$elm_css$Css_Structure_Output$indent(
+							_rtfeldman$elm_css$Css_Structure_Output$prettyPrintStyleBlock(_p19));
+					},
+					_p16._1));
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'@media ',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					query,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' {\n',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_rtfeldman$elm_css$Css_Structure_Output$indent(blocks),
+							'\n}'))));
+		default:
+			return _elm_lang$core$Native_Utils.crashCase(
+				'Css.Structure.Output',
+				{
+					start: {line: 56, column: 5},
+					end: {line: 73, column: 49}
+				},
+				_p16)('not yet implemented :x');
+	}
+};
+var _rtfeldman$elm_css$Css_Structure_Output$namespaceToString = function (_p21) {
+	var _p22 = _p21;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'@namespace ',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_p22._0,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'\"',
+				A2(_elm_lang$core$Basics_ops['++'], _p22._1, '\"'))));
+};
+var _rtfeldman$elm_css$Css_Structure_Output$importToString = function (_p23) {
+	var _p24 = _p23;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'@import \"',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_p24._0,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(_p24._1),
+				'\"')));
+};
+var _rtfeldman$elm_css$Css_Structure_Output$charsetToString = function (charset) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		'',
+		A2(
+			_elm_lang$core$Maybe$map,
+			function (str) {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					'@charset \"',
+					A2(_elm_lang$core$Basics_ops['++'], str, '\"'));
+			},
+			charset));
+};
+var _rtfeldman$elm_css$Css_Structure_Output$prettyPrint = function (_p25) {
+	var _p26 = _p25;
+	return A2(
+		_elm_lang$core$String$join,
+		'\n\n',
+		A2(
+			_elm_lang$core$List$filter,
+			function (_p27) {
+				return !_elm_lang$core$String$isEmpty(_p27);
+			},
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css_Structure_Output$charsetToString(_p26.charset),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$core$String$join,
+						'\n',
+						A2(_elm_lang$core$List$map, _rtfeldman$elm_css$Css_Structure_Output$importToString, _p26.imports)),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$core$String$join,
+							'\n',
+							A2(_elm_lang$core$List$map, _rtfeldman$elm_css$Css_Structure_Output$namespaceToString, _p26.namespaces)),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$core$String$join,
+								'\n\n',
+								A2(_elm_lang$core$List$map, _rtfeldman$elm_css$Css_Structure_Output$prettyPrintDeclaration, _p26.declarations)),
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}));
+};
+
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$oneOf = function (maybes) {
+	oneOf:
+	while (true) {
+		var _p0 = maybes;
+		if (_p0.ctor === '[]') {
+			return _elm_lang$core$Maybe$Nothing;
+		} else {
+			var _p2 = _p0._0;
+			var _p1 = _p2;
+			if (_p1.ctor === 'Nothing') {
+				var _v2 = _p0._1;
+				maybes = _v2;
+				continue oneOf;
+			} else {
+				return _p2;
+			}
+		}
+	}
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$collectSelectors = function (declarations) {
+	collectSelectors:
+	while (true) {
+		var _p3 = declarations;
+		if (_p3.ctor === '[]') {
+			return {ctor: '[]'};
+		} else {
+			if (_p3._0.ctor === 'StyleBlockDeclaration') {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					{ctor: '::', _0: _p3._0._0._0, _1: _p3._0._0._1},
+					_rtfeldman$elm_css$Css_Preprocess_Resolve$collectSelectors(_p3._1));
+			} else {
+				var _v4 = _p3._1;
+				declarations = _v4;
+				continue collectSelectors;
+			}
+		}
+	}
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarning = function (_p4) {
+	var _p5 = _p4;
+	return {
+		ctor: '_Tuple2',
+		_0: _p5.warnings,
+		_1: {key: _p5.key, value: _p5.value, important: _p5.important}
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarnings = function (properties) {
+	return {
+		ctor: '_Tuple2',
+		_0: A2(
+			_elm_lang$core$List$concatMap,
+			function (_) {
+				return _.warnings;
+			},
+			properties),
+		_1: A2(
+			_elm_lang$core$List$map,
+			function (prop) {
+				return _elm_lang$core$Tuple$second(
+					_rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarning(prop));
+			},
+			properties)
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$toDocumentRule = F5(
+	function (str1, str2, str3, str4, declaration) {
+		var _p6 = declaration;
+		if (_p6.ctor === 'StyleBlockDeclaration') {
+			return A5(_rtfeldman$elm_css$Css_Structure$DocumentRule, str1, str2, str3, str4, _p6._0);
+		} else {
+			return declaration;
+		}
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$lastDeclaration = function (declarations) {
+	lastDeclaration:
+	while (true) {
+		var _p7 = declarations;
+		if (_p7.ctor === '[]') {
+			return _elm_lang$core$Maybe$Nothing;
+		} else {
+			if (_p7._1.ctor === '[]') {
+				return _elm_lang$core$Maybe$Just(
+					{
+						ctor: '::',
+						_0: _p7._0,
+						_1: {ctor: '[]'}
+					});
+			} else {
+				var _v8 = _p7._1;
+				declarations = _v8;
+				continue lastDeclaration;
+			}
+		}
+	}
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$concatDeclarationsAndWarnings = function (declarationsAndWarnings) {
+	var _p8 = declarationsAndWarnings;
+	if (_p8.ctor === '[]') {
+		return {
+			declarations: {ctor: '[]'},
+			warnings: {ctor: '[]'}
+		};
+	} else {
+		var result = _rtfeldman$elm_css$Css_Preprocess_Resolve$concatDeclarationsAndWarnings(_p8._1);
+		return {
+			declarations: A2(_elm_lang$core$Basics_ops['++'], _p8._0.declarations, result.declarations),
+			warnings: A2(_elm_lang$core$Basics_ops['++'], _p8._0.warnings, result.warnings)
+		};
+	}
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveFontFeatureValues = function (tuples) {
+	var expandTuples = function (tuplesToExpand) {
+		var _p9 = tuplesToExpand;
+		if (_p9.ctor === '[]') {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: {ctor: '[]'}
+			};
+		} else {
+			var _p10 = expandTuples(_p9._1);
+			var nextWarnings = _p10._0;
+			var nextTuples = _p10._1;
+			var _p11 = _rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarnings(_p9._0._1);
+			var warnings = _p11._0;
+			var properties = _p11._1;
+			return {
+				ctor: '_Tuple2',
+				_0: A2(_elm_lang$core$Basics_ops['++'], warnings, nextWarnings),
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: _p9._0._0, _1: properties},
+					_1: nextTuples
+				}
+			};
+		}
+	};
+	var _p12 = expandTuples(tuples);
+	var warnings = _p12._0;
+	var newTuples = _p12._1;
+	return {
+		declarations: {
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css_Structure$FontFeatureValues(newTuples),
+			_1: {ctor: '[]'}
+		},
+		warnings: warnings
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveCounterStyle = function (counterStyleProperties) {
+	var _p13 = _rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarnings(counterStyleProperties);
+	var warnings = _p13._0;
+	var properties = _p13._1;
+	return {
+		declarations: {
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css_Structure$Viewport(properties),
+			_1: {ctor: '[]'}
+		},
+		warnings: warnings
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveViewport = function (viewportProperties) {
+	var _p14 = _rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarnings(viewportProperties);
+	var warnings = _p14._0;
+	var properties = _p14._1;
+	return {
+		declarations: {
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css_Structure$Viewport(properties),
+			_1: {ctor: '[]'}
+		},
+		warnings: warnings
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveKeyframes = F2(
+	function (str, properties) {
+		return {
+			declarations: {
+				ctor: '::',
+				_0: A2(_rtfeldman$elm_css$Css_Structure$Keyframes, str, properties),
+				_1: {ctor: '[]'}
+			},
+			warnings: {ctor: '[]'}
+		};
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveFontFace = function (fontFaceProperties) {
+	var _p15 = _rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarnings(fontFaceProperties);
+	var warnings = _p15._0;
+	var properties = _p15._1;
+	return {
+		declarations: {
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css_Structure$FontFace(properties),
+			_1: {ctor: '[]'}
+		},
+		warnings: warnings
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolvePageRule = F2(
+	function (str, pageRuleProperties) {
+		var _p16 = _rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarnings(pageRuleProperties);
+		var warnings = _p16._0;
+		var properties = _p16._1;
+		return {
+			declarations: {
+				ctor: '::',
+				_0: A2(_rtfeldman$elm_css$Css_Structure$PageRule, str, properties),
+				_1: {ctor: '[]'}
+			},
+			warnings: warnings
+		};
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$toMediaRule = F2(
+	function (mediaQueries, declaration) {
+		var _p17 = declaration;
+		switch (_p17.ctor) {
+			case 'StyleBlockDeclaration':
+				return A2(
+					_rtfeldman$elm_css$Css_Structure$MediaRule,
+					mediaQueries,
+					{
+						ctor: '::',
+						_0: _p17._0,
+						_1: {ctor: '[]'}
+					});
+			case 'MediaRule':
+				return A2(
+					_rtfeldman$elm_css$Css_Structure$MediaRule,
+					A2(_elm_lang$core$Basics_ops['++'], mediaQueries, _p17._0),
+					_p17._1);
+			case 'SupportsRule':
+				return A2(
+					_rtfeldman$elm_css$Css_Structure$SupportsRule,
+					_p17._0,
+					A2(
+						_elm_lang$core$List$map,
+						_rtfeldman$elm_css$Css_Preprocess_Resolve$toMediaRule(mediaQueries),
+						_p17._1));
+			case 'DocumentRule':
+				return A5(_rtfeldman$elm_css$Css_Structure$DocumentRule, _p17._0, _p17._1, _p17._2, _p17._3, _p17._4);
+			case 'PageRule':
+				return declaration;
+			case 'FontFace':
+				return declaration;
+			case 'Keyframes':
+				return declaration;
+			case 'Viewport':
+				return declaration;
+			case 'CounterStyle':
+				return declaration;
+			default:
+				return declaration;
+		}
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveMediaRule = F2(
+	function (mediaQueries, styleBlocks) {
+		var handleStyleBlock = function (styleBlock) {
+			var _p18 = _rtfeldman$elm_css$Css_Preprocess_Resolve$expandStyleBlock(styleBlock);
+			var declarations = _p18.declarations;
+			var warnings = _p18.warnings;
+			return {
+				declarations: A2(
+					_elm_lang$core$List$map,
+					_rtfeldman$elm_css$Css_Preprocess_Resolve$toMediaRule(mediaQueries),
+					declarations),
+				warnings: warnings
+			};
+		};
+		var results = A2(_elm_lang$core$List$map, handleStyleBlock, styleBlocks);
+		return {
+			warnings: A2(
+				_elm_lang$core$List$concatMap,
+				function (_) {
+					return _.warnings;
+				},
+				results),
+			declarations: A2(
+				_elm_lang$core$List$concatMap,
+				function (_) {
+					return _.declarations;
+				},
+				results)
+		};
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$expandStyleBlock = function (_p19) {
+	var _p20 = _p19;
+	return A2(
+		_rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins,
+		_p20._2,
+		{
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css_Structure$StyleBlockDeclaration(
+				A3(
+					_rtfeldman$elm_css$Css_Structure$StyleBlock,
+					_p20._0,
+					_p20._1,
+					{ctor: '[]'})),
+			_1: {ctor: '[]'}
+		});
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins = F2(
+	function (mixins, declarations) {
+		applyMixins:
+		while (true) {
+			var _p21 = mixins;
+			if (_p21.ctor === '[]') {
+				return {
+					declarations: declarations,
+					warnings: {ctor: '[]'}
+				};
+			} else {
+				switch (_p21._0.ctor) {
+					case 'AppendProperty':
+						var _p22 = _rtfeldman$elm_css$Css_Preprocess_Resolve$extractWarning(_p21._0._0);
+						var warnings = _p22._0;
+						var property = _p22._1;
+						var result = A2(
+							_rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins,
+							_p21._1,
+							A2(_rtfeldman$elm_css$Css_Structure$appendProperty, property, declarations));
+						return {
+							declarations: result.declarations,
+							warnings: A2(_elm_lang$core$Basics_ops['++'], warnings, result.warnings)
+						};
+					case 'ExtendSelector':
+						return A4(
+							_rtfeldman$elm_css$Css_Preprocess_Resolve$applyNestedMixinsToLast,
+							_p21._0._1,
+							_p21._1,
+							_rtfeldman$elm_css$Css_Structure$appendRepeatableToLastSelector(_p21._0._0),
+							declarations);
+					case 'NestSnippet':
+						var chain = F2(
+							function (_p24, _p23) {
+								var _p25 = _p24;
+								var _p26 = _p23;
+								return A3(
+									_rtfeldman$elm_css$Css_Structure$Selector,
+									_p25._0,
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_p25._1,
+										{
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: _p21._0._0, _1: _p26._0},
+											_1: _p26._1
+										}),
+									_rtfeldman$elm_css$Css_Preprocess_Resolve$oneOf(
+										{
+											ctor: '::',
+											_0: _p26._2,
+											_1: {
+												ctor: '::',
+												_0: _p25._2,
+												_1: {ctor: '[]'}
+											}
+										}));
+							});
+						var expandDeclaration = function (declaration) {
+							var _p27 = declaration;
+							switch (_p27.ctor) {
+								case 'StyleBlockDeclaration':
+									var newSelectors = A2(
+										_elm_lang$core$List$concatMap,
+										function (originalSelector) {
+											return A2(
+												_elm_lang$core$List$map,
+												chain(originalSelector),
+												{ctor: '::', _0: _p27._0._0, _1: _p27._0._1});
+										},
+										_rtfeldman$elm_css$Css_Preprocess_Resolve$collectSelectors(declarations));
+									var newDeclarations = function () {
+										var _p28 = newSelectors;
+										if (_p28.ctor === '[]') {
+											return {ctor: '[]'};
+										} else {
+											return {
+												ctor: '::',
+												_0: _rtfeldman$elm_css$Css_Structure$StyleBlockDeclaration(
+													A3(
+														_rtfeldman$elm_css$Css_Structure$StyleBlock,
+														_p28._0,
+														_p28._1,
+														{ctor: '[]'})),
+												_1: {ctor: '[]'}
+											};
+										}
+									}();
+									return _rtfeldman$elm_css$Css_Preprocess_Resolve$concatDeclarationsAndWarnings(
+										{
+											ctor: '::',
+											_0: A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins, _p27._0._2, newDeclarations),
+											_1: {ctor: '[]'}
+										});
+								case 'MediaRule':
+									return A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolveMediaRule, _p27._0, _p27._1);
+								case 'SupportsRule':
+									return A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolveSupportsRule, _p27._0, _p27._1);
+								case 'DocumentRule':
+									return A5(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolveDocumentRule, _p27._0, _p27._1, _p27._2, _p27._3, _p27._4);
+								case 'PageRule':
+									return A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolvePageRule, _p27._0, _p27._1);
+								case 'FontFace':
+									return _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveFontFace(_p27._0);
+								case 'Keyframes':
+									return A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolveKeyframes, _p27._0, _p27._1);
+								case 'Viewport':
+									return _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveViewport(_p27._0);
+								case 'CounterStyle':
+									return _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveCounterStyle(_p27._0);
+								default:
+									return _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveFontFeatureValues(_p27._0);
+							}
+						};
+						return _rtfeldman$elm_css$Css_Preprocess_Resolve$concatDeclarationsAndWarnings(
+							A2(
+								F2(
+									function (x, y) {
+										return A2(_elm_lang$core$Basics_ops['++'], x, y);
+									}),
+								{
+									ctor: '::',
+									_0: A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins, _p21._1, declarations),
+									_1: {ctor: '[]'}
+								},
+								A2(
+									_elm_lang$core$List$map,
+									expandDeclaration,
+									A2(_elm_lang$core$List$concatMap, _rtfeldman$elm_css$Css_Preprocess$unwrapSnippet, _p21._0._1))));
+					case 'WithPseudoElement':
+						return A4(
+							_rtfeldman$elm_css$Css_Preprocess_Resolve$applyNestedMixinsToLast,
+							_p21._0._1,
+							_p21._1,
+							_rtfeldman$elm_css$Css_Structure$appendPseudoElementToLastSelector(_p21._0._0),
+							declarations);
+					case 'WithMedia':
+						var newDeclarations = function () {
+							var _p29 = _rtfeldman$elm_css$Css_Preprocess_Resolve$collectSelectors(declarations);
+							if (_p29.ctor === '[]') {
+								return {ctor: '[]'};
+							} else {
+								return {
+									ctor: '::',
+									_0: A2(
+										_rtfeldman$elm_css$Css_Structure$MediaRule,
+										_p21._0._0,
+										{
+											ctor: '::',
+											_0: A3(
+												_rtfeldman$elm_css$Css_Structure$StyleBlock,
+												_p29._0,
+												_p29._1,
+												{ctor: '[]'}),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								};
+							}
+						}();
+						return _rtfeldman$elm_css$Css_Preprocess_Resolve$concatDeclarationsAndWarnings(
+							{
+								ctor: '::',
+								_0: A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins, _p21._1, declarations),
+								_1: {
+									ctor: '::',
+									_0: A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins, _p21._0._1, newDeclarations),
+									_1: {ctor: '[]'}
+								}
+							});
+					default:
+						var _v19 = A2(_elm_lang$core$Basics_ops['++'], _p21._0._0, _p21._1),
+							_v20 = declarations;
+						mixins = _v19;
+						declarations = _v20;
+						continue applyMixins;
+				}
+			}
+		}
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$applyNestedMixinsToLast = F4(
+	function (nestedMixins, rest, f, declarations) {
+		var withoutParent = function (decls) {
+			return A2(
+				_elm_lang$core$Maybe$withDefault,
+				{ctor: '[]'},
+				_elm_lang$core$List$tail(decls));
+		};
+		var nextResult = A2(
+			_rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins,
+			rest,
+			A2(
+				_elm_lang$core$Maybe$withDefault,
+				{ctor: '[]'},
+				_rtfeldman$elm_css$Css_Preprocess_Resolve$lastDeclaration(declarations)));
+		var newDeclarations = function () {
+			var _p30 = {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$List$head(nextResult.declarations),
+				_1: _elm_lang$core$List$head(
+					_elm_lang$core$List$reverse(declarations))
+			};
+			if (((_p30.ctor === '_Tuple2') && (_p30._0.ctor === 'Just')) && (_p30._1.ctor === 'Just')) {
+				var _p32 = _p30._1._0;
+				var _p31 = _p30._0._0;
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(
+						_elm_lang$core$List$take,
+						_elm_lang$core$List$length(declarations) - 1,
+						declarations),
+					{
+						ctor: '::',
+						_0: (!_elm_lang$core$Native_Utils.eq(_p32, _p31)) ? _p31 : _p32,
+						_1: {ctor: '[]'}
+					});
+			} else {
+				return declarations;
+			}
+		}();
+		var handleInitial = function (declarationsAndWarnings) {
+			var result = A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$applyMixins, nestedMixins, declarationsAndWarnings.declarations);
+			return {
+				warnings: A2(_elm_lang$core$Basics_ops['++'], declarationsAndWarnings.warnings, result.warnings),
+				declarations: result.declarations
+			};
+		};
+		var insertMixinsToNestedDecl = function (lastDecl) {
+			return _rtfeldman$elm_css$Css_Preprocess_Resolve$concatDeclarationsAndWarnings(
+				A2(
+					_rtfeldman$elm_css$Css_Structure$mapLast,
+					handleInitial,
+					A2(
+						_elm_lang$core$List$map,
+						function (declaration) {
+							return {
+								declarations: {
+									ctor: '::',
+									_0: declaration,
+									_1: {ctor: '[]'}
+								},
+								warnings: {ctor: '[]'}
+							};
+						},
+						A2(_rtfeldman$elm_css$Css_Structure$concatMapLastStyleBlock, f, lastDecl))));
+		};
+		var initialResult = A2(
+			_elm_lang$core$Maybe$withDefault,
+			{
+				warnings: {ctor: '[]'},
+				declarations: {ctor: '[]'}
+			},
+			A2(
+				_elm_lang$core$Maybe$map,
+				insertMixinsToNestedDecl,
+				_rtfeldman$elm_css$Css_Preprocess_Resolve$lastDeclaration(declarations)));
+		return {
+			warnings: A2(_elm_lang$core$Basics_ops['++'], initialResult.warnings, nextResult.warnings),
+			declarations: A2(
+				_elm_lang$core$Basics_ops['++'],
+				newDeclarations,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					withoutParent(initialResult.declarations),
+					withoutParent(nextResult.declarations)))
+		};
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveDocumentRule = F5(
+	function (str1, str2, str3, str4, styleBlock) {
+		var _p33 = _rtfeldman$elm_css$Css_Preprocess_Resolve$expandStyleBlock(styleBlock);
+		var declarations = _p33.declarations;
+		var warnings = _p33.warnings;
+		return {
+			declarations: A2(
+				_elm_lang$core$List$map,
+				A4(_rtfeldman$elm_css$Css_Preprocess_Resolve$toDocumentRule, str1, str2, str3, str4),
+				declarations),
+			warnings: warnings
+		};
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveSupportsRule = F2(
+	function (str, snippets) {
+		var _p34 = _rtfeldman$elm_css$Css_Preprocess_Resolve$extract(
+			A2(_elm_lang$core$List$concatMap, _rtfeldman$elm_css$Css_Preprocess$unwrapSnippet, snippets));
+		var declarations = _p34.declarations;
+		var warnings = _p34.warnings;
+		return {
+			declarations: {
+				ctor: '::',
+				_0: A2(_rtfeldman$elm_css$Css_Structure$SupportsRule, str, declarations),
+				_1: {ctor: '[]'}
+			},
+			warnings: warnings
+		};
+	});
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$extract = function (snippetDeclarations) {
+	var _p35 = snippetDeclarations;
+	if (_p35.ctor === '[]') {
+		return {
+			declarations: {ctor: '[]'},
+			warnings: {ctor: '[]'}
+		};
+	} else {
+		var _p36 = _rtfeldman$elm_css$Css_Preprocess_Resolve$toDeclarations(_p35._0);
+		var declarations = _p36.declarations;
+		var warnings = _p36.warnings;
+		var nextResult = _rtfeldman$elm_css$Css_Preprocess_Resolve$extract(_p35._1);
+		return {
+			declarations: A2(_elm_lang$core$Basics_ops['++'], declarations, nextResult.declarations),
+			warnings: A2(_elm_lang$core$Basics_ops['++'], warnings, nextResult.warnings)
+		};
+	}
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$toDeclarations = function (snippetDeclaration) {
+	var _p37 = snippetDeclaration;
+	switch (_p37.ctor) {
+		case 'StyleBlockDeclaration':
+			return _rtfeldman$elm_css$Css_Preprocess_Resolve$expandStyleBlock(_p37._0);
+		case 'MediaRule':
+			return A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolveMediaRule, _p37._0, _p37._1);
+		case 'SupportsRule':
+			return A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolveSupportsRule, _p37._0, _p37._1);
+		case 'DocumentRule':
+			return A5(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolveDocumentRule, _p37._0, _p37._1, _p37._2, _p37._3, _p37._4);
+		case 'PageRule':
+			return A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolvePageRule, _p37._0, _p37._1);
+		case 'FontFace':
+			return _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveFontFace(_p37._0);
+		case 'Keyframes':
+			return A2(_rtfeldman$elm_css$Css_Preprocess_Resolve$resolveKeyframes, _p37._0, _p37._1);
+		case 'Viewport':
+			return _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveViewport(_p37._0);
+		case 'CounterStyle':
+			return _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveCounterStyle(_p37._0);
+		default:
+			return _rtfeldman$elm_css$Css_Preprocess_Resolve$resolveFontFeatureValues(_p37._0);
+	}
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$toStructure = function (_p38) {
+	var _p39 = _p38;
+	var _p40 = _rtfeldman$elm_css$Css_Preprocess_Resolve$extract(
+		A2(_elm_lang$core$List$concatMap, _rtfeldman$elm_css$Css_Preprocess$unwrapSnippet, _p39.snippets));
+	var warnings = _p40.warnings;
+	var declarations = _p40.declarations;
+	return {
+		ctor: '_Tuple2',
+		_0: {charset: _p39.charset, imports: _p39.imports, namespaces: _p39.namespaces, declarations: declarations},
+		_1: warnings
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$compile1 = function (sheet) {
+	var _p41 = _rtfeldman$elm_css$Css_Preprocess_Resolve$toStructure(sheet);
+	var structureStylesheet = _p41._0;
+	var warnings = _p41._1;
+	return {
+		warnings: warnings,
+		css: _rtfeldman$elm_css$Css_Structure_Output$prettyPrint(
+			_rtfeldman$elm_css$Css_Structure$dropEmpty(structureStylesheet))
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$compile = function (styles) {
+	var results = A2(_elm_lang$core$List$map, _rtfeldman$elm_css$Css_Preprocess_Resolve$compile1, styles);
+	return {
+		warnings: A2(
+			_elm_lang$core$List$concatMap,
+			function (_) {
+				return _.warnings;
+			},
+			results),
+		css: A2(
+			_elm_lang$core$String$join,
+			'\n\n',
+			A2(
+				_elm_lang$core$List$map,
+				function (_) {
+					return _.css;
+				},
+				results))
+	};
+};
+var _rtfeldman$elm_css$Css_Preprocess_Resolve$DeclarationsAndWarnings = F2(
+	function (a, b) {
+		return {declarations: a, warnings: b};
+	});
+
+var _rtfeldman$hex$Hex$toString = function (num) {
+	return _elm_lang$core$String$fromList(
+		(_elm_lang$core$Native_Utils.cmp(num, 0) < 0) ? {
+			ctor: '::',
+			_0: _elm_lang$core$Native_Utils.chr('-'),
+			_1: A2(
+				_rtfeldman$hex$Hex$unsafePositiveToDigits,
+				{ctor: '[]'},
+				_elm_lang$core$Basics$negate(num))
+		} : A2(
+			_rtfeldman$hex$Hex$unsafePositiveToDigits,
+			{ctor: '[]'},
+			num));
+};
+var _rtfeldman$hex$Hex$unsafePositiveToDigits = F2(
+	function (digits, num) {
+		unsafePositiveToDigits:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(num, 16) < 0) {
+				return {
+					ctor: '::',
+					_0: _rtfeldman$hex$Hex$unsafeToDigit(num),
+					_1: digits
+				};
+			} else {
+				var _v0 = {
+					ctor: '::',
+					_0: _rtfeldman$hex$Hex$unsafeToDigit(
+						A2(_elm_lang$core$Basics_ops['%'], num, 16)),
+					_1: digits
+				},
+					_v1 = (num / 16) | 0;
+				digits = _v0;
+				num = _v1;
+				continue unsafePositiveToDigits;
+			}
+		}
+	});
+var _rtfeldman$hex$Hex$unsafeToDigit = function (num) {
+	var _p0 = num;
+	switch (_p0) {
+		case 0:
+			return _elm_lang$core$Native_Utils.chr('0');
+		case 1:
+			return _elm_lang$core$Native_Utils.chr('1');
+		case 2:
+			return _elm_lang$core$Native_Utils.chr('2');
+		case 3:
+			return _elm_lang$core$Native_Utils.chr('3');
+		case 4:
+			return _elm_lang$core$Native_Utils.chr('4');
+		case 5:
+			return _elm_lang$core$Native_Utils.chr('5');
+		case 6:
+			return _elm_lang$core$Native_Utils.chr('6');
+		case 7:
+			return _elm_lang$core$Native_Utils.chr('7');
+		case 8:
+			return _elm_lang$core$Native_Utils.chr('8');
+		case 9:
+			return _elm_lang$core$Native_Utils.chr('9');
+		case 10:
+			return _elm_lang$core$Native_Utils.chr('a');
+		case 11:
+			return _elm_lang$core$Native_Utils.chr('b');
+		case 12:
+			return _elm_lang$core$Native_Utils.chr('c');
+		case 13:
+			return _elm_lang$core$Native_Utils.chr('d');
+		case 14:
+			return _elm_lang$core$Native_Utils.chr('e');
+		case 15:
+			return _elm_lang$core$Native_Utils.chr('f');
+		default:
+			return _elm_lang$core$Native_Utils.crashCase(
+				'Hex',
+				{
+					start: {line: 138, column: 5},
+					end: {line: 188, column: 84}
+				},
+				_p0)(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'Tried to convert ',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_rtfeldman$hex$Hex$toString(num),
+						' to hexadecimal.')));
+	}
+};
+var _rtfeldman$hex$Hex$fromStringHelp = F3(
+	function (position, chars, accumulated) {
+		var _p2 = chars;
+		if (_p2.ctor === '[]') {
+			return _elm_lang$core$Result$Ok(accumulated);
+		} else {
+			var recurse = function (additional) {
+				return A3(
+					_rtfeldman$hex$Hex$fromStringHelp,
+					position - 1,
+					_p2._1,
+					accumulated + (additional * Math.pow(16, position)));
+			};
+			var _p3 = _p2._0;
+			switch (_p3.valueOf()) {
+				case '0':
+					return recurse(0);
+				case '1':
+					return recurse(1);
+				case '2':
+					return recurse(2);
+				case '3':
+					return recurse(3);
+				case '4':
+					return recurse(4);
+				case '5':
+					return recurse(5);
+				case '6':
+					return recurse(6);
+				case '7':
+					return recurse(7);
+				case '8':
+					return recurse(8);
+				case '9':
+					return recurse(9);
+				case 'a':
+					return recurse(10);
+				case 'b':
+					return recurse(11);
+				case 'c':
+					return recurse(12);
+				case 'd':
+					return recurse(13);
+				case 'e':
+					return recurse(14);
+				case 'f':
+					return recurse(15);
+				default:
+					return _elm_lang$core$Result$Err(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(_p3),
+							' is not a valid hexadecimal character.'));
+			}
+		}
+	});
+var _rtfeldman$hex$Hex$fromString = function (str) {
+	if (_elm_lang$core$String$isEmpty(str)) {
+		return _elm_lang$core$Result$Err('Empty strings are not valid hexadecimal strings.');
+	} else {
+		var formatError = function (err) {
+			return A2(
+				_elm_lang$core$String$join,
+				' ',
+				{
+					ctor: '::',
+					_0: _elm_lang$core$Basics$toString(str),
+					_1: {
+						ctor: '::',
+						_0: 'is not a valid hexadecimal string because',
+						_1: {
+							ctor: '::',
+							_0: err,
+							_1: {ctor: '[]'}
+						}
+					}
+				});
+		};
+		var result = function () {
+			if (A2(_elm_lang$core$String$startsWith, '-', str)) {
+				var list = A2(
+					_elm_lang$core$Maybe$withDefault,
+					{ctor: '[]'},
+					_elm_lang$core$List$tail(
+						_elm_lang$core$String$toList(str)));
+				return A2(
+					_elm_lang$core$Result$map,
+					_elm_lang$core$Basics$negate,
+					A3(
+						_rtfeldman$hex$Hex$fromStringHelp,
+						_elm_lang$core$List$length(list) - 1,
+						list,
+						0));
+			} else {
+				return A3(
+					_rtfeldman$hex$Hex$fromStringHelp,
+					_elm_lang$core$String$length(str) - 1,
+					_elm_lang$core$String$toList(str),
+					0);
+			}
+		}();
+		return A2(_elm_lang$core$Result$mapError, formatError, result);
+	}
+};
+
+var _rtfeldman$elm_css$Css$asPairs = _rtfeldman$elm_css$Css_Preprocess$toPropertyPairs;
+var _rtfeldman$elm_css$Css$collectSelectors = function (declarations) {
+	collectSelectors:
+	while (true) {
+		var _p0 = declarations;
+		if (_p0.ctor === '[]') {
+			return {ctor: '[]'};
+		} else {
+			if (_p0._0.ctor === 'StyleBlockDeclaration') {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					{ctor: '::', _0: _p0._0._0._0, _1: _p0._0._0._1},
+					_rtfeldman$elm_css$Css$collectSelectors(_p0._1));
+			} else {
+				var _v1 = _p0._1;
+				declarations = _v1;
+				continue collectSelectors;
+			}
+		}
+	}
+};
+var _rtfeldman$elm_css$Css$compile = _rtfeldman$elm_css$Css_Preprocess_Resolve$compile;
+var _rtfeldman$elm_css$Css$stringsToValue = function (list) {
+	return _elm_lang$core$List$isEmpty(list) ? {value: 'none'} : {
+		value: A2(
+			_elm_lang$core$String$join,
+			', ',
+			A2(
+				_elm_lang$core$List$map,
+				function (s) {
+					return s;
+				},
+				list))
+	};
+};
+var _rtfeldman$elm_css$Css$valuesOrNone = function (list) {
+	return _elm_lang$core$List$isEmpty(list) ? {value: 'none'} : {
+		value: A2(
+			_elm_lang$core$String$join,
+			' ',
+			A2(
+				_elm_lang$core$List$map,
+				function (_) {
+					return _.value;
+				},
+				list))
+	};
+};
+var _rtfeldman$elm_css$Css$stringToInt = function (str) {
+	return A2(
+		_elm_lang$core$Result$withDefault,
+		0,
+		_elm_lang$core$String$toInt(str));
+};
+var _rtfeldman$elm_css$Css$numberToString = function (num) {
+	return _elm_lang$core$Basics$toString(num + 0);
+};
+var _rtfeldman$elm_css$Css$numericalPercentageToString = function (value) {
+	return A3(
+		_elm_lang$core$Basics$flip,
+		F2(
+			function (x, y) {
+				return A2(_elm_lang$core$Basics_ops['++'], x, y);
+			}),
+		'%',
+		_rtfeldman$elm_css$Css$numberToString(
+			A2(
+				F2(
+					function (x, y) {
+						return x * y;
+					}),
+				100,
+				value)));
+};
+var _rtfeldman$elm_css$Css$each = F2(
+	function (snippetCreators, mixins) {
+		var selectorsToSnippet = function (selectors) {
+			var _p1 = selectors;
+			if (_p1.ctor === '[]') {
+				return _rtfeldman$elm_css$Css_Preprocess$Snippet(
+					{ctor: '[]'});
+			} else {
+				return _rtfeldman$elm_css$Css_Preprocess$Snippet(
+					{
+						ctor: '::',
+						_0: _rtfeldman$elm_css$Css_Preprocess$StyleBlockDeclaration(
+							A3(_rtfeldman$elm_css$Css_Preprocess$StyleBlock, _p1._0, _p1._1, mixins)),
+						_1: {ctor: '[]'}
+					});
+			}
+		};
+		return selectorsToSnippet(
+			_rtfeldman$elm_css$Css$collectSelectors(
+				A2(
+					_elm_lang$core$List$concatMap,
+					_rtfeldman$elm_css$Css_Preprocess$unwrapSnippet,
+					A2(
+						_elm_lang$core$List$map,
+						F2(
+							function (x, y) {
+								return y(x);
+							})(
+							{ctor: '[]'}),
+						snippetCreators))));
+	});
+var _rtfeldman$elm_css$Css$generalSiblings = _rtfeldman$elm_css$Css_Preprocess$NestSnippet(_rtfeldman$elm_css$Css_Structure$GeneralSibling);
+var _rtfeldman$elm_css$Css$adjacentSiblings = _rtfeldman$elm_css$Css_Preprocess$NestSnippet(_rtfeldman$elm_css$Css_Structure$AdjacentSibling);
+var _rtfeldman$elm_css$Css$descendants = _rtfeldman$elm_css$Css_Preprocess$NestSnippet(_rtfeldman$elm_css$Css_Structure$Descendant);
+var _rtfeldman$elm_css$Css$withClass = function ($class) {
+	return _rtfeldman$elm_css$Css_Preprocess$ExtendSelector(
+		_rtfeldman$elm_css$Css_Structure$ClassSelector(
+			A2(_rtfeldman$elm_css_util$Css_Helpers$identifierToString, '', $class)));
+};
+var _rtfeldman$elm_css$Css$children = _rtfeldman$elm_css$Css_Preprocess$NestSnippet(_rtfeldman$elm_css$Css_Structure$Child);
+var _rtfeldman$elm_css$Css$pseudoElement = function (element) {
+	return _rtfeldman$elm_css$Css_Preprocess$WithPseudoElement(
+		_rtfeldman$elm_css$Css_Structure$PseudoElement(element));
+};
+var _rtfeldman$elm_css$Css$after = _rtfeldman$elm_css$Css$pseudoElement('after');
+var _rtfeldman$elm_css$Css$before = _rtfeldman$elm_css$Css$pseudoElement('before');
+var _rtfeldman$elm_css$Css$firstLetter = _rtfeldman$elm_css$Css$pseudoElement('first-letter');
+var _rtfeldman$elm_css$Css$firstLine = _rtfeldman$elm_css$Css$pseudoElement('first-line');
+var _rtfeldman$elm_css$Css$selection = _rtfeldman$elm_css$Css$pseudoElement('selection');
+var _rtfeldman$elm_css$Css$pseudoClass = function ($class) {
+	return _rtfeldman$elm_css$Css_Preprocess$ExtendSelector(
+		_rtfeldman$elm_css$Css_Structure$PseudoClassSelector($class));
+};
+var _rtfeldman$elm_css$Css$active = _rtfeldman$elm_css$Css$pseudoClass('active');
+var _rtfeldman$elm_css$Css$any = function (str) {
+	return _rtfeldman$elm_css$Css$pseudoClass(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'any(',
+			A2(_elm_lang$core$Basics_ops['++'], str, ')')));
+};
+var _rtfeldman$elm_css$Css$checked = _rtfeldman$elm_css$Css$pseudoClass('checked');
+var _rtfeldman$elm_css$Css$disabled = _rtfeldman$elm_css$Css$pseudoClass('disabled');
+var _rtfeldman$elm_css$Css$empty = _rtfeldman$elm_css$Css$pseudoClass('empty');
+var _rtfeldman$elm_css$Css$enabled = _rtfeldman$elm_css$Css$pseudoClass('enabled');
+var _rtfeldman$elm_css$Css$first = _rtfeldman$elm_css$Css$pseudoClass('first');
+var _rtfeldman$elm_css$Css$firstChild = _rtfeldman$elm_css$Css$pseudoClass('first-child');
+var _rtfeldman$elm_css$Css$firstOfType = _rtfeldman$elm_css$Css$pseudoClass('first-of-type');
+var _rtfeldman$elm_css$Css$fullscreen = _rtfeldman$elm_css$Css$pseudoClass('fullscreen');
+var _rtfeldman$elm_css$Css$focus = _rtfeldman$elm_css$Css$pseudoClass('focus');
+var _rtfeldman$elm_css$Css$hover = _rtfeldman$elm_css$Css$pseudoClass('hover');
+var _rtfeldman$elm_css$Css$visited = _rtfeldman$elm_css$Css$pseudoClass('visited');
+var _rtfeldman$elm_css$Css$indeterminate = _rtfeldman$elm_css$Css$pseudoClass('indeterminate');
+var _rtfeldman$elm_css$Css$invalid = _rtfeldman$elm_css$Css$pseudoClass('invalid');
+var _rtfeldman$elm_css$Css$lang = function (str) {
+	return _rtfeldman$elm_css$Css$pseudoClass(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'lang(',
+			A2(_elm_lang$core$Basics_ops['++'], str, ')')));
+};
+var _rtfeldman$elm_css$Css$lastChild = _rtfeldman$elm_css$Css$pseudoClass('last-child');
+var _rtfeldman$elm_css$Css$lastOfType = _rtfeldman$elm_css$Css$pseudoClass('last-of-type');
+var _rtfeldman$elm_css$Css$link = _rtfeldman$elm_css$Css$pseudoClass('link');
+var _rtfeldman$elm_css$Css$nthChild = function (str) {
+	return _rtfeldman$elm_css$Css$pseudoClass(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'nth-child(',
+			A2(_elm_lang$core$Basics_ops['++'], str, ')')));
+};
+var _rtfeldman$elm_css$Css$nthLastChild = function (str) {
+	return _rtfeldman$elm_css$Css$pseudoClass(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'nth-last-child(',
+			A2(_elm_lang$core$Basics_ops['++'], str, ')')));
+};
+var _rtfeldman$elm_css$Css$nthLastOfType = function (str) {
+	return _rtfeldman$elm_css$Css$pseudoClass(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'nth-last-of-type(',
+			A2(_elm_lang$core$Basics_ops['++'], str, ')')));
+};
+var _rtfeldman$elm_css$Css$nthOfType = function (str) {
+	return _rtfeldman$elm_css$Css$pseudoClass(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'nth-of-type(',
+			A2(_elm_lang$core$Basics_ops['++'], str, ')')));
+};
+var _rtfeldman$elm_css$Css$onlyChild = _rtfeldman$elm_css$Css$pseudoClass('only-child');
+var _rtfeldman$elm_css$Css$onlyOfType = _rtfeldman$elm_css$Css$pseudoClass('only-of-type');
+var _rtfeldman$elm_css$Css$optional = _rtfeldman$elm_css$Css$pseudoClass('optional');
+var _rtfeldman$elm_css$Css$outOfRange = _rtfeldman$elm_css$Css$pseudoClass('out-of-range');
+var _rtfeldman$elm_css$Css$readWrite = _rtfeldman$elm_css$Css$pseudoClass('read-write');
+var _rtfeldman$elm_css$Css$required = _rtfeldman$elm_css$Css$pseudoClass('required');
+var _rtfeldman$elm_css$Css$root = _rtfeldman$elm_css$Css$pseudoClass('root');
+var _rtfeldman$elm_css$Css$scope = _rtfeldman$elm_css$Css$pseudoClass('scope');
+var _rtfeldman$elm_css$Css$target = _rtfeldman$elm_css$Css$pseudoClass('target');
+var _rtfeldman$elm_css$Css$valid = _rtfeldman$elm_css$Css$pseudoClass('valid');
+var _rtfeldman$elm_css$Css$directionalityToString = function (directionality) {
+	var _p2 = directionality;
+	if (_p2.ctor === 'Ltr') {
+		return 'ltr';
+	} else {
+		return 'rtl';
+	}
+};
+var _rtfeldman$elm_css$Css$dir = function (directionality) {
+	return _rtfeldman$elm_css$Css$pseudoClass(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'dir(',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_rtfeldman$elm_css$Css$directionalityToString(directionality),
+				')')));
+};
+var _rtfeldman$elm_css$Css$propertyWithWarnings = F3(
+	function (warnings, key, value) {
+		return _rtfeldman$elm_css$Css_Preprocess$AppendProperty(
+			{key: key, value: value, important: false, warnings: warnings});
+	});
+var _rtfeldman$elm_css$Css$property = _rtfeldman$elm_css$Css$propertyWithWarnings(
+	{ctor: '[]'});
+var _rtfeldman$elm_css$Css$makeSnippet = F2(
+	function (mixins, sequence) {
+		var selector = A3(
+			_rtfeldman$elm_css$Css_Structure$Selector,
+			sequence,
+			{ctor: '[]'},
+			_elm_lang$core$Maybe$Nothing);
+		return _rtfeldman$elm_css$Css_Preprocess$Snippet(
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css_Preprocess$StyleBlockDeclaration(
+					A3(
+						_rtfeldman$elm_css$Css_Preprocess$StyleBlock,
+						selector,
+						{ctor: '[]'},
+						mixins)),
+				_1: {ctor: '[]'}
+			});
+	});
+var _rtfeldman$elm_css$Css$class = F2(
+	function ($class, mixins) {
+		return A2(
+			_rtfeldman$elm_css$Css$makeSnippet,
+			mixins,
+			_rtfeldman$elm_css$Css_Structure$UniversalSelectorSequence(
+				{
+					ctor: '::',
+					_0: _rtfeldman$elm_css$Css_Structure$ClassSelector(
+						A2(_rtfeldman$elm_css_util$Css_Helpers$identifierToString, '', $class)),
+					_1: {ctor: '[]'}
+				}));
+	});
+var _rtfeldman$elm_css$Css$selector = F2(
+	function (selectorStr, mixins) {
+		return A2(
+			_rtfeldman$elm_css$Css$makeSnippet,
+			mixins,
+			A2(
+				_rtfeldman$elm_css$Css_Structure$CustomSelector,
+				selectorStr,
+				{ctor: '[]'}));
+	});
+var _rtfeldman$elm_css$Css$everything = function (mixins) {
+	return A2(
+		_rtfeldman$elm_css$Css$makeSnippet,
+		mixins,
+		_rtfeldman$elm_css$Css_Structure$UniversalSelectorSequence(
+			{ctor: '[]'}));
+};
+var _rtfeldman$elm_css$Css$id = F2(
+	function (identifier, mixins) {
+		return A2(
+			_rtfeldman$elm_css$Css$makeSnippet,
+			mixins,
+			_rtfeldman$elm_css$Css_Structure$UniversalSelectorSequence(
+				{
+					ctor: '::',
+					_0: _rtfeldman$elm_css$Css_Structure$IdSelector(
+						A2(_rtfeldman$elm_css_util$Css_Helpers$identifierToString, '', identifier)),
+					_1: {ctor: '[]'}
+				}));
+	});
+var _rtfeldman$elm_css$Css$mixin = _rtfeldman$elm_css$Css_Preprocess$ApplyMixins;
+var _rtfeldman$elm_css$Css$stylesheet = _rtfeldman$elm_css$Css_Preprocess$stylesheet;
+var _rtfeldman$elm_css$Css$animationNames = function (identifiers) {
+	var value = A2(
+		_elm_lang$core$String$join,
+		', ',
+		A2(
+			_elm_lang$core$List$map,
+			_rtfeldman$elm_css_util$Css_Helpers$identifierToString(''),
+			identifiers));
+	return A2(_rtfeldman$elm_css$Css$property, 'animation-name', value);
+};
+var _rtfeldman$elm_css$Css$animationName = function (identifier) {
+	return _rtfeldman$elm_css$Css$animationNames(
+		{
+			ctor: '::',
+			_0: identifier,
+			_1: {ctor: '[]'}
+		});
+};
+var _rtfeldman$elm_css$Css$fontWeight = function (_p3) {
+	var _p4 = _p3;
+	var _p5 = _p4.value;
+	var validWeight = function (weight) {
+		return (!_elm_lang$core$Native_Utils.eq(
+			_p5,
+			_elm_lang$core$Basics$toString(weight))) ? true : A2(
+			_elm_lang$core$List$member,
+			weight,
+			A2(
+				_elm_lang$core$List$map,
+				F2(
+					function (x, y) {
+						return x * y;
+					})(100),
+				A2(_elm_lang$core$List$range, 1, 9)));
+	};
+	var warnings = validWeight(
+		_rtfeldman$elm_css$Css$stringToInt(_p5)) ? {ctor: '[]'} : {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$core$Basics_ops['++'],
+			'fontWeight ',
+			A2(_elm_lang$core$Basics_ops['++'], _p5, ' is invalid. Valid weights are: 100, 200, 300, 400, 500, 600, 700, 800, 900. Please see https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight#Values')),
+		_1: {ctor: '[]'}
+	};
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, warnings, 'font-weight', _p5);
+};
+var _rtfeldman$elm_css$Css$fontFeatureSettingsList = function (featureTagValues) {
+	var warnings = _elm_lang$core$List$concat(
+		A2(
+			_elm_lang$core$List$map,
+			function (_) {
+				return _.warnings;
+			},
+			featureTagValues));
+	var value = A2(
+		_elm_lang$core$String$join,
+		', ',
+		A2(
+			_elm_lang$core$List$map,
+			function (_) {
+				return _.value;
+			},
+			featureTagValues));
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, warnings, 'font-feature-settings', value);
+};
+var _rtfeldman$elm_css$Css$fontFeatureSettings = function (_p6) {
+	var _p7 = _p6;
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, _p7.warnings, 'font-feature-settings', _p7.value);
+};
+var _rtfeldman$elm_css$Css$qt = function (str) {
+	return _elm_lang$core$Basics$toString(str);
+};
+var _rtfeldman$elm_css$Css$fontFace = function (value) {
+	return A2(_elm_lang$core$Basics_ops['++'], 'font-face ', value);
+};
+var _rtfeldman$elm_css$Css$src = function (value) {
+	return _elm_lang$core$Basics$toString(value.value);
+};
+var _rtfeldman$elm_css$Css$withMedia = _rtfeldman$elm_css$Css_Preprocess$WithMedia;
+var _rtfeldman$elm_css$Css$media = F2(
+	function (mediaQueries, snippets) {
+		var nestedMediaRules = function (declarations) {
+			nestedMediaRules:
+			while (true) {
+				var _p8 = declarations;
+				if (_p8.ctor === '[]') {
+					return {ctor: '[]'};
+				} else {
+					switch (_p8._0.ctor) {
+						case 'StyleBlockDeclaration':
+							var _v7 = _p8._1;
+							declarations = _v7;
+							continue nestedMediaRules;
+						case 'MediaRule':
+							return {
+								ctor: '::',
+								_0: A2(
+									_rtfeldman$elm_css$Css_Preprocess$MediaRule,
+									A2(_elm_lang$core$Basics_ops['++'], mediaQueries, _p8._0._0),
+									_p8._0._1),
+								_1: nestedMediaRules(_p8._1)
+							};
+						default:
+							return {
+								ctor: '::',
+								_0: _p8._0,
+								_1: nestedMediaRules(_p8._1)
+							};
+					}
+				}
+			}
+		};
+		var extractStyleBlocks = function (declarations) {
+			extractStyleBlocks:
+			while (true) {
+				var _p9 = declarations;
+				if (_p9.ctor === '[]') {
+					return {ctor: '[]'};
+				} else {
+					if (_p9._0.ctor === 'StyleBlockDeclaration') {
+						return {
+							ctor: '::',
+							_0: _p9._0._0,
+							_1: extractStyleBlocks(_p9._1)
+						};
+					} else {
+						var _v9 = _p9._1;
+						declarations = _v9;
+						continue extractStyleBlocks;
+					}
+				}
+			}
+		};
+		var snippetDeclarations = A2(_elm_lang$core$List$concatMap, _rtfeldman$elm_css$Css_Preprocess$unwrapSnippet, snippets);
+		var mediaRuleFromStyleBlocks = A2(
+			_rtfeldman$elm_css$Css_Preprocess$MediaRule,
+			mediaQueries,
+			extractStyleBlocks(snippetDeclarations));
+		return _rtfeldman$elm_css$Css_Preprocess$Snippet(
+			{
+				ctor: '::',
+				_0: mediaRuleFromStyleBlocks,
+				_1: nestedMediaRules(snippetDeclarations)
+			});
+	});
+var _rtfeldman$elm_css$Css$mediaQuery = F2(
+	function (queryString, snippets) {
+		return A2(
+			_rtfeldman$elm_css$Css$media,
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css_Structure$MediaQuery(queryString),
+				_1: {ctor: '[]'}
+			},
+			snippets);
+	});
+var _rtfeldman$elm_css$Css$color = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'color', c.value);
+};
+var _rtfeldman$elm_css$Css$backgroundColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'background-color', c.value);
+};
+var _rtfeldman$elm_css$Css$outlineColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'outline-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderColor4 = F4(
+	function (c1, c2, c3, c4) {
+		var value = A2(
+			_elm_lang$core$String$join,
+			' ',
+			{
+				ctor: '::',
+				_0: c1.value,
+				_1: {
+					ctor: '::',
+					_0: c2.value,
+					_1: {
+						ctor: '::',
+						_0: c3.value,
+						_1: {
+							ctor: '::',
+							_0: c4.value,
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			});
+		var warnings = A2(
+			_elm_lang$core$Basics_ops['++'],
+			c1.warnings,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				c2.warnings,
+				A2(_elm_lang$core$Basics_ops['++'], c3.warnings, c4.warnings)));
+		return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, warnings, 'border-color', value);
+	});
+var _rtfeldman$elm_css$Css$borderColor3 = F3(
+	function (c1, c2, c3) {
+		var value = A2(
+			_elm_lang$core$String$join,
+			' ',
+			{
+				ctor: '::',
+				_0: c1.value,
+				_1: {
+					ctor: '::',
+					_0: c2.value,
+					_1: {
+						ctor: '::',
+						_0: c3.value,
+						_1: {ctor: '[]'}
+					}
+				}
+			});
+		var warnings = A2(
+			_elm_lang$core$Basics_ops['++'],
+			c1.warnings,
+			A2(_elm_lang$core$Basics_ops['++'], c2.warnings, c3.warnings));
+		return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, warnings, 'border-color', value);
+	});
+var _rtfeldman$elm_css$Css$borderColor2 = F2(
+	function (c1, c2) {
+		var value = A2(
+			_elm_lang$core$String$join,
+			' ',
+			{
+				ctor: '::',
+				_0: c1.value,
+				_1: {
+					ctor: '::',
+					_0: c2.value,
+					_1: {ctor: '[]'}
+				}
+			});
+		var warnings = A2(_elm_lang$core$Basics_ops['++'], c1.warnings, c2.warnings);
+		return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, warnings, 'border-color', value);
+	});
+var _rtfeldman$elm_css$Css$borderColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderBlockEndColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-block-end-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderTopColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-top-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderRightColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-right-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderLeftColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-left-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderInlineEndColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-inline-end-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderInlineStartColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-inline-start-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderBottomColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-bottom-color', c.value);
+};
+var _rtfeldman$elm_css$Css$borderBlockStartColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'border-block-start-color', c.value);
+};
+var _rtfeldman$elm_css$Css$featureOff = 0;
+var _rtfeldman$elm_css$Css$featureOn = 1;
+var _rtfeldman$elm_css$Css$displayFlex = A2(_rtfeldman$elm_css$Css$property, 'display', 'flex');
+var _rtfeldman$elm_css$Css$textEmphasisColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'text-emphasis-color', c.value);
+};
+var _rtfeldman$elm_css$Css$textDecorationColor = function (c) {
+	return A3(_rtfeldman$elm_css$Css$propertyWithWarnings, c.warnings, 'text-decoration-color', c.value);
+};
+var _rtfeldman$elm_css$Css$prop6 = F7(
+	function (key, argA, argB, argC, argD, argE, argF) {
+		return A2(
+			_rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				_elm_lang$core$String$join,
+				' ',
+				{
+					ctor: '::',
+					_0: argA.value,
+					_1: {
+						ctor: '::',
+						_0: argB.value,
+						_1: {
+							ctor: '::',
+							_0: argC.value,
+							_1: {
+								ctor: '::',
+								_0: argD.value,
+								_1: {
+									ctor: '::',
+									_0: argE.value,
+									_1: {
+										ctor: '::',
+										_0: argF.value,
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				}));
+	});
+var _rtfeldman$elm_css$Css$boxShadow6 = _rtfeldman$elm_css$Css$prop6('box-shadow');
+var _rtfeldman$elm_css$Css$prop5 = F6(
+	function (key, argA, argB, argC, argD, argE) {
+		return A2(
+			_rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				_elm_lang$core$String$join,
+				' ',
+				{
+					ctor: '::',
+					_0: argA.value,
+					_1: {
+						ctor: '::',
+						_0: argB.value,
+						_1: {
+							ctor: '::',
+							_0: argC.value,
+							_1: {
+								ctor: '::',
+								_0: argD.value,
+								_1: {
+									ctor: '::',
+									_0: argE.value,
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}
+				}));
+	});
+var _rtfeldman$elm_css$Css$boxShadow5 = _rtfeldman$elm_css$Css$prop5('box-shadow');
+var _rtfeldman$elm_css$Css$prop4 = F5(
+	function (key, argA, argB, argC, argD) {
+		return A2(
+			_rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				_elm_lang$core$String$join,
+				' ',
+				{
+					ctor: '::',
+					_0: argA.value,
+					_1: {
+						ctor: '::',
+						_0: argB.value,
+						_1: {
+							ctor: '::',
+							_0: argC.value,
+							_1: {
+								ctor: '::',
+								_0: argD.value,
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}));
+	});
+var _rtfeldman$elm_css$Css$textShadow4 = _rtfeldman$elm_css$Css$prop4('text-shadow');
+var _rtfeldman$elm_css$Css$boxShadow4 = _rtfeldman$elm_css$Css$prop4('box-shadow');
+var _rtfeldman$elm_css$Css$padding4 = _rtfeldman$elm_css$Css$prop4('padding');
+var _rtfeldman$elm_css$Css$margin4 = _rtfeldman$elm_css$Css$prop4('margin');
+var _rtfeldman$elm_css$Css$borderImageOutset4 = _rtfeldman$elm_css$Css$prop4('border-image-outset');
+var _rtfeldman$elm_css$Css$borderImageWidth4 = _rtfeldman$elm_css$Css$prop4('border-image-width');
+var _rtfeldman$elm_css$Css$borderRadius4 = _rtfeldman$elm_css$Css$prop4('border-radius');
+var _rtfeldman$elm_css$Css$prop3 = F4(
+	function (key, argA, argB, argC) {
+		return A2(
+			_rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				_elm_lang$core$String$join,
+				' ',
+				{
+					ctor: '::',
+					_0: argA.value,
+					_1: {
+						ctor: '::',
+						_0: argB.value,
+						_1: {
+							ctor: '::',
+							_0: argC.value,
+							_1: {ctor: '[]'}
+						}
+					}
+				}));
+	});
+var _rtfeldman$elm_css$Css$textShadow3 = _rtfeldman$elm_css$Css$prop3('text-shadow');
+var _rtfeldman$elm_css$Css$boxShadow3 = _rtfeldman$elm_css$Css$prop3('box-shadow');
+var _rtfeldman$elm_css$Css$textIndent3 = _rtfeldman$elm_css$Css$prop3('text-indent');
+var _rtfeldman$elm_css$Css$padding3 = _rtfeldman$elm_css$Css$prop3('padding');
+var _rtfeldman$elm_css$Css$margin3 = _rtfeldman$elm_css$Css$prop3('margin');
+var _rtfeldman$elm_css$Css$border3 = _rtfeldman$elm_css$Css$prop3('border');
+var _rtfeldman$elm_css$Css$borderTop3 = _rtfeldman$elm_css$Css$prop3('border-top');
+var _rtfeldman$elm_css$Css$borderBottom3 = _rtfeldman$elm_css$Css$prop3('border-bottom');
+var _rtfeldman$elm_css$Css$borderLeft3 = _rtfeldman$elm_css$Css$prop3('border-left');
+var _rtfeldman$elm_css$Css$borderRight3 = _rtfeldman$elm_css$Css$prop3('border-right');
+var _rtfeldman$elm_css$Css$borderBlockStart3 = _rtfeldman$elm_css$Css$prop3('border-block-start');
+var _rtfeldman$elm_css$Css$borderBlockEnd3 = _rtfeldman$elm_css$Css$prop3('border-block-end');
+var _rtfeldman$elm_css$Css$borderInlineStart3 = _rtfeldman$elm_css$Css$prop3('border-block-start');
+var _rtfeldman$elm_css$Css$borderInlineEnd3 = _rtfeldman$elm_css$Css$prop3('border-block-end');
+var _rtfeldman$elm_css$Css$borderImageOutset3 = _rtfeldman$elm_css$Css$prop3('border-image-outset');
+var _rtfeldman$elm_css$Css$borderImageWidth3 = _rtfeldman$elm_css$Css$prop3('border-image-width');
+var _rtfeldman$elm_css$Css$borderRadius3 = _rtfeldman$elm_css$Css$prop3('border-radius');
+var _rtfeldman$elm_css$Css$outline3 = _rtfeldman$elm_css$Css$prop3('outline');
+var _rtfeldman$elm_css$Css$fontVariant3 = _rtfeldman$elm_css$Css$prop3('font-variant');
+var _rtfeldman$elm_css$Css$fontVariantNumeric3 = _rtfeldman$elm_css$Css$prop3('font-variant-numeric');
+var _rtfeldman$elm_css$Css$textDecoration3 = _rtfeldman$elm_css$Css$prop3('text-decoration');
+var _rtfeldman$elm_css$Css$textDecorations3 = function (_p10) {
+	return A2(
+		_rtfeldman$elm_css$Css$prop3,
+		'text-decoration',
+		_rtfeldman$elm_css$Css$valuesOrNone(_p10));
+};
+var _rtfeldman$elm_css$Css$prop2 = F3(
+	function (key, argA, argB) {
+		return A2(
+			_rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				_elm_lang$core$String$join,
+				' ',
+				{
+					ctor: '::',
+					_0: argA.value,
+					_1: {
+						ctor: '::',
+						_0: argB.value,
+						_1: {ctor: '[]'}
+					}
+				}));
+	});
+var _rtfeldman$elm_css$Css$textShadow2 = _rtfeldman$elm_css$Css$prop2('text-shadow');
+var _rtfeldman$elm_css$Css$boxShadow2 = _rtfeldman$elm_css$Css$prop2('box-shadow');
+var _rtfeldman$elm_css$Css$textIndent2 = _rtfeldman$elm_css$Css$prop2('text-indent');
+var _rtfeldman$elm_css$Css$padding2 = _rtfeldman$elm_css$Css$prop2('padding');
+var _rtfeldman$elm_css$Css$margin2 = _rtfeldman$elm_css$Css$prop2('margin');
+var _rtfeldman$elm_css$Css$border2 = _rtfeldman$elm_css$Css$prop2('border');
+var _rtfeldman$elm_css$Css$borderTop2 = _rtfeldman$elm_css$Css$prop2('border-top');
+var _rtfeldman$elm_css$Css$borderBottom2 = _rtfeldman$elm_css$Css$prop2('border-bottom');
+var _rtfeldman$elm_css$Css$borderLeft2 = _rtfeldman$elm_css$Css$prop2('border-left');
+var _rtfeldman$elm_css$Css$borderRight2 = _rtfeldman$elm_css$Css$prop2('border-right');
+var _rtfeldman$elm_css$Css$borderBlockStart2 = _rtfeldman$elm_css$Css$prop2('border-block-start');
+var _rtfeldman$elm_css$Css$borderBlockEnd2 = _rtfeldman$elm_css$Css$prop2('border-block-end');
+var _rtfeldman$elm_css$Css$borderInlineStart2 = _rtfeldman$elm_css$Css$prop2('border-block-start');
+var _rtfeldman$elm_css$Css$borderInlineEnd2 = _rtfeldman$elm_css$Css$prop2('border-block-end');
+var _rtfeldman$elm_css$Css$borderImageOutset2 = _rtfeldman$elm_css$Css$prop2('border-image-outset');
+var _rtfeldman$elm_css$Css$borderImageWidth2 = _rtfeldman$elm_css$Css$prop2('border-image-width');
+var _rtfeldman$elm_css$Css$borderTopWidth2 = _rtfeldman$elm_css$Css$prop2('border-top-width');
+var _rtfeldman$elm_css$Css$borderBottomLeftRadius2 = _rtfeldman$elm_css$Css$prop2('border-bottom-left-radius');
+var _rtfeldman$elm_css$Css$borderBottomRightRadius2 = _rtfeldman$elm_css$Css$prop2('border-bottom-right-radius');
+var _rtfeldman$elm_css$Css$borderTopLeftRadius2 = _rtfeldman$elm_css$Css$prop2('border-top-left-radius');
+var _rtfeldman$elm_css$Css$borderTopRightRadius2 = _rtfeldman$elm_css$Css$prop2('border-top-right-radius');
+var _rtfeldman$elm_css$Css$borderRadius2 = _rtfeldman$elm_css$Css$prop2('border-radius');
+var _rtfeldman$elm_css$Css$borderSpacing2 = _rtfeldman$elm_css$Css$prop2('border-spacing');
+var _rtfeldman$elm_css$Css$backgroundRepeat2 = _rtfeldman$elm_css$Css$prop2('background-repeat');
+var _rtfeldman$elm_css$Css$backgroundPosition2 = _rtfeldman$elm_css$Css$prop2('background-position');
+var _rtfeldman$elm_css$Css$backgroundSize2 = _rtfeldman$elm_css$Css$prop2('background-size');
+var _rtfeldman$elm_css$Css$fontVariant2 = _rtfeldman$elm_css$Css$prop2('font-variant');
+var _rtfeldman$elm_css$Css$fontVariantNumeric2 = _rtfeldman$elm_css$Css$prop2('font-variant-numeric');
+var _rtfeldman$elm_css$Css$textDecoration2 = _rtfeldman$elm_css$Css$prop2('text-decoration');
+var _rtfeldman$elm_css$Css$textDecorations2 = function (_p11) {
+	return A2(
+		_rtfeldman$elm_css$Css$prop2,
+		'text-decoration',
+		_rtfeldman$elm_css$Css$valuesOrNone(_p11));
+};
+var _rtfeldman$elm_css$Css$prop1 = F2(
+	function (key, arg) {
+		return A2(_rtfeldman$elm_css$Css$property, key, arg.value);
+	});
+var _rtfeldman$elm_css$Css$textRendering = _rtfeldman$elm_css$Css$prop1('text-rendering');
+var _rtfeldman$elm_css$Css$textOrientation = _rtfeldman$elm_css$Css$prop1('text-orientation');
+var _rtfeldman$elm_css$Css$textOverflow = _rtfeldman$elm_css$Css$prop1('text-overflow');
+var _rtfeldman$elm_css$Css$textShadow = _rtfeldman$elm_css$Css$prop1('text-shadow');
+var _rtfeldman$elm_css$Css$boxShadow = _rtfeldman$elm_css$Css$prop1('box-shadow');
+var _rtfeldman$elm_css$Css$textIndent = _rtfeldman$elm_css$Css$prop1('text-indent');
+var _rtfeldman$elm_css$Css$textTransform = _rtfeldman$elm_css$Css$prop1('text-transform');
+var _rtfeldman$elm_css$Css$display = _rtfeldman$elm_css$Css$prop1('display');
+var _rtfeldman$elm_css$Css$opacity = _rtfeldman$elm_css$Css$prop1('opacity');
+var _rtfeldman$elm_css$Css$width = _rtfeldman$elm_css$Css$prop1('width');
+var _rtfeldman$elm_css$Css$maxWidth = _rtfeldman$elm_css$Css$prop1('max-width');
+var _rtfeldman$elm_css$Css$minWidth = _rtfeldman$elm_css$Css$prop1('min-width');
+var _rtfeldman$elm_css$Css$height = _rtfeldman$elm_css$Css$prop1('height');
+var _rtfeldman$elm_css$Css$minHeight = _rtfeldman$elm_css$Css$prop1('min-height');
+var _rtfeldman$elm_css$Css$maxHeight = _rtfeldman$elm_css$Css$prop1('max-height');
+var _rtfeldman$elm_css$Css$padding = _rtfeldman$elm_css$Css$prop1('padding');
+var _rtfeldman$elm_css$Css$paddingBlockStart = _rtfeldman$elm_css$Css$prop1('padding-block-start');
+var _rtfeldman$elm_css$Css$paddingBlockEnd = _rtfeldman$elm_css$Css$prop1('padding-block-end');
+var _rtfeldman$elm_css$Css$paddingInlineStart = _rtfeldman$elm_css$Css$prop1('padding-inline-start');
+var _rtfeldman$elm_css$Css$paddingInlineEnd = _rtfeldman$elm_css$Css$prop1('padding-inline-end');
+var _rtfeldman$elm_css$Css$paddingTop = _rtfeldman$elm_css$Css$prop1('padding-top');
+var _rtfeldman$elm_css$Css$paddingBottom = _rtfeldman$elm_css$Css$prop1('padding-bottom');
+var _rtfeldman$elm_css$Css$paddingRight = _rtfeldman$elm_css$Css$prop1('padding-right');
+var _rtfeldman$elm_css$Css$paddingLeft = _rtfeldman$elm_css$Css$prop1('padding-left');
+var _rtfeldman$elm_css$Css$margin = _rtfeldman$elm_css$Css$prop1('margin');
+var _rtfeldman$elm_css$Css$marginTop = _rtfeldman$elm_css$Css$prop1('margin-top');
+var _rtfeldman$elm_css$Css$marginBottom = _rtfeldman$elm_css$Css$prop1('margin-bottom');
+var _rtfeldman$elm_css$Css$marginRight = _rtfeldman$elm_css$Css$prop1('margin-right');
+var _rtfeldman$elm_css$Css$marginLeft = _rtfeldman$elm_css$Css$prop1('margin-left');
+var _rtfeldman$elm_css$Css$marginBlockStart = _rtfeldman$elm_css$Css$prop1('margin-block-start');
+var _rtfeldman$elm_css$Css$marginBlockEnd = _rtfeldman$elm_css$Css$prop1('margin-block-end');
+var _rtfeldman$elm_css$Css$marginInlineStart = _rtfeldman$elm_css$Css$prop1('margin-inline-start');
+var _rtfeldman$elm_css$Css$marginInlineEnd = _rtfeldman$elm_css$Css$prop1('margin-inline-end');
+var _rtfeldman$elm_css$Css$top = _rtfeldman$elm_css$Css$prop1('top');
+var _rtfeldman$elm_css$Css$bottom = _rtfeldman$elm_css$Css$prop1('bottom');
+var _rtfeldman$elm_css$Css$left = _rtfeldman$elm_css$Css$prop1('left');
+var _rtfeldman$elm_css$Css$right = _rtfeldman$elm_css$Css$prop1('right');
+var _rtfeldman$elm_css$Css$border = _rtfeldman$elm_css$Css$prop1('border');
+var _rtfeldman$elm_css$Css$borderTop = _rtfeldman$elm_css$Css$prop1('border-top');
+var _rtfeldman$elm_css$Css$borderBottom = _rtfeldman$elm_css$Css$prop1('border-bottom');
+var _rtfeldman$elm_css$Css$borderLeft = _rtfeldman$elm_css$Css$prop1('border-left');
+var _rtfeldman$elm_css$Css$borderRight = _rtfeldman$elm_css$Css$prop1('border-right');
+var _rtfeldman$elm_css$Css$borderBlockStart = _rtfeldman$elm_css$Css$prop1('border-block-start');
+var _rtfeldman$elm_css$Css$borderBlockEnd = _rtfeldman$elm_css$Css$prop1('border-block-end');
+var _rtfeldman$elm_css$Css$borderInlineStart = _rtfeldman$elm_css$Css$prop1('border-block-start');
+var _rtfeldman$elm_css$Css$borderInlineEnd = _rtfeldman$elm_css$Css$prop1('border-block-end');
+var _rtfeldman$elm_css$Css$borderImageOutset = _rtfeldman$elm_css$Css$prop1('border-image-outset');
+var _rtfeldman$elm_css$Css$borderImageWidth = _rtfeldman$elm_css$Css$prop1('border-image-width');
+var _rtfeldman$elm_css$Css$borderBlockEndStyle = _rtfeldman$elm_css$Css$prop1('border-block-end-style');
+var _rtfeldman$elm_css$Css$borderBlockStartStyle = _rtfeldman$elm_css$Css$prop1('border-block-start-style');
+var _rtfeldman$elm_css$Css$borderInlineEndStyle = _rtfeldman$elm_css$Css$prop1('border-inline-end-style');
+var _rtfeldman$elm_css$Css$borderBottomStyle = _rtfeldman$elm_css$Css$prop1('border-bottom-style');
+var _rtfeldman$elm_css$Css$borderInlineStartStyle = _rtfeldman$elm_css$Css$prop1('border-inline-start-style');
+var _rtfeldman$elm_css$Css$borderLeftStyle = _rtfeldman$elm_css$Css$prop1('border-left-style');
+var _rtfeldman$elm_css$Css$borderRightStyle = _rtfeldman$elm_css$Css$prop1('border-right-style');
+var _rtfeldman$elm_css$Css$borderTopStyle = _rtfeldman$elm_css$Css$prop1('border-top-style');
+var _rtfeldman$elm_css$Css$borderStyle = _rtfeldman$elm_css$Css$prop1('border-style');
+var _rtfeldman$elm_css$Css$borderCollapse = _rtfeldman$elm_css$Css$prop1('border-collapse');
+var _rtfeldman$elm_css$Css$borderBottomWidth = _rtfeldman$elm_css$Css$prop1('border-bottom-width');
+var _rtfeldman$elm_css$Css$borderInlineEndWidth = _rtfeldman$elm_css$Css$prop1('border-inline-end-width');
+var _rtfeldman$elm_css$Css$borderLeftWidth = _rtfeldman$elm_css$Css$prop1('border-left-width');
+var _rtfeldman$elm_css$Css$borderRightWidth = _rtfeldman$elm_css$Css$prop1('border-right-width');
+var _rtfeldman$elm_css$Css$borderTopWidth = _rtfeldman$elm_css$Css$prop1('border-top-width');
+var _rtfeldman$elm_css$Css$borderBottomLeftRadius = _rtfeldman$elm_css$Css$prop1('border-bottom-left-radius');
+var _rtfeldman$elm_css$Css$borderBottomRightRadius = _rtfeldman$elm_css$Css$prop1('border-bottom-right-radius');
+var _rtfeldman$elm_css$Css$borderTopLeftRadius = _rtfeldman$elm_css$Css$prop1('border-top-left-radius');
+var _rtfeldman$elm_css$Css$borderTopRightRadius = _rtfeldman$elm_css$Css$prop1('border-top-right-radius');
+var _rtfeldman$elm_css$Css$borderRadius = _rtfeldman$elm_css$Css$prop1('border-radius');
+var _rtfeldman$elm_css$Css$borderSpacing = _rtfeldman$elm_css$Css$prop1('border-spacing');
+var _rtfeldman$elm_css$Css$outline = _rtfeldman$elm_css$Css$prop1('outline');
+var _rtfeldman$elm_css$Css$outlineWidth = _rtfeldman$elm_css$Css$prop1('outline-width');
+var _rtfeldman$elm_css$Css$outlineStyle = _rtfeldman$elm_css$Css$prop1('outline-style');
+var _rtfeldman$elm_css$Css$outlineOffset = _rtfeldman$elm_css$Css$prop1('outline-offset');
+var _rtfeldman$elm_css$Css$resize = _rtfeldman$elm_css$Css$prop1('resize');
+var _rtfeldman$elm_css$Css$fill = _rtfeldman$elm_css$Css$prop1('fill');
+var _rtfeldman$elm_css$Css$overflow = _rtfeldman$elm_css$Css$prop1('overflow');
+var _rtfeldman$elm_css$Css$overflowX = _rtfeldman$elm_css$Css$prop1('overflow-x');
+var _rtfeldman$elm_css$Css$overflowY = _rtfeldman$elm_css$Css$prop1('overflow-y');
+var _rtfeldman$elm_css$Css$overflowWrap = _rtfeldman$elm_css$Css$prop1('overflow-wrap');
+var _rtfeldman$elm_css$Css$whiteSpace = _rtfeldman$elm_css$Css$prop1('white-space');
+var _rtfeldman$elm_css$Css$backgroundRepeat = _rtfeldman$elm_css$Css$prop1('background-repeat');
+var _rtfeldman$elm_css$Css$backgroundAttachment = _rtfeldman$elm_css$Css$prop1('background-attachment');
+var _rtfeldman$elm_css$Css$backgroundClip = _rtfeldman$elm_css$Css$prop1('background-clip');
+var _rtfeldman$elm_css$Css$backgroundOrigin = _rtfeldman$elm_css$Css$prop1('background-origin');
+var _rtfeldman$elm_css$Css$backgroundImage = _rtfeldman$elm_css$Css$prop1('background-image');
+var _rtfeldman$elm_css$Css$backgroundSize = _rtfeldman$elm_css$Css$prop1('background-size');
+var _rtfeldman$elm_css$Css$lineHeight = _rtfeldman$elm_css$Css$prop1('line-height');
+var _rtfeldman$elm_css$Css$letterSpacing = _rtfeldman$elm_css$Css$prop1('letter-spacing');
+var _rtfeldman$elm_css$Css$fontFamily = _rtfeldman$elm_css$Css$prop1('font-family');
+var _rtfeldman$elm_css$Css$fontFamilies = function (_p12) {
+	return A2(
+		_rtfeldman$elm_css$Css$prop1,
+		'font-family',
+		_rtfeldman$elm_css$Css$stringsToValue(_p12));
+};
+var _rtfeldman$elm_css$Css$fontSize = _rtfeldman$elm_css$Css$prop1('font-size');
+var _rtfeldman$elm_css$Css$fontStyle = _rtfeldman$elm_css$Css$prop1('font-style');
+var _rtfeldman$elm_css$Css$fontVariant = _rtfeldman$elm_css$Css$prop1('font-variant');
+var _rtfeldman$elm_css$Css$fontVariantLigatures = _rtfeldman$elm_css$Css$prop1('font-variant-ligatures');
+var _rtfeldman$elm_css$Css$fontVariantCaps = _rtfeldman$elm_css$Css$prop1('font-variant-caps');
+var _rtfeldman$elm_css$Css$fontVariantNumeric = _rtfeldman$elm_css$Css$prop1('font-variant-numeric');
+var _rtfeldman$elm_css$Css$fontVariantNumerics = function (_p13) {
+	return A2(
+		_rtfeldman$elm_css$Css$prop1,
+		'font-variant-numeric',
+		_rtfeldman$elm_css$Css$valuesOrNone(_p13));
+};
+var _rtfeldman$elm_css$Css$cursor = _rtfeldman$elm_css$Css$prop1('cursor');
+var _rtfeldman$elm_css$Css$textDecoration = _rtfeldman$elm_css$Css$prop1('text-decoration');
+var _rtfeldman$elm_css$Css$textDecorations = function (_p14) {
+	return A2(
+		_rtfeldman$elm_css$Css$prop1,
+		'text-decoration',
+		_rtfeldman$elm_css$Css$valuesOrNone(_p14));
+};
+var _rtfeldman$elm_css$Css$textDecorationLine = _rtfeldman$elm_css$Css$prop1('text-decoration-line');
+var _rtfeldman$elm_css$Css$textDecorationLines = function (_p15) {
+	return A2(
+		_rtfeldman$elm_css$Css$prop1,
+		'text-decoration-line',
+		_rtfeldman$elm_css$Css$valuesOrNone(_p15));
+};
+var _rtfeldman$elm_css$Css$textDecorationStyle = _rtfeldman$elm_css$Css$prop1('text-decoration-style');
+var _rtfeldman$elm_css$Css$zIndex = _rtfeldman$elm_css$Css$prop1('z-index');
+var _rtfeldman$elm_css$Css$position = _rtfeldman$elm_css$Css$prop1('position');
+var _rtfeldman$elm_css$Css$textBottom = _rtfeldman$elm_css$Css$prop1('text-bottom');
+var _rtfeldman$elm_css$Css$textTop = _rtfeldman$elm_css$Css$prop1('text-top');
+var _rtfeldman$elm_css$Css$super = _rtfeldman$elm_css$Css$prop1('super');
+var _rtfeldman$elm_css$Css$sub = _rtfeldman$elm_css$Css$prop1('sub');
+var _rtfeldman$elm_css$Css$baseline = _rtfeldman$elm_css$Css$prop1('baseline');
+var _rtfeldman$elm_css$Css$middle = _rtfeldman$elm_css$Css$prop1('middle');
+var _rtfeldman$elm_css$Css$stretch = _rtfeldman$elm_css$Css$prop1('stretch');
+var _rtfeldman$elm_css$Css$spaceBetween = _rtfeldman$elm_css$Css$prop1('space-between');
+var _rtfeldman$elm_css$Css$spaceAround = _rtfeldman$elm_css$Css$prop1('space-around');
+var _rtfeldman$elm_css$Css$flexEnd = _rtfeldman$elm_css$Css$prop1('flex-end');
+var _rtfeldman$elm_css$Css$flexStart = _rtfeldman$elm_css$Css$prop1('flex-start');
+var _rtfeldman$elm_css$Css$order = _rtfeldman$elm_css$Css$prop1('order');
+var _rtfeldman$elm_css$Css$flexFlow2 = _rtfeldman$elm_css$Css$prop2('flex-flow');
+var _rtfeldman$elm_css$Css$flexFlow1 = _rtfeldman$elm_css$Css$prop1('flex-flow');
+var _rtfeldman$elm_css$Css$flexDirection = _rtfeldman$elm_css$Css$prop1('flex-direction');
+var _rtfeldman$elm_css$Css$flexWrap = _rtfeldman$elm_css$Css$prop1('flex-wrap');
+var _rtfeldman$elm_css$Css$flexShrink = _rtfeldman$elm_css$Css$prop1('flex-shrink');
+var _rtfeldman$elm_css$Css$flexGrow = _rtfeldman$elm_css$Css$prop1('flex-grow');
+var _rtfeldman$elm_css$Css$flexBasis = _rtfeldman$elm_css$Css$prop1('flex-basis');
+var _rtfeldman$elm_css$Css$flex3 = _rtfeldman$elm_css$Css$prop3('flex');
+var _rtfeldman$elm_css$Css$flex2 = _rtfeldman$elm_css$Css$prop2('flex');
+var _rtfeldman$elm_css$Css$flex = _rtfeldman$elm_css$Css$prop1('flex');
+var _rtfeldman$elm_css$Css$listStyle3 = _rtfeldman$elm_css$Css$prop3('list-style');
+var _rtfeldman$elm_css$Css$listStyle2 = _rtfeldman$elm_css$Css$prop2('list-style');
+var _rtfeldman$elm_css$Css$listStyle = _rtfeldman$elm_css$Css$prop1('list-style');
+var _rtfeldman$elm_css$Css$listStyleType = _rtfeldman$elm_css$Css$prop1('list-style-type');
+var _rtfeldman$elm_css$Css$listStylePosition = _rtfeldman$elm_css$Css$prop1('list-style-position');
+var _rtfeldman$elm_css$Css$transformStyle = _rtfeldman$elm_css$Css$prop1('transform-style');
+var _rtfeldman$elm_css$Css$boxSizing = _rtfeldman$elm_css$Css$prop1('box-sizing');
+var _rtfeldman$elm_css$Css$transformBox = _rtfeldman$elm_css$Css$prop1('transform-box');
+var _rtfeldman$elm_css$Css$transforms = function (_p16) {
+	return A2(
+		_rtfeldman$elm_css$Css$prop1,
+		'transform',
+		_rtfeldman$elm_css$Css$valuesOrNone(_p16));
+};
+var _rtfeldman$elm_css$Css$transform = function (only) {
+	return _rtfeldman$elm_css$Css$transforms(
+		{
+			ctor: '::',
+			_0: only,
+			_1: {ctor: '[]'}
+		});
+};
+var _rtfeldman$elm_css$Css$true = _rtfeldman$elm_css$Css$prop1('true');
+var _rtfeldman$elm_css$Css$matchParent = _rtfeldman$elm_css$Css$prop1('match-parent');
+var _rtfeldman$elm_css$Css$end = _rtfeldman$elm_css$Css$prop1('end');
+var _rtfeldman$elm_css$Css$start = _rtfeldman$elm_css$Css$prop1('start');
+var _rtfeldman$elm_css$Css$justifyAll = _rtfeldman$elm_css$Css$prop1('justify-all');
+var _rtfeldman$elm_css$Css$textJustify = _rtfeldman$elm_css$Css$prop1('text-justify');
+var _rtfeldman$elm_css$Css$center = _rtfeldman$elm_css$Css$prop1('center');
+var _rtfeldman$elm_css$Css$withPrecedingHash = function (str) {
+	return A2(_elm_lang$core$String$startsWith, '#', str) ? str : A2(
+		_elm_lang$core$String$cons,
+		_elm_lang$core$Native_Utils.chr('#'),
+		str);
+};
+var _rtfeldman$elm_css$Css$luminosity = _rtfeldman$elm_css$Css$prop1('luminosity');
+var _rtfeldman$elm_css$Css$saturation = _rtfeldman$elm_css$Css$prop1('saturation');
+var _rtfeldman$elm_css$Css$hue = _rtfeldman$elm_css$Css$prop1('hue');
+var _rtfeldman$elm_css$Css$exclusion = _rtfeldman$elm_css$Css$prop1('exclusion');
+var _rtfeldman$elm_css$Css$difference = _rtfeldman$elm_css$Css$prop1('difference');
+var _rtfeldman$elm_css$Css$softLight = _rtfeldman$elm_css$Css$prop1('soft-light');
+var _rtfeldman$elm_css$Css$hardLight = _rtfeldman$elm_css$Css$prop1('hard-light');
+var _rtfeldman$elm_css$Css$colorBurn = _rtfeldman$elm_css$Css$prop1('color-burn');
+var _rtfeldman$elm_css$Css$colorDodge = _rtfeldman$elm_css$Css$prop1('color-dodge');
+var _rtfeldman$elm_css$Css$lighten = _rtfeldman$elm_css$Css$prop1('lighten');
+var _rtfeldman$elm_css$Css$darken = _rtfeldman$elm_css$Css$prop1('darken');
+var _rtfeldman$elm_css$Css$overlay = _rtfeldman$elm_css$Css$prop1('overlay');
+var _rtfeldman$elm_css$Css$screenBlendMode = _rtfeldman$elm_css$Css$prop1('screen');
+var _rtfeldman$elm_css$Css$multiply = _rtfeldman$elm_css$Css$prop1('multiply');
+var _rtfeldman$elm_css$Css$important = _rtfeldman$elm_css$Css_Preprocess$mapLastProperty(
+	function (property) {
+		return _elm_lang$core$Native_Utils.update(
+			property,
+			{important: true});
+	});
+var _rtfeldman$elm_css$Css$all = _rtfeldman$elm_css$Css$prop1('all');
+var _rtfeldman$elm_css$Css$combineLengths = F3(
+	function (operation, first, second) {
+		var numericValue = A2(operation, first.numericValue, second.numericValue);
+		var value = A2(
+			_elm_lang$core$String$join,
+			'',
+			A2(
+				_elm_lang$core$List$filter,
+				function (_p17) {
+					return !_elm_lang$core$String$isEmpty(_p17);
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$core$Basics$toString(numericValue),
+					_1: {
+						ctor: '::',
+						_0: first.unitLabel,
+						_1: {ctor: '[]'}
+					}
+				}));
+		return _elm_lang$core$Native_Utils.update(
+			first,
+			{value: value, numericValue: numericValue});
+	});
+var _rtfeldman$elm_css$Css_ops = _rtfeldman$elm_css$Css_ops || {};
+_rtfeldman$elm_css$Css_ops['|*|'] = _rtfeldman$elm_css$Css$combineLengths(
+	F2(
+		function (x, y) {
+			return x * y;
+		}));
+var _rtfeldman$elm_css$Css_ops = _rtfeldman$elm_css$Css_ops || {};
+_rtfeldman$elm_css$Css_ops['|/|'] = _rtfeldman$elm_css$Css$combineLengths(
+	F2(
+		function (x, y) {
+			return x / y;
+		}));
+var _rtfeldman$elm_css$Css_ops = _rtfeldman$elm_css$Css_ops || {};
+_rtfeldman$elm_css$Css_ops['|-|'] = _rtfeldman$elm_css$Css$combineLengths(
+	F2(
+		function (x, y) {
+			return x - y;
+		}));
+var _rtfeldman$elm_css$Css_ops = _rtfeldman$elm_css$Css_ops || {};
+_rtfeldman$elm_css$Css_ops['|+|'] = _rtfeldman$elm_css$Css$combineLengths(
+	F2(
+		function (x, y) {
+			return x + y;
+		}));
+var _rtfeldman$elm_css$Css$getOverloadedProperty = F3(
+	function (functionName, desiredKey, mixin) {
+		getOverloadedProperty:
+		while (true) {
+			var _p18 = mixin;
+			switch (_p18.ctor) {
+				case 'AppendProperty':
+					return A2(_rtfeldman$elm_css$Css$property, desiredKey, _p18._0.key);
+				case 'ExtendSelector':
+					return A3(
+						_rtfeldman$elm_css$Css$propertyWithWarnings,
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$core$Basics_ops['++'],
+								'Cannot apply ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									functionName,
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										' with inapplicable mixin for selector ',
+										_elm_lang$core$Basics$toString(_p18._0)))),
+							_1: {ctor: '[]'}
+						},
+						desiredKey,
+						'');
+				case 'NestSnippet':
+					return A3(
+						_rtfeldman$elm_css$Css$propertyWithWarnings,
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$core$Basics_ops['++'],
+								'Cannot apply ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									functionName,
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										' with inapplicable mixin for combinator ',
+										_elm_lang$core$Basics$toString(_p18._0)))),
+							_1: {ctor: '[]'}
+						},
+						desiredKey,
+						'');
+				case 'WithPseudoElement':
+					return A3(
+						_rtfeldman$elm_css$Css$propertyWithWarnings,
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$core$Basics_ops['++'],
+								'Cannot apply ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									functionName,
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										' with inapplicable mixin for pseudo-element setter ',
+										_elm_lang$core$Basics$toString(_p18._0)))),
+							_1: {ctor: '[]'}
+						},
+						desiredKey,
+						'');
+				case 'WithMedia':
+					return A3(
+						_rtfeldman$elm_css$Css$propertyWithWarnings,
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$core$Basics_ops['++'],
+								'Cannot apply ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									functionName,
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										' with inapplicable mixin for media query ',
+										_elm_lang$core$Basics$toString(_p18._0)))),
+							_1: {ctor: '[]'}
+						},
+						desiredKey,
+						'');
+				default:
+					if (_p18._0.ctor === '[]') {
+						return A3(
+							_rtfeldman$elm_css$Css$propertyWithWarnings,
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$core$Basics_ops['++'],
+									'Cannot apply ',
+									A2(_elm_lang$core$Basics_ops['++'], functionName, ' with empty mixin. ')),
+								_1: {ctor: '[]'}
+							},
+							desiredKey,
+							'');
+					} else {
+						if (_p18._0._1.ctor === '[]') {
+							var _v11 = functionName,
+								_v12 = desiredKey,
+								_v13 = _p18._0._0;
+							functionName = _v11;
+							desiredKey = _v12;
+							mixin = _v13;
+							continue getOverloadedProperty;
+						} else {
+							var _v14 = functionName,
+								_v15 = desiredKey,
+								_v16 = _rtfeldman$elm_css$Css_Preprocess$ApplyMixins(_p18._0._1);
+							functionName = _v14;
+							desiredKey = _v15;
+							mixin = _v16;
+							continue getOverloadedProperty;
+						}
+					}
+			}
+		}
+	});
+var _rtfeldman$elm_css$Css$cssFunction = F2(
+	function (funcName, args) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			funcName,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'(',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(_elm_lang$core$String$join, ', ', args),
+					')')));
+	});
+var _rtfeldman$elm_css$Css$tv = _rtfeldman$elm_css$Css_Structure$MediaQuery('tv');
+var _rtfeldman$elm_css$Css$projection = _rtfeldman$elm_css$Css_Structure$MediaQuery('projection');
+var _rtfeldman$elm_css$Css$print = _rtfeldman$elm_css$Css_Structure$MediaQuery('print');
+var _rtfeldman$elm_css$Css$screen = _rtfeldman$elm_css$Css_Structure$MediaQuery('screen');
+var _rtfeldman$elm_css$Css$ExplicitLength = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return function (l) {
+												return function (m) {
+													return function (n) {
+														return function (o) {
+															return {value: a, numericValue: b, units: c, unitLabel: d, length: e, lengthOrAuto: f, lengthOrNumber: g, lengthOrNone: h, lengthOrMinMaxDimension: i, lengthOrNoneOrMinMaxDimension: j, textIndent: k, flexBasis: l, lengthOrNumberOrAutoOrNoneOrContent: m, fontSize: n, lengthOrAutoOrCoverOrContain: o};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _rtfeldman$elm_css$Css$NonMixable = {};
+var _rtfeldman$elm_css$Css$BasicProperty = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return function (l) {
+												return function (m) {
+													return function (n) {
+														return function (o) {
+															return function (p) {
+																return function (q) {
+																	return function (r) {
+																		return function (s) {
+																			return function (t) {
+																				return function (u) {
+																					return function (v) {
+																						return function (w) {
+																							return function (x) {
+																								return function (y) {
+																									return function (z) {
+																										return function (_1) {
+																											return function (_2) {
+																												return function (_3) {
+																													return function (_4) {
+																														return function (_5) {
+																															return function (_6) {
+																																return function (_7) {
+																																	return function (_8) {
+																																		return function (_9) {
+																																			return function (_10) {
+																																				return function (_11) {
+																																					return function (_12) {
+																																						return function (_13) {
+																																							return function (_14) {
+																																								return function (_15) {
+																																									return function (_16) {
+																																										return function (_17) {
+																																											return function (_18) {
+																																												return function (_19) {
+																																													return function (_20) {
+																																														return function (_21) {
+																																															return function (_22) {
+																																																return {value: a, all: b, alignItems: c, borderStyle: d, boxSizing: e, color: f, cursor: g, display: h, flexBasis: i, flexWrap: j, flexDirection: k, flexDirectionOrWrap: l, justifyContent: m, none: n, number: o, outline: p, overflow: q, textDecorationLine: r, textRendering: s, textIndent: t, textDecorationStyle: u, length: v, lengthOrAuto: w, lengthOrNone: x, lengthOrNumber: y, lengthOrMinMaxDimension: z, lengthOrNoneOrMinMaxDimension: _1, lengthOrNumberOrAutoOrNoneOrContent: _2, listStyleType: _3, listStylePosition: _4, listStyleTypeOrPositionOrImage: _5, fontFamily: _6, fontSize: _7, fontStyle: _8, fontWeight: _9, fontVariant: _10, units: _11, numericValue: _12, unitLabel: _13, warnings: _14, backgroundRepeat: _15, backgroundRepeatShorthand: _16, backgroundAttachment: _17, backgroundBlendMode: _18, backgroundOrigin: _19, backgroundImage: _20, lengthOrAutoOrCoverOrContain: _21, intOrAuto: _22};
+																																															};
+																																														};
+																																													};
+																																												};
+																																											};
+																																										};
+																																									};
+																																								};
+																																							};
+																																						};
+																																					};
+																																				};
+																																			};
+																																		};
+																																	};
+																																};
+																															};
+																														};
+																													};
+																												};
+																											};
+																										};
+																									};
+																								};
+																							};
+																						};
+																					};
+																				};
+																			};
+																		};
+																	};
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _rtfeldman$elm_css$Css$Compatible = {ctor: 'Compatible'};
+var _rtfeldman$elm_css$Css$transparent = {
+	value: 'transparent',
+	color: _rtfeldman$elm_css$Css$Compatible,
+	warnings: {ctor: '[]'}
+};
+var _rtfeldman$elm_css$Css$colorValueForOverloadedProperty = _rtfeldman$elm_css$Css$transparent;
+var _rtfeldman$elm_css$Css$backgroundBlendMode = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'backgroundBlendMode',
+		'background-blend-mode',
+		fn(_rtfeldman$elm_css$Css$colorValueForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$currentColor = {
+	value: 'currentColor',
+	color: _rtfeldman$elm_css$Css$Compatible,
+	warnings: {ctor: '[]'}
+};
+var _rtfeldman$elm_css$Css$visible = {value: 'visible', overflow: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$scroll = {value: 'scroll', overflow: _rtfeldman$elm_css$Css$Compatible, backgroundAttachment: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$breakWord = {value: 'break-word', overflowWrap: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$both = {value: 'both', resize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$horizontal = {value: 'horizontal', resize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$vertical = {value: 'vertical', resize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$paddingBox = {value: 'padding-box', backgroundClip: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$url = function (urlValue) {
+	return {
+		value: A2(
+			_elm_lang$core$Basics_ops['++'],
+			'url(',
+			A2(_elm_lang$core$Basics_ops['++'], urlValue, ')')),
+		backgroundImage: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$cover = {value: 'cover', lengthOrAutoOrCoverOrContain: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$contain = {value: 'contain', lengthOrAutoOrCoverOrContain: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$hidden = {value: 'hidden', overflow: _rtfeldman$elm_css$Css$Compatible, borderStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$rgb = F3(
+	function (red, green, blue) {
+		var warnings = ((_elm_lang$core$Native_Utils.cmp(red, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(red, 255) > 0) || ((_elm_lang$core$Native_Utils.cmp(green, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(green, 255) > 0) || ((_elm_lang$core$Native_Utils.cmp(blue, 0) < 0) || (_elm_lang$core$Native_Utils.cmp(blue, 255) > 0)))))) ? {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$core$Basics_ops['++'],
+				'RGB color values must be between 0 and 255. rgb(',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(red),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						', ',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(green),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								', ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_elm_lang$core$Basics$toString(blue),
+									') is not valid.')))))),
+			_1: {ctor: '[]'}
+		} : {ctor: '[]'};
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'rgb',
+				A2(
+					_elm_lang$core$List$map,
+					_rtfeldman$elm_css$Css$numberToString,
+					{
+						ctor: '::',
+						_0: red,
+						_1: {
+							ctor: '::',
+							_0: green,
+							_1: {
+								ctor: '::',
+								_0: blue,
+								_1: {ctor: '[]'}
+							}
+						}
+					})),
+			color: _rtfeldman$elm_css$Css$Compatible,
+			warnings: warnings,
+			red: red,
+			green: green,
+			blue: blue,
+			alpha: 1
+		};
+	});
+var _rtfeldman$elm_css$Css$rgba = F4(
+	function (red, green, blue, alpha) {
+		var warnings = ((_elm_lang$core$Native_Utils.cmp(red, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(red, 255) > 0) || ((_elm_lang$core$Native_Utils.cmp(green, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(green, 255) > 0) || ((_elm_lang$core$Native_Utils.cmp(blue, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(blue, 255) > 0) || ((_elm_lang$core$Native_Utils.cmp(alpha, 0) < 0) || (_elm_lang$core$Native_Utils.cmp(alpha, 1) > 0)))))))) ? {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$core$Basics_ops['++'],
+				'RGB color values must be between 0 and 255, and the alpha in RGBA must be between 0 and 1. rgba(',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(red),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						', ',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(green),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								', ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_elm_lang$core$Basics$toString(blue),
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										', ',
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											_elm_lang$core$Basics$toString(alpha),
+											') is not valid.')))))))),
+			_1: {ctor: '[]'}
+		} : {ctor: '[]'};
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'rgba',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(
+						_elm_lang$core$List$map,
+						_rtfeldman$elm_css$Css$numberToString,
+						{
+							ctor: '::',
+							_0: red,
+							_1: {
+								ctor: '::',
+								_0: green,
+								_1: {
+									ctor: '::',
+									_0: blue,
+									_1: {ctor: '[]'}
+								}
+							}
+						}),
+					{
+						ctor: '::',
+						_0: _rtfeldman$elm_css$Css$numberToString(alpha),
+						_1: {ctor: '[]'}
+					})),
+			color: _rtfeldman$elm_css$Css$Compatible,
+			warnings: warnings,
+			red: red,
+			green: green,
+			blue: blue,
+			alpha: alpha
+		};
+	});
+var _rtfeldman$elm_css$Css$erroneousHex = function (str) {
+	return {
+		value: _rtfeldman$elm_css$Css$withPrecedingHash(str),
+		color: _rtfeldman$elm_css$Css$Compatible,
+		red: 0,
+		green: 0,
+		blue: 0,
+		alpha: 1,
+		warnings: _elm_lang$core$List$singleton(
+			A2(
+				_elm_lang$core$String$join,
+				' ',
+				{
+					ctor: '::',
+					_0: 'Hex color strings must contain exactly 3, 4, 6, or 8 hexadecimal digits, optionally preceded by \"#\".',
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$core$Basics$toString(str),
+						_1: {
+							ctor: '::',
+							_0: 'is an invalid hex color string.',
+							_1: {
+								ctor: '::',
+								_0: 'Please see: https://drafts.csswg.org/css-color/#hex-notation',
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}))
+	};
+};
+var _rtfeldman$elm_css$Css$validHex = F5(
+	function (str, _p22, _p21, _p20, _p19) {
+		var _p23 = _p22;
+		var _p24 = _p21;
+		var _p25 = _p20;
+		var _p26 = _p19;
+		var toResult = function (_p27) {
+			return _rtfeldman$hex$Hex$fromString(
+				_elm_lang$core$String$toLower(
+					_elm_lang$core$String$fromList(_p27)));
+		};
+		var results = {
+			ctor: '_Tuple4',
+			_0: toResult(
+				{
+					ctor: '::',
+					_0: _p23._0,
+					_1: {
+						ctor: '::',
+						_0: _p23._1,
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: toResult(
+				{
+					ctor: '::',
+					_0: _p24._0,
+					_1: {
+						ctor: '::',
+						_0: _p24._1,
+						_1: {ctor: '[]'}
+					}
+				}),
+			_2: toResult(
+				{
+					ctor: '::',
+					_0: _p25._0,
+					_1: {
+						ctor: '::',
+						_0: _p25._1,
+						_1: {ctor: '[]'}
+					}
+				}),
+			_3: toResult(
+				{
+					ctor: '::',
+					_0: _p26._0,
+					_1: {
+						ctor: '::',
+						_0: _p26._1,
+						_1: {ctor: '[]'}
+					}
+				})
+		};
+		var _p28 = results;
+		if (((((_p28.ctor === '_Tuple4') && (_p28._0.ctor === 'Ok')) && (_p28._1.ctor === 'Ok')) && (_p28._2.ctor === 'Ok')) && (_p28._3.ctor === 'Ok')) {
+			return {
+				value: _rtfeldman$elm_css$Css$withPrecedingHash(str),
+				color: _rtfeldman$elm_css$Css$Compatible,
+				red: _p28._0._0,
+				green: _p28._1._0,
+				blue: _p28._2._0,
+				alpha: _elm_lang$core$Basics$toFloat(_p28._3._0) / 255,
+				warnings: {ctor: '[]'}
+			};
+		} else {
+			return _rtfeldman$elm_css$Css$erroneousHex(str);
+		}
+	});
+var _rtfeldman$elm_css$Css$hex = function (str) {
+	var withoutHash = A2(_elm_lang$core$String$startsWith, '#', str) ? A2(_elm_lang$core$String$dropLeft, 1, str) : str;
+	var _p29 = _elm_lang$core$String$toList(withoutHash);
+	_v22_4:
+	do {
+		if (((_p29.ctor === '::') && (_p29._1.ctor === '::')) && (_p29._1._1.ctor === '::')) {
+			if (_p29._1._1._1.ctor === '[]') {
+				var _p32 = _p29._0;
+				var _p31 = _p29._1._0;
+				var _p30 = _p29._1._1._0;
+				return A5(
+					_rtfeldman$elm_css$Css$validHex,
+					str,
+					{ctor: '_Tuple2', _0: _p32, _1: _p32},
+					{ctor: '_Tuple2', _0: _p31, _1: _p31},
+					{ctor: '_Tuple2', _0: _p30, _1: _p30},
+					{
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.chr('f'),
+						_1: _elm_lang$core$Native_Utils.chr('f')
+					});
+			} else {
+				if (_p29._1._1._1._1.ctor === '[]') {
+					var _p36 = _p29._0;
+					var _p35 = _p29._1._0;
+					var _p34 = _p29._1._1._0;
+					var _p33 = _p29._1._1._1._0;
+					return A5(
+						_rtfeldman$elm_css$Css$validHex,
+						str,
+						{ctor: '_Tuple2', _0: _p36, _1: _p36},
+						{ctor: '_Tuple2', _0: _p35, _1: _p35},
+						{ctor: '_Tuple2', _0: _p34, _1: _p34},
+						{ctor: '_Tuple2', _0: _p33, _1: _p33});
+				} else {
+					if (_p29._1._1._1._1._1.ctor === '::') {
+						if (_p29._1._1._1._1._1._1.ctor === '[]') {
+							return A5(
+								_rtfeldman$elm_css$Css$validHex,
+								str,
+								{ctor: '_Tuple2', _0: _p29._0, _1: _p29._1._0},
+								{ctor: '_Tuple2', _0: _p29._1._1._0, _1: _p29._1._1._1._0},
+								{ctor: '_Tuple2', _0: _p29._1._1._1._1._0, _1: _p29._1._1._1._1._1._0},
+								{
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Native_Utils.chr('f'),
+									_1: _elm_lang$core$Native_Utils.chr('f')
+								});
+						} else {
+							if ((_p29._1._1._1._1._1._1._1.ctor === '::') && (_p29._1._1._1._1._1._1._1._1.ctor === '[]')) {
+								return A5(
+									_rtfeldman$elm_css$Css$validHex,
+									str,
+									{ctor: '_Tuple2', _0: _p29._0, _1: _p29._1._0},
+									{ctor: '_Tuple2', _0: _p29._1._1._0, _1: _p29._1._1._1._0},
+									{ctor: '_Tuple2', _0: _p29._1._1._1._1._0, _1: _p29._1._1._1._1._1._0},
+									{ctor: '_Tuple2', _0: _p29._1._1._1._1._1._1._0, _1: _p29._1._1._1._1._1._1._1._0});
+							} else {
+								break _v22_4;
+							}
+						}
+					} else {
+						break _v22_4;
+					}
+				}
+			}
+		} else {
+			break _v22_4;
+		}
+	} while(false);
+	return _rtfeldman$elm_css$Css$erroneousHex(str);
+};
+var _rtfeldman$elm_css$Css$hslaToRgba = F6(
+	function (value, warnings, hue, saturation, lightness, hslAlpha) {
+		var _p37 = _elm_lang$core$Color$toRgb(
+			A4(_elm_lang$core$Color$hsla, hue, saturation, lightness, hslAlpha));
+		var red = _p37.red;
+		var green = _p37.green;
+		var blue = _p37.blue;
+		var alpha = _p37.alpha;
+		return {value: value, color: _rtfeldman$elm_css$Css$Compatible, red: red, green: green, blue: blue, alpha: alpha, warnings: warnings};
+	});
+var _rtfeldman$elm_css$Css$hsl = F3(
+	function (hue, saturation, lightness) {
+		var valuesList = {
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css$numberToString(hue),
+			_1: {
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css$numericalPercentageToString(saturation),
+				_1: {
+					ctor: '::',
+					_0: _rtfeldman$elm_css$Css$numericalPercentageToString(lightness),
+					_1: {ctor: '[]'}
+				}
+			}
+		};
+		var value = A2(_rtfeldman$elm_css$Css$cssFunction, 'hsl', valuesList);
+		var warnings = ((_elm_lang$core$Native_Utils.cmp(hue, 360) > 0) || ((_elm_lang$core$Native_Utils.cmp(hue, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(saturation, 1) > 0) || ((_elm_lang$core$Native_Utils.cmp(saturation, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(lightness, 1) > 0) || (_elm_lang$core$Native_Utils.cmp(lightness, 0) < 0)))))) ? {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$core$Basics_ops['++'],
+				'HSL color values must have an H value between 0 and 360 (as in degrees) and S and L values between 0 and 1. ',
+				A2(_elm_lang$core$Basics_ops['++'], value, ' is not valid.')),
+			_1: {ctor: '[]'}
+		} : {ctor: '[]'};
+		return A6(_rtfeldman$elm_css$Css$hslaToRgba, value, warnings, hue, saturation, lightness, 1);
+	});
+var _rtfeldman$elm_css$Css$hsla = F4(
+	function (hue, saturation, lightness, alpha) {
+		var valuesList = {
+			ctor: '::',
+			_0: _rtfeldman$elm_css$Css$numberToString(hue),
+			_1: {
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css$numericalPercentageToString(saturation),
+				_1: {
+					ctor: '::',
+					_0: _rtfeldman$elm_css$Css$numericalPercentageToString(lightness),
+					_1: {
+						ctor: '::',
+						_0: _rtfeldman$elm_css$Css$numberToString(alpha),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		};
+		var value = A2(_rtfeldman$elm_css$Css$cssFunction, 'hsla', valuesList);
+		var warnings = ((_elm_lang$core$Native_Utils.cmp(hue, 360) > 0) || ((_elm_lang$core$Native_Utils.cmp(hue, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(saturation, 1) > 0) || ((_elm_lang$core$Native_Utils.cmp(saturation, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(lightness, 1) > 0) || ((_elm_lang$core$Native_Utils.cmp(lightness, 0) < 0) || ((_elm_lang$core$Native_Utils.cmp(alpha, 1) > 0) || (_elm_lang$core$Native_Utils.cmp(alpha, 0) < 0)))))))) ? {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$core$Basics_ops['++'],
+				'HSLA color values must have an H value between 0 and 360 (as in degrees) and S, L, and A values between 0 and 1. ',
+				A2(_elm_lang$core$Basics_ops['++'], value, ' is not valid.')),
+			_1: {ctor: '[]'}
+		} : {ctor: '[]'};
+		return A6(_rtfeldman$elm_css$Css$hslaToRgba, value, warnings, hue, saturation, lightness, alpha);
+	});
+var _rtfeldman$elm_css$Css$optimizeSpeed = {value: 'optimizeSpeed', textRendering: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$optimizeLegibility = {value: 'optimizeLegibility', textRendering: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$geometricPrecision = {value: 'geometricPrecision', textRendering: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$hanging = {value: 'hanging', textIndent: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$eachLine = {value: 'each-line', textIndent: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$mixed = {value: 'mixed', textOrientation: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$upright = {value: 'upright', textOrientation: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$sideways = {value: 'sideways', textOrientation: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$capitalize = {value: 'capitalize', textTransform: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$uppercase = {value: 'uppercase', textTransform: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lowercase = {value: 'lowercase', textTransform: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$fullWidth = {value: 'full-width', textTransform: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$ellipsis = {value: 'ellipsis', textOverflow: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$clip = {value: 'clip', textOverflow: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$wavy = {value: 'wavy', textDecorationStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$dotted = {value: 'dotted', borderStyle: _rtfeldman$elm_css$Css$Compatible, textDecorationStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$dashed = {value: 'dashed', borderStyle: _rtfeldman$elm_css$Css$Compatible, textDecorationStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$solid = {value: 'solid', borderStyle: _rtfeldman$elm_css$Css$Compatible, textDecorationStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$double = {value: 'double', borderStyle: _rtfeldman$elm_css$Css$Compatible, textDecorationStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$groove = {value: 'groove', borderStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$ridge = {value: 'ridge', borderStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$inset = {value: 'inset', borderStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$outset = {value: 'outset', borderStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$separate = {value: 'separate', borderCollapse: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$collapse = {value: 'collapse', borderCollapse: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lengthConverter = F3(
+	function (units, unitLabel, numericValue) {
+		return {
+			value: A2(
+				_elm_lang$core$Basics_ops['++'],
+				_rtfeldman$elm_css$Css$numberToString(numericValue),
+				unitLabel),
+			numericValue: numericValue,
+			units: units,
+			unitLabel: unitLabel,
+			length: _rtfeldman$elm_css$Css$Compatible,
+			lengthOrAuto: _rtfeldman$elm_css$Css$Compatible,
+			lengthOrNumber: _rtfeldman$elm_css$Css$Compatible,
+			lengthOrNone: _rtfeldman$elm_css$Css$Compatible,
+			lengthOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible,
+			lengthOrNoneOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible,
+			textIndent: _rtfeldman$elm_css$Css$Compatible,
+			flexBasis: _rtfeldman$elm_css$Css$Compatible,
+			lengthOrNumberOrAutoOrNoneOrContent: _rtfeldman$elm_css$Css$Compatible,
+			fontSize: _rtfeldman$elm_css$Css$Compatible,
+			lengthOrAutoOrCoverOrContain: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$angleConverter = F2(
+	function (suffix, num) {
+		return {
+			value: A2(
+				_elm_lang$core$Basics_ops['++'],
+				_rtfeldman$elm_css$Css$numberToString(num),
+				suffix),
+			angle: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$deg = _rtfeldman$elm_css$Css$angleConverter('deg');
+var _rtfeldman$elm_css$Css$grad = _rtfeldman$elm_css$Css$angleConverter('grad');
+var _rtfeldman$elm_css$Css$rad = _rtfeldman$elm_css$Css$angleConverter('rad');
+var _rtfeldman$elm_css$Css$turn = _rtfeldman$elm_css$Css$angleConverter('turn');
+var _rtfeldman$elm_css$Css$matrix = F6(
+	function (a, b, c, d, tx, ty) {
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'matrix',
+				A2(
+					_elm_lang$core$List$map,
+					_rtfeldman$elm_css$Css$numberToString,
+					{
+						ctor: '::',
+						_0: a,
+						_1: {
+							ctor: '::',
+							_0: b,
+							_1: {
+								ctor: '::',
+								_0: c,
+								_1: {
+									ctor: '::',
+									_0: d,
+									_1: {
+										ctor: '::',
+										_0: tx,
+										_1: {
+											ctor: '::',
+											_0: ty,
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}
+						}
+					})),
+			transform: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$matrix3d = function (a1) {
+	return function (a2) {
+		return function (a3) {
+			return function (a4) {
+				return function (b1) {
+					return function (b2) {
+						return function (b3) {
+							return function (b4) {
+								return function (c1) {
+									return function (c2) {
+										return function (c3) {
+											return function (c4) {
+												return function (d1) {
+													return function (d2) {
+														return function (d3) {
+															return function (d4) {
+																return {
+																	value: A2(
+																		_rtfeldman$elm_css$Css$cssFunction,
+																		'matrix3d',
+																		A2(
+																			_elm_lang$core$List$map,
+																			_rtfeldman$elm_css$Css$numberToString,
+																			{
+																				ctor: '::',
+																				_0: a1,
+																				_1: {
+																					ctor: '::',
+																					_0: a2,
+																					_1: {
+																						ctor: '::',
+																						_0: a3,
+																						_1: {
+																							ctor: '::',
+																							_0: a4,
+																							_1: {
+																								ctor: '::',
+																								_0: b1,
+																								_1: {
+																									ctor: '::',
+																									_0: b2,
+																									_1: {
+																										ctor: '::',
+																										_0: b3,
+																										_1: {
+																											ctor: '::',
+																											_0: b4,
+																											_1: {
+																												ctor: '::',
+																												_0: c1,
+																												_1: {
+																													ctor: '::',
+																													_0: c2,
+																													_1: {
+																														ctor: '::',
+																														_0: c3,
+																														_1: {
+																															ctor: '::',
+																															_0: c4,
+																															_1: {
+																																ctor: '::',
+																																_0: d1,
+																																_1: {
+																																	ctor: '::',
+																																	_0: d2,
+																																	_1: {
+																																		ctor: '::',
+																																		_0: d3,
+																																		_1: {
+																																			ctor: '::',
+																																			_0: d4,
+																																			_1: {ctor: '[]'}
+																																		}
+																																	}
+																																}
+																															}
+																														}
+																													}
+																												}
+																											}
+																										}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			})),
+																	transform: _rtfeldman$elm_css$Css$Compatible
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _rtfeldman$elm_css$Css$perspective = function (l) {
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'perspective',
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css$numberToString(l),
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$rotate = function (_p38) {
+	var _p39 = _p38;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'rotate',
+			{
+				ctor: '::',
+				_0: _p39.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$rotateX = function (_p40) {
+	var _p41 = _p40;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'rotateX',
+			{
+				ctor: '::',
+				_0: _p41.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$rotateY = function (_p42) {
+	var _p43 = _p42;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'rotateY',
+			{
+				ctor: '::',
+				_0: _p43.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$rotateZ = function (_p44) {
+	var _p45 = _p44;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'rotateZ',
+			{
+				ctor: '::',
+				_0: _p45.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$rotate3d = F4(
+	function (x, y, z, _p46) {
+		var _p47 = _p46;
+		var coordsAsStrings = A2(
+			_elm_lang$core$List$map,
+			_rtfeldman$elm_css$Css$numberToString,
+			{
+				ctor: '::',
+				_0: x,
+				_1: {
+					ctor: '::',
+					_0: y,
+					_1: {
+						ctor: '::',
+						_0: z,
+						_1: {ctor: '[]'}
+					}
+				}
+			});
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'rotate3d',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					coordsAsStrings,
+					{
+						ctor: '::',
+						_0: _p47.value,
+						_1: {ctor: '[]'}
+					})),
+			transform: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$scale = function (x) {
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'scale',
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css$numberToString(x),
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$scale2 = F2(
+	function (x, y) {
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'scale',
+				A2(
+					_elm_lang$core$List$map,
+					_rtfeldman$elm_css$Css$numberToString,
+					{
+						ctor: '::',
+						_0: x,
+						_1: {
+							ctor: '::',
+							_0: y,
+							_1: {ctor: '[]'}
+						}
+					})),
+			transform: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$scaleX = function (x) {
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'scaleX',
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css$numberToString(x),
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$scaleY = function (y) {
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'scaleY',
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Css$numberToString(y),
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$scale3d = F3(
+	function (x, y, z) {
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'scale3d',
+				A2(
+					_elm_lang$core$List$map,
+					_rtfeldman$elm_css$Css$numberToString,
+					{
+						ctor: '::',
+						_0: x,
+						_1: {
+							ctor: '::',
+							_0: y,
+							_1: {
+								ctor: '::',
+								_0: z,
+								_1: {ctor: '[]'}
+							}
+						}
+					})),
+			transform: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$skew = function (_p48) {
+	var _p49 = _p48;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'skew',
+			{
+				ctor: '::',
+				_0: _p49.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$skew2 = F2(
+	function (ax, ay) {
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'skew',
+				{
+					ctor: '::',
+					_0: ax.value,
+					_1: {
+						ctor: '::',
+						_0: ay.value,
+						_1: {ctor: '[]'}
+					}
+				}),
+			transform: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$skewX = function (_p50) {
+	var _p51 = _p50;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'skewX',
+			{
+				ctor: '::',
+				_0: _p51.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$skewY = function (_p52) {
+	var _p53 = _p52;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'skewY',
+			{
+				ctor: '::',
+				_0: _p53.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$translate = function (_p54) {
+	var _p55 = _p54;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'translate',
+			{
+				ctor: '::',
+				_0: _p55.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$translate2 = F2(
+	function (tx, ty) {
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'translate',
+				{
+					ctor: '::',
+					_0: tx.value,
+					_1: {
+						ctor: '::',
+						_0: ty.value,
+						_1: {ctor: '[]'}
+					}
+				}),
+			transform: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$translateX = function (_p56) {
+	var _p57 = _p56;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'translateX',
+			{
+				ctor: '::',
+				_0: _p57.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$translateY = function (_p58) {
+	var _p59 = _p58;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'translateY',
+			{
+				ctor: '::',
+				_0: _p59.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$translateZ = function (_p60) {
+	var _p61 = _p60;
+	return {
+		value: A2(
+			_rtfeldman$elm_css$Css$cssFunction,
+			'translateZ',
+			{
+				ctor: '::',
+				_0: _p61.value,
+				_1: {ctor: '[]'}
+			}),
+		transform: _rtfeldman$elm_css$Css$Compatible
+	};
+};
+var _rtfeldman$elm_css$Css$translate3d = F3(
+	function (tx, ty, tz) {
+		return {
+			value: A2(
+				_rtfeldman$elm_css$Css$cssFunction,
+				'translate3d',
+				{
+					ctor: '::',
+					_0: tx.value,
+					_1: {
+						ctor: '::',
+						_0: ty.value,
+						_1: {
+							ctor: '::',
+							_0: tz.value,
+							_1: {ctor: '[]'}
+						}
+					}
+				}),
+			transform: _rtfeldman$elm_css$Css$Compatible
+		};
+	});
+var _rtfeldman$elm_css$Css$fillBox = {value: 'fill-box', transformBox: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$contentBox = {value: 'content-box', boxSizing: _rtfeldman$elm_css$Css$Compatible, backgroundClip: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$borderBox = {value: 'border-box', boxSizing: _rtfeldman$elm_css$Css$Compatible, backgroundClip: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$viewBox = {value: 'view-box', transformBox: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$preserve3d = {value: 'preserve-3d', transformStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$flat = {value: 'flat', transformStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$inside = {value: 'inside', listStylePosition: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$outside = {value: 'outside', listStylePosition: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$disc = {value: 'disc', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$circle = {value: 'circle', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$square = {value: 'square', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$decimal = {value: 'decimal', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$decimalLeadingZero = {value: 'decimal-leading-zero', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lowerRoman = {value: 'lower-roman', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$upperRoman = {value: 'upper-roman', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lowerGreek = {value: 'lower-greek', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$upperGreek = {value: 'upper-greek', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lowerAlpha = {value: 'lower-alpha', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$upperAlpha = {value: 'upper-alpha', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lowerLatin = {value: 'lower-latin', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$upperLatin = {value: 'upper-latin', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$arabicIndic = {value: 'arabic-indic', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$armenian = {value: 'armenian', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$bengali = {value: 'bengali', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$cjkEarthlyBranch = {value: 'cjk-earthly-branch', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$cjkHeavenlyStem = {value: 'cjk-heavenly-stem', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$devanagari = {value: 'devanagari', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$georgian = {value: 'georgian', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$gujarati = {value: 'gujarati', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$gurmukhi = {value: 'gurmukhi', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$kannada = {value: 'kannada', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$khmer = {value: 'khmer', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lao = {value: 'lao', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$malayalam = {value: 'malayalam', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$myanmar = {value: 'myanmar', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$oriya = {value: 'oriya', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$telugu = {value: 'telugu', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$thai = {value: 'thai', listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$content = {value: 'content', flexBasis: _rtfeldman$elm_css$Css$Compatible, lengthOrNumberOrAutoOrNoneOrContent: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$wrap = {value: 'wrap', flexWrap: _rtfeldman$elm_css$Css$Compatible, flexDirectionOrWrap: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$wrapReverse = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$wrap,
+	{value: 'wrap-reverse'});
+var _rtfeldman$elm_css$Css$row = {value: 'row', flexDirection: _rtfeldman$elm_css$Css$Compatible, flexDirectionOrWrap: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$rowReverse = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$row,
+	{value: 'row-reverse'});
+var _rtfeldman$elm_css$Css$column = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$row,
+	{value: 'column'});
+var _rtfeldman$elm_css$Css$columnReverse = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$row,
+	{value: 'column-reverse'});
+var _rtfeldman$elm_css$Css$underline = {value: 'underline', textDecorationLine: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$overline = {value: 'overline', textDecorationLine: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lineThrough = {value: 'line-through', textDecorationLine: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$repeatX = {value: 'repeat-x', backgroundRepeatShorthand: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$repeatY = {value: 'repeat-y', backgroundRepeatShorthand: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$repeat = {value: 'repeat', backgroundRepeat: _rtfeldman$elm_css$Css$Compatible, backgroundRepeatShorthand: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$space = {value: 'space', backgroundRepeat: _rtfeldman$elm_css$Css$Compatible, backgroundRepeatShorthand: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$round = {value: 'round', backgroundRepeat: _rtfeldman$elm_css$Css$Compatible, backgroundRepeatShorthand: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$noRepeat = {value: 'no-repeat', backgroundRepeat: _rtfeldman$elm_css$Css$Compatible, backgroundRepeatShorthand: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$local = {value: 'local', backgroundAttachment: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$block = {value: 'block', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$inlineBlock = {value: 'inline-block', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$inline = {value: 'inline', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$table = {value: 'table', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$inlineTable = {value: 'inline-table', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tableRow = {value: 'table-row', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tableCell = {value: 'table-cell', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tableColumn = {value: 'table-column', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tableCaption = {value: 'table-caption', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tableRowGroup = {value: 'table-row-group', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tableColumnGroup = {value: 'table-column-group', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tableHeaderGroup = {value: 'table-header-group', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tableFooterGroup = {value: 'table-footer-group', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$listItem = {value: 'list-item', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$inlineListItem = {value: 'inline-list-item', display: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$none = {value: 'none', cursor: _rtfeldman$elm_css$Css$Compatible, none: _rtfeldman$elm_css$Css$Compatible, lengthOrNone: _rtfeldman$elm_css$Css$Compatible, lengthOrNoneOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible, lengthOrNumberOrAutoOrNoneOrContent: _rtfeldman$elm_css$Css$Compatible, textDecorationLine: _rtfeldman$elm_css$Css$Compatible, listStyleType: _rtfeldman$elm_css$Css$Compatible, listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible, display: _rtfeldman$elm_css$Css$Compatible, outline: _rtfeldman$elm_css$Css$Compatible, resize: _rtfeldman$elm_css$Css$Compatible, transform: _rtfeldman$elm_css$Css$Compatible, borderStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$auto = {value: 'auto', cursor: _rtfeldman$elm_css$Css$Compatible, flexBasis: _rtfeldman$elm_css$Css$Compatible, overflow: _rtfeldman$elm_css$Css$Compatible, textRendering: _rtfeldman$elm_css$Css$Compatible, lengthOrAuto: _rtfeldman$elm_css$Css$Compatible, lengthOrNumberOrAutoOrNoneOrContent: _rtfeldman$elm_css$Css$Compatible, alignItemsOrAuto: _rtfeldman$elm_css$Css$Compatible, lengthOrAutoOrCoverOrContain: _rtfeldman$elm_css$Css$Compatible, justifyContentOrAuto: _rtfeldman$elm_css$Css$Compatible, intOrAuto: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$noWrap = {value: 'nowrap', whiteSpace: _rtfeldman$elm_css$Css$Compatible, flexWrap: _rtfeldman$elm_css$Css$Compatible, flexDirectionOrWrap: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$fillAvailable = {value: 'fill-available', minMaxDimension: _rtfeldman$elm_css$Css$Compatible, lengthOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible, lengthOrNoneOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$maxContent = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$fillAvailable,
+	{value: 'max-content'});
+var _rtfeldman$elm_css$Css$minContent = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$fillAvailable,
+	{value: 'min-content'});
+var _rtfeldman$elm_css$Css$fitContent = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$fillAvailable,
+	{value: 'fit-content'});
+var _rtfeldman$elm_css$Css$static = {value: 'static', position: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$fixed = {value: 'fixed', position: _rtfeldman$elm_css$Css$Compatible, backgroundAttachment: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$sticky = {value: 'sticky', position: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$relative = {value: 'relative', position: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$absolute = {value: 'absolute', position: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$serif = {value: 'serif', fontFamily: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$sansSerif = {value: 'sans-serif', fontFamily: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$monospace = {value: 'monospace', fontFamily: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$cursive = {value: 'cursive', fontFamily: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$fantasy = {value: 'fantasy', fontFamily: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$xxSmall = {value: 'xx-small', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$xSmall = {value: 'x-small', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$small = {value: 'small', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$medium = {value: 'medium', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$large = {value: 'large', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$xLarge = {value: 'x-large', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$xxLarge = {value: 'xx-large', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$smaller = {value: 'smaller', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$larger = {value: 'larger', fontSize: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$normal = {
+	value: 'normal',
+	warnings: {ctor: '[]'},
+	fontStyle: _rtfeldman$elm_css$Css$Compatible,
+	fontWeight: _rtfeldman$elm_css$Css$Compatible,
+	featureTagValue: _rtfeldman$elm_css$Css$Compatible,
+	overflowWrap: _rtfeldman$elm_css$Css$Compatible
+};
+var _rtfeldman$elm_css$Css$italic = {value: 'italic', fontStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$oblique = {value: 'oblique', fontStyle: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$bold = {value: 'bold', fontWeight: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$lighter = {value: 'lighter', fontWeight: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$bolder = {value: 'bolder', fontWeight: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$smallCaps = {value: 'small-caps', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantCaps: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$allSmallCaps = {value: 'all-small-caps', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantCaps: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$petiteCaps = {value: 'petite-caps', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantCaps: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$allPetiteCaps = {value: 'all-petite-caps', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantCaps: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$unicase = {value: 'unicase', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantCaps: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$titlingCaps = {value: 'titling-caps', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantCaps: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$commonLigatures = {value: 'common-ligatures', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantLigatures: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$noCommonLigatures = {value: 'no-common-ligatures', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantLigatures: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$discretionaryLigatures = {value: 'discretionary-ligatures', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantLigatures: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$noDiscretionaryLigatures = {value: 'no-discretionary-ligatures', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantLigatures: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$historicalLigatures = {value: 'historical-ligatures', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantLigatures: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$noHistoricalLigatures = {value: 'no-historical-ligatures', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantLigatures: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$contextual = {value: 'context', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantLigatures: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$noContextual = {value: 'no-contextual', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantLigatures: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$liningNums = {value: 'lining-nums', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantNumeric: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$oldstyleNums = {value: 'oldstyle-nums', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantNumeric: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$proportionalNums = {value: 'proportional-nums', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantNumeric: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$tabularNums = {value: 'tabular-nums', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantNumeric: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$diagonalFractions = {value: 'diagonal-fractions', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantNumeric: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$stackedFractions = {value: 'stacked-fractions', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantNumeric: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$ordinal = {value: 'ordinal', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantNumeric: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$slashedZero = {value: 'slashed-zero', fontVariant: _rtfeldman$elm_css$Css$Compatible, fontVariantNumeric: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$featureTag2 = F2(
+	function (tag, value) {
+		var potentialWarnings = {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: !_elm_lang$core$Native_Utils.eq(
+					_elm_lang$core$String$length(tag),
+					4),
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					'Feature tags must be exactly 4 characters long. ',
+					A2(_elm_lang$core$Basics_ops['++'], tag, ' is invalid.'))
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.cmp(value, 0) < 0,
+					_1: A2(
+						_elm_lang$core$Basics_ops['++'],
+						'Feature values cannot be negative. ',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(value),
+							' is invalid.'))
+				},
+				_1: {ctor: '[]'}
+			}
+		};
+		var warnings = A2(
+			_elm_lang$core$List$map,
+			_elm_lang$core$Tuple$second,
+			A2(_elm_lang$core$List$filter, _elm_lang$core$Tuple$first, potentialWarnings));
+		return {
+			value: A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(tag),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					' ',
+					_elm_lang$core$Basics$toString(value))),
+			featureTagValue: _rtfeldman$elm_css$Css$Compatible,
+			warnings: warnings
+		};
+	});
+var _rtfeldman$elm_css$Css$featureTag = function (tag) {
+	return A2(_rtfeldman$elm_css$Css$featureTag2, tag, 1);
+};
+var _rtfeldman$elm_css$Css$default = {value: 'default', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$crosshair = {value: 'crosshair', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$contextMenu = {value: 'context-menu', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$help = {value: 'help', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$pointer = {value: 'pointer', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$progress = {value: 'progress', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$wait = {value: 'wait', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$cell = {value: 'cell', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$text = {value: 'text', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$verticalText = {value: 'vertical-text', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$cursorAlias = {value: 'alias', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$copy = {value: 'copy', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$move = {value: 'move', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$noDrop = {value: 'no-drop', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$notAllowed = {value: 'not-allowed', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$eResize = {value: 'e-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$nResize = {value: 'n-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$neResize = {value: 'ne-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$nwResize = {value: 'nw-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$sResize = {value: 's-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$seResize = {value: 'se-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$swResize = {value: 'sw-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$wResize = {value: 'w-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$ewResize = {value: 'ew-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$nsResize = {value: 'ns-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$neswResize = {value: 'nesw-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$nwseResize = {value: 'nwse-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$colResize = {value: 'col-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$rowResize = {value: 'row-resize', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$allScroll = {value: 'all-scroll', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$zoomIn = {value: 'zoom-in', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$zoomOut = {value: 'zoom-out', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$grab = {value: 'grab', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$grabbing = {value: 'grabbing', cursor: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$PseudoClass = F2(
+	function (a, b) {
+		return {ctor: 'PseudoClass', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css$PseudoElement = F2(
+	function (a, b) {
+		return {ctor: 'PseudoElement', _0: a, _1: b};
+	});
+var _rtfeldman$elm_css$Css$PercentageUnits = {ctor: 'PercentageUnits'};
+var _rtfeldman$elm_css$Css$pct = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$PercentageUnits, '%');
+var _rtfeldman$elm_css$Css$EmUnits = {ctor: 'EmUnits'};
+var _rtfeldman$elm_css$Css$em = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$EmUnits, 'em');
+var _rtfeldman$elm_css$Css$ExUnits = {ctor: 'ExUnits'};
+var _rtfeldman$elm_css$Css$ex = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$ExUnits, 'ex');
+var _rtfeldman$elm_css$Css$ChUnits = {ctor: 'ChUnits'};
+var _rtfeldman$elm_css$Css$ch = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$ChUnits, 'ch');
+var _rtfeldman$elm_css$Css$RemUnits = {ctor: 'RemUnits'};
+var _rtfeldman$elm_css$Css$rem = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$RemUnits, 'rem');
+var _rtfeldman$elm_css$Css$VhUnits = {ctor: 'VhUnits'};
+var _rtfeldman$elm_css$Css$vh = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$VhUnits, 'vh');
+var _rtfeldman$elm_css$Css$VwUnits = {ctor: 'VwUnits'};
+var _rtfeldman$elm_css$Css$vw = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$VwUnits, 'vw');
+var _rtfeldman$elm_css$Css$VMinUnits = {ctor: 'VMinUnits'};
+var _rtfeldman$elm_css$Css$vmin = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$VMinUnits, 'vmin');
+var _rtfeldman$elm_css$Css$VMaxUnits = {ctor: 'VMaxUnits'};
+var _rtfeldman$elm_css$Css$vmax = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$VMaxUnits, 'vmax');
+var _rtfeldman$elm_css$Css$PxUnits = {ctor: 'PxUnits'};
+var _rtfeldman$elm_css$Css$px = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$PxUnits, 'px');
+var _rtfeldman$elm_css$Css$MMUnits = {ctor: 'MMUnits'};
+var _rtfeldman$elm_css$Css$mm = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$MMUnits, 'mm');
+var _rtfeldman$elm_css$Css$CMUnits = {ctor: 'CMUnits'};
+var _rtfeldman$elm_css$Css$cm = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$CMUnits, 'cm');
+var _rtfeldman$elm_css$Css$InchUnits = {ctor: 'InchUnits'};
+var _rtfeldman$elm_css$Css$inches = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$InchUnits, 'in');
+var _rtfeldman$elm_css$Css$PtUnits = {ctor: 'PtUnits'};
+var _rtfeldman$elm_css$Css$pt = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$PtUnits, 'pt');
+var _rtfeldman$elm_css$Css$PcUnits = {ctor: 'PcUnits'};
+var _rtfeldman$elm_css$Css$pc = A2(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$PcUnits, 'pc');
+var _rtfeldman$elm_css$Css$UnitlessInteger = {ctor: 'UnitlessInteger'};
+var _rtfeldman$elm_css$Css$zero = {value: '0', length: _rtfeldman$elm_css$Css$Compatible, lengthOrNumber: _rtfeldman$elm_css$Css$Compatible, lengthOrNone: _rtfeldman$elm_css$Css$Compatible, lengthOrAuto: _rtfeldman$elm_css$Css$Compatible, lengthOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible, lengthOrNoneOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible, number: _rtfeldman$elm_css$Css$Compatible, outline: _rtfeldman$elm_css$Css$Compatible, units: _rtfeldman$elm_css$Css$UnitlessInteger, unitLabel: '', numericValue: 0, lengthOrAutoOrCoverOrContain: _rtfeldman$elm_css$Css$Compatible};
+var _rtfeldman$elm_css$Css$int = function (val) {
+	return {
+		value: _rtfeldman$elm_css$Css$numberToString(val),
+		lengthOrNumber: _rtfeldman$elm_css$Css$Compatible,
+		number: _rtfeldman$elm_css$Css$Compatible,
+		fontWeight: _rtfeldman$elm_css$Css$Compatible,
+		lengthOrNumberOrAutoOrNoneOrContent: _rtfeldman$elm_css$Css$Compatible,
+		intOrAuto: _rtfeldman$elm_css$Css$Compatible,
+		numericValue: _elm_lang$core$Basics$toFloat(val),
+		unitLabel: '',
+		units: _rtfeldman$elm_css$Css$UnitlessInteger
+	};
+};
+var _rtfeldman$elm_css$Css$UnitlessFloat = {ctor: 'UnitlessFloat'};
+var _rtfeldman$elm_css$Css$num = function (val) {
+	return {
+		value: _rtfeldman$elm_css$Css$numberToString(val),
+		lengthOrNumber: _rtfeldman$elm_css$Css$Compatible,
+		number: _rtfeldman$elm_css$Css$Compatible,
+		lengthOrNumberOrAutoOrNoneOrContent: _rtfeldman$elm_css$Css$Compatible,
+		numericValue: val,
+		unitLabel: '',
+		units: _rtfeldman$elm_css$Css$UnitlessFloat
+	};
+};
+var _rtfeldman$elm_css$Css$IncompatibleUnits = {ctor: 'IncompatibleUnits'};
+var _rtfeldman$elm_css$Css$initial = {
+	value: 'initial',
+	overflow: _rtfeldman$elm_css$Css$Compatible,
+	none: _rtfeldman$elm_css$Css$Compatible,
+	number: _rtfeldman$elm_css$Css$Compatible,
+	textDecorationLine: _rtfeldman$elm_css$Css$Compatible,
+	textRendering: _rtfeldman$elm_css$Css$Compatible,
+	textIndent: _rtfeldman$elm_css$Css$Compatible,
+	textDecorationStyle: _rtfeldman$elm_css$Css$Compatible,
+	borderStyle: _rtfeldman$elm_css$Css$Compatible,
+	boxSizing: _rtfeldman$elm_css$Css$Compatible,
+	color: _rtfeldman$elm_css$Css$Compatible,
+	cursor: _rtfeldman$elm_css$Css$Compatible,
+	display: _rtfeldman$elm_css$Css$Compatible,
+	all: _rtfeldman$elm_css$Css$Compatible,
+	alignItems: _rtfeldman$elm_css$Css$Compatible,
+	justifyContent: _rtfeldman$elm_css$Css$Compatible,
+	length: _rtfeldman$elm_css$Css$Compatible,
+	lengthOrAuto: _rtfeldman$elm_css$Css$Compatible,
+	lengthOrNone: _rtfeldman$elm_css$Css$Compatible,
+	lengthOrNumber: _rtfeldman$elm_css$Css$Compatible,
+	lengthOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible,
+	lengthOrNoneOrMinMaxDimension: _rtfeldman$elm_css$Css$Compatible,
+	listStyleType: _rtfeldman$elm_css$Css$Compatible,
+	listStylePosition: _rtfeldman$elm_css$Css$Compatible,
+	listStyleTypeOrPositionOrImage: _rtfeldman$elm_css$Css$Compatible,
+	flexBasis: _rtfeldman$elm_css$Css$Compatible,
+	flexWrap: _rtfeldman$elm_css$Css$Compatible,
+	flexDirection: _rtfeldman$elm_css$Css$Compatible,
+	flexDirectionOrWrap: _rtfeldman$elm_css$Css$Compatible,
+	lengthOrNumberOrAutoOrNoneOrContent: _rtfeldman$elm_css$Css$Compatible,
+	fontFamily: _rtfeldman$elm_css$Css$Compatible,
+	fontSize: _rtfeldman$elm_css$Css$Compatible,
+	fontStyle: _rtfeldman$elm_css$Css$Compatible,
+	fontWeight: _rtfeldman$elm_css$Css$Compatible,
+	fontVariant: _rtfeldman$elm_css$Css$Compatible,
+	outline: _rtfeldman$elm_css$Css$Compatible,
+	units: _rtfeldman$elm_css$Css$IncompatibleUnits,
+	numericValue: 0,
+	unitLabel: '',
+	warnings: {ctor: '[]'},
+	backgroundRepeat: _rtfeldman$elm_css$Css$Compatible,
+	backgroundRepeatShorthand: _rtfeldman$elm_css$Css$Compatible,
+	backgroundAttachment: _rtfeldman$elm_css$Css$Compatible,
+	backgroundBlendMode: _rtfeldman$elm_css$Css$Compatible,
+	backgroundOrigin: _rtfeldman$elm_css$Css$Compatible,
+	backgroundImage: _rtfeldman$elm_css$Css$Compatible,
+	lengthOrAutoOrCoverOrContain: _rtfeldman$elm_css$Css$Compatible,
+	intOrAuto: _rtfeldman$elm_css$Css$Compatible
+};
+var _rtfeldman$elm_css$Css$unset = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$initial,
+	{value: 'unset'});
+var _rtfeldman$elm_css$Css$inherit = _elm_lang$core$Native_Utils.update(
+	_rtfeldman$elm_css$Css$initial,
+	{value: 'inherit'});
+var _rtfeldman$elm_css$Css$lengthForOverloadedProperty = A3(_rtfeldman$elm_css$Css$lengthConverter, _rtfeldman$elm_css$Css$IncompatibleUnits, '', 0);
+var _rtfeldman$elm_css$Css$alignItems = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'alignItems',
+		'align-items',
+		fn(_rtfeldman$elm_css$Css$lengthForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$alignSelf = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'alignSelf',
+		'align-self',
+		fn(_rtfeldman$elm_css$Css$lengthForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$justifyContent = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'justifyContent',
+		'justify-content',
+		fn(_rtfeldman$elm_css$Css$lengthForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$float = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'float',
+		'float',
+		fn(_rtfeldman$elm_css$Css$lengthForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$textAlignLast = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'textAlignLast',
+		'text-align-last',
+		fn(_rtfeldman$elm_css$Css$lengthForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$textAlign = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'textAlign',
+		'text-align',
+		fn(_rtfeldman$elm_css$Css$lengthForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$verticalAlign = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'verticalAlign',
+		'vertical-align',
+		fn(_rtfeldman$elm_css$Css$lengthForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$backgroundPosition = function (fn) {
+	return A3(
+		_rtfeldman$elm_css$Css$getOverloadedProperty,
+		'backgroundPosition',
+		'background-position',
+		fn(_rtfeldman$elm_css$Css$lengthForOverloadedProperty));
+};
+var _rtfeldman$elm_css$Css$Rtl = {ctor: 'Rtl'};
+var _rtfeldman$elm_css$Css$Ltr = {ctor: 'Ltr'};
+var _rtfeldman$elm_css$Css$IntentionallyUnsupportedPleaseSeeDocs = {ctor: 'IntentionallyUnsupportedPleaseSeeDocs'};
+var _rtfeldman$elm_css$Css$thin = _rtfeldman$elm_css$Css$IntentionallyUnsupportedPleaseSeeDocs;
+var _rtfeldman$elm_css$Css$thick = _rtfeldman$elm_css$Css$IntentionallyUnsupportedPleaseSeeDocs;
+var _rtfeldman$elm_css$Css$blink = _rtfeldman$elm_css$Css$IntentionallyUnsupportedPleaseSeeDocs;
+
+var _mordrax$cotwelm$Tile_View$rotateHalfTiles = F3(
 	function (_p1, _p0, neighbours) {
 		var _p2 = _p1;
 		var _p3 = _p0;
@@ -24695,6 +31150,263 @@ var _mordrax$cotwelm$Tile$rotateHalfTiles = F3(
 			}
 		}
 	});
+var _mordrax$cotwelm$Tile_View$halfTiles = {
+	ctor: '::',
+	_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile_Types$PathRock, _1: _mordrax$cotwelm$Tile_Types$Path, _2: 0},
+	_1: {
+		ctor: '::',
+		_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile_Types$PathGrass, _1: _mordrax$cotwelm$Tile_Types$Path, _2: 0},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile_Types$WaterGrass, _1: _mordrax$cotwelm$Tile_Types$Water, _2: 0},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile_Types$WaterPath, _1: _mordrax$cotwelm$Tile_Types$Path, _2: 180},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile_Types$WallDarkDgn, _1: _mordrax$cotwelm$Tile_Types$DarkDgn, _2: 180},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile_Types$WallLitDgn, _1: _mordrax$cotwelm$Tile_Types$LitDgn, _2: 180},
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		}
+	}
+};
+var _mordrax$cotwelm$Tile_View$stylesExtra = F2(
+	function (cssStyles, extras) {
+		return _elm_lang$html$Html_Attributes$style(
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_rtfeldman$elm_css$Css$asPairs(cssStyles),
+				extras));
+	});
+var _mordrax$cotwelm$Tile_View$styles = function (_p14) {
+	return _elm_lang$html$Html_Attributes$style(
+		_rtfeldman$elm_css$Css$asPairs(_p14));
+};
+var _mordrax$cotwelm$Tile_View$view = F4(
+	function (_p15, scaleTile, neighbours, onClick) {
+		var _p16 = _p15;
+		var _p23 = _p16.type_;
+		var _p22 = _p16.position;
+		var clickAttribute = function (position) {
+			return _elm_lang$html$Html_Events$onClick(
+				onClick(position));
+		};
+		var itemsOnGround = _mordrax$cotwelm$Container$list(_p16.ground);
+		var tileToCss = function (_p17) {
+			return A2(
+				_elm_lang$core$String$dropLeft,
+				1,
+				_elm_community$string_extra$String_Extra$dasherize(
+					_elm_lang$core$Basics$toString(_p17)));
+		};
+		var rotation = function () {
+			var _p20 = A2(
+				_elm_community$list_extra$List_Extra$find,
+				function (_p18) {
+					var _p19 = _p18;
+					return _elm_lang$core$Native_Utils.eq(_p23, _p19._0);
+				},
+				_mordrax$cotwelm$Tile_View$halfTiles);
+			if (_p20.ctor === 'Nothing') {
+				return 0;
+			} else {
+				return A3(_mordrax$cotwelm$Tile_View$rotateHalfTiles, _p16, _p20._0, neighbours);
+			}
+		}();
+		var tileDiv = function (css) {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'tile ',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								css,
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									' ',
+									_elm_lang$core$Basics$toString(_p22))))),
+					_1: {
+						ctor: '::',
+						_0: _mordrax$cotwelm$Tile_View$styles(
+							{
+								ctor: '::',
+								_0: _rtfeldman$elm_css$Css$transforms(
+									{
+										ctor: '::',
+										_0: _rtfeldman$elm_css$Css$scale(scaleTile),
+										_1: {
+											ctor: '::',
+											_0: _rtfeldman$elm_css$Css$rotate(
+												_rtfeldman$elm_css$Css$deg(rotation)),
+											_1: {ctor: '[]'}
+										}
+									}),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(_mordrax$cotwelm$Utils_Misc$toScaledTilePosition, _p22, scaleTile),
+							_1: {
+								ctor: '::',
+								_0: clickAttribute(_p22),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				},
+				{ctor: '[]'});
+		};
+		var baseTile = tileDiv(
+			tileToCss(_p23));
+		var itemDiv = function (item) {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'tile cotw-item ',
+							_mordrax$cotwelm$Item_Item$css(item))),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_mordrax$cotwelm$Tile_View$stylesExtra,
+							{
+								ctor: '::',
+								_0: _rtfeldman$elm_css$Css$transforms(
+									{
+										ctor: '::',
+										_0: _rtfeldman$elm_css$Css$rotate(
+											_rtfeldman$elm_css$Css$deg(rotation)),
+										_1: {
+											ctor: '::',
+											_0: _rtfeldman$elm_css$Css$scale(scaleTile),
+											_1: {ctor: '[]'}
+										}
+									}),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'pointer-events', _1: 'none'},
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(_mordrax$cotwelm$Utils_Misc$toScaledTilePosition, _p22, scaleTile),
+							_1: {ctor: '[]'}
+						}
+					}
+				},
+				{ctor: '[]'});
+		};
+		var _p21 = {ctor: '_Tuple2', _0: itemsOnGround, _1: _p16.visible};
+		_v9_3:
+		do {
+			_v9_0:
+			do {
+				if (_p21.ctor === '_Tuple2') {
+					if (_p21._0.ctor === '::') {
+						if (_p21._0._1.ctor === '[]') {
+							if (_p21._1.ctor === 'Hidden') {
+								break _v9_0;
+							} else {
+								return {
+									ctor: '::',
+									_0: baseTile,
+									_1: {
+										ctor: '::',
+										_0: itemDiv(_p21._0._0),
+										_1: {ctor: '[]'}
+									}
+								};
+							}
+						} else {
+							if (_p21._1.ctor === 'Hidden') {
+								break _v9_0;
+							} else {
+								return {
+									ctor: '::',
+									_0: baseTile,
+									_1: {
+										ctor: '::',
+										_0: tileDiv(
+											tileToCss(_mordrax$cotwelm$Tile_Types$TreasurePile)),
+										_1: {ctor: '[]'}
+									}
+								};
+							}
+						}
+					} else {
+						if (_p21._1.ctor === 'Hidden') {
+							break _v9_0;
+						} else {
+							break _v9_3;
+						}
+					}
+				} else {
+					break _v9_3;
+				}
+			} while(false);
+			return {ctor: '[]'};
+		} while(false);
+		return {
+			ctor: '::',
+			_0: baseTile,
+			_1: {ctor: '[]'}
+		};
+	});
+
+var _mordrax$cotwelm$Tile$asciiToTileType = function ($char) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		_mordrax$cotwelm$Tile_Types$Grass,
+		A2(_elm_lang$core$Dict$get, $char, _mordrax$cotwelm$Tile_Model$asciiTileMap));
+};
+var _mordrax$cotwelm$Tile$toTile = F2(
+	function (_p0, tileType) {
+		var _p1 = _p0;
+		var container = _mordrax$cotwelm$Item_Item$containerBuilder(
+			A2(_mordrax$cotwelm$Utils_Mass$Capacity, _mgold$elm_random_pcg$Random_Pcg$maxInt, _mgold$elm_random_pcg$Random_Pcg$maxInt));
+		var solid = A2(_elm_lang$core$List$member, tileType, _mordrax$cotwelm$Tile_Model$solidTiles);
+		return A8(
+			_mordrax$cotwelm$Tile_Model$Tile,
+			tileType,
+			solid,
+			{ctor: '[]'},
+			_mordrax$cotwelm$Tile_Model$Empty,
+			{ctor: '_Tuple2', _0: _p1._0, _1: _p1._1},
+			container,
+			_mordrax$cotwelm$Types$Hidden,
+			false);
+	});
+var _mordrax$cotwelm$Tile$mapToTiles = function (asciiMap) {
+	var rowToTiles = F2(
+		function (y, asciiRow) {
+			return A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (x, $char) {
+						return A2(
+							_mordrax$cotwelm$Tile$toTile,
+							{ctor: '_Tuple2', _0: x, _1: y},
+							_mordrax$cotwelm$Tile$asciiToTileType($char));
+					}),
+				_elm_lang$core$String$toList(asciiRow));
+		});
+	var tiles = A2(_elm_lang$core$List$indexedMap, rowToTiles, asciiMap);
+	return _elm_lang$core$List$concat(tiles);
+};
 var _mordrax$cotwelm$Tile$setVisibility = F2(
 	function (visibility, tile) {
 		return _elm_lang$core$Native_Utils.update(
@@ -24717,521 +31429,13 @@ var _mordrax$cotwelm$Tile$updateGround = F2(
 	});
 var _mordrax$cotwelm$Tile$drop = F2(
 	function (item, model) {
-		var _p14 = A2(_mordrax$cotwelm$Container$add, item, model.ground);
-		var groundWithItem = _p14._0;
+		var _p2 = A2(_mordrax$cotwelm$Container$add, item, model.ground);
+		var groundWithItem = _p2._0;
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{ground: groundWithItem});
 	});
-var _mordrax$cotwelm$Tile$Tile = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {type_: a, solid: b, items: c, occupant: d, position: e, ground: f, visible: g, isLit: h};
-	});
-var _mordrax$cotwelm$Tile$WithinFOV = {ctor: 'WithinFOV'};
-var _mordrax$cotwelm$Tile$Explored = {ctor: 'Explored'};
-var _mordrax$cotwelm$Tile$Hidden = {ctor: 'Hidden'};
-var _mordrax$cotwelm$Tile$Empty = {ctor: 'Empty'};
-var _mordrax$cotwelm$Tile$M = function (a) {
-	return {ctor: 'M', _0: a};
-};
-var _mordrax$cotwelm$Tile$H = function (a) {
-	return {ctor: 'H', _0: a};
-};
-var _mordrax$cotwelm$Tile$B = function (a) {
-	return {ctor: 'B', _0: a};
-};
-var _mordrax$cotwelm$Tile$TreasurePile = {ctor: 'TreasurePile'};
-var _mordrax$cotwelm$Tile$White90Cave10 = {ctor: 'White90Cave10'};
-var _mordrax$cotwelm$Tile$White50Cave50 = {ctor: 'White50Cave50'};
-var _mordrax$cotwelm$Tile$Grass10Cave90 = {ctor: 'Grass10Cave90'};
-var _mordrax$cotwelm$Tile$Grass50Cave50 = {ctor: 'Grass50Cave50'};
-var _mordrax$cotwelm$Tile$Pillar = {ctor: 'Pillar'};
-var _mordrax$cotwelm$Tile$Cobweb = {ctor: 'Cobweb'};
-var _mordrax$cotwelm$Tile$DoorBroken = {ctor: 'DoorBroken'};
-var _mordrax$cotwelm$Tile$DoorOpen = {ctor: 'DoorOpen'};
-var _mordrax$cotwelm$Tile$DoorClosed = {ctor: 'DoorClosed'};
-var _mordrax$cotwelm$Tile$WallLitDgn = {ctor: 'WallLitDgn'};
-var _mordrax$cotwelm$Tile$LitDgn = {ctor: 'LitDgn'};
-var _mordrax$cotwelm$Tile$TownWall = {ctor: 'TownWall'};
-var _mordrax$cotwelm$Tile$TownWallStop = {ctor: 'TownWallStop'};
-var _mordrax$cotwelm$Tile$TownWallCorner = {ctor: 'TownWallCorner'};
-var _mordrax$cotwelm$Tile$StairsDown = {ctor: 'StairsDown'};
-var _mordrax$cotwelm$Tile$StairsUp = {ctor: 'StairsUp'};
-var _mordrax$cotwelm$Tile$WaterPath = {ctor: 'WaterPath'};
-var _mordrax$cotwelm$Tile$Path = {ctor: 'Path'};
-var _mordrax$cotwelm$Tile$Throne = {ctor: 'Throne'};
-var _mordrax$cotwelm$Tile$Status = {ctor: 'Status'};
-var _mordrax$cotwelm$Tile$Altar = {ctor: 'Altar'};
-var _mordrax$cotwelm$Tile$Fountain = {ctor: 'Fountain'};
-var _mordrax$cotwelm$Tile$BlueSquare = {ctor: 'BlueSquare'};
-var _mordrax$cotwelm$Tile$WaterGrass = {ctor: 'WaterGrass'};
-var _mordrax$cotwelm$Tile$Water = {ctor: 'Water'};
-var _mordrax$cotwelm$Tile$Ashes = {ctor: 'Ashes'};
-var _mordrax$cotwelm$Tile$GreenWell = {ctor: 'GreenWell'};
-var _mordrax$cotwelm$Tile$CastleParapet = {ctor: 'CastleParapet'};
-var _mordrax$cotwelm$Tile$CastleWall = {ctor: 'CastleWall'};
-var _mordrax$cotwelm$Tile$CastleCornerParapet = {ctor: 'CastleCornerParapet'};
-var _mordrax$cotwelm$Tile$WallDarkDgn = {ctor: 'WallDarkDgn'};
-var _mordrax$cotwelm$Tile$DarkDgn = {ctor: 'DarkDgn'};
-var _mordrax$cotwelm$Tile$Wagon = {ctor: 'Wagon'};
-var _mordrax$cotwelm$Tile$Well = {ctor: 'Well'};
-var _mordrax$cotwelm$Tile$VegePatch = {ctor: 'VegePatch'};
-var _mordrax$cotwelm$Tile$DestoyedVegePatch = {ctor: 'DestoyedVegePatch'};
-var _mordrax$cotwelm$Tile$Crop = {ctor: 'Crop'};
-var _mordrax$cotwelm$Tile$PathGrass = {ctor: 'PathGrass'};
-var _mordrax$cotwelm$Tile$Grass = {ctor: 'Grass'};
-var _mordrax$cotwelm$Tile$Favicon = {ctor: 'Favicon'};
-var _mordrax$cotwelm$Tile$Sign = {ctor: 'Sign'};
-var _mordrax$cotwelm$Tile$PortcullisOpen = {ctor: 'PortcullisOpen'};
-var _mordrax$cotwelm$Tile$PortcullisClosed = {ctor: 'PortcullisClosed'};
-var _mordrax$cotwelm$Tile$MineEntrance = {ctor: 'MineEntrance'};
-var _mordrax$cotwelm$Tile$PathRock = {ctor: 'PathRock'};
-var _mordrax$cotwelm$Tile$halfTiles = {
-	ctor: '::',
-	_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile$PathRock, _1: _mordrax$cotwelm$Tile$Path, _2: 0},
-	_1: {
-		ctor: '::',
-		_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile$PathGrass, _1: _mordrax$cotwelm$Tile$Path, _2: 0},
-		_1: {
-			ctor: '::',
-			_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile$WaterGrass, _1: _mordrax$cotwelm$Tile$Water, _2: 0},
-			_1: {
-				ctor: '::',
-				_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile$WaterPath, _1: _mordrax$cotwelm$Tile$Path, _2: 180},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile$WallDarkDgn, _1: _mordrax$cotwelm$Tile$DarkDgn, _2: 180},
-					_1: {
-						ctor: '::',
-						_0: {ctor: '_Tuple3', _0: _mordrax$cotwelm$Tile$WallLitDgn, _1: _mordrax$cotwelm$Tile$LitDgn, _2: 180},
-						_1: {ctor: '[]'}
-					}
-				}
-			}
-		}
-	}
-};
-var _mordrax$cotwelm$Tile$view = F4(
-	function (_p15, scale, neighbours, onClick) {
-		var _p16 = _p15;
-		var _p24 = _p16.type_;
-		var _p23 = _p16.position;
-		var clickAttribute = function (position) {
-			return _elm_lang$html$Html_Events$onClick(
-				onClick(position));
-		};
-		var itemsOnGround = _mordrax$cotwelm$Container$list(_p16.ground);
-		var tileToCss = function (_p17) {
-			return A2(
-				_elm_lang$core$String$dropLeft,
-				1,
-				_elm_community$string_extra$String_Extra$dasherize(
-					_elm_lang$core$Basics$toString(_p17)));
-		};
-		var rotation = function () {
-			var _p20 = A2(
-				_elm_community$list_extra$List_Extra$find,
-				function (_p18) {
-					var _p19 = _p18;
-					return _elm_lang$core$Native_Utils.eq(_p24, _p19._0);
-				},
-				_mordrax$cotwelm$Tile$halfTiles);
-			if (_p20.ctor === 'Nothing') {
-				return 0;
-			} else {
-				return A3(_mordrax$cotwelm$Tile$rotateHalfTiles, _p16, _p20._0, neighbours);
-			}
-		}();
-		var transform = F2(
-			function (rotation, scale) {
-				var _p21 = {ctor: '_Tuple2', _0: rotation, _1: scale};
-				_v9_3:
-				do {
-					if (_p21.ctor === '_Tuple2') {
-						if (_p21._0 === 0) {
-							if (_p21._1 === 1) {
-								return {ctor: '_Tuple2', _0: '', _1: ''};
-							} else {
-								return {
-									ctor: '_Tuple2',
-									_0: 'transform',
-									_1: A2(
-										_elm_lang$core$Basics_ops['++'],
-										'scale',
-										_elm_lang$core$Basics$toString(
-											{ctor: '_Tuple2', _0: scale, _1: scale}))
-								};
-							}
-						} else {
-							if (_p21._1 === 1) {
-								return {
-									ctor: '_Tuple2',
-									_0: 'transform',
-									_1: A2(
-										_elm_lang$core$Basics_ops['++'],
-										'rotate(',
-										A2(
-											_elm_lang$core$Basics_ops['++'],
-											_elm_lang$core$Basics$toString(rotation),
-											'deg)'))
-								};
-							} else {
-								break _v9_3;
-							}
-						}
-					} else {
-						break _v9_3;
-					}
-				} while(false);
-				return {
-					ctor: '_Tuple2',
-					_0: 'transform',
-					_1: A2(
-						_elm_lang$core$Basics_ops['++'],
-						'rotate(',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(rotation),
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								'deg) scale',
-								_elm_lang$core$Basics$toString(
-									{ctor: '_Tuple2', _0: scale, _1: scale}))))
-				};
-			});
-		var tileDiv = function (css) {
-			return A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'tile ',
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								css,
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									' ',
-									_elm_lang$core$Basics$toString(_p23))))),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$style(
-							{
-								ctor: '::',
-								_0: A2(transform, rotation, scale),
-								_1: {ctor: '[]'}
-							}),
-						_1: {
-							ctor: '::',
-							_0: A2(_mordrax$cotwelm$Utils_Misc$toScaledTilePosition, _p23, scale),
-							_1: {
-								ctor: '::',
-								_0: clickAttribute(_p23),
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				},
-				{ctor: '[]'});
-		};
-		var baseTile = tileDiv(
-			tileToCss(_p24));
-		var itemDiv = function (item) {
-			return A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'tile cotw-item ',
-							_mordrax$cotwelm$Item_Item$css(item))),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$style(
-							{
-								ctor: '::',
-								_0: A2(transform, rotation, scale),
-								_1: {
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'pointer-events', _1: 'none'},
-									_1: {ctor: '[]'}
-								}
-							}),
-						_1: {
-							ctor: '::',
-							_0: A2(_mordrax$cotwelm$Utils_Misc$toScaledTilePosition, _p23, scale),
-							_1: {ctor: '[]'}
-						}
-					}
-				},
-				{ctor: '[]'});
-		};
-		var _p22 = {ctor: '_Tuple2', _0: itemsOnGround, _1: _p16.visible};
-		switch (_p22._1.ctor) {
-			case 'Hidden':
-				return {ctor: '[]'};
-			case 'Explored':
-				return {
-					ctor: '::',
-					_0: baseTile,
-					_1: {ctor: '[]'}
-				};
-			default:
-				if ((_p22._0.ctor === '::') && (_p22._0._1.ctor === '[]')) {
-					return {
-						ctor: '::',
-						_0: baseTile,
-						_1: {
-							ctor: '::',
-							_0: itemDiv(_p22._0._0),
-							_1: {ctor: '[]'}
-						}
-					};
-				} else {
-					return {
-						ctor: '::',
-						_0: baseTile,
-						_1: {
-							ctor: '::',
-							_0: tileDiv(
-								tileToCss(_mordrax$cotwelm$Tile$TreasurePile)),
-							_1: {ctor: '[]'}
-						}
-					};
-				}
-		}
-	});
-var _mordrax$cotwelm$Tile$Rock = {ctor: 'Rock'};
-var _mordrax$cotwelm$Tile$asciiTileMap = _elm_lang$core$Dict$fromList(
-	{
-		ctor: '::',
-		_0: {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Native_Utils.chr('^'),
-			_1: _mordrax$cotwelm$Tile$Rock
-		},
-		_1: {
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.chr(','),
-				_1: _mordrax$cotwelm$Tile$Grass
-			},
-			_1: {
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.chr('o'),
-					_1: _mordrax$cotwelm$Tile$DarkDgn
-				},
-				_1: {
-					ctor: '::',
-					_0: {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.chr('~'),
-						_1: _mordrax$cotwelm$Tile$Water
-					},
-					_1: {
-						ctor: '::',
-						_0: {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.chr('.'),
-							_1: _mordrax$cotwelm$Tile$Path
-						},
-						_1: {
-							ctor: '::',
-							_0: {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Native_Utils.chr('O'),
-								_1: _mordrax$cotwelm$Tile$LitDgn
-							},
-							_1: {
-								ctor: '::',
-								_0: {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Native_Utils.chr('_'),
-									_1: _mordrax$cotwelm$Tile$PathRock
-								},
-								_1: {
-									ctor: '::',
-									_0: {
-										ctor: '_Tuple2',
-										_0: _elm_lang$core$Native_Utils.chr(';'),
-										_1: _mordrax$cotwelm$Tile$PathGrass
-									},
-									_1: {
-										ctor: '::',
-										_0: {
-											ctor: '_Tuple2',
-											_0: _elm_lang$core$Native_Utils.chr('d'),
-											_1: _mordrax$cotwelm$Tile$WallDarkDgn
-										},
-										_1: {
-											ctor: '::',
-											_0: {
-												ctor: '_Tuple2',
-												_0: _elm_lang$core$Native_Utils.chr('w'),
-												_1: _mordrax$cotwelm$Tile$WaterGrass
-											},
-											_1: {
-												ctor: '::',
-												_0: {
-													ctor: '_Tuple2',
-													_0: _elm_lang$core$Native_Utils.chr('W'),
-													_1: _mordrax$cotwelm$Tile$WaterPath
-												},
-												_1: {
-													ctor: '::',
-													_0: {
-														ctor: '_Tuple2',
-														_0: _elm_lang$core$Native_Utils.chr('D'),
-														_1: _mordrax$cotwelm$Tile$WallLitDgn
-													},
-													_1: {
-														ctor: '::',
-														_0: {
-															ctor: '_Tuple2',
-															_0: _elm_lang$core$Native_Utils.chr('g'),
-															_1: _mordrax$cotwelm$Tile$Grass50Cave50
-														},
-														_1: {
-															ctor: '::',
-															_0: {
-																ctor: '_Tuple2',
-																_0: _elm_lang$core$Native_Utils.chr('G'),
-																_1: _mordrax$cotwelm$Tile$Grass10Cave90
-															},
-															_1: {
-																ctor: '::',
-																_0: {
-																	ctor: '_Tuple2',
-																	_0: _elm_lang$core$Native_Utils.chr('c'),
-																	_1: _mordrax$cotwelm$Tile$White50Cave50
-																},
-																_1: {
-																	ctor: '::',
-																	_0: {
-																		ctor: '_Tuple2',
-																		_0: _elm_lang$core$Native_Utils.chr('C'),
-																		_1: _mordrax$cotwelm$Tile$White90Cave10
-																	},
-																	_1: {
-																		ctor: '::',
-																		_0: {
-																			ctor: '_Tuple2',
-																			_0: _elm_lang$core$Native_Utils.chr('='),
-																			_1: _mordrax$cotwelm$Tile$Crop
-																		},
-																		_1: {
-																			ctor: '::',
-																			_0: {
-																				ctor: '_Tuple2',
-																				_0: _elm_lang$core$Native_Utils.chr('e'),
-																				_1: _mordrax$cotwelm$Tile$Well
-																			},
-																			_1: {
-																				ctor: '::',
-																				_0: {
-																					ctor: '_Tuple2',
-																					_0: _elm_lang$core$Native_Utils.chr('>'),
-																					_1: _mordrax$cotwelm$Tile$StairsDown
-																				},
-																				_1: {ctor: '[]'}
-																			}
-																		}
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	});
-var _mordrax$cotwelm$Tile$asciiToTileType = function ($char) {
-	return A2(
-		_elm_lang$core$Maybe$withDefault,
-		_mordrax$cotwelm$Tile$Grass,
-		A2(_elm_lang$core$Dict$get, $char, _mordrax$cotwelm$Tile$asciiTileMap));
-};
-var _mordrax$cotwelm$Tile$solidTiles = {
-	ctor: '::',
-	_0: _mordrax$cotwelm$Tile$Rock,
-	_1: {
-		ctor: '::',
-		_0: _mordrax$cotwelm$Tile$Grass10Cave90,
-		_1: {
-			ctor: '::',
-			_0: _mordrax$cotwelm$Tile$White50Cave50,
-			_1: {
-				ctor: '::',
-				_0: _mordrax$cotwelm$Tile$Crop,
-				_1: {
-					ctor: '::',
-					_0: _mordrax$cotwelm$Tile$Well,
-					_1: {
-						ctor: '::',
-						_0: _mordrax$cotwelm$Tile$PathRock,
-						_1: {
-							ctor: '::',
-							_0: _mordrax$cotwelm$Tile$WallDarkDgn,
-							_1: {
-								ctor: '::',
-								_0: _mordrax$cotwelm$Tile$WallLitDgn,
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-};
-var _mordrax$cotwelm$Tile$toTile = F2(
-	function (_p25, tileType) {
-		var _p26 = _p25;
-		var container = _mordrax$cotwelm$Item_Item$containerBuilder(
-			A2(_mordrax$cotwelm$Utils_Mass$Capacity, _mgold$elm_random_pcg$Random_Pcg$maxInt, _mgold$elm_random_pcg$Random_Pcg$maxInt));
-		var solid = A2(_elm_lang$core$List$member, tileType, _mordrax$cotwelm$Tile$solidTiles);
-		return A8(
-			_mordrax$cotwelm$Tile$Tile,
-			tileType,
-			solid,
-			{ctor: '[]'},
-			_mordrax$cotwelm$Tile$Empty,
-			{ctor: '_Tuple2', _0: _p26._0, _1: _p26._1},
-			container,
-			_mordrax$cotwelm$Tile$Hidden,
-			false);
-	});
-var _mordrax$cotwelm$Tile$mapToTiles = function (asciiMap) {
-	var rowToTiles = F2(
-		function (y, asciiRow) {
-			return A2(
-				_elm_lang$core$List$indexedMap,
-				F2(
-					function (x, $char) {
-						return A2(
-							_mordrax$cotwelm$Tile$toTile,
-							{ctor: '_Tuple2', _0: x, _1: y},
-							_mordrax$cotwelm$Tile$asciiToTileType($char));
-					}),
-				_elm_lang$core$String$toList(asciiRow));
-		});
-	var tiles = A2(_elm_lang$core$List$indexedMap, rowToTiles, asciiMap);
-	return _elm_lang$core$List$concat(tiles);
-};
+var _mordrax$cotwelm$Tile$view = _mordrax$cotwelm$Tile_View$view;
 
 var _mordrax$cotwelm$Dungeon_Entrance$equal = F2(
 	function (_p1, _p0) {
@@ -25246,9 +31450,9 @@ var _mordrax$cotwelm$Dungeon_Entrance$toTile = function (_p4) {
 	var tileType = function () {
 		var _p6 = _p5._0._0;
 		if (_p6.ctor === 'Door') {
-			return _mordrax$cotwelm$Tile$DoorClosed;
+			return _mordrax$cotwelm$Tile_Types$DoorClosed;
 		} else {
-			return _mordrax$cotwelm$Tile$DarkDgn;
+			return _mordrax$cotwelm$Tile_Types$DarkDgn;
 		}
 	}();
 	return A2(_mordrax$cotwelm$Tile$toTile, _p5._0._1, tileType);
@@ -25734,8 +31938,8 @@ var _mordrax$cotwelm$Dungeon_Corridor$path = F2(
 			_elm_lang$core$Basics$max,
 			_elm_lang$core$Basics$abs(_p6 - _p4),
 			_elm_lang$core$Basics$abs(_p7 - _p5)) + 1;
-		var rangeX = _elm_lang$core$Native_Utils.eq(_p6, _p4) ? A2(_elm_lang$core$List$repeat, length, _p6) : A2(_mordrax$cotwelm$Lodash$range, _p6, _p4);
-		var rangeY = _elm_lang$core$Native_Utils.eq(_p7, _p5) ? A2(_elm_lang$core$List$repeat, length, _p7) : A2(_mordrax$cotwelm$Lodash$range, _p7, _p5);
+		var rangeX = _elm_lang$core$Native_Utils.eq(_p6, _p4) ? A2(_elm_lang$core$List$repeat, length, _p6) : A2(_mordrax$cotwelm$Utils_Misc$range, _p6, _p4);
+		var rangeY = _elm_lang$core$Native_Utils.eq(_p7, _p5) ? A2(_elm_lang$core$List$repeat, length, _p7) : A2(_mordrax$cotwelm$Utils_Misc$range, _p7, _p5);
 		return A3(
 			_elm_lang$core$List$map2,
 			F2(
@@ -25830,15 +32034,15 @@ var _mordrax$cotwelm$Dungeon_Corridor$allPossibleDirections = function (facing) 
 var _mordrax$cotwelm$Dungeon_Corridor$onePossibleDirection = function (direction) {
 	return A2(
 		_mgold$elm_random_pcg$Random_Pcg$map,
-		_mordrax$cotwelm$Lodash$headWithDefault(direction),
-		_mordrax$cotwelm$Lodash$shuffle(
+		_mordrax$cotwelm$Utils_Misc$headWithDefault(direction),
+		_mordrax$cotwelm$Utils_Misc$shuffle(
 			_mordrax$cotwelm$Dungeon_Corridor$allPossibleDirections(direction)));
 };
 var _mordrax$cotwelm$Dungeon_Corridor$onePossibleCardinalDirection = function (direction) {
 	return A2(
 		_mgold$elm_random_pcg$Random_Pcg$map,
-		_mordrax$cotwelm$Lodash$headWithDefault(direction),
-		_mordrax$cotwelm$Lodash$shuffle(
+		_mordrax$cotwelm$Utils_Misc$headWithDefault(direction),
+		_mordrax$cotwelm$Utils_Misc$shuffle(
 			A2(
 				_elm_lang$core$List$filter,
 				_mordrax$cotwelm$Utils_Direction$isCardinal,
@@ -25855,9 +32059,9 @@ var _mordrax$cotwelm$Dungeon_Corridor$stepsFromPoint = F2(
 				steps,
 				_mordrax$cotwelm$Utils_Vector$fromDirection(_p20._1)));
 	});
-var _mordrax$cotwelm$Dungeon_Corridor$Model = F5(
-	function (a, b, c, d, e) {
-		return {entranceFacing: a, start: b, points: c, entrances: d, paths: e};
+var _mordrax$cotwelm$Dungeon_Corridor$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {entranceFacing: a, start: b, points: c, entrances: d, paths: e, lightSource: f};
 	});
 var _mordrax$cotwelm$Dungeon_Corridor$A = function (a) {
 	return {ctor: 'A', _0: a};
@@ -25870,50 +32074,62 @@ var _mordrax$cotwelm$Dungeon_Corridor$init = F2(
 				entranceFacing: entranceFacing,
 				points: {ctor: '[]'},
 				entrances: {ctor: '[]'},
-				paths: {ctor: '[]'}
+				paths: {ctor: '[]'},
+				lightSource: _mordrax$cotwelm$Types$Dark
 			});
 	});
+var _mordrax$cotwelm$Dungeon_Corridor$lightSourceGenerator = function (_p21) {
+	var _p22 = _p21;
+	var _p23 = _p22._0;
+	var setArtificialLightSource = function (isLit) {
+		return isLit ? _mordrax$cotwelm$Dungeon_Corridor$A(
+			_elm_lang$core$Native_Utils.update(
+				_p23,
+				{lightSource: _mordrax$cotwelm$Types$Artificial})) : _mordrax$cotwelm$Dungeon_Corridor$A(_p23);
+	};
+	return A2(_mgold$elm_random_pcg$Random_Pcg$map, setArtificialLightSource, _mgold$elm_random_pcg$Random_Pcg$bool);
+};
 var _mordrax$cotwelm$Dungeon_Corridor$add = F2(
-	function (_p22, _p21) {
-		var _p23 = _p22;
-		var _p24 = _p21;
-		var _p26 = _p24._0.points;
-		var _p25 = _p24._0;
-		var lastCorridorPoint = A2(_mordrax$cotwelm$Lodash$headWithDefault, _p24._0.start, _p26);
+	function (_p25, _p24) {
+		var _p26 = _p25;
+		var _p27 = _p24;
+		var _p29 = _p27._0.points;
+		var _p28 = _p27._0;
+		var lastCorridorPoint = A2(_mordrax$cotwelm$Utils_Misc$headWithDefault, _p27._0.start, _p29);
 		var newPath = A2(
 			_elm_lang$core$List$map,
 			function (x) {
-				return A2(_mordrax$cotwelm$Tile$toTile, x, _mordrax$cotwelm$Tile$DarkDgn);
+				return A2(_mordrax$cotwelm$Tile$toTile, x, _mordrax$cotwelm$Tile_Types$DarkDgn);
 			},
 			A2(
 				_mordrax$cotwelm$Dungeon_Corridor$path,
 				_elm_lang$core$Tuple$first(lastCorridorPoint),
-				_p23._0));
+				_p26._0));
 		return _mordrax$cotwelm$Dungeon_Corridor$A(
 			_elm_lang$core$Native_Utils.update(
-				_p25,
+				_p28,
 				{
-					points: {ctor: '::', _0: _p23, _1: _p26},
-					paths: A2(_elm_lang$core$Basics_ops['++'], newPath, _p25.paths)
+					points: {ctor: '::', _0: _p26, _1: _p29},
+					paths: A2(_elm_lang$core$Basics_ops['++'], newPath, _p28.paths)
 				}));
 	});
 var _mordrax$cotwelm$Dungeon_Corridor$extend = F2(
 	function (corridor, config) {
 		var lengthGen = A2(_mordrax$cotwelm$Dice$range, config.corridor.minLength, config.corridor.maxLength);
-		var _p27 = _mordrax$cotwelm$Dungeon_Corridor$end(corridor);
-		var lastPoint = _p27;
-		var lastFacing = _p27._1;
+		var _p30 = _mordrax$cotwelm$Dungeon_Corridor$end(corridor);
+		var lastPoint = _p30;
+		var lastFacing = _p30._1;
 		var directionGen = _mordrax$cotwelm$Dungeon_Corridor$onePossibleCardinalDirection(lastFacing);
 		return A2(
 			_mgold$elm_random_pcg$Random_Pcg$map,
-			function (_p28) {
-				var _p29 = _p28;
+			function (_p31) {
+				var _p32 = _p31;
 				return A2(
 					_mordrax$cotwelm$Dungeon_Corridor$add,
 					{
 						ctor: '_Tuple2',
-						_0: A2(_mordrax$cotwelm$Dungeon_Corridor$stepsFromPoint, lastPoint, _p29._0),
-						_1: _p29._1
+						_0: A2(_mordrax$cotwelm$Dungeon_Corridor$stepsFromPoint, lastPoint, _p32._0),
+						_1: _p32._1
 					},
 					corridor);
 			},
@@ -25936,54 +32152,57 @@ var _mordrax$cotwelm$Dungeon_Corridor$generate = F3(
 		var startDirectionGen = _mordrax$cotwelm$Dungeon_Corridor$onePossibleDirection(facingEntrance);
 		return A2(
 			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			makeCorridor,
+			_mordrax$cotwelm$Dungeon_Corridor$lightSourceGenerator,
 			A2(
-				_mgold$elm_random_pcg$Random_Pcg$map,
-				function (dir) {
-					return {ctor: '_Tuple2', _0: startPosition, _1: dir};
-				},
-				startDirectionGen));
+				_mgold$elm_random_pcg$Random_Pcg$andThen,
+				makeCorridor,
+				A2(
+					_mgold$elm_random_pcg$Random_Pcg$map,
+					function (dir) {
+						return {ctor: '_Tuple2', _0: startPosition, _1: dir};
+					},
+					startDirectionGen)));
 	});
 var _mordrax$cotwelm$Dungeon_Corridor$addEntrance = F2(
-	function (position, _p30) {
-		var _p31 = _p30;
+	function (position, _p33) {
+		var _p34 = _p33;
 		return _mordrax$cotwelm$Dungeon_Corridor$A(
 			_elm_lang$core$Native_Utils.update(
-				_p31._0,
+				_p34._0,
 				{
 					paths: {
 						ctor: '::',
-						_0: A2(_mordrax$cotwelm$Tile$toTile, position, _mordrax$cotwelm$Tile$DarkDgn),
-						_1: _p31._0.paths
+						_0: A2(_mordrax$cotwelm$Tile$toTile, position, _mordrax$cotwelm$Tile_Types$DarkDgn),
+						_1: _p34._0.paths
 					}
 				}));
 	});
-var _mordrax$cotwelm$Dungeon_Corridor$boundaryHelper = function (_p32) {
-	var _p33 = _p32;
-	var _p37 = _p33.start;
-	var _p36 = _p33.paths;
-	var _p35 = _p33.entranceFacing;
+var _mordrax$cotwelm$Dungeon_Corridor$boundaryHelper = function (_p35) {
+	var _p36 = _p35;
+	var _p40 = _p36.start;
+	var _p39 = _p36.paths;
+	var _p38 = _p36.entranceFacing;
 	var entranceExceptions = _elm_lang$core$Set$fromList(
 		{
 			ctor: '::',
 			_0: A2(
 				_mordrax$cotwelm$Utils_Vector$add,
-				_elm_lang$core$Tuple$first(_p37),
-				_mordrax$cotwelm$Utils_Vector$fromDirection(_p35)),
+				_elm_lang$core$Tuple$first(_p40),
+				_mordrax$cotwelm$Utils_Vector$fromDirection(_p38)),
 			_1: {
 				ctor: '::',
 				_0: A2(
 					_mordrax$cotwelm$Utils_Vector$add,
-					_elm_lang$core$Tuple$first(_p37),
+					_elm_lang$core$Tuple$first(_p40),
 					_mordrax$cotwelm$Utils_Vector$fromDirection(
-						A2(_mordrax$cotwelm$Utils_Vector$rotateCompass, _p35, _mordrax$cotwelm$Utils_Vector$Left))),
+						A2(_mordrax$cotwelm$Utils_Vector$rotateCompass, _p38, _mordrax$cotwelm$Utils_Vector$Left))),
 				_1: {
 					ctor: '::',
 					_0: A2(
 						_mordrax$cotwelm$Utils_Vector$add,
-						_elm_lang$core$Tuple$first(_p37),
+						_elm_lang$core$Tuple$first(_p40),
 						_mordrax$cotwelm$Utils_Vector$fromDirection(
-							A2(_mordrax$cotwelm$Utils_Vector$rotateCompass, _p35, _mordrax$cotwelm$Utils_Vector$Right))),
+							A2(_mordrax$cotwelm$Utils_Vector$rotateCompass, _p38, _mordrax$cotwelm$Utils_Vector$Right))),
 					_1: {ctor: '[]'}
 				}
 			}
@@ -25993,17 +32212,17 @@ var _mordrax$cotwelm$Dungeon_Corridor$boundaryHelper = function (_p32) {
 		function (_) {
 			return _.position;
 		},
-		_p36);
+		_p39);
 	var lessPaths = function (positionSet) {
 		return A2(
 			_elm_lang$core$Set$diff,
 			positionSet,
 			_elm_lang$core$Set$fromList(pathPositions));
 	};
-	var _p34 = _mordrax$cotwelm$Dungeon_Corridor$end(
-		_mordrax$cotwelm$Dungeon_Corridor$A(_p33));
-	var endPosition = _p34._0;
-	var endFacing = _p34._1;
+	var _p37 = _mordrax$cotwelm$Dungeon_Corridor$end(
+		_mordrax$cotwelm$Dungeon_Corridor$A(_p36));
+	var endPosition = _p37._0;
+	var endFacing = _p37._1;
 	var exitExceptions = _elm_lang$core$Set$fromList(
 		{
 			ctor: '::',
@@ -26049,11 +32268,11 @@ var _mordrax$cotwelm$Dungeon_Corridor$boundaryHelper = function (_p32) {
 									function (_) {
 										return _.position;
 									},
-									_p36))))))));
+									_p39))))))));
 };
-var _mordrax$cotwelm$Dungeon_Corridor$boundary = function (_p38) {
-	var _p39 = _p38;
-	return _mordrax$cotwelm$Dungeon_Corridor$boundaryHelper(_p39._0);
+var _mordrax$cotwelm$Dungeon_Corridor$boundary = function (_p41) {
+	var _p42 = _p41;
+	return _mordrax$cotwelm$Dungeon_Corridor$boundaryHelper(_p42._0);
 };
 var _mordrax$cotwelm$Dungeon_Corridor$isCollision = F2(
 	function (position, corridor) {
@@ -26066,87 +32285,16 @@ var _mordrax$cotwelm$Dungeon_Corridor$isCollision = F2(
 			_mordrax$cotwelm$Dungeon_Corridor$boundary(corridor));
 	});
 
-var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$walls = function (_p0) {
-	var _p1 = _p0;
-	var _p2 = {ctor: '_Tuple2', _0: _p1._0 - 1, _1: _p1._1 - 1};
-	var xMax = _p2._0;
-	var yMax = _p2._1;
-	return {
-		ctor: '::',
-		_0: A2(
-			_elm_lang$core$List$map,
-			function (y) {
-				return {ctor: '_Tuple2', _0: 0, _1: y};
-			},
-			A2(_elm_lang$core$List$range, 1, yMax - 1)),
-		_1: {
-			ctor: '::',
-			_0: A2(
-				_elm_lang$core$List$map,
-				function (y) {
-					return {ctor: '_Tuple2', _0: xMax, _1: y};
-				},
-				A2(_elm_lang$core$List$range, 1, yMax - 1)),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$core$List$map,
-					function (x) {
-						return {ctor: '_Tuple2', _0: x, _1: 0};
-					},
-					A2(_elm_lang$core$List$range, 1, xMax - 1)),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$core$List$map,
-						function (x) {
-							return {ctor: '_Tuple2', _0: x, _1: yMax};
-						},
-						A2(_elm_lang$core$List$range, 1, xMax - 1)),
-					_1: {ctor: '[]'}
-				}
-			}
-		}
-	};
+var _mordrax$cotwelm$Dungeon_Rooms_Circular$walls = function (dimension) {
+	return {ctor: '[]'};
 };
-var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$floors = function (_p3) {
-	var _p4 = _p3;
-	var _p5 = {ctor: '_Tuple2', _0: _p4._0 - 1, _1: _p4._1 - 1};
-	var xMax = _p5._0;
-	var yMax = _p5._1;
-	return A3(
-		_elm_community$list_extra$List_Extra$lift2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		A2(_elm_lang$core$List$range, 1, xMax - 1),
-		A2(_elm_lang$core$List$range, 1, yMax - 1));
+var _mordrax$cotwelm$Dungeon_Rooms_Circular$floors = function (dimension) {
+	return {ctor: '[]'};
 };
-var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$corners = function (_p6) {
-	var _p7 = _p6;
-	var _p8 = {ctor: '_Tuple2', _0: _p7._0 - 1, _1: _p7._1 - 1};
-	var xMax = _p8._0;
-	var yMax = _p8._1;
-	return {
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 0, _1: 0},
-		_1: {
-			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: xMax, _1: 0},
-			_1: {
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 0, _1: yMax},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: xMax, _1: yMax},
-					_1: {ctor: '[]'}
-				}
-			}
-		}
-	};
+var _mordrax$cotwelm$Dungeon_Rooms_Circular$corners = function (dimension) {
+	return {ctor: '[]'};
 };
-var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$floors};
+var _mordrax$cotwelm$Dungeon_Rooms_Circular$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Circular$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Circular$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Circular$floors};
 
 var _mordrax$cotwelm$Dungeon_Rooms_Cross$dot = F2(
 	function (wallSize, axis) {
@@ -26413,6 +32561,28 @@ var _mordrax$cotwelm$Dungeon_Rooms_Cross$walls = function (_p5) {
 };
 var _mordrax$cotwelm$Dungeon_Rooms_Cross$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Cross$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Cross$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Cross$floors};
 
+var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$walls = function (dimension) {
+	return {ctor: '[]'};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$floors = function (dimension) {
+	return {ctor: '[]'};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$corners = function (dimension) {
+	return {ctor: '[]'};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$floors};
+
+var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$walls = function (dimension) {
+	return {ctor: '[]'};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$floors = function (dimension) {
+	return {ctor: '[]'};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$corners = function (dimension) {
+	return {ctor: '[]'};
+};
+var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$floors};
+
 var _mordrax$cotwelm$Dungeon_Rooms_Diamond$largestEquilaterialDimension = function (_p0) {
 	var _p1 = _p0;
 	var _p4 = _p1._1;
@@ -26584,38 +32754,87 @@ var _mordrax$cotwelm$Dungeon_Rooms_Potion$corners = function (dimension) {
 };
 var _mordrax$cotwelm$Dungeon_Rooms_Potion$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Potion$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Potion$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Potion$floors};
 
-var _mordrax$cotwelm$Dungeon_Rooms_Circular$walls = function (dimension) {
-	return {ctor: '[]'};
+var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$walls = function (_p0) {
+	var _p1 = _p0;
+	var _p2 = {ctor: '_Tuple2', _0: _p1._0 - 1, _1: _p1._1 - 1};
+	var xMax = _p2._0;
+	var yMax = _p2._1;
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$core$List$map,
+			function (y) {
+				return {ctor: '_Tuple2', _0: 0, _1: y};
+			},
+			A2(_elm_lang$core$List$range, 1, yMax - 1)),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$core$List$map,
+				function (y) {
+					return {ctor: '_Tuple2', _0: xMax, _1: y};
+				},
+				A2(_elm_lang$core$List$range, 1, yMax - 1)),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$core$List$map,
+					function (x) {
+						return {ctor: '_Tuple2', _0: x, _1: 0};
+					},
+					A2(_elm_lang$core$List$range, 1, xMax - 1)),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$core$List$map,
+						function (x) {
+							return {ctor: '_Tuple2', _0: x, _1: yMax};
+						},
+						A2(_elm_lang$core$List$range, 1, xMax - 1)),
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	};
 };
-var _mordrax$cotwelm$Dungeon_Rooms_Circular$floors = function (dimension) {
-	return {ctor: '[]'};
+var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$floors = function (_p3) {
+	var _p4 = _p3;
+	var _p5 = {ctor: '_Tuple2', _0: _p4._0 - 1, _1: _p4._1 - 1};
+	var xMax = _p5._0;
+	var yMax = _p5._1;
+	return A3(
+		_elm_community$list_extra$List_Extra$lift2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		A2(_elm_lang$core$List$range, 1, xMax - 1),
+		A2(_elm_lang$core$List$range, 1, yMax - 1));
 };
-var _mordrax$cotwelm$Dungeon_Rooms_Circular$corners = function (dimension) {
-	return {ctor: '[]'};
+var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$corners = function (_p6) {
+	var _p7 = _p6;
+	var _p8 = {ctor: '_Tuple2', _0: _p7._0 - 1, _1: _p7._1 - 1};
+	var xMax = _p8._0;
+	var yMax = _p8._1;
+	return {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 0, _1: 0},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: xMax, _1: 0},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 0, _1: yMax},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: xMax, _1: yMax},
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	};
 };
-var _mordrax$cotwelm$Dungeon_Rooms_Circular$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Circular$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Circular$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Circular$floors};
-
-var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$walls = function (dimension) {
-	return {ctor: '[]'};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$floors = function (dimension) {
-	return {ctor: '[]'};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$corners = function (dimension) {
-	return {ctor: '[]'};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_DiagonalSquares$floors};
-
-var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$walls = function (dimension) {
-	return {ctor: '[]'};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$floors = function (dimension) {
-	return {ctor: '[]'};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$corners = function (dimension) {
-	return {ctor: '[]'};
-};
-var _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$floors};
+var _mordrax$cotwelm$Dungeon_Rooms_Rectangular$template = {makeWalls: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$walls, makeCorners: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$corners, makeFloors: _mordrax$cotwelm$Dungeon_Rooms_Rectangular$floors};
 
 var _mordrax$cotwelm$Dungeon_Room$templates = function (roomType) {
 	var _p0 = roomType;
@@ -26636,16 +32855,6 @@ var _mordrax$cotwelm$Dungeon_Room$templates = function (roomType) {
 			return _mordrax$cotwelm$Dungeon_Rooms_DeadEnd$template;
 	}
 };
-var _mordrax$cotwelm$Dungeon_Room$floorsGenerator = function (_p1) {
-	var _p2 = _p1;
-	var makeFloors = _mordrax$cotwelm$Dungeon_Room$templates(_p2.roomType).makeFloors;
-	return _mgold$elm_random_pcg$Random_Pcg$constant(
-		_elm_lang$core$Native_Utils.update(
-			_p2,
-			{
-				floors: makeFloors(_p2.dimension)
-			}));
-};
 var _mordrax$cotwelm$Dungeon_Room$generateEntranceHelper = function (possibleEntrancePositions) {
 	var newEntrance = function (pos) {
 		return A2(_mordrax$cotwelm$Dungeon_Entrance$init, _mordrax$cotwelm$Dungeon_Entrance$Door, pos);
@@ -26653,14 +32862,14 @@ var _mordrax$cotwelm$Dungeon_Room$generateEntranceHelper = function (possibleEnt
 	var makeADoor = function (positions) {
 		return newEntrance(
 			A2(
-				_mordrax$cotwelm$Lodash$headWithDefault,
+				_mordrax$cotwelm$Utils_Misc$headWithDefault,
 				{ctor: '_Tuple2', _0: 0, _1: 0},
 				positions));
 	};
 	return A2(
 		_mgold$elm_random_pcg$Random_Pcg$map,
 		makeADoor,
-		_mordrax$cotwelm$Lodash$shuffle(possibleEntrancePositions));
+		_mordrax$cotwelm$Utils_Misc$shuffle(possibleEntrancePositions));
 };
 var _mordrax$cotwelm$Dungeon_Room$headOfWalls = function (walls) {
 	return A2(
@@ -26669,92 +32878,49 @@ var _mordrax$cotwelm$Dungeon_Room$headOfWalls = function (walls) {
 		_elm_lang$core$List$head(
 			_elm_lang$core$List$concat(walls)));
 };
-var _mordrax$cotwelm$Dungeon_Room$roomSizeGenerator = F2(
-	function (config, _p3) {
-		var _p4 = _p3;
-		return A2(
-			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			function (roomSize) {
-				return _mgold$elm_random_pcg$Random_Pcg$constant(
-					_elm_lang$core$Native_Utils.update(
-						_p4,
-						{
-							dimension: {ctor: '_Tuple2', _0: roomSize, _1: roomSize}
-						}));
-			},
-			A2(_mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeGenerator, _p4.roomType, config));
-	});
-var _mordrax$cotwelm$Dungeon_Room$positionGenerator = F2(
-	function (_p6, _p5) {
-		var _p7 = _p6;
-		var _p11 = _p7.dungeonSize;
-		var _p8 = _p5;
-		var _p9 = _p8.dimension;
-		var dimX = _p9._0;
-		var dimY = _p9._1;
-		var _p10 = A2(
-			_mordrax$cotwelm$Utils_Vector$map,
-			_elm_lang$core$Basics$max(0),
-			{ctor: '_Tuple2', _0: (_p11 - dimX) - 1, _1: (_p11 - dimY) - 1});
-		var maxX = _p10._0;
-		var maxY = _p10._1;
-		return A2(
-			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			function (worldPos_) {
-				return _mgold$elm_random_pcg$Random_Pcg$constant(
-					_elm_lang$core$Native_Utils.update(
-						_p8,
-						{worldPos: worldPos_}));
-			},
-			A2(_mordrax$cotwelm$Dice$d2d, maxX, maxY));
-	});
-var _mordrax$cotwelm$Dungeon_Room$roomTypeGenerator = F2(
-	function (config, model) {
-		return A2(
-			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			function (roomType_) {
-				return _mgold$elm_random_pcg$Random_Pcg$constant(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{roomType: roomType_}));
-			},
-			_mordrax$cotwelm$Dungeon_Rooms_Config$roomTypeGenerator(config));
-	});
-var _mordrax$cotwelm$Dungeon_Room$pp = function (_p12) {
-	var _p13 = _p12;
+var _mordrax$cotwelm$Dungeon_Room$lightSourceGenerator = function (room) {
+	var setArtificialLightSource = function (isLit) {
+		return isLit ? _elm_lang$core$Native_Utils.update(
+			room,
+			{lightSource: _mordrax$cotwelm$Types$Artificial}) : room;
+	};
+	return A2(_mgold$elm_random_pcg$Random_Pcg$map, setArtificialLightSource, _mgold$elm_random_pcg$Random_Pcg$bool);
+};
+var _mordrax$cotwelm$Dungeon_Room$pp = function (_p1) {
+	var _p2 = _p1;
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
 		'Room at (',
 		A2(
 			_elm_lang$core$Basics_ops['++'],
-			_elm_lang$core$Basics$toString(_p13._0.worldPos),
+			_elm_lang$core$Basics$toString(_p2.worldPos),
 			')'));
 };
-var _mordrax$cotwelm$Dungeon_Room$position = function (_p14) {
-	var _p15 = _p14;
-	return _p15._0.worldPos;
+var _mordrax$cotwelm$Dungeon_Room$position = function (_p3) {
+	var _p4 = _p3;
+	return _p4.worldPos;
 };
 var _mordrax$cotwelm$Dungeon_Room$wallsFacingDirection = F3(
-	function (direction, walls, _p16) {
-		var _p17 = _p16;
-		var xEqualsMaxX = function (_p18) {
-			var _p19 = _p18;
-			return _elm_lang$core$Native_Utils.eq(_p19._0, _p17._0 - 1);
+	function (direction, walls, _p5) {
+		var _p6 = _p5;
+		var xEqualsMaxX = function (_p7) {
+			var _p8 = _p7;
+			return _elm_lang$core$Native_Utils.eq(_p8._0, _p6._0 - 1);
 		};
-		var xEqualsZero = function (_p20) {
-			var _p21 = _p20;
-			return _elm_lang$core$Native_Utils.eq(_p21._0, 0);
+		var xEqualsZero = function (_p9) {
+			var _p10 = _p9;
+			return _elm_lang$core$Native_Utils.eq(_p10._0, 0);
 		};
-		var yEqualsMaxY = function (_p22) {
-			var _p23 = _p22;
-			return _elm_lang$core$Native_Utils.eq(_p23._1, _p17._1 - 1);
+		var yEqualsMaxY = function (_p11) {
+			var _p12 = _p11;
+			return _elm_lang$core$Native_Utils.eq(_p12._1, _p6._1 - 1);
 		};
-		var yEqualsZero = function (_p24) {
-			var _p25 = _p24;
-			return _elm_lang$core$Native_Utils.eq(_p25._1, 0);
+		var yEqualsZero = function (_p13) {
+			var _p14 = _p13;
+			return _elm_lang$core$Native_Utils.eq(_p14._1, 0);
 		};
-		var _p26 = direction;
-		switch (_p26.ctor) {
+		var _p15 = direction;
+		switch (_p15.ctor) {
 			case 'N':
 				return A2(_elm_lang$core$List$filter, yEqualsMaxY, walls);
 			case 'E':
@@ -26767,17 +32933,67 @@ var _mordrax$cotwelm$Dungeon_Room$wallsFacingDirection = F3(
 				return {ctor: '[]'};
 		}
 	});
+var _mordrax$cotwelm$Dungeon_Room$placeRoom = F2(
+	function (_p17, _p16) {
+		var _p18 = _p17;
+		var _p21 = _p18._1;
+		var _p19 = _p16;
+		var _p20 = _p19.floors;
+		var makeADoor = function (wall) {
+			var entrancePosition = A2(
+				_mordrax$cotwelm$Utils_Vector$add,
+				_p18._0,
+				_mordrax$cotwelm$Utils_Vector$fromDirection(_p21));
+			var entrance = A2(_mordrax$cotwelm$Dungeon_Entrance$init, _mordrax$cotwelm$Dungeon_Entrance$Door, entrancePosition);
+			var roomWorldPosition = A2(_mordrax$cotwelm$Utils_Vector$sub, entrancePosition, wall);
+			return _mgold$elm_random_pcg$Random_Pcg$constant(
+				_elm_lang$core$Native_Utils.update(
+					_p19,
+					{
+						entrances: {
+							ctor: '::',
+							_0: entrance,
+							_1: {ctor: '[]'}
+						},
+						worldPos: roomWorldPosition
+					}));
+		};
+		var pickAWall = function (walls) {
+			return A2(
+				_mgold$elm_random_pcg$Random_Pcg$map,
+				_mordrax$cotwelm$Utils_Misc$headWithDefault(
+					{ctor: '_Tuple2', _0: 0, _1: 0}),
+				_mordrax$cotwelm$Utils_Misc$shuffle(walls));
+		};
+		var wallFacing = _mordrax$cotwelm$Utils_Vector$oppositeDirection(_p21);
+		var candidateWalls = _elm_lang$core$Set$toList(
+			A3(
+				_elm_lang$core$Basics$flip,
+				_elm_lang$core$Set$diff,
+				_elm_lang$core$Set$fromList(_p20),
+				_elm_lang$core$Set$fromList(
+					A2(
+						_elm_lang$core$List$map,
+						function (floor) {
+							return A2(_mordrax$cotwelm$Utils_Vector$neighbourInDirection, floor, wallFacing);
+						},
+						_p20))));
+		return A2(
+			_mgold$elm_random_pcg$Random_Pcg$andThen,
+			makeADoor,
+			pickAWall(candidateWalls));
+	});
 var _mordrax$cotwelm$Dungeon_Room$entranceFacing = F2(
-	function (_p27, entrance) {
-		var _p28 = _p27;
+	function (_p22, entrance) {
+		var _p23 = _p22;
 		var entrancePos = A3(
 			_elm_lang$core$Basics$flip,
 			_mordrax$cotwelm$Utils_Vector$sub,
-			_p28._0.worldPos,
+			_p23.worldPos,
 			_mordrax$cotwelm$Dungeon_Entrance$position(entrance));
 		var isFloor = function (direction) {
 			return function (x) {
-				return A2(_elm_lang$core$List$member, x, _p28._0.floors);
+				return A2(_elm_lang$core$List$member, x, _p23.floors);
 			}(
 				A2(
 					_mordrax$cotwelm$Utils_Vector$add,
@@ -26786,35 +33002,73 @@ var _mordrax$cotwelm$Dungeon_Room$entranceFacing = F2(
 		};
 		return isFloor(_mordrax$cotwelm$Utils_Direction$N) ? _mordrax$cotwelm$Utils_Direction$S : (isFloor(_mordrax$cotwelm$Utils_Direction$S) ? _mordrax$cotwelm$Utils_Direction$N : (isFloor(_mordrax$cotwelm$Utils_Direction$E) ? _mordrax$cotwelm$Utils_Direction$W : (isFloor(_mordrax$cotwelm$Utils_Direction$W) ? _mordrax$cotwelm$Utils_Direction$E : _mordrax$cotwelm$Utils_Direction$N)));
 	});
-var _mordrax$cotwelm$Dungeon_Room$entrances = function (_p29) {
-	var _p30 = _p29;
-	return _p30._0.entrances;
+var _mordrax$cotwelm$Dungeon_Room$entrances = function (_p24) {
+	var _p25 = _p24;
+	return _p25.entrances;
 };
-var _mordrax$cotwelm$Dungeon_Room$toTiles = function (_p31) {
-	var _p32 = _p31;
-	var roomTileTypes = {
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile$DarkDgn, _1: _p32._0.floors},
-		_1: {ctor: '[]'}
-	};
+var _mordrax$cotwelm$Dungeon_Room$toTiles = function (_p26) {
+	var _p27 = _p26;
+	var _p31 = _p27.floors;
+	var roomTileTypes = function () {
+		var _p28 = _p27.lightSource;
+		if (_p28.ctor === 'Dark') {
+			return {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile_Types$DarkDgn, _1: _p31},
+				_1: {ctor: '[]'}
+			};
+		} else {
+			return {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: _mordrax$cotwelm$Tile_Types$LitDgn, _1: _p31},
+				_1: {ctor: '[]'}
+			};
+		}
+	}();
 	var toWorldPos = function (localPos) {
-		return A2(_mordrax$cotwelm$Utils_Vector$add, _p32._0.worldPos, localPos);
+		return A2(_mordrax$cotwelm$Utils_Vector$add, _p27.worldPos, localPos);
 	};
-	var makeTiles = function (_p33) {
-		var _p34 = _p33;
+	var makeTiles = function (_p29) {
+		var _p30 = _p29;
 		return A2(
 			_elm_lang$core$List$map,
 			function (pos) {
-				return A2(_mordrax$cotwelm$Tile$toTile, pos, _p34._0);
+				return A2(_mordrax$cotwelm$Tile$toTile, pos, _p30._0);
 			},
-			A2(_elm_lang$core$List$map, toWorldPos, _p34._1));
+			A2(_elm_lang$core$List$map, toWorldPos, _p30._1));
 	};
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
-		A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Entrance$toTile, _p32._0.entrances),
+		A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Entrance$toTile, _p27.entrances),
 		_elm_lang$core$List$concat(
 			A2(_elm_lang$core$List$map, makeTiles, roomTileTypes)));
 };
+var _mordrax$cotwelm$Dungeon_Room$removeEntrance = F2(
+	function (entrance, _p32) {
+		var _p33 = _p32;
+		var entrances_ = A2(
+			_elm_lang$core$List$filter,
+			function (_p34) {
+				return !A2(_mordrax$cotwelm$Dungeon_Entrance$equal, entrance, _p34);
+			},
+			_p33.entrances);
+		return _elm_lang$core$Native_Utils.update(
+			_p33,
+			{entrances: entrances_});
+	});
+var _mordrax$cotwelm$Dungeon_Room$addEntrance = F2(
+	function (entrance, _p35) {
+		var _p36 = _p35;
+		var entrancePosition = A2(
+			_mordrax$cotwelm$Utils_Vector$sub,
+			_mordrax$cotwelm$Dungeon_Entrance$position(entrance),
+			_p36.worldPos);
+		return _elm_lang$core$Native_Utils.update(
+			_p36,
+			{
+				entrances: {ctor: '::', _0: entrance, _1: _p36.entrances}
+			});
+	});
 var _mordrax$cotwelm$Dungeon_Room$adjacentToFloors = function (floors) {
 	var lessFloors = function (floorSet) {
 		return A2(
@@ -26828,32 +33082,30 @@ var _mordrax$cotwelm$Dungeon_Room$adjacentToFloors = function (floors) {
 				_elm_lang$core$List$concat(
 					A2(_elm_lang$core$List$map, _mordrax$cotwelm$Utils_Vector$neighbours, floors)))));
 };
-var _mordrax$cotwelm$Dungeon_Room$boundary = function (_p35) {
-	var _p36 = _p35;
-	var _p37 = _p36._0;
+var _mordrax$cotwelm$Dungeon_Room$boundary = function (room) {
 	return A2(
 		_elm_lang$core$List$map,
-		_mordrax$cotwelm$Utils_Vector$add(_p37.worldPos),
-		_mordrax$cotwelm$Dungeon_Room$adjacentToFloors(_p37.floors));
+		_mordrax$cotwelm$Utils_Vector$add(room.worldPos),
+		_mordrax$cotwelm$Dungeon_Room$adjacentToFloors(room.floors));
 };
 var _mordrax$cotwelm$Dungeon_Room$isCollision = F2(
-	function (_p38, position) {
-		var _p39 = _p38;
+	function (_p37, position) {
+		var _p38 = _p37;
 		var isPositionAEntrance = A2(
 			_elm_lang$core$List$any,
 			F2(
 				function (x, y) {
 					return _elm_lang$core$Native_Utils.eq(x, y);
 				})(position),
-			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Entrance$position, _p39._0.entrances));
-		var localPosition = A2(_mordrax$cotwelm$Utils_Vector$sub, position, _p39._0.worldPos);
+			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Entrance$position, _p38.entrances));
+		var localPosition = A2(_mordrax$cotwelm$Utils_Vector$sub, position, _p38.worldPos);
 		var isPositionAdjacent = A2(
 			_elm_lang$core$List$any,
 			F2(
 				function (x, y) {
 					return _elm_lang$core$Native_Utils.eq(x, y);
 				})(localPosition),
-			_mordrax$cotwelm$Dungeon_Room$adjacentToFloors(_p39._0.floors));
+			_mordrax$cotwelm$Dungeon_Room$adjacentToFloors(_p38.floors));
 		return isPositionAEntrance || isPositionAdjacent;
 	});
 var _mordrax$cotwelm$Dungeon_Room$adjacentToFloorsWithoutDiagonals = function (floors) {
@@ -26870,19 +33122,19 @@ var _mordrax$cotwelm$Dungeon_Room$adjacentToFloorsWithoutDiagonals = function (f
 					A2(_elm_lang$core$List$map, _mordrax$cotwelm$Utils_Vector$cardinalNeighbours, floors)))));
 };
 var _mordrax$cotwelm$Dungeon_Room$tooCloseToEntrances = F2(
-	function (_p40, entrances) {
-		var _p41 = _p40;
+	function (_p39, entrances) {
+		var _p40 = _p39;
 		var tooCloseToEntrance = function (entrance) {
-			var _p42 = _mordrax$cotwelm$Dungeon_Entrance$position(entrance);
-			var ex = _p42._0;
-			var ey = _p42._1;
-			var _p43 = {
+			var _p41 = _mordrax$cotwelm$Dungeon_Entrance$position(entrance);
+			var ex = _p41._0;
+			var ey = _p41._1;
+			var _p42 = {
 				ctor: '_Tuple2',
-				_0: _elm_lang$core$Basics$abs(ex - _p41._0),
-				_1: _elm_lang$core$Basics$abs(ey - _p41._1)
+				_0: _elm_lang$core$Basics$abs(ex - _p40._0),
+				_1: _elm_lang$core$Basics$abs(ey - _p40._1)
 			};
-			var dx = _p43._0;
-			var dy = _p43._1;
+			var dx = _p42._0;
+			var dy = _p42._1;
 			return (_elm_lang$core$Native_Utils.eq(dx, 0) && (_elm_lang$core$Native_Utils.cmp(dy, 2) < 1)) || (_elm_lang$core$Native_Utils.eq(dy, 0) && (_elm_lang$core$Native_Utils.cmp(dx, 2) < 1));
 		};
 		return A2(_elm_lang$core$List$any, tooCloseToEntrance, entrances);
@@ -26897,32 +33149,35 @@ var _mordrax$cotwelm$Dungeon_Room$notTooClose = F2(
 				})(position),
 			A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Entrance$position, entrances)) ? _elm_lang$core$Maybe$Nothing : (A2(_mordrax$cotwelm$Dungeon_Room$tooCloseToEntrances, position, entrances) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(position));
 	});
-var _mordrax$cotwelm$Dungeon_Room$floors = function (_p44) {
-	var _p45 = _p44;
+var _mordrax$cotwelm$Dungeon_Room$generateEntrance = function (_p43) {
+	var _p44 = _p43;
+	var _p45 = _p44.entrances;
+	var toReturn = function (entrance) {
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				_p44,
+				{
+					entrances: {ctor: '::', _0: entrance, _1: _p45}
+				}),
+			_1: entrance
+		};
+	};
+	var possibleEntrancePositions = A2(
+		_elm_lang$core$List$filterMap,
+		_mordrax$cotwelm$Dungeon_Room$notTooClose(_p45),
+		A2(
+			_elm_lang$core$List$map,
+			_mordrax$cotwelm$Utils_Vector$add(_p44.worldPos),
+			_mordrax$cotwelm$Dungeon_Room$adjacentToFloorsWithoutDiagonals(_p44.floors)));
 	return A2(
-		_elm_lang$core$List$map,
-		_mordrax$cotwelm$Utils_Vector$add(_p45._0.worldPos),
-		_p45._0.floors);
+		_mgold$elm_random_pcg$Random_Pcg$map,
+		toReturn,
+		_mordrax$cotwelm$Dungeon_Room$generateEntranceHelper(possibleEntrancePositions));
 };
-var _mordrax$cotwelm$Dungeon_Room$Model = F5(
-	function (a, b, c, d, e) {
-		return {entrances: a, floors: b, roomType: c, dimension: d, worldPos: e};
-	});
-var _mordrax$cotwelm$Dungeon_Room$A = function (a) {
-	return {ctor: 'A', _0: a};
-};
-var _mordrax$cotwelm$Dungeon_Room$init = _mordrax$cotwelm$Dungeon_Room$A(
-	{
-		entrances: {ctor: '[]'},
-		floors: {ctor: '[]'},
-		roomType: _mordrax$cotwelm$Dungeon_Rooms_Type$DeadEnd,
-		dimension: {ctor: '_Tuple2', _0: 1, _1: 1},
-		worldPos: _mordrax$cotwelm$Utils_Vector$zero
-	});
 var _mordrax$cotwelm$Dungeon_Room$new = F5(
 	function (entrances, floors, roomType, dimension, worldPos) {
-		return _mordrax$cotwelm$Dungeon_Room$A(
-			{entrances: entrances, floors: floors, roomType: roomType, dimension: dimension, worldPos: worldPos});
+		return {entrances: entrances, floors: floors, roomType: roomType, dimension: dimension, worldPos: worldPos, lightSource: _mordrax$cotwelm$Types$Dark};
 	});
 var _mordrax$cotwelm$Dungeon_Room$newDeadEnd = function (worldPos) {
 	return A5(
@@ -26937,132 +33192,127 @@ var _mordrax$cotwelm$Dungeon_Room$newDeadEnd = function (worldPos) {
 		{ctor: '_Tuple2', _0: 1, _1: 1},
 		worldPos);
 };
+var _mordrax$cotwelm$Dungeon_Room$floors = function (_p46) {
+	var _p47 = _p46;
+	return A2(
+		_elm_lang$core$List$map,
+		_mordrax$cotwelm$Utils_Vector$add(_p47.worldPos),
+		_p47.floors);
+};
+var _mordrax$cotwelm$Dungeon_Room$init = {
+	entrances: {ctor: '[]'},
+	floors: {ctor: '[]'},
+	roomType: _mordrax$cotwelm$Dungeon_Rooms_Type$DeadEnd,
+	dimension: {ctor: '_Tuple2', _0: 1, _1: 1},
+	worldPos: _mordrax$cotwelm$Utils_Vector$zero,
+	lightSource: _mordrax$cotwelm$Types$Dark
+};
+var _mordrax$cotwelm$Dungeon_Room$setLightSource = F2(
+	function (val, room) {
+		return _elm_lang$core$Native_Utils.update(
+			room,
+			{lightSource: val});
+	});
+var _mordrax$cotwelm$Dungeon_Room$setWorldPos = F2(
+	function (val, room) {
+		return _elm_lang$core$Native_Utils.update(
+			room,
+			{worldPos: val});
+	});
+var _mordrax$cotwelm$Dungeon_Room$positionGenerator = F2(
+	function (_p49, _p48) {
+		var _p50 = _p49;
+		var _p54 = _p50.dungeonSize;
+		var _p51 = _p48;
+		var _p52 = _p51.dimension;
+		var dimX = _p52._0;
+		var dimY = _p52._1;
+		var _p53 = A2(
+			_mordrax$cotwelm$Utils_Vector$map,
+			_elm_lang$core$Basics$max(0),
+			{ctor: '_Tuple2', _0: (_p54 - dimX) - 1, _1: (_p54 - dimY) - 1});
+		var maxX = _p53._0;
+		var maxY = _p53._1;
+		return A2(
+			_mgold$elm_random_pcg$Random_Pcg$map,
+			A2(_elm_lang$core$Basics$flip, _mordrax$cotwelm$Dungeon_Room$setWorldPos, _p51),
+			A2(_mordrax$cotwelm$Dice$d2d, maxX, maxY));
+	});
+var _mordrax$cotwelm$Dungeon_Room$setDimension = F2(
+	function (val, room) {
+		return _elm_lang$core$Native_Utils.update(
+			room,
+			{dimension: val});
+	});
+var _mordrax$cotwelm$Dungeon_Room$roomSizeGenerator = F2(
+	function (config, _p55) {
+		var _p56 = _p55;
+		return A2(
+			_mgold$elm_random_pcg$Random_Pcg$map,
+			function (size) {
+				return A2(
+					_mordrax$cotwelm$Dungeon_Room$setDimension,
+					{ctor: '_Tuple2', _0: size, _1: size},
+					_p56);
+			},
+			A2(_mordrax$cotwelm$Dungeon_Rooms_Config$roomSizeGenerator, _p56.roomType, config));
+	});
+var _mordrax$cotwelm$Dungeon_Room$setRoomType = F2(
+	function (val, room) {
+		return _elm_lang$core$Native_Utils.update(
+			room,
+			{roomType: val});
+	});
+var _mordrax$cotwelm$Dungeon_Room$roomTypeGenerator = F2(
+	function (config, model) {
+		return A2(
+			_mgold$elm_random_pcg$Random_Pcg$map,
+			A2(_elm_lang$core$Basics$flip, _mordrax$cotwelm$Dungeon_Room$setRoomType, model),
+			_mordrax$cotwelm$Dungeon_Rooms_Config$roomTypeGenerator(config));
+	});
+var _mordrax$cotwelm$Dungeon_Room$setFloors = F2(
+	function (val, room) {
+		return _elm_lang$core$Native_Utils.update(
+			room,
+			{floors: val});
+	});
+var _mordrax$cotwelm$Dungeon_Room$floorsGenerator = function (_p57) {
+	var _p58 = _p57;
+	var makeFloors = _mordrax$cotwelm$Dungeon_Room$templates(_p58.roomType).makeFloors;
+	return _mgold$elm_random_pcg$Random_Pcg$constant(
+		A3(
+			_elm_lang$core$Basics$flip,
+			_mordrax$cotwelm$Dungeon_Room$setFloors,
+			_p58,
+			makeFloors(_p58.dimension)));
+};
 var _mordrax$cotwelm$Dungeon_Room$generate = function (config) {
-	var toRoomGenerator = function (model) {
-		return _mgold$elm_random_pcg$Random_Pcg$constant(
-			_mordrax$cotwelm$Dungeon_Room$A(model));
-	};
-	var _p46 = _mordrax$cotwelm$Dungeon_Room$init;
-	var model = _p46._0;
 	return A2(
 		_mgold$elm_random_pcg$Random_Pcg$andThen,
-		toRoomGenerator,
+		_mgold$elm_random_pcg$Random_Pcg$constant,
 		A2(
 			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			_mordrax$cotwelm$Dungeon_Room$floorsGenerator,
+			_mordrax$cotwelm$Dungeon_Room$lightSourceGenerator,
 			A2(
 				_mgold$elm_random_pcg$Random_Pcg$andThen,
-				_mordrax$cotwelm$Dungeon_Room$positionGenerator(config),
+				_mordrax$cotwelm$Dungeon_Room$floorsGenerator,
 				A2(
 					_mgold$elm_random_pcg$Random_Pcg$andThen,
-					_mordrax$cotwelm$Dungeon_Room$roomSizeGenerator(config),
-					A2(_mordrax$cotwelm$Dungeon_Room$roomTypeGenerator, config, model)))));
-};
-var _mordrax$cotwelm$Dungeon_Room$generateEntrance = function (_p47) {
-	var _p48 = _p47;
-	var _p49 = _p48._0.entrances;
-	var toReturn = function (entrance) {
-		return {
-			ctor: '_Tuple2',
-			_0: _mordrax$cotwelm$Dungeon_Room$A(
-				_elm_lang$core$Native_Utils.update(
-					_p48._0,
-					{
-						entrances: {ctor: '::', _0: entrance, _1: _p49}
-					})),
-			_1: entrance
-		};
-	};
-	var possibleEntrancePositions = A2(
-		_elm_lang$core$List$filterMap,
-		_mordrax$cotwelm$Dungeon_Room$notTooClose(_p49),
-		A2(
-			_elm_lang$core$List$map,
-			_mordrax$cotwelm$Utils_Vector$add(_p48._0.worldPos),
-			_mordrax$cotwelm$Dungeon_Room$adjacentToFloorsWithoutDiagonals(_p48._0.floors)));
-	return A2(
-		_mgold$elm_random_pcg$Random_Pcg$map,
-		toReturn,
-		_mordrax$cotwelm$Dungeon_Room$generateEntranceHelper(possibleEntrancePositions));
-};
-var _mordrax$cotwelm$Dungeon_Room$addEntrance = F2(
-	function (entrance, _p50) {
-		var _p51 = _p50;
-		var entrancePosition = A2(
-			_mordrax$cotwelm$Utils_Vector$sub,
-			_mordrax$cotwelm$Dungeon_Entrance$position(entrance),
-			_p51._0.worldPos);
-		return _mordrax$cotwelm$Dungeon_Room$A(
-			_elm_lang$core$Native_Utils.update(
-				_p51._0,
-				{
-					entrances: {ctor: '::', _0: entrance, _1: _p51._0.entrances}
-				}));
-	});
-var _mordrax$cotwelm$Dungeon_Room$removeEntrance = F2(
-	function (entrance, _p52) {
-		var _p53 = _p52;
-		var entrances_ = A2(
-			_elm_lang$core$List$filter,
-			function (_p54) {
-				return !A2(_mordrax$cotwelm$Dungeon_Entrance$equal, entrance, _p54);
-			},
-			_p53._0.entrances);
-		return _mordrax$cotwelm$Dungeon_Room$A(
-			_elm_lang$core$Native_Utils.update(
-				_p53._0,
-				{entrances: entrances_}));
-	});
-var _mordrax$cotwelm$Dungeon_Room$placeRoom = F2(
-	function (_p56, _p55) {
-		var _p57 = _p56;
-		var _p60 = _p57._1;
-		var _p58 = _p55;
-		var _p59 = _p58._0.floors;
-		var makeADoor = function (wall) {
-			var entrancePosition = A2(
-				_mordrax$cotwelm$Utils_Vector$add,
-				_p57._0,
-				_mordrax$cotwelm$Utils_Vector$fromDirection(_p60));
-			var entrance = A2(_mordrax$cotwelm$Dungeon_Entrance$init, _mordrax$cotwelm$Dungeon_Entrance$Door, entrancePosition);
-			var roomWorldPosition = A2(_mordrax$cotwelm$Utils_Vector$sub, entrancePosition, wall);
-			return _mgold$elm_random_pcg$Random_Pcg$constant(
-				_mordrax$cotwelm$Dungeon_Room$A(
-					_elm_lang$core$Native_Utils.update(
-						_p58._0,
-						{
-							entrances: {
-								ctor: '::',
-								_0: entrance,
-								_1: {ctor: '[]'}
-							},
-							worldPos: roomWorldPosition
-						})));
-		};
-		var pickAWall = function (walls) {
-			return A2(
-				_mgold$elm_random_pcg$Random_Pcg$map,
-				_mordrax$cotwelm$Lodash$headWithDefault(
-					{ctor: '_Tuple2', _0: 0, _1: 0}),
-				_mordrax$cotwelm$Lodash$shuffle(walls));
-		};
-		var wallFacing = _mordrax$cotwelm$Utils_Vector$oppositeDirection(_p60);
-		var candidateWalls = _elm_lang$core$Set$toList(
-			A3(
-				_elm_lang$core$Basics$flip,
-				_elm_lang$core$Set$diff,
-				_elm_lang$core$Set$fromList(_p59),
-				_elm_lang$core$Set$fromList(
+					_mordrax$cotwelm$Dungeon_Room$positionGenerator(config),
 					A2(
-						_elm_lang$core$List$map,
-						function (floor) {
-							return A2(_mordrax$cotwelm$Utils_Vector$neighbourInDirection, floor, wallFacing);
-						},
-						_p59))));
-		return A2(
-			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			makeADoor,
-			pickAWall(candidateWalls));
+						_mgold$elm_random_pcg$Random_Pcg$andThen,
+						_mordrax$cotwelm$Dungeon_Room$roomSizeGenerator(config),
+						A2(_mordrax$cotwelm$Dungeon_Room$roomTypeGenerator, config, _mordrax$cotwelm$Dungeon_Room$init))))));
+};
+var _mordrax$cotwelm$Dungeon_Room$setEntrances = F2(
+	function (val, room) {
+		return _elm_lang$core$Native_Utils.update(
+			room,
+			{entrances: val});
+	});
+var _mordrax$cotwelm$Dungeon_Room$Room = F6(
+	function (a, b, c, d, e, f) {
+		return {entrances: a, floors: b, roomType: c, dimension: d, worldPos: e, lightSource: f};
 	});
 
 var _mordrax$cotwelm$Utils_BresenhamLine$vline = F3(
@@ -27153,73 +33403,148 @@ var _mordrax$cotwelm$Utils_BresenhamLine$line = F2(
 			{ctor: '_Tuple2', _0: _p12, _1: _p13}));
 	});
 
-var _mordrax$cotwelm$Level$unexploredTiles = function (_p0) {
-	var _p1 = _p0;
-	return A2(
-		_elm_lang$core$List$filter,
-		function (_p2) {
-			return A2(
-				F2(
-					function (x, y) {
-						return _elm_lang$core$Native_Utils.eq(x, y);
-					}),
-				_mordrax$cotwelm$Tile$Hidden,
-				function (_) {
-					return _.visible;
-				}(_p2));
-		},
-		A2(
-			_elm_lang$core$List$map,
-			_elm_lang$core$Tuple$second,
-			_elm_lang$core$Dict$toList(_p1.map)));
-};
-var _mordrax$cotwelm$Level$lineOfSight = F3(
-	function (a, b, map) {
-		var isSeeThroughOrEitherEndpoints = function (tile) {
-			return _elm_lang$core$Native_Utils.eq(tile.solid, false) || (_elm_lang$core$Native_Utils.eq(tile.position, a) || _elm_lang$core$Native_Utils.eq(tile.position, b));
+var _mordrax$cotwelm$Utils_FieldOfView$los = F3(
+	function (a, b, isSeeThrough) {
+		var isSeeThroughOrEitherEndpoints = function (point) {
+			return isSeeThrough(point) || (_elm_lang$core$Native_Utils.eq(point, a) || (_elm_lang$core$Native_Utils.eq(point, b) || A2(_mordrax$cotwelm$Utils_Vector$adjacent, a, b)));
 		};
 		return A2(
 			_elm_lang$core$List$all,
-			_elm_lang$core$Basics$identity,
+			isSeeThroughOrEitherEndpoints,
+			A2(_mordrax$cotwelm$Utils_BresenhamLine$line, a, b));
+	});
+var _mordrax$cotwelm$Utils_FieldOfView$find_ = F2(
+	function (source, _p0) {
+		find_:
+		while (true) {
+			var _p1 = _p0;
+			var _p6 = _p1;
+			var _p5 = _p1.explored;
+			var addNeighbours = F2(
+				function (x, fov) {
+					var neighbours = _p1.getNeighbours(x);
+					return _elm_lang$core$Native_Utils.update(
+						fov,
+						{
+							unexplored: A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Set$toList(
+									A2(_elm_lang$core$Set$diff, neighbours, fov.explored)),
+								fov.unexplored)
+						});
+				});
+			var _p2 = _p1.unexplored;
+			if (_p2.ctor === '[]') {
+				return _p6;
+			} else {
+				var _p4 = _p2._1;
+				var _p3 = _p2._0;
+				if (A3(_mordrax$cotwelm$Utils_FieldOfView$los, source, _p3, _p1.isSeeThrough)) {
+					var _v2 = source,
+						_v3 = A2(
+						addNeighbours,
+						_p3,
+						_elm_lang$core$Native_Utils.update(
+							_p6,
+							{
+								unexplored: _p4,
+								explored: A2(_elm_lang$core$Set$insert, _p3, _p5),
+								visible: A2(_elm_lang$core$Set$insert, _p3, _p1.visible)
+							}));
+					source = _v2;
+					_p0 = _v3;
+					continue find_;
+				} else {
+					var _v4 = source,
+						_v5 = _elm_lang$core$Native_Utils.update(
+						_p6,
+						{
+							unexplored: _p4,
+							explored: A2(_elm_lang$core$Set$insert, _p3, _p5)
+						});
+					source = _v4;
+					_p0 = _v5;
+					continue find_;
+				}
+			}
+		}
+	});
+var _mordrax$cotwelm$Utils_FieldOfView$FieldOfView = F5(
+	function (a, b, c, d, e) {
+		return {unexplored: a, explored: b, visible: c, isSeeThrough: d, getNeighbours: e};
+	});
+var _mordrax$cotwelm$Utils_FieldOfView$find = F3(
+	function (source, isSeeThrough, neighbours) {
+		var fov = A5(
+			_mordrax$cotwelm$Utils_FieldOfView$FieldOfView,
+			{
+				ctor: '::',
+				_0: source,
+				_1: {ctor: '[]'}
+			},
+			_elm_lang$core$Set$empty,
+			_elm_lang$core$Set$empty,
+			isSeeThrough,
+			neighbours);
+		return function (_) {
+			return _.visible;
+		}(
+			A2(_mordrax$cotwelm$Utils_FieldOfView$find_, source, fov));
+	});
+
+var _mordrax$cotwelm$Level$addTileAtPositionIfNotEmpty = F2(
+	function (tile, tiles) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			tiles,
 			A2(
-				_elm_lang$core$List$map,
-				_elm_lang$core$Maybe$withDefault(false),
+				_elm_lang$core$Maybe$map,
 				A2(
-					_elm_lang$core$List$map,
-					_elm_lang$core$Maybe$map(isSeeThroughOrEitherEndpoints),
-					A2(
-						_elm_lang$core$List$map,
-						function (point) {
-							return A2(_elm_lang$core$Dict$get, point, map);
-						},
-						A2(_mordrax$cotwelm$Utils_BresenhamLine$line, a, b)))));
+					_elm_lang$core$Basics$flip,
+					F2(
+						function (x, y) {
+							return {ctor: '::', _0: x, _1: y};
+						}),
+					tiles),
+				tile));
 	});
-var _mordrax$cotwelm$Level$updateFOV = F2(
-	function (heroPosition, _p3) {
-		var _p4 = _p3;
-		var _p6 = _p4.map;
-		var _p5 = _p4;
-		var newMonsters = _p4.monsters;
-		var addToMap = F2(
-			function (tile, map) {
-				return A3(_elm_lang$core$Dict$insert, tile.position, tile, map);
-			});
-		var newExploredTiles = A2(
-			_elm_lang$core$List$map,
-			_mordrax$cotwelm$Tile$setVisibility(_mordrax$cotwelm$Tile$Explored),
-			A2(
-				_elm_lang$core$List$filter,
-				function (tile) {
-					return A3(_mordrax$cotwelm$Level$lineOfSight, heroPosition, tile.position, _p6);
-				},
-				_mordrax$cotwelm$Level$unexploredTiles(_p5)));
-		var newMap = A3(_elm_lang$core$List$foldl, addToMap, _p6, newExploredTiles);
-		return _elm_lang$core$Native_Utils.update(
-			_p5,
-			{map: newMap, monsters: newMonsters});
+var _mordrax$cotwelm$Level$getTile = function (map) {
+	return A2(_elm_lang$core$Basics$flip, _elm_lang$core$Dict$get, map);
+};
+var _mordrax$cotwelm$Level$neighbours = F2(
+	function (map, center) {
+		var addTilePosition = _mordrax$cotwelm$Utils_Vector$add(center);
+		var getNeighbour = function (_p0) {
+			return A2(
+				_mordrax$cotwelm$Level$getTile,
+				map,
+				addTilePosition(_p0));
+		};
+		return {
+			ctor: '_Tuple4',
+			_0: getNeighbour(
+				{ctor: '_Tuple2', _0: 0, _1: -1}),
+			_1: getNeighbour(
+				{ctor: '_Tuple2', _0: 1, _1: 0}),
+			_2: getNeighbour(
+				{ctor: '_Tuple2', _0: 0, _1: 1}),
+			_3: getNeighbour(
+				{ctor: '_Tuple2', _0: -1, _1: 0})
+		};
 	});
-var _mordrax$cotwelm$Level$floors = function (_p7) {
-	var _p8 = _p7;
+var _mordrax$cotwelm$Level$allNeighbours = F2(
+	function (map, center) {
+		return A3(
+			_elm_lang$core$List$foldl,
+			function (_p1) {
+				return _mordrax$cotwelm$Level$addTileAtPositionIfNotEmpty(
+					A2(_mordrax$cotwelm$Level$getTile, map, _p1));
+			},
+			{ctor: '[]'},
+			_mordrax$cotwelm$Utils_Vector$neighbours(center));
+	});
+var _mordrax$cotwelm$Level$floors = function (_p2) {
+	var _p3 = _p2;
 	return A2(
 		_elm_lang$core$List$map,
 		function (_) {
@@ -27227,15 +33552,15 @@ var _mordrax$cotwelm$Level$floors = function (_p7) {
 		},
 		A2(
 			_elm_lang$core$List$filter,
-			function (_p9) {
+			function (_p4) {
 				return !function (_) {
 					return _.solid;
-				}(_p9);
+				}(_p4);
 			},
 			A2(
 				_elm_lang$core$List$map,
 				_elm_lang$core$Tuple$second,
-				_elm_lang$core$Dict$toList(_p8.map))));
+				_elm_lang$core$Dict$toList(_p3.map))));
 };
 var _mordrax$cotwelm$Level$updateGround = F3(
 	function (pos, payload, model) {
@@ -27243,41 +33568,159 @@ var _mordrax$cotwelm$Level$updateGround = F3(
 			_elm_lang$core$Maybe$map,
 			_mordrax$cotwelm$Tile$updateGround(payload),
 			A2(_elm_lang$core$Dict$get, pos, model.map));
-		var _p10 = maybeTile;
-		if (_p10.ctor === 'Nothing') {
+		var _p5 = maybeTile;
+		if (_p5.ctor === 'Nothing') {
 			return model;
 		} else {
 			return _elm_lang$core$Native_Utils.update(
 				model,
 				{
-					map: A3(_elm_lang$core$Dict$insert, pos, _p10._0, model.map)
+					map: A3(_elm_lang$core$Dict$insert, pos, _p5._0, model.map)
 				});
 		}
 	});
-var _mordrax$cotwelm$Level$tileAtPosition = F2(
-	function (pos, _p11) {
-		var _p12 = _p11;
-		return A2(_elm_lang$core$Dict$get, pos, _p12.map);
+var _mordrax$cotwelm$Level$roomAtPosition = F2(
+	function (pos, rooms) {
+		var inRoom = function (room) {
+			return A2(
+				_mordrax$cotwelm$Utils_Vector$boxIntersectVector,
+				pos,
+				{
+					ctor: '_Tuple2',
+					_0: room.worldPos,
+					_1: A2(_mordrax$cotwelm$Utils_Vector$add, room.worldPos, room.dimension)
+				});
+		};
+		return _elm_lang$core$List$head(
+			A2(_elm_lang$core$List$filter, inRoom, rooms));
 	});
-var _mordrax$cotwelm$Level$size = function (_p13) {
-	var _p14 = _p13;
-	var positions = _elm_lang$core$Dict$keys(_p14.map);
-	var _p15 = A3(
+var _mordrax$cotwelm$Level$roomAndDark = F2(
+	function (rooms, position) {
+		return A2(
+			F2(
+				function (x, y) {
+					return _elm_lang$core$Native_Utils.eq(x, y);
+				}),
+			_mordrax$cotwelm$Types$Dark,
+			A2(
+				_elm_lang$core$Maybe$withDefault,
+				_mordrax$cotwelm$Types$Dark,
+				A2(
+					_elm_lang$core$Maybe$map,
+					function (_) {
+						return _.lightSource;
+					},
+					A2(_mordrax$cotwelm$Level$roomAtPosition, position, rooms))));
+	});
+var _mordrax$cotwelm$Level$isSeeThrough = F2(
+	function (_p6, target) {
+		var _p7 = _p6;
+		var notDarkRoom = function (_p8) {
+			return !A2(_mordrax$cotwelm$Level$roomAndDark, _p7.rooms, _p8);
+		};
+		var notClosedDoor = function (_p9) {
+			return A2(
+				F2(
+					function (x, y) {
+						return !_elm_lang$core$Native_Utils.eq(x, y);
+					}),
+				_mordrax$cotwelm$Tile_Types$DoorClosed,
+				function (_) {
+					return _.type_;
+				}(_p9));
+		};
+		var notSolid = function (_p10) {
+			return !function (_) {
+				return _.solid;
+			}(_p10);
+		};
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			false,
+			A2(
+				_elm_lang$core$Maybe$map,
+				function (tile) {
+					return notSolid(tile) && (notClosedDoor(tile) && notDarkRoom(target));
+				},
+				A2(_mordrax$cotwelm$Level$getTile, _p7.map, target)));
+	});
+var _mordrax$cotwelm$Level$calculateMonsterVisibility = F3(
+	function (monster, heroPosition, _p11) {
+		var _p12 = _p11;
+		return A3(
+			_mordrax$cotwelm$Utils_FieldOfView$los,
+			monster.position,
+			heroPosition,
+			_mordrax$cotwelm$Level$isSeeThrough(_p12)) ? _elm_lang$core$Native_Utils.update(
+			monster,
+			{visible: _mordrax$cotwelm$Types$LineOfSight}) : monster;
+	});
+var _mordrax$cotwelm$Level$updateFOV = F2(
+	function (heroPosition, _p13) {
+		var _p14 = _p13;
+		var _p16 = _p14;
+		var newMonsters = A2(
+			_elm_lang$core$List$map,
+			function (monster) {
+				return A3(_mordrax$cotwelm$Level$calculateMonsterVisibility, monster, heroPosition, _p16);
+			},
+			_p14.monsters);
+		var addToMapAsVisibleTile = F2(
+			function (tilePosition, map) {
+				return A2(
+					_elm_lang$core$Maybe$withDefault,
+					map,
+					A2(
+						_elm_lang$core$Maybe$map,
+						function (x) {
+							return A3(_elm_lang$core$Dict$insert, x.position, x, map);
+						},
+						A2(
+							_elm_lang$core$Maybe$map,
+							_mordrax$cotwelm$Tile$setVisibility(_mordrax$cotwelm$Types$Known),
+							A2(_mordrax$cotwelm$Level$getTile, map, tilePosition))));
+			});
+		var newMap = A3(
+			_elm_lang$core$List$foldl,
+			addToMapAsVisibleTile,
+			_p14.map,
+			_elm_lang$core$Set$toList(
+				A3(
+					_mordrax$cotwelm$Utils_FieldOfView$find,
+					heroPosition,
+					_mordrax$cotwelm$Level$isSeeThrough(_p16),
+					function (_p15) {
+						return _elm_lang$core$Set$fromList(
+							_mordrax$cotwelm$Utils_Vector$neighbours(_p15));
+					})));
+		return _elm_lang$core$Native_Utils.update(
+			_p16,
+			{map: newMap, monsters: newMonsters});
+	});
+var _mordrax$cotwelm$Level$tileAtPosition = F2(
+	function (pos, _p17) {
+		var _p18 = _p17;
+		return A2(_elm_lang$core$Dict$get, pos, _p18.map);
+	});
+var _mordrax$cotwelm$Level$size = function (_p19) {
+	var _p20 = _p19;
+	var positions = _elm_lang$core$Dict$keys(_p20.map);
+	var _p21 = A3(
 		_elm_lang$core$List$foldr,
 		F2(
-			function (_p17, _p16) {
-				var _p18 = _p17;
-				var _p19 = _p16;
+			function (_p23, _p22) {
+				var _p24 = _p23;
+				var _p25 = _p22;
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_elm_lang$core$Basics$max, _p18._0, _p19._0),
-					_1: A2(_elm_lang$core$Basics$max, _p18._1, _p19._1)
+					_0: A2(_elm_lang$core$Basics$max, _p24._0, _p25._0),
+					_1: A2(_elm_lang$core$Basics$max, _p24._1, _p25._1)
 				};
 			}),
 		{ctor: '_Tuple2', _0: 0, _1: 0},
 		positions);
-	var maxX = _p15._0;
-	var maxY = _p15._1;
+	var maxX = _p21._0;
+	var maxY = _p21._1;
 	return {ctor: '_Tuple2', _0: maxX + 1, _1: maxY + 1};
 };
 var _mordrax$cotwelm$Level$downstairs = function (model) {
@@ -27295,7 +33738,7 @@ var _mordrax$cotwelm$Level$fromTiles = function (tiles) {
 	return _elm_lang$core$Dict$fromList(
 		A2(_elm_lang$core$List$map, toKVPair, tiles));
 };
-var _mordrax$cotwelm$Level$init = F3(
+var _mordrax$cotwelm$Level$initNonDungeon = F3(
 	function (tiles, buildings, monsters) {
 		return {
 			map: _mordrax$cotwelm$Level$fromTiles(tiles),
@@ -27312,9 +33755,9 @@ var _mordrax$cotwelm$Level$setMap = F2(
 			{map: map});
 	});
 var _mordrax$cotwelm$Level$drop = F2(
-	function (_p20, level) {
-		var _p21 = _p20;
-		var _p22 = _p21._0;
+	function (_p26, level) {
+		var _p27 = _p26;
+		var _p28 = _p27._0;
 		return A2(
 			_mordrax$cotwelm$Level$setMap,
 			level,
@@ -27324,12 +33767,12 @@ var _mordrax$cotwelm$Level$drop = F2(
 				A2(
 					_elm_lang$core$Maybe$map,
 					function (x) {
-						return A3(_elm_lang$core$Dict$insert, _p22, x, level.map);
+						return A3(_elm_lang$core$Dict$insert, _p28, x, level.map);
 					},
 					A2(
 						_elm_lang$core$Maybe$map,
-						_mordrax$cotwelm$Tile$drop(_p21._1),
-						A2(_elm_lang$core$Dict$get, _p22, level.map)))));
+						_mordrax$cotwelm$Tile$drop(_p27._1),
+						A2(_elm_lang$core$Dict$get, _p28, level.map)))));
 	});
 var _mordrax$cotwelm$Level$Level = F5(
 	function (a, b, c, d, e) {
@@ -27637,7 +34080,7 @@ var _mordrax$cotwelm$Dungeon_Clean$allDirectionsAreFloors = F3(
 					_elm_lang$core$List$map,
 					_elm_community$maybe_extra$Maybe_Extra$filter(
 						function (x) {
-							return _elm_lang$core$Native_Utils.eq(x.type_, _mordrax$cotwelm$Tile$DarkDgn);
+							return _elm_lang$core$Native_Utils.eq(x.type_, _mordrax$cotwelm$Tile_Types$DarkDgn);
 						}),
 					maybeTiles));
 		};
@@ -27786,12 +34229,12 @@ var _mordrax$cotwelm$Dungeon_Clean$calculateTypeOfWall = F2(
 		};
 		if ((_p22.ctor === '_Tuple2') && (_p22._0 === true)) {
 			if (_p22._1 === true) {
-				return A2(_mordrax$cotwelm$Tile$toTile, position, _mordrax$cotwelm$Tile$DarkDgn);
+				return A2(_mordrax$cotwelm$Tile$toTile, position, _mordrax$cotwelm$Tile_Types$DarkDgn);
 			} else {
-				return A2(_mordrax$cotwelm$Tile$toTile, position, _mordrax$cotwelm$Tile$WallDarkDgn);
+				return A2(_mordrax$cotwelm$Tile$toTile, position, _mordrax$cotwelm$Tile_Types$WallDarkDgn);
 			}
 		} else {
-			return A2(_mordrax$cotwelm$Tile$toTile, position, _mordrax$cotwelm$Tile$Rock);
+			return A2(_mordrax$cotwelm$Tile$toTile, position, _mordrax$cotwelm$Tile_Types$Rock);
 		}
 	});
 var _mordrax$cotwelm$Dungeon_Clean$addWalls = function (model) {
@@ -28173,7 +34616,7 @@ var _mordrax$cotwelm$Dungeon_DungeonGenerator$step = function (model) {
 						model,
 						{activePoints: x})));
 		},
-		_mordrax$cotwelm$Lodash$shuffle(model.activePoints));
+		_mordrax$cotwelm$Utils_Misc$shuffle(model.activePoints));
 };
 var _mordrax$cotwelm$Dungeon_DungeonGenerator$steps = F2(
 	function (steps, model) {
@@ -28224,7 +34667,7 @@ var _mordrax$cotwelm$Dungeon_DungeonGenerator$addStairs = function (model) {
 	return A2(
 		_mgold$elm_random_pcg$Random_Pcg$map,
 		makeUpDownStairs,
-		_mordrax$cotwelm$Lodash$shuffle(
+		_mordrax$cotwelm$Utils_Misc$shuffle(
 			_elm_lang$core$List$concat(
 				A2(_elm_lang$core$List$map, _mordrax$cotwelm$Dungeon_Room$floors, model.rooms))));
 };
@@ -28274,29 +34717,9 @@ var _mordrax$cotwelm$Dungeon_DungeonGenerator$generate = function (config) {
 		_mordrax$cotwelm$Dungeon_DungeonGenerator$generate_(config));
 };
 
-var _mordrax$cotwelm$Maps$tileNeighbours = F2(
-	function (map, center) {
-		var getTile = A2(_elm_lang$core$Basics$flip, _elm_lang$core$Dict$get, map);
-		var addTilePosition = _mordrax$cotwelm$Utils_Vector$add(center);
-		var getNeighbour = function (_p0) {
-			return getTile(
-				addTilePosition(_p0));
-		};
-		return {
-			ctor: '_Tuple4',
-			_0: getNeighbour(
-				{ctor: '_Tuple2', _0: 0, _1: -1}),
-			_1: getNeighbour(
-				{ctor: '_Tuple2', _0: 1, _1: 0}),
-			_2: getNeighbour(
-				{ctor: '_Tuple2', _0: 0, _1: 1}),
-			_3: getNeighbour(
-				{ctor: '_Tuple2', _0: -1, _1: 0})
-		};
-	});
 var _mordrax$cotwelm$Maps$buildingsOfArea = function (area) {
-	var _p1 = area;
-	switch (_p1.ctor) {
+	var _p0 = area;
+	switch (_p0.ctor) {
 		case 'Village':
 			var farmGate = A2(
 				_mordrax$cotwelm$Building$newLink,
@@ -28453,8 +34876,8 @@ var _mordrax$cotwelm$Maps$buildingsOfArea = function (area) {
 	}
 };
 var _mordrax$cotwelm$Maps$getASCIIMap = function (area) {
-	var _p2 = area;
-	switch (_p2.ctor) {
+	var _p1 = area;
+	switch (_p1.ctor) {
 		case 'Village':
 			return _mordrax$cotwelm$ASCIIMaps$villageMap;
 		case 'Farm':
@@ -28466,8 +34889,8 @@ var _mordrax$cotwelm$Maps$getASCIIMap = function (area) {
 	}
 };
 var _mordrax$cotwelm$Maps$currentLevel = function (model) {
-	var _p3 = model.currentArea;
-	switch (_p3.ctor) {
+	var _p2 = model.currentArea;
+	switch (_p2.ctor) {
 		case 'Village':
 			return model.village;
 		case 'Farm':
@@ -28478,7 +34901,7 @@ var _mordrax$cotwelm$Maps$currentLevel = function (model) {
 			return A2(
 				_elm_lang$core$Maybe$withDefault,
 				model.abandonedMinesEntry,
-				A2(_Skinney$elm_array_exploration$Array_Hamt$get, _p3._0, model.abandonedMines));
+				A2(_Skinney$elm_array_exploration$Array_Hamt$get, _p2._0, model.abandonedMines));
 	}
 };
 var _mordrax$cotwelm$Maps$getTile = F2(
@@ -28490,9 +34913,9 @@ var _mordrax$cotwelm$Maps$getTile = F2(
 				return _.map;
 			}(
 				_mordrax$cotwelm$Maps$currentLevel(model)));
-		var _p4 = maybeTile;
-		if (_p4.ctor === 'Just') {
-			return _p4._0;
+		var _p3 = maybeTile;
+		if (_p3.ctor === 'Just') {
+			return _p3._0;
 		} else {
 			return A2(
 				_elm_lang$core$Debug$log,
@@ -28506,22 +34929,22 @@ var _mordrax$cotwelm$Maps$getTile = F2(
 				A2(
 					_mordrax$cotwelm$Tile$toTile,
 					{ctor: '_Tuple2', _0: 0, _1: 0},
-					_mordrax$cotwelm$Tile$Grass));
+					_mordrax$cotwelm$Tile_Types$Grass));
 		}
 	});
 var _mordrax$cotwelm$Maps$toScreenCoords = F2(
 	function (map, mapSize) {
-		var invertY = function (_p5) {
-			var _p6 = _p5;
-			var _p8 = _p6._0._1;
-			var _p7 = _p6._0._0;
+		var invertY = function (_p4) {
+			var _p5 = _p4;
+			var _p7 = _p5._0._1;
+			var _p6 = _p5._0._0;
 			return {
 				ctor: '_Tuple2',
-				_0: {ctor: '_Tuple2', _0: _p7, _1: mapSize - _p8},
+				_0: {ctor: '_Tuple2', _0: _p6, _1: mapSize - _p7},
 				_1: A2(
 					_mordrax$cotwelm$Tile$setPosition,
-					{ctor: '_Tuple2', _0: _p7, _1: mapSize - _p8},
-					_p6._1)
+					{ctor: '_Tuple2', _0: _p6, _1: mapSize - _p7},
+					_p5._1)
 			};
 		};
 		return _elm_lang$core$Dict$fromList(
@@ -28530,11 +34953,11 @@ var _mordrax$cotwelm$Maps$toScreenCoords = F2(
 				invertY,
 				_elm_lang$core$Dict$toList(map)));
 	});
-var _mordrax$cotwelm$Maps$toTiles = function (_p9) {
+var _mordrax$cotwelm$Maps$toTiles = function (_p8) {
 	return A2(
 		_elm_lang$core$List$map,
 		_elm_lang$core$Tuple$second,
-		_elm_lang$core$Dict$toList(_p9));
+		_elm_lang$core$Dict$toList(_p8));
 };
 var _mordrax$cotwelm$Maps$draw = F4(
 	function (viewport, map, scale, onClick) {
@@ -28551,7 +34974,7 @@ var _mordrax$cotwelm$Maps$draw = F4(
 		};
 		var mapTiles = _mordrax$cotwelm$Maps$toTiles(map);
 		var neighbours = function (center) {
-			return A2(_mordrax$cotwelm$Maps$tileNeighbours, map, center);
+			return A2(_mordrax$cotwelm$Level$neighbours, map, center);
 		};
 		var toHtml = function (tile) {
 			return A4(
@@ -28568,8 +34991,8 @@ var _mordrax$cotwelm$Maps$draw = F4(
 				A2(_elm_lang$core$List$filter, withinViewport, mapTiles)));
 	});
 var _mordrax$cotwelm$Maps$view = F3(
-	function (_p10, onClick, maps) {
-		var _p11 = _p10;
+	function (_p9, onClick, maps) {
+		var _p10 = _p9;
 		var level = _mordrax$cotwelm$Maps$currentLevel(maps);
 		var onVisibleTile = function (building) {
 			return A2(
@@ -28577,10 +35000,10 @@ var _mordrax$cotwelm$Maps$view = F3(
 					function (x, y) {
 						return !_elm_lang$core$Native_Utils.eq(x, y);
 					}),
-				_mordrax$cotwelm$Tile$Hidden,
+				_mordrax$cotwelm$Types$Hidden,
 				A2(
 					_elm_lang$core$Maybe$withDefault,
-					_mordrax$cotwelm$Tile$Hidden,
+					_mordrax$cotwelm$Types$Hidden,
 					A2(
 						_elm_lang$core$Maybe$map,
 						function (_) {
@@ -28594,7 +35017,7 @@ var _mordrax$cotwelm$Maps$view = F3(
 			_elm_lang$core$List$map,
 			_mordrax$cotwelm$Building$view,
 			A2(_elm_lang$core$List$filter, onVisibleTile, level.buildings));
-		var viewport = {start: _p11._0, size: _p11._1};
+		var viewport = {start: _p10._0, size: _p10._1};
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
@@ -28605,8 +35028,8 @@ var _mordrax$cotwelm$Maps$view = F3(
 	});
 var _mordrax$cotwelm$Maps$updateCurrentLevel = F2(
 	function (level, model) {
-		var _p12 = model.currentArea;
-		switch (_p12.ctor) {
+		var _p11 = model.currentArea;
+		switch (_p11.ctor) {
 			case 'Village':
 				return _elm_lang$core$Native_Utils.update(
 					model,
@@ -28623,7 +35046,7 @@ var _mordrax$cotwelm$Maps$updateCurrentLevel = F2(
 				return _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						abandonedMines: A3(_Skinney$elm_array_exploration$Array_Hamt$set, _p12._0, level, model.abandonedMines)
+						abandonedMines: A3(_Skinney$elm_array_exploration$Array_Hamt$set, _p11._0, level, model.abandonedMines)
 					});
 		}
 	});
@@ -28644,11 +35067,11 @@ var _mordrax$cotwelm$Maps$addMonstersToLevel = function (level) {
 		},
 		A2(
 			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			_mordrax$cotwelm$Monster$randomMonsters,
+			_mordrax$cotwelm$Monster$makeRandomMonsters,
 			A2(
 				_mgold$elm_random_pcg$Random_Pcg$map,
 				_elm_lang$core$List$take(10),
-				_mordrax$cotwelm$Lodash$shuffle(floors))));
+				_mordrax$cotwelm$Utils_Misc$shuffle(floors))));
 };
 var _mordrax$cotwelm$Maps$init = F2(
 	function (armour, seed) {
@@ -28663,12 +35086,12 @@ var _mordrax$cotwelm$Maps$init = F2(
 		var levelOfArea = F2(
 			function (area, visibility) {
 				return A3(
-					_mordrax$cotwelm$Level$init,
+					_mordrax$cotwelm$Level$initNonDungeon,
 					A2(areaToTiles, area, visibility),
 					_mordrax$cotwelm$Maps$buildingsOfArea(area),
 					{ctor: '[]'});
 			});
-		var mineEntryLevel = A2(levelOfArea, _mordrax$cotwelm$Types$DungeonLevelOne, _mordrax$cotwelm$Tile$Hidden);
+		var mineEntryLevel = A2(levelOfArea, _mordrax$cotwelm$Types$DungeonLevelOne, _mordrax$cotwelm$Types$Hidden);
 		var mineEntryLevelWithArmour = A2(
 			_mordrax$cotwelm$Level$drop,
 			{
@@ -28683,8 +35106,8 @@ var _mordrax$cotwelm$Maps$init = F2(
 				currentArea: _mordrax$cotwelm$Types$Village,
 				abandonedMines: _Skinney$elm_array_exploration$Array_Hamt$fromList(
 					{ctor: '[]'}),
-				village: A2(levelOfArea, _mordrax$cotwelm$Types$Village, _mordrax$cotwelm$Tile$Explored),
-				farm: A2(levelOfArea, _mordrax$cotwelm$Types$Farm, _mordrax$cotwelm$Tile$Explored),
+				village: A2(levelOfArea, _mordrax$cotwelm$Types$Village, _mordrax$cotwelm$Types$Known),
+				farm: A2(levelOfArea, _mordrax$cotwelm$Types$Farm, _mordrax$cotwelm$Types$Known),
 				abandonedMinesEntry: mineEntryLevelWithArmour
 			},
 			_1: seed
@@ -28697,14 +35120,14 @@ var _mordrax$cotwelm$Maps$setCurrentArea = F2(
 			{currentArea: area});
 	});
 var _mordrax$cotwelm$Maps$upstairs = function (model) {
-	var _p13 = model.currentArea;
-	if (_p13.ctor === 'DungeonLevel') {
-		if (_p13._0 === 0) {
+	var _p12 = model.currentArea;
+	if (_p12.ctor === 'DungeonLevel') {
+		if (_p12._0 === 0) {
 			return A2(_mordrax$cotwelm$Maps$setCurrentArea, _mordrax$cotwelm$Types$DungeonLevelOne, model);
 		} else {
 			return A2(
 				_mordrax$cotwelm$Maps$setCurrentArea,
-				_mordrax$cotwelm$Types$DungeonLevel(_p13._0 - 1),
+				_mordrax$cotwelm$Types$DungeonLevel(_p12._0 - 1),
 				model);
 		}
 	} else {
@@ -28713,18 +35136,18 @@ var _mordrax$cotwelm$Maps$upstairs = function (model) {
 };
 var _mordrax$cotwelm$Maps$downstairs = function (model) {
 	var nextLevel = function () {
-		var _p14 = model.currentArea;
-		switch (_p14.ctor) {
+		var _p13 = model.currentArea;
+		switch (_p13.ctor) {
 			case 'DungeonLevelOne':
 				return 0;
 			case 'DungeonLevel':
-				return _p14._0 + 1;
+				return _p13._0 + 1;
 			default:
 				return 0;
 		}
 	}();
-	var _p15 = A2(_Skinney$elm_array_exploration$Array_Hamt$get, nextLevel, model.abandonedMines);
-	if (_p15.ctor === 'Just') {
+	var _p14 = A2(_Skinney$elm_array_exploration$Array_Hamt$get, nextLevel, model.abandonedMines);
+	if (_p14.ctor === 'Just') {
 		return _mgold$elm_random_pcg$Random_Pcg$constant(
 			function (x) {
 				return A2(_mordrax$cotwelm$Maps$setCurrentArea, x, model);
@@ -29365,6 +35788,10 @@ var _mordrax$cotwelm$Utils_DragDrop$view = function (_p6) {
 			{ctor: '[]'});
 	}
 };
+var _mordrax$cotwelm$Utils_DragDrop$getSource = function (_p10) {
+	var _p11 = _p10;
+	return _p11._0.source;
+};
 var _mordrax$cotwelm$Utils_DragDrop$Model = F4(
 	function (a, b, c, d) {
 		return {source: a, target: b, position: c, dragging: d};
@@ -29384,64 +35811,64 @@ var _mordrax$cotwelm$Utils_DragDrop$init = _mordrax$cotwelm$Utils_DragDrop$A(
 		dragging: _elm_lang$core$Maybe$Nothing
 	});
 var _mordrax$cotwelm$Utils_DragDrop$update = F2(
-	function (msg, _p10) {
-		var _p11 = _p10;
-		var _p15 = _p11._0;
+	function (msg, _p12) {
+		var _p13 = _p12;
+		var _p17 = _p13._0;
 		var atDrag = F3(
 			function (source, html, pos) {
 				return A4(
 					_mordrax$cotwelm$Utils_DragDrop$Model,
 					source,
-					_p15.target,
-					_p15.position,
+					_p17.target,
+					_p17.position,
 					A2(
 						_elm_lang$core$Maybe$map,
-						function (_p12) {
-							var _p13 = _p12;
-							return A3(_mordrax$cotwelm$Utils_DragDrop$Dragging, _p13.start, pos, html);
+						function (_p14) {
+							var _p15 = _p14;
+							return A3(_mordrax$cotwelm$Utils_DragDrop$Dragging, _p15.start, pos, html);
 						},
-						_p15.dragging));
+						_p17.dragging));
 			});
 		var startDrag = F3(
 			function (source, html, pos) {
 				return A4(
 					_mordrax$cotwelm$Utils_DragDrop$Model,
 					source,
-					_p15.target,
+					_p17.target,
 					pos,
 					_elm_lang$core$Maybe$Just(
 						A3(_mordrax$cotwelm$Utils_DragDrop$Dragging, pos, pos, html)));
 			});
-		var _p14 = msg;
-		switch (_p14.ctor) {
+		var _p16 = msg;
+		switch (_p16.ctor) {
 			case 'Start':
 				return {
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Utils_DragDrop$A(
-						A3(startDrag, _p14._0, _p14._1, _p14._2)),
+						A3(startDrag, _p16._0, _p16._1, _p16._2)),
 					_1: _elm_lang$core$Maybe$Nothing
 				};
 			case 'At':
 				return {
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Utils_DragDrop$A(
-						A3(atDrag, _p14._0, _p14._1, _p14._2)),
+						A3(atDrag, _p16._0, _p16._1, _p16._2)),
 					_1: _elm_lang$core$Maybe$Nothing
 				};
 			case 'End':
 				return {
 					ctor: '_Tuple2',
-					_0: _mordrax$cotwelm$Utils_DragDrop$A(_p15),
+					_0: _mordrax$cotwelm$Utils_DragDrop$A(_p17),
 					_1: _elm_lang$core$Maybe$Just(
-						{ctor: '_Tuple2', _0: _p14._0, _1: _p14._1})
+						{ctor: '_Tuple2', _0: _p16._0, _1: _p16._1})
 				};
 			case 'MouseOver':
 				return {
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Utils_DragDrop$A(
 						_elm_lang$core$Native_Utils.update(
-							_p15,
-							{target: _p14._0})),
+							_p17,
+							{target: _p16._0})),
 					_1: _elm_lang$core$Maybe$Nothing
 				};
 			default:
@@ -29449,7 +35876,7 @@ var _mordrax$cotwelm$Utils_DragDrop$update = F2(
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Utils_DragDrop$A(
 						_elm_lang$core$Native_Utils.update(
-							_p15,
+							_p17,
 							{target: _elm_lang$core$Maybe$Nothing})),
 					_1: _elm_lang$core$Maybe$Nothing
 				};
@@ -29460,11 +35887,11 @@ var _mordrax$cotwelm$Utils_DragDrop$MouseOver = function (a) {
 	return {ctor: 'MouseOver', _0: a};
 };
 var _mordrax$cotwelm$Utils_DragDrop$droppable = F3(
-	function (dropTarget, _p16, html) {
-		var _p17 = _p16;
+	function (dropTarget, _p18, html) {
+		var _p19 = _p18;
 		var mouseLeaveStyle = _elm_lang$html$Html_Events$onMouseLeave(_mordrax$cotwelm$Utils_DragDrop$MouseLeave);
 		var target = _elm_lang$core$Maybe$Just(dropTarget);
-		var borderStyle = _elm_lang$core$Native_Utils.eq(_p17._0.target, target) ? _elm_lang$html$Html_Attributes$style(
+		var borderStyle = _elm_lang$core$Native_Utils.eq(_p19._0.target, target) ? _elm_lang$html$Html_Attributes$style(
 			{
 				ctor: '::',
 				_0: {ctor: '_Tuple2', _0: 'border', _1: '1px solid'},
@@ -29509,24 +35936,24 @@ var _mordrax$cotwelm$Utils_DragDrop$At = F3(
 	function (a, b, c) {
 		return {ctor: 'At', _0: a, _1: b, _2: c};
 	});
-var _mordrax$cotwelm$Utils_DragDrop$subscription = function (_p18) {
-	var _p19 = _p18;
-	var _p22 = _p19._0;
-	var _p20 = _p22.source;
-	if (_p20.ctor === 'Nothing') {
+var _mordrax$cotwelm$Utils_DragDrop$subscription = function (_p20) {
+	var _p21 = _p20;
+	var _p24 = _p21._0;
+	var _p22 = _p24.source;
+	if (_p22.ctor === 'Nothing') {
 		return _elm_lang$core$Platform_Sub$none;
 	} else {
-		var _p21 = _p22.dragging;
-		if (_p21.ctor === 'Just') {
+		var _p23 = _p24.dragging;
+		if (_p23.ctor === 'Just') {
 			return _elm_lang$core$Platform_Sub$batch(
 				{
 					ctor: '::',
 					_0: _elm_lang$mouse$Mouse$moves(
-						A2(_mordrax$cotwelm$Utils_DragDrop$At, _p20, _p21._0.html)),
+						A2(_mordrax$cotwelm$Utils_DragDrop$At, _p22, _p23._0.html)),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$mouse$Mouse$ups(
-							A2(_mordrax$cotwelm$Utils_DragDrop$End, _p22.source, _p22.target)),
+							A2(_mordrax$cotwelm$Utils_DragDrop$End, _p24.source, _p24.target)),
 						_1: {ctor: '[]'}
 					}
 				});
@@ -29540,11 +35967,11 @@ var _mordrax$cotwelm$Utils_DragDrop$Start = F3(
 		return {ctor: 'Start', _0: a, _1: b, _2: c};
 	});
 var _mordrax$cotwelm$Utils_DragDrop$draggable = F3(
-	function (draggableHtml, source, _p23) {
-		var _p24 = _p23;
+	function (draggableHtml, source, _p25) {
+		var _p26 = _p25;
 		var pointerEventStyle = function () {
-			var _p25 = _p24._0.dragging;
-			if (_p25.ctor === 'Just') {
+			var _p27 = _p26._0.dragging;
+			if (_p27.ctor === 'Just') {
 				return _elm_lang$html$Html_Attributes$style(
 					{
 						ctor: '::',
@@ -29715,6 +36142,38 @@ var _mordrax$cotwelm$Inventory$viewPackInfo = function (maybeItem) {
 		return '';
 	}
 };
+var _mordrax$cotwelm$Inventory$dragSourceSameAsDropTarget = F2(
+	function (dragSource, dropTarget) {
+		var _p6 = {ctor: '_Tuple2', _0: dragSource, _1: dropTarget};
+		_v3_3:
+		do {
+			if (_p6.ctor === '_Tuple2') {
+				switch (_p6._0.ctor) {
+					case 'DragSlot':
+						if (_p6._1.ctor === 'DropEquipment') {
+							return _elm_lang$core$Native_Utils.eq(_p6._0._1, _p6._1._0);
+						} else {
+							break _v3_3;
+						}
+					case 'DragPack':
+						if (_p6._1.ctor === 'DropPack') {
+							return true;
+						} else {
+							break _v3_3;
+						}
+					default:
+						if (_p6._1.ctor === 'DropMerchant') {
+							return true;
+						} else {
+							break _v3_3;
+						}
+				}
+			} else {
+				break _v3_3;
+			}
+		} while(false);
+		return false;
+	});
 var _mordrax$cotwelm$Inventory$Model = F3(
 	function (a, b, c) {
 		return {dnd: a, merchant: b, equipment: c};
@@ -29734,46 +36193,46 @@ var _mordrax$cotwelm$Inventory$Shop = function (a) {
 	return {ctor: 'Shop', _0: a};
 };
 var _mordrax$cotwelm$Inventory$transactWithMerchant = F2(
-	function (item, _p6) {
-		var _p7 = _p6;
-		var _p13 = _p7;
-		var _p12 = _p7.equipment;
-		var updateModelFromPurchase = function (_p8) {
-			var _p9 = _p8;
+	function (item, _p7) {
+		var _p8 = _p7;
+		var _p14 = _p8;
+		var _p13 = _p8.equipment;
+		var updateModelFromPurchase = function (_p9) {
+			var _p10 = _p9;
 			return _elm_lang$core$Result$Ok(
 				{
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p13,
+						_p14,
 						{
-							merchant: _mordrax$cotwelm$Inventory$Shop(_p9._0),
-							equipment: A2(_mordrax$cotwelm$Equipment$setPurse, _p9._1, _p12)
+							merchant: _mordrax$cotwelm$Inventory$Shop(_p10._0),
+							equipment: A2(_mordrax$cotwelm$Equipment$setPurse, _p10._1, _p13)
 						}),
 					_1: item
 				});
 		};
-		var maybePurse = _mordrax$cotwelm$Equipment$getPurse(_p12);
+		var maybePurse = _mordrax$cotwelm$Equipment$getPurse(_p13);
 		var buyFrom = function (shop) {
-			var _p10 = maybePurse;
-			if (_p10.ctor === 'Just') {
-				return A3(_mordrax$cotwelm$Shops$sell, item, _p10._0, shop);
+			var _p11 = maybePurse;
+			if (_p11.ctor === 'Just') {
+				return A3(_mordrax$cotwelm$Shops$sell, item, _p11._0, shop);
 			} else {
 				return _elm_lang$core$Result$Err('No purse to buy anything with!');
 			}
 		};
-		var _p11 = _p7.merchant;
-		if (_p11.ctor === 'Shop') {
+		var _p12 = _p8.merchant;
+		if (_p12.ctor === 'Shop') {
 			return A2(
 				_elm_lang$core$Result$andThen,
 				updateModelFromPurchase,
-				buyFrom(_p11._0));
+				buyFrom(_p12._0));
 		} else {
-			var container_ = A2(_mordrax$cotwelm$Container$remove, item, _p11._0);
+			var container_ = A2(_mordrax$cotwelm$Container$remove, item, _p12._0);
 			return _elm_lang$core$Result$Ok(
 				{
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p13,
+						_p14,
 						{
 							merchant: _mordrax$cotwelm$Inventory$Ground(container_)
 						}),
@@ -29783,92 +36242,97 @@ var _mordrax$cotwelm$Inventory$transactWithMerchant = F2(
 	});
 var _mordrax$cotwelm$Inventory$handleDrag = F2(
 	function (draggable, model) {
-		var _p14 = draggable;
-		switch (_p14.ctor) {
+		var _p15 = draggable;
+		switch (_p15.ctor) {
 			case 'DragSlot':
-				var unequipRes = A2(_mordrax$cotwelm$Equipment$unequip, _p14._1, model.equipment);
-				var _p15 = unequipRes;
-				if (_p15.ctor === 'Ok') {
+				var unequipRes = A2(_mordrax$cotwelm$Equipment$unequip, _p15._1, model.equipment);
+				var _p16 = unequipRes;
+				if (_p16.ctor === 'Ok') {
 					return _elm_lang$core$Result$Ok(
 						{
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{equipment: _p15._0}),
-							_1: _p14._0
+								{equipment: _p16._0._0}),
+							_1: _p15._0
 						});
 				} else {
-					return _elm_lang$core$Result$Err(_p15._0);
+					return _elm_lang$core$Result$Err(
+						_elm_lang$core$Basics$toString(_p16._0));
 				}
 			case 'DragPack':
-				var _p17 = _p14._0;
-				var _p16 = A2(_elm_lang$core$Debug$log, 'TODO: Remove item from the pack.container and return just the item', 1);
+				var _p18 = _p15._0;
+				var _p17 = A2(_elm_lang$core$Debug$log, 'TODO: Remove item from the pack.container and return just the item', 1);
 				var modelItemRemoved = _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						equipment: A2(_mordrax$cotwelm$Equipment$removeFromPack, _p17, model.equipment)
+						equipment: A2(_mordrax$cotwelm$Equipment$removeFromPack, _p18, model.equipment)
 					});
 				return _elm_lang$core$Result$Ok(
-					{ctor: '_Tuple2', _0: modelItemRemoved, _1: _p17});
+					{ctor: '_Tuple2', _0: modelItemRemoved, _1: _p18});
 			default:
-				return A2(_mordrax$cotwelm$Inventory$transactWithMerchant, _p14._0, model);
+				return A2(_mordrax$cotwelm$Inventory$transactWithMerchant, _p15._0, model);
 		}
 	});
 var _mordrax$cotwelm$Inventory$handleDrop = F3(
 	function (droppable, item, model) {
-		var _p18 = droppable;
-		switch (_p18.ctor) {
+		var _p19 = droppable;
+		switch (_p19.ctor) {
 			case 'DropPack':
-				var _p19 = A2(_mordrax$cotwelm$Equipment$putInPack, item, model.equipment);
-				var equipment_ = _p19._0;
-				var equipMsg = _p19._1;
+				var _p20 = A2(_mordrax$cotwelm$Equipment$putInPack, item, model.equipment);
+				var equipment_ = _p20._0;
+				var equipMsg = _p20._1;
 				var success = _elm_lang$core$Result$Ok(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{equipment: equipment_}));
-				var _p20 = equipMsg;
-				switch (_p20.ctor) {
+				var _p21 = equipMsg;
+				switch (_p21.ctor) {
 					case 'Success':
 						return success;
 					case 'NoPackEquipped':
 						return _elm_lang$core$Result$Err('Can\'t add to the pack. No packed equipped!');
 					case 'ContainerMsg':
-						if (_p20._0.ctor === 'Ok') {
+						if (_p21._0.ctor === 'Ok') {
 							return success;
 						} else {
 							return _elm_lang$core$Result$Err(
 								A2(
 									_elm_lang$core$Basics_ops['++'],
 									'Dropping into pack with unhandled item msg',
-									_elm_lang$core$Basics$toString(_p20._0)));
+									_elm_lang$core$Basics$toString(_p21._0)));
 						}
 					default:
 						return _elm_lang$core$Result$Err(
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								'Dropping into pack failed with unhanded msg: ',
-								_elm_lang$core$Basics$toString(_p20)));
+								_elm_lang$core$Basics$toString(_p21)));
 				}
 			case 'DropEquipment':
-				var _p21 = A2(
+				var _p22 = A2(
 					_mordrax$cotwelm$Equipment$equip,
-					{ctor: '_Tuple2', _0: _p18._0, _1: item},
+					{ctor: '_Tuple2', _0: _p19._0, _1: item},
 					model.equipment);
-				if (_p21.ctor === 'Ok') {
-					return _elm_lang$core$Result$Ok(
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{equipment: _p21._0}));
+				if (_p22.ctor === 'Ok') {
+					if (_p22._0._1.ctor === 'Nothing') {
+						return _elm_lang$core$Result$Ok(
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{equipment: _p22._0._0}));
+					} else {
+						return _elm_lang$core$Result$Err('The slot is not empty!');
+					}
 				} else {
 					return _elm_lang$core$Result$Err(
-						_elm_lang$core$Basics$toString(_p21._0));
+						_elm_lang$core$Basics$toString(_p22._0));
 				}
 			default:
 				var sellTo = F2(
 					function (shop, purse) {
-						var _p22 = A3(_mordrax$cotwelm$Shops$buy, item, purse, shop);
-						var shopAfterBought = _p22._0;
-						var purseAfterPaid = _p22._1;
+						var _p23 = A3(_mordrax$cotwelm$Shops$buy, item, purse, shop);
+						var shopAfterBought = _p23._0;
+						var purseAfterPaid = _p23._1;
 						return _elm_lang$core$Result$Ok(
 							_elm_lang$core$Native_Utils.update(
 								model,
@@ -29881,15 +36345,15 @@ var _mordrax$cotwelm$Inventory$handleDrop = F3(
 					_elm_lang$core$Result$fromMaybe,
 					'No purse to hold coins!',
 					_mordrax$cotwelm$Equipment$getPurse(model.equipment));
-				var _p23 = _p18._0;
-				if (_p23.ctor === 'Shop') {
+				var _p24 = _p19._0;
+				if (_p24.ctor === 'Shop') {
 					return A2(
 						_elm_lang$core$Result$andThen,
-						sellTo(_p23._0),
+						sellTo(_p24._0),
 						getPurseResult);
 				} else {
-					var _p24 = A2(_mordrax$cotwelm$Container$add, item, _p23._0);
-					var container_ = _p24._0;
+					var _p25 = A2(_mordrax$cotwelm$Container$add, item, _p24._0);
+					var container_ = _p25._0;
 					return _elm_lang$core$Result$Ok(
 						_elm_lang$core$Native_Utils.update(
 							model,
@@ -29904,54 +36368,58 @@ var _mordrax$cotwelm$Inventory$handleDragDrop = F3(
 		var noChange = model;
 		var handleDrop_ = F2(
 			function (item, modelWithDrag) {
-				var _p25 = A3(_mordrax$cotwelm$Inventory$handleDrop, dropTarget, item, modelWithDrag);
-				if (_p25.ctor === 'Ok') {
-					return _p25._0;
+				var _p26 = A3(_mordrax$cotwelm$Inventory$handleDrop, dropTarget, item, modelWithDrag);
+				if (_p26.ctor === 'Ok') {
+					return _p26._0;
 				} else {
-					var _p26 = A2(_elm_lang$core$Debug$log, 'Drop failed: ', _p25._0);
+					var _p27 = A2(_elm_lang$core$Debug$log, 'Drop failed: ', _p26._0);
 					return noChange;
 				}
 			});
 		var dragResult = A2(_mordrax$cotwelm$Inventory$handleDrag, dragSource, model);
-		var _p27 = dragResult;
-		if (_p27.ctor === 'Ok') {
-			return A2(handleDrop_, _p27._0._1, _p27._0._0);
-		} else {
-			var _p28 = A2(_elm_lang$core$Debug$log, 'Drag failed: ', _p27._0);
+		if (A2(_mordrax$cotwelm$Inventory$dragSourceSameAsDropTarget, dragSource, dropTarget)) {
 			return noChange;
+		} else {
+			var _p28 = dragResult;
+			if (_p28.ctor === 'Ok') {
+				return A2(handleDrop_, _p28._0._1, _p28._0._0);
+			} else {
+				var _p29 = A2(_elm_lang$core$Debug$log, 'Drag failed: ', _p28._0);
+				return noChange;
+			}
 		}
 	});
 var _mordrax$cotwelm$Inventory$update = F2(
-	function (msg, _p29) {
-		var _p30 = _p29;
-		var _p34 = _p30._0;
-		var _p31 = msg;
-		if (_p31.ctor === 'DnDMsg') {
+	function (msg, _p30) {
+		var _p31 = _p30;
+		var _p35 = _p31._0;
+		var _p32 = msg;
+		if (_p32.ctor === 'DnDMsg') {
 			var modelNewDnD = _elm_lang$core$Native_Utils.update(
-				_p34,
+				_p35,
 				{dnd: _mordrax$cotwelm$Utils_DragDrop$init});
-			var _p32 = A2(_mordrax$cotwelm$Utils_DragDrop$update, _p31._0, _p34.dnd);
-			var dnd_ = _p32._0;
-			var end = _p32._1;
-			var _p33 = end;
-			if (_p33.ctor === 'Nothing') {
+			var _p33 = A2(_mordrax$cotwelm$Utils_DragDrop$update, _p32._0, _p35.dnd);
+			var dnd_ = _p33._0;
+			var end = _p33._1;
+			var _p34 = end;
+			if (_p34.ctor === 'Nothing') {
 				return {
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Inventory$A(
 						_elm_lang$core$Native_Utils.update(
-							_p34,
+							_p35,
 							{dnd: dnd_})),
 					_1: _elm_lang$core$Maybe$Nothing
 				};
 			} else {
-				if (_p33._0._0.ctor === 'Nothing') {
+				if (_p34._0._0.ctor === 'Nothing') {
 					return {
 						ctor: '_Tuple2',
 						_0: _mordrax$cotwelm$Inventory$A(modelNewDnD),
 						_1: _elm_lang$core$Maybe$Nothing
 					};
 				} else {
-					if (_p33._0._1.ctor === 'Nothing') {
+					if (_p34._0._1.ctor === 'Nothing') {
 						return {
 							ctor: '_Tuple2',
 							_0: _mordrax$cotwelm$Inventory$A(modelNewDnD),
@@ -29961,24 +36429,24 @@ var _mordrax$cotwelm$Inventory$update = F2(
 						return {
 							ctor: '_Tuple2',
 							_0: _mordrax$cotwelm$Inventory$A(
-								A3(_mordrax$cotwelm$Inventory$handleDragDrop, _p33._0._0._0, _p33._0._1._0, modelNewDnD)),
+								A3(_mordrax$cotwelm$Inventory$handleDragDrop, _p34._0._0._0, _p34._0._1._0, modelNewDnD)),
 							_1: _elm_lang$core$Maybe$Nothing
 						};
 					}
 				}
 			}
 		} else {
-			if (_p31._0.ctor === 'Esc') {
+			if (_p32._0.ctor === 'Esc') {
 				return {
 					ctor: '_Tuple2',
-					_0: _mordrax$cotwelm$Inventory$A(_p34),
+					_0: _mordrax$cotwelm$Inventory$A(_p35),
 					_1: _elm_lang$core$Maybe$Just(
-						{ctor: '_Tuple2', _0: _p34.equipment, _1: _p34.merchant})
+						{ctor: '_Tuple2', _0: _p35.equipment, _1: _p35.merchant})
 				};
 			} else {
 				return {
 					ctor: '_Tuple2',
-					_0: _mordrax$cotwelm$Inventory$A(_p34),
+					_0: _mordrax$cotwelm$Inventory$A(_p35),
 					_1: _elm_lang$core$Maybe$Nothing
 				};
 			}
@@ -29993,17 +36461,17 @@ var _mordrax$cotwelm$Inventory$DragPack = F2(
 		return {ctor: 'DragPack', _0: a, _1: b};
 	});
 var _mordrax$cotwelm$Inventory$viewContainer = F2(
-	function (pack, _p35) {
-		var _p36 = _p35;
+	function (pack, _p36) {
+		var _p37 = _p36;
 		var makeDraggable = F2(
 			function (pack, item) {
 				return A3(
 					_mordrax$cotwelm$Utils_DragDrop$draggable,
 					_mordrax$cotwelm$Item_Item$view(item),
 					A2(_mordrax$cotwelm$Inventory$DragPack, item, pack),
-					_p36.dnd);
+					_p37.dnd);
 			});
-		var items = _mordrax$cotwelm$Equipment$getPackContent(_p36.equipment);
+		var items = _mordrax$cotwelm$Equipment$getPackContent(_p37.equipment);
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -30133,8 +36601,8 @@ var _mordrax$cotwelm$Inventory$viewEquipment = F2(
 					_elm_lang$core$Basics_ops['++'],
 					_elm_lang$core$Basics$toString(slot),
 					']'));
-			var _p37 = getEquipment(slot);
-			if (_p37.ctor === 'Just') {
+			var _p38 = getEquipment(slot);
+			if (_p38.ctor === 'Just') {
 				return A2(
 					_elm_lang$html$Html$div,
 					{
@@ -30144,7 +36612,7 @@ var _mordrax$cotwelm$Inventory$viewEquipment = F2(
 					},
 					{
 						ctor: '::',
-						_0: A2(drawItem, _p37._0, slot),
+						_0: A2(drawItem, _p38._0, slot),
 						_1: {ctor: '[]'}
 					});
 			} else {
@@ -30246,8 +36714,17 @@ var _mordrax$cotwelm$Inventory$DropPack = function (a) {
 	return {ctor: 'DropPack', _0: a};
 };
 var _mordrax$cotwelm$Inventory$viewPack = F2(
-	function (maybePack, _p38) {
-		var _p39 = _p38;
+	function (maybePack, _p39) {
+		var _p40 = _p39;
+		var _p44 = _p40.dnd;
+		var isDraggingPack = function () {
+			var _p41 = _mordrax$cotwelm$Utils_DragDrop$getSource(_p44);
+			if (((_p41.ctor === 'Just') && (_p41._0.ctor === 'DragSlot')) && (_p41._0._1.ctor === 'PackSlot')) {
+				return true;
+			} else {
+				return false;
+			}
+		}();
 		var packStyle = _elm_lang$html$Html_Attributes$style(
 			{
 				ctor: '::',
@@ -30268,28 +36745,47 @@ var _mordrax$cotwelm$Inventory$viewPack = F2(
 				},
 				{
 					ctor: '::',
-					_0: A2(_mordrax$cotwelm$Inventory$viewContainer, pack, _p39),
+					_0: A2(_mordrax$cotwelm$Inventory$viewContainer, pack, _p40),
 					_1: {ctor: '[]'}
 				});
 		};
-		var _p40 = maybePack;
-		if (_p40.ctor === 'Just') {
-			var _p41 = _p40._0;
-			return A3(
-				_mordrax$cotwelm$Utils_DragDrop$droppable,
-				_mordrax$cotwelm$Inventory$DropPack(_p41),
-				_p39.dnd,
-				droppableHtml(_p41));
-		} else {
-			return A2(
-				_elm_lang$html$Html$div,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('You have no pack! Equip a pack to use this space.'),
-					_1: {ctor: '[]'}
-				});
-		}
+		var _p42 = {ctor: '_Tuple2', _0: maybePack, _1: isDraggingPack};
+		_v23_2:
+		do {
+			if (_p42.ctor === '_Tuple2') {
+				if (_p42._1 === true) {
+					return A2(
+						_elm_lang$html$Html$div,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Pack being dragged.'),
+							_1: {ctor: '[]'}
+						});
+				} else {
+					if (_p42._0.ctor === 'Just') {
+						var _p43 = _p42._0._0;
+						return A3(
+							_mordrax$cotwelm$Utils_DragDrop$droppable,
+							_mordrax$cotwelm$Inventory$DropPack(_p43),
+							_p44,
+							droppableHtml(_p43));
+					} else {
+						break _v23_2;
+					}
+				}
+			} else {
+				break _v23_2;
+			}
+		} while(false);
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('You have no pack! Equip a pack to use this space.'),
+				_1: {ctor: '[]'}
+			});
 	});
 var _mordrax$cotwelm$Inventory$Keyboard = function (a) {
 	return {ctor: 'Keyboard', _0: a};
@@ -30300,11 +36796,11 @@ var _mordrax$cotwelm$Inventory$keyboardToInventoryMsg = function (msg) {
 var _mordrax$cotwelm$Inventory$DnDMsg = function (a) {
 	return {ctor: 'DnDMsg', _0: a};
 };
-var _mordrax$cotwelm$Inventory$viewShopPackPurse = function (_p42) {
-	var _p43 = _p42;
-	var _p46 = _p43;
-	var _p45 = _p43.dnd;
-	var maybePack = _mordrax$cotwelm$Equipment$getPack(_p43.equipment);
+var _mordrax$cotwelm$Inventory$viewShopPackPurse = function (_p45) {
+	var _p46 = _p45;
+	var _p49 = _p46;
+	var _p48 = _p46.dnd;
+	var maybePack = _mordrax$cotwelm$Equipment$getPack(_p46.equipment);
 	var columnWidth = F2(
 		function (width, children) {
 			return A2(
@@ -30340,7 +36836,7 @@ var _mordrax$cotwelm$Inventory$viewShopPackPurse = function (_p42) {
 				_0: header('Ground'),
 				_1: {
 					ctor: '::',
-					_0: A2(_mordrax$cotwelm$Inventory$viewGround, container, _p45),
+					_0: A2(_mordrax$cotwelm$Inventory$viewGround, container, _p48),
 					_1: {ctor: '[]'}
 				}
 			});
@@ -30354,17 +36850,17 @@ var _mordrax$cotwelm$Inventory$viewShopPackPurse = function (_p42) {
 				_0: header('Shop'),
 				_1: {
 					ctor: '::',
-					_0: A2(_mordrax$cotwelm$Inventory$viewShop, shop, _p45),
+					_0: A2(_mordrax$cotwelm$Inventory$viewShop, shop, _p48),
 					_1: {ctor: '[]'}
 				}
 			});
 	};
 	var shopGroundHtml = function () {
-		var _p44 = _p43.merchant;
-		if (_p44.ctor === 'Shop') {
-			return shopHtml(_p44._0);
+		var _p47 = _p46.merchant;
+		if (_p47.ctor === 'Shop') {
+			return shopHtml(_p47._0);
 		} else {
-			return groundHtml(_p44._0);
+			return groundHtml(_p47._0);
 		}
 	}();
 	var packHtml = A2(
@@ -30382,7 +36878,7 @@ var _mordrax$cotwelm$Inventory$viewShopPackPurse = function (_p42) {
 						')'))),
 			_1: {
 				ctor: '::',
-				_0: A2(_mordrax$cotwelm$Inventory$viewPack, maybePack, _p46),
+				_0: A2(_mordrax$cotwelm$Inventory$viewPack, maybePack, _p49),
 				_1: {ctor: '[]'}
 			}
 		});
@@ -30394,7 +36890,7 @@ var _mordrax$cotwelm$Inventory$viewShopPackPurse = function (_p42) {
 			_0: header('Purse'),
 			_1: {
 				ctor: '::',
-				_0: _mordrax$cotwelm$Inventory$viewPurse(_p46),
+				_0: _mordrax$cotwelm$Inventory$viewPurse(_p49),
 				_1: {ctor: '[]'}
 			}
 		});
@@ -30418,9 +36914,9 @@ var _mordrax$cotwelm$Inventory$viewShopPackPurse = function (_p42) {
 				}
 			}));
 };
-var _mordrax$cotwelm$Inventory$view = function (_p47) {
-	var _p48 = _p47;
-	var _p49 = _p48._0.dnd;
+var _mordrax$cotwelm$Inventory$view = function (_p50) {
+	var _p51 = _p50;
+	var _p52 = _p51._0.dnd;
 	var columnWidth = F2(
 		function (width, children) {
 			return A2(
@@ -30438,7 +36934,7 @@ var _mordrax$cotwelm$Inventory$view = function (_p47) {
 		'six',
 		{
 			ctor: '::',
-			_0: A2(_mordrax$cotwelm$Inventory$viewEquipment, _p48._0.equipment, _p49),
+			_0: A2(_mordrax$cotwelm$Inventory$viewEquipment, _p51._0.equipment, _p52),
 			_1: {ctor: '[]'}
 		});
 	var heading = function (title) {
@@ -30489,7 +36985,7 @@ var _mordrax$cotwelm$Inventory$view = function (_p47) {
 						_0: A2(_elm_lang$html$Html$map, _mordrax$cotwelm$Inventory$DnDMsg, equipmentColumn),
 						_1: {
 							ctor: '::',
-							_0: _mordrax$cotwelm$Inventory$viewShopPackPurse(_p48._0),
+							_0: _mordrax$cotwelm$Inventory$viewShopPackPurse(_p51._0),
 							_1: {ctor: '[]'}
 						}
 					}),
@@ -30498,18 +36994,18 @@ var _mordrax$cotwelm$Inventory$view = function (_p47) {
 					_0: A2(
 						_elm_lang$html$Html$map,
 						_mordrax$cotwelm$Inventory$DnDMsg,
-						_mordrax$cotwelm$Utils_DragDrop$view(_p49)),
+						_mordrax$cotwelm$Utils_DragDrop$view(_p52)),
 					_1: {ctor: '[]'}
 				}
 			}
 		});
 };
-var _mordrax$cotwelm$Inventory$subscription = function (_p50) {
-	var _p51 = _p50;
+var _mordrax$cotwelm$Inventory$subscription = function (_p53) {
+	var _p54 = _p53;
 	return A2(
 		_elm_lang$core$Platform_Sub$map,
 		_mordrax$cotwelm$Inventory$DnDMsg,
-		_mordrax$cotwelm$Utils_DragDrop$subscription(_p51._0.dnd));
+		_mordrax$cotwelm$Utils_DragDrop$subscription(_p54._0.dnd));
 };
 
 var _mordrax$cotwelm$Game$simpleBtn = function (txt) {
@@ -30711,76 +37207,71 @@ var _mordrax$cotwelm$Game$viewStatus = function (model) {
 			_1: {ctor: '[]'}
 		});
 };
-var _mordrax$cotwelm$Game$donDefaultGarb = F2(
-	function (itemFactory, hero) {
-		var makeEquipment = F2(
-			function (_p1, _p0) {
-				var _p2 = _p1;
-				var _p3 = _p0;
-				var _p4 = A2(_mordrax$cotwelm$Item_Factory$make, _p2._1, _p3._1);
-				var item = _p4._0;
-				var itemFactory_ = _p4._1;
-				return {
-					ctor: '_Tuple2',
-					_0: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: _p2._0, _1: item},
-						_1: _p3._0
-					},
-					_1: itemFactory_
-				};
-			});
-		var equipmentToMake = {
+var _mordrax$cotwelm$Game$donDefaultGarb = function (hero) {
+	var defaultEquipment = A2(
+		_mordrax$cotwelm$Equipment$setMany_,
+		{
 			ctor: '::',
 			_0: {
 				ctor: '_Tuple2',
 				_0: _mordrax$cotwelm$Equipment$WeaponSlot,
-				_1: _mordrax$cotwelm$Item_Data$ItemTypeWeapon(_mordrax$cotwelm$Item_Data$Dagger)
+				_1: _mordrax$cotwelm$Item_Item$new(
+					_mordrax$cotwelm$Item_Data$ItemTypeWeapon(_mordrax$cotwelm$Item_Data$Dagger))
 			},
 			_1: {
 				ctor: '::',
 				_0: {
 					ctor: '_Tuple2',
 					_0: _mordrax$cotwelm$Equipment$ArmourSlot,
-					_1: _mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$ScaleMail)
+					_1: _mordrax$cotwelm$Item_Item$new(
+						_mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$ScaleMail))
 				},
 				_1: {
 					ctor: '::',
 					_0: {
 						ctor: '_Tuple2',
 						_0: _mordrax$cotwelm$Equipment$ShieldSlot,
-						_1: _mordrax$cotwelm$Item_Data$ItemTypeShield(_mordrax$cotwelm$Item_Data$LargeIronShield)
+						_1: _mordrax$cotwelm$Item_Item$new(
+							_mordrax$cotwelm$Item_Data$ItemTypeShield(_mordrax$cotwelm$Item_Data$LargeIronShield))
 					},
 					_1: {
 						ctor: '::',
 						_0: {
 							ctor: '_Tuple2',
 							_0: _mordrax$cotwelm$Equipment$HelmetSlot,
-							_1: _mordrax$cotwelm$Item_Data$ItemTypeHelmet(_mordrax$cotwelm$Item_Data$LeatherHelmet)
+							_1: _mordrax$cotwelm$Item_Item$new(
+								_mordrax$cotwelm$Item_Data$ItemTypeHelmet(_mordrax$cotwelm$Item_Data$LeatherHelmet))
 						},
 						_1: {
 							ctor: '::',
 							_0: {
 								ctor: '_Tuple2',
 								_0: _mordrax$cotwelm$Equipment$GauntletsSlot,
-								_1: _mordrax$cotwelm$Item_Data$ItemTypeGauntlets(_mordrax$cotwelm$Item_Data$NormalGauntlets)
+								_1: _mordrax$cotwelm$Item_Item$new(
+									_mordrax$cotwelm$Item_Data$ItemTypeGauntlets(_mordrax$cotwelm$Item_Data$NormalGauntlets))
 							},
 							_1: {
 								ctor: '::',
 								_0: {
 									ctor: '_Tuple2',
 									_0: _mordrax$cotwelm$Equipment$BeltSlot,
-									_1: _mordrax$cotwelm$Item_Data$ItemTypeBelt(_mordrax$cotwelm$Item_Data$ThreeSlotBelt)
+									_1: _mordrax$cotwelm$Item_Item$new(
+										_mordrax$cotwelm$Item_Data$ItemTypeBelt(_mordrax$cotwelm$Item_Data$ThreeSlotBelt))
 								},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: _mordrax$cotwelm$Equipment$PurseSlot, _1: _mordrax$cotwelm$Item_Data$ItemTypePurse},
+									_0: {
+										ctor: '_Tuple2',
+										_0: _mordrax$cotwelm$Equipment$PurseSlot,
+										_1: _mordrax$cotwelm$Item_Item$new(_mordrax$cotwelm$Item_Data$ItemTypePurse)
+									},
 									_1: {
 										ctor: '::',
 										_0: {
 											ctor: '_Tuple2',
 											_0: _mordrax$cotwelm$Equipment$PackSlot,
-											_1: _mordrax$cotwelm$Item_Data$ItemTypePack(_mordrax$cotwelm$Item_Data$MediumPack)
+											_1: _mordrax$cotwelm$Item_Item$new(
+												_mordrax$cotwelm$Item_Data$ItemTypePack(_mordrax$cotwelm$Item_Data$MediumPack))
 										},
 										_1: {ctor: '[]'}
 									}
@@ -30790,65 +37281,41 @@ var _mordrax$cotwelm$Game$donDefaultGarb = F2(
 					}
 				}
 			}
-		};
-		var _p5 = A3(
-			_elm_lang$core$List$foldl,
-			makeEquipment,
-			{
-				ctor: '_Tuple2',
-				_0: {ctor: '[]'},
-				_1: itemFactory
-			},
-			equipmentToMake);
-		var defaultEquipment = _p5._0;
-		var factoryAfterProduction = _p5._1;
-		var equippingHero = A3(
-			_mordrax$cotwelm$Utils_Misc$foldResult,
-			function (item) {
-				return _mordrax$cotwelm$Hero$equip(item);
-			},
-			_elm_lang$core$Result$Ok(hero),
-			defaultEquipment);
-		var _p6 = equippingHero;
-		if (_p6.ctor === 'Ok') {
-			return {ctor: '_Tuple2', _0: _p6._0, _1: factoryAfterProduction};
-		} else {
-			var _p7 = A2(
-				_elm_lang$core$Debug$log,
-				'Game.donDefaultGarb',
-				_elm_lang$core$Basics$toString(_p6));
-			return {ctor: '_Tuple2', _0: hero, _1: itemFactory};
-		}
-	});
-var _mordrax$cotwelm$Game$updateViewportOffset = function (_p8) {
-	var _p9 = _p8;
-	var _p14 = _p9.windowSize;
-	var _p13 = _p9.viewport;
-	var _p10 = _mordrax$cotwelm$Level$size(
-		_mordrax$cotwelm$Maps$currentLevel(_p9.maps));
-	var mapWidth = _p10._0;
-	var mapHeight = _p10._1;
-	var _p11 = {ctor: '_Tuple2', _0: (_p14.width / 2) | 0, _1: (_p14.height / 2) | 0};
-	var xOff = _p11._0;
-	var yOff = _p11._1;
+		},
+		_mordrax$cotwelm$Equipment$init);
+	return _elm_lang$core$Native_Utils.update(
+		hero,
+		{equipment: defaultEquipment});
+};
+var _mordrax$cotwelm$Game$updateViewportOffset = function (_p0) {
+	var _p1 = _p0;
+	var _p6 = _p1.windowSize;
+	var _p5 = _p1.viewport;
+	var _p2 = _mordrax$cotwelm$Level$size(
+		_mordrax$cotwelm$Maps$currentLevel(_p1.maps));
+	var mapWidth = _p2._0;
+	var mapHeight = _p2._1;
+	var _p3 = {ctor: '_Tuple2', _0: (_p6.width / 2) | 0, _1: (_p6.height / 2) | 0};
+	var xOff = _p3._0;
+	var yOff = _p3._1;
 	var tileSize = 32;
-	var _p12 = A2(
+	var _p4 = A2(
 		_mordrax$cotwelm$Utils_Vector$scale,
 		tileSize,
-		_mordrax$cotwelm$Hero$position(_p9.hero));
-	var curX = _p12._0;
-	var curY = _p12._1;
+		_mordrax$cotwelm$Hero$position(_p1.hero));
+	var curX = _p4._0;
+	var curY = _p4._1;
 	var tolerance = tileSize * 4;
 	var scroll = {
-		up: _elm_lang$core$Native_Utils.cmp(_p13.y + curY, tolerance) < 1,
-		down: _elm_lang$core$Native_Utils.cmp(_p13.y + curY, (((_p14.height * 4) / 5) | 0) - tolerance) > -1,
-		left: _elm_lang$core$Native_Utils.cmp(_p13.x + curX, tolerance) < 1,
-		right: _elm_lang$core$Native_Utils.cmp(_p13.x + curX, _p14.width - tolerance) > -1
+		up: _elm_lang$core$Native_Utils.cmp(_p5.y + curY, tolerance) < 1,
+		down: _elm_lang$core$Native_Utils.cmp(_p5.y + curY, (((_p6.height * 4) / 5) | 0) - tolerance) > -1,
+		left: _elm_lang$core$Native_Utils.cmp(_p5.x + curX, tolerance) < 1,
+		right: _elm_lang$core$Native_Utils.cmp(_p5.x + curX, _p6.width - tolerance) > -1
 	};
-	var newX = (scroll.left || scroll.right) ? A3(_elm_lang$core$Basics$clamp, _p14.width - (mapWidth * tileSize), 0, xOff - curX) : _p13.x;
-	var newY = (scroll.up || scroll.down) ? A3(_elm_lang$core$Basics$clamp, (((_p14.height * 4) / 5) | 0) - (mapHeight * tileSize), 0, yOff - curY) : _p13.y;
+	var newX = (scroll.left || scroll.right) ? A3(_elm_lang$core$Basics$clamp, _p6.width - (mapWidth * tileSize), 0, xOff - curX) : _p5.x;
+	var newY = (scroll.up || scroll.down) ? A3(_elm_lang$core$Basics$clamp, (((_p6.height * 4) / 5) | 0) - (mapHeight * tileSize), 0, yOff - curY) : _p5.y;
 	return _elm_lang$core$Native_Utils.update(
-		_p9,
+		_p1,
 		{
 			viewport: {x: newX, y: newY}
 		});
@@ -30878,9 +37345,9 @@ var _mordrax$cotwelm$Game$neighbours_ = F3(
 	});
 var _mordrax$cotwelm$Game$heuristic = F2(
 	function (start, end) {
-		var _p15 = A2(_mordrax$cotwelm$Utils_Vector$sub, start, end);
-		var dx = _p15._0;
-		var dy = _p15._1;
+		var _p7 = A2(_mordrax$cotwelm$Utils_Vector$sub, start, end);
+		var dx = _p7._0;
+		var dy = _p7._1;
 		return _elm_lang$core$Basics$sqrt(
 			_elm_lang$core$Basics$toFloat(
 				Math.pow(dx, 2) + Math.pow(dy, 2)));
@@ -30891,39 +37358,35 @@ var _mordrax$cotwelm$Game$buildingAtPosition = F2(
 			_elm_lang$core$List$filter,
 			_mordrax$cotwelm$Building$isBuildingAtPosition(pos),
 			buildings);
-		var _p16 = buildingsAtTile;
-		if (_p16.ctor === '::') {
-			return _elm_lang$core$Maybe$Just(_p16._0);
+		var _p8 = buildingsAtTile;
+		if (_p8.ctor === '::') {
+			return _elm_lang$core$Maybe$Just(_p8._0);
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
 	});
 var _mordrax$cotwelm$Game$attackHero = F2(
-	function (monster, _p17) {
-		var _p18 = _p17;
-		var _p19 = A2(
+	function (monster, _p9) {
+		var _p10 = _p9;
+		var _p11 = A2(
 			_mgold$elm_random_pcg$Random_Pcg$step,
-			A2(_mordrax$cotwelm$Combat$defend, monster, _p18.hero),
-			_p18.seed);
-		var msg = _p19._0._0;
-		var heroAfterHit = _p19._0._1;
-		var seed_ = _p19._1;
+			A2(_mordrax$cotwelm$Combat$attack, monster, _p10.hero),
+			_p10.seed);
+		var msg = _p11._0._0;
+		var heroAfterHit = _p11._0._1;
+		var seed_ = _p11._1;
 		return _elm_lang$core$Native_Utils.update(
-			_p18,
+			_p10,
 			{
-				messages: {ctor: '::', _0: msg, _1: _p18.messages},
+				messages: {ctor: '::', _0: msg, _1: _p10.messages},
 				hero: heroAfterHit,
 				seed: seed_
 			});
 	});
 var _mordrax$cotwelm$Game$addLoot = F2(
 	function (monster, model) {
-		var _p20 = A2(
-			_mordrax$cotwelm$Item_Factory$make,
-			_mordrax$cotwelm$Item_Data$ItemTypeCopper(1234),
-			model.itemFactory);
-		var loot = _p20._0;
-		var itemFactory_ = _p20._1;
+		var loot = _mordrax$cotwelm$Item_Item$new(
+			_mordrax$cotwelm$Item_Data$ItemTypeCopper(1234));
 		var currentLevel = _mordrax$cotwelm$Maps$currentLevel(model.maps);
 		var currentLevel_ = A2(
 			_mordrax$cotwelm$Level$drop,
@@ -30933,8 +37396,7 @@ var _mordrax$cotwelm$Game$addLoot = F2(
 			model,
 			{
 				seed: model.seed,
-				maps: A2(_mordrax$cotwelm$Maps$updateCurrentLevel, currentLevel_, model.maps),
-				itemFactory: itemFactory_
+				maps: A2(_mordrax$cotwelm$Maps$updateCurrentLevel, currentLevel_, model.maps)
 			});
 	});
 var _mordrax$cotwelm$Game$updateMonstersOnCurrentLevel = F2(
@@ -30951,13 +37413,13 @@ var _mordrax$cotwelm$Game$updateMonstersOnCurrentLevel = F2(
 	});
 var _mordrax$cotwelm$Game$resolveCombat = F3(
 	function (hero, monster, seed) {
-		var _p21 = A2(
+		var _p12 = A2(
 			_mgold$elm_random_pcg$Random_Pcg$step,
 			A2(_mordrax$cotwelm$Combat$attack, hero, monster),
 			seed);
-		var combatMsg = _p21._0._0;
-		var monsterAfterBeingHit = _p21._0._1;
-		var seed_ = _p21._1;
+		var combatMsg = _p12._0._0;
+		var monsterAfterBeingHit = _p12._0._1;
+		var seed_ = _p12._1;
 		return _mordrax$cotwelm$Stats$isDead(monster.stats) ? {ctor: '_Tuple3', _0: _elm_lang$core$Maybe$Nothing, _1: seed_, _2: combatMsg} : {
 			ctor: '_Tuple3',
 			_0: _elm_lang$core$Maybe$Just(monsterAfterBeingHit),
@@ -30965,6 +37427,19 @@ var _mordrax$cotwelm$Game$resolveCombat = F3(
 			_2: combatMsg
 		};
 	});
+var _mordrax$cotwelm$Game$updateCurrentLevelFOV = function (model) {
+	return function (level) {
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				maps: A2(_mordrax$cotwelm$Maps$updateCurrentLevel, level, model.maps)
+			});
+	}(
+		A2(
+			_mordrax$cotwelm$Level$updateFOV,
+			model.hero.position,
+			_mordrax$cotwelm$Maps$currentLevel(model.maps)));
+};
 var _mordrax$cotwelm$Game$getGroundAtHero = F2(
 	function (hero, maps) {
 		return function (_) {
@@ -30981,32 +37456,32 @@ var _mordrax$cotwelm$Game$newMessage = F2(
 			});
 	});
 var _mordrax$cotwelm$Game$pickupReducer = F2(
-	function (item, _p22) {
-		var _p23 = _p22;
-		var _p28 = _p23._2;
-		var _p27 = _p23._1;
-		var _p26 = _p23._0;
-		var _p24 = A2(_mordrax$cotwelm$Equipment$putInPack, item, _p26.equipment);
-		var equipment_ = _p24._0;
-		var msg = _p24._1;
+	function (item, _p13) {
+		var _p14 = _p13;
+		var _p19 = _p14._2;
+		var _p18 = _p14._1;
+		var _p17 = _p14._0;
+		var _p15 = A2(_mordrax$cotwelm$Equipment$putInPack, item, _p17.equipment);
+		var equipment_ = _p15._0;
+		var msg = _p15._1;
 		var hero_ = _elm_lang$core$Native_Utils.update(
-			_p26,
+			_p17,
 			{equipment: equipment_});
-		var success = {ctor: '_Tuple3', _0: hero_, _1: _p27, _2: _p28};
-		var _p25 = msg;
-		_v7_2:
+		var success = {ctor: '_Tuple3', _0: hero_, _1: _p18, _2: _p19};
+		var _p16 = msg;
+		_v4_2:
 		do {
-			switch (_p25.ctor) {
+			switch (_p16.ctor) {
 				case 'Success':
 					return success;
 				case 'ContainerMsg':
-					if (_p25._0.ctor === 'Ok') {
+					if (_p16._0.ctor === 'Ok') {
 						return success;
 					} else {
-						break _v7_2;
+						break _v4_2;
 					}
 				default:
-					break _v7_2;
+					break _v4_2;
 			}
 		} while(false);
 		return {
@@ -31017,15 +37492,15 @@ var _mordrax$cotwelm$Game$pickupReducer = F2(
 				_0: A2(
 					_elm_lang$core$Basics_ops['++'],
 					'Failed to pick up item: ',
-					_elm_lang$core$Basics$toString(_p25)),
-				_1: _p27
+					_elm_lang$core$Basics$toString(_p16)),
+				_1: _p18
 			},
-			_2: _p28
+			_2: {ctor: '::', _0: item, _1: _p19}
 		};
 	});
 var _mordrax$cotwelm$Game$pickup = F2(
 	function (items, model) {
-		var _p29 = A3(
+		var _p20 = A3(
 			_elm_lang$core$List$foldl,
 			_mordrax$cotwelm$Game$pickupReducer,
 			{
@@ -31035,9 +37510,9 @@ var _mordrax$cotwelm$Game$pickup = F2(
 				_2: {ctor: '[]'}
 			},
 			A2(_elm_lang$core$Debug$log, 'picking up: ', items));
-		var hero_ = _p29._0;
-		var msgs = _p29._1;
-		var failedToPickup = _p29._2;
+		var hero_ = _p20._0;
+		var msgs = _p20._1;
+		var failedToPickup = _p20._2;
 		var failedToPickupWithPosition = A2(
 			_elm_lang$core$List$map,
 			function (x) {
@@ -31088,32 +37563,32 @@ var _mordrax$cotwelm$Game$monstersOnLevel = function (model) {
 		_mordrax$cotwelm$Maps$currentLevel(model.maps));
 };
 var _mordrax$cotwelm$Game$attackMonster = F2(
-	function (monster, _p30) {
-		var _p31 = _p30;
-		var _p35 = _p31;
-		var _p32 = A3(_mordrax$cotwelm$Game$resolveCombat, _p31.hero, monster, _p31.seed);
-		var maybeMonster = _p32._0;
-		var seed_ = _p32._1;
-		var combatMsg = _p32._2;
-		var monsters = _mordrax$cotwelm$Game$monstersOnLevel(_p35);
+	function (monster, _p21) {
+		var _p22 = _p21;
+		var _p26 = _p22;
+		var _p23 = A3(_mordrax$cotwelm$Game$resolveCombat, _p22.hero, monster, _p22.seed);
+		var maybeMonster = _p23._0;
+		var seed_ = _p23._1;
+		var combatMsg = _p23._2;
+		var monsters = _mordrax$cotwelm$Game$monstersOnLevel(_p26);
 		var monsters_ = function () {
-			var _p33 = maybeMonster;
-			if (_p33.ctor === 'Nothing') {
+			var _p24 = maybeMonster;
+			if (_p24.ctor === 'Nothing') {
 				return A2(_mordrax$cotwelm$Monster$remove, monster, monsters);
 			} else {
-				return A2(_mordrax$cotwelm$Monster$update, _p33._0, monsters);
+				return A2(_mordrax$cotwelm$Monster$replace, _p24._0, monsters);
 			}
 		}();
 		var modelAfterCombat = _elm_lang$core$Native_Utils.update(
-			_p35,
+			_p26,
 			{
 				seed: seed_,
-				maps: A2(_mordrax$cotwelm$Game$updateMonstersOnCurrentLevel, monsters_, _p35.maps),
-				messages: {ctor: '::', _0: combatMsg, _1: _p31.messages}
+				maps: A2(_mordrax$cotwelm$Game$updateMonstersOnCurrentLevel, monsters_, _p26.maps),
+				messages: {ctor: '::', _0: combatMsg, _1: _p22.messages}
 			});
 		var modelAfterCombatAndLoot = function () {
-			var _p34 = maybeMonster;
-			if (_p34.ctor === 'Just') {
+			var _p25 = maybeMonster;
+			if (_p25.ctor === 'Just') {
 				return modelAfterCombat;
 			} else {
 				return A2(_mordrax$cotwelm$Game$addLoot, monster, modelAfterCombat);
@@ -31122,18 +37597,18 @@ var _mordrax$cotwelm$Game$attackMonster = F2(
 		return modelAfterCombatAndLoot;
 	});
 var _mordrax$cotwelm$Game$queryPosition = F2(
-	function (pos, _p36) {
-		var _p37 = _p36;
-		var _p38 = _p37.maps;
+	function (pos, _p27) {
+		var _p28 = _p27;
+		var _p29 = _p28.maps;
 		var hasHero = _elm_lang$core$Native_Utils.eq(
-			_mordrax$cotwelm$Hero$position(_p37.hero),
+			_mordrax$cotwelm$Hero$position(_p28.hero),
 			pos);
-		var level = _mordrax$cotwelm$Maps$currentLevel(_p38);
+		var level = _mordrax$cotwelm$Maps$currentLevel(_p29);
 		var maybeBuilding = A2(_mordrax$cotwelm$Game$buildingAtPosition, pos, level.buildings);
 		var maybeTile = A2(
 			_mordrax$cotwelm$Level$tileAtPosition,
 			pos,
-			_mordrax$cotwelm$Maps$currentLevel(_p38));
+			_mordrax$cotwelm$Maps$currentLevel(_p29));
 		var tileObstruction = A2(
 			_elm_lang$core$Maybe$withDefault,
 			true,
@@ -31143,7 +37618,7 @@ var _mordrax$cotwelm$Game$queryPosition = F2(
 					return _.solid;
 				},
 				maybeTile));
-		var monsters = _mordrax$cotwelm$Game$monstersOnLevel(_p37);
+		var monsters = _mordrax$cotwelm$Game$monstersOnLevel(_p28);
 		var maybeMonster = _elm_lang$core$List$head(
 			A2(
 				_elm_lang$core$List$filter,
@@ -31156,8 +37631,8 @@ var _mordrax$cotwelm$Game$queryPosition = F2(
 var _mordrax$cotwelm$Game$neighboursIncludeBuildings = F2(
 	function (model, position) {
 		var isObstructedFilter = function (pos) {
-			var _p39 = A2(_mordrax$cotwelm$Game$queryPosition, pos, model);
-			if ((((_p39.ctor === '_Tuple4') && (_p39._0 === false)) && (_p39._2.ctor === 'Nothing')) && (_p39._3 === false)) {
+			var _p30 = A2(_mordrax$cotwelm$Game$queryPosition, pos, model);
+			if ((((_p30.ctor === '_Tuple4') && (_p30._0 === false)) && (_p30._2.ctor === 'Nothing')) && (_p30._3 === false)) {
 				return true;
 			} else {
 				return false;
@@ -31167,21 +37642,21 @@ var _mordrax$cotwelm$Game$neighboursIncludeBuildings = F2(
 	});
 var _mordrax$cotwelm$Game$isObstructed = F2(
 	function (position, model) {
-		var _p40 = A2(_mordrax$cotwelm$Game$queryPosition, position, model);
-		_v13_2:
+		var _p31 = A2(_mordrax$cotwelm$Game$queryPosition, position, model);
+		_v10_2:
 		do {
-			if (_p40.ctor === '_Tuple4') {
-				if (_p40._3 === true) {
+			if (_p31.ctor === '_Tuple4') {
+				if (_p31._3 === true) {
 					return false;
 				} else {
-					if (((_p40._0 === false) && (_p40._1.ctor === 'Nothing')) && (_p40._2.ctor === 'Nothing')) {
+					if (((_p31._0 === false) && (_p31._1.ctor === 'Nothing')) && (_p31._2.ctor === 'Nothing')) {
 						return false;
 					} else {
-						break _v13_2;
+						break _v10_2;
 					}
 				}
 			} else {
-				break _v13_2;
+				break _v10_2;
 			}
 		} while(false);
 		return true;
@@ -31220,114 +37695,94 @@ var _mordrax$cotwelm$Game$pathMonster = F3(
 					A4(_mordrax$cotwelm$Game$findPath, monster.position, hero.position, false, model))));
 	});
 var _mordrax$cotwelm$Game$moveMonsters = F3(
-	function (monsters, movedMonsters, _p41) {
+	function (monsters, movedMonsters, _p32) {
 		moveMonsters:
 		while (true) {
-			var _p42 = _p41;
-			var _p47 = _p42;
-			var _p43 = monsters;
-			if (_p43.ctor === '[]') {
+			var _p33 = _p32;
+			var _p38 = _p33;
+			var _p34 = monsters;
+			if (_p34.ctor === '[]') {
 				return _elm_lang$core$Native_Utils.update(
-					_p47,
+					_p38,
 					{
-						maps: A2(_mordrax$cotwelm$Game$updateMonstersOnCurrentLevel, movedMonsters, _p42.maps)
+						maps: A2(_mordrax$cotwelm$Game$updateMonstersOnCurrentLevel, movedMonsters, _p33.maps)
 					});
 			} else {
-				var _p46 = _p43._1;
-				var _p45 = _p43._0;
-				var movedMonster = A3(_mordrax$cotwelm$Game$pathMonster, _p45, _p42.hero, _p47);
-				var obstructions = A2(_mordrax$cotwelm$Game$queryPosition, movedMonster.position, _p47);
+				var _p37 = _p34._1;
+				var _p36 = _p34._0;
+				var movedMonster = A3(_mordrax$cotwelm$Game$pathMonster, _p36, _p33.hero, _p38);
+				var obstructions = A2(_mordrax$cotwelm$Game$queryPosition, movedMonster.position, _p38);
 				var isObstructedByMovedMonsters = A2(_mordrax$cotwelm$Game$isMonsterObstruction, movedMonster, movedMonsters);
-				var _p44 = obstructions;
-				_v16_4:
+				var _p35 = obstructions;
+				_v13_4:
 				do {
-					if (_p44.ctor === '_Tuple4') {
-						if (_p44._3 === true) {
-							var _v17 = _p46,
-								_v18 = {ctor: '::', _0: _p45, _1: movedMonsters},
-								_v19 = A2(_mordrax$cotwelm$Game$attackHero, _p45, _p47);
-							monsters = _v17;
-							movedMonsters = _v18;
-							_p41 = _v19;
+					if (_p35.ctor === '_Tuple4') {
+						if (_p35._3 === true) {
+							var _v14 = _p37,
+								_v15 = {ctor: '::', _0: _p36, _1: movedMonsters},
+								_v16 = A2(_mordrax$cotwelm$Game$attackHero, _p36, _p38);
+							monsters = _v14;
+							movedMonsters = _v15;
+							_p32 = _v16;
 							continue moveMonsters;
 						} else {
-							if (_p44._0 === true) {
-								var _v20 = _p46,
-									_v21 = {ctor: '::', _0: _p45, _1: movedMonsters},
-									_v22 = _p47;
-								monsters = _v20;
-								movedMonsters = _v21;
-								_p41 = _v22;
+							if (_p35._0 === true) {
+								var _v17 = _p37,
+									_v18 = {ctor: '::', _0: _p36, _1: movedMonsters},
+									_v19 = _p38;
+								monsters = _v17;
+								movedMonsters = _v18;
+								_p32 = _v19;
 								continue moveMonsters;
 							} else {
-								if (_p44._1.ctor === 'Just') {
-									var _v23 = _p46,
-										_v24 = {ctor: '::', _0: _p45, _1: movedMonsters},
-										_v25 = _p47;
-									monsters = _v23;
-									movedMonsters = _v24;
-									_p41 = _v25;
+								if (_p35._1.ctor === 'Just') {
+									var _v20 = _p37,
+										_v21 = {ctor: '::', _0: _p36, _1: movedMonsters},
+										_v22 = _p38;
+									monsters = _v20;
+									movedMonsters = _v21;
+									_p32 = _v22;
 									continue moveMonsters;
 								} else {
-									if (_p44._2.ctor === 'Just') {
-										var _v26 = _p46,
-											_v27 = {ctor: '::', _0: _p45, _1: movedMonsters},
-											_v28 = _p47;
-										monsters = _v26;
-										movedMonsters = _v27;
-										_p41 = _v28;
+									if (_p35._2.ctor === 'Just') {
+										var _v23 = _p37,
+											_v24 = {ctor: '::', _0: _p36, _1: movedMonsters},
+											_v25 = _p38;
+										monsters = _v23;
+										movedMonsters = _v24;
+										_p32 = _v25;
 										continue moveMonsters;
 									} else {
-										break _v16_4;
+										break _v13_4;
 									}
 								}
 							}
 						}
 					} else {
-						break _v16_4;
+						break _v13_4;
 					}
 				} while(false);
 				if (isObstructedByMovedMonsters) {
-					var _v29 = _p46,
-						_v30 = {ctor: '::', _0: _p45, _1: movedMonsters},
-						_v31 = _p47;
-					monsters = _v29;
-					movedMonsters = _v30;
-					_p41 = _v31;
+					var _v26 = _p37,
+						_v27 = {ctor: '::', _0: _p36, _1: movedMonsters},
+						_v28 = _p38;
+					monsters = _v26;
+					movedMonsters = _v27;
+					_p32 = _v28;
 					continue moveMonsters;
 				} else {
-					var _v32 = _p46,
-						_v33 = {ctor: '::', _0: movedMonster, _1: movedMonsters},
-						_v34 = _p47;
-					monsters = _v32;
-					movedMonsters = _v33;
-					_p41 = _v34;
+					var _v29 = _p37,
+						_v30 = {ctor: '::', _0: movedMonster, _1: movedMonsters},
+						_v31 = _p38;
+					monsters = _v29;
+					movedMonsters = _v30;
+					_p32 = _v31;
 					continue moveMonsters;
 				}
 			}
 		}
 	});
 var _mordrax$cotwelm$Game$viewMonsters = function (model) {
-	var isMonsterVisible = function (monster) {
-		return A2(
-			F2(
-				function (x, y) {
-					return _elm_lang$core$Native_Utils.eq(x, y);
-				}),
-			_mordrax$cotwelm$Tile$WithinFOV,
-			A2(
-				_elm_lang$core$Maybe$withDefault,
-				_mordrax$cotwelm$Tile$Hidden,
-				A2(
-					_elm_lang$core$Maybe$map,
-					function (_) {
-						return _.visible;
-					},
-					A2(
-						_mordrax$cotwelm$Level$tileAtPosition,
-						monster.position,
-						_mordrax$cotwelm$Maps$currentLevel(model.maps)))));
-	};
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -31336,7 +37791,17 @@ var _mordrax$cotwelm$Game$viewMonsters = function (model) {
 			_mordrax$cotwelm$Monster$view,
 			A2(
 				_elm_lang$core$List$filter,
-				isMonsterVisible,
+				function (_p39) {
+					return A2(
+						F2(
+							function (x, y) {
+								return _elm_lang$core$Native_Utils.eq(x, y);
+							}),
+						_mordrax$cotwelm$Types$LineOfSight,
+						function (_) {
+							return _.visible;
+						}(_p39));
+				},
 				_mordrax$cotwelm$Game$monstersOnLevel(model))));
 };
 var _mordrax$cotwelm$Game$Model = function (a) {
@@ -31350,11 +37815,7 @@ var _mordrax$cotwelm$Game$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return function (l) {
-												return function (m) {
-													return {name: a, hero: b, maps: c, currentScreen: d, shops: e, idGen: f, seed: g, windowSize: h, messages: i, viewport: j, difficulty: k, inventory: l, itemFactory: m};
-												};
-											};
+											return {name: a, hero: b, maps: c, currentScreen: d, shops: e, seed: f, windowSize: g, messages: h, viewport: i, difficulty: j, inventory: k};
 										};
 									};
 								};
@@ -31370,72 +37831,80 @@ var _mordrax$cotwelm$Game$BuildingScreen = function (a) {
 	return {ctor: 'BuildingScreen', _0: a};
 };
 var _mordrax$cotwelm$Game$enterBuilding = F2(
-	function (building, _p48) {
-		var _p49 = _p48;
-		var _p53 = _p49;
-		var _p52 = _p49.hero;
-		var modelWithHeroMoved = _elm_lang$core$Native_Utils.update(
-			_p53,
-			{
-				hero: A2(_mordrax$cotwelm$Hero$teleport, building.position, _p52)
+	function (building, _p40) {
+		var _p41 = _p40;
+		var _p45 = _p41;
+		var _p44 = _p41.hero;
+		var teleportHero = F2(
+			function (model, newPosition) {
+				return _mordrax$cotwelm$Game$updateCurrentLevelFOV(
+					_mordrax$cotwelm$Game$updateViewportOffset(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								hero: A2(_mordrax$cotwelm$Hero$teleport, newPosition, _p44)
+							})));
 			});
-		var _p50 = building.buildingType;
-		switch (_p50.ctor) {
+		var _p42 = building.buildingType;
+		switch (_p42.ctor) {
 			case 'Linked':
-				var _p51 = _p50._0;
-				return _elm_lang$core$Native_Utils.update(
-					_p53,
-					{
-						maps: A2(_mordrax$cotwelm$Maps$updateArea, _p51.area, _p49.maps),
-						hero: A2(_mordrax$cotwelm$Hero$teleport, _p51.position, _p52)
-					});
+				var _p43 = _p42._0;
+				return A3(
+					_elm_lang$core$Basics$flip,
+					teleportHero,
+					_p43.position,
+					_elm_lang$core$Native_Utils.update(
+						_p45,
+						{
+							maps: A2(_mordrax$cotwelm$Maps$updateArea, _p43.area, _p41.maps)
+						}));
 			case 'Shop':
 				return _elm_lang$core$Native_Utils.update(
-					_p53,
+					_p45,
 					{
 						currentScreen: _mordrax$cotwelm$Game$BuildingScreen(building),
 						inventory: A2(
 							_mordrax$cotwelm$Inventory$init,
 							_mordrax$cotwelm$Inventory$Shop(
-								A2(_mordrax$cotwelm$Shops$shop, _p50._0, _p53.shops)),
-							_p52.equipment)
+								A2(_mordrax$cotwelm$Shops$shop, _p42._0, _p45.shops)),
+							_p44.equipment)
 					});
 			case 'Ordinary':
 				return _elm_lang$core$Native_Utils.update(
-					_p53,
+					_p45,
 					{
 						currentScreen: _mordrax$cotwelm$Game$BuildingScreen(building)
 					});
 			case 'StairUp':
-				return modelWithHeroMoved;
+				return A2(teleportHero, _p45, building.position);
 			default:
-				return modelWithHeroMoved;
+				return A2(teleportHero, _p45, building.position);
 		}
 	});
 var _mordrax$cotwelm$Game$moveHero_ = F2(
 	function (dir, model) {
 		var heroMoved = A2(_mordrax$cotwelm$Hero$move, dir, model.hero);
-		var _p54 = A2(_mordrax$cotwelm$Game$queryPosition, heroMoved.position, model);
-		_v37_1:
+		var _p46 = A2(_mordrax$cotwelm$Game$queryPosition, heroMoved.position, model);
+		_v34_1:
 		do {
-			_v37_0:
+			_v34_0:
 			do {
-				if (_p54._0 === true) {
-					if (_p54._2.ctor === 'Just') {
-						break _v37_0;
+				if (_p46._0 === true) {
+					if (_p46._2.ctor === 'Just') {
+						break _v34_0;
 					} else {
-						if (_p54._1.ctor === 'Just') {
-							break _v37_1;
+						if (_p46._1.ctor === 'Just') {
+							break _v34_1;
 						} else {
 							return {ctor: '_Tuple2', _0: model, _1: false};
 						}
 					}
 				} else {
-					if (_p54._2.ctor === 'Just') {
-						break _v37_0;
+					if (_p46._2.ctor === 'Just') {
+						break _v34_0;
 					} else {
-						if (_p54._1.ctor === 'Just') {
-							break _v37_1;
+						if (_p46._1.ctor === 'Just') {
+							break _v34_1;
 						} else {
 							return {
 								ctor: '_Tuple2',
@@ -31450,46 +37919,40 @@ var _mordrax$cotwelm$Game$moveHero_ = F2(
 			} while(false);
 			return {
 				ctor: '_Tuple2',
-				_0: A2(_mordrax$cotwelm$Game$attackMonster, _p54._2._0, model),
+				_0: A2(_mordrax$cotwelm$Game$attackMonster, _p46._2._0, model),
 				_1: false
 			};
 		} while(false);
 		return {
 			ctor: '_Tuple2',
-			_0: A2(_mordrax$cotwelm$Game$enterBuilding, _p54._1._0, model),
+			_0: A2(_mordrax$cotwelm$Game$enterBuilding, _p46._1._0, model),
 			_1: false
 		};
 	});
 var _mordrax$cotwelm$Game$moveHero = F2(
 	function (dir, model) {
-		var updateCurrentLevelFOV = function (model) {
-			return function (level) {
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						maps: A2(_mordrax$cotwelm$Maps$updateCurrentLevel, level, model.maps)
-					});
-			}(
-				A2(
-					_mordrax$cotwelm$Level$updateFOV,
-					model.hero.position,
-					_mordrax$cotwelm$Maps$currentLevel(model.maps)));
-		};
-		var _p55 = A2(_mordrax$cotwelm$Game$moveHero_, dir, model);
-		var modelWithHeroMoved = _p55._0;
-		var hasMoved = _p55._1;
-		var _p56 = hasMoved;
-		if (_p56 === false) {
+		var _p47 = A2(_mordrax$cotwelm$Game$moveHero_, dir, model);
+		var modelWithHeroMoved = _p47._0;
+		var heroPositionChanged = _p47._1;
+		var _p48 = heroPositionChanged;
+		if (_p48 === false) {
 			return {
 				ctor: '_Tuple2',
-				_0: _mordrax$cotwelm$Game$updateViewportOffset(modelWithHeroMoved),
+				_0: function (m) {
+					return A3(
+						_mordrax$cotwelm$Game$moveMonsters,
+						_mordrax$cotwelm$Game$monstersOnLevel(m),
+						{ctor: '[]'},
+						m);
+				}(
+					_mordrax$cotwelm$Game$updateViewportOffset(modelWithHeroMoved)),
 				_1: false
 			};
 		} else {
 			return function (m) {
 				return {ctor: '_Tuple2', _0: m, _1: true};
 			}(
-				updateCurrentLevelFOV(
+				_mordrax$cotwelm$Game$updateCurrentLevelFOV(
 					function (m) {
 						return A3(
 							_mordrax$cotwelm$Game$moveMonsters,
@@ -31508,17 +37971,17 @@ var _mordrax$cotwelm$Game$PathTo = function (a) {
 var _mordrax$cotwelm$Game$ClickTile = function (a) {
 	return {ctor: 'ClickTile', _0: a};
 };
-var _mordrax$cotwelm$Game$viewMap = function (_p57) {
-	var _p58 = _p57;
-	var _p61 = _p58.windowSize;
-	var _p60 = _p58.viewport;
-	var _p59 = _p58;
+var _mordrax$cotwelm$Game$viewMap = function (_p49) {
+	var _p50 = _p49;
+	var _p53 = _p50.windowSize;
+	var _p52 = _p50.viewport;
+	var _p51 = _p50;
 	var viewStart = {
 		ctor: '_Tuple2',
-		_0: _elm_lang$core$Basics$abs((_p60.x / 32) | 0),
-		_1: _elm_lang$core$Basics$abs((_p60.y / 32) | 0)
+		_0: _elm_lang$core$Basics$abs((_p52.x / 32) | 0),
+		_1: _elm_lang$core$Basics$abs((_p52.y / 32) | 0)
 	};
-	var viewSize = {ctor: '_Tuple2', _0: (_p61.width / 32) | 0, _1: (_p61.height / 32) | 0};
+	var viewSize = {ctor: '_Tuple2', _0: (_p53.width / 32) | 0, _1: (_p53.height / 32) | 0};
 	var px = function (x) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
@@ -31542,14 +38005,14 @@ var _mordrax$cotwelm$Game$viewMap = function (_p57) {
 								_0: {
 									ctor: '_Tuple2',
 									_0: 'width',
-									_1: px(_p61.width)
+									_1: px(_p53.width)
 								},
 								_1: {
 									ctor: '::',
 									_0: {
 										ctor: '_Tuple2',
 										_0: 'height',
-										_1: px(((_p61.height * 4) / 5) | 0)
+										_1: px(((_p53.height * 4) / 5) | 0)
 									},
 									_1: {ctor: '[]'}
 								}
@@ -31573,14 +38036,14 @@ var _mordrax$cotwelm$Game$viewMap = function (_p57) {
 									_0: {
 										ctor: '_Tuple2',
 										_0: 'top',
-										_1: px(_p60.y)
+										_1: px(_p52.y)
 									},
 									_1: {
 										ctor: '::',
 										_0: {
 											ctor: '_Tuple2',
 											_0: 'left',
-											_1: px(_p60.x)
+											_1: px(_p52.x)
 										},
 										_1: {ctor: '[]'}
 									}
@@ -31598,7 +38061,7 @@ var _mordrax$cotwelm$Game$viewMap = function (_p57) {
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html$text(
-				A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', _p59.name)),
+				A2(_elm_lang$core$Basics_ops['++'], 'Welcome to Castle of the Winds: ', _p51.name)),
 			_1: {ctor: '[]'}
 		});
 	return A2(
@@ -31619,20 +38082,20 @@ var _mordrax$cotwelm$Game$viewMap = function (_p57) {
 								_mordrax$cotwelm$Maps$view,
 								{ctor: '_Tuple2', _0: viewStart, _1: viewSize},
 								_mordrax$cotwelm$Game$ClickTile,
-								_p59.maps),
+								_p51.maps),
 							_1: {
 								ctor: '::',
-								_0: _mordrax$cotwelm$Hero$view(_p59.hero),
+								_0: _mordrax$cotwelm$Hero$view(_p51.hero),
 								_1: {
 									ctor: '::',
-									_0: _mordrax$cotwelm$Game$viewMonsters(_p59),
+									_0: _mordrax$cotwelm$Game$viewMonsters(_p51),
 									_1: {ctor: '[]'}
 								}
 							}
 						}),
 					_1: {
 						ctor: '::',
-						_0: _mordrax$cotwelm$Game$viewStatus(_p59),
+						_0: _mordrax$cotwelm$Game$viewStatus(_p51),
 						_1: {ctor: '[]'}
 					}
 				}
@@ -31651,25 +38114,16 @@ var _mordrax$cotwelm$Game$initialWindowSizeCmd = A2(
 var _mordrax$cotwelm$Game$init = F3(
 	function (seed, hero, difficulty) {
 		var cmd = _mordrax$cotwelm$Game$initialWindowSizeCmd;
-		var itemFactory = _mordrax$cotwelm$Item_Factory$init;
-		var _p62 = A2(_mordrax$cotwelm$Game$donDefaultGarb, itemFactory, hero);
-		var heroWithDefaultEquipment = _p62._0;
-		var itemFactoryAfterHeroEquipment = _p62._1;
-		var _p63 = A2(_mordrax$cotwelm$Shops$init, seed, itemFactoryAfterHeroEquipment);
-		var shops = _p63._0;
-		var itemFactoryAfterShop = _p63._1;
-		var seed_ = _p63._2;
-		var _p64 = A2(
-			_mordrax$cotwelm$Item_Factory$make,
-			_mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$LeatherArmour),
-			itemFactoryAfterShop);
-		var leatherArmour = _p64._0;
-		var itemFactory_ = _p64._1;
-		var _p65 = A2(_mordrax$cotwelm$Maps$init, leatherArmour, seed_);
-		var maps = _p65._0;
-		var seed__ = _p65._1;
+		var leatherArmour = _mordrax$cotwelm$Item_Item$new(
+			_mordrax$cotwelm$Item_Data$ItemTypeArmour(_mordrax$cotwelm$Item_Data$LeatherArmour));
+		var _p54 = _mordrax$cotwelm$Shops$init(seed);
+		var shops = _p54._0;
+		var seed_ = _p54._1;
+		var _p55 = A2(_mordrax$cotwelm$Maps$init, leatherArmour, seed_);
+		var maps = _p55._0;
+		var seed__ = _p55._1;
+		var heroWithDefaultEquipment = _mordrax$cotwelm$Game$donDefaultGarb(hero);
 		var ground = A2(_mordrax$cotwelm$Game$getGroundAtHero, heroWithDefaultEquipment, maps);
-		var idGenerator = _mordrax$cotwelm$Utils_IdGenerator$init;
 		return {
 			ctor: '_Tuple2',
 			_0: {
@@ -31678,7 +38132,6 @@ var _mordrax$cotwelm$Game$init = F3(
 				maps: maps,
 				currentScreen: _mordrax$cotwelm$Game$MapScreen,
 				shops: shops,
-				idGen: idGenerator,
 				inventory: A2(
 					_mordrax$cotwelm$Inventory$init,
 					_mordrax$cotwelm$Inventory$Ground(ground),
@@ -31691,8 +38144,7 @@ var _mordrax$cotwelm$Game$init = F3(
 				},
 				difficulty: difficulty,
 				windowSize: {width: 640, height: 640},
-				viewport: {x: 0, y: 0},
-				itemFactory: itemFactory_
+				viewport: {x: 0, y: 0}
 			},
 			_1: cmd
 		};
@@ -31701,20 +38153,20 @@ var _mordrax$cotwelm$Game$InventoryMsg = function (a) {
 	return {ctor: 'InventoryMsg', _0: a};
 };
 var _mordrax$cotwelm$Game$view = function (model) {
-	var _p66 = model.currentScreen;
-	switch (_p66.ctor) {
+	var _p56 = model.currentScreen;
+	switch (_p56.ctor) {
 		case 'MapScreen':
 			return _mordrax$cotwelm$Game$viewMap(model);
 		case 'BuildingScreen':
-			var _p68 = _p66._0;
-			var _p67 = _p68.buildingType;
-			if (_p67.ctor === 'Shop') {
+			var _p58 = _p56._0;
+			var _p57 = _p58.buildingType;
+			if (_p57.ctor === 'Shop') {
 				return A2(
 					_elm_lang$html$Html$map,
 					_mordrax$cotwelm$Game$InventoryMsg,
 					_mordrax$cotwelm$Inventory$view(model.inventory));
 			} else {
-				return _mordrax$cotwelm$Game$viewBuilding(_p68);
+				return _mordrax$cotwelm$Game$viewBuilding(_p58);
 			}
 		default:
 			return A2(
@@ -31730,16 +38182,16 @@ var _mordrax$cotwelm$Game$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p69 = msg;
-			switch (_p69.ctor) {
+			var _p59 = msg;
+			switch (_p59.ctor) {
 				case 'KeyboardMsg':
-					return A2(_mordrax$cotwelm$Game$updateKeyboard, _p69._0, model);
+					return A2(_mordrax$cotwelm$Game$updateKeyboard, _p59._0, model);
 				case 'InventoryMsg':
-					var _p70 = A2(_mordrax$cotwelm$Inventory$update, _p69._0, model.inventory);
-					var inventory_ = _p70._0;
-					var maybeExitValues = _p70._1;
-					var _p71 = maybeExitValues;
-					if (_p71.ctor === 'Nothing') {
+					var _p60 = A2(_mordrax$cotwelm$Inventory$update, _p59._0, model.inventory);
+					var inventory_ = _p60._0;
+					var maybeExitValues = _p60._1;
+					var _p61 = maybeExitValues;
+					if (_p61.ctor === 'Nothing') {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -31752,15 +38204,15 @@ var _mordrax$cotwelm$Game$update = F2(
 							model,
 							{
 								inventory: inventory_,
-								hero: A2(_mordrax$cotwelm$Hero$updateEquipment, _p71._0._0, model.hero),
+								hero: A2(_mordrax$cotwelm$Hero$setEquipment, _p61._0._0, model.hero),
 								currentScreen: _mordrax$cotwelm$Game$MapScreen
 							});
-						var _p72 = _p71._0._1;
-						if (_p72.ctor === 'Ground') {
+						var _p62 = _p61._0._1;
+						if (_p62.ctor === 'Ground') {
 							var level_ = A3(
 								_mordrax$cotwelm$Level$updateGround,
 								model.hero.position,
-								_mordrax$cotwelm$Container$list(_p72._0),
+								_mordrax$cotwelm$Container$list(_p62._0),
 								_mordrax$cotwelm$Maps$currentLevel(model.maps));
 							var maps_ = A2(_mordrax$cotwelm$Maps$updateCurrentLevel, level_, model.maps);
 							return {
@@ -31776,7 +38228,7 @@ var _mordrax$cotwelm$Game$update = F2(
 								_0: _elm_lang$core$Native_Utils.update(
 									modelWithHeroAndInventory,
 									{
-										shops: A2(_mordrax$cotwelm$Shops$updateShop, _p72._0, model.shops)
+										shops: A2(_mordrax$cotwelm$Shops$updateShop, _p62._0, model.shops)
 									}),
 								_1: _elm_lang$core$Platform_Cmd$none
 							};
@@ -31787,114 +38239,102 @@ var _mordrax$cotwelm$Game$update = F2(
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{windowSize: _p69._0}),
+							{windowSize: _p59._0}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'ClickTile':
 					var path = A2(
 						_elm_lang$core$Debug$log,
 						'Path: ',
-						A4(_mordrax$cotwelm$Game$findPath, model.hero.position, _p69._0, true, model));
-					var _v45 = _mordrax$cotwelm$Game$PathTo(path),
-						_v46 = model;
-					msg = _v45;
-					model = _v46;
+						A4(_mordrax$cotwelm$Game$findPath, model.hero.position, _p59._0, true, model));
+					var _v42 = _mordrax$cotwelm$Game$PathTo(path),
+						_v43 = model;
+					msg = _v42;
+					model = _v43;
 					continue update;
 				default:
-					if (_p69._0.ctor === '[]') {
+					if (_p59._0.ctor === '[]') {
 						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					} else {
-						var _p78 = _p69._0._1;
-						var _p77 = _p69._0._0;
-						var currentTile = A2(_mordrax$cotwelm$Maps$getTile, _p77, model.maps);
-						var walkRemainingPathTask = _elm_lang$core$Task$succeed(_p78);
+						var _p66 = _p59._0._1;
+						var _p65 = _p59._0._0;
+						var currentTile = A2(_mordrax$cotwelm$Maps$getTile, _p65, model.maps);
 						var dir = _mordrax$cotwelm$Utils_Vector$toDirection(
-							A2(_mordrax$cotwelm$Utils_Vector$sub, _p77, model.hero.position));
-						var _p73 = A2(
+							A2(_mordrax$cotwelm$Utils_Vector$sub, _p65, model.hero.position));
+						var _p63 = A2(
 							_mordrax$cotwelm$Game$update,
 							_mordrax$cotwelm$Game$KeyboardMsg(
 								_mordrax$cotwelm$Keymap$KeyDir(dir)),
 							model);
-						var modelAfterMovement = _p73._0;
-						var cmdsAfterMovement = _p73._1;
-						var _p74 = {
+						var modelAfterMovement = _p63._0;
+						var cmdsAfterMovement = _p63._1;
+						var _p64 = {
 							ctor: '_Tuple3',
-							_0: _p78,
+							_0: _p66,
 							_1: A2(_mordrax$cotwelm$Game$isOnStairs, _mordrax$cotwelm$Level$upstairs, modelAfterMovement),
 							_2: A2(_mordrax$cotwelm$Game$isOnStairs, _mordrax$cotwelm$Level$downstairs, modelAfterMovement)
 						};
-						_v47_2:
+						_v44_2:
 						do {
-							if ((_p74.ctor === '_Tuple3') && (_p74._0.ctor === '[]')) {
-								if (_p74._1 === true) {
-									var _p75 = A2(_elm_lang$core$Debug$log, 'Taking upstairs', 1);
-									var _v48 = _mordrax$cotwelm$Game$KeyboardMsg(_mordrax$cotwelm$Keymap$GoUpstairs),
-										_v49 = modelAfterMovement;
-									msg = _v48;
-									model = _v49;
+							if ((_p64.ctor === '_Tuple3') && (_p64._0.ctor === '[]')) {
+								if (_p64._1 === true) {
+									var _v45 = _mordrax$cotwelm$Game$KeyboardMsg(_mordrax$cotwelm$Keymap$GoUpstairs),
+										_v46 = modelAfterMovement;
+									msg = _v45;
+									model = _v46;
 									continue update;
 								} else {
-									if (_p74._2 === true) {
-										var _p76 = A2(_elm_lang$core$Debug$log, 'Taking downstairs', 1);
-										var _v50 = _mordrax$cotwelm$Game$KeyboardMsg(_mordrax$cotwelm$Keymap$GoDownstairs),
-											_v51 = modelAfterMovement;
-										msg = _v50;
-										model = _v51;
+									if (_p64._2 === true) {
+										var _v47 = _mordrax$cotwelm$Game$KeyboardMsg(_mordrax$cotwelm$Keymap$GoDownstairs),
+											_v48 = modelAfterMovement;
+										msg = _v47;
+										model = _v48;
 										continue update;
 									} else {
-										break _v47_2;
+										break _v44_2;
 									}
 								}
 							} else {
-								break _v47_2;
+								break _v44_2;
 							}
 						} while(false);
-						return {
-							ctor: '_Tuple2',
-							_0: modelAfterMovement,
-							_1: _elm_lang$core$Platform_Cmd$batch(
-								{
-									ctor: '::',
-									_0: A2(_elm_lang$core$Task$perform, _mordrax$cotwelm$Game$PathTo, walkRemainingPathTask),
-									_1: {
-										ctor: '::',
-										_0: cmdsAfterMovement,
-										_1: {ctor: '[]'}
-									}
-								})
-						};
+						var _v49 = _mordrax$cotwelm$Game$PathTo(_p66),
+							_v50 = modelAfterMovement;
+						msg = _v49;
+						model = _v50;
+						continue update;
 					}
 			}
 		}
 	});
 var _mordrax$cotwelm$Game$updateKeyboard = F2(
 	function (keyboardMsg, model) {
-		var _p79 = keyboardMsg;
-		switch (_p79.ctor) {
+		var _p67 = keyboardMsg;
+		switch (_p67.ctor) {
 			case 'KeyDir':
-				return function (_p80) {
-					var _p81 = _p80;
-					return {ctor: '_Tuple2', _0: _p81._0, _1: _elm_lang$core$Platform_Cmd$none};
+				return function (_p68) {
+					var _p69 = _p68;
+					return {ctor: '_Tuple2', _0: _p69._0, _1: _elm_lang$core$Platform_Cmd$none};
 				}(
-					A2(_mordrax$cotwelm$Game$moveHero, _p79._0, model));
+					A2(_mordrax$cotwelm$Game$moveHero, _p67._0, model));
 			case 'Walk':
-				var _p84 = _p79._0;
-				var _p82 = A2(_mordrax$cotwelm$Game$moveHero, _p84, model);
-				var modelWithMovedHero = _p82._0;
-				var hasMoved = _p82._1;
-				var _p83 = hasMoved;
-				if (_p83 === false) {
+				var _p72 = _p67._0;
+				var _p70 = A2(_mordrax$cotwelm$Game$moveHero, _p72, model);
+				var modelWithMovedHero = _p70._0;
+				var hasMoved = _p70._1;
+				var _p71 = A2(_elm_lang$core$Debug$log, 'Walking: ', hasMoved);
+				if (_p71 === false) {
 					return {ctor: '_Tuple2', _0: modelWithMovedHero, _1: _elm_lang$core$Platform_Cmd$none};
 				} else {
 					return A2(
 						_mordrax$cotwelm$Game$update,
 						_mordrax$cotwelm$Game$KeyboardMsg(
-							_mordrax$cotwelm$Keymap$Walk(_p84)),
+							_mordrax$cotwelm$Keymap$Walk(_p72)),
 						modelWithMovedHero);
 				}
 			case 'Esc':
-				var _p85 = model.currentScreen;
-				switch (_p85.ctor) {
+				var _p73 = model.currentScreen;
+				switch (_p73.ctor) {
 					case 'MapScreen':
 						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					case 'BuildingScreen':
@@ -31926,8 +38366,8 @@ var _mordrax$cotwelm$Game$updateKeyboard = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'GoUpstairs':
-				var _p86 = A2(_mordrax$cotwelm$Game$isOnStairs, _mordrax$cotwelm$Level$upstairs, model);
-				if (_p86 === true) {
+				var _p74 = A2(_mordrax$cotwelm$Game$isOnStairs, _mordrax$cotwelm$Level$upstairs, model);
+				if (_p74 === true) {
 					var map_ = _mordrax$cotwelm$Maps$upstairs(model.maps);
 					var heroAtTopOfStairs = A2(
 						_elm_lang$core$Maybe$withDefault,
@@ -31944,14 +38384,15 @@ var _mordrax$cotwelm$Game$updateKeyboard = F2(
 									_mordrax$cotwelm$Maps$currentLevel(map_)))));
 					return {
 						ctor: '_Tuple2',
-						_0: _mordrax$cotwelm$Game$updateViewportOffset(
-							_elm_lang$core$Native_Utils.update(
-								model,
-								{
-									maps: map_,
-									hero: heroAtTopOfStairs,
-									messages: {ctor: '::', _0: 'You climb back up the stairs', _1: model.messages}
-								})),
+						_0: _mordrax$cotwelm$Game$updateCurrentLevelFOV(
+							_mordrax$cotwelm$Game$updateViewportOffset(
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{
+										maps: map_,
+										hero: heroAtTopOfStairs,
+										messages: {ctor: '::', _0: 'You climb back up the stairs', _1: model.messages}
+									}))),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				} else {
@@ -31966,14 +38407,14 @@ var _mordrax$cotwelm$Game$updateKeyboard = F2(
 					};
 				}
 			case 'GoDownstairs':
-				var _p87 = A2(_mordrax$cotwelm$Game$isOnStairs, _mordrax$cotwelm$Level$downstairs, model);
-				if (_p87 === true) {
-					var _p88 = A2(
+				var _p75 = A2(_mordrax$cotwelm$Game$isOnStairs, _mordrax$cotwelm$Level$downstairs, model);
+				if (_p75 === true) {
+					var _p76 = A2(
 						_mgold$elm_random_pcg$Random_Pcg$step,
 						_mordrax$cotwelm$Maps$downstairs(model.maps),
 						model.seed);
-					var newMap = _p88._0;
-					var seed_ = _p88._1;
+					var newMap = _p76._0;
+					var seed_ = _p76._1;
 					var heroAtBottomOfStairs = A2(
 						_elm_lang$core$Maybe$withDefault,
 						model.hero,
@@ -31992,15 +38433,16 @@ var _mordrax$cotwelm$Game$updateKeyboard = F2(
 										_mordrax$cotwelm$Maps$currentLevel(newMap))))));
 					return {
 						ctor: '_Tuple2',
-						_0: _mordrax$cotwelm$Game$updateViewportOffset(
-							_elm_lang$core$Native_Utils.update(
-								model,
-								{
-									maps: newMap,
-									hero: heroAtBottomOfStairs,
-									seed: seed_,
-									messages: {ctor: '::', _0: 'You go downstairs', _1: model.messages}
-								})),
+						_0: _mordrax$cotwelm$Game$updateCurrentLevelFOV(
+							_mordrax$cotwelm$Game$updateViewportOffset(
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{
+										maps: newMap,
+										hero: heroAtBottomOfStairs,
+										seed: seed_,
+										messages: {ctor: '::', _0: 'You go downstairs', _1: model.messages}
+									}))),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				} else {
@@ -32027,18 +38469,18 @@ var _mordrax$cotwelm$Game$updateKeyboard = F2(
 							_mordrax$cotwelm$Level$tileAtPosition,
 							model.hero.position,
 							_mordrax$cotwelm$Maps$currentLevel(model.maps))));
-				var _p89 = maybeItems;
-				if (_p89.ctor === 'Nothing') {
+				var _p77 = maybeItems;
+				if (_p77.ctor === 'Nothing') {
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				} else {
 					return {
 						ctor: '_Tuple2',
-						_0: A2(_mordrax$cotwelm$Game$pickup, _p89._0, model),
+						_0: A2(_mordrax$cotwelm$Game$pickup, _p77._0, model),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				}
 			default:
-				var _p90 = A2(_elm_lang$core$Debug$log, 'Keyboard key not implemented yet', _p79);
+				var _p78 = A2(_elm_lang$core$Debug$log, 'Keyboard key not implemented yet', _p67);
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
@@ -32222,12 +38664,15 @@ var _mordrax$cotwelm$SplashView$view = function () {
 		});
 }();
 
-var _mordrax$cotwelm$Main$Model = F5(
-	function (a, b, c, d, e) {
-		return {currentPage: a, charCreation: b, game: c, editor: d, arena: e};
+var _mordrax$cotwelm$Main$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {currentPage: a, charCreation: b, game: c, editor: d, arena: e, pit: f};
 	});
 var _mordrax$cotwelm$Main$ChangePage = function (a) {
 	return {ctor: 'ChangePage', _0: a};
+};
+var _mordrax$cotwelm$Main$PitMsg = function (a) {
+	return {ctor: 'PitMsg', _0: a};
 };
 var _mordrax$cotwelm$Main$ArenaMsg = function (a) {
 	return {ctor: 'ArenaMsg', _0: a};
@@ -32254,14 +38699,26 @@ var _mordrax$cotwelm$Main$GameMsg = function (a) {
 	return {ctor: 'GameMsg', _0: a};
 };
 var _mordrax$cotwelm$Main$subscriptions = function (model) {
-	var _p0 = model.game;
-	if (_p0.ctor === 'Nothing') {
-		return _elm_lang$core$Platform_Sub$none;
-	} else {
+	var gameSub = A2(
+		_elm_lang$core$Maybe$withDefault,
+		_elm_lang$core$Platform_Sub$none,
+		A2(
+			_elm_lang$core$Maybe$map,
+			function (_p0) {
+				return A2(
+					_elm_lang$core$Platform_Sub$map,
+					_mordrax$cotwelm$Main$GameMsg,
+					_mordrax$cotwelm$Game$subscription(_p0));
+			},
+			model.game));
+	var _p1 = model.currentPage;
+	if (_p1.ctor === 'PitPage') {
 		return A2(
 			_elm_lang$core$Platform_Sub$map,
-			_mordrax$cotwelm$Main$GameMsg,
-			_mordrax$cotwelm$Game$subscription(_p0._0));
+			_mordrax$cotwelm$Main$PitMsg,
+			_mordrax$cotwelm$Arena_MonsterArena$subs(model.pit));
+	} else {
+		return gameSub;
 	}
 };
 var _mordrax$cotwelm$Main$CharCreationMsg = function (a) {
@@ -32271,8 +38728,8 @@ var _mordrax$cotwelm$Main$SplashMsg = function (a) {
 	return {ctor: 'SplashMsg', _0: a};
 };
 var _mordrax$cotwelm$Main$view = function (model) {
-	var _p1 = model.currentPage;
-	switch (_p1.ctor) {
+	var _p2 = model.currentPage;
+	switch (_p2.ctor) {
 		case 'CharCreationPage':
 			return A2(
 				_elm_lang$html$Html$map,
@@ -32281,8 +38738,8 @@ var _mordrax$cotwelm$Main$view = function (model) {
 		case 'SplashPage':
 			return A2(_elm_lang$html$Html$map, _mordrax$cotwelm$Main$SplashMsg, _mordrax$cotwelm$SplashView$view);
 		case 'GamePage':
-			var _p2 = model.game;
-			if (_p2.ctor === 'Nothing') {
+			var _p3 = model.game;
+			if (_p3.ctor === 'Nothing') {
 				return A2(
 					_elm_lang$html$Html$h1,
 					{ctor: '[]'},
@@ -32295,7 +38752,7 @@ var _mordrax$cotwelm$Main$view = function (model) {
 				return A2(
 					_elm_lang$html$Html$map,
 					_mordrax$cotwelm$Main$GameMsg,
-					_mordrax$cotwelm$Game$view(_p2._0));
+					_mordrax$cotwelm$Game$view(_p3._0));
 			}
 		case 'EditorPage':
 			return A2(
@@ -32306,7 +38763,12 @@ var _mordrax$cotwelm$Main$view = function (model) {
 			return A2(
 				_elm_lang$html$Html$map,
 				_mordrax$cotwelm$Main$ArenaMsg,
-				_mordrax$cotwelm$Arena$view(model.arena));
+				_mordrax$cotwelm$Arena_PlayerArena$view(model.arena));
+		case 'PitPage':
+			return A2(
+				_elm_lang$html$Html$map,
+				_mordrax$cotwelm$Main$PitMsg,
+				_mordrax$cotwelm$Arena_MonsterArena$view(model.pit));
 		default:
 			return A2(
 				_elm_lang$html$Html$h1,
@@ -32321,10 +38783,10 @@ var _mordrax$cotwelm$Main$view = function (model) {
 var _mordrax$cotwelm$Main$NotImplementedPage = {ctor: 'NotImplementedPage'};
 var _mordrax$cotwelm$Main$update = F2(
 	function (msg, model) {
-		var _p3 = msg;
-		switch (_p3.ctor) {
+		var _p4 = msg;
+		switch (_p4.ctor) {
 			case 'SplashMsg':
-				if (_p3._0.ctor === 'NewGame') {
+				if (_p4._0.ctor === 'NewGame') {
 					return {
 						ctor: '_Tuple2',
 						_0: model,
@@ -32340,11 +38802,11 @@ var _mordrax$cotwelm$Main$update = F2(
 					};
 				}
 			case 'CharCreationMsg':
-				var _p4 = A2(_mordrax$cotwelm$CharCreation$update, _p3._0, model.charCreation);
-				var charCreation_ = _p4._0;
-				var isComplete = _p4._1;
-				var _p5 = isComplete;
-				if (_p5 === false) {
+				var _p5 = A2(_mordrax$cotwelm$CharCreation$update, _p4._0, model.charCreation);
+				var charCreation_ = _p5._0;
+				var isComplete = _p5._1;
+				var _p6 = isComplete;
+				if (_p6 === false) {
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -32371,13 +38833,13 @@ var _mordrax$cotwelm$Main$update = F2(
 					};
 				}
 			case 'GameMsg':
-				var _p6 = model.game;
-				if (_p6.ctor === 'Nothing') {
+				var _p7 = model.game;
+				if (_p7.ctor === 'Nothing') {
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				} else {
-					var _p7 = A2(_mordrax$cotwelm$Game$update, _p3._0, _p6._0);
-					var game_ = _p7._0;
-					var cmd = _p7._1;
+					var _p8 = A2(_mordrax$cotwelm$Game$update, _p4._0, _p7._0);
+					var game_ = _p8._0;
+					var cmd = _p8._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -32389,9 +38851,9 @@ var _mordrax$cotwelm$Main$update = F2(
 					};
 				}
 			case 'EditorMsg':
-				var _p8 = A2(_mordrax$cotwelm$Dungeon_Editor$update, _p3._0, model.editor);
-				var editor_ = _p8._0;
-				var cmds = _p8._1;
+				var _p9 = A2(_mordrax$cotwelm$Dungeon_Editor$update, _p4._0, model.editor);
+				var editor_ = _p9._0;
+				var cmds = _p9._1;
 				var gameCmds = A2(_elm_lang$core$Platform_Cmd$map, _mordrax$cotwelm$Main$EditorMsg, cmds);
 				return {
 					ctor: '_Tuple2',
@@ -32401,9 +38863,9 @@ var _mordrax$cotwelm$Main$update = F2(
 					_1: gameCmds
 				};
 			case 'ArenaMsg':
-				var _p9 = A2(_mordrax$cotwelm$Arena$update, _p3._0, model.arena);
-				var arena_ = _p9._0;
-				var cmds = _p9._1;
+				var _p10 = A2(_mordrax$cotwelm$Arena_PlayerArena$update, _p4._0, model.arena);
+				var arena_ = _p10._0;
+				var cmds = _p10._1;
 				var gameCmds = A2(_elm_lang$core$Platform_Cmd$map, _mordrax$cotwelm$Main$ArenaMsg, cmds);
 				return {
 					ctor: '_Tuple2',
@@ -32412,16 +38874,27 @@ var _mordrax$cotwelm$Main$update = F2(
 						{arena: arena_}),
 					_1: gameCmds
 				};
+			case 'PitMsg':
+				var _p11 = A2(_mordrax$cotwelm$Arena_MonsterArena$update, _p4._0, model.pit);
+				var pit_ = _p11._0;
+				var cmds = _p11._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{pit: pit_}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _mordrax$cotwelm$Main$PitMsg, cmds)
+				};
 			case 'GenerateGame':
-				var _p10 = _mordrax$cotwelm$CharCreation$info(_p3._1);
-				var name = _p10._0;
-				var gender = _p10._1;
-				var difficulty = _p10._2;
-				var attributes = _p10._3;
+				var _p12 = _mordrax$cotwelm$CharCreation$info(_p4._1);
+				var name = _p12._0;
+				var gender = _p12._1;
+				var difficulty = _p12._2;
+				var attributes = _p12._3;
 				var hero = A3(_mordrax$cotwelm$Hero$init, name, attributes, gender);
-				var _p11 = A3(_mordrax$cotwelm$Game$init, _p3._0, hero, difficulty);
-				var game = _p11._0;
-				var gameCmds = _p11._1;
+				var _p13 = A3(_mordrax$cotwelm$Game$init, _p4._0, hero, difficulty);
+				var game = _p13._0;
+				var gameCmds = _p13._1;
 				var mainCmds = A2(_elm_lang$core$Platform_Cmd$map, _mordrax$cotwelm$Main$GameMsg, gameCmds);
 				return {
 					ctor: '_Tuple2',
@@ -32437,11 +38910,12 @@ var _mordrax$cotwelm$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{currentPage: _p3._0}),
+						{currentPage: _p4._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
 	});
+var _mordrax$cotwelm$Main$PitPage = {ctor: 'PitPage'};
 var _mordrax$cotwelm$Main$ArenaPage = {ctor: 'ArenaPage'};
 var _mordrax$cotwelm$Main$EditorPage = {ctor: 'EditorPage'};
 var _mordrax$cotwelm$Main$DungeonPage = {ctor: 'DungeonPage'};
@@ -32449,10 +38923,10 @@ var _mordrax$cotwelm$Main$ShopPage = {ctor: 'ShopPage'};
 var _mordrax$cotwelm$Main$GamePage = {ctor: 'GamePage'};
 var _mordrax$cotwelm$Main$CharCreationPage = {ctor: 'CharCreationPage'};
 var _mordrax$cotwelm$Main$SplashPage = {ctor: 'SplashPage'};
-var _mordrax$cotwelm$Main$urlToPage = function (_p12) {
-	var _p13 = _p12;
-	var _p14 = _p13.hash;
-	return _elm_lang$core$Native_Utils.eq(_p14, '#/charCreation') ? _mordrax$cotwelm$Main$CharCreationPage : (_elm_lang$core$Native_Utils.eq(_p14, '#/game') ? _mordrax$cotwelm$Main$GamePage : (_elm_lang$core$Native_Utils.eq(_p14, '#/editor') ? _mordrax$cotwelm$Main$EditorPage : (_elm_lang$core$Native_Utils.eq(_p14, '#/arena') ? _mordrax$cotwelm$Main$ArenaPage : _mordrax$cotwelm$Main$SplashPage)));
+var _mordrax$cotwelm$Main$urlToPage = function (_p14) {
+	var _p15 = _p14;
+	var _p16 = _p15.hash;
+	return _elm_lang$core$Native_Utils.eq(_p16, '#/charCreation') ? _mordrax$cotwelm$Main$CharCreationPage : (_elm_lang$core$Native_Utils.eq(_p16, '#/game') ? _mordrax$cotwelm$Main$GamePage : (_elm_lang$core$Native_Utils.eq(_p16, '#/editor') ? _mordrax$cotwelm$Main$EditorPage : (_elm_lang$core$Native_Utils.eq(_p16, '#/arena') ? _mordrax$cotwelm$Main$ArenaPage : (_elm_lang$core$Native_Utils.eq(_p16, '#/pit') ? _mordrax$cotwelm$Main$PitPage : _mordrax$cotwelm$Main$SplashPage))));
 };
 var _mordrax$cotwelm$Main$init = function (location) {
 	var model = {
@@ -32460,7 +38934,8 @@ var _mordrax$cotwelm$Main$init = function (location) {
 		charCreation: _mordrax$cotwelm$CharCreation$init,
 		game: _elm_lang$core$Maybe$Nothing,
 		editor: _mordrax$cotwelm$Dungeon_Editor$init,
-		arena: _mordrax$cotwelm$Arena$init
+		arena: _mordrax$cotwelm$Arena_PlayerArena$init,
+		pit: _mordrax$cotwelm$Arena_MonsterArena$init
 	};
 	return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 };
