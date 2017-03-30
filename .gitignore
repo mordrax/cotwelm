@@ -1,7 +1,7 @@
 elm-stuff
 index.html
 index.php
-dist
+dist/js
 .idea
 node_modules
 analyse
