@@ -40,6 +40,7 @@ import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Tile.Types
 
+
 -- Model: Room
 
 
@@ -393,13 +394,13 @@ pp { worldPos } =
 lightSourceGenerator : Room -> Generator Room
 lightSourceGenerator room =
     let
-        setArtificialLightSource isLit =
-            if isLit then
-                { room | lightSource = Artificial }
-            else
+        setArtificialLightSource isDark =
+            if isDark then
                 room
+            else
+                { room | lightSource = Artificial }
     in
-        Random.bool
+        Random.oneIn 5
             |> Random.map setArtificialLightSource
 
 
