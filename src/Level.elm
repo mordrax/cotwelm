@@ -215,14 +215,6 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
         { level | map = newMap, monsters = newMonsters }
 
 
-unexploredTiles : Level -> List Tile
-unexploredTiles { map } =
-    map
-        |> Dict.toList
-        |> List.map Tuple.second
-        |> List.filter (.visible >> (==) Hidden)
-
-
 {-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
 -}
 getTile : Map -> Vector -> Maybe Tile
