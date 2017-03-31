@@ -2,7 +2,7 @@ module Tile.Model exposing (..)
 
 import Container exposing (Container)
 import Dict exposing (Dict)
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 import Types exposing (..)
 import Utils.Vector as Vector exposing (Vector)
 import Building exposing (Building)

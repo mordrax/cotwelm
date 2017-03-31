@@ -8,7 +8,7 @@ module Hero
         , setEquipment
         , setStats
         , stats
-        , teleport
+        , setPosition
         , view
         , viewStats
         )
@@ -18,7 +18,7 @@ import Equipment exposing (Equipment, EquipmentSlot)
 import Types exposing (..)
 import Html exposing (..)
 import Html.Attributes as HA
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Direction as Direction exposing (Direction)
@@ -72,8 +72,8 @@ move direction model =
         |> \x -> { model | position = x }
 
 
-teleport : Vector -> Hero -> Hero
-teleport newPosition model =
+setPosition : Vector -> Hero -> Hero
+setPosition newPosition model =
     { model | position = newPosition }
 
 

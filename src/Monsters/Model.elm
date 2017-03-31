@@ -6,7 +6,7 @@ import Monsters.Types exposing (..)
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Vector as Vector exposing (Vector)
-import Item.Item exposing (Item)
+import Item exposing (Item)
 
 
 type alias Monster =
