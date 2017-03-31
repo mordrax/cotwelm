@@ -1,20 +1,19 @@
 module Maps
     exposing
-        ( Model
+        ( Maps
         , init
-        , updateArea
-        , updateCurrentLevel
+        , setCurrentArea
+        , setLevel
         , view
         , draw
         , currentLevel
-        , getASCIIMap
         , toScreenCoords
         , downstairs
         , upstairs
         , getTile
         )
 
-{-| Handles rendering of all the static/dynamic game areas
+{-| Holds maps for all areas and handles interaction and rendering of them.
 
 Static areas are:
 Village
@@ -45,7 +44,7 @@ import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
 
-type alias Model =
+type alias Maps =
     { currentArea : Area
     , village : Level
     , farm : Level
@@ -54,12 +53,28 @@ type alias Model =
     }
 
 
-setCurrentArea : Area -> Model -> Model
-setCurrentArea area model =
-    { model | currentArea = area }
+setCurrentArea : Area -> Maps -> Maps
+setCurrentArea currentArea model =
+    { model | currentArea = currentArea }
 
 
-init : Item -> Random.Seed -> ( Model, Random.Seed )
+setLevel : Level -> Maps -> Maps
+setLevel level model =
+    case model.currentArea of
+        Village ->
+            { model | village = level }
+
+        Farm ->
+            { model | farm = level }
+
+        DungeonLevelOne ->
+            { model | abandonedMinesEntry = level }
+
+        DungeonLevel n ->
+            { model | abandonedMines = Array.set n level model.abandonedMines }
+
+
+init : Item -> Random.Seed -> ( Maps, Random.Seed )
 init armour seed =
     let
         areaToTiles area visibility =
@@ -87,7 +102,7 @@ init armour seed =
         )
 
 
-upstairs : Model -> Model
+upstairs : Maps -> Maps
 upstairs model =
     case model.currentArea of
         DungeonLevel 0 ->
@@ -100,7 +115,7 @@ upstairs model =
             setCurrentArea Farm model
 
 
-downstairs : Model -> Generator Model
+downstairs : Maps -> Generator Maps
 downstairs model =
     let
         nextLevel =
@@ -132,6 +147,81 @@ downstairs model =
                             }
                         )
 
+queryPosition :
+    Vector
+    -> Model
+    -> ( TileObstruction, Maybe Building, Maybe Monster, HeroObstruction )
+queryPosition pos ({ hero, maps } as model) =
+    let
+        monsters =
+            monstersOnLevel model
+
+        maybeTile =
+            maps
+                |> Maps.currentLevel
+                |> Level.tileAtPosition pos
+
+        level =
+            Maps.currentLevel maps
+
+        maybeBuilding =
+            buildingAtPosition pos level.buildings
+
+        maybeMonster =
+            monsters
+                |> List.filter (\x -> pos == x.position)
+                |> List.head
+
+        hasHero =
+            (Hero.position hero) == pos
+
+        tileObstruction =
+            maybeTile
+                |> Maybe.map .solid
+                |> Maybe.withDefault True
+    in
+        ( tileObstruction, maybeBuilding, maybeMonster, hasHero )
+
+
+moveMonsters : List Monster -> List Monster -> Model -> Model
+moveMonsters monsters movedMonsters ({ hero, maps } as model) =
+    case monsters of
+        [] ->
+            { model | maps = updateMonstersOnCurrentLevel movedMonsters maps }
+
+        monster :: restOfMonsters ->
+            let
+                movedMonster =
+                    pathMonster monster hero model
+
+                obstructions =
+                    queryPosition movedMonster.position model
+
+                isObstructedByMovedMonsters =
+                    isMonsterObstruction movedMonster movedMonsters
+            in
+                case obstructions of
+                    -- hit hero
+                    ( _, _, _, True ) ->
+                        model
+                            |> attackHero monster
+                            |> moveMonsters restOfMonsters (monster :: movedMonsters)
+
+                    ( True, _, _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( _, Just _, _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( _, _, Just _, _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    _ ->
+                        if isObstructedByMovedMonsters then
+                            moveMonsters restOfMonsters (monster :: movedMonsters) model
+                        else
+                            moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
+
 
 addMonstersToLevel : Level -> Generator Level
 addMonstersToLevel level =
@@ -145,28 +235,7 @@ addMonstersToLevel level =
             |> Random.map (\monsters -> { level | monsters = monsters })
 
 
-updateArea : Area -> Model -> Model
-updateArea area model =
-    { model | currentArea = area }
-
-
-updateCurrentLevel : Level -> Model -> Model
-updateCurrentLevel level model =
-    case model.currentArea of
-        Village ->
-            { model | village = level }
-
-        Farm ->
-            { model | farm = level }
-
-        DungeonLevelOne ->
-            { model | abandonedMinesEntry = level }
-
-        DungeonLevel n ->
-            { model | abandonedMines = Array.set n level model.abandonedMines }
-
-
-view : ( Vector, Vector ) -> (Vector -> a) -> Model -> Html a
+view : ( Vector, Vector ) -> (Vector -> a) -> Maps -> Html a
 view ( start, size ) onClick maps =
     let
         viewport =
@@ -236,7 +305,7 @@ toScreenCoords map mapSize =
 
 {-| Get the map for the current area
 -}
-currentLevel : Model -> Level
+currentLevel : Maps -> Level
 currentLevel model =
     case model.currentArea of
         Village ->
@@ -274,7 +343,7 @@ getASCIIMap area =
             []
 
 
-getTile : Vector -> Model -> Tile
+getTile : Vector -> Maps -> Tile
 getTile position model =
     let
         maybeTile =
@@ -340,4 +409,3 @@ buildingsOfArea area =
 
         _ ->
             []
-

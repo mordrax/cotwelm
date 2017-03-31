@@ -40,7 +40,7 @@ import Container exposing (Container)
 type alias Model =
     { name : String
     , hero : Hero
-    , maps : Maps.Model
+    , maps : Maps.Maps
     , currentScreen : Screen
     , shops : Shops
     , seed : Random.Seed
@@ -69,7 +69,6 @@ type Msg
 init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
 init seed hero difficulty =
     let
-
         heroWithDefaultEquipment =
             donDefaultGarb hero
 
@@ -261,7 +260,7 @@ pickup items model =
         maps_ =
             Maps.currentLevel model.maps
                 |> Level.updateGround hero_.position failedToPickup
-                |> flip Maps.updateCurrentLevel model.maps
+                |> flip Maps.setLevel model.maps
     in
         { model
             | hero = hero_
@@ -324,7 +323,7 @@ update msg model =
                                             Level.updateGround model.hero.position (Container.list container) (Maps.currentLevel model.maps)
 
                                         maps_ =
-                                            Maps.updateCurrentLevel level_ model.maps
+                                            Maps.setLevel level_ model.maps
                                     in
                                         ( { modelWithHeroAndInventory
                                             | maps = maps_
@@ -386,7 +385,7 @@ newMessage msg model =
 --------------
 
 
-getGroundAtHero : Hero -> Maps.Model -> Container Item
+getGroundAtHero : Hero -> Maps.Maps -> Container Item
 getGroundAtHero hero maps =
     hero.position
         |> flip Maps.getTile maps
@@ -400,7 +399,7 @@ getGroundAtHero hero maps =
 updateCurrentLevelFOV : Model -> Model
 updateCurrentLevelFOV model =
     Level.updateFOV model.hero.position (Maps.currentLevel model.maps)
-        |> (\level -> { model | maps = Maps.updateCurrentLevel level model.maps })
+        |> (\level -> { model | maps = Maps.setLevel level model.maps })
 
 
 type alias HeroPositionChanged =
@@ -507,11 +506,11 @@ resolveCombat hero monster seed =
             ( Just monsterAfterBeingHit, seed_, combatMsg )
 
 
-updateMonstersOnCurrentLevel : List Monster -> Maps.Model -> Maps.Model
+updateMonstersOnCurrentLevel : List Monster -> Maps.Maps -> Maps.Maps
 updateMonstersOnCurrentLevel monsters maps =
     Maps.currentLevel maps
         |> (\level -> { level | monsters = monsters })
-        |> (\level -> Maps.updateCurrentLevel level maps)
+        |> (\level -> Maps.setLevel level maps)
 
 
 addLoot : Monster -> Model -> Model
@@ -528,48 +527,8 @@ addLoot monster model =
     in
         { model
             | seed = model.seed
-            , maps = Maps.updateCurrentLevel currentLevel_ model.maps
+            , maps = Maps.setLevel currentLevel_ model.maps
         }
-
-
-moveMonsters : List Monster -> List Monster -> Model -> Model
-moveMonsters monsters movedMonsters ({ hero, maps, seed } as model) =
-    case monsters of
-        [] ->
-            { model | maps = updateMonstersOnCurrentLevel movedMonsters maps }
-
-        monster :: restOfMonsters ->
-            let
-                movedMonster =
-                    pathMonster monster hero model
-
-                obstructions =
-                    queryPosition movedMonster.position model
-
-                isObstructedByMovedMonsters =
-                    isMonsterObstruction movedMonster movedMonsters
-            in
-                case obstructions of
-                    -- hit hero
-                    ( _, _, _, True ) ->
-                        model
-                            |> attackHero monster
-                            |> moveMonsters restOfMonsters (monster :: movedMonsters)
-
-                    ( True, _, _, _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    ( _, Just _, _, _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    ( _, _, Just _, _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    _ ->
-                        if isObstructedByMovedMonsters then
-                            moveMonsters restOfMonsters (monster :: movedMonsters) model
-                        else
-                            moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
 
 
 attackHero : Monster -> Model -> Model
@@ -595,7 +554,7 @@ enterBuilding building ({ hero, maps } as model) =
     in
         case building.buildingType of
             Building.Linked link ->
-                { model | maps = Maps.updateArea link.area maps }
+                { model | maps = Maps.setCurrentArea link.area maps }
                     |> flip teleportHero link.position
 
             Building.Shop shopType ->
@@ -622,42 +581,6 @@ type alias TileObstruction =
 
 type alias HeroObstruction =
     Bool
-
-
-queryPosition :
-    Vector
-    -> Model
-    -> ( TileObstruction, Maybe Building, Maybe Monster, HeroObstruction )
-queryPosition pos ({ hero, maps } as model) =
-    let
-        monsters =
-            monstersOnLevel model
-
-        maybeTile =
-            maps
-                |> Maps.currentLevel
-                |> Level.tileAtPosition pos
-
-        level =
-            Maps.currentLevel maps
-
-        maybeBuilding =
-            buildingAtPosition pos level.buildings
-
-        maybeMonster =
-            monsters
-                |> List.filter (\x -> pos == x.position)
-                |> List.head
-
-        hasHero =
-            (Hero.position hero) == pos
-
-        tileObstruction =
-            maybeTile
-                |> Maybe.map .solid
-                |> Maybe.withDefault True
-    in
-        ( tileObstruction, maybeBuilding, maybeMonster, hasHero )
 
 
 {-| Given a point and a list of buildings, return the building that the point is within or nothing
