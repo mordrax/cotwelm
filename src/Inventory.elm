@@ -25,7 +25,7 @@ import Equipment exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Item.Data exposing (..)
-import Item.Item as Item exposing (..)
+import Item exposing (..)
 import Item.Pack as Pack exposing (Pack)
 import Item.Purse as Purse exposing (..)
 import Keymap

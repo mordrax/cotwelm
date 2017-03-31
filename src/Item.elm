@@ -1,4 +1,4 @@
-module Item.Item
+module Item
     exposing
         ( Item(..)
         , Items

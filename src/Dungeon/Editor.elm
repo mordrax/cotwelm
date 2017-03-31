@@ -119,7 +119,7 @@ view model =
             ( "border", "1px solid black" )
 
         screenMap =
-            Maps.toScreenCoords model.map model.config.dungeonSize
+            Level.toScreenCoords model.map model.config.dungeonSize
 
         clickTile position =
             Noop

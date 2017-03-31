@@ -1,4 +1,4 @@
-module Level
+module Game.Level
     exposing
         ( Level
         , Map
@@ -9,19 +9,22 @@ module Level
         , initNonDungeon
         , neighbours
         , queryPosition
+        , setMonsters
         , size
         , tileAtPosition
         , updateFOV
         , updateGround
         , upstairs
+        , toScreenCoords
         )
 
+import Game.Model exposing (Game)
 import Building exposing (Building)
 import Container exposing (Container)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 import Monster exposing (Monster)
 import Tile exposing (Tile)
 import Tile.Types
@@ -30,6 +33,8 @@ import Utils.BresenhamLine as BresenhamLine
 import Utils.Vector as Vector exposing (Vector)
 import Utils.FieldOfView
 import Set
+import Random.Pcg as Random exposing (Generator)
+import Utils.Misc as Misc
 
 
 type alias Map =
@@ -54,6 +59,11 @@ setTile ({ map } as level) tile =
     { level | map = Dict.insert tile.position tile map }
 
 
+setMonsters : List Monster -> Level -> Level
+setMonsters monsters level =
+    { level | monsters = monsters }
+
+
 initNonDungeon : List Tile -> List Building -> List Monster -> Level
 initNonDungeon tiles buildings monsters =
     { map = fromTiles tiles
@@ -62,6 +72,18 @@ initNonDungeon tiles buildings monsters =
     , rooms = []
     , corridors = []
     }
+
+
+addMonsters : Level -> Generator Level
+addMonsters level =
+    let
+        floors =
+            floors level
+    in
+        Misc.shuffle floors
+            |> Random.map (List.take 10)
+            |> Random.andThen Monster.makeRandomMonsters
+            |> Random.map (\monsters -> { level | monsters = monsters })
 
 
 fromTiles : List Tile -> Map
@@ -130,6 +152,18 @@ buildingAtPosition pos buildings =
                 Nothing
 
 
+toScreenCoords : Map -> Int -> Map
+toScreenCoords map mapSize =
+    let
+        invertY ( ( x, y ), tile ) =
+            ( ( x, mapSize - y ), Tile.setPosition ( x, mapSize - y ) tile )
+    in
+        map
+            |> Dict.toList
+            |> List.map invertY
+            |> Dict.fromList
+
+
 updateGround : Vector -> List Item -> Level -> Level
 updateGround pos payload model =
     let
@@ -182,6 +216,55 @@ queryPosition position ({ monsters, buildings, map } as level) =
                 |> .solid
     in
         ( tileObstruction, maybeBuilding, maybeMonster )
+
+
+view : ( Vector, Vector ) -> (Vector -> a) -> Level -> Html a
+view ( start, size ) onClick level =
+    let
+        viewport =
+            { start = start, size = size }
+
+        onVisibleTile building =
+            building.position
+                |> (\x -> tileAtPosition x level)
+                |> Maybe.map .visible
+                |> Maybe.withDefault Hidden
+                |> ((/=) Hidden)
+
+        buildingsHtml =
+            level.buildings
+                |> List.filter onVisibleTile
+                |> List.map Building.view
+    in
+        div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
+
+
+draw :
+    { viewport | start : Vector, size : Vector }
+    -> Map
+    -> Float
+    -> (Vector -> a)
+    -> List (Html a)
+draw viewport map scale onClick =
+    let
+        neighbours center =
+            neighbours map center
+
+        mapTiles =
+            Dict.toList map
+                |> List.map Tuple.second
+
+        toHtml tile =
+            Tile.view tile scale (neighbours <| tile.position) onClick
+
+        withinViewport tile =
+            tile.position
+                |> flip Vector.boxIntersectVector ( viewport.start, Vector.add viewport.start viewport.size )
+    in
+        mapTiles
+            |> List.filter withinViewport
+            |> List.map toHtml
+            |> List.concat
 
 
 

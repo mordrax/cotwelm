@@ -1,6 +1,6 @@
 module Arena.Types exposing (..)
 
-import Combat
+import Game.Combat as Combat
 
 
 init = ()

@@ -1,7 +1,6 @@
 module Game
     exposing
-        ( Model
-        , Msg
+        ( Msg
         , init
         , update
         , view
@@ -9,7 +8,7 @@ module Game
         )
 
 import AStar
-import Combat
+import Game.Combat as Combat
 import Dict
 import Equipment exposing (Equipment)
 import Keymap
@@ -19,7 +18,7 @@ import Types exposing (..)
 import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 import Item.Data exposing (..)
 import Level exposing (Level)
 import Monster exposing (Monster)
@@ -35,28 +34,11 @@ import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
 import Container exposing (Container)
-
-
-type alias Model =
-    { name : String
-    , hero : Hero
-    , maps : Maps.Maps
-    , currentScreen : Screen
-    , shops : Shops
-    , seed : Random.Seed
-    , windowSize : Window.Size
-    , messages : List String
-    , viewport : { x : Int, y : Int }
-    , difficulty : Difficulty
-    , inventory : Inventory
-    }
-
-
-type Screen
-    = MapScreen
-    | InventoryScreen
-    | BuildingScreen Building
-
+import Game.Model exposing (Game, Screen(..))
+import Game.Collision as Collision
+import Game.Render as Render
+import Game.FOV as FOV
+import Game.Level as Level
 
 type Msg
     = KeyboardMsg Keymap.Msg
@@ -66,7 +48,8 @@ type Msg
     | PathTo (List Vector)
 
 
-init : Random.Seed -> Hero -> Difficulty -> ( Model, Cmd Msg )
+
+init : Random.Seed -> Hero -> Difficulty -> ( Game, Cmd Msg )
 init seed hero difficulty =
     let
         heroWithDefaultEquipment =
@@ -82,10 +65,10 @@ init seed hero difficulty =
             Maps.init leatherArmour seed_
 
         cmd =
-            initialWindowSizeCmd
+            Task.perform (\x -> WindowSize x) Window.size
 
         ground =
-            getGroundAtHero heroWithDefaultEquipment maps
+            getGroundAtHero heroWithDefaultEquipment level
     in
         ( { name = "A new game"
           , hero = heroWithDefaultEquipment
@@ -98,19 +81,39 @@ init seed hero difficulty =
           , difficulty = difficulty
           , windowSize = { width = 640, height = 640 }
           , viewport = { x = 0, y = 0 }
+          , turn = Game.Model.initTurn
           }
         , cmd
         )
 
 
-monstersOnLevel : Model -> List Monster
+donDefaultGarb : Hero -> Hero
+donDefaultGarb hero =
+    let
+        defaultEquipment =
+            Equipment.setMany_
+                [ ( Equipment.WeaponSlot, Item.new <| Item.Data.ItemTypeWeapon Item.Data.Dagger )
+                , ( Equipment.ArmourSlot, Item.new <| Item.Data.ItemTypeArmour Item.Data.ScaleMail )
+                , ( Equipment.ShieldSlot, Item.new <| Item.Data.ItemTypeShield Item.Data.LargeIronShield )
+                , ( Equipment.HelmetSlot, Item.new <| Item.Data.ItemTypeHelmet Item.Data.LeatherHelmet )
+                , ( Equipment.GauntletsSlot, Item.new <| Item.Data.ItemTypeGauntlets Item.Data.NormalGauntlets )
+                , ( Equipment.BeltSlot, Item.new <| Item.Data.ItemTypeBelt Item.Data.ThreeSlotBelt )
+                , ( Equipment.PurseSlot, Item.new <| Item.Data.ItemTypePurse )
+                , ( Equipment.PackSlot, Item.new <| Item.Data.ItemTypePack Item.Data.MediumPack )
+                ]
+                Equipment.init
+    in
+        { hero | equipment = defaultEquipment }
+
+
+monstersOnLevel : Game -> List Monster
 monstersOnLevel model =
     model.maps
         |> Maps.currentLevel
         |> .monsters
 
 
-isOnStairs : (Level -> Maybe Building) -> Model -> Bool
+isOnStairs : (Level -> Maybe Building) -> Game -> Bool
 isOnStairs upOrDownStairs model =
     let
         atHeroPosition =
@@ -123,17 +126,17 @@ isOnStairs upOrDownStairs model =
             |> Maybe.withDefault False
 
 
-updateKeyboard : Keymap.Msg -> Model -> ( Model, Cmd Msg )
+updateKeyboard : Keymap.Msg -> Game -> ( Game, Cmd Msg )
 updateKeyboard keyboardMsg model =
     case keyboardMsg of
         Keymap.KeyDir dir ->
-            moveHero dir model
+            actionMovement dir model
                 |> \( model, _ ) -> ( model, Cmd.none )
 
         Keymap.Walk dir ->
             let
                 ( modelWithMovedHero, hasMoved ) =
-                    moveHero dir model
+                    actionMovement dir model
             in
                 case Debug.log "Walking: " hasMoved of
                     False ->
@@ -176,7 +179,7 @@ updateKeyboard keyboardMsg model =
                             Maps.currentLevel map_
                                 |> Level.downstairs
                                 |> Maybe.map .position
-                                |> Maybe.map (flip Hero.teleport model.hero)
+                                |> Maybe.map (flip Hero.setPosition model.hero)
                                 |> Maybe.withDefault model.hero
                     in
                         ( { model
@@ -184,8 +187,7 @@ updateKeyboard keyboardMsg model =
                             , hero = heroAtTopOfStairs
                             , messages = "You climb back up the stairs" :: model.messages
                           }
-                            |> updateViewportOffset
-                            |> updateCurrentLevelFOV
+                          |> Game.Model.setHeroMoved True
                         , Cmd.none
                         )
 
@@ -206,7 +208,7 @@ updateKeyboard keyboardMsg model =
                                 |> Level.upstairs
                                 |> Debug.log "upstairs"
                                 |> Maybe.map .position
-                                |> Maybe.map (flip Hero.teleport model.hero)
+                                |> Maybe.map (flip Hero.setPosition model.hero)
                                 |> Maybe.withDefault model.hero
                     in
                         ( { model
@@ -215,8 +217,7 @@ updateKeyboard keyboardMsg model =
                             , seed = seed_
                             , messages = "You go downstairs" :: model.messages
                           }
-                            |> updateViewportOffset
-                            |> updateCurrentLevelFOV
+                          |> Game.Model.setHeroMoved True
                         , Cmd.none
                         )
 
@@ -248,7 +249,7 @@ updateKeyboard keyboardMsg model =
                 ( model, Cmd.none )
 
 
-pickup : List Item -> Model -> Model
+pickup : List Item -> Game -> Game
 pickup items model =
     let
         ( hero_, msgs, failedToPickup ) =
@@ -292,7 +293,7 @@ pickupReducer item ( hero, messages, remainingItems ) =
                 ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, item :: remainingItems )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Game -> ( Game, Cmd Msg )
 update msg model =
     case msg of
         KeyboardMsg msg ->
@@ -358,7 +359,7 @@ update msg model =
                         |> Vector.toDirection
 
                 currentTile =
-                    Maps.getTile nextStep model.maps
+                    Level.getTile nextStep model.level
 
                 ( modelAfterMovement, cmdsAfterMovement ) =
                     update (KeyboardMsg (Keymap.KeyDir dir)) model
@@ -374,7 +375,7 @@ update msg model =
                         update (PathTo remainingSteps) modelAfterMovement
 
 
-newMessage : String -> Model -> Model
+newMessage : String -> Game -> Game
 newMessage msg model =
     { model | messages = msg :: model.messages }
 
@@ -385,10 +386,10 @@ newMessage msg model =
 --------------
 
 
-getGroundAtHero : Hero -> Maps.Maps -> Container Item
-getGroundAtHero hero maps =
+getGroundAtHero : Hero -> Level -> Container Item
+getGroundAtHero hero level =
     hero.position
-        |> flip Maps.getTile maps
+        |> flip Level.getTile level
         |> .ground
 
 
@@ -396,7 +397,7 @@ getGroundAtHero hero maps =
 -- Collision
 
 
-updateCurrentLevelFOV : Model -> Model
+updateCurrentLevelFOV : Game -> Game
 updateCurrentLevelFOV model =
     Level.updateFOV model.hero.position (Maps.currentLevel model.maps)
         |> (\level -> { model | maps = Maps.setLevel level model.maps })
@@ -406,51 +407,21 @@ type alias HeroPositionChanged =
     Bool
 
 
-moveHero : Direction -> Model -> ( Model, HeroPositionChanged )
-moveHero dir model =
+actionMovement : Direction -> Game -> ( Game, HeroPositionChanged )
+actionMovement dir game =
     let
         ( modelWithHeroMoved, heroPositionChanged ) =
-            moveHero_ dir model
+            moveHero_ dir game
     in
-        case heroPositionChanged of
-            False ->
-                ( updateViewportOffset modelWithHeroMoved
-                    |> (\m -> moveMonsters (monstersOnLevel m) [] m)
-                , False
-                )
-
-            _ ->
-                modelWithHeroMoved
-                    |> updateViewportOffset
-                    |> (\m -> moveMonsters (monstersOnLevel m) [] m)
-                    |> updateCurrentLevelFOV
-                    |> (\m -> ( m, True ))
+        game
+        |> Collision.move dir
+        |> Collision.moveMonsters (monstersOnLevel game) [] game
+        |> FOV.fov
+        |> Render.viewport
 
 
-moveHero_ : Direction -> Model -> ( Model, Bool )
-moveHero_ dir model =
-    let
-        heroMoved =
-            Hero.move dir model.hero
-    in
-        case Level.queryPosition heroMoved.position (Maps.currentLevel model.maps) of
-            ( _, _, Just monster ) ->
-                ( attackMonster monster model, False )
 
-            -- entering a building
-            ( _, Just building, _ ) ->
-                ( enterBuilding building model, False )
-
-            -- path blocked
-            ( True, _, _ ) ->
-                ( model, False )
-
-            -- path free, moved
-            ( False, _, _ ) ->
-                ( { model | hero = heroMoved }, True )
-
-
-moveMonsters : List Monster -> List Monster -> Model -> Model
+moveMonsters : List Monster -> List Monster -> Game -> Game
 moveMonsters monsters movedMonsters ({ hero, maps } as model) =
     case monsters of
         [] ->
@@ -494,87 +465,10 @@ moveMonsters monsters movedMonsters ({ hero, maps } as model) =
 
 
 
--------------------------
--- Attacking a monster --
--- 1. Resolve combat   --
--- 2. Determine death  --
--- 3. Calculate loot   --
--------------------------
 
 
-attackMonster : Monster -> Model -> Model
-attackMonster monster ({ hero, seed, messages, maps } as model) =
-    let
-        monsters =
-            monstersOnLevel model
 
-        ( maybeMonster, seed_, combatMsg ) =
-            resolveCombat hero monster seed
-
-        monsters_ =
-            case maybeMonster of
-                Nothing ->
-                    Monster.remove monster monsters
-
-                Just monster ->
-                    Monster.replace monster monsters
-
-        modelAfterCombat =
-            { model
-                | seed = seed_
-                , maps = updateMonstersOnCurrentLevel monsters_ model.maps
-                , messages = combatMsg :: messages
-            }
-
-        modelAfterCombatAndLoot =
-            case maybeMonster of
-                Just monster ->
-                    modelAfterCombat
-
-                Nothing ->
-                    addLoot monster modelAfterCombat
-    in
-        modelAfterCombatAndLoot
-
-
-resolveCombat : Hero -> Monster -> Seed -> ( Maybe Monster, Seed, String )
-resolveCombat hero monster seed =
-    let
-        ( ( combatMsg, monsterAfterBeingHit ), seed_ ) =
-            Random.step (Combat.attack hero monster) seed
-    in
-        if Stats.isDead monster.stats then
-            ( Nothing, seed_, combatMsg )
-        else
-            ( Just monsterAfterBeingHit, seed_, combatMsg )
-
-
-updateMonstersOnCurrentLevel : List Monster -> Maps.Maps -> Maps.Maps
-updateMonstersOnCurrentLevel monsters maps =
-    Maps.currentLevel maps
-        |> (\level -> { level | monsters = monsters })
-        |> (\level -> Maps.setLevel level maps)
-
-
-addLoot : Monster -> Model -> Model
-addLoot monster model =
-    let
-        currentLevel =
-            Maps.currentLevel model.maps
-
-        loot =
-            Item.new (ItemTypeCopper 1234)
-
-        currentLevel_ =
-            Level.drop ( monster.position, loot ) currentLevel
-    in
-        { model
-            | seed = model.seed
-            , maps = Maps.setLevel currentLevel_ model.maps
-        }
-
-
-attackHero : Monster -> Model -> Model
+attackHero : Monster -> Game -> Game
 attackHero monster ({ hero, seed, messages } as model) =
     let
         ( ( msg, heroAfterHit ), seed_ ) =
@@ -587,33 +481,6 @@ attackHero monster ({ hero, seed, messages } as model) =
         }
 
 
-enterBuilding : Building -> Model -> Model
-enterBuilding building ({ hero, maps } as model) =
-    let
-        teleportHero model newPosition =
-            { model | hero = Hero.teleport newPosition hero }
-                |> updateViewportOffset
-                |> updateCurrentLevelFOV
-    in
-        case building.buildingType of
-            Building.Linked link ->
-                { model | maps = Maps.setCurrentArea link.area maps }
-                    |> flip teleportHero link.position
-
-            Building.Shop shopType ->
-                { model
-                    | currentScreen = BuildingScreen building
-                    , inventory = Inventory.init (Inventory.Shop <| Shops.shop shopType model.shops) hero.equipment
-                }
-
-            Building.Ordinary ->
-                { model | currentScreen = BuildingScreen building }
-
-            Building.StairUp ->
-                teleportHero model building.position
-
-            Building.StairDown ->
-                teleportHero model building.position
 
 
 {-| Given a position and a map, work out everything on the square
@@ -632,7 +499,7 @@ type alias HeroObstruction =
 -----------------
 
 
-findPath : Vector -> Vector -> Bool -> Model -> List Vector
+findPath : Vector -> Vector -> Bool -> Game -> List Vector
 findPath from to ignoreObstructions model =
     let
         neighboursFunction =
@@ -645,7 +512,7 @@ findPath from to ignoreObstructions model =
             |> Maybe.withDefault []
 
 
-pathMonster : Monster -> Hero -> Model -> Monster
+pathMonster : Monster -> Hero -> Game -> Monster
 pathMonster monster hero model =
     findPath monster.position hero.position False model
         |> List.head
@@ -666,7 +533,7 @@ heuristic start end =
             |> sqrt
 
 
-neighbours_ : Model -> Vector -> (Vector -> Bool) -> Set Vector
+neighbours_ : Game -> Vector -> (Vector -> Bool) -> Set Vector
 neighbours_ model position isObstructedFilter =
     position
         |> Vector.neighbours
@@ -674,7 +541,7 @@ neighbours_ model position isObstructedFilter =
         |> Set.fromList
 
 
-neighboursIncludeBuildings : Model -> Vector -> Set Vector
+neighboursIncludeBuildings : Game -> Vector -> Set Vector
 neighboursIncludeBuildings model position =
     let
         isObstructedFilter pos =
@@ -688,7 +555,7 @@ neighboursIncludeBuildings model position =
         neighbours_ model position isObstructedFilter
 
 
-neighbours : Model -> Vector -> Set Vector
+neighbours : Game -> Vector -> Set Vector
 neighbours model position =
     let
         obstructionFilter vector =
@@ -697,7 +564,7 @@ neighbours model position =
         neighbours_ model position obstructionFilter
 
 
-isObstructed : Vector -> Model -> Bool
+isObstructed : Vector -> Game -> Bool
 isObstructed position model =
     case Level.queryPosition position (Maps.currentLevel model.maps) of
         ( False, Nothing, Nothing ) ->
@@ -712,78 +579,12 @@ isMonsterObstruction monster monsters =
     List.any (.position >> (==) monster.position) monsters
 
 
-
------------
--- Adhoc --
------------
-
-
-updateViewportOffset : Model -> Model
-updateViewportOffset ({ windowSize, viewport, maps, hero } as model) =
-    let
-        tileSize =
-            32
-
-        ( curX, curY ) =
-            Vector.scale tileSize (Hero.position hero)
-
-        ( xOff, yOff ) =
-            ( windowSize.width // 2, windowSize.height // 2 )
-
-        tolerance =
-            tileSize * 4
-
-        scroll =
-            { up = viewport.y + curY <= tolerance
-            , down = viewport.y + curY >= (windowSize.height * 4 // 5) - tolerance
-            , left = viewport.x + curX <= tolerance
-            , right = viewport.x + curX >= windowSize.width - tolerance
-            }
-
-        ( mapWidth, mapHeight ) =
-            (Level.size (Maps.currentLevel maps))
-
-        newX =
-            if scroll.left || scroll.right then
-                clamp (windowSize.width - mapWidth * tileSize) 0 (xOff - curX)
-            else
-                viewport.x
-
-        newY =
-            if scroll.up || scroll.down then
-                clamp (windowSize.height * 4 // 5 - mapHeight * tileSize) 0 (yOff - curY)
-            else
-                viewport.y
-    in
-        { model | viewport = { x = newX, y = newY } }
-
-
-donDefaultGarb : Hero -> Hero
-donDefaultGarb hero =
-    let
-        defaultEquipment =
-            Equipment.setMany_
-                [ ( Equipment.WeaponSlot, Item.new <| Item.Data.ItemTypeWeapon Dagger )
-                , ( Equipment.ArmourSlot, Item.new <| Item.Data.ItemTypeArmour ScaleMail )
-                , ( Equipment.ShieldSlot, Item.new <| Item.Data.ItemTypeShield LargeIronShield )
-                , ( Equipment.HelmetSlot, Item.new <| Item.Data.ItemTypeHelmet LeatherHelmet )
-                , ( Equipment.GauntletsSlot, Item.new <| Item.Data.ItemTypeGauntlets NormalGauntlets )
-                , ( Equipment.BeltSlot, Item.new <| Item.Data.ItemTypeBelt ThreeSlotBelt )
-                , ( Equipment.PurseSlot, Item.new <| Item.Data.ItemTypePurse )
-                , ( Equipment.PackSlot, Item.new <| Item.Data.ItemTypePack MediumPack )
-                ]
-                Equipment.init
-    in
-        { hero | equipment = defaultEquipment }
-
-
-
 ----------
 -- View --
 ----------
 
 
-view : Model -> Html Msg
+view : Game -> Html Msg
 view model =
     case model.currentScreen of
         MapScreen ->
@@ -801,7 +602,7 @@ view model =
             Html.map InventoryMsg (Inventory.view model.inventory)
 
 
-viewMonsters : Model -> Html Msg
+viewMonsters : Game -> Html Msg
 viewMonsters model =
     model
         |> monstersOnLevel
@@ -810,7 +611,7 @@ viewMonsters model =
         |> div []
 
 
-viewMap : Model -> Html Msg
+viewMap : Game -> Html Msg
 viewMap ({ windowSize, viewport } as model) =
     let
         title =
@@ -848,7 +649,7 @@ viewMap ({ windowSize, viewport } as model) =
             [ viewMenu
             , viewQuickMenu
             , adjustViewport
-                [ Maps.view ( viewStart, viewSize ) ClickTile model.maps
+                [ Level.view ( viewStart, viewSize ) ClickTile model.level
                 , Hero.view model.hero
                 , viewMonsters model
                 ]
@@ -856,7 +657,7 @@ viewMap ({ windowSize, viewport } as model) =
             ]
 
 
-viewStatus : Model -> Html Msg
+viewStatus : Game -> Html Msg
 viewStatus model =
     div []
         [ div [ class "ui padded grid" ]
@@ -868,7 +669,7 @@ viewStatus model =
         ]
 
 
-viewMessages : Model -> Html Msg
+viewMessages : Game -> Html Msg
 viewMessages model =
     let
         msg txt =
@@ -909,7 +710,7 @@ viewQuickMenu =
         )
 
 
-viewHUD : Model -> Html Msg
+viewHUD : Game -> Html Msg
 viewHUD model =
     div [] [ text "messages" ]
 
@@ -919,24 +720,13 @@ viewBuilding building =
     div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
 
 
-subscription : Model -> Sub Msg
+subscription : Game -> Sub Msg
 subscription model =
     Sub.batch
         [ Window.resizes (\x -> WindowSize x)
         , Sub.map InventoryMsg (Inventory.subscription model.inventory)
         , Sub.map KeyboardMsg (Keymap.subscription)
         ]
-
-
-
---------------
--- Commands --
---------------
-
-
-initialWindowSizeCmd : Cmd Msg
-initialWindowSizeCmd =
-    Task.perform (\x -> WindowSize x) Window.size
 
 
 
