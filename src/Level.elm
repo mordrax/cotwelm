@@ -8,6 +8,7 @@ module Level
         , fromTiles
         , initNonDungeon
         , neighbours
+        , queryPosition
         , size
         , tileAtPosition
         , updateFOV
@@ -115,6 +116,20 @@ roomAtPosition pos rooms =
             |> List.head
 
 
+buildingAtPosition : Vector -> List Building -> Maybe Building
+buildingAtPosition pos buildings =
+    let
+        buildingsAtTile =
+            List.filter (Building.isBuildingAtPosition pos) buildings
+    in
+        case buildingsAtTile of
+            b :: rest ->
+                Just b
+
+            _ ->
+                Nothing
+
+
 updateGround : Vector -> List Item -> Level -> Level
 updateGround pos payload model =
     let
@@ -146,6 +161,27 @@ floors { map } =
         |> List.map Tuple.second
         |> List.filter (.solid >> not)
         |> List.map .position
+
+
+{-| Work out if there is a (solid tile, building, monster) at the given position on the level.
+-}
+queryPosition : Vector -> Level -> ( Bool, Maybe Building, Maybe Monster )
+queryPosition position ({ monsters, buildings, map } as level) =
+    let
+        maybeBuilding =
+            buildingAtPosition position buildings
+
+        maybeMonster =
+            monsters
+                |> List.filter (.position >> (==) position)
+                |> List.head
+
+        tileObstruction =
+            position
+                |> getTile map
+                |> .solid
+    in
+        ( tileObstruction, maybeBuilding, maybeMonster )
 
 
 

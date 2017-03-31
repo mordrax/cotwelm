@@ -433,21 +433,64 @@ moveHero_ dir model =
         heroMoved =
             Hero.move dir model.hero
     in
-        case queryPosition heroMoved.position model of
-            ( _, _, Just monster, _ ) ->
+        case Level.queryPosition heroMoved.position (Maps.currentLevel model.maps) of
+            ( _, _, Just monster ) ->
                 ( attackMonster monster model, False )
 
             -- entering a building
-            ( _, Just building, _, _ ) ->
+            ( _, Just building, _ ) ->
                 ( enterBuilding building model, False )
 
             -- path blocked
-            ( True, _, _, _ ) ->
+            ( True, _, _ ) ->
                 ( model, False )
 
             -- path free, moved
-            ( False, _, _, _ ) ->
+            ( False, _, _ ) ->
                 ( { model | hero = heroMoved }, True )
+
+
+moveMonsters : List Monster -> List Monster -> Model -> Model
+moveMonsters monsters movedMonsters ({ hero, maps } as model) =
+    case monsters of
+        [] ->
+            { model | maps = updateMonstersOnCurrentLevel movedMonsters maps }
+
+        monster :: restOfMonsters ->
+            let
+                movedMonster =
+                    pathMonster monster hero model
+
+                obstructions =
+                    Level.queryPosition movedMonster.position (Maps.currentLevel model.maps)
+
+                isObstructedByMovedMonsters =
+                    isMonsterObstruction movedMonster movedMonsters
+
+                movedIntoHero =
+                    movedMonster.position == hero.position
+            in
+                case ( obstructions, movedIntoHero ) of
+                    -- hit hero
+                    ( _, True ) ->
+                        model
+                            |> attackHero monster
+                            |> moveMonsters restOfMonsters (monster :: movedMonsters)
+
+                    ( ( True, _, _ ), _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( ( _, Just _, _ ), _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    ( ( _, _, Just _ ), _ ) ->
+                        moveMonsters restOfMonsters (monster :: movedMonsters) model
+
+                    _ ->
+                        if isObstructedByMovedMonsters then
+                            moveMonsters restOfMonsters (monster :: movedMonsters) model
+                        else
+                            moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
 
 
 
@@ -583,22 +626,6 @@ type alias HeroObstruction =
     Bool
 
 
-{-| Given a point and a list of buildings, return the building that the point is within or nothing
--}
-buildingAtPosition : Vector -> List Building -> Maybe Building
-buildingAtPosition pos buildings =
-    let
-        buildingsAtTile =
-            List.filter (Building.isBuildingAtPosition pos) buildings
-    in
-        case buildingsAtTile of
-            b :: rest ->
-                Just b
-
-            _ ->
-                Nothing
-
-
 
 -----------------
 -- Pathfinding --
@@ -651,8 +678,8 @@ neighboursIncludeBuildings : Model -> Vector -> Set Vector
 neighboursIncludeBuildings model position =
     let
         isObstructedFilter pos =
-            case queryPosition pos model of
-                ( False, _, Nothing, False ) ->
+            case ( Level.queryPosition pos (Maps.currentLevel model.maps), position == model.hero.position ) of
+                ( ( False, _, Nothing ), True ) ->
                     True
 
                 _ ->
@@ -672,11 +699,8 @@ neighbours model position =
 
 isObstructed : Vector -> Model -> Bool
 isObstructed position model =
-    case queryPosition position model of
-        ( _, _, _, True ) ->
-            False
-
-        ( False, Nothing, Nothing, _ ) ->
+    case Level.queryPosition position (Maps.currentLevel model.maps) of
+        ( False, Nothing, Nothing ) ->
             False
 
         _ ->
@@ -685,13 +709,7 @@ isObstructed position model =
 
 isMonsterObstruction : Monster -> List Monster -> Bool
 isMonsterObstruction monster monsters =
-    let
-        atMonsterPosition pos =
-            pos == monster.position
-    in
-        monsters
-            |> List.map .position
-            |> List.any atMonsterPosition
+    List.any (.position >> (==) monster.position) monsters
 
 
 

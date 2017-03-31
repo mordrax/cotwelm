@@ -147,80 +147,8 @@ downstairs model =
                             }
                         )
 
-queryPosition :
-    Vector
-    -> Model
-    -> ( TileObstruction, Maybe Building, Maybe Monster, HeroObstruction )
-queryPosition pos ({ hero, maps } as model) =
-    let
-        monsters =
-            monstersOnLevel model
-
-        maybeTile =
-            maps
-                |> Maps.currentLevel
-                |> Level.tileAtPosition pos
-
-        level =
-            Maps.currentLevel maps
-
-        maybeBuilding =
-            buildingAtPosition pos level.buildings
-
-        maybeMonster =
-            monsters
-                |> List.filter (\x -> pos == x.position)
-                |> List.head
-
-        hasHero =
-            (Hero.position hero) == pos
-
-        tileObstruction =
-            maybeTile
-                |> Maybe.map .solid
-                |> Maybe.withDefault True
-    in
-        ( tileObstruction, maybeBuilding, maybeMonster, hasHero )
 
 
-moveMonsters : List Monster -> List Monster -> Model -> Model
-moveMonsters monsters movedMonsters ({ hero, maps } as model) =
-    case monsters of
-        [] ->
-            { model | maps = updateMonstersOnCurrentLevel movedMonsters maps }
-
-        monster :: restOfMonsters ->
-            let
-                movedMonster =
-                    pathMonster monster hero model
-
-                obstructions =
-                    queryPosition movedMonster.position model
-
-                isObstructedByMovedMonsters =
-                    isMonsterObstruction movedMonster movedMonsters
-            in
-                case obstructions of
-                    -- hit hero
-                    ( _, _, _, True ) ->
-                        model
-                            |> attackHero monster
-                            |> moveMonsters restOfMonsters (monster :: movedMonsters)
-
-                    ( True, _, _, _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    ( _, Just _, _, _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    ( _, _, Just _, _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    _ ->
-                        if isObstructedByMovedMonsters then
-                            moveMonsters restOfMonsters (monster :: movedMonsters) model
-                        else
-                            moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
 
 
 addMonstersToLevel : Level -> Generator Level
