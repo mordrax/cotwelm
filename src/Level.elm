@@ -2,17 +2,17 @@ module Level
     exposing
         ( Level
         , Map
-        , initNonDungeon
-        , fromTiles
         , downstairs
-        , upstairs
-        , size
-        , updateGround
-        , tileAtPosition
-        , floors
         , drop
-        , updateFOV
+        , floors
+        , fromTiles
+        , initNonDungeon
         , neighbours
+        , size
+        , tileAtPosition
+        , updateFOV
+        , updateGround
+        , upstairs
         )
 
 import Building exposing (Building)
@@ -48,9 +48,9 @@ type Msg
     = NoOp
 
 
-setMap : Level -> Map -> Level
-setMap level map =
-    { level | map = map }
+setTile : Level -> Tile -> Level
+setTile ({ map } as level) tile =
+    { level | map = Dict.insert tile.position tile map }
 
 
 initNonDungeon : List Tile -> List Building -> List Monster -> Level
@@ -130,13 +130,13 @@ updateGround pos payload model =
                 { model | map = Dict.insert pos tile model.map }
 
 
+{-| Drop an item on the level.
+-}
 drop : ( Vector, Item ) -> Level -> Level
-drop ( position, item ) level =
-    Dict.get position level.map
-        |> Maybe.map (Tile.drop item)
-        |> Maybe.map (\x -> Dict.insert position x level.map)
-        |> Maybe.withDefault level.map
-        |> setMap level
+drop ( position, item ) ({ map } as level) =
+    getTile map position
+        |> Tile.drop item
+        |> setTile level
 
 
 floors : Level -> List Vector
@@ -188,8 +188,7 @@ isSeeThrough { map, rooms } target =
             roomAndDark rooms >> not
     in
         getTile map target
-            |> Maybe.map (\tile -> (notSolid tile && notClosedDoor tile && notDarkRoom target))
-            |> Maybe.withDefault False
+            |> (\tile -> (notSolid tile && notClosedDoor tile && notDarkRoom target))
 
 
 updateFOV : Vector -> Level -> Level
@@ -204,9 +203,8 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
         addToMapAsVisibleTile tilePosition map =
             tilePosition
                 |> getTile map
-                |> Maybe.map (Tile.setVisibility Known)
-                |> Maybe.map (\x -> Dict.insert x.position x map)
-                |> Maybe.withDefault map
+                |> Tile.setVisibility Known
+                |> (\x -> Dict.insert x.position x map)
 
         newMonsters =
             monsters
@@ -217,9 +215,14 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
 
 {-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
 -}
-getTile : Map -> Vector -> Maybe Tile
-getTile map =
-    flip Dict.get map
+getTile : Map -> Vector -> Tile
+getTile map position =
+    case Dict.get position map of
+        Just tile ->
+            tile
+
+        Nothing ->
+            Debug.crash <| "Level.getTile: " ++ (toString position)
 
 
 neighbours : Map -> Vector -> Tile.TileNeighbours
@@ -229,7 +232,7 @@ neighbours map center =
             Vector.add center
 
         getNeighbour =
-            addTilePosition >> (getTile map)
+            addTilePosition >> (flip Dict.get map)
     in
         ( getNeighbour ( 0, -1 )
         , getNeighbour ( 1, 0 )
@@ -240,11 +243,10 @@ neighbours map center =
 
 allNeighbours : Map -> Vector -> List Tile
 allNeighbours map center =
-    List.foldl ((getTile map) >> addTileAtPositionIfNotEmpty) [] (Vector.neighbours center)
-
-
-addTileAtPositionIfNotEmpty : Maybe Tile -> List Tile -> List Tile
-addTileAtPositionIfNotEmpty tile tiles =
-    tile
-        |> Maybe.map (flip (::) tiles)
-        |> Maybe.withDefault tiles
+    let
+        reducer a b =
+            Dict.get a map
+                |> Maybe.map (flip (::) b)
+                |> Maybe.withDefault b
+    in
+        List.foldl reducer [] (Vector.neighbours center)

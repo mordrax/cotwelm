@@ -45,6 +45,8 @@ view =
 -----------------------------------------------------------------------------------
 
 
+{-| Drop something onto the ground (which is a container on the tile.
+-}
 drop : Item -> Tile -> Tile
 drop item model =
     let
