@@ -140,6 +140,7 @@ actionMove : Direction -> Game -> Game
 actionMove dir game =
     game
         |> Collision.move dir
+        |> updateFOV
         --        |> Collisionon.moveMonsters (monstersOnLevel game) [] game
         --        |> FOV.fov
         |>
@@ -152,7 +153,7 @@ actionKeepOnWalking walkDirection game =
         moved =
             Game.Model.hasHeroMoved game
     in
-        case moved of
+        case Debug.log "has hero moved: " moved of
             False ->
                 ( game, Cmd.none )
 
