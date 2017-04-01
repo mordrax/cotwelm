@@ -1,12 +1,10 @@
-module Maps
+module Game.Maps
     exposing
         ( Maps
         , init
-        , view
-        , draw
         , downstairs
+        , saveLoadArea
         , upstairs
-        , getTile
         )
 
 {-| Holds maps for all areas and handles interaction and rendering of them.
@@ -29,7 +27,7 @@ import Dungeon.Rooms.Config as Config
 import Html exposing (..)
 import Html.Lazy as Lazy
 import Item exposing (Item)
-import Game.Level exposing (Level)
+import Game.Level as Level exposing (Level)
 import Monster
 import Random.Pcg as Random exposing (Generator)
 import Shops
@@ -111,7 +109,7 @@ upstairs model =
             setCurrentArea Farm model
 
 
-downstairs : Maps -> Generator Maps
+downstairs : Maps -> Generator (Level, Maps)
 downstairs model =
     let
         nextLevel =
@@ -133,19 +131,18 @@ downstairs model =
 
             Nothing ->
                 DungeonGenerator.generate Config.init
-                    |> Random.andThen addMonstersToLevel
-                    |> Random.map (\level -> Array.push level model.abandonedMines)
+                    |> Random.andThen Level.generateMonsters
                     |> Random.map
-                        (\abandonedMines ->
-                            { model
-                                | abandonedMines = abandonedMines
+                        (\level ->
+                            (level, { model
+                                | abandonedMines = Array.push level model.abandonedMines
                                 , currentArea = DungeonLevel nextLevel
-                            }
+                            })
                         )
 
 
-swapOutLevel : Level -> Area -> Maps -> ( Level, Maps )
-swapOutLevel currentLevel newArea maps =
+saveLoadArea : Level -> Area -> Maps -> ( Level, Maps )
+saveLoadArea currentLevel newArea maps =
     setLevel currentLevel maps
         |> setCurrentArea newArea
         |> getLevel

@@ -3,12 +3,13 @@ module Game.Model exposing (..)
 import Building exposing (Building)
 import Hero exposing (Hero)
 import Inventory exposing (Inventory)
-import Maps exposing (Maps)
+import Game.Maps as Maps exposing (Maps)
 import Random.Pcg as Random
 import Shops exposing (Shops)
 import Types exposing (..)
 import Window
 import Game.Level as Level exposing (Level)
+
 
 type Screen
     = MapScreen
@@ -31,6 +32,7 @@ type alias Game =
     , difficulty : Difficulty
     , inventory : Inventory
     , turn : Turn
+    , previousState : Maybe Game
     }
 
 
@@ -51,6 +53,17 @@ initTurn =
     }
 
 
-setHeroMoved : Bool -> Game -> Game
-setHeroMoved moved ({ turn } as game) =
-    { game | turn = { turn | heroMoved = moved } }
+hasHeroMoved : Game -> Bool
+hasHeroMoved ({ previousState } as game) =
+    let
+        heroPosition game =
+            game.hero.position
+    in
+        previousState
+            |> Maybe.map (heroPosition >> (==) heroPosition game)
+            |> Maybe.withDefault False
+
+
+--setHeroMoved : Bool -> Game -> Game
+--setHeroMoved moved ({ turn } as game) =
+--    { game | turn = { turn | heroMoved = moved } }

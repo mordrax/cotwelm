@@ -8,8 +8,8 @@ import Dungeon.Types
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
-import Level
-import Maps
+import Game.Level as Level
+import Game.Maps as Maps
 import Random.Pcg as Random exposing (Generator, constant)
 
 

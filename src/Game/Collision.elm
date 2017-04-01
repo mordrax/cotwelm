@@ -8,7 +8,7 @@ import Hero exposing (Hero)
 import Inventory exposing (Inventory)
 import Item
 import Item.Data
-import Maps
+import Game.Maps as Maps
 import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Seed)
 import Shops exposing (Shops)
@@ -23,6 +23,13 @@ type alias Moved =
 
 
 {-| Move the hero.
+
+If moving into a monster, attack it.
+If moving into a building (shop), change screen.
+If moving into a building (gate, dungeon entrance) trigger a change of area.
+If moving into a tile marked solid, stop the move.
+Otherwise, free to move into square.
+
 -}
 move : Direction -> Game -> Game
 move dir ({level} as game )=
@@ -45,7 +52,7 @@ move dir ({level} as game )=
             -- path free, moved
             ( False, _, _ ) ->
                 { game | hero = heroMoved }
-                    |> Game.Model.setHeroMoved True
+--                    |> Game.Model.setHeroMoved True
 
 
 
@@ -115,7 +122,7 @@ enterBuilding building ({ hero, level } as model) =
     let
         teleportHero position model =
             { model | hero = Hero.setPosition position hero }
-                |> Game.Model.setHeroMoved True
+--                |> Game.Model.setHeroMoved True
     in
         case building.buildingType of
             Building.Linked link ->

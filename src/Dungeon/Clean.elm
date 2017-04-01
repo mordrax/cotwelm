@@ -6,7 +6,7 @@ import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Room as Room exposing (Room)
 import Dungeon.Rooms.Config as Config
 import Dungeon.Types as Types
-import Level
+import Game.Level as Level
 import List.Extra
 import Maybe.Extra exposing (..)
 import Tile exposing (Tile)
