@@ -3,6 +3,7 @@ module Game.Maps
         ( Maps
         , init
         , downstairs
+        , getCurrentLevel
         , saveLoadArea
         , upstairs
         )
@@ -96,48 +97,65 @@ setLevel level model =
             { model | abandonedMines = Array.set n level model.abandonedMines }
 
 
-upstairs : Maps -> Maps
-upstairs model =
-    case model.currentArea of
-        DungeonLevel 0 ->
-            setCurrentArea DungeonLevelOne model
-
-        DungeonLevel n ->
-            setCurrentArea (DungeonLevel (n - 1)) model
-
-        _ ->
-            setCurrentArea Farm model
-
-
-downstairs : Maps -> Generator (Level, Maps)
-downstairs model =
+{-| Take the current level, save it back to maps, get the upstairs level and return the
+updated map with the new level.
+-}
+upstairs : Level -> Maps -> ( Level, Maps )
+upstairs currentLevel maps =
     let
-        nextLevel =
-            case model.currentArea of
-                DungeonLevelOne ->
-                    0
+        newArea =
+            case maps.currentArea of
+                DungeonLevel 0 ->
+                    DungeonLevelOne
 
-                DungeonLevel level ->
-                    level + 1
+                DungeonLevel n ->
+                    (DungeonLevel (n - 1))
+
+                _ ->
+                    Farm
+    in
+        maps
+            |> setLevel currentLevel
+            |> setCurrentArea newArea
+            |> (\maps -> ( getCurrentLevel maps, maps ))
+
+
+{-| Take the current level and the maps, generate a new level.
+    Save the current level and the new level back to maps, return the new level and updated maps.
+-}
+downstairs : Level -> Maps -> Generator ( Level, Maps )
+downstairs currentLevel maps =
+    let
+        nextDungeonLevel =
+            case maps.currentArea of
+                DungeonLevel currentDungeonLevel ->
+                    currentDungeonLevel + 1
 
                 _ ->
                     0
+
+        mapsSavedAndUpdated =
+            maps
+                |> setLevel currentLevel
+                |> setCurrentArea (DungeonLevel nextDungeonLevel)
+
+        mapsWithSavedCurrentLevel =
+            setLevel currentLevel maps
     in
-        case Array.get nextLevel model.abandonedMines of
+        case Array.get nextDungeonLevel maps.abandonedMines of
             Just level ->
-                DungeonLevel nextLevel
-                    |> (\x -> setCurrentArea x model)
-                    |> Random.constant
+                Random.constant ( level, mapsSavedAndUpdated )
 
             Nothing ->
                 DungeonGenerator.generate Config.init
                     |> Random.andThen Level.generateMonsters
                     |> Random.map
-                        (\level ->
-                            (level, { model
-                                | abandonedMines = Array.push level model.abandonedMines
-                                , currentArea = DungeonLevel nextLevel
-                            })
+                        (\newLevel ->
+                            ( newLevel
+                            , { mapsSavedAndUpdated
+                                | abandonedMines = Array.push newLevel mapsWithSavedCurrentLevel.abandonedMines
+                              }
+                            )
                         )
 
 
@@ -145,14 +163,14 @@ saveLoadArea : Level -> Area -> Maps -> ( Level, Maps )
 saveLoadArea currentLevel newArea maps =
     setLevel currentLevel maps
         |> setCurrentArea newArea
-        |> getLevel
+        |> getCurrentLevel
         |> (\level -> ( level, maps ))
 
 
 {-| Get the map for the current area
 -}
-getLevel : Maps -> Level
-getLevel model =
+getCurrentLevel : Maps -> Level
+getCurrentLevel model =
     case model.currentArea of
         Village ->
             model.village

@@ -1,4 +1,8 @@
-module Game.Collision exposing (move, moveMonsters)
+module Game.Collision
+    exposing
+        ( move
+          --        , moveMonsters
+        )
 
 import Building exposing (Building)
 import Game.Combat as Combat
@@ -32,7 +36,7 @@ Otherwise, free to move into square.
 
 -}
 move : Direction -> Game -> Game
-move dir ({level} as game )=
+move dir ({ level } as game) =
     let
         heroMoved =
             Hero.move dir game.hero
@@ -52,10 +56,10 @@ move dir ({level} as game )=
             -- path free, moved
             ( False, _, _ ) ->
                 { game | hero = heroMoved }
+
+
+
 --                    |> Game.Model.setHeroMoved True
-
-
-
 ---------------------------
 -- Movement into monster --
 ---------------------------
@@ -75,7 +79,7 @@ attack monster ({ hero, seed, messages, level } as model) =
         modelAfterCombat =
             { model
                 | seed = seed_
-                , level = Level.setMonsters monsters_
+                , level = Level.setMonsters monsters_ level
                 , messages = combatMsg :: messages
             }
     in
@@ -118,16 +122,23 @@ addLoot monster ({ level } as game) =
 
 
 enterBuilding : Building -> Game -> Game
-enterBuilding building ({ hero, level } as model) =
+enterBuilding building ({ hero, level, maps } as model) =
     let
         teleportHero position model =
             { model | hero = Hero.setPosition position hero }
---                |> Game.Model.setHeroMoved True
+
+        --                |> Game.Model.setHeroMoved True
     in
         case building.buildingType of
             Building.Linked link ->
-                { model | level = Maps.swapOutLevel level link.area }
-                    |> teleportHero link.position
+                Maps.saveLoadArea level link.area maps
+                    |> (\( newLevel, maps ) ->
+                            { model
+                                | level = newLevel
+                                , maps = maps
+                                , hero = Hero.setPosition link.position hero
+                            }
+                       )
 
             Building.Shop shopType ->
                 { model
