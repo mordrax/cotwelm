@@ -118,14 +118,14 @@ at the beginning of each turn.
 heroMoved - Whether the hero's position has changed.
 -}
 type alias Turn =
-    {
-    }
+    {}
 
 
 initTurn : Turn
 initTurn =
-    {
-    }
+    {}
+
+
 
 --
 --setWalking : Maybe Direction -> Game -> Game
@@ -139,14 +139,14 @@ hasHeroMoved : Game -> Bool
 hasHeroMoved ({ previousState, hero } as game) =
     let
         heroPosition game =
-            hero.position
+            game.hero.position
     in
         case previousState of
             Empty ->
                 False
 
             State previousGame ->
-                heroPosition previousGame == heroPosition game
+                heroPosition previousGame /= heroPosition game
 
 
 
