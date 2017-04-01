@@ -1,10 +1,15 @@
 module Game.Render exposing (viewport)
 
+import Game.Model exposing (Game)
+import Utils.Vector as Vector exposing (Vector)
+import Game.Level as Level
+import Game.Maps as Maps
+
+
 {-| Handles all logic and rendering of the game to screen.
 -}
-
-updateViewportOffset : Game -> Game
-updateViewportOffset ({ windowSize, viewport, maps, hero } as model) =
+viewport : Game -> Game
+viewport ({ windowSize, viewport, maps, hero, level } as model) =
     let
         tileSize =
             32
@@ -26,7 +31,7 @@ updateViewportOffset ({ windowSize, viewport, maps, hero } as model) =
             }
 
         ( mapWidth, mapHeight ) =
-            (Level.size (Maps.currentLevel maps))
+            (Level.size level)
 
         newX =
             if scroll.left || scroll.right then
@@ -41,5 +46,3 @@ updateViewportOffset ({ windowSize, viewport, maps, hero } as model) =
                 viewport.y
     in
         { model | viewport = { x = newX, y = newY } }
-
-

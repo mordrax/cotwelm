@@ -6,19 +6,19 @@ module Game.Level
         , drop
         , floors
         , fromTiles
+        , generateMonsters
         , initNonDungeon
         , neighbours
         , queryPosition
         , setMonsters
         , size
         , tileAtPosition
+        , toScreenCoords
         , updateFOV
         , updateGround
         , upstairs
-        , toScreenCoords
         )
 
-import Game.Model exposing (Game)
 import Building exposing (Building)
 import Container exposing (Container)
 import Dict exposing (Dict)
@@ -35,6 +35,7 @@ import Utils.FieldOfView
 import Set
 import Random.Pcg as Random exposing (Generator)
 import Utils.Misc as Misc
+import Html exposing (..)
 
 
 type alias Map =
@@ -74,8 +75,8 @@ initNonDungeon tiles buildings monsters =
     }
 
 
-addMonsters : Level -> Generator Level
-addMonsters level =
+generateMonsters : Level -> Generator Level
+generateMonsters level =
     let
         floors =
             floors level
