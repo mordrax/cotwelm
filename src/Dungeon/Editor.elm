@@ -135,7 +135,7 @@ view model =
                 , mapSizeView model
                 ]
             , div [ HA.style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-                (Maps.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
+                (Level.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
             ]
 
 

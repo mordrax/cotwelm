@@ -4,6 +4,7 @@ module Tile
         , TileNeighbours
         , setVisibility
         , drop
+        , pickup
         , updateGround
         , setPosition
         , mapToTiles
@@ -54,6 +55,11 @@ drop item model =
             Container.add item model.ground
     in
         { model | ground = groundWithItem }
+
+
+pickup : Tile -> ( List Item, Tile )
+pickup ({ ground } as tile) =
+    ( Container.list ground, { tile | ground = Container.set [] ground } )
 
 
 updateGround : List Item -> Tile -> Tile

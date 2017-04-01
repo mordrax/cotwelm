@@ -3,10 +3,14 @@ module Game.Level
         ( Level
         , Map
         , downstairs
+        , draw
         , drop
-        , floors
+        , drops
+        , pickup
         , fromTiles
         , generateMonsters
+        , getTile
+        , ground
         , initNonDungeon
         , neighbours
         , queryPosition
@@ -17,6 +21,7 @@ module Game.Level
         , updateFOV
         , updateGround
         , upstairs
+        , view
         )
 
 import Building exposing (Building)
@@ -36,6 +41,7 @@ import Set
 import Random.Pcg as Random exposing (Generator)
 import Utils.Misc as Misc
 import Html exposing (..)
+import List.Extra as ListX
 
 
 type alias Map =
@@ -77,14 +83,10 @@ initNonDungeon tiles buildings monsters =
 
 generateMonsters : Level -> Generator Level
 generateMonsters level =
-    let
-        floors =
-            floors level
-    in
-        Misc.shuffle floors
-            |> Random.map (List.take 10)
-            |> Random.andThen Monster.makeRandomMonsters
-            |> Random.map (\monsters -> { level | monsters = monsters })
+    Misc.shuffle (floors level)
+        |> Random.map (List.take 10)
+        |> Random.andThen Monster.makeRandomMonsters
+        |> Random.map (\monsters -> { level | monsters = monsters })
 
 
 fromTiles : List Tile -> Map
@@ -180,6 +182,26 @@ updateGround pos payload model =
                 { model | map = Dict.insert pos tile model.map }
 
 
+pickup : Vector -> Level -> ( Level, List Item )
+pickup position level =
+    let
+        ( items, clearedTile ) =
+            getTile level.map position
+                |> Tile.pickup
+
+        levelWithClearedTile =
+            setTile level clearedTile
+    in
+        ( levelWithClearedTile, items )
+
+
+ground : Vector -> Level -> List Item
+ground position { map } =
+    Dict.get position map
+        |> Maybe.map (.ground >> Container.list)
+        |> Maybe.withDefault []
+
+
 {-| Drop an item on the level.
 -}
 drop : ( Vector, Item ) -> Level -> Level
@@ -187,6 +209,11 @@ drop ( position, item ) ({ map } as level) =
     getTile map position
         |> Tile.drop item
         |> setTile level
+
+
+drops : ( Vector, List Item ) -> Level -> Level
+drops ( position, items ) level =
+    List.foldl drop level (ListX.lift2 (,) [ position ] items)
 
 
 floors : Level -> List Vector
@@ -248,15 +275,12 @@ draw :
     -> List (Html a)
 draw viewport map scale onClick =
     let
-        neighbours center =
-            neighbours map center
-
         mapTiles =
             Dict.toList map
                 |> List.map Tuple.second
 
         toHtml tile =
-            Tile.view tile scale (neighbours <| tile.position) onClick
+            Tile.view tile scale (neighbours map tile.position) onClick
 
         withinViewport tile =
             tile.position

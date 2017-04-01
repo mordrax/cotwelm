@@ -15,7 +15,7 @@ viewport ({ windowSize, viewport, maps, hero, level } as model) =
             32
 
         ( curX, curY ) =
-            Vector.scale tileSize (Hero.position hero)
+            Vector.scale tileSize hero.position
 
         ( xOff, yOff ) =
             ( windowSize.width // 2, windowSize.height // 2 )
