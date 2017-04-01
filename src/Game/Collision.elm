@@ -132,10 +132,10 @@ enterBuilding building ({ hero, level, maps } as model) =
         case building.buildingType of
             Building.Linked link ->
                 Maps.saveLoadArea level link.area maps
-                    |> (\( newLevel, maps ) ->
+                    |> (\( newLevel, newMaps ) ->
                             { model
                                 | level = newLevel
-                                , maps = maps
+                                , maps = newMaps
                                 , hero = Hero.setPosition link.position hero
                             }
                        )

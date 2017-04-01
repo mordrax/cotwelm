@@ -117,7 +117,7 @@ upstairs currentLevel maps =
         maps
             |> setLevel currentLevel
             |> setCurrentArea newArea
-            |> (\maps -> ( getCurrentLevel maps, maps ))
+            |> (\newMaps -> ( getCurrentLevel newMaps, newMaps ))
 
 
 {-| Take the current level and the maps, generate a new level.
@@ -163,8 +163,7 @@ saveLoadArea : Level -> Area -> Maps -> ( Level, Maps )
 saveLoadArea currentLevel newArea maps =
     setLevel currentLevel maps
         |> setCurrentArea newArea
-        |> getCurrentLevel
-        |> (\level -> ( level, maps ))
+        |> (\newMaps -> ( getCurrentLevel newMaps, newMaps ))
 
 
 {-| Get the map for the current area

@@ -115,15 +115,14 @@ monstersOnLevel model =
 
 
 isOnStairs : (Level -> Maybe Building) -> Game -> Bool
-isOnStairs upOrDownStairs model =
+isOnStairs upOrDownStairs ({ hero, level } as game) =
     let
         atHeroPosition =
-            (==) model.hero.position
+            (==) hero.position
     in
-        Maps.getCurrentLevel model.maps
+        level
             |> upOrDownStairs
-            |> Maybe.map .position
-            |> Maybe.map atHeroPosition
+            |> Maybe.map (.position >> (==) hero.position)
             |> Maybe.withDefault False
 
 
@@ -141,24 +140,19 @@ actionMove dir game =
     game
         |> Collision.move dir
         |> updateFOV
-        --        |> Collisionon.moveMonsters (monstersOnLevel game) [] game
-        --        |> FOV.fov
+        --        |> Collision.moveMonsters (monstersOnLevel game) [] game
         |>
             Render.viewport
 
 
 actionKeepOnWalking : Direction -> Game -> ( Game, Cmd Msg )
 actionKeepOnWalking walkDirection game =
-    let
-        moved =
-            Game.Model.hasHeroMoved game
-    in
-        case Debug.log "has hero moved: " moved of
-            False ->
-                ( game, Cmd.none )
+    case Game.Model.hasHeroMoved game of
+        False ->
+            ( game, Cmd.none )
 
-            True ->
-                update (KeyboardMsg (Keymap.Walk walkDirection)) game
+        True ->
+            update (KeyboardMsg (Keymap.Walk walkDirection)) game
 
 
 updateFOV : Game -> Game
@@ -218,12 +212,12 @@ updateKeyboard keyboardMsg ({ hero, level, maps } as game) =
                             heroAtTopOfStairs =
                                 newLevel
                                     |> Level.downstairs
-                                    |> Maybe.map .position
-                                    |> Maybe.map (flip Hero.setPosition hero)
+                                    |> Maybe.map (.position >> (flip Hero.setPosition hero))
                                     |> Maybe.withDefault hero
                         in
                             ( { game
                                 | maps = newMaps
+                                , level = newLevel
                                 , hero = heroAtTopOfStairs
                                 , messages = "You climb back up the stairs" :: game.messages
                               }
@@ -246,10 +240,8 @@ updateKeyboard keyboardMsg ({ hero, level, maps } as game) =
                             heroAtBottomOfStairs =
                                 newLevel
                                     |> Level.upstairs
-                                    |> Debug.log "upstairs"
-                                    |> Maybe.map .position
-                                    |> Maybe.map (flip Hero.setPosition game.hero)
-                                    |> Maybe.withDefault game.hero
+                                    |> Maybe.map (.position >> (flip Hero.setPosition game.hero))
+                                    |> Maybe.withDefault hero
                         in
                             ( { game
                                 | maps = newMaps
