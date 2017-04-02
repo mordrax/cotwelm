@@ -155,6 +155,41 @@ actionKeepOnWalking walkDirection game =
             update (KeyboardMsg (Keymap.Walk walkDirection)) game
 
 
+actionTakeStairs : Game -> Game
+actionTakeStairs ({ level, hero, maps } as game) =
+    let
+        maybeMoveHero stairTile =
+            stairTile
+                |> Maybe.map (.position >> (flip Hero.setPosition hero))
+                |> Maybe.withDefault hero
+    in
+        if isOnStairs Level.upstairs game then
+            let
+                ( newLevel, newMaps ) =
+                    Maps.upstairs level maps
+            in
+                { game
+                    | maps = newMaps
+                    , level = newLevel
+                    , hero = maybeMoveHero (Level.downstairs newLevel)
+                    , messages = "You climb back up the stairs" :: game.messages
+                }
+        else if isOnStairs Level.downstairs game then
+            let
+                ( ( newLevel, newMaps ), seed_ ) =
+                    Random.step (Maps.downstairs level game.maps) game.seed
+            in
+                { game
+                    | maps = newMaps
+                    , level = newLevel
+                    , hero = maybeMoveHero (Level.upstairs newLevel)
+                    , seed = seed_
+                    , messages = "You go downstairs" :: game.messages
+                }
+        else
+            { game | messages = "You need to be on some stairs!" :: game.messages }
+
+
 updateFOV : Game -> Game
 updateFOV ({ level, hero } as game) =
     Game.Model.setLevel (Level.updateFOV hero.position level) game
@@ -167,12 +202,14 @@ updateFOV ({ level, hero } as game) =
 updateKeyboard : Keymap.Msg -> Game -> ( Game, Cmd Msg )
 updateKeyboard keyboardMsg ({ hero, level, maps } as game) =
     let
-        returnWithCmdNone =
+        noCmd =
             flip (,) Cmd.none
     in
         case keyboardMsg of
             Keymap.KeyDir dir ->
-                ( actionMove dir game, Cmd.none )
+                game
+                    |> actionMove dir
+                    |> noCmd
 
             Keymap.Walk dir ->
                 game
@@ -203,60 +240,18 @@ updateKeyboard keyboardMsg ({ hero, level, maps } as game) =
                     )
 
             Keymap.GoUpstairs ->
-                case isOnStairs Level.upstairs game of
-                    True ->
-                        let
-                            ( newLevel, newMaps ) =
-                                Maps.upstairs level maps
-
-                            heroAtTopOfStairs =
-                                newLevel
-                                    |> Level.downstairs
-                                    |> Maybe.map (.position >> (flip Hero.setPosition hero))
-                                    |> Maybe.withDefault hero
-                        in
-                            ( { game
-                                | maps = newMaps
-                                , level = newLevel
-                                , hero = heroAtTopOfStairs
-                                , messages = "You climb back up the stairs" :: game.messages
-                              }
-                              --                            |> Game.Model.setHeroMoved True
-                            , Cmd.none
-                            )
-
-                    False ->
-                        ( { game | messages = "You need to be on some stairs!" :: game.messages }
-                        , Cmd.none
-                        )
+                game
+                    |> actionTakeStairs
+                    |> updateFOV
+                    |> Render.viewport
+                    |> noCmd
 
             Keymap.GoDownstairs ->
-                case isOnStairs Level.downstairs game of
-                    True ->
-                        let
-                            ( ( newLevel, newMaps ), seed_ ) =
-                                Random.step (Maps.downstairs level game.maps) game.seed
-
-                            heroAtBottomOfStairs =
-                                newLevel
-                                    |> Level.upstairs
-                                    |> Maybe.map (.position >> (flip Hero.setPosition game.hero))
-                                    |> Maybe.withDefault hero
-                        in
-                            ( { game
-                                | maps = newMaps
-                                , level = newLevel
-                                , hero = heroAtBottomOfStairs
-                                , seed = seed_
-                                , messages = "You go downstairs" :: game.messages
-                              }
-                            , Cmd.none
-                            )
-
-                    False ->
-                        ( { game | messages = "You need to be on some stairs!" :: game.messages }
-                        , Cmd.none
-                        )
+                game
+                    |> actionTakeStairs
+                    |> updateFOV
+                    |> Render.viewport
+                    |> noCmd
 
             Keymap.Get ->
                 let
