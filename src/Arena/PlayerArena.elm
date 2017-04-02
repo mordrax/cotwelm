@@ -6,7 +6,7 @@ import Arena.Round as Round exposing (RoundResult)
 import Arena.View as View
 import Attributes exposing (Attributes)
 import Char
-import Combat
+import Game.Combat as Combat
 import Dice
 import Dict exposing (Dict)
 import Equipment exposing (Equipment)
@@ -17,7 +17,7 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Item.Armour as Armour
 import Item.Data as ItemData
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 import Item.Weapon as Weapon
 import Monster exposing (Monster)
 import Process

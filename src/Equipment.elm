@@ -35,7 +35,7 @@ import Container
 import Html exposing (..)
 import Item.Belt as Belt exposing (Belt)
 import Item.Data exposing (..)
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 import Item.Pack as Pack exposing (Pack)
 import Item.Purse as Purse exposing (Purse)
 import Utils.Misc as Misc

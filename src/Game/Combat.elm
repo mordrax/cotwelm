@@ -1,4 +1,4 @@
-module Combat
+module Game.Combat
     exposing
         ( attack
         , Fighter

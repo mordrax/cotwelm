@@ -21,7 +21,7 @@ import Html.Attributes as HA
 import Monster exposing (Monster)
 import Arena.Match as Match
 import Arena.Types exposing (..)
-import Combat
+import Game.Combat as Combat
 import EveryDict exposing (EveryDict)
 import Monsters.Types
 import Time exposing (Time)

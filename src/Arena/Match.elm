@@ -15,11 +15,11 @@ module Arena.Match
 import Arena.Round as Round exposing (RoundResult)
 import Arena.View
 import Attributes exposing (Attributes)
-import Combat
+import Game.Combat as Combat
 import Dice
 import Equipment exposing (Equipment)
 import Html exposing (..)
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 import Random.Pcg as Random exposing (Generator)
 import Arena.Types exposing (..)
 

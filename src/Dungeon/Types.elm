@@ -6,7 +6,7 @@ import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Room as Room exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Tile exposing (Tile)
-import Level
+import Game.Level as Level exposing (Level)
 import Dict exposing (Dict)
 import Utils.Vector exposing (Vector)
 
@@ -30,7 +30,7 @@ type ActivePoint
     | ActiveCorridor Corridor
 
 
-toLevel : Model -> Level.Level
+toLevel : Model -> Level
 toLevel ({ buildings, rooms, corridors } as model) =
     let
         map =
@@ -38,7 +38,7 @@ toLevel ({ buildings, rooms, corridors } as model) =
                 |> toTiles
                 |> Level.fromTiles
     in
-        Level.Level map buildings [] rooms corridors
+        Level.Level map buildings [] rooms corridors Dict.empty
 
 
 toOccupied : Model -> List Vector

@@ -1,16 +1,11 @@
-module Maps
+module Game.Maps
     exposing
         ( Maps
         , init
-        , setCurrentArea
-        , setLevel
-        , view
-        , draw
-        , currentLevel
-        , toScreenCoords
         , downstairs
+        , getCurrentLevel
+        , saveLoadArea
         , upstairs
-        , getTile
         )
 
 {-| Holds maps for all areas and handles interaction and rendering of them.
@@ -32,8 +27,8 @@ import Dungeon.DungeonGenerator as DungeonGenerator
 import Dungeon.Rooms.Config as Config
 import Html exposing (..)
 import Html.Lazy as Lazy
-import Item.Item as Item exposing (Item)
-import Level exposing (Level)
+import Item exposing (Item)
+import Game.Level as Level exposing (Level)
 import Monster
 import Random.Pcg as Random exposing (Generator)
 import Shops
@@ -51,27 +46,6 @@ type alias Maps =
     , abandonedMinesEntry : Level
     , abandonedMines : Array Level
     }
-
-
-setCurrentArea : Area -> Maps -> Maps
-setCurrentArea currentArea model =
-    { model | currentArea = currentArea }
-
-
-setLevel : Level -> Maps -> Maps
-setLevel level model =
-    case model.currentArea of
-        Village ->
-            { model | village = level }
-
-        Farm ->
-            { model | farm = level }
-
-        DungeonLevelOne ->
-            { model | abandonedMinesEntry = level }
-
-        DungeonLevel n ->
-            { model | abandonedMines = Array.set n level model.abandonedMines }
 
 
 init : Item -> Random.Seed -> ( Maps, Random.Seed )
@@ -102,139 +76,100 @@ init armour seed =
         )
 
 
-upstairs : Maps -> Maps
-upstairs model =
+setCurrentArea : Area -> Maps -> Maps
+setCurrentArea currentArea model =
+    { model | currentArea = currentArea }
+
+
+setLevel : Level -> Maps -> Maps
+setLevel level model =
     case model.currentArea of
-        DungeonLevel 0 ->
-            setCurrentArea DungeonLevelOne model
+        Village ->
+            { model | village = level }
+
+        Farm ->
+            { model | farm = level }
+
+        DungeonLevelOne ->
+            { model | abandonedMinesEntry = level }
 
         DungeonLevel n ->
-            setCurrentArea (DungeonLevel (n - 1)) model
-
-        _ ->
-            setCurrentArea Farm model
+            { model | abandonedMines = Array.set n level model.abandonedMines }
 
 
-downstairs : Maps -> Generator Maps
-downstairs model =
+{-| Take the current level, save it back to maps, get the upstairs level and return the
+updated map with the new level.
+-}
+upstairs : Level -> Maps -> ( Level, Maps )
+upstairs currentLevel maps =
     let
-        nextLevel =
-            case model.currentArea of
-                DungeonLevelOne ->
-                    0
+        newArea =
+            case maps.currentArea of
+                DungeonLevel 0 ->
+                    DungeonLevelOne
 
-                DungeonLevel level ->
-                    level + 1
+                DungeonLevel n ->
+                    (DungeonLevel (n - 1))
+
+                _ ->
+                    Farm
+    in
+        maps
+            |> setLevel currentLevel
+            |> setCurrentArea newArea
+            |> (\newMaps -> ( getCurrentLevel newMaps, newMaps ))
+
+
+{-| Take the current level and the maps, generate a new level.
+    Save the current level and the new level back to maps, return the new level and updated maps.
+-}
+downstairs : Level -> Maps -> Generator ( Level, Maps )
+downstairs currentLevel maps =
+    let
+        nextDungeonLevel =
+            case maps.currentArea of
+                DungeonLevel currentDungeonLevel ->
+                    currentDungeonLevel + 1
 
                 _ ->
                     0
+
+        mapsSavedAndUpdated =
+            maps
+                |> setLevel currentLevel
+                |> setCurrentArea (DungeonLevel nextDungeonLevel)
+
+        mapsWithSavedCurrentLevel =
+            setLevel currentLevel maps
     in
-        case Array.get nextLevel model.abandonedMines of
+        case Array.get nextDungeonLevel maps.abandonedMines of
             Just level ->
-                DungeonLevel nextLevel
-                    |> (\x -> setCurrentArea x model)
-                    |> Random.constant
+                Random.constant ( level, mapsSavedAndUpdated )
 
             Nothing ->
                 DungeonGenerator.generate Config.init
-                    |> Random.andThen addMonstersToLevel
-                    |> Random.map (\level -> Array.push level model.abandonedMines)
+                    |> Random.andThen Level.generateMonsters
                     |> Random.map
-                        (\abandonedMines ->
-                            { model
-                                | abandonedMines = abandonedMines
-                                , currentArea = DungeonLevel nextLevel
-                            }
+                        (\newLevel ->
+                            ( newLevel
+                            , { mapsSavedAndUpdated
+                                | abandonedMines = Array.push newLevel mapsWithSavedCurrentLevel.abandonedMines
+                              }
+                            )
                         )
 
 
-
-
-
-addMonstersToLevel : Level -> Generator Level
-addMonstersToLevel level =
-    let
-        floors =
-            Level.floors level
-    in
-        Misc.shuffle floors
-            |> Random.map (List.take 10)
-            |> Random.andThen Monster.makeRandomMonsters
-            |> Random.map (\monsters -> { level | monsters = monsters })
-
-
-view : ( Vector, Vector ) -> (Vector -> a) -> Maps -> Html a
-view ( start, size ) onClick maps =
-    let
-        viewport =
-            { start = start, size = size }
-
-        level =
-            currentLevel maps
-
-        onVisibleTile building =
-            building.position
-                |> (\x -> Level.tileAtPosition x level)
-                |> Maybe.map .visible
-                |> Maybe.withDefault Hidden
-                |> ((/=) Hidden)
-
-        buildingsHtml =
-            level.buildings
-                |> List.filter onVisibleTile
-                |> List.map Building.view
-    in
-        div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
-
-
-draw :
-    { viewport | start : Vector, size : Vector }
-    -> Level.Map
-    -> Float
-    -> (Vector -> a)
-    -> List (Html a)
-draw viewport map scale onClick =
-    let
-        neighbours center =
-            Level.neighbours map center
-
-        mapTiles =
-            toTiles map
-
-        toHtml tile =
-            Tile.view tile scale (neighbours <| tile.position) onClick
-
-        withinViewport tile =
-            tile.position
-                |> flip Vector.boxIntersectVector ( viewport.start, Vector.add viewport.start viewport.size )
-    in
-        mapTiles
-            |> List.filter withinViewport
-            |> List.map toHtml
-            |> List.concat
-
-
-toTiles : Level.Map -> List Tile
-toTiles =
-    Dict.toList >> List.map Tuple.second
-
-
-toScreenCoords : Level.Map -> Int -> Level.Map
-toScreenCoords map mapSize =
-    let
-        invertY ( ( x, y ), tile ) =
-            ( ( x, mapSize - y ), Tile.setPosition ( x, mapSize - y ) tile )
-    in
-        map
-            |> Dict.toList
-            |> List.map invertY
-            |> Dict.fromList
+saveLoadArea : Level -> Area -> Maps -> ( Level, Maps )
+saveLoadArea currentLevel newArea maps =
+    setLevel currentLevel maps
+        |> setCurrentArea newArea
+        |> (\newMaps -> ( getCurrentLevel newMaps, newMaps ))
 
 
 {-| Get the map for the current area
 -}
-currentLevel : Maps -> Level
-currentLevel model =
+getCurrentLevel : Maps -> Level
+getCurrentLevel model =
     case model.currentArea of
         Village ->
             model.village
@@ -269,23 +204,6 @@ getASCIIMap area =
 
         _ ->
             []
-
-
-getTile : Vector -> Maps -> Tile
-getTile position model =
-    let
-        maybeTile =
-            currentLevel model
-                |> .map
-                |> Dict.get position
-    in
-        case maybeTile of
-            Just tile ->
-                tile
-
-            _ ->
-                Debug.log ("Could not find the tile the hero" ++ toString position ++ " is standing on.")
-                    (Tile.toTile ( 0, 0 ) Tile.Types.Grass)
 
 
 

@@ -7,6 +7,7 @@ module Monster
         , types
         , remove
         , replace
+        , replaceMoved
         , view
         )
 
@@ -69,9 +70,20 @@ view =
 -- base
 
 
+{-| Replaces a monster uniquely identified by it's position.
+-}
 replace : Monster -> List Monster -> List Monster
 replace monster monsters =
     monster :: remove monster monsters
+
+
+{-| Replace a monster with a new instance using the old monster's position.
+-}
+replaceMoved : Monster -> Monster -> List Monster -> List Monster
+replaceMoved existing new monsters =
+    monsters
+        |> remove existing
+        |> (::) new
 
 
 remove : Monster -> List Monster -> List Monster

@@ -24,8 +24,8 @@ import Container exposing (Container)
 import Equipment exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Item exposing (..)
 import Item.Data exposing (..)
-import Item.Item as Item exposing (..)
 import Item.Pack as Pack exposing (Pack)
 import Item.Purse as Purse exposing (..)
 import Keymap
@@ -33,6 +33,7 @@ import Shops exposing (Shops, Shop)
 import Task
 import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Utils.Mass as Mass exposing (..)
+import Utils.Misc
 
 
 type Inventory
@@ -41,7 +42,7 @@ type Inventory
 
 type Merchant
     = Shop Shop
-    | Ground (Container Item)
+    | Ground (List Item)
 
 
 type alias Model =
@@ -263,12 +264,12 @@ transactWithMerchant item ({ merchant, equipment } as model) =
                 buyFrom shop
                     |> Result.andThen updateModelFromPurchase
 
-            Ground container ->
+            Ground items ->
                 let
-                    container_ =
-                        Container.remove item container
+                    itemsWithoutItem =
+                        Utils.Misc.removeFirst item Item.equals items
                 in
-                    Result.Ok ( { model | merchant = Ground container_ }, item )
+                    Result.Ok ( { model | merchant = Ground itemsWithoutItem }, item )
 
 
 {-| handleDrop
@@ -342,12 +343,8 @@ handleDrop droppable item model =
                         getPurseResult
                             |> Result.andThen (sellTo shop)
 
-                    Ground container ->
-                        let
-                            ( container_, _ ) =
-                                Container.add item container
-                        in
-                            Result.Ok { model | merchant = Ground container_ }
+                    Ground items ->
+                        Result.Ok { model | merchant = Ground (item :: items) }
 
 
 
@@ -390,8 +387,8 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
         columnWidth width children =
             div [ class (width ++ " wide column") ] children
 
-        groundHtml container =
-            div [] [ header "Ground", viewGround container dnd ]
+        groundHtml items =
+            div [] [ header "Ground", viewGround items dnd ]
 
         shopHtml shop =
             div []
@@ -407,8 +404,8 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
                 Shop shop ->
                     shopHtml shop
 
-                Ground container ->
-                    groundHtml container
+                Ground items ->
+                    groundHtml items
 
         packHtml =
             div []
@@ -431,23 +428,20 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
             )
 
 
-viewGround : Container Item -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable Droppable)
-viewGround container dnd =
+viewGround : List Item -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable Droppable)
+viewGround items dnd =
     let
         styles =
             style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
 
-        items =
-            Container.list container
-
-        makeDraggable ground item =
-            DragDrop.draggable (Item.view item) (DragMerchant item (Ground container)) dnd
+        makeDraggable items item =
+            DragDrop.draggable (Item.view item) (DragMerchant item (Ground items)) dnd
 
         droppableDiv =
-            div [ class "ui cards", styles ] (List.map (makeDraggable container) items)
+            div [ class "ui cards", styles ] (List.map (makeDraggable items) items)
 
         droppableGround =
-            DragDrop.droppable (DropMerchant (Ground container)) dnd droppableDiv
+            DragDrop.droppable (DropMerchant (Ground items)) dnd droppableDiv
     in
         droppableGround
 
