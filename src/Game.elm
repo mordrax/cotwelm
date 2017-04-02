@@ -138,8 +138,10 @@ isOnStairs upOrDownStairs ({ hero, level } as game) =
 actionMove : Direction -> Game -> Game
 actionMove dir game =
     game
-        |> Collision.move dir
-        |> updateFOV
+        |>
+            Collision.move dir
+        |>
+            updateFOV
         --        |> Collision.moveMonsters (monstersOnLevel game) [] game
         |>
             Render.viewport
@@ -188,6 +190,25 @@ actionTakeStairs ({ level, hero, maps } as game) =
                 }
         else
             { game | messages = "You need to be on some stairs!" :: game.messages }
+
+
+actionPickup : Game -> Game
+actionPickup ({ hero, level } as game) =
+    let
+        ( levelAfterPickup, items ) =
+            Level.pickup hero.position level
+
+        ( heroWithItems, leftOverItems, pickMsgs ) =
+            Hero.pickup items hero
+
+        levelWithLeftOvers =
+            Level.drops ( hero.position, leftOverItems ) levelAfterPickup
+    in
+        { game
+            | level = levelWithLeftOvers
+            , hero = heroWithItems
+            , messages = pickMsgs ++ game.messages
+        }
 
 
 updateFOV : Game -> Game
@@ -254,23 +275,9 @@ updateKeyboard keyboardMsg ({ hero, level, maps } as game) =
                     |> noCmd
 
             Keymap.Get ->
-                let
-                    ( levelAfterPickup, items ) =
-                        Level.pickup hero.position level
-
-                    ( heroWithItems, leftOverItems, pickMsgs ) =
-                        Hero.pickup items hero
-
-                    levelWithLeftOvers =
-                        Level.drops ( hero.position, leftOverItems ) levelAfterPickup
-                in
-                    ( { game
-                        | level = levelWithLeftOvers
-                        , hero = heroWithItems
-                        , messages = pickMsgs ++ game.messages
-                      }
-                    , Cmd.none
-                    )
+                game
+                    |> actionPickup
+                    |> noCmd
 
             other ->
                 let
@@ -280,9 +287,35 @@ updateKeyboard keyboardMsg ({ hero, level, maps } as game) =
                     ( game, Cmd.none )
 
 
+updateEquipmentAndMerchant : ( Equipment, Inventory.Merchant ) -> Game -> Game
+updateEquipmentAndMerchant ( equipment, merchant ) ({ hero, shops, level } as game) =
+    let
+        game_ =
+            { game
+                | hero = Hero.setEquipment equipment hero
+                , currentScreen = MapScreen
+            }
+
+        updateLevel items =
+            Level.updateGround hero.position items level
+
+        updateShop shop =
+            Shops.updateShop shop game.shops
+    in
+        case merchant of
+            Inventory.Ground items ->
+                Game.Model.setLevel (updateLevel items) game_
+
+            Inventory.Shop shop ->
+                Game.Model.setShops (updateShop shop) game_
+
+
 update : Msg -> Game -> ( Game, Cmd Msg )
 update msg ({ hero, level, inventory } as previousGameState) =
     let
+        noCmd =
+            flip (,) Cmd.none
+
         game =
             Game.Model.setPreviousState previousGameState previousGameState
     in
@@ -292,36 +325,16 @@ update msg ({ hero, level, inventory } as previousGameState) =
 
             InventoryMsg msg ->
                 let
-                    ( inventory_, maybeExitValues ) =
+                    ( inventory_, exitInventoryValues ) =
                         Inventory.update msg inventory
+
+                    gameWithInventoryUpdate =
+                        { game | inventory = inventory_ }
                 in
-                    case maybeExitValues of
-                        Nothing ->
-                            ( { game | inventory = inventory_ }, Cmd.none )
-
-                        Just ( equipment, merchant ) ->
-                            let
-                                modelWithHeroAndInventory =
-                                    { game
-                                        | inventory = inventory_
-                                        , hero = Hero.setEquipment equipment hero
-                                        , currentScreen = MapScreen
-                                    }
-                            in
-                                case merchant of
-                                    Inventory.Ground items ->
-                                        let
-                                            level_ =
-                                                Level.updateGround hero.position items level
-                                        in
-                                            modelWithHeroAndInventory
-                                                |> Game.Model.setLevel level_
-                                                |> (\model -> ( model, Cmd.none ))
-
-                                    Inventory.Shop shop ->
-                                        modelWithHeroAndInventory
-                                            |> Game.Model.setShops (Shops.updateShop shop game.shops)
-                                            |> (\model -> ( model, Cmd.none ))
+                    exitInventoryValues
+                        |> Maybe.map (flip updateEquipmentAndMerchant gameWithInventoryUpdate)
+                        |> Maybe.withDefault gameWithInventoryUpdate
+                        |> noCmd
 
             WindowSize size ->
                 ( { game | windowSize = size }, Cmd.none )
