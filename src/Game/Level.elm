@@ -16,7 +16,6 @@ module Game.Level
         , queryPosition
         , setMonsters
         , size
-        , tileAtPosition
         , toScreenCoords
         , updateFOV
         , updateGround
@@ -126,11 +125,6 @@ size { map } =
         ( maxX + 1, maxY + 1 )
 
 
-tileAtPosition : Vector -> Level -> Maybe Tile
-tileAtPosition pos { map } =
-    Dict.get pos map
-
-
 roomAtPosition : Vector -> List Room -> Maybe Room
 roomAtPosition pos rooms =
     let
@@ -185,14 +179,14 @@ updateGround pos payload model =
 pickup : Vector -> Level -> ( Level, List Item )
 pickup position level =
     let
-        ( items, clearedTile ) =
-            getTile level.map position
-                |> Tile.pickup
-
-        levelWithClearedTile =
-            setTile level clearedTile
+        levelWithClearedTile ( items, clearedTile ) =
+            ( setTile level clearedTile, items )
     in
-        ( levelWithClearedTile, items )
+        level
+            |> getTile position
+            |> Maybe.map Tile.pickup
+            |> Maybe.map levelWithClearedTile
+            |> Maybe.withDefault ( level, [] )
 
 
 ground : Vector -> Level -> List Item
@@ -206,9 +200,10 @@ ground position { map } =
 -}
 drop : ( Vector, Item ) -> Level -> Level
 drop ( position, item ) ({ map } as level) =
-    getTile map position
-        |> Tile.drop item
-        |> setTile level
+    level
+        |> getTile position
+        |> Maybe.map (Tile.drop item >> setTile level)
+        |> Maybe.withDefault (Debug.log "Level.drop invalid position" level)
 
 
 drops : ( Vector, List Item ) -> Level -> Level
@@ -239,9 +234,10 @@ queryPosition position ({ monsters, buildings, map } as level) =
                 |> List.head
 
         tileObstruction =
-            position
-                |> getTile map
-                |> .solid
+            level
+                |> getTile position
+                |> Maybe.map .solid
+                |> Maybe.withDefault True
     in
         ( tileObstruction, maybeBuilding, maybeMonster )
 
@@ -253,8 +249,8 @@ view ( start, size ) onClick level =
             { start = start, size = size }
 
         onVisibleTile building =
-            building.position
-                |> (\x -> tileAtPosition x level)
+            level
+                |> getTile building.position
                 |> Maybe.map .visible
                 |> Maybe.withDefault Hidden
                 |> ((/=) Hidden)
@@ -320,7 +316,7 @@ roomAndDark rooms position =
 
 
 isSeeThrough : Level -> Vector -> Bool
-isSeeThrough { map, rooms } target =
+isSeeThrough ({ map, rooms } as level) target =
     let
         notSolid =
             .solid >> not
@@ -331,8 +327,10 @@ isSeeThrough { map, rooms } target =
         notDarkRoom =
             roomAndDark rooms >> not
     in
-        getTile map target
-            |> (\tile -> (notSolid tile && notClosedDoor tile && notDarkRoom target))
+        level
+            |> getTile target
+            |> Maybe.map (\tile -> (notSolid tile && notClosedDoor tile && notDarkRoom target))
+            |> Maybe.withDefault False
 
 
 updateFOV : Vector -> Level -> Level
@@ -345,10 +343,11 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
 
         addToMapAsVisibleTile : Vector -> Map -> Map
         addToMapAsVisibleTile tilePosition map =
-            tilePosition
-                |> getTile map
-                |> Tile.setVisibility Known
-                |> (\x -> Dict.insert x.position x map)
+            level
+                |> getTile tilePosition
+                |> Maybe.map (Tile.setVisibility Known)
+                |> Maybe.map (\x -> Dict.insert x.position x map)
+                |> Maybe.withDefault map
 
         newMonsters =
             monsters
@@ -359,14 +358,9 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
 
 {-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.
 -}
-getTile : Map -> Vector -> Tile
-getTile map position =
-    case Dict.get position map of
-        Just tile ->
-            tile
-
-        Nothing ->
-            Debug.crash <| "Level.getTile: " ++ (toString position)
+getTile : Vector -> Level -> Maybe Tile
+getTile position { map } =
+    Dict.get position map
 
 
 neighbours : Map -> Vector -> Tile.TileNeighbours
