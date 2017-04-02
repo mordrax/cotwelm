@@ -1,18 +1,19 @@
 module Game.Collision
     exposing
         ( move
-          --        , moveMonsters
+        , moveMonsters
         )
 
 import Building exposing (Building)
 import Game.Combat as Combat
 import Game.Level as Level
+import Game.Maps as Maps
 import Game.Model exposing (Game, Screen(..))
+import Game.Pathfinding as Pathfinding
 import Hero exposing (Hero)
 import Inventory exposing (Inventory)
 import Item
 import Item.Data
-import Game.Maps as Maps
 import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Seed)
 import Shops exposing (Shops)
@@ -59,7 +60,6 @@ move dir ({ level } as game) =
 
 
 
---                    |> Game.Model.setHeroMoved True
 ---------------------------
 -- Movement into monster --
 ---------------------------
@@ -122,18 +122,16 @@ addLoot monster ({ level } as game) =
 
 
 enterBuilding : Building -> Game -> Game
-enterBuilding building ({ hero, level, maps } as model) =
+enterBuilding building ({ hero, level, maps } as game) =
     let
         teleportHero position model =
             { model | hero = Hero.setPosition position hero }
-
-        --                |> Game.Model.setHeroMoved True
     in
         case building.buildingType of
             Building.Linked link ->
                 Maps.saveLoadArea level link.area maps
                     |> (\( newLevel, newMaps ) ->
-                            { model
+                            { game
                                 | level = newLevel
                                 , maps = newMaps
                                 , hero = Hero.setPosition link.position hero
@@ -141,16 +139,106 @@ enterBuilding building ({ hero, level, maps } as model) =
                        )
 
             Building.Shop shopType ->
-                { model
+                { game
                     | currentScreen = BuildingScreen building
-                    , inventory = Inventory.init (Inventory.Shop <| Shops.shop shopType model.shops) hero.equipment
+                    , inventory = Inventory.init (Inventory.Shop <| Shops.shop shopType game.shops) hero.equipment
                 }
 
             Building.Ordinary ->
-                { model | currentScreen = BuildingScreen building }
+                { game | currentScreen = BuildingScreen building }
 
             Building.StairUp ->
-                teleportHero building.position model
+                teleportHero building.position game
 
             Building.StairDown ->
-                teleportHero building.position model
+                teleportHero building.position game
+
+
+
+----------------------
+-- Monster movement --
+----------------------
+
+
+moveMonsters : Game -> Game
+moveMonsters ({ hero, maps, level } as game) =
+    let
+        distance a b =
+            Pathfinding.heuristic a.position b.position
+
+        distanceToHero m1 m2 =
+            if distance m1 hero > distance m2 hero then
+                GT
+            else
+                LT
+
+        sortByDistance monsters =
+            List.sortWith distanceToHero monsters
+    in
+        level.monsters
+            |> sortByDistance
+            |> List.foldl (moveMonster game) game
+
+
+moveMonster : Monster -> Game -> Game
+moveMonster monster ({ hero, level, monsters } as game) =
+    let
+        movedMonster =
+            pathMonster monster hero game
+
+        obstructions =
+            Level.queryPosition movedMonster.position (Maps.getCurrentLevel game.maps)
+
+        isObstructedByMovedMonsters =
+            isMonsterObstruction movedMonster movedMonsters
+
+        movedIntoHero =
+            movedMonster.position == hero.position
+    in
+        case ( obstructions, movedIntoHero ) of
+            -- hit hero
+            ( _, True ) ->
+                game
+                    |> attackHero monster
+                    |> moveMonsters restOfMonsters (monster :: movedMonsters)
+
+            ( ( True, _, _ ), _ ) ->
+                moveMonsters restOfMonsters (monster :: movedMonsters) game
+
+            ( ( _, Just _, _ ), _ ) ->
+                moveMonsters restOfMonsters (monster :: movedMonsters) game
+
+            ( ( _, _, Just _ ), _ ) ->
+                moveMonsters restOfMonsters (monster :: movedMonsters) game
+
+            _ ->
+                if isObstructedByMovedMonsters then
+                    moveMonsters restOfMonsters (monster :: movedMonsters) game
+                else
+                    moveMonsters restOfMonsters (movedMonster :: movedMonsters) game
+
+
+pathMonster : Monster -> Hero -> Game -> Monster
+pathMonster monster hero game =
+    Pathfinding.findPath monster.position hero.position False game
+        |> List.head
+        |> Maybe.withDefault monster.position
+        |> \newPosition -> { monster | position = newPosition }
+
+
+isMonsterObstruction : Monster -> List Monster -> Bool
+isMonsterObstruction monster monsters =
+    List.any (.position >> (==) monster.position) monsters
+
+
+attackHero : Monster -> Game -> Game
+attackHero monster ({ hero, seed, messages } as game) =
+    let
+        ( ( msg, heroAfterHit ), seed_ ) =
+            Random.step (Combat.attack monster hero) seed
+    in
+        { game
+            | messages = msg :: messages
+            , hero = heroAfterHit
+            , seed = seed_
+        }
