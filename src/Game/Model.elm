@@ -10,12 +10,22 @@ import Types exposing (..)
 import Window
 import Game.Level as Level exposing (Level)
 import Utils.Direction as Direction exposing (Direction)
+import Utils.Vector as Vector exposing (Vector)
+import Keymap
 
 
 type Screen
     = MapScreen
     | InventoryScreen
     | BuildingScreen Building
+
+
+type Msg
+    = KeyboardMsg Keymap.Msg
+    | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
+    | WindowSize Window.Size
+    | ClickTile Vector
+    | PathTo (List Vector)
 
 
 type alias Game =
