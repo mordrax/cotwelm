@@ -1,14 +1,13 @@
 module Game.Pathfinding
     exposing
         ( findPath
+        , findPathForClickNavigation
         , heuristic
         )
 
 import AStar
 import Game.Model exposing (Game)
 import Game.Level as Level exposing (Level)
-import Hero exposing (Hero)
-import Monster exposing (Monster)
 import Set exposing (Set)
 import Utils.Vector as Vector exposing (Vector)
 
@@ -16,17 +15,24 @@ import Utils.Vector as Vector exposing (Vector)
 {-| Manages pathfinding in the game. Is an adapter between the game code
  and the AStar pathing library being used.
 -}
-findPath : Vector -> Vector -> Bool -> Game -> List Vector
-findPath from to ignoreBuildingObstruction game =
+findPath : Vector -> Vector -> Level -> ( Level, List Vector )
+findPath from to level =
     let
-        neighboursFunction =
-            if ignoreBuildingObstruction then
-                neighboursIncludeBuildings
-            else
-                neighbours
+        astar =
+            AStar.findPath heuristic (neighbours level creaturesAllowedFilter)
     in
-        AStar.findPath heuristic (neighboursFunction game) from to
-            |> Maybe.withDefault []
+        case Level.getPath from to level of
+            Just path ->
+                ( level, Debug.log "using existing path" path )
+
+            _ ->
+                memoisePath from to level astar
+
+
+findPathForClickNavigation : Vector -> Vector -> Level -> List Vector
+findPathForClickNavigation from to level =
+    AStar.findPath heuristic (neighbours level buildingsAllowedFilter) from to
+        |> Maybe.withDefault []
 
 
 {-| Manhattan but counts diagonal cost as one (since you can move diagonally)
@@ -42,48 +48,54 @@ heuristic start end =
             |> sqrt
 
 
-neighboursIncludeBuildings : Game -> Vector -> Set Vector
-neighboursIncludeBuildings { level, hero } position =
-    let
-        notObstructed vector =
-            case (Level.queryPosition vector level) of
-                ( False, _, Nothing ) ->
-                    True
-
-                _ ->
-                    False
-    in
-        position
-            |> Vector.neighbours
-            |> List.filter notObstructed
-            |> Set.fromList
-
-
-neighbours : Game -> Vector -> Set Vector
-neighbours { level } position =
-    let
-        notObstructed vector =
-            not (isObstructed vector level)
-    in
-        position
-            |> Vector.neighbours
-            |> List.filter notObstructed
-            |> Set.fromList
-
-
-neighbours_ : Vector -> (Vector -> Bool) -> Set Vector
-neighbours_ position isObstructedFilter =
+neighbours : Level -> (Level -> Vector -> Bool) -> Vector -> Set Vector
+neighbours level filter position =
     position
         |> Vector.neighbours
-        |> List.filter isObstructedFilter
+        |> List.filter (filter level)
         |> Set.fromList
 
 
-isObstructed : Vector -> Level -> Bool
-isObstructed position level =
+creaturesAllowedFilter : Level -> Vector -> Bool
+creaturesAllowedFilter level position =
     case Level.queryPosition position level of
-        ( False, Nothing, Nothing ) ->
-            False
+        ( False, Nothing, _ ) ->
+            True
 
         _ ->
+            False
+
+
+buildingsAllowedFilter : Level -> Vector -> Bool
+buildingsAllowedFilter level position =
+    case Level.queryPosition position level of
+        ( False, _, _ ) ->
             True
+
+        _ ->
+            False
+
+
+obstructionFilter : Level -> Vector -> Bool
+obstructionFilter level position =
+    case Level.queryPosition position level of
+        ( False, Nothing, Nothing ) ->
+            True
+
+        _ ->
+            False
+
+
+memoisePath :
+    Vector
+    -> Vector
+    -> Level
+    -> (Vector -> Vector -> Maybe (List Vector))
+    -> ( Level, List Vector )
+memoisePath from to level astar =
+    let
+        newPath =
+            astar from to
+                |> Maybe.withDefault []
+    in
+        ( Level.insertPath from to newPath level, newPath )

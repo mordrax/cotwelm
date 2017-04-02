@@ -9,9 +9,11 @@ module Game.Level
         , pickup
         , fromTiles
         , generateMonsters
+        , getPath
         , getTile
         , ground
         , initNonDungeon
+        , insertPath
         , obstructed
         , queryPosition
         , setMonsters
@@ -47,17 +49,35 @@ type alias Map =
     Dict Vector Tile
 
 
+type alias MemoisedPaths =
+    Dict ( Vector, Vector ) (List Vector)
+
+
 type alias Level =
     { map : Map
     , buildings : List Building
     , monsters : List Monster
     , rooms : List Room
     , corridors : List Corridor
+    , paths : MemoisedPaths
     }
 
 
 type Msg
     = NoOp
+
+
+insertPath : Vector -> Vector -> List Vector -> Level -> Level
+insertPath from to path ({ paths } as level) =
+    paths
+        |> Dict.insert ( from, to ) path
+        |> Dict.insert ( to, from ) (List.reverse path)
+        |> (\newPaths -> { level | paths = newPaths })
+
+
+getPath : Vector -> Vector -> Level -> Maybe (List Vector)
+getPath from to { paths } =
+    Dict.get ( from, to ) paths
 
 
 setTile : Level -> Tile -> Level
@@ -77,13 +97,14 @@ initNonDungeon tiles buildings monsters =
     , monsters = monsters
     , rooms = []
     , corridors = []
+    , paths = Dict.empty
     }
 
 
 generateMonsters : Level -> Generator Level
 generateMonsters level =
     Misc.shuffle (floors level)
-        |> Random.map (List.take 10)
+        |> Random.map (List.take 15)
         |> Random.andThen Monster.makeRandomMonsters
         |> Random.map (\monsters -> { level | monsters = monsters })
 
@@ -241,11 +262,16 @@ queryPosition position ({ monsters, buildings, map } as level) =
     in
         ( tileObstruction, maybeBuilding, maybeMonster )
 
-obstructed: Vector -> Level -> Bool
+
+obstructed : Vector -> Level -> Bool
 obstructed position level =
-  case queryPosition position level of
-    (False, Nothing, Nothing) -> False
-    _ -> True
+    case queryPosition position level of
+        ( False, Nothing, Nothing ) ->
+            False
+
+        _ ->
+            True
+
 
 view : ( Vector, Vector ) -> (Vector -> a) -> Level -> Html a
 view ( start, size ) onClick level =
@@ -384,14 +410,3 @@ cardinalTileNeighbours map center =
         , getNeighbour ( 0, 1 )
         , getNeighbour ( -1, 0 )
         )
-
-
---neighbours : Map -> Vector -> List Tile
---neighbours map center =
---    let
---        reducer a b =
---            Dict.get a map
---                |> Maybe.map (flip (::) b)
---                |> Maybe.withDefault b
---    in
---        List.foldl reducer [] (Vector.neighbours center)
