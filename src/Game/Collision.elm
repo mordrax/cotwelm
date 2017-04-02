@@ -19,6 +19,7 @@ import Random.Pcg as Random exposing (Seed)
 import Shops exposing (Shops)
 import Stats
 import Utils.Direction exposing (Direction)
+import Utils.Vector as Vector exposing (Vector)
 
 
 {-| Handles all logic to do with movements and collision of hero and monsters.
@@ -177,45 +178,27 @@ moveMonsters ({ hero, maps, level } as game) =
     in
         level.monsters
             |> sortByDistance
-            |> List.foldl (moveMonster game) game
+            |> List.foldl moveMonster game
 
 
 moveMonster : Monster -> Game -> Game
-moveMonster monster ({ hero, level, monsters } as game) =
+moveMonster monster ({ hero, level } as game) =
     let
         movedMonster =
             pathMonster monster hero game
 
-        obstructions =
-            Level.queryPosition movedMonster.position (Maps.getCurrentLevel game.maps)
-
-        isObstructedByMovedMonsters =
-            isMonsterObstruction movedMonster movedMonsters
-
-        movedIntoHero =
-            movedMonster.position == hero.position
+        obstructed monster =
+            Level.queryPosition movedMonster.position level
     in
-        case ( obstructions, movedIntoHero ) of
-            -- hit hero
-            ( _, True ) ->
-                game
-                    |> attackHero monster
-                    |> moveMonsters restOfMonsters (monster :: movedMonsters)
-
-            ( ( True, _, _ ), _ ) ->
-                moveMonsters restOfMonsters (monster :: movedMonsters) game
-
-            ( ( _, Just _, _ ), _ ) ->
-                moveMonsters restOfMonsters (monster :: movedMonsters) game
-
-            ( ( _, _, Just _ ), _ ) ->
-                moveMonsters restOfMonsters (monster :: movedMonsters) game
-
-            _ ->
-                if isObstructedByMovedMonsters then
-                    moveMonsters restOfMonsters (monster :: movedMonsters) game
-                else
-                    moveMonsters restOfMonsters (movedMonster :: movedMonsters) game
+        if Vector.adjacent monster.position hero.position then
+            attackHero monster game
+        else if Level.obstructed movedMonster.position level then
+            game
+        else
+            level.monsters
+                |> Monster.replaceMoved monster movedMonster
+                |> flip Level.setMonsters level
+                |> flip Game.Model.setLevel game
 
 
 pathMonster : Monster -> Hero -> Game -> Monster
@@ -224,11 +207,6 @@ pathMonster monster hero game =
         |> List.head
         |> Maybe.withDefault monster.position
         |> \newPosition -> { monster | position = newPosition }
-
-
-isMonsterObstruction : Monster -> List Monster -> Bool
-isMonsterObstruction monster monsters =
-    List.any (.position >> (==) monster.position) monsters
 
 
 attackHero : Monster -> Game -> Game

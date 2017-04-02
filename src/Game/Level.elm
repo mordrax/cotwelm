@@ -12,6 +12,7 @@ module Game.Level
         , getTile
         , ground
         , initNonDungeon
+        , obstructed
         , queryPosition
         , setMonsters
         , size
@@ -240,6 +241,11 @@ queryPosition position ({ monsters, buildings, map } as level) =
     in
         ( tileObstruction, maybeBuilding, maybeMonster )
 
+obstructed: Vector -> Level -> Bool
+obstructed position level =
+  case queryPosition position level of
+    (False, Nothing, Nothing) -> False
+    _ -> True
 
 view : ( Vector, Vector ) -> (Vector -> a) -> Level -> Html a
 view ( start, size ) onClick level =
