@@ -17,7 +17,7 @@ import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Types exposing (..)
 import Building exposing (Building)
 import Types exposing (..)
-import Level
+import Game.Level as Level
 import List.Extra exposing (dropWhile)
 import Random.Pcg as Random exposing (Generator, constant)
 import Set

@@ -8,8 +8,8 @@ import Dungeon.Types
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
-import Level
-import Maps
+import Game.Level as Level
+import Game.Maps as Maps
 import Random.Pcg as Random exposing (Generator, constant)
 
 
@@ -119,7 +119,7 @@ view model =
             ( "border", "1px solid black" )
 
         screenMap =
-            Maps.toScreenCoords model.map model.config.dungeonSize
+            Level.toScreenCoords model.map model.config.dungeonSize
 
         clickTile position =
             Noop
@@ -135,7 +135,7 @@ view model =
                 , mapSizeView model
                 ]
             , div [ HA.style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-                (Maps.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
+                (Level.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
             ]
 
 

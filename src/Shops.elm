@@ -15,7 +15,7 @@ module Shops
 
 import Dict exposing (Dict)
 import Item.Data exposing (..)
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 import Item.Purse as Purse exposing (Purse)
 import Random.Pcg as Random exposing (step, initialSeed, list, Seed)
 import Task exposing (perform)

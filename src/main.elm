@@ -4,6 +4,7 @@ import Arena.PlayerArena as PlayerArena
 import CharCreation exposing (CharCreation)
 import Dungeon.Editor as Editor exposing (..)
 import Game
+import Game.Model exposing (Game)
 import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
@@ -18,7 +19,7 @@ import Arena.MonsterArena as MonsterArena
 type Msg
     = SplashMsg SplashView.Msg
     | CharCreationMsg CharCreation.Msg
-    | GameMsg Game.Msg
+    | GameMsg Game.Model.Msg
     | GenerateGame Random.Seed CharCreation
     | EditorMsg Editor.Msg
     | ArenaMsg PlayerArena.Msg
@@ -56,7 +57,7 @@ init location =
 type alias Model =
     { currentPage : Page
     , charCreation : CharCreation
-    , game : Maybe Game.Model
+    , game : Maybe Game
     , editor : Editor.Model
     , arena : PlayerArena.Model
     , pit : MonsterArena.Model

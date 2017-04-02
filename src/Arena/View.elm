@@ -5,7 +5,7 @@ module Arena.View
         )
 
 import Equipment exposing (Equipment)
-import Item.Item as Item exposing (Item)
+import Item exposing (Item)
 
 
 weaponToString : Equipment -> String
