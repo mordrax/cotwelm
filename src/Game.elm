@@ -112,13 +112,6 @@ donDefaultGarb hero =
         { hero | equipment = defaultEquipment }
 
 
-monstersOnLevel : Game -> List Monster
-monstersOnLevel model =
-    model.maps
-        |> Maps.getCurrentLevel
-        |> .monsters
-
-
 isOnStairs : (Level -> Maybe Building) -> Game -> Bool
 isOnStairs upOrDownStairs ({ hero, level } as game) =
     let
@@ -141,13 +134,12 @@ isOnStairs upOrDownStairs ({ hero, level } as game) =
 
 
 actionMove : Direction -> Game -> Game
-actionMove dir game =
-    game
+actionMove dir ({ level } as game) =
+    compare game
         |> Collision.move dir
         |> updateFOV
-        --        |> Collision.moveMonsters (monstersOnLevel game) [] game
-        |>
-            Render.viewport
+        |> Collision.moveMonsters
+        |> Render.viewport
 
 
 actionKeepOnWalking : Direction -> Game -> ( Game, Cmd Msg )
@@ -163,7 +155,7 @@ actionKeepOnWalking walkDirection game =
 actionTakeStairs : Game -> Game
 actionTakeStairs ({ level, hero, maps } as game) =
     let
-        maybeMoveHero stairTile =
+        heroTakeStairs stairTile =
             stairTile
                 |> Maybe.map (.position >> (flip Hero.setPosition hero))
                 |> Maybe.withDefault hero
@@ -176,7 +168,7 @@ actionTakeStairs ({ level, hero, maps } as game) =
                 { game
                     | maps = newMaps
                     , level = newLevel
-                    , hero = maybeMoveHero (Level.downstairs newLevel)
+                    , hero = heroTakeStairs (Level.downstairs newLevel)
                     , messages = "You climb back up the stairs" :: game.messages
                 }
         else if isOnStairs Level.downstairs game then
@@ -187,7 +179,7 @@ actionTakeStairs ({ level, hero, maps } as game) =
                 { game
                     | maps = newMaps
                     , level = newLevel
-                    , hero = maybeMoveHero (Level.upstairs newLevel)
+                    , hero = heroTakeStairs (Level.upstairs newLevel)
                     , seed = seed_
                     , messages = "You go downstairs" :: game.messages
                 }
@@ -360,99 +352,10 @@ update msg ({ hero, level, inventory } as previousGameState) =
                             update (PathTo remainingSteps) modelAfterMovement
 
 
-newMessage : String -> Game -> Game
-newMessage msg model =
-    { model | messages = msg :: model.messages }
-
-
 
 --------------
 -- Privates --
 --------------
--- Collision
-
-
-type alias HeroPositionChanged =
-    Bool
-
-
-isMonsterObstruction : Monster -> List Monster -> Bool
-isMonsterObstruction monster monsters =
-    List.any (.position >> (==) monster.position) monsters
-
-
-pathMonster : Monster -> Hero -> Game -> Monster
-pathMonster monster hero game =
-    Pathfinding.findPath monster.position hero.position False game
-        |> List.head
-        |> Maybe.withDefault monster.position
-        |> \newPosition -> { monster | position = newPosition }
-
-
-moveMonsters : List Monster -> List Monster -> Game -> Game
-moveMonsters monsters movedMonsters ({ hero, maps, level } as model) =
-    case monsters of
-        [] ->
-            { model | level = Level.setMonsters movedMonsters level }
-
-        monster :: restOfMonsters ->
-            let
-                movedMonster =
-                    pathMonster monster hero model
-
-                obstructions =
-                    Level.queryPosition movedMonster.position (Maps.getCurrentLevel model.maps)
-
-                isObstructedByMovedMonsters =
-                    isMonsterObstruction movedMonster movedMonsters
-
-                movedIntoHero =
-                    movedMonster.position == hero.position
-            in
-                case ( obstructions, movedIntoHero ) of
-                    -- hit hero
-                    ( _, True ) ->
-                        model
-                            |> attackHero monster
-                            |> moveMonsters restOfMonsters (monster :: movedMonsters)
-
-                    ( ( True, _, _ ), _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    ( ( _, Just _, _ ), _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    ( ( _, _, Just _ ), _ ) ->
-                        moveMonsters restOfMonsters (monster :: movedMonsters) model
-
-                    _ ->
-                        if isObstructedByMovedMonsters then
-                            moveMonsters restOfMonsters (monster :: movedMonsters) model
-                        else
-                            moveMonsters restOfMonsters (movedMonster :: movedMonsters) model
-
-
-attackHero : Monster -> Game -> Game
-attackHero monster ({ hero, seed, messages } as model) =
-    let
-        ( ( msg, heroAfterHit ), seed_ ) =
-            Random.step (Combat.attack monster hero) seed
-    in
-        { model
-            | messages = msg :: messages
-            , hero = heroAfterHit
-            , seed = seed_
-        }
-
-
-{-| Given a position and a map, work out everything on the square
--}
-type alias TileObstruction =
-    Bool
-
-
-type alias HeroObstruction =
-    Bool
 
 
 subscription : Game -> Sub Msg

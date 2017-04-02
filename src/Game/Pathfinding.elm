@@ -1,4 +1,8 @@
-module Game.Pathfinding exposing (findPath)
+module Game.Pathfinding
+    exposing
+        ( findPath
+        , heuristic
+        )
 
 import AStar
 import Game.Model exposing (Game)
