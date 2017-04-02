@@ -325,7 +325,7 @@ update msg ({ hero, level, inventory } as previousGameState) =
             ClickTile targetPosition ->
                 let
                     path =
-                        Debug.log "Path: " (Pathfinding.findPath hero.position targetPosition True game)
+                        Debug.log "Path: " (Pathfinding.findPathForClickNavigation hero.position targetPosition level)
                 in
                     update (PathTo path) game
 

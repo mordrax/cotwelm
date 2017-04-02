@@ -6,7 +6,7 @@ module Game.Collision
 
 import Building exposing (Building)
 import Game.Combat as Combat
-import Game.Level as Level
+import Game.Level as Level exposing (Level)
 import Game.Maps as Maps
 import Game.Model exposing (Game, Screen(..))
 import Game.Pathfinding as Pathfinding
@@ -184,29 +184,34 @@ moveMonsters ({ hero, maps, level } as game) =
 moveMonster : Monster -> Game -> Game
 moveMonster monster ({ hero, level } as game) =
     let
-        movedMonster =
-            pathMonster monster hero game
+        (newLevel, movedMonster) =
+            pathMonster monster hero level
 
         obstructed monster =
-            Level.queryPosition movedMonster.position level
+            Level.queryPosition movedMonster.position newLevel
     in
         if Vector.adjacent monster.position hero.position then
             attackHero monster game
-        else if Level.obstructed movedMonster.position level then
+        else if Level.obstructed movedMonster.position newLevel then
             game
         else
-            level.monsters
+            newLevel.monsters
                 |> Monster.replaceMoved monster movedMonster
-                |> flip Level.setMonsters level
+                |> flip Level.setMonsters newLevel
                 |> flip Game.Model.setLevel game
 
 
-pathMonster : Monster -> Hero -> Game -> Monster
-pathMonster monster hero game =
-    Pathfinding.findPath monster.position hero.position False game
-        |> List.head
-        |> Maybe.withDefault monster.position
-        |> \newPosition -> { monster | position = newPosition }
+pathMonster : Monster -> Hero -> Level -> ( Level, Monster )
+pathMonster monster hero level =
+    let
+        monsterFollowPath m path =
+            path
+                |> List.head
+                |> Maybe.map (\step -> { monster | position = step })
+                |> Maybe.withDefault m
+    in
+        Pathfinding.findPath monster.position hero.position level
+            |> (\( newLevel, path ) -> ( newLevel, monsterFollowPath monster path ))
 
 
 attackHero : Monster -> Game -> Game
