@@ -126,15 +126,6 @@ initTurn =
     {}
 
 
-
---
---setWalking : Maybe Direction -> Game -> Game
---setWalking walking ({ turn } as game) =
---    { game
---        | turn = { turn | walking = walking }
---    }
-
-
 hasHeroMoved : Game -> Bool
 hasHeroMoved ({ previousState, hero } as game) =
     let
@@ -147,9 +138,3 @@ hasHeroMoved ({ previousState, hero } as game) =
 
             State previousGame ->
                 heroPosition previousGame /= heroPosition game
-
-
-
---setHeroMoved : Bool -> Game -> Game
---setHeroMoved moved ({ turn } as game) =
---    { game | turn = { turn | heroMoved = moved } }

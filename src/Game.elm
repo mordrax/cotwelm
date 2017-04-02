@@ -1,6 +1,7 @@
 module Game
     exposing
         ( Msg
+        , Game
         , init
         , update
         , view
@@ -38,6 +39,11 @@ import Utils.Direction as Direction exposing (Direction)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
+import Game.Pathfinding as Pathfinding
+
+
+type alias Game =
+    Game.Model.Game
 
 
 type Msg
@@ -138,10 +144,8 @@ isOnStairs upOrDownStairs ({ hero, level } as game) =
 actionMove : Direction -> Game -> Game
 actionMove dir game =
     game
-        |>
-            Collision.move dir
-        |>
-            updateFOV
+        |> Collision.move dir
+        |> updateFOV
         --        |> Collision.moveMonsters (monstersOnLevel game) [] game
         |>
             Render.viewport
@@ -220,73 +224,6 @@ updateFOV ({ level, hero } as game) =
 -- Updates
 
 
-updateKeyboard : Keymap.Msg -> Game -> ( Game, Cmd Msg )
-updateKeyboard keyboardMsg ({ hero, level, maps } as game) =
-    let
-        noCmd =
-            flip (,) Cmd.none
-    in
-        case keyboardMsg of
-            Keymap.KeyDir dir ->
-                game
-                    |> actionMove dir
-                    |> noCmd
-
-            Keymap.Walk dir ->
-                game
-                    |> actionMove dir
-                    |> actionKeepOnWalking dir
-
-            Keymap.Esc ->
-                case game.currentScreen of
-                    MapScreen ->
-                        ( game, Cmd.none )
-
-                    BuildingScreen _ ->
-                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) game
-
-                    InventoryScreen ->
-                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) game
-
-            Keymap.Inventory ->
-                let
-                    ground =
-                        Level.ground hero.position level
-                in
-                    ( { game
-                        | currentScreen = InventoryScreen
-                        , inventory = Inventory.init (Inventory.Ground ground) hero.equipment
-                      }
-                    , Cmd.none
-                    )
-
-            Keymap.GoUpstairs ->
-                game
-                    |> actionTakeStairs
-                    |> updateFOV
-                    |> Render.viewport
-                    |> noCmd
-
-            Keymap.GoDownstairs ->
-                game
-                    |> actionTakeStairs
-                    |> updateFOV
-                    |> Render.viewport
-                    |> noCmd
-
-            Keymap.Get ->
-                game
-                    |> actionPickup
-                    |> noCmd
-
-            other ->
-                let
-                    _ =
-                        Debug.log "Keyboard key not implemented yet" other
-                in
-                    ( game, Cmd.none )
-
-
 updateEquipmentAndMerchant : ( Equipment, Inventory.Merchant ) -> Game -> Game
 updateEquipmentAndMerchant ( equipment, merchant ) ({ hero, shops, level } as game) =
     let
@@ -320,8 +257,63 @@ update msg ({ hero, level, inventory } as previousGameState) =
             Game.Model.setPreviousState previousGameState previousGameState
     in
         case msg of
-            KeyboardMsg msg ->
-                updateKeyboard msg game
+            KeyboardMsg (Keymap.KeyDir dir) ->
+                game
+                    |> actionMove dir
+                    |> noCmd
+
+            KeyboardMsg (Keymap.Walk dir) ->
+                game
+                    |> actionMove dir
+                    |> actionKeepOnWalking dir
+
+            KeyboardMsg (Keymap.Esc) ->
+                case game.currentScreen of
+                    MapScreen ->
+                        ( game, Cmd.none )
+
+                    BuildingScreen _ ->
+                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) game
+
+                    InventoryScreen ->
+                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) game
+
+            KeyboardMsg (Keymap.Inventory) ->
+                let
+                    newInventory =
+                        Level.ground hero.position level
+                            |> Inventory.Ground
+                in
+                    game
+                        |> Game.Model.setCurrentScreen InventoryScreen
+                        |> Game.Model.setInventory (Inventory.init newInventory hero.equipment)
+                        |> noCmd
+
+            KeyboardMsg (Keymap.GoUpstairs) ->
+                game
+                    |> actionTakeStairs
+                    |> updateFOV
+                    |> Render.viewport
+                    |> noCmd
+
+            KeyboardMsg (Keymap.GoDownstairs) ->
+                game
+                    |> actionTakeStairs
+                    |> updateFOV
+                    |> Render.viewport
+                    |> noCmd
+
+            KeyboardMsg (Keymap.Get) ->
+                game
+                    |> actionPickup
+                    |> noCmd
+
+            KeyboardMsg other ->
+                let
+                    _ =
+                        Debug.log "Keyboard key not implemented yet" other
+                in
+                    ( game, Cmd.none )
 
             InventoryMsg msg ->
                 let
@@ -342,7 +334,7 @@ update msg ({ hero, level, inventory } as previousGameState) =
             ClickTile targetPosition ->
                 let
                     path =
-                        Debug.log "Path: " (findPath game.hero.position targetPosition True game)
+                        Debug.log "Path: " (Pathfinding.findPath hero.position targetPosition True game)
                 in
                     update (PathTo path) game
 
@@ -383,6 +375,19 @@ newMessage msg model =
 
 type alias HeroPositionChanged =
     Bool
+
+
+isMonsterObstruction : Monster -> List Monster -> Bool
+isMonsterObstruction monster monsters =
+    List.any (.position >> (==) monster.position) monsters
+
+
+pathMonster : Monster -> Hero -> Game -> Monster
+pathMonster monster hero game =
+    Pathfinding.findPath monster.position hero.position False game
+        |> List.head
+        |> Maybe.withDefault monster.position
+        |> \newPosition -> { monster | position = newPosition }
 
 
 moveMonsters : List Monster -> List Monster -> Game -> Game
@@ -455,89 +460,6 @@ type alias HeroObstruction =
 -----------------
 -- Pathfinding --
 -----------------
-
-
-findPath : Vector -> Vector -> Bool -> Game -> List Vector
-findPath from to ignoreObstructions model =
-    let
-        neighboursFunction =
-            if ignoreObstructions then
-                neighboursIncludeBuildings
-            else
-                neighbours
-    in
-        AStar.findPath heuristic (neighboursFunction model) from to
-            |> Maybe.withDefault []
-
-
-pathMonster : Monster -> Hero -> Game -> Monster
-pathMonster monster hero model =
-    findPath monster.position hero.position False model
-        |> List.head
-        |> Maybe.withDefault monster.position
-        |> \newPosition -> { monster | position = newPosition }
-
-
-{-| Manhattan but counts diagonal cost as one (since you can move diagonally)
--}
-heuristic : Vector -> Vector -> Float
-heuristic start end =
-    let
-        ( dx, dy ) =
-            Vector.sub start end
-    in
-        (dx ^ 2 + dy ^ 2)
-            |> toFloat
-            |> sqrt
-
-
-neighbours_ : Game -> Vector -> (Vector -> Bool) -> Set Vector
-neighbours_ model position isObstructedFilter =
-    position
-        |> Vector.neighbours
-        |> List.filter isObstructedFilter
-        |> Set.fromList
-
-
-neighboursIncludeBuildings : Game -> Vector -> Set Vector
-neighboursIncludeBuildings model position =
-    let
-        isObstructedFilter pos =
-            case ( Level.queryPosition pos (Maps.getCurrentLevel model.maps), position == model.hero.position ) of
-                ( ( False, _, Nothing ), True ) ->
-                    True
-
-                _ ->
-                    False
-    in
-        neighbours_ model position isObstructedFilter
-
-
-neighbours : Game -> Vector -> Set Vector
-neighbours model position =
-    let
-        obstructionFilter vector =
-            not (isObstructed vector model)
-    in
-        neighbours_ model position obstructionFilter
-
-
-isObstructed : Vector -> Game -> Bool
-isObstructed position model =
-    case Level.queryPosition position (Maps.getCurrentLevel model.maps) of
-        ( False, Nothing, Nothing ) ->
-            False
-
-        _ ->
-            True
-
-
-isMonsterObstruction : Monster -> List Monster -> Bool
-isMonsterObstruction monster monsters =
-    List.any (.position >> (==) monster.position) monsters
-
-
-
 ----------
 -- View --
 ----------

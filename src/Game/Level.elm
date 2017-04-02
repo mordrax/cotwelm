@@ -12,7 +12,6 @@ module Game.Level
         , getTile
         , ground
         , initNonDungeon
-        , neighbours
         , queryPosition
         , setMonsters
         , size
@@ -276,7 +275,7 @@ draw viewport map scale onClick =
                 |> List.map Tuple.second
 
         toHtml tile =
-            Tile.view tile scale (neighbours map tile.position) onClick
+            Tile.view tile scale (cardinalTileNeighbours map tile.position) onClick
 
         withinViewport tile =
             tile.position
@@ -363,8 +362,10 @@ getTile position { map } =
     Dict.get position map
 
 
-neighbours : Map -> Vector -> Tile.TileNeighbours
-neighbours map center =
+{-| Returns 4 direction tiles as a tuple to calculate tile rotation.
+-}
+cardinalTileNeighbours : Map -> Vector -> Tile.TileNeighbours
+cardinalTileNeighbours map center =
     let
         addTilePosition =
             Vector.add center
@@ -379,12 +380,12 @@ neighbours map center =
         )
 
 
-allNeighbours : Map -> Vector -> List Tile
-allNeighbours map center =
-    let
-        reducer a b =
-            Dict.get a map
-                |> Maybe.map (flip (::) b)
-                |> Maybe.withDefault b
-    in
-        List.foldl reducer [] (Vector.neighbours center)
+--neighbours : Map -> Vector -> List Tile
+--neighbours map center =
+--    let
+--        reducer a b =
+--            Dict.get a map
+--                |> Maybe.map (flip (::) b)
+--                |> Maybe.withDefault b
+--    in
+--        List.foldl reducer [] (Vector.neighbours center)
