@@ -19,7 +19,7 @@ import Arena.MonsterArena as MonsterArena
 type Msg
     = SplashMsg SplashView.Msg
     | CharCreationMsg CharCreation.Msg
-    | GameMsg Game.Msg
+    | GameMsg Game.Model.Msg
     | GenerateGame Random.Seed CharCreation
     | EditorMsg Editor.Msg
     | ArenaMsg PlayerArena.Msg

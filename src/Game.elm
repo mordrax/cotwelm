@@ -1,7 +1,6 @@
 module Game
     exposing
-        ( Msg
-        , Game
+        ( Game
         , init
         , update
         , view
@@ -18,7 +17,7 @@ import Game.Combat as Combat
 import Game.FOV as FOV
 import Game.Level as Level exposing (Level)
 import Game.Maps as Maps
-import Game.Model exposing (Game, Screen(..))
+import Game.Model exposing (..)
 import Game.Render as Render
 import Hero exposing (Hero)
 import Html exposing (..)
@@ -46,12 +45,12 @@ type alias Game =
     Game.Model.Game
 
 
-type Msg
-    = KeyboardMsg Keymap.Msg
-    | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
-    | WindowSize Window.Size
-    | ClickTile Vector
-    | PathTo (List Vector)
+type alias Msg =
+    Game.Model.Msg
+
+
+view =
+    Render.game
 
 
 init : Random.Seed -> Hero -> Difficulty -> ( Game, Cmd Msg )
@@ -456,151 +455,6 @@ type alias HeroObstruction =
     Bool
 
 
-
------------------
--- Pathfinding --
------------------
-----------
--- View --
-----------
-
-
-view : Game -> Html Msg
-view model =
-    case model.currentScreen of
-        MapScreen ->
-            viewMap model
-
-        BuildingScreen building ->
-            case building.buildingType of
-                Building.Shop shopType ->
-                    Html.map InventoryMsg (Inventory.view model.inventory)
-
-                _ ->
-                    viewBuilding building
-
-        InventoryScreen ->
-            Html.map InventoryMsg (Inventory.view model.inventory)
-
-
-viewMonsters : Game -> Html Msg
-viewMonsters model =
-    model
-        |> monstersOnLevel
-        |> List.filter (.visible >> (==) LineOfSight)
-        |> List.map Monster.view
-        |> div []
-
-
-viewMap : Game -> Html Msg
-viewMap ({ windowSize, viewport } as model) =
-    let
-        title =
-            h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
-
-        px x =
-            (toString x) ++ "px"
-
-        adjustViewport html =
-            div
-                [ style
-                    [ ( "position", "relative" )
-                    , ( "overflow", "hidden" )
-                    , ( "width", px windowSize.width )
-                    , ( "height", px (windowSize.height * 4 // 5) )
-                    ]
-                ]
-                [ div
-                    [ style
-                        [ ( "position", "relative" )
-                        , ( "top", px viewport.y )
-                        , ( "left", px viewport.x )
-                        ]
-                    ]
-                    html
-                ]
-
-        viewSize =
-            ( windowSize.width // 32, windowSize.height // 32 )
-
-        viewStart =
-            ( abs <| viewport.x // 32, abs <| viewport.y // 32 )
-    in
-        div []
-            [ viewMenu
-            , viewQuickMenu
-            , adjustViewport
-                [ Level.view ( viewStart, viewSize ) ClickTile model.level
-                , Hero.view model.hero
-                , viewMonsters model
-                ]
-            , viewStatus model
-            ]
-
-
-viewStatus : Game -> Html Msg
-viewStatus model =
-    div []
-        [ div [ class "ui padded grid" ]
-            [ div [ style [ ( "overflow", "auto" ), ( "height", "100px" ) ], class "ui twelve wide column" ]
-                [ viewMessages model ]
-            , div [ class "ui four wide column" ]
-                [ Hero.viewStats model.hero ]
-            ]
-        ]
-
-
-viewMessages : Game -> Html Msg
-viewMessages model =
-    let
-        msg txt =
-            div [] [ text txt ]
-    in
-        div [] (List.map msg model.messages)
-
-
-viewMenu : Html Msg
-viewMenu =
-    div [ class "ui buttons" ]
-        (List.map simpleBtn
-            [ "File"
-            , "Character!"
-            , "Inventory!"
-            , "Map!"
-            , "Spells"
-            , "Activate"
-            , "Verbs"
-            , "Options"
-            , "Window"
-            , "Help"
-            ]
-        )
-
-
-viewQuickMenu : Html Msg
-viewQuickMenu =
-    div []
-        (List.map simpleBtn
-            [ "Get"
-            , "Free Hand"
-            , "Search"
-            , "Disarm"
-            , "Rest"
-            , "Save"
-            ]
-        )
-
-
-viewHUD : Game -> Html Msg
-viewHUD model =
-    div [] [ text "messages" ]
-
-
-viewBuilding : Building -> Html Msg
-viewBuilding building =
-    div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
-
-
 subscription : Game -> Sub Msg
 subscription model =
     Sub.batch
@@ -608,14 +462,3 @@ subscription model =
         , Sub.map InventoryMsg (Inventory.subscription model.inventory)
         , Sub.map KeyboardMsg (Keymap.subscription)
         ]
-
-
-
---------
--- UI --
---------
-
-
-simpleBtn : String -> Html Msg
-simpleBtn txt =
-    div [ class "ui button" ] [ text txt ]
