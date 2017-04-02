@@ -135,7 +135,7 @@ isOnStairs upOrDownStairs ({ hero, level } as game) =
 
 actionMove : Direction -> Game -> Game
 actionMove dir ({ level } as game) =
-    compare game
+    game
         |> Collision.move dir
         |> updateFOV
         |> Collision.moveMonsters
