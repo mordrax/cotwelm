@@ -332,10 +332,16 @@ draw viewport map scale onClick =
 
 calculateMonsterVisibility : Monster -> Vector -> Level -> Monster
 calculateMonsterVisibility monster heroPosition ({ map } as level) =
-    if Utils.FieldOfView.los monster.position heroPosition (isSeeThrough level) then
-        { monster | visible = LineOfSight }
-    else
-        monster
+    let
+        isInLOS =
+            Utils.FieldOfView.los monster.position heroPosition (isSeeThrough level)
+    in
+        if isInLOS then
+            { monster | visible = LineOfSight }
+        else if monster.visible /= Hidden then
+            { monster | visible = Known }
+        else
+            monster
 
 
 roomAndDark : List Room -> Vector -> Bool
@@ -367,8 +373,13 @@ isSeeThrough ({ map, rooms } as level) target =
 updateFOV : Vector -> Level -> Level
 updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
     let
+        isTileVisible position =
+            getTile position level
+                |> Maybe.map (.visible >> (==) Known)
+                |> Maybe.withDefault True
+
         newMap =
-            Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList)
+            Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList) isTileVisible
                 |> Set.toList
                 |> List.foldl addToMapAsVisibleTile map
 

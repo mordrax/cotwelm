@@ -4,18 +4,19 @@ module Game.Render
         , game
         )
 
-import Game.Model exposing (..)
-import Utils.Vector as Vector exposing (Vector)
+import Building exposing (Building)
 import Game.Level as Level
 import Game.Maps as Maps
+import Game.Model exposing (..)
+import Hero
 import Html exposing (..)
 import Html.Attributes as HA
+import Html.Lazy
 import Inventory exposing (Inventory)
-import Shops exposing (Shop)
 import Monster exposing (Monster)
-import Building exposing (Building)
-import Hero
+import Shops exposing (Shop)
 import Types exposing (..)
+import Utils.Vector as Vector exposing (Vector)
 
 
 {-| Handles all logic and rendering of the game to screen.
@@ -119,12 +120,15 @@ viewMap ({ windowSize, viewport } as model) =
 
         viewStart =
             ( abs <| viewport.x // 32, abs <| viewport.y // 32 )
+
+        lazyLevelView =
+            Html.Lazy.lazy3 Level.view ( viewStart, viewSize ) ClickTile model.level
     in
         div []
             [ viewMenu
             , viewQuickMenu
             , adjustViewport
-                [ Level.view ( viewStart, viewSize ) ClickTile model.level
+                [ lazyLevelView
                 , Hero.view model.hero
                 , viewMonsters model
                 ]
