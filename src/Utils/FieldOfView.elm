@@ -1,4 +1,9 @@
-module Utils.FieldOfView exposing (find, los)
+module Utils.FieldOfView
+    exposing
+        ( find
+        , los
+        , losWithLine
+        )
 
 {-| For any given graph, will span out from the source point, collecting visible nodes
     until there are no more nodes to collect.
@@ -25,21 +30,25 @@ type alias FieldOfView comparable =
     , visible : Set comparable
     , isSeeThrough : comparable -> Bool
     , getNeighbours : comparable -> Set comparable
+    , isExplored : comparable -> Bool
     }
 
 
-find : Vector -> (Vector -> Bool) -> (Vector -> Set Vector) -> Set Vector
-find source isSeeThrough neighbours =
+find : Vector -> (Vector -> Bool) -> (Vector -> Set Vector) -> (Vector -> Bool) -> Set Vector
+find source isSeeThrough neighbours isExplored =
     let
+        initialSources =
+            neighbours source
+
         fov =
-            FieldOfView [ source ] Set.empty Set.empty isSeeThrough neighbours
+            FieldOfView (Set.toList initialSources) Set.empty Set.empty isSeeThrough neighbours isExplored
     in
         find_ source fov
             |> .visible
 
 
 find_ : Vector -> FieldOfView Vector -> FieldOfView Vector
-find_ source ({ unexplored, explored, visible, isSeeThrough, getNeighbours } as fov) =
+find_ source ({ unexplored, explored, visible, isSeeThrough, getNeighbours, isExplored } as fov) =
     let
         addNeighbours x fov =
             let
@@ -53,7 +62,7 @@ find_ source ({ unexplored, explored, visible, isSeeThrough, getNeighbours } as 
                 fov
 
             x :: xs ->
-                if los source x isSeeThrough then
+                if not (isExplored x) && los source x isSeeThrough then
                     { fov
                         | unexplored = xs
                         , explored = Set.insert x explored
@@ -71,9 +80,17 @@ find_ source ({ unexplored, explored, visible, isSeeThrough, getNeighbours } as 
 
 los : Vector -> Vector -> (Vector -> Bool) -> Bool
 los a b isSeeThrough =
+    losWithLine a b isSeeThrough
+        |> Tuple.first
+
+
+losWithLine : Vector -> Vector -> (Vector -> Bool) -> ( Bool, List Vector )
+losWithLine a b isSeeThrough =
     let
         isSeeThroughOrEitherEndpoints point =
             (isSeeThrough point) || (point == a) || (point == b) || Vector.adjacent a b
+
+        line =
+            BresenhamLine.line a b
     in
-        BresenhamLine.line a b
-            |> List.all isSeeThroughOrEitherEndpoints
+        ( List.all isSeeThroughOrEitherEndpoints line, line )

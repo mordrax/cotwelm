@@ -20,6 +20,8 @@ import Shops exposing (Shops)
 import Stats
 import Utils.Direction exposing (Direction)
 import Utils.Vector as Vector exposing (Vector)
+import Utils.FieldOfView as FieldOfView
+import Types exposing (..)
 
 
 {-| Handles all logic to do with movements and collision of hero and monsters.
@@ -175,25 +177,28 @@ moveMonsters ({ hero, maps, level } as game) =
 
         sortByDistance monsters =
             List.sortWith distanceToHero monsters
+
+        detectionDistance =
+            10
     in
         level.monsters
+            |> List.filter (\monster -> monster.visible /= Hidden)
             |> sortByDistance
+            |> List.filter (\monster -> distance monster hero <= detectionDistance)
             |> List.foldl moveMonster game
 
 
 moveMonster : Monster -> Game -> Game
-moveMonster monster ({ hero, level } as game) =
+moveMonster monster ({ hero } as game) =
     let
-        (newLevel, movedMonster) =
-            pathMonster monster hero level
+        ( newLevel, movedMonster ) =
+            pathMonster monster hero game.level
 
         obstructed monster =
             Level.queryPosition movedMonster.position newLevel
     in
         if Vector.adjacent monster.position hero.position then
             attackHero monster game
-        else if Level.obstructed movedMonster.position newLevel then
-            game
         else
             newLevel.monsters
                 |> Monster.replaceMoved monster movedMonster
