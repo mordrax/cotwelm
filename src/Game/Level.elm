@@ -224,7 +224,7 @@ drop ( position, item ) ({ map } as level) =
     level
         |> getTile position
         |> Maybe.map (Tile.drop item >> setTile level)
-        |> Maybe.withDefault (Debug.log "Level.drop invalid position" level)
+        |> Maybe.withDefault level
 
 
 drops : ( Vector, List Item ) -> Level -> Level

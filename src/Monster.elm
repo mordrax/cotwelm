@@ -89,3 +89,6 @@ replaceMoved existing new monsters =
 remove : Monster -> List Monster -> List Monster
 remove monster monsters =
     List.filter (\x -> monster.position /= x.position) monsters
+
+rank: List Monster
+rank = []
