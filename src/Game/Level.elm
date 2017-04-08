@@ -101,11 +101,11 @@ initNonDungeon tiles buildings monsters =
     }
 
 
-generateMonsters : Level -> Generator Level
-generateMonsters level =
+generateMonsters : Int -> Level -> Generator Level
+generateMonsters dungeonLevel level =
     Misc.shuffle (floors level)
         |> Random.map (List.take 15)
-        |> Random.andThen Monster.makeRandomMonsters
+        |> Random.andThen (Monster.makeRandomMonsters ((dungeonLevel + 1) * 5))
         |> Random.map (\monsters -> { level | monsters = monsters })
 
 
@@ -224,7 +224,7 @@ drop ( position, item ) ({ map } as level) =
     level
         |> getTile position
         |> Maybe.map (Tile.drop item >> setTile level)
-        |> Maybe.withDefault (Debug.log "Level.drop invalid position" level)
+        |> Maybe.withDefault level
 
 
 drops : ( Vector, List Item ) -> Level -> Level

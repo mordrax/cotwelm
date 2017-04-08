@@ -50,10 +50,15 @@ type FightState
     | Stopped
 
 
+type alias Ranking =
+    EveryDict Monsters.Types.MonsterType Int
+
+
 type alias Model =
     { matches : Matches
     , vses : List VS
     , fightState : FightState
+    , ranking : EveryDict Monsters.Types.MonsterType Int
     }
 
 
@@ -70,6 +75,7 @@ init =
         { matches = initMatches vses
         , vses = vses
         , fightState = Started
+        , ranking = EveryDict.empty
         }
 
 
@@ -100,13 +106,58 @@ update msg model =
             ( model, Random.generate FightResult (fight model) )
 
         FightResult matches ->
-            ( { model | matches = matches }, Cmd.none )
+            ( { model
+                | matches = matches
+                , ranking = calculateRanking matches
+              }
+            , Cmd.none
+            )
 
         ChangeFightState fightState ->
-            ( { model | fightState = fightState }, Cmd.none )
+            let
+                _ =
+                    if fightState == Stopped then
+                        Debug.log "Monster ranks:"
+                            (model.ranking
+                                |> EveryDict.toList
+                                |> List.sortBy Tuple.second
+                            )
+                    else
+                        []
+            in
+                ( { model | fightState = fightState }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
+
+
+calculateRanking : Matches -> Ranking
+calculateRanking matches =
+    let
+        addToWins_ monsterType timesWon wins =
+            wins
+                |> EveryDict.get monsterType
+                |> Maybe.withDefault 0
+                |> (+) timesWon
+                |> (\newWins -> EveryDict.insert monsterType newWins wins)
+
+        addToWins : ( VS, Match ) -> EveryDict Monsters.Types.MonsterType Int -> EveryDict Monsters.Types.MonsterType Int
+        addToWins ( ( blue, red ), match ) wins =
+            wins
+                |> addToWins_ blue match.blueWins
+                |> addToWins_ red (match.rounds - match.blueWins)
+
+        winsToRanking wins =
+            EveryDict.toList wins
+                |> List.sortBy Tuple.second
+                |> List.map Tuple.first
+                |> List.indexedMap (\a b -> ( b, a ))
+                |> EveryDict.fromList
+    in
+        matches
+            |> EveryDict.toList
+            |> List.foldl addToWins EveryDict.empty
+            |> winsToRanking
 
 
 fight : Model -> Generator Matches
@@ -152,7 +203,7 @@ viewTournament model =
                 |> List.map toString
 
         headers =
-            "Combatants" :: contestantsAsStrings
+            "Combatants" :: "Rank" :: contestantsAsStrings
 
         headStyle =
             HA.style [ ( "height", "150px" ), ( "white-space", "nowrap" ), ( "padding", "0" ), ( "width", "10px" ) ]
@@ -168,20 +219,32 @@ viewTournament model =
         div [ HA.style [ ( "width", "100%" ), ( "overflow", "scroll" ), ( "height", "800px" ) ] ]
             [ table [ HA.class "ui very basic compact striped celled table" ]
                 [ thead [] [ tr [] (List.map header headers) ]
-                , tbody [] (List.map (viewMatches model.matches) Monster.types)
+                , tbody [] (List.map (viewMatches model) Monster.types)
                 ]
             ]
 
 
-viewMatches : Matches -> Monsters.Types.MonsterType -> Html msg
-viewMatches matches contestant =
+viewMatches : Model -> Monsters.Types.MonsterType -> Html msg
+viewMatches { matches, ranking } contestant =
     let
         match opponent =
             EveryDict.get ( contestant, opponent ) matches
                 |> Maybe.map viewMatch
                 |> Maybe.withDefault (td [] [ text "N/A" ])
+
+        rank =
+            EveryDict.get contestant ranking
+                |> Maybe.map toString
+                |> Maybe.withDefault "N/A"
+
+        tdata a =
+            td [] [ text <| toString a ]
     in
-        tr [] ((text <| toString contestant) :: List.map match monsterTypes)
+        tr []
+            (tdata contestant
+                :: tdata rank
+                :: List.map match monsterTypes
+            )
 
 
 viewMatch : Match -> Html msg

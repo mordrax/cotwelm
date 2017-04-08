@@ -26,7 +26,7 @@ size and type.
 import Html exposing (Html)
 import Monsters.Factory exposing (make)
 import Monsters.Model
-import Monsters.Types
+import Monsters.Types exposing (..)
 import Monsters.View
 import Utils.Vector as Vector exposing (Vector)
 
