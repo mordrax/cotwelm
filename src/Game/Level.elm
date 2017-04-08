@@ -101,11 +101,11 @@ initNonDungeon tiles buildings monsters =
     }
 
 
-generateMonsters : Level -> Generator Level
-generateMonsters level =
+generateMonsters : Int -> Level -> Generator Level
+generateMonsters dungeonLevel level =
     Misc.shuffle (floors level)
         |> Random.map (List.take 15)
-        |> Random.andThen Monster.makeRandomMonsters
+        |> Random.andThen (Monster.makeRandomMonsters ((dungeonLevel + 1) * 5))
         |> Random.map (\monsters -> { level | monsters = monsters })
 
 
