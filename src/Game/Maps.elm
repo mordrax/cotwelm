@@ -148,7 +148,7 @@ downstairs currentLevel maps =
 
             Nothing ->
                 DungeonGenerator.generate Config.init
-                    |> Random.andThen Level.generateMonsters
+                    |> Random.andThen (Level.generateMonsters nextDungeonLevel)
                     |> Random.map
                         (\newLevel ->
                             ( newLevel

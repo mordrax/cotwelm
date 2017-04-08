@@ -24,20 +24,20 @@ import Utils.Vector as Vector exposing (Vector)
 
 {-| Give a list of positions, fill those places in with random monsters
 -}
-makeRandomMonsters : List Vector -> Generator (List Monster)
-makeRandomMonsters positions =
-    List.foldl randomMonstersReducer (Random.constant []) positions
+makeRandomMonsters : Int -> List Vector -> Generator (List Monster)
+makeRandomMonsters maxRank positions =
+    List.foldl (randomMonstersReducer maxRank) (Random.constant []) positions
 
 
-randomMonstersReducer : Vector -> Generator (List Monster) -> Generator (List Monster)
-randomMonstersReducer position monsters =
-    randomMonster position
+randomMonstersReducer : Int -> Vector -> Generator (List Monster) -> Generator (List Monster)
+randomMonstersReducer maxRank position monsters =
+    randomMonster maxRank position
         |> (\monster -> Random.map2 (::) monster monsters)
 
 
-randomMonster : Vector -> Generator Monster
-randomMonster position =
-    Misc.shuffle monsterTypesToList
+randomMonster : Int -> Vector -> Generator Monster
+randomMonster maxRank position =
+    Misc.shuffle (cappedRank maxRank)
         |> Random.map (List.head)
         |> Random.map (Maybe.withDefault GiantRat)
         |> Random.map (flip make position)
