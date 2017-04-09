@@ -26,7 +26,7 @@ type alias Weight =
 
 
 type alias Capacity =
-    { maxWeight : Weight, maxBulk : Bulk }
+    { maxBulk : Bulk, maxWeight : Weight }
 
 
 type Msg
@@ -37,12 +37,16 @@ type Msg
 
 add : Mass -> Mass -> Mass
 add a b =
-    Mass (a.bulk + b.bulk) (a.weight + b.weight)
+    { bulk = a.bulk + b.bulk
+    , weight = a.weight + b.weight
+    }
 
 
 subtract : Mass -> Mass -> Mass
 subtract a b =
-    Mass (a.bulk - b.bulk) (a.weight - b.weight)
+    { bulk = a.bulk - b.bulk
+    , weight = a.weight - b.weight
+    }
 
 
 withinCapacity : Mass -> Capacity -> Msg

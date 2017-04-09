@@ -29,7 +29,6 @@ type Msg
 
 type alias Model a =
     { capacity : Capacity
-    , currentMass : Mass
     , items : List a
     , getMass : a -> Mass
     , equals : a -> a -> Bool
@@ -47,12 +46,18 @@ capacity (ContainerModel model) =
 
 mass : Container a -> Mass
 mass (ContainerModel model) =
-    model.currentMass
+    let
+        sumMass a accMass =
+            model.getMass a
+                |> (\{ weight, bulk } -> { weight = weight + accMass.weight, bulk = bulk + accMass.bulk })
+    in
+        model.items
+            |> List.foldl sumMass (Mass 0 0)
 
 
 init : Capacity -> (a -> Mass) -> (a -> a -> Bool) -> Container a
 init capacity getMass equals =
-    ContainerModel <| Model capacity (Mass 0 0) [] getMass equals
+    ContainerModel <| Model capacity [] getMass equals
 
 
 {-| Get all the things in the container as a list
@@ -72,21 +77,18 @@ set items (ContainerModel model) =
 add : a -> Container a -> ( Container a, Msg )
 add item (ContainerModel model) =
     let
-        mass =
-            model.getMass item
-
-        containerMassWithItem =
-            Mass.add mass model.currentMass
+        newMass =
+            Mass.add (model.getMass item)
+                (mass (ContainerModel model))
 
         isWithinCapacity =
-            Mass.withinCapacity containerMassWithItem model.capacity
+            Mass.withinCapacity newMass model.capacity
     in
         case isWithinCapacity of
             Mass.Success ->
                 ( ContainerModel
                     { model
-                        | currentMass = containerMassWithItem
-                        , items = item :: model.items
+                        | items = item :: model.items
                     }
                 , Ok
                 )
@@ -99,14 +101,4 @@ add item (ContainerModel model) =
 -}
 remove : a -> Container a -> Container a
 remove item (ContainerModel model) =
-    let
-        itemsWithItemRemoved =
-            Utils.Misc.removeFirst item model.equals model.items
-
-        itemMass =
-            model.getMass item
-
-        mass_ =
-            Mass.subtract model.currentMass itemMass
-    in
-        ContainerModel { model | items = itemsWithItemRemoved, currentMass = mass_ }
+    ContainerModel { model | items = Utils.Misc.removeFirst item model.equals model.items }
