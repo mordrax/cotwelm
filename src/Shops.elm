@@ -208,8 +208,7 @@ weapons =
 
 armour : ItemTypes
 armour =
-    [ Item.Data.ItemTypeArmour RustyArmour
-    , Item.Data.ItemTypeArmour LeatherArmour
+    [ Item.Data.ItemTypeArmour LeatherArmour
     , Item.Data.ItemTypeArmour StuddedLeatherArmour
     , Item.Data.ItemTypeArmour RingMail
     , Item.Data.ItemTypeArmour ScaleMail
@@ -244,8 +243,7 @@ gauntlets =
 
 helmet : ItemTypes
 helmet =
-    [ Item.Data.ItemTypeHelmet BrokenHelmet
-    , Item.Data.ItemTypeHelmet LeatherHelmet
+    [ Item.Data.ItemTypeHelmet LeatherHelmet
     , Item.Data.ItemTypeHelmet IronHelmet
     , Item.Data.ItemTypeHelmet SteelHelmet
     , Item.Data.ItemTypeHelmet MeteoricSteelHelmet
@@ -272,8 +270,7 @@ pack =
 
 shield : ItemTypes
 shield =
-    [ Item.Data.ItemTypeShield BrokenShield
-    , Item.Data.ItemTypeShield SmallWoodenShield
+    [ Item.Data.ItemTypeShield SmallWoodenShield
     , Item.Data.ItemTypeShield MediumWoodenShield
     , Item.Data.ItemTypeShield LargeWoodenShield
     , Item.Data.ItemTypeShield SmallIronShield
