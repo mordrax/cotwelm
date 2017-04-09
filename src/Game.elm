@@ -23,7 +23,7 @@ import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Inventory exposing (Inventory)
-import Item exposing (Item)
+import Item
 import Item.Data exposing (..)
 import Keymap
 import Monster exposing (Monster)

@@ -4,7 +4,7 @@ import Container exposing (Container)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
-import Item exposing (Item)
+import Item
 import List.Extra as ListX
 import String.Extra as StringX
 import Tile.Model exposing (..)

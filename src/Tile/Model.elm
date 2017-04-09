@@ -2,13 +2,14 @@ module Tile.Model exposing (..)
 
 import Container exposing (Container)
 import Dict exposing (Dict)
-import Item exposing (Item)
+import Item.Data exposing (Item)
 import Types exposing (..)
 import Utils.Vector as Vector exposing (Vector)
 import Building exposing (Building)
 import Monster exposing (Monster)
 import Hero exposing (Hero)
 import Tile.Types exposing (..)
+
 
 type alias Tile =
     { type_ : TileType
@@ -27,6 +28,7 @@ type Occupant
     | H Hero
     | M Monster
     | Empty
+
 
 type alias HalfTileData =
     ( TileType, TileType, Int )
@@ -72,4 +74,3 @@ solidTiles =
     , WallDarkDgn
     , WallLitDgn
     ]
-

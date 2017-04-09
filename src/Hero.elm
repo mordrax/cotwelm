@@ -17,13 +17,14 @@ import Equipment exposing (Equipment, EquipmentSlot)
 import Types exposing (..)
 import Html exposing (..)
 import Html.Attributes as HA
-import Item exposing (Item)
+import Item
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Direction as Direction exposing (Direction)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Container
+import Item.Data
 
 type alias Hero =
     { name : Name
@@ -85,7 +86,7 @@ move direction model =
         |> Vector.add model.position
         |> \x -> { model | position = x }
 
-pickup : List Item -> Hero -> (Hero, List Item, List String)
+pickup : List Item.Data.Item -> Hero -> (Hero, List Item.Data.Item, List String)
 pickup items hero =
     let
         ( hero_, msgs, failedToPickup ) =
@@ -93,7 +94,7 @@ pickup items hero =
     in
         (hero_, failedToPickup, msgs)
 
-pickup_ : Item -> ( Hero, List String, List Item ) -> ( Hero, List String, List Item )
+pickup_ : Item.Data.Item -> ( Hero, List String, List Item.Data.Item ) -> ( Hero, List String, List Item.Data.Item )
 pickup_ item ( hero, messages, remainingItems ) =
     let
         ( equipment_, msg ) =

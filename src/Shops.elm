@@ -15,15 +15,16 @@ module Shops
 
 import Dict exposing (Dict)
 import Item.Data exposing (..)
-import Item exposing (Item)
-import Item.Purse as Purse exposing (Purse)
+import Item
+import Item.Purse as Purse
 import Random.Pcg as Random exposing (step, initialSeed, list, Seed)
 import Task exposing (perform)
 import Time exposing (now)
 import Utils.Misc
 
+
 type alias Items =
-    List Item.Item
+    List Item
 
 
 type Msg

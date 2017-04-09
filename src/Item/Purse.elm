@@ -1,12 +1,6 @@
 module Item.Purse
     exposing
-        ( Purse
-        , Coins
-        , CopperCoins
-        , SilverCoins
-        , GoldCoins
-        , PlatinumCoins
-        , init
+        ( init
         , initCoppers
         , initSilvers
         , initGolds
@@ -28,66 +22,36 @@ init =
     }
 
 
-type alias CopperCoins =
-    { base : BaseItem, value : Int }
-
-
-type alias SilverCoins =
-    { base : BaseItem, value : Int }
-
-
-type alias GoldCoins =
-    { base : BaseItem, value : Int }
-
-
-type alias PlatinumCoins =
-    { base : BaseItem, value : Int }
-
-
 initCoinBaseItem : String -> String -> Int -> BaseItem
-initCoinBaseItem name css  value =
+initCoinBaseItem name css value =
     BaseItem name (Prices value value) css (Mass.Mass 0 0) Normal Identified
 
 
-initCoppers :  Int -> CopperCoins
+initCoppers : Int -> CopperCoins
 initCoppers value =
     { base = initCoinBaseItem "Copper" "coins-copper" value
     , value = value
     }
 
 
-initSilvers :  Int -> SilverCoins
+initSilvers : Int -> SilverCoins
 initSilvers value =
     { base = initCoinBaseItem "Silver" "coins-silver" value
     , value = value
     }
 
 
-initGolds :  Int -> GoldCoins
+initGolds : Int -> GoldCoins
 initGolds value =
     { base = initCoinBaseItem "Gold" "coins-gold" value
     , value = value
     }
 
 
-initPlatinums :  Int -> PlatinumCoins
+initPlatinums : Int -> PlatinumCoins
 initPlatinums value =
     { base = initCoinBaseItem "Platinum" "coins-platinum" value
     , value = value
-    }
-
-
-type alias Coins =
-    { copper : Int
-    , silver : Int
-    , gold : Int
-    , platinum : Int
-    }
-
-
-type alias Purse =
-    { base : BaseItem
-    , coins : Coins
     }
 
 
@@ -104,8 +68,7 @@ add coppers ({ coins } as model) =
     in
         { model
             | coins =
-                Coins
-                    (coins.copper + leastCoins.copper)
+                Coins (coins.copper + leastCoins.copper)
                     (coins.silver + leastCoins.silver)
                     (coins.gold + leastCoins.gold)
                     (coins.platinum + leastCoins.platinum)

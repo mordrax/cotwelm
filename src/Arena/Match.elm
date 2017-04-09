@@ -19,7 +19,7 @@ import Game.Combat as Combat
 import Dice
 import Equipment exposing (Equipment)
 import Html exposing (..)
-import Item exposing (Item)
+import Item
 import Random.Pcg as Random exposing (Generator)
 import Arena.Types exposing (..)
 

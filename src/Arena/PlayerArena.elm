@@ -17,7 +17,7 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Item.Armour as Armour
 import Item.Data as ItemData
-import Item exposing (Item)
+import Item
 import Item.Weapon as Weapon
 import Monster exposing (Monster)
 import Process
@@ -348,12 +348,12 @@ initHero attrs equipment =
         |> \x -> equipHero x equipment
 
 
-makeWeapon : ItemData.WeaponType -> Item
+makeWeapon : ItemData.WeaponType -> ItemData.Item
 makeWeapon weaponType =
     Item.new (ItemData.ItemTypeWeapon weaponType)
 
 
-makeArmour : ItemData.ArmourType -> Item
+makeArmour : ItemData.ArmourType -> ItemData.Item
 makeArmour armourType =
     Item.new (ItemData.ItemTypeArmour armourType)
 

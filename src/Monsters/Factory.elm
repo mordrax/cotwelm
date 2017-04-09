@@ -11,7 +11,7 @@ module Monsters.Factory
 import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
 import Item.Data as ItemData exposing (..)
-import Item exposing (Item)
+import Item
 import Monsters.Model as Model exposing (Monster)
 import Monsters.Types exposing (..)
 import Random.Pcg as Random exposing (Generator)

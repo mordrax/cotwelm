@@ -27,7 +27,8 @@ import Dungeon.DungeonGenerator as DungeonGenerator
 import Dungeon.Rooms.Config as Config
 import Html exposing (..)
 import Html.Lazy as Lazy
-import Item exposing (Item)
+import Item
+import Item.Data exposing (Item)
 import Game.Level as Level exposing (Level)
 import Monster
 import Random.Pcg as Random exposing (Generator)

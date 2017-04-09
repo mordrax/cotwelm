@@ -4,19 +4,6 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-type BeltContainer a
-    = TwoSlot ( Maybe a, Maybe a )
-    | ThreeSlot ( Maybe a, Maybe a, Maybe a )
-    | FourSlot ( Maybe a, Maybe a, Maybe a, Maybe a )
-
-
-type alias Belt a =
-    { base : BaseItem
-    , beltType : BeltType
-    , beltContainer : BeltContainer a
-    }
-
-
 init : BeltType -> ItemStatus -> IdentificationStatus -> Belt a
 init beltType status idStatus =
     let

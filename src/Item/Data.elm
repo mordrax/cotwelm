@@ -2,6 +2,7 @@ module Item.Data exposing (..)
 
 import Utils.Mass exposing (..)
 import Dice exposing (Dice)
+import Container exposing (Container)
 
 
 type Msg
@@ -37,6 +38,26 @@ type IdentificationStatus
 
 type alias ItemTypes =
     List ItemType
+
+
+type Item
+    = ItemWeapon Weapon
+    | ItemArmour Armour
+    | ItemShield Shield
+    | ItemHelmet Helmet
+    | ItemBracers Bracers
+    | ItemGauntlets Gauntlets
+    | ItemBelt (Belt Item)
+    | ItemPack (Pack Item)
+    | ItemPurse Purse
+    | ItemNeckwear Neckwear
+    | ItemOvergarment Overgarment
+    | ItemRing Ring
+    | ItemBoots Boots
+    | ItemCopper CopperCoins
+    | ItemSilver SilverCoins
+    | ItemGold GoldCoins
+    | ItemPlatinum PlatinumCoins
 
 
 type ItemType
@@ -139,6 +160,56 @@ type alias Overgarment =
 
 type alias Ring =
     { base : BaseItem, ringType : RingType }
+
+
+type BeltContainer a
+    = TwoSlot ( Maybe a, Maybe a )
+    | ThreeSlot ( Maybe a, Maybe a, Maybe a )
+    | FourSlot ( Maybe a, Maybe a, Maybe a, Maybe a )
+
+
+type alias Belt a =
+    { base : BaseItem
+    , beltType : BeltType
+    , beltContainer : BeltContainer a
+    }
+
+
+type alias Pack a =
+    { base : BaseItem
+    , packType : PackType
+    , container : Container a
+    }
+
+
+type alias Coins =
+    { copper : Int
+    , silver : Int
+    , gold : Int
+    , platinum : Int
+    }
+
+
+type alias Purse =
+    { base : BaseItem
+    , coins : Coins
+    }
+
+
+type alias CopperCoins =
+    { base : BaseItem, value : Int }
+
+
+type alias SilverCoins =
+    { base : BaseItem, value : Int }
+
+
+type alias GoldCoins =
+    { base : BaseItem, value : Int }
+
+
+type alias PlatinumCoins =
+    { base : BaseItem, value : Int }
 
 
 

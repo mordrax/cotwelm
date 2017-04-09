@@ -1,7 +1,6 @@
 module Item
     exposing
-        ( Item(..)
-        , Items
+        ( Items
         , new
         , view
         , viewSlot
@@ -21,13 +20,13 @@ import Container exposing (Container)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Item.Armour
-import Item.Belt as Belt exposing (Belt)
+import Item.Belt as Belt
+import Item.Purse as Purse
+import Item.Pack as Pack
 import Item.Bracers
 import Item.Data exposing (..)
 import Item.Gauntlets
 import Item.Helmet
-import Item.Pack as Pack exposing (Pack)
-import Item.Purse as Purse exposing (Purse)
 import Item.Shield
 import Item.Weapon
 import Utils.Mass as Mass exposing (..)
@@ -36,26 +35,6 @@ import Dice
 
 type alias Items =
     List Item
-
-
-type Item
-    = ItemWeapon Weapon
-    | ItemArmour Armour
-    | ItemShield Shield
-    | ItemHelmet Helmet
-    | ItemBracers Bracers
-    | ItemGauntlets Gauntlets
-    | ItemBelt (Belt Item)
-    | ItemPack (Pack Item)
-    | ItemPurse Purse
-    | ItemNeckwear Neckwear
-    | ItemOvergarment Overgarment
-    | ItemRing Ring
-    | ItemBoots Boots
-    | ItemCopper Purse.CopperCoins
-    | ItemSilver Purse.SilverCoins
-    | ItemGold Purse.GoldCoins
-    | ItemPlatinum Purse.PlatinumCoins
 
 
 

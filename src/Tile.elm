@@ -15,7 +15,8 @@ module Tile
 import Building exposing (Building)
 import Container exposing (Container)
 import Dict exposing (Dict)
-import Item exposing (Item)
+import Item
+import Item.Data exposing (Item)
 import List.Extra as ListX
 import Random.Pcg as Random
 import String.Extra as StringX

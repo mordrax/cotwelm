@@ -1,7 +1,6 @@
 module Item.Pack
     exposing
-        ( Pack
-        , init
+        ( init
         , add
         , remove
         , contents
@@ -11,13 +10,6 @@ module Item.Pack
 import Utils.Mass as Mass exposing (..)
 import Item.Data exposing (..)
 import Container exposing (..)
-
-
-type alias Pack a =
-    { base : BaseItem
-    , packType : PackType
-    , container : Container a
-    }
 
 
 info : Pack a -> ( Mass, Capacity )

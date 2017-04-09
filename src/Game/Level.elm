@@ -30,7 +30,8 @@ import Container exposing (Container)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
-import Item exposing (Item)
+import Item
+import Item.Data exposing (Item)
 import Monster exposing (Monster)
 import Tile exposing (Tile)
 import Tile.Types

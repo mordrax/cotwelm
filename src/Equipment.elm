@@ -33,11 +33,11 @@ Does not render equipment but will provide a API to retrieve them.
 
 import Container
 import Html exposing (..)
-import Item.Belt as Belt exposing (Belt)
+import Item.Belt as Belt
 import Item.Data exposing (..)
-import Item exposing (Item)
-import Item.Pack as Pack exposing (Pack)
-import Item.Purse as Purse exposing (Purse)
+import Item
+import Item.Pack as Pack
+import Item.Purse as Purse
 import Utils.Misc as Misc
 import Utils.Mass as Mass
 
@@ -91,6 +91,7 @@ type Msg
     | WrongSlotForItemType
     | ItemAlreadyEquipped
     | CannotUnequipCursedItem
+    | CannotPutAPackInAPack
 
 
 init : Equipment
@@ -146,49 +147,49 @@ setMany_ itemSlotPairs equipment =
 setSlot_ : ( EquipmentSlot, Item ) -> Equipment -> Equipment
 setSlot_ ( slot, item ) (A model) =
     case ( slot, item ) of
-        ( WeaponSlot, Item.ItemWeapon weapon ) ->
+        ( WeaponSlot, ItemWeapon weapon ) ->
             (A { model | weapon = Just weapon })
 
         ( FreehandSlot, item ) ->
             (A { model | freehand = Just item })
 
-        ( ArmourSlot, Item.ItemArmour armour ) ->
+        ( ArmourSlot, ItemArmour armour ) ->
             (A { model | armour = Just armour })
 
-        ( ShieldSlot, Item.ItemShield shield ) ->
+        ( ShieldSlot, ItemShield shield ) ->
             (A { model | shield = Just shield })
 
-        ( HelmetSlot, Item.ItemHelmet helmet ) ->
+        ( HelmetSlot, ItemHelmet helmet ) ->
             (A { model | helmet = Just helmet })
 
-        ( BracersSlot, Item.ItemBracers bracers ) ->
+        ( BracersSlot, ItemBracers bracers ) ->
             (A { model | bracers = Just bracers })
 
-        ( GauntletsSlot, Item.ItemGauntlets gauntlets ) ->
+        ( GauntletsSlot, ItemGauntlets gauntlets ) ->
             (A { model | gauntlets = Just gauntlets })
 
-        ( BeltSlot, Item.ItemBelt belt ) ->
+        ( BeltSlot, ItemBelt belt ) ->
             (A { model | belt = Just belt })
 
-        ( PurseSlot, Item.ItemPurse purse ) ->
+        ( PurseSlot, ItemPurse purse ) ->
             (A { model | purse = Just purse })
 
-        ( PackSlot, Item.ItemPack pack ) ->
+        ( PackSlot, ItemPack pack ) ->
             (A { model | pack = Just pack })
 
-        ( NeckwearSlot, Item.ItemNeckwear neckwear ) ->
+        ( NeckwearSlot, ItemNeckwear neckwear ) ->
             (A { model | neckwear = Just neckwear })
 
-        ( OvergarmentSlot, Item.ItemOvergarment overgarment ) ->
+        ( OvergarmentSlot, ItemOvergarment overgarment ) ->
             (A { model | overgarment = Just overgarment })
 
-        ( LeftRingSlot, Item.ItemRing leftRing ) ->
+        ( LeftRingSlot, ItemRing leftRing ) ->
             (A { model | leftRing = Just leftRing })
 
-        ( RightRingSlot, Item.ItemRing rightRing ) ->
+        ( RightRingSlot, ItemRing rightRing ) ->
             (A { model | rightRing = Just rightRing })
 
-        ( BootsSlot, Item.ItemBoots boots ) ->
+        ( BootsSlot, ItemBoots boots ) ->
             (A { model | boots = Just boots })
 
         _ ->
@@ -222,17 +223,17 @@ unequip slot (A model) =
 putInPack : Item -> Equipment -> ( Equipment, Msg )
 putInPack item equipment =
     case item of
-        Item.ItemCopper { value } ->
-            ( putInPurse (Purse.Coins value 0 0 0) equipment, Success )
+        ItemCopper { value } ->
+            ( putInPurse (Coins value 0 0 0) equipment, Success )
 
-        Item.ItemSilver { value } ->
-            ( putInPurse (Purse.Coins 0 value 0 0) equipment, Success )
+        ItemSilver { value } ->
+            ( putInPurse (Coins 0 value 0 0) equipment, Success )
 
-        Item.ItemGold { value } ->
-            ( putInPurse (Purse.Coins 0 0 value 0) equipment, Success )
+        ItemGold { value } ->
+            ( putInPurse (Coins 0 0 value 0) equipment, Success )
 
-        Item.ItemPlatinum { value } ->
-            ( putInPurse (Purse.Coins 0 0 0 value) equipment, Success )
+        ItemPlatinum { value } ->
+            ( putInPurse (Coins 0 0 0 value) equipment, Success )
 
         _ ->
             putInPack_ item equipment
@@ -244,11 +245,14 @@ putInPack_ item (A model) =
         noChange =
             ( A model, Success )
     in
-        case model.pack of
-            Nothing ->
+        case ( model.pack, item ) of
+            ( Nothing, _ ) ->
                 ( A model, NoPackEquipped )
 
-            Just pack ->
+            ( _, ItemPack _ ) ->
+                ( A model, CannotPutAPackInAPack )
+
+            ( Just pack, _ ) ->
                 let
                     ( packWithItem, msg ) =
                         Pack.add item pack
@@ -256,7 +260,7 @@ putInPack_ item (A model) =
                     ( A { model | pack = Just packWithItem }, ContainerMsg msg )
 
 
-putInPurse : Purse.Coins -> Equipment -> Equipment
+putInPurse : Coins -> Equipment -> Equipment
 putInPurse coins equipment =
     let
         purse =
@@ -326,49 +330,49 @@ get : EquipmentSlot -> Equipment -> Maybe Item
 get slot (A model) =
     case slot of
         WeaponSlot ->
-            model.weapon |> Maybe.map Item.ItemWeapon
+            model.weapon |> Maybe.map ItemWeapon
 
         FreehandSlot ->
             model.freehand
 
         ArmourSlot ->
-            model.armour |> Maybe.map Item.ItemArmour
+            model.armour |> Maybe.map ItemArmour
 
         ShieldSlot ->
-            model.shield |> Maybe.map Item.ItemShield
+            model.shield |> Maybe.map ItemShield
 
         HelmetSlot ->
-            model.helmet |> Maybe.map Item.ItemHelmet
+            model.helmet |> Maybe.map ItemHelmet
 
         BracersSlot ->
-            model.bracers |> Maybe.map Item.ItemBracers
+            model.bracers |> Maybe.map ItemBracers
 
         GauntletsSlot ->
-            model.gauntlets |> Maybe.map Item.ItemGauntlets
+            model.gauntlets |> Maybe.map ItemGauntlets
 
         BeltSlot ->
-            model.belt |> Maybe.map Item.ItemBelt
+            model.belt |> Maybe.map ItemBelt
 
         PurseSlot ->
-            model.purse |> Maybe.map Item.ItemPurse
+            model.purse |> Maybe.map ItemPurse
 
         PackSlot ->
-            model.pack |> Maybe.map Item.ItemPack
+            model.pack |> Maybe.map ItemPack
 
         NeckwearSlot ->
-            model.neckwear |> Maybe.map Item.ItemNeckwear
+            model.neckwear |> Maybe.map ItemNeckwear
 
         OvergarmentSlot ->
-            model.overgarment |> Maybe.map Item.ItemOvergarment
+            model.overgarment |> Maybe.map ItemOvergarment
 
         LeftRingSlot ->
-            model.leftRing |> Maybe.map Item.ItemRing
+            model.leftRing |> Maybe.map ItemRing
 
         RightRingSlot ->
-            model.rightRing |> Maybe.map Item.ItemRing
+            model.rightRing |> Maybe.map ItemRing
 
         BootsSlot ->
-            model.boots |> Maybe.map Item.ItemBoots
+            model.boots |> Maybe.map ItemBoots
 
 
 clearSlot_ : EquipmentSlot -> Model -> Model
