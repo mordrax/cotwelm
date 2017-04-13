@@ -200,10 +200,21 @@ moveMonster monster ({ hero } as game) =
         if Vector.adjacent monster.position hero.position then
             attackHero monster game
         else
-            newLevel.monsters
-                |> Monster.replaceMoved monster movedMonster
-                |> flip Level.setMonsters newLevel
-                |> flip Game.Model.setLevel game
+            case obstructed monster of
+                ( True, _, _ ) ->
+                    game
+
+                ( _, Just _, _ ) ->
+                    game
+
+                ( _, _, Just _ ) ->
+                    game
+
+                _ ->
+                    newLevel.monsters
+                        |> Monster.replaceMoved monster movedMonster
+                        |> flip Level.setMonsters newLevel
+                        |> flip Game.Model.setLevel game
 
 
 pathMonster : Monster -> Hero -> Level -> ( Level, Monster )
