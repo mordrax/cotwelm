@@ -239,7 +239,7 @@ updateEquipmentAndMerchant ( equipment, merchant ) ({ hero, shops, level } as ga
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
-update msg ({ hero, level, inventory } as previousGameState) =
+update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
     let
         noCmd =
             flip (,) Cmd.none
@@ -247,18 +247,18 @@ update msg ({ hero, level, inventory } as previousGameState) =
         game =
             Game.Model.setPreviousState previousGameState previousGameState
     in
-        case msg of
-            KeyboardMsg (Keymap.KeyDir dir) ->
+        case ( currentScreen, msg ) of
+            ( MapScreen, KeyboardMsg (Keymap.KeyDir dir) ) ->
                 game
                     |> actionMove dir
                     |> noCmd
 
-            KeyboardMsg (Keymap.Walk dir) ->
+            ( MapScreen, KeyboardMsg (Keymap.Walk dir) ) ->
                 game
                     |> actionMove dir
                     |> actionKeepOnWalking dir
 
-            KeyboardMsg (Keymap.Esc) ->
+            ( _, KeyboardMsg (Keymap.Esc) ) ->
                 case game.currentScreen of
                     MapScreen ->
                         ( game, Cmd.none )
@@ -269,7 +269,7 @@ update msg ({ hero, level, inventory } as previousGameState) =
                     InventoryScreen ->
                         update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) game
 
-            KeyboardMsg (Keymap.Inventory) ->
+            ( MapScreen, KeyboardMsg (Keymap.Inventory) ) ->
                 let
                     newInventory =
                         Level.ground hero.position level
@@ -280,33 +280,33 @@ update msg ({ hero, level, inventory } as previousGameState) =
                         |> Game.Model.setInventory (Inventory.init newInventory hero.equipment)
                         |> noCmd
 
-            KeyboardMsg (Keymap.GoUpstairs) ->
+            ( MapScreen, KeyboardMsg (Keymap.GoUpstairs) ) ->
                 game
                     |> actionTakeStairs
                     |> updateFOV
                     |> Render.viewport
                     |> noCmd
 
-            KeyboardMsg (Keymap.GoDownstairs) ->
+            ( MapScreen, KeyboardMsg (Keymap.GoDownstairs) ) ->
                 game
                     |> actionTakeStairs
                     |> updateFOV
                     |> Render.viewport
                     |> noCmd
 
-            KeyboardMsg (Keymap.Get) ->
+            ( MapScreen, KeyboardMsg (Keymap.Get) ) ->
                 game
                     |> actionPickup
                     |> noCmd
 
-            KeyboardMsg other ->
+            ( _, KeyboardMsg other ) ->
                 let
                     _ =
                         Debug.log "Keyboard key not implemented yet" other
                 in
                     ( game, Cmd.none )
 
-            InventoryMsg msg ->
+            ( _, InventoryMsg msg ) ->
                 let
                     ( inventory_, exitInventoryValues ) =
                         Inventory.update msg inventory
@@ -319,20 +319,20 @@ update msg ({ hero, level, inventory } as previousGameState) =
                         |> Maybe.withDefault gameWithInventoryUpdate
                         |> noCmd
 
-            WindowSize size ->
+            ( _, WindowSize size ) ->
                 ( { game | windowSize = size }, Cmd.none )
 
-            ClickTile targetPosition ->
+            ( _, ClickTile targetPosition ) ->
                 let
                     path =
                         Debug.log "Path: " (Pathfinding.findPathForClickNavigation hero.position targetPosition level)
                 in
                     update (PathTo path) game
 
-            PathTo [] ->
+            ( MapScreen, PathTo [] ) ->
                 ( game, Cmd.none )
 
-            PathTo (nextStep :: remainingSteps) ->
+            ( MapScreen, PathTo (nextStep :: remainingSteps) ) ->
                 let
                     dir =
                         Vector.sub nextStep game.hero.position
@@ -350,6 +350,13 @@ update msg ({ hero, level, inventory } as previousGameState) =
 
                         _ ->
                             update (PathTo remainingSteps) modelAfterMovement
+
+            other ->
+                let
+                    _ =
+                        Debug.log "This combo of screen and msg has no effect" other
+                in
+                    ( game, Cmd.none )
 
 
 
