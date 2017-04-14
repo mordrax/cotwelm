@@ -29,7 +29,7 @@ import Item.Data exposing (..)
 import Item.Pack as Pack
 import Item.Purse as Purse exposing (..)
 import Keymap
-import Shops exposing (Shops, Shop)
+import Shops exposing (Shops, Store)
 import Task
 import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Utils.Mass as Mass exposing (..)
@@ -41,7 +41,7 @@ type Inventory
 
 
 type Merchant
-    = Shop Shop
+    = Shop Store
     | Ground (List Item)
 
 
@@ -497,21 +497,21 @@ viewPack maybePack ({ dnd } as model) =
                 div [] [ text "You have no pack! Equip a pack to use this space." ]
 
 
-viewShop : Shop -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable Droppable)
-viewShop shop dnd =
+viewShop : Store -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable Droppable)
+viewShop store dnd =
     let
         wares =
-            Shops.wares shop
+            Shops.wares store
 
-        makeDraggable : Shop -> Item -> Html (DragDrop.Msg Draggable a)
+        makeDraggable : Store -> Item -> Html (DragDrop.Msg Draggable a)
         makeDraggable shop item =
             DragDrop.draggable (Item.view item) (DragMerchant item (Shop shop)) dnd
 
         droppableDiv =
-            div [ class "ui cards" ] (List.map (makeDraggable shop) wares)
+            div [ class "ui cards" ] (List.map (makeDraggable store) wares)
 
         droppableShop =
-            DragDrop.droppable (DropMerchant (Shop shop)) dnd droppableDiv
+            DragDrop.droppable (DropMerchant (Shop store)) dnd droppableDiv
 
         --DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
     in

@@ -1,8 +1,8 @@
 module Shops
     exposing
         ( Shops
-        , Shop
-        , ShopType(..)
+        , Store
+        , StoreType(..)
         , Msg
         , init
         , buy
@@ -14,18 +14,14 @@ module Shops
         , tick
         )
 
-import Dict exposing (Dict)
+import EveryDict as Dict exposing (EveryDict)
 import Item.Data exposing (..)
 import Item
 import Item.Purse as Purse
-import Random.Pcg as Random exposing (step, initialSeed, list, Seed)
+import Random.Pcg as Random exposing (step, initialSeed, list, Seed, Generator)
 import Task exposing (perform)
 import Time exposing (now)
 import Utils.Misc
-
-
-type alias Items =
-    List Item
 
 
 type Msg
@@ -33,39 +29,47 @@ type Msg
     | PopulateShop Random.Seed
 
 
-type Shops
-    = A Model
+type alias Shops =
+    { stores : Stores
+    , replenishCounter : Int
+    }
 
 
-type ShopType
+type StoreType
     = WeaponSmith
     | GeneralStore
     | PotionStore
     | JunkShop
 
 
-type alias ShopsDict =
-    Dict ShopTypeString Items
+type alias Stores =
+    EveryDict StoreType (List Item)
 
 
-type alias ShopTypeString =
-    String
+type Store
+    = B (List Item) StoreType
 
 
-type alias Model =
-    { stores : ShopsDict
-    }
+{-| Time taken for the shop to change it's wares
+-}
+replenishCounter : Int
+replenishCounter =
+    200
 
 
-type Shop
-    = B Items ShopType
+tick : Shops -> Seed -> ( Shops, Seed )
+tick ({ replenishCounter } as shops) seed =
+    case replenishCounter of
+        0 ->
+            init seed
 
-tick: Shops -> Shops
-tick a = a
+        _ ->
+            ( { shops | replenishCounter = replenishCounter - 1 }, seed )
 
-shop : ShopType -> Shops -> Shop
-shop shopType (A model) =
-    B (list shopType model.stores) shopType
+
+shop : StoreType -> Shops -> Store
+shop shopType shops =
+    B (list shopType shops.stores) shopType
 
 
 init : Seed -> ( Shops, Seed )
@@ -79,14 +83,14 @@ init seed =
                 ( emptyStores, seed )
                 [ WeaponSmith, GeneralStore, PotionStore, JunkShop ]
     in
-        ( A { stores = stores }
+        ( { stores = stores, replenishCounter = replenishCounter }
         , seed_
         )
 
 
 {-| The shop sells to the customer.
 -}
-sell : Item -> Purse -> Shop -> Result String ( Shop, Purse )
+sell : Item -> Purse -> Store -> Result String ( Store, Purse )
 sell item purse (B items shopType) =
     let
         price =
@@ -105,7 +109,7 @@ sell item purse (B items shopType) =
 
 {-| The shop buys from the customer.
 -}
-buy : Item -> Purse -> Shop -> ( Shop, Purse )
+buy : Item -> Purse -> Store -> ( Store, Purse )
 buy item purse (B items shopType) =
     let
         cost =
@@ -114,19 +118,19 @@ buy item purse (B items shopType) =
         ( B (item :: items) shopType, Purse.add cost purse )
 
 
-replenishReducer : ShopType -> ( Dict ShopTypeString Items, Seed ) -> ( Dict ShopTypeString Items, Seed )
+replenishReducer : StoreType -> ( Stores, Seed ) -> ( Stores, Seed )
 replenishReducer shopType ( currentStores, seed ) =
     let
         ( newItems, seed_ ) =
             replenish (inventoryStock shopType) seed
 
         newStores =
-            Dict.insert (toString shopType) newItems currentStores
+            Dict.insert shopType newItems currentStores
     in
         ( newStores, seed_ )
 
 
-replenish : ItemTypes -> Seed -> ( Items, Seed )
+replenish : ItemTypes -> Seed -> ( List Item, Seed )
 replenish itemTypes seed =
     let
         defaultProduct =
@@ -150,28 +154,28 @@ getSeed =
         Time.now
 
 
-wares : Shop -> Items
+wares : Store -> List Item
 wares (B items _) =
     items
 
 
-list : ShopType -> ShopsDict -> Items
+list : StoreType -> Stores -> List Item
 list shopType stores =
     stores
-        |> Dict.get (toString shopType)
+        |> Dict.get shopType
         |> Maybe.withDefault []
 
 
-updateShop : Shop -> Shops -> Shops
-updateShop (B items shopType) (A model) =
-    A { model | stores = Dict.insert (toString shopType) items model.stores }
+updateShop : Store -> Shops -> Shops
+updateShop (B items shopType) ({ stores } as shops) =
+    { shops | stores = Dict.insert shopType items stores }
 
 
 type alias ProductName =
     String
 
 
-inventoryStock : ShopType -> ItemTypes
+inventoryStock : StoreType -> ItemTypes
 inventoryStock shop =
     case shop of
         WeaponSmith ->

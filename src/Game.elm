@@ -212,12 +212,17 @@ updateFOV ({ level, hero } as game) =
 
 
 tick : Game -> Game
-tick ({ maps, shops, hero } as game) =
-    { game
-        | maps = Maps.tick maps
-        , shops = Shops.tick shops
-        , hero = Hero.tick hero
-    }
+tick ({ maps, shops, hero, seed } as game) =
+    let
+        ( shops_, seed_ ) =
+            Shops.tick shops seed
+    in
+        { game
+            | maps = Maps.tick maps
+            , shops = shops_
+            , hero = Hero.tick hero
+            , seed = seed_
+        }
 
 
 

@@ -24,7 +24,7 @@ import Html.Attributes exposing (..)
 import Utils.Vector as Vector exposing (..)
 import Utils.Misc as Misc exposing (..)
 import Types exposing (..)
-import Shops exposing (ShopType)
+import Shops exposing (StoreType)
 import String.Extra as StringX
 
 
@@ -48,7 +48,7 @@ type BuildingType
     = Linked Link
     | StairUp
     | StairDown
-    | Shop ShopType
+    | Shop StoreType
     | Ordinary
 
 

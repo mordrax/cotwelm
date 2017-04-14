@@ -14,7 +14,7 @@ import Html.Attributes as HA
 import Html.Lazy
 import Inventory exposing (Inventory)
 import Monster exposing (Monster)
-import Shops exposing (Shop)
+import Shops exposing (Store)
 import Types exposing (..)
 import Utils.Vector as Vector exposing (Vector)
 
