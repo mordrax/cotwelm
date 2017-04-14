@@ -10,6 +10,7 @@ module Hero
         , setStats
         , view
         , viewStats
+        , tick
         )
 
 import Attributes exposing (Attributes)
@@ -25,6 +26,7 @@ import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Container
 import Item.Data
+
 
 type alias Hero =
     { name : Name
@@ -74,6 +76,11 @@ setStats stats model =
     { model | stats = stats }
 
 
+tick : Hero -> Hero
+tick hero =
+    { hero | stats = Stats.tick hero.stats }
+
+
 levelUp : Hero -> Hero
 levelUp hero =
     { hero | stats = Stats.incLevel 1 hero.attributes hero.stats }
@@ -86,13 +93,15 @@ move direction model =
         |> Vector.add model.position
         |> \x -> { model | position = x }
 
-pickup : List Item.Data.Item -> Hero -> (Hero, List Item.Data.Item, List String)
+
+pickup : List Item.Data.Item -> Hero -> ( Hero, List Item.Data.Item, List String )
 pickup items hero =
     let
         ( hero_, msgs, failedToPickup ) =
             List.foldl pickup_ ( hero, [], [] ) items
     in
-        (hero_, failedToPickup, msgs)
+        ( hero_, failedToPickup, msgs )
+
 
 pickup_ : Item.Data.Item -> ( Hero, List String, List Item.Data.Item ) -> ( Hero, List String, List Item.Data.Item )
 pickup_ item ( hero, messages, remainingItems ) =
@@ -115,6 +124,8 @@ pickup_ item ( hero, messages, remainingItems ) =
 
             other ->
                 ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, item :: remainingItems )
+
+
 
 -- View
 

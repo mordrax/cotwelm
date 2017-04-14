@@ -6,6 +6,7 @@ module Game.Maps
         , getCurrentLevel
         , saveLoadArea
         , upstairs
+        , tick
         )
 
 {-| Holds maps for all areas and handles interaction and rendering of them.
@@ -75,6 +76,12 @@ init armour seed =
           }
         , seed
         )
+
+
+tick : Maps -> Maps
+tick ({ abandonedMines } as maps) =
+    Array.map Level.tick abandonedMines
+        |> (\newMines -> { maps | abandonedMines = newMines })
 
 
 setCurrentArea : Area -> Maps -> Maps

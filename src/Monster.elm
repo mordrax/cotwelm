@@ -9,6 +9,7 @@ module Monster
         , replace
         , replaceMoved
         , view
+        , tick
         )
 
 {-|
@@ -29,6 +30,7 @@ import Monsters.Model
 import Monsters.Types exposing (..)
 import Monsters.View
 import Utils.Vector as Vector exposing (Vector)
+import Stats exposing (Stats)
 
 
 -- types
@@ -64,6 +66,11 @@ make =
 
 view =
     Monsters.View.view
+
+
+tick : Monster -> Monster
+tick monster =
+    { monster | stats = Stats.tick monster.stats }
 
 
 

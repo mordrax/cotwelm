@@ -11,6 +11,7 @@ module Shops
         , wares
         , replenish
         , updateShop
+        , tick
         )
 
 import Dict exposing (Dict)
@@ -59,6 +60,8 @@ type alias Model =
 type Shop
     = B Items ShopType
 
+tick: Shops -> Shops
+tick a = a
 
 shop : ShopType -> Shops -> Shop
 shop shopType (A model) =

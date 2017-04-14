@@ -211,6 +211,15 @@ updateFOV ({ level, hero } as game) =
     Game.Model.setLevel (Level.updateFOV hero.position level) game
 
 
+tick : Game -> Game
+tick ({ maps, shops, hero } as game) =
+    { game
+        | maps = Maps.tick maps
+        , shops = Shops.tick shops
+        , hero = Hero.tick hero
+    }
+
+
 
 -- Updates
 
@@ -250,11 +259,13 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
         case ( currentScreen, msg ) of
             ( MapScreen, KeyboardMsg (Keymap.KeyDir dir) ) ->
                 game
+                    |> tick
                     |> actionMove dir
                     |> noCmd
 
             ( MapScreen, KeyboardMsg (Keymap.Walk dir) ) ->
                 game
+                    |> tick
                     |> actionMove dir
                     |> actionKeepOnWalking dir
 
@@ -282,6 +293,7 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
 
             ( MapScreen, KeyboardMsg (Keymap.GoUpstairs) ) ->
                 game
+                    |> tick
                     |> actionTakeStairs
                     |> updateFOV
                     |> Render.viewport
@@ -289,6 +301,7 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
 
             ( MapScreen, KeyboardMsg (Keymap.GoDownstairs) ) ->
                 game
+                    |> tick
                     |> actionTakeStairs
                     |> updateFOV
                     |> Render.viewport

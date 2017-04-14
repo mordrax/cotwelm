@@ -9,17 +9,24 @@ module Stats
         , isDead
         , printHP
         , printSP
+        , tick
         )
 
 import Attributes exposing (Attributes)
 import Types exposing (..)
+
 
 type Msg
     = Alive
     | Dead
 
 
-
+type alias RegenerationStatus =
+    { hpRate : Int
+    , hpCounter : Int
+    , spRate : Int
+    , spCounter : Int
+    }
 
 
 type alias Stats =
@@ -30,6 +37,7 @@ type alias Stats =
     , maxSP : Int
     , hardMaxSP : Int
     , effects : Effects
+    , regeneration : RegenerationStatus
     }
 
 
@@ -42,6 +50,41 @@ type alias Effects =
     }
 
 
+tick : Stats -> Stats
+tick =
+    regenerateHP >> regenerateSP
+
+
+regenerateHP : Stats -> Stats
+regenerateHP ({ regeneration, currentHP, maxHP } as stats) =
+    case regeneration.hpCounter of
+        0 ->
+            { stats
+                | regeneration = { regeneration | hpCounter = regeneration.hpRate }
+                , currentHP = min (currentHP + 1) maxHP
+            }
+
+        _ ->
+            { stats
+                | regeneration = { regeneration | hpCounter = regeneration.hpCounter - 1 }
+            }
+
+
+regenerateSP : Stats -> Stats
+regenerateSP ({ regeneration, currentSP, maxSP } as stats) =
+    case regeneration.hpCounter of
+        0 ->
+            { stats
+                | regeneration = { regeneration | hpCounter = regeneration.hpRate }
+                , currentSP = min (currentSP + 1) maxSP
+            }
+
+        _ ->
+            { stats
+                | regeneration = { regeneration | hpCounter = regeneration.hpCounter - 1 }
+            }
+
+
 init : Attributes -> Stats
 init attributes =
     let
@@ -51,8 +94,20 @@ init attributes =
         sp =
             spBonus attributes
     in
-        Stats hp hp hp sp sp sp <|
-            Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
+        { currentHP = hp
+        , maxHP = hp
+        , hardMaxHP = hp
+        , currentSP = sp
+        , maxSP = sp
+        , hardMaxSP = sp
+        , effects = Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
+        , regeneration =
+            { hpRate = 10
+            , hpCounter = 10
+            , spRate = 10
+            , spCounter = 10
+            }
+        }
 
 
 initExperienced : Attributes -> Int -> Stats

@@ -12,6 +12,7 @@ module Game.Level
         , getPath
         , getTile
         , ground
+        , tick
         , initNonDungeon
         , insertPath
         , obstructed
@@ -268,6 +269,14 @@ obstructed position level =
         _ ->
             True
 
+tick: Level -> Level
+tick ({monsters} as level) =
+    List.map Monster.tick monsters
+    |> flip setMonsters level
+
+
+
+-- Rendering
 
 view : ( Vector, Vector ) -> (Vector -> a) -> Level -> Html a
 view ( start, size ) onClick level =
