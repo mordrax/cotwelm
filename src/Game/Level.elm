@@ -380,9 +380,17 @@ updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
                 |> Maybe.withDefault True
 
         newMap =
-            Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList) isTileVisible
-                |> Set.toList
-                |> List.foldl addToMapAsVisibleTile map
+            case roomAtPosition heroPosition rooms of
+                Just room ->
+                    room
+                        |> Room.toTiles
+                        |> List.map .position
+                        |> List.foldl addToMapAsVisibleTile map
+
+                Nothing ->
+                    Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList) isTileVisible
+                        |> Set.toList
+                        |> List.foldl addToMapAsVisibleTile map
 
         addToMapAsVisibleTile : Vector -> Map -> Map
         addToMapAsVisibleTile tilePosition map =
