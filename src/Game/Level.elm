@@ -148,13 +148,8 @@ size { map } =
 
 
 roomAtPosition : Vector -> List Room -> Maybe Room
-roomAtPosition pos rooms =
-    let
-        inRoom room =
-            Vector.boxIntersectVector pos ( room.worldPos, Vector.add room.worldPos room.dimension )
-    in
-        List.filter inRoom rooms
-            |> List.head
+roomAtPosition position rooms =
+    ListX.find (\room -> Room.isInRectangularRoom room position) rooms
 
 
 buildingAtPosition : Vector -> List Building -> Maybe Building
@@ -345,8 +340,8 @@ calculateMonsterVisibility monster heroPosition ({ map } as level) =
             monster
 
 
-roomAndDark : List Room -> Vector -> Bool
-roomAndDark rooms position =
+isDarkRoom : List Room -> Vector -> Bool
+isDarkRoom rooms position =
     roomAtPosition position rooms
         |> Maybe.map .lightSource
         |> Maybe.withDefault Dark
@@ -354,7 +349,7 @@ roomAndDark rooms position =
 
 
 isSeeThrough : Level -> Vector -> Bool
-isSeeThrough ({ map, rooms } as level) target =
+isSeeThrough ({ map, rooms } as level) position =
     let
         notSolid =
             .solid >> not
@@ -363,48 +358,85 @@ isSeeThrough ({ map, rooms } as level) target =
             .type_ >> ((/=) Tile.Types.DoorClosed)
 
         notDarkRoom =
-            roomAndDark rooms >> not
+            isDarkRoom rooms >> not
     in
         level
-            |> getTile target
-            |> Maybe.map (\tile -> (notSolid tile && notClosedDoor tile && notDarkRoom target))
+            |> getTile position
+            |> Maybe.map (\tile -> (notSolid tile && notClosedDoor tile && notDarkRoom position))
             |> Maybe.withDefault False
 
 
+{-| FOV:
+    Every lit room should be explored on entry.
+    Lit tiles count as being see through, unlit ones as solid.
+    View extends from the source to the first solid tile.
+
+    1. In a lit room
+     a Room is explored - do nothing
+     b Room is unexplored - explore
+
+    Then run the FOV algo because a room counts it's door which will
+    open into the corridor.
+-}
 updateFOV : Vector -> Level -> Level
 updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
+    level
+        |> exploreRooms heroPosition
+        |> exploreUnlitTiles heroPosition
+        |> losToMonsters heroPosition
+
+
+losToMonsters : Vector -> Level -> Level
+losToMonsters heroPosition ({ monsters } as level) =
+    monsters
+        |> List.map (\monster -> calculateMonsterVisibility monster heroPosition level)
+        |> flip setMonsters level
+
+
+markTilesVisible : List Vector -> Level -> Level
+markTilesVisible tilePositions ({ map } as level) =
     let
-        isTileVisible position =
-            getTile position level
-                |> Maybe.map (.visible >> (==) Known)
-                |> Maybe.withDefault True
-
-        newMap =
-            case roomAtPosition heroPosition rooms of
-                Just room ->
-                    room
-                        |> Room.toTiles
-                        |> List.map .position
-                        |> List.foldl addToMapAsVisibleTile map
-
-                Nothing ->
-                    Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList) isTileVisible
-                        |> Set.toList
-                        |> List.foldl addToMapAsVisibleTile map
-
-        addToMapAsVisibleTile : Vector -> Map -> Map
-        addToMapAsVisibleTile tilePosition map =
+        markTileVisible: Vector -> Map -> Map
+        markTileVisible tilePosition map =
             level
                 |> getTile tilePosition
                 |> Maybe.map (Tile.setVisibility Known)
                 |> Maybe.map (\x -> Dict.insert x.position x map)
                 |> Maybe.withDefault map
-
-        newMonsters =
-            monsters
-                |> List.map (\monster -> calculateMonsterVisibility monster heroPosition level)
     in
-        { level | map = newMap, monsters = newMonsters }
+        { level | map = List.foldl markTileVisible map tilePositions }
+
+
+exploreUnlitTiles : Vector -> Level -> Level
+exploreUnlitTiles heroPosition ({ map } as level) =
+    let
+        isTileVisible position =
+            getTile position level
+                |> Maybe.map (.visible >> (==) Known)
+                |> Maybe.withDefault True
+    in
+        Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList) isTileVisible
+            |> Set.toList
+            |> flip markTilesVisible level
+
+
+{-| If the hero is in a lit, unexplored room, then explore that room.
+-}
+exploreRooms : Vector -> Level -> Level
+exploreRooms position ({ rooms, map } as level) =
+    case roomAtPosition position rooms of
+        Just room ->
+            if room.lightSource /= Dark then
+                room
+                    |> Room.toTiles
+                    |> List.map .position
+                    |> (++) (Room.boundary room)
+                    |> flip markTilesVisible level
+            else
+                level
+
+        Nothing ->
+            level
 
 
 {-| Returns a tuple (N, E, S, W) of tiles neighbouring the center tile.

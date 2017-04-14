@@ -365,6 +365,16 @@ position { worldPos } =
     worldPos
 
 
+isInRectangularRoom : Room -> Vector -> Bool
+isInRectangularRoom { floors, worldPos, dimension } position =
+    Vector.boxIntersectVector position ( worldPos, Vector.add worldPos dimension )
+
+
+isInRoom : Room -> Vector -> Bool
+isInRoom { floors, worldPos } position =
+    List.any (Vector.add worldPos >> (==) position) floors
+
+
 isCollision : Room -> Vector -> Bool
 isCollision { entrances, floors, worldPos } position =
     let
