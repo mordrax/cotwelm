@@ -17,15 +17,16 @@ import Game.Combat as Combat
 import Game.FOV as FOV
 import Game.Level as Level exposing (Level)
 import Game.Maps as Maps
-import Game.Model exposing (..)
+import Game.Model exposing (Msg(..))
 import Game.Render as Render
+import Game.Types exposing (..)
 import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Inventory exposing (Inventory)
 import Item
 import Item.Data exposing (..)
-import Keymap
+import Input exposing (Input)
 import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Generator, Seed)
 import Set exposing (Set)
@@ -88,6 +89,7 @@ init seed hero difficulty =
           , viewport = { x = 0, y = 0 }
           , turn = Game.Model.initTurn
           , previousState = Game.Model.Empty
+          , input = Input.init
           }
         , cmd
         )
@@ -149,7 +151,7 @@ actionKeepOnWalking walkDirection game =
             ( game, Cmd.none )
 
         True ->
-            update (KeyboardMsg (Keymap.Walk walkDirection)) game
+            update (GameAction (Walk walkDirection)) game
 
 
 actionTakeStairs : Game -> Game
@@ -261,31 +263,47 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
         game =
             Game.Model.setPreviousState previousGameState previousGameState
     in
-        case ( currentScreen, msg ) of
-            ( MapScreen, KeyboardMsg (Keymap.KeyDir dir) ) ->
+        case msg of
+            InputMsg inputMsg ->
+                Input.update inputMsg game.input
+                    |> \( input, action ) -> update (GameAction action) { game | input = input }
+
+            GameAction (Move dir) ->
                 game
                     |> tick
                     |> actionMove dir
                     |> noCmd
 
-            ( MapScreen, KeyboardMsg (Keymap.Walk dir) ) ->
+            GameAction (Walk dir) ->
                 game
                     |> tick
                     |> actionMove dir
                     |> actionKeepOnWalking dir
 
-            ( _, KeyboardMsg (Keymap.Esc) ) ->
-                case game.currentScreen of
-                    MapScreen ->
-                        ( game, Cmd.none )
+            GameAction BackToMapScreen ->
+                let
+                    updatedGameFromInventory inventory =
+                        Inventory.exit inventory
+                            |> (\( i, e, m ) ->
+                                    game
+                                        |> Game.Model.setInventory i
+                                        |> updateEquipmentAndMerchant ( e, m )
+                               )
+                in
+                    case game.currentScreen of
+                        MapScreen ->
+                            ( game, Cmd.none )
 
-                    BuildingScreen _ ->
-                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) game
+                        BuildingScreen _ ->
+                            ( updatedGameFromInventory game.inventory, Cmd.none )
 
-                    InventoryScreen ->
-                        update (InventoryMsg <| Inventory.keyboardToInventoryMsg Keymap.Esc) game
+                        InventoryScreen ->
+                            ( updatedGameFromInventory game.inventory, Cmd.none )
 
-            ( MapScreen, KeyboardMsg (Keymap.Inventory) ) ->
+            InventoryMsg msg ->
+                ( { game | inventory = Inventory.update msg game.inventory }, Cmd.none )
+
+            GameAction OpenInventory ->
                 let
                     newInventory =
                         Level.ground hero.position level
@@ -296,7 +314,7 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                         |> Game.Model.setInventory (Inventory.init newInventory hero.equipment)
                         |> noCmd
 
-            ( MapScreen, KeyboardMsg (Keymap.GoUpstairs) ) ->
+            GameAction GoUpstairs ->
                 game
                     |> tick
                     |> actionTakeStairs
@@ -304,7 +322,7 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                     |> Render.viewport
                     |> noCmd
 
-            ( MapScreen, KeyboardMsg (Keymap.GoDownstairs) ) ->
+            GameAction GoDownstairs ->
                 game
                     |> tick
                     |> actionTakeStairs
@@ -312,59 +330,40 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                     |> Render.viewport
                     |> noCmd
 
-            ( MapScreen, KeyboardMsg (Keymap.Get) ) ->
+            GameAction Pickup ->
                 game
                     |> actionPickup
                     |> noCmd
 
-            ( _, KeyboardMsg other ) ->
-                let
-                    _ =
-                        Debug.log "Keyboard key not implemented yet" other
-                in
-                    ( game, Cmd.none )
+            WindowSize size ->
+                { game | windowSize = size }
+                    |> noCmd
 
-            ( _, InventoryMsg msg ) ->
-                let
-                    ( inventory_, exitInventoryValues ) =
-                        Inventory.update msg inventory
-
-                    gameWithInventoryUpdate =
-                        { game | inventory = inventory_ }
-                in
-                    exitInventoryValues
-                        |> Maybe.map (flip updateEquipmentAndMerchant gameWithInventoryUpdate)
-                        |> Maybe.withDefault gameWithInventoryUpdate
-                        |> noCmd
-
-            ( _, WindowSize size ) ->
-                ( { game | windowSize = size }, Cmd.none )
-
-            ( _, ClickTile targetPosition ) ->
+            ClickTile targetPosition ->
                 let
                     path =
                         Debug.log "Path: " (Pathfinding.findPathForClickNavigation hero.position targetPosition level)
                 in
                     update (PathTo path) game
 
-            ( MapScreen, PathTo [] ) ->
+            PathTo [] ->
                 ( game, Cmd.none )
 
-            ( MapScreen, PathTo (nextStep :: remainingSteps) ) ->
+            PathTo (nextStep :: remainingSteps) ->
                 let
                     dir =
                         Vector.sub nextStep game.hero.position
                             |> Vector.toDirection
 
                     ( modelAfterMovement, cmdsAfterMovement ) =
-                        update (KeyboardMsg (Keymap.KeyDir dir)) game
+                        update (GameAction (Move dir)) game
                 in
                     case ( remainingSteps, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement ) of
                         ( [], True, _ ) ->
-                            update (KeyboardMsg Keymap.GoUpstairs) modelAfterMovement
+                            update (GameAction GoUpstairs) modelAfterMovement
 
                         ( [], _, True ) ->
-                            update (KeyboardMsg Keymap.GoDownstairs) modelAfterMovement
+                            update (GameAction GoDownstairs) modelAfterMovement
 
                         _ ->
                             update (PathTo remainingSteps) modelAfterMovement
@@ -388,5 +387,5 @@ subscription model =
     Sub.batch
         [ Window.resizes (\x -> WindowSize x)
         , Sub.map InventoryMsg (Inventory.subscription model.inventory)
-        , Sub.map KeyboardMsg (Keymap.subscription)
+        , Sub.map InputMsg (Input.subscription)
         ]

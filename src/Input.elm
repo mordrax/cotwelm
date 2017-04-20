@@ -1,9 +1,29 @@
-module Keymap exposing (Msg(..), subscription)
+module Input
+    exposing
+        ( Msg
+        , Input
+        , init
+        , update
+        , subscription
+        )
 
 import Keyboard exposing (..)
 import Dict exposing (Dict)
 import Utils.Vector as Vector exposing (Vector)
 import Utils.Direction as Direction exposing (Direction(..))
+import Keyboard.Extra as KeyboardX
+import Game.Types
+
+
+type alias Input =
+    { keyboardState : KeyboardX.State
+    }
+
+
+init : Input
+init =
+    { keyboardState = KeyboardX.initialState
+    }
 
 
 subscription : Sub Msg
@@ -15,8 +35,14 @@ subscription =
         ]
 
 
+subscriptions : Input -> Sub Msg
+subscriptions input =
+    Sub.map KeyboardExtraMsg KeyboardX.subscriptions
+
+
 type Msg
-    = KeyDir Direction
+    = KeyboardExtraMsg KeyboardX.Msg
+    | KeyDir Direction
     | Esc
     | Inventory
     | Open
@@ -24,7 +50,7 @@ type Msg
     | Search
     | DisarmTrap
     | ViewMap
-    | RestHp
+    | RestHP
     | RestMP
     | Examine
     | Get
@@ -36,6 +62,20 @@ type Msg
 
 type alias KeyMap =
     Dict Int Msg
+
+
+update : Msg -> Input -> ( Input, Game.Types.GameAction )
+update msg input =
+    case msg of
+        KeyboardExtraMsg keyboardXMsg ->
+            let
+                ( keyboardXState_, maybeKeyChange ) =
+                    KeyboardX.updateWithKeyChange keyboardXMsg input.keyboardState
+            in
+                ( input, Game.Types.NoOp )
+
+        _ ->
+            ( input, Game.Types.NoOp )
 
 
 playerKeymap : KeyMap
@@ -68,7 +108,7 @@ playerKeymap =
         , ( 83, Search )
         , ( 68, DisarmTrap )
         , ( 77, ViewMap )
-        , ( 82, RestHp )
+        , ( 82, RestHP )
         , ( 82, RestMP )
         , ( 88, Examine )
         , ( 71, Get )

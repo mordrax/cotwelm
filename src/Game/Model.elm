@@ -4,6 +4,7 @@ import Building exposing (Building)
 import Hero exposing (Hero)
 import Inventory exposing (Inventory)
 import Game.Maps as Maps exposing (Maps)
+import Game.Types exposing (..)
 import Random.Pcg as Random
 import Shops exposing (Shops)
 import Types exposing (..)
@@ -11,21 +12,16 @@ import Window
 import Game.Level as Level exposing (Level)
 import Utils.Direction as Direction exposing (Direction)
 import Utils.Vector as Vector exposing (Vector)
-import Keymap
-
-
-type Screen
-    = MapScreen
-    | InventoryScreen
-    | BuildingScreen Building
+import Input exposing (Input)
 
 
 type Msg
-    = KeyboardMsg Keymap.Msg
+    = InputMsg Input.Msg
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
     | WindowSize Window.Size
     | ClickTile Vector
     | PathTo (List Vector)
+    | GameAction GameAction
 
 
 type alias Game =
@@ -43,6 +39,7 @@ type alias Game =
     , inventory : Inventory
     , turn : Turn
     , previousState : GameState
+    , input : Input
     }
 
 

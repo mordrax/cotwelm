@@ -8,7 +8,8 @@ import Building exposing (Building)
 import Game.Combat as Combat
 import Game.Level as Level exposing (Level)
 import Game.Maps as Maps
-import Game.Model exposing (Game, Screen(..))
+import Game.Model exposing (Game)
+import Game.Types
 import Game.Pathfinding as Pathfinding
 import Hero exposing (Hero)
 import Inventory exposing (Inventory)
@@ -143,12 +144,12 @@ enterBuilding building ({ hero, level, maps } as game) =
 
             Building.Shop shopType ->
                 { game
-                    | currentScreen = BuildingScreen building
+                    | currentScreen = Game.Types.BuildingScreen building
                     , inventory = Inventory.init (Inventory.Shop <| Shops.shop shopType game.shops) hero.equipment
                 }
 
             Building.Ordinary ->
-                { game | currentScreen = BuildingScreen building }
+                { game | currentScreen = Game.Types.BuildingScreen building }
 
             Building.StairUp ->
                 teleportHero building.position game

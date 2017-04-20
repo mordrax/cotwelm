@@ -16,6 +16,7 @@ import Inventory exposing (Inventory)
 import Monster exposing (Monster)
 import Shops exposing (Store)
 import Types exposing (..)
+import Game.Types
 import Utils.Vector as Vector exposing (Vector)
 
 
@@ -64,10 +65,10 @@ viewport ({ windowSize, viewport, maps, hero, level } as model) =
 game : Game -> Html Msg
 game model =
     case model.currentScreen of
-        MapScreen ->
+        Game.Types.MapScreen ->
             viewMap model
 
-        BuildingScreen building ->
+        Game.Types.BuildingScreen building ->
             case building.buildingType of
                 Building.Shop shopType ->
                     Html.map InventoryMsg (Inventory.view model.inventory)
@@ -75,7 +76,7 @@ game model =
                 _ ->
                     viewBuilding building
 
-        InventoryScreen ->
+        Game.Types.InventoryScreen ->
             Html.map InventoryMsg (Inventory.view model.inventory)
 
 

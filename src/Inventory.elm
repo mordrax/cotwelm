@@ -5,7 +5,7 @@ module Inventory
         , Msg
         , Draggable
         , Droppable
-        , keyboardToInventoryMsg
+        , exit
         , init
         , view
         , update
@@ -28,7 +28,6 @@ import Item exposing (..)
 import Item.Data exposing (..)
 import Item.Pack as Pack
 import Item.Purse as Purse exposing (..)
-import Keymap
 import Shops exposing (Shops, Store)
 import Task
 import Utils.DragDrop as DragDrop exposing (DragDrop)
@@ -66,7 +65,6 @@ type Droppable
 
 type Msg source target
     = DnDMsg (DragDrop.Msg source target)
-    | Keyboard Keymap.Msg
 
 
 init : Merchant -> Equipment -> Inventory
@@ -84,7 +82,7 @@ init merchant equipment =
 ------------
 
 
-update : Msg Draggable Droppable -> Inventory -> ( Inventory, Maybe ( Equipment, Merchant ) )
+update : Msg Draggable Droppable -> Inventory -> Inventory
 update msg (A ({ dnd } as model)) =
     case msg of
         DnDMsg dragDropMsg ->
@@ -97,30 +95,24 @@ update msg (A ({ dnd } as model)) =
             in
                 case end of
                     Nothing ->
-                        ( A { model | dnd = dnd_ }, Nothing )
+                        A { model | dnd = dnd_ }
 
                     Just ( Nothing, _ ) ->
-                        ( A modelNewDnD, Nothing )
+                        A modelNewDnD
 
                     Just ( _, Nothing ) ->
-                        ( A modelNewDnD, Nothing )
+                        A modelNewDnD
 
                     {- On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
                        then call a function to handle the transaction, otherwise just clear the dndModel and return.
                     -}
                     Just ( Just drag, Just drop ) ->
-                        ( A <| handleDragDrop drag drop modelNewDnD, Nothing )
-
-        Keyboard (Keymap.Esc) ->
-            ( A model, Just ( model.equipment, model.merchant ) )
-
-        Keyboard msg ->
-            ( A model, Nothing )
+                        A <| handleDragDrop drag drop modelNewDnD
 
 
-keyboardToInventoryMsg : Keymap.Msg -> Msg s t
-keyboardToInventoryMsg msg =
-    Keyboard msg
+exit : Inventory -> ( Inventory, Equipment, Merchant )
+exit (A model) =
+    ( A model, model.equipment, model.merchant )
 
 
 
