@@ -20,4 +20,6 @@ type GameAction
     | GoUpstairs
     | GoDownstairs
     | Pickup
+    | WaitATurn
+    | WaitUntilHealed
     | NoOp
