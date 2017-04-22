@@ -11,7 +11,7 @@ import Keyboard exposing (..)
 import Dict exposing (Dict)
 import Utils.Vector as Vector exposing (Vector)
 import Utils.Direction as Direction exposing (Direction(..))
-import Keyboard.Extra as KeyboardX
+import Keyboard.Extra as KeyboardX exposing (KeyChange(..), Key(..))
 import Game.Types
 
 
@@ -28,15 +28,6 @@ init =
 
 subscription : Sub Msg
 subscription =
-    Sub.batch
-        [ --ups (keyUpToMsg playerKeymap)        ,
-          --, presses (keycodeToMsg playerKeymap)
-          downs (keycodeToMsg playerKeymap)
-        ]
-
-
-subscriptions : Input -> Sub Msg
-subscriptions input =
     Sub.map KeyboardExtraMsg KeyboardX.subscriptions
 
 
@@ -71,11 +62,39 @@ update msg input =
             let
                 ( keyboardXState_, maybeKeyChange ) =
                     KeyboardX.updateWithKeyChange keyboardXMsg input.keyboardState
+
+                gameAction =
+                    maybeKeyChange
+                        |> Maybe.map (mapKeyboardEventToAction keyboardXState_)
+                        |> Maybe.withDefault Game.Types.NoOp
             in
-                ( input, Game.Types.NoOp )
+                ( { input | keyboardState = keyboardXState_ }, gameAction )
 
         _ ->
             ( input, Game.Types.NoOp )
+
+
+mapKeyboardEventToAction : KeyboardX.State -> KeyboardX.KeyChange -> Game.Types.GameAction
+mapKeyboardEventToAction state keyChange =
+    let
+        isShiftPressed =
+            KeyboardX.isPressed KeyboardX.Shift state
+    in
+        case Debug.log "Key:" ( isShiftPressed, keyChange ) of
+            ( True, KeyUp ArrowUp ) ->
+                Game.Types.Walk N
+
+            ( True, KeyUp ArrowRight ) ->
+                Game.Types.Walk E
+
+            ( True, KeyUp ArrowDown ) ->
+                Game.Types.Walk S
+
+            ( True, KeyUp ArrowLeft ) ->
+                Game.Types.Walk W
+
+            _ ->
+                Game.Types.NoOp
 
 
 playerKeymap : KeyMap
