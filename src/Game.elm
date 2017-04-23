@@ -139,6 +139,7 @@ actionMove : Direction -> Game -> Game
 actionMove dir ({ level } as game) =
     game
         |> Collision.move dir
+        |> Collision.autoOpenAnyDoorHeroIsOn
         |> updateFOV
         |> Collision.moveMonsters
         |> Render.viewport

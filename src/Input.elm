@@ -135,29 +135,6 @@ playerKeymap =
 
 
 
---    Dict.fromList
---        --numpad
---        [ ( 40, KeyDir N )
---        , ( 38, KeyDir S )
---        , ( 37, KeyDir W )
---        , ( 39, KeyDir E )
---        , ( 36, KeyDir SW )
---        , ( 33, KeyDir SE )
---        , ( 35, KeyDir NW )
---        , ( 34, KeyDir NE )
---          -- walking
---        , ( 104, Walk S )
---        , ( 102, Walk E )
---        , ( 98, Walk N )
---        , ( 100, Walk W )
---        , ( 103, Walk SW )
---        , ( 105, Walk SE )
---        , ( 97, Walk NW )
---        , ( 99, Walk NE )
---          -- Esc
---        , ( 27, Esc )
---          -- i
---        , ( 73, Inventory )
 --        , ( 79, Open )
 --        , ( 67, Close )
 --        , ( 83, Search )
@@ -166,8 +143,3 @@ playerKeymap =
 --        , ( 82, RestHP )
 --        , ( 82, RestMP )
 --        , ( 88, Examine )
---        , ( 71, Get )
---        , ( 190, GoDownstairs )
---        , ( 188, GoUpstairs )
---          --        , ( 16, ShiftDown )
---        ]

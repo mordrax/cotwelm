@@ -2,6 +2,7 @@ module Game.Collision
     exposing
         ( move
         , moveMonsters
+        , autoOpenAnyDoorHeroIsOn
         )
 
 import Building exposing (Building)
@@ -61,6 +62,11 @@ move dir ({ level } as game) =
             -- path free, moved
             ( False, _, _ ) ->
                 { game | hero = heroMoved }
+
+
+autoOpenAnyDoorHeroIsOn : Game -> Game
+autoOpenAnyDoorHeroIsOn game =
+    { game | level = Level.openDoor game.hero.position game.level }
 
 
 

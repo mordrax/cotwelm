@@ -16,6 +16,7 @@ module Game.Level
         , initNonDungeon
         , insertPath
         , obstructed
+        , openDoor
         , queryPosition
         , setMonsters
         , size
@@ -269,14 +270,16 @@ obstructed position level =
         _ ->
             True
 
-tick: Level -> Level
-tick ({monsters} as level) =
+
+tick : Level -> Level
+tick ({ monsters } as level) =
     List.map Monster.tick monsters
-    |> flip setMonsters level
+        |> flip setMonsters level
 
 
 
 -- Rendering
+
 
 view : ( Vector, Vector ) -> (Vector -> a) -> Level -> Html a
 view ( start, size ) onClick level =
@@ -405,7 +408,7 @@ losToMonsters heroPosition ({ monsters } as level) =
 markTilesVisible : List Vector -> Level -> Level
 markTilesVisible tilePositions ({ map } as level) =
     let
-        markTileVisible: Vector -> Map -> Map
+        markTileVisible : Vector -> Map -> Map
         markTileVisible tilePosition map =
             level
                 |> getTile tilePosition
@@ -471,3 +474,20 @@ cardinalTileNeighbours map center =
         , getNeighbour ( 0, 1 )
         , getNeighbour ( -1, 0 )
         )
+
+
+{-| If there is a door at the position, then change it to opened
+-}
+openDoor : Vector -> Level -> Level
+openDoor pos level =
+    let
+        ifDoorThenOpen tile =
+            if tile.type_ == Tile.Types.DoorClosed then
+                { tile | type_ = Tile.Types.DoorOpen }
+            else
+                tile
+    in
+        Dict.get pos level.map
+            |> Maybe.map ifDoorThenOpen
+            |> Maybe.map (setTile level)
+            |> Maybe.withDefault level
