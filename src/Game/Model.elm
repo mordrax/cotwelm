@@ -20,8 +20,12 @@ type Msg
     | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
     | WindowSize Window.Size
     | ClickTile Vector
-    | PathTo (List Vector)
+    | PathTo (List Vector) ClickedStairs
     | GameAction GameAction
+
+
+type alias ClickedStairs =
+    Bool
 
 
 type alias Game =

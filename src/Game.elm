@@ -114,16 +114,12 @@ donDefaultGarb hero =
         { hero | equipment = defaultEquipment }
 
 
-isOnStairs : (Level -> Maybe Building) -> Game -> Bool
-isOnStairs upOrDownStairs ({ hero, level } as game) =
-    let
-        atHeroPosition =
-            (==) hero.position
-    in
-        level
-            |> upOrDownStairs
-            |> Maybe.map (.position >> (==) hero.position)
-            |> Maybe.withDefault False
+isOnStairs : (Level -> Maybe Building) -> Vector -> Level -> Bool
+isOnStairs upOrDownStairs position level =
+    level
+        |> upOrDownStairs
+        |> Maybe.map (.position >> (==) position)
+        |> Maybe.withDefault False
 
 
 
@@ -163,7 +159,7 @@ actionTakeStairs ({ level, hero, maps } as game) =
                 |> Maybe.map (.position >> (flip Hero.setPosition hero))
                 |> Maybe.withDefault hero
     in
-        if isOnStairs Level.upstairs game then
+        if isOnStairs Level.upstairs hero.position game.level then
             let
                 ( newLevel, newMaps ) =
                     Maps.upstairs level maps
@@ -174,7 +170,7 @@ actionTakeStairs ({ level, hero, maps } as game) =
                     , hero = heroTakeStairs (Level.downstairs newLevel)
                     , messages = "You climb back up the stairs" :: game.messages
                 }
-        else if isOnStairs Level.downstairs game then
+        else if isOnStairs Level.downstairs hero.position game.level then
             let
                 ( ( newLevel, newMaps ), seed_ ) =
                     Random.step (Maps.downstairs level game.maps) game.seed
@@ -344,13 +340,17 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                 let
                     path =
                         Debug.log "Path: " (Pathfinding.findPathForClickNavigation hero.position targetPosition level)
-                in
-                    update (PathTo path) game
 
-            PathTo [] ->
+                    isClickStairs =
+                        (isOnStairs Level.upstairs targetPosition game.level)
+                            || (isOnStairs Level.downstairs targetPosition game.level)
+                in
+                    update (PathTo path isClickStairs) game
+
+            PathTo [] _ ->
                 ( game, Cmd.none )
 
-            PathTo (nextStep :: remainingSteps) ->
+            PathTo (nextStep :: remainingSteps) isClickStairs ->
                 let
                     dir =
                         Vector.sub nextStep game.hero.position
@@ -358,16 +358,22 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
 
                     ( modelAfterMovement, cmdsAfterMovement ) =
                         update (GameAction (Move dir)) game
+
+                    isOnUpstairs =
+                        isOnStairs Level.upstairs modelAfterMovement.hero.position modelAfterMovement.level
+
+                    isOnDownstairs =
+                        isOnStairs Level.downstairs modelAfterMovement.hero.position modelAfterMovement.level
                 in
-                    case ( remainingSteps, isOnStairs Level.upstairs modelAfterMovement, isOnStairs Level.downstairs modelAfterMovement ) of
-                        ( [], True, _ ) ->
+                    case ( isClickStairs, isOnUpstairs, isOnDownstairs ) of
+                        ( True, True, _ ) ->
                             update (GameAction GoUpstairs) modelAfterMovement
 
-                        ( [], _, True ) ->
+                        ( True, _, True ) ->
                             update (GameAction GoDownstairs) modelAfterMovement
 
                         _ ->
-                            update (PathTo remainingSteps) modelAfterMovement
+                            update (PathTo remainingSteps isClickStairs) modelAfterMovement
 
             other ->
                 let

@@ -33,22 +33,6 @@ subscription =
 
 type Msg
     = KeyboardExtraMsg KeyboardX.Msg
-      --    | KeyDir Direction
-      --    | Esc
-      --    | Inventory
-      --    | Open
-      --    | Close
-      --    | Search
-      --    | DisarmTrap
-      --    | ViewMap
-      --    | RestHP
-      --    | RestMP
-      --    | Examine
-      --    | Get
-      --    | GoDownstairs
-      --    | GoUpstairs
-      --    | Walk Direction
-    | NoOp
 
 
 type alias KeyboardXToGameActionMap =
@@ -69,9 +53,6 @@ update msg input =
                         |> Maybe.withDefault Game.Types.NoOp
             in
                 ( { input | keyboardState = keyboardXState_ }, gameAction )
-
-        _ ->
-            ( input, Game.Types.NoOp )
 
 
 mapKeyboardEventToAction : KeyboardX.State -> KeyboardX.KeyChange -> Game.Types.GameAction
