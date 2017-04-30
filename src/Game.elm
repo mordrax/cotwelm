@@ -252,13 +252,13 @@ updateEquipmentAndMerchant ( equipment, merchant ) ({ hero, shops, level } as ga
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
-update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
+update msg ({ hero, level, inventory, currentScreen } as game) =
     let
         noCmd =
             flip (,) Cmd.none
 
-        game =
-            Game.Model.setPreviousState previousGameState previousGameState
+        updatePreviousState modifiedGameState =
+            Game.Model.setPreviousState (Game.Model.State modifiedGameState) game
     in
         case msg of
             InputMsg inputMsg ->
@@ -269,13 +269,18 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                 game
                     |> tick
                     |> actionMove dir
+                    |> updatePreviousState
                     |> noCmd
 
             GameAction (Walk dir) ->
-                game
-                    |> tick
-                    |> actionMove dir
-                    |> actionKeepOnWalking dir
+                if isNewArea game then
+                    ( game, Cmd.none )
+                else
+                    game
+                        |> tick
+                        |> actionMove dir
+                        |> updatePreviousState
+                        |> actionKeepOnWalking dir
 
             GameAction BackToMapScreen ->
                 let
@@ -289,16 +294,24 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                 in
                     case game.currentScreen of
                         MapScreen ->
-                            ( game, Cmd.none )
+                            game
+                                |> updatePreviousState
+                                |> noCmd
 
                         BuildingScreen _ ->
-                            ( updatedGameFromInventory game.inventory, Cmd.none )
+                            updatedGameFromInventory game.inventory
+                                |> updatePreviousState
+                                |> noCmd
 
                         InventoryScreen ->
-                            ( updatedGameFromInventory game.inventory, Cmd.none )
+                            updatedGameFromInventory game.inventory
+                                |> updatePreviousState
+                                |> noCmd
 
             InventoryMsg msg ->
-                ( { game | inventory = Inventory.update msg game.inventory }, Cmd.none )
+                { game | inventory = Inventory.update msg game.inventory }
+                    |> updatePreviousState
+                    |> noCmd
 
             GameAction OpenInventory ->
                 let
@@ -309,6 +322,7 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                     game
                         |> Game.Model.setCurrentScreen InventoryScreen
                         |> Game.Model.setInventory (Inventory.init newInventory hero.equipment)
+                        |> updatePreviousState
                         |> noCmd
 
             GameAction GoUpstairs ->
@@ -317,6 +331,7 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                     |> actionTakeStairs
                     |> updateFOV
                     |> Render.viewport
+                    |> updatePreviousState
                     |> noCmd
 
             GameAction GoDownstairs ->
@@ -325,15 +340,18 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                     |> actionTakeStairs
                     |> updateFOV
                     |> Render.viewport
+                    |> updatePreviousState
                     |> noCmd
 
             GameAction Pickup ->
                 game
                     |> actionPickup
+                    |> updatePreviousState
                     |> noCmd
 
             WindowSize size ->
                 { game | windowSize = size }
+                    |> updatePreviousState
                     |> noCmd
 
             ClickTile targetPosition ->
@@ -364,16 +382,19 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
 
                     isOnDownstairs =
                         isOnStairs Level.downstairs modelAfterMovement.hero.position modelAfterMovement.level
+
+                    isGoingUpstairs =
+                        isClickStairs && isOnUpstairs
+
+                    isGoingDownstairs =
+                        isClickStairs && isOnDownstairs
                 in
-                    case ( isClickStairs, isOnUpstairs, isOnDownstairs ) of
-                        ( True, True, _ ) ->
-                            update (GameAction GoUpstairs) modelAfterMovement
-
-                        ( True, _, True ) ->
-                            update (GameAction GoDownstairs) modelAfterMovement
-
-                        _ ->
-                            update (PathTo remainingSteps isClickStairs) modelAfterMovement
+                    if isGoingUpstairs then
+                        update (GameAction GoUpstairs) modelAfterMovement
+                    else if isGoingDownstairs then
+                        update (GameAction GoDownstairs) modelAfterMovement
+                    else
+                        update (PathTo remainingSteps isClickStairs) modelAfterMovement
 
             other ->
                 let
@@ -381,6 +402,16 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                         Debug.log "This combo of screen and msg has no effect" other
                 in
                     ( game, Cmd.none )
+
+
+isNewArea : Game -> Bool
+isNewArea game =
+    case game.previousState of
+        Game.Model.State prevGame ->
+            prevGame.maps.currentArea /= game.maps.currentArea
+
+        _ ->
+            False
 
 
 
