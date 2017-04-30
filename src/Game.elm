@@ -258,7 +258,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
             flip (,) Cmd.none
 
         updatePreviousState modifiedGameState =
-            Game.Model.setPreviousState (Game.Model.State modifiedGameState) game
+            Game.Model.setPreviousState (Game.Model.State game) modifiedGameState
     in
         case msg of
             InputMsg inputMsg ->
