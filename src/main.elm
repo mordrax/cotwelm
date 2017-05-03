@@ -81,7 +81,6 @@ subscriptions model =
             model.game
                 |> Maybe.map (Game.subscription >> Sub.map GameMsg)
                 |> Maybe.withDefault Sub.none
-
     in
         case model.currentPage of
             PitPage ->
@@ -155,6 +154,9 @@ update msg model =
                     MonsterArena.update msg model.pit
             in
                 ( { model | pit = pit_ }, Cmd.map PitMsg cmds )
+
+        RIPMsg msg ->
+            ( model, Cmd.none )
 
         GenerateGame seed charCreation ->
             let

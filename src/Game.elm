@@ -13,7 +13,6 @@ import Container exposing (Container)
 import Dict
 import Equipment exposing (Equipment)
 import Game.Collision as Collision
-import Game.Combat as Combat
 import Game.FOV as FOV
 import Game.Level as Level exposing (Level)
 import Game.Maps as Maps
@@ -205,6 +204,13 @@ actionPickup ({ hero, level } as game) =
         }
 
 
+checkHeroIsAlive: Game -> (Game, Cmd Msg)
+checkHeroIsAlive ({hero} as game) =
+  if Stats.isDead hero.stats then
+    (game, )
+  else
+    (game, Cmd.none)
+
 updateFOV : Game -> Game
 updateFOV ({ level, hero } as game) =
     Game.Model.setLevel (Level.updateFOV hero.position level) game
@@ -269,7 +275,7 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                 game
                     |> tick
                     |> actionMove dir
-                    |> noCmd
+                    |> checkHeroIsAlive
 
             GameAction (Walk dir) ->
                 game
