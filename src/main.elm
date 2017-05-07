@@ -24,7 +24,6 @@ type Msg
     | EditorMsg Editor.Msg
     | ArenaMsg PlayerArena.Msg
     | PitMsg MonsterArena.Msg
-    | RIPMsg
     | ChangePage Page
 
 
@@ -37,7 +36,6 @@ type Page
     | EditorPage
     | ArenaPage
     | PitPage
-    | RIPPage
     | NotImplementedPage
 
 
@@ -125,10 +123,15 @@ update msg model =
 
                 Just game ->
                     let
-                        ( game_, cmd ) =
+                        ( game_, cmd, isQuit ) =
                             Game.update msg game
                     in
-                        ( { model | game = Just game_ }, Cmd.map GameMsg cmd )
+                        case isQuit of
+                            False ->
+                                ( { model | game = Just game_ }, Cmd.map GameMsg cmd )
+
+                            True ->
+                                ( { model | currentPage = SplashPage }, Cmd.none )
 
         EditorMsg msg ->
             let
@@ -156,9 +159,6 @@ update msg model =
                     MonsterArena.update msg model.pit
             in
                 ( { model | pit = pit_ }, Cmd.map PitMsg cmds )
-
-        RIPMsg msg ->
-            ( model, Cmd.none )
 
         GenerateGame seed charCreation ->
             let

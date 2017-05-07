@@ -113,9 +113,9 @@ setTurn turn game =
     { game | turn = turn }
 
 
-setPreviousState : Game -> Game -> Game
+setPreviousState : GameState -> Game -> Game
 setPreviousState previousState game =
-    { game | previousState = State previousState }
+    { game | previousState = previousState }
 
 
 type GameState

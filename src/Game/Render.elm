@@ -79,7 +79,7 @@ game model =
         Game.Types.InventoryScreen ->
             Html.map InventoryMsg (Inventory.view model.inventory)
 
-        Game.Types.RIPScreen ->
+        Game.Types.RipScreen ->
             viewRip model
 
 
