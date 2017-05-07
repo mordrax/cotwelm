@@ -24,6 +24,7 @@ type Msg
     | EditorMsg Editor.Msg
     | ArenaMsg PlayerArena.Msg
     | PitMsg MonsterArena.Msg
+    | RIPMsg
     | ChangePage Page
 
 
@@ -36,6 +37,7 @@ type Page
     | EditorPage
     | ArenaPage
     | PitPage
+    | RIPPage
     | NotImplementedPage
 
 

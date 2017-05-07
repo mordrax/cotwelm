@@ -79,6 +79,9 @@ game model =
         Game.Types.InventoryScreen ->
             Html.map InventoryMsg (Inventory.view model.inventory)
 
+        Game.Types.RIPScreen ->
+            viewRip model
+
 
 viewMonsters : Game -> Html Msg
 viewMonsters { level } =
@@ -198,6 +201,11 @@ viewHUD model =
 viewBuilding : Building -> Html Msg
 viewBuilding building =
     div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
+
+
+viewRip : Game -> Html Msg
+viewRip model =
+    h1 [] [ text "You are dead!" ]
 
 
 simpleBtn : String -> Html Msg

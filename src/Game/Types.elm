@@ -10,6 +10,7 @@ type Screen
     = MapScreen
     | InventoryScreen
     | BuildingScreen Building
+    | RipScreen
 
 
 type GameAction

@@ -22,6 +22,7 @@ type Msg
     | ClickTile Vector
     | PathTo (List Vector) ClickedStairs
     | GameAction GameAction
+    | Died
 
 
 type alias ClickedStairs =

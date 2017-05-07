@@ -204,12 +204,13 @@ actionPickup ({ hero, level } as game) =
         }
 
 
-checkHeroIsAlive: Game -> (Game, Cmd Msg)
-checkHeroIsAlive ({hero} as game) =
-  if Stats.isDead hero.stats then
-    (game, )
-  else
-    (game, Cmd.none)
+checkHeroAlive : Game -> Game
+checkHeroAlive ({ hero } as game) =
+    if Stats.isDead hero.stats then
+        { game | currentScreen = RipScreen }
+    else
+        game
+
 
 updateFOV : Game -> Game
 updateFOV ({ level, hero } as game) =
@@ -257,11 +258,15 @@ updateEquipmentAndMerchant ( equipment, merchant ) ({ hero, shops, level } as ga
                 Game.Model.setShops (updateShop shop) game_
 
 
-update : Msg -> Game -> ( Game, Cmd Msg )
+type alias Quit =
+    Bool
+
+
+update : Msg -> Game -> ( Game, Cmd Msg, Quit )
 update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
     let
-        noCmd =
-            flip (,) Cmd.none
+        noCmd game =
+            ( game, Cmd.none, False )
 
         game =
             Game.Model.setPreviousState previousGameState previousGameState
@@ -275,7 +280,8 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                 game
                     |> tick
                     |> actionMove dir
-                    |> checkHeroIsAlive
+                    |> checkHeroAlive
+                    |> noCmd
 
             GameAction (Walk dir) ->
                 game
@@ -295,13 +301,19 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
                 in
                     case game.currentScreen of
                         MapScreen ->
-                            ( game, Cmd.none )
+                            game
+                                |> noCmd
 
                         BuildingScreen _ ->
-                            ( updatedGameFromInventory game.inventory, Cmd.none )
+                            updatedGameFromInventory game.inventory
+                                |> noCmd
 
                         InventoryScreen ->
-                            ( updatedGameFromInventory game.inventory, Cmd.none )
+                            updatedGameFromInventory game.inventory
+                                |> noCmd
+
+                        RipScreen ->
+                            ( game, Cmd.none, True )
 
             InventoryMsg msg ->
                 ( { game | inventory = Inventory.update msg game.inventory }, Cmd.none )
@@ -380,6 +392,9 @@ update msg ({ hero, level, inventory, currentScreen } as previousGameState) =
 
                         _ ->
                             update (PathTo remainingSteps isClickStairs) modelAfterMovement
+
+            Died ->
+                ( { game | currentScreen = RipScreen }, Cmd.none )
 
             other ->
                 let
