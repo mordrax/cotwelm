@@ -2,6 +2,7 @@ module Game.Render
     exposing
         ( viewport
         , game
+        , viewRip
         )
 
 import Building exposing (Building)
@@ -18,6 +19,15 @@ import Shops exposing (Store)
 import Types exposing (..)
 import Game.Types
 import Utils.Vector as Vector exposing (Vector)
+import Css exposing (..)
+
+
+styles =
+    asPairs >> HA.style
+
+
+addStyle currentStyles style =
+    HA.style (asPairs <| style :: currentStyles)
 
 
 {-| Handles all logic and rendering of the game to screen.
@@ -80,7 +90,8 @@ game model =
             Html.map InventoryMsg (Inventory.view model.inventory)
 
         Game.Types.RipScreen ->
-            viewRip model
+            --            viewRip model
+            viewRip
 
 
 viewMonsters : Game -> Html Msg
@@ -95,7 +106,7 @@ viewMap : Game -> Html Msg
 viewMap ({ windowSize, viewport } as model) =
     let
         title =
-            h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
+            h1 [] [ Html.text ("Welcome to Castle of the Winds: " ++ model.name) ]
 
         px x =
             (toString x) ++ "px"
@@ -156,7 +167,7 @@ viewMessages : Game -> Html Msg
 viewMessages model =
     let
         msg txt =
-            div [] [ text txt ]
+            div [] [ Html.text txt ]
     in
         div [] (List.map msg model.messages)
 
@@ -195,19 +206,68 @@ viewQuickMenu =
 
 viewHUD : Game -> Html Msg
 viewHUD model =
-    div [] [ text "messages" ]
+    div [] [ Html.text "messages" ]
 
 
 viewBuilding : Building -> Html Msg
 viewBuilding building =
-    div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
+    div [] [ h1 [] [ Html.text "TODO: Get the internal view of the building" ] ]
 
 
-viewRip : Game -> Html Msg
-viewRip model =
-    h1 [] [ text "You are dead!" ]
+
+--viewRip : Game -> Html Msg
+--viewRip model =
+
+
+viewRip : Html msg
+viewRip =
+    let
+        name =
+            "Conan the destroyer"
+    in
+        viewTombstone
+            [ tombstoneImg
+            , viewInscription
+                [ Html.text name ]
+            ]
+
+
+tombstoneImg : Html msg
+tombstoneImg =
+    img
+        [ styles [ width (pct 100) ]
+        , HA.src "/assets/original/RIP_blank.png"
+        ]
+        []
+
+
+viewTombstone : List (Html msg) -> Html msg
+viewTombstone =
+    div
+        [ styles
+            [ position relative
+            ]
+        ]
+
+
+viewInscription : List (Html msg) -> Html msg
+viewInscription =
+    div
+        [ styles
+            [ position absolute
+            , left (pct 35)
+            , top (pct 45)
+            , textAlign center
+            ]
+        ]
 
 
 simpleBtn : String -> Html Msg
 simpleBtn txt =
-    div [ HA.class "ui button" ] [ text txt ]
+    div [ HA.class "ui button" ] [ Html.text txt ]
+
+
+
+-------------------
+-- Style helpers --
+-------------------

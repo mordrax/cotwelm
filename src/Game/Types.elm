@@ -23,4 +23,5 @@ type GameAction
     | Pickup
     | WaitATurn
     | WaitUntilHealed
+    | KillHero
     | NoOp

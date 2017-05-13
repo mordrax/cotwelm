@@ -93,7 +93,7 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SplashMsg (SplashView.NewGame) ->
+        SplashMsg SplashView.NewGame ->
             ( model, Navigation.newUrl "#/charCreation" )
 
         SplashMsg _ ->
