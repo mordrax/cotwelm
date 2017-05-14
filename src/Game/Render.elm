@@ -225,40 +225,32 @@ viewRip =
         name =
             "Conan the destroyer"
 
-        killedBy =
-            "Killed by: " ++ "Giant Ego"
-
-        lastMessage =
-            "Conan looked down his nose on the pathetic ant and failed to notice the giant queen behind him."
-
-        turns =
-            "He" ++ " survived " ++ (toString 1234) ++ " turns."
+        deathMessage =
+            { killedBy = "Killed by: " ++ "Giant Ego"
+            , lastMessage =
+                "Conan looked down his nose on the pathetic ant and failed to notice the giant queen behind him."
+            , turns = "He" ++ " survived " ++ (toString 1234) ++ " turns."
+            }
     in
         viewTombstone
-            [ tombstoneImg
-            , viewInscription
-                [ inscribe name
-                , inscribe killedBy
-                , inscribeParagraph lastMessage
-                , inscribe turns
+            [ viewInscription
+                [ inscribeName name
+                , inscribeDeathMessage deathMessage
                 ]
             ]
-
-
-tombstoneImg : Html msg
-tombstoneImg =
-    img
-        [ styles [ width (pct 100) ]
-        , HA.src "/assets/original/RIP_blank.png"
-        ]
-        []
 
 
 viewTombstone : List (Html msg) -> Html msg
 viewTombstone =
     div
         [ styles
-            [ position relative
+            [ backgroundImage (url "/assets/original/RIP_blank.png")
+            , backgroundSize contain
+            , backgroundRepeat noRepeat
+            , width (pct 100)
+            , height (pct 100)
+            , displayFlex
+            , justifyContent center
             ]
         ]
 
@@ -267,37 +259,61 @@ viewInscription : List (Html msg) -> Html msg
 viewInscription =
     div
         [ styles
-            [ position absolute
-            , left (pct -5)
-            , top (pct 40)
-            , textAlign center
-            , width (pct 100)
+            [ marginLeft (vw -10)
+            , marginTop (vw 24)
+            , width (vw 40)
             ]
         ]
+
+
+inscribeName : String -> Html a
+inscribeName name =
+    span
+        [ styles
+            [ fontSize (vw 4) ]
+        ]
+        [ Html.text name ]
+
+
+type alias DeathMessage =
+    { killedBy : String
+    , lastMessage : String
+    , turns : String
+    }
+
+
+inscribeDeathMessage : DeathMessage -> Html msg
+inscribeDeathMessage { killedBy, lastMessage, turns } =
+    let
+        inscribe str =
+            span
+                [ styles
+                    [ fontSize (vw 2)
+                    , display block
+                    , textAlign center
+                    , marginTop (vw 0.2)
+                    ]
+                ]
+                [ Html.text str ]
+    in
+        div
+            [ styles [ marginTop (vw 8) ]
+            ]
+            [ inscribe killedBy
+            , inscribeParagraph lastMessage
+            , inscribe turns
+            ]
 
 
 inscribeParagraph : String -> Html msg
 inscribeParagraph paragraph =
     span
         [ styles
-            [ display block
-            , width (Css.em 15)
+            [ margin2 (vw 0.4) zero
             ]
         ]
         [ Html.text paragraph
         ]
-
-
-inscribe : String -> Html msg
-inscribe str =
-    span
-        [ styles
-            [ display block
-            , fontSize (Css.em 1.5)
-            , marginTop (px 10)
-            ]
-        ]
-        [ Html.text str ]
 
 
 simpleBtn : String -> Html Msg
