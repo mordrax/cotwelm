@@ -224,11 +224,24 @@ viewRip =
     let
         name =
             "Conan the destroyer"
+
+        killedBy =
+            "Killed by: " ++ "Giant Ego"
+
+        lastMessage =
+            "Conan looked down his nose on the pathetic ant and failed to notice the giant queen behind him."
+
+        turns =
+            "He" ++ " survived " ++ (toString 1234) ++ " turns."
     in
         viewTombstone
             [ tombstoneImg
             , viewInscription
-                [ Html.text name ]
+                [ inscribe name
+                , inscribe killedBy
+                , inscribeParagraph lastMessage
+                , inscribe turns
+                ]
             ]
 
 
@@ -255,11 +268,36 @@ viewInscription =
     div
         [ styles
             [ position absolute
-            , left (pct 35)
-            , top (pct 45)
+            , left (pct -5)
+            , top (pct 40)
             , textAlign center
+            , width (pct 100)
             ]
         ]
+
+
+inscribeParagraph : String -> Html msg
+inscribeParagraph paragraph =
+    span
+        [ styles
+            [ display block
+            , width (Css.em 15)
+            ]
+        ]
+        [ Html.text paragraph
+        ]
+
+
+inscribe : String -> Html msg
+inscribe str =
+    span
+        [ styles
+            [ display block
+            , fontSize (Css.em 1.5)
+            , marginTop (px 10)
+            ]
+        ]
+        [ Html.text str ]
 
 
 simpleBtn : String -> Html Msg
