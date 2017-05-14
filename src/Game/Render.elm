@@ -291,13 +291,18 @@ inscribeDeathMessage { killedBy, lastMessage, turns } =
                     [ fontSize (vw 2)
                     , display block
                     , textAlign center
-                    , marginTop (vw 0.2)
                     ]
                 ]
                 [ Html.text str ]
     in
         div
-            [ styles [ marginTop (vw 8) ]
+            [ styles
+                [ marginTop (vw 8)
+                , displayFlex
+                , flexDirection column
+                , justifyContent spaceBetween
+                , height (vw 28)
+                ]
             ]
             [ inscribe killedBy
             , inscribeParagraph lastMessage
@@ -308,10 +313,7 @@ inscribeDeathMessage { killedBy, lastMessage, turns } =
 inscribeParagraph : String -> Html msg
 inscribeParagraph paragraph =
     span
-        [ styles
-            [ margin2 (vw 0.4) zero
-            ]
-        ]
+        []
         [ Html.text paragraph
         ]
 
