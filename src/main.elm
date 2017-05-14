@@ -81,7 +81,6 @@ subscriptions model =
             model.game
                 |> Maybe.map (Game.subscription >> Sub.map GameMsg)
                 |> Maybe.withDefault Sub.none
-
     in
         case model.currentPage of
             PitPage ->
@@ -94,7 +93,7 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SplashMsg (SplashView.NewGame) ->
+        SplashMsg SplashView.NewGame ->
             ( model, Navigation.newUrl "#/charCreation" )
 
         SplashMsg _ ->
@@ -124,10 +123,15 @@ update msg model =
 
                 Just game ->
                     let
-                        ( game_, cmd ) =
+                        ( game_, cmd, isQuit ) =
                             Game.update msg game
                     in
-                        ( { model | game = Just game_ }, Cmd.map GameMsg cmd )
+                        case isQuit of
+                            False ->
+                                ( { model | game = Just game_ }, Cmd.map GameMsg cmd )
+
+                            True ->
+                                ( { model | currentPage = SplashPage }, Cmd.none )
 
         EditorMsg msg ->
             let

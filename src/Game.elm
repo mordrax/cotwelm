@@ -13,7 +13,6 @@ import Container exposing (Container)
 import Dict
 import Equipment exposing (Equipment)
 import Game.Collision as Collision
-import Game.Combat as Combat
 import Game.FOV as FOV
 import Game.Level as Level exposing (Level)
 import Game.Maps as Maps
@@ -141,11 +140,11 @@ actionMove dir ({ level } as game) =
         |> Render.viewport
 
 
-actionKeepOnWalking : Direction -> Game -> ( Game, Cmd Msg )
+actionKeepOnWalking : Direction -> Game -> ( Game, Cmd Msg, Quit )
 actionKeepOnWalking walkDirection game =
     case Game.Model.hasHeroMoved game of
         False ->
-            ( game, Cmd.none )
+            ( game, Cmd.none, False )
 
         True ->
             update (GameAction (Walk walkDirection)) game
@@ -205,6 +204,14 @@ actionPickup ({ hero, level } as game) =
         }
 
 
+checkHeroAlive : Game -> Game
+checkHeroAlive ({ hero } as game) =
+    if Stats.isDead hero.stats then
+        { game | currentScreen = RipScreen }
+    else
+        game
+
+
 updateFOV : Game -> Game
 updateFOV ({ level, hero } as game) =
     Game.Model.setLevel (Level.updateFOV hero.position level) game
@@ -251,14 +258,18 @@ updateEquipmentAndMerchant ( equipment, merchant ) ({ hero, shops, level } as ga
                 Game.Model.setShops (updateShop shop) game_
 
 
-update : Msg -> Game -> ( Game, Cmd Msg )
+type alias Quit =
+    Bool
+
+
+update : Msg -> Game -> ( Game, Cmd Msg, Quit )
 update msg ({ hero, level, inventory, currentScreen } as game) =
     let
-        noCmd =
-            flip (,) Cmd.none
+        noCmd game =
+            ( game, Cmd.none, False )
 
-        updatePreviousState modifiedGameState =
-            Game.Model.setPreviousState (Game.Model.State game) modifiedGameState
+        updatePreviousState newGameState =
+            { newGameState | previousState = Game.Model.State game }
     in
         case msg of
             InputMsg inputMsg ->
@@ -269,12 +280,13 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 game
                     |> tick
                     |> actionMove dir
+                    |> checkHeroAlive
                     |> updatePreviousState
                     |> noCmd
 
             GameAction (Walk dir) ->
                 if isNewArea game then
-                    ( game, Cmd.none )
+                    noCmd game
                 else
                     game
                         |> tick
@@ -307,6 +319,9 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                             updatedGameFromInventory game.inventory
                                 |> updatePreviousState
                                 |> noCmd
+
+                        RipScreen ->
+                            ( game, Cmd.none, True )
 
             InventoryMsg msg ->
                 { game | inventory = Inventory.update msg game.inventory }
@@ -366,7 +381,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                     update (PathTo path isClickStairs) game
 
             PathTo [] _ ->
-                ( game, Cmd.none )
+                noCmd game
 
             PathTo (nextStep :: remainingSteps) isClickStairs ->
                 let
@@ -374,7 +389,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                         Vector.sub nextStep game.hero.position
                             |> Vector.toDirection
 
-                    ( modelAfterMovement, cmdsAfterMovement ) =
+                    ( modelAfterMovement, cmdsAfterMovement, _ ) =
                         update (GameAction (Move dir)) game
 
                     isOnUpstairs =
@@ -396,12 +411,15 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                     else
                         update (PathTo remainingSteps isClickStairs) modelAfterMovement
 
+            Died ->
+                noCmd { game | currentScreen = RipScreen }
+
             other ->
                 let
                     _ =
                         Debug.log "This combo of screen and msg has no effect" other
                 in
-                    ( game, Cmd.none )
+                    noCmd game
 
 
 isNewArea : Game -> Bool

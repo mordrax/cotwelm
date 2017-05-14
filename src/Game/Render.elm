@@ -2,6 +2,7 @@ module Game.Render
     exposing
         ( viewport
         , game
+        , viewRip
         )
 
 import Building exposing (Building)
@@ -18,6 +19,15 @@ import Shops exposing (Store)
 import Types exposing (..)
 import Game.Types
 import Utils.Vector as Vector exposing (Vector)
+import Css exposing (..)
+
+
+styles =
+    asPairs >> HA.style
+
+
+addStyle currentStyles style =
+    HA.style (asPairs <| style :: currentStyles)
 
 
 {-| Handles all logic and rendering of the game to screen.
@@ -79,6 +89,10 @@ game model =
         Game.Types.InventoryScreen ->
             Html.map InventoryMsg (Inventory.view model.inventory)
 
+        Game.Types.RipScreen ->
+            --            viewRip model
+            viewRip
+
 
 viewMonsters : Game -> Html Msg
 viewMonsters { level } =
@@ -92,7 +106,7 @@ viewMap : Game -> Html Msg
 viewMap ({ windowSize, viewport } as model) =
     let
         title =
-            h1 [] [ text ("Welcome to Castle of the Winds: " ++ model.name) ]
+            h1 [] [ Html.text ("Welcome to Castle of the Winds: " ++ model.name) ]
 
         px x =
             (toString x) ++ "px"
@@ -153,7 +167,7 @@ viewMessages : Game -> Html Msg
 viewMessages model =
     let
         msg txt =
-            div [] [ text txt ]
+            div [] [ Html.text txt ]
     in
         div [] (List.map msg model.messages)
 
@@ -192,14 +206,124 @@ viewQuickMenu =
 
 viewHUD : Game -> Html Msg
 viewHUD model =
-    div [] [ text "messages" ]
+    div [] [ Html.text "messages" ]
 
 
 viewBuilding : Building -> Html Msg
 viewBuilding building =
-    div [] [ h1 [] [ text "TODO: Get the internal view of the building" ] ]
+    div [] [ h1 [] [ Html.text "TODO: Get the internal view of the building" ] ]
+
+
+
+--viewRip : Game -> Html Msg
+--viewRip model =
+
+
+viewRip : Html msg
+viewRip =
+    let
+        name =
+            "Conan the destroyer"
+
+        deathMessage =
+            { killedBy = "Killed by: " ++ "Giant Ego"
+            , lastMessage =
+                "Conan looked down his nose on the pathetic ant and failed to notice the giant queen behind him."
+            , turns = "He" ++ " survived " ++ (toString 1234) ++ " turns."
+            }
+    in
+        viewTombstone
+            [ viewInscription
+                [ inscribeName name
+                , inscribeDeathMessage deathMessage
+                ]
+            ]
+
+
+viewTombstone : List (Html msg) -> Html msg
+viewTombstone =
+    div
+        [ styles
+            [ backgroundImage (url "/assets/original/RIP_blank.png")
+            , backgroundSize contain
+            , backgroundRepeat noRepeat
+            , width (pct 100)
+            , height (pct 100)
+            , displayFlex
+            , justifyContent center
+            ]
+        ]
+
+
+viewInscription : List (Html msg) -> Html msg
+viewInscription =
+    div
+        [ styles
+            [ marginLeft (vw -10)
+            , marginTop (vw 24)
+            , width (vw 40)
+            ]
+        ]
+
+
+inscribeName : String -> Html a
+inscribeName name =
+    span
+        [ styles
+            [ fontSize (vw 4) ]
+        ]
+        [ Html.text name ]
+
+
+type alias DeathMessage =
+    { killedBy : String
+    , lastMessage : String
+    , turns : String
+    }
+
+
+inscribeDeathMessage : DeathMessage -> Html msg
+inscribeDeathMessage { killedBy, lastMessage, turns } =
+    let
+        inscribe str =
+            span
+                [ styles
+                    [ fontSize (vw 2)
+                    , display block
+                    , textAlign center
+                    ]
+                ]
+                [ Html.text str ]
+    in
+        div
+            [ styles
+                [ marginTop (vw 8)
+                , displayFlex
+                , flexDirection column
+                , justifyContent spaceBetween
+                , height (vw 28)
+                ]
+            ]
+            [ inscribe killedBy
+            , inscribeParagraph lastMessage
+            , inscribe turns
+            ]
+
+
+inscribeParagraph : String -> Html msg
+inscribeParagraph paragraph =
+    span
+        []
+        [ Html.text paragraph
+        ]
 
 
 simpleBtn : String -> Html Msg
 simpleBtn txt =
-    div [ HA.class "ui button" ] [ text txt ]
+    div [ HA.class "ui button" ] [ Html.text txt ]
+
+
+
+-------------------
+-- Style helpers --
+-------------------

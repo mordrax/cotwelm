@@ -10,6 +10,7 @@ type Screen
     = MapScreen
     | InventoryScreen
     | BuildingScreen Building
+    | RipScreen
 
 
 type GameAction
@@ -22,4 +23,5 @@ type GameAction
     | Pickup
     | WaitATurn
     | WaitUntilHealed
+    | KillHero
     | NoOp

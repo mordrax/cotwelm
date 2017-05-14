@@ -19,7 +19,7 @@ styles =
     Css.asPairs >> HA.style
 
 
-stylesExtra cssStyles extras =
+addStyle cssStyles extras =
     HA.style (asPairs cssStyles ++ extras)
 
 
@@ -54,7 +54,7 @@ view ({ type_, position, ground, visible } as model) scaleTile neighbours onClic
         itemDiv item =
             div
                 [ HA.class ("tile cotw-item " ++ (Item.css item))
-                , stylesExtra
+                , addStyle
                     [ transforms [ rotate (deg rotation), scale scaleTile ] ]
                     [ ( "pointer-events", "none" ) ]
                 , Misc.toScaledTilePosition position scaleTile
