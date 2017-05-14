@@ -26,6 +26,15 @@ import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 import Container
 import Item.Data
+import Css
+
+
+styles =
+    Css.asPairs >> HA.style
+
+
+addStyle currentStyles style =
+    HA.style (Css.asPairs <| style :: currentStyles)
 
 
 type alias Hero =
@@ -144,8 +153,21 @@ view model =
 
 viewStats : Hero -> Html a
 viewStats model =
-    div []
-        [ div [] [ text "Stats:" ]
-        , div [] [ text <| "HP: " ++ (Stats.printHP model.stats) ]
-        , div [] [ text <| "SP: " ++ (Stats.printSP model.stats) ]
-        ]
+    let
+        hpLessThanTwentyPercent =
+            toFloat model.stats.currentHP / toFloat model.stats.maxHP < 0.2
+
+        hpLessThanTen =
+            model.stats.currentHP < 10
+
+        hpColor =
+            if hpLessThanTwentyPercent || hpLessThanTen then
+                styles [ Css.color (Css.rgb 255 0 0) ]
+            else
+                styles []
+    in
+        div []
+            [ div [] [ text "Stats:" ]
+            , div [ hpColor ] [ text <| "HP: " ++ (Stats.printHP model.stats) ]
+            , div [] [ text <| "SP: " ++ (Stats.printSP model.stats) ]
+            ]
