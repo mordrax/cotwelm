@@ -1,11 +1,20 @@
 module UI exposing (..)
 
 import Html exposing (..)
-import Html.Events exposing (..)
-import Html.Attributes exposing (..)
+import Html.Events as HE
+import Html.Attributes as HA
 import String exposing (..)
 import Json.Decode as JD
 import Json.Decode.Pipeline as JP
+import Css exposing (..)
+
+
+styles =
+    asPairs >> HA.style
+
+
+addStyle currentStyles style =
+    HA.style (asPairs <| style :: currentStyles)
 
 
 type alias Label =
@@ -19,13 +28,13 @@ labeledNumber_ convert label number msg =
 
 labeledNumberWithStep : (String -> number -> number) -> Label -> number -> Float -> (number -> a) -> Html a
 labeledNumberWithStep convert label number inc msg =
-    div [ class "ui labeled input" ]
-        [ div [ class "ui label" ] [ text label ]
+    div [ HA.class "ui labeled input" ]
+        [ div [ HA.class "ui label" ] [ Html.text label ]
         , input
-            [ type_ "number"
-            , step (toString inc)
-            , onInput (\input -> msg <| convert input 0)
-            , value (toString number)
+            [ HA.type_ "number"
+            , HA.step (toString inc)
+            , HE.onInput (\input -> msg <| convert input 0)
+            , HA.value (toString number)
             ]
             []
         ]
@@ -51,13 +60,13 @@ labeledFloat label number msg =
 
 inputWithIncDec : Int -> (Int -> a) -> Html a
 inputWithIncDec val msg =
-    div [ class "ui left action right action input" ]
-        [ button [ class "ui icon button" ]
-            [ i [ class "minus icon" ] []
+    div [ HA.class "ui left action right action input" ]
+        [ button [ HA.class "ui icon button" ]
+            [ i [ HA.class "minus icon" ] []
             ]
-        , input [ type_ "number", value (toString val) ] []
-        , button [ class "ui icon button" ]
-            [ i [ class "plus icon" ] []
+        , input [ HA.type_ "number", HA.value (toString val) ] []
+        , button [ HA.class "ui icon button" ]
+            [ i [ HA.class "plus icon" ] []
             ]
         ]
 
@@ -65,7 +74,7 @@ inputWithIncDec val msg =
 labeled2TupleNumber : Label -> ( Int, Int ) -> (Int -> a) -> (Int -> a) -> Html a
 labeled2TupleNumber label ( min, max ) minMsg maxMsg =
     div []
-        [ h4 [] [ text label ]
+        [ h4 [] [ Html.text label ]
         , div []
             [ labeledNumber "Min" min minMsg
             , labeledNumber "Max" max maxMsg
@@ -83,8 +92,8 @@ list display selectAction ( encoder, decoder ) items =
     let
         renderItem ( item, isSelected ) =
             Html.option
-                [ selected isSelected
-                , value (encoder item)
+                [ HA.selected isSelected
+                , HA.value (encoder item)
                 ]
                 [ display item ]
 
@@ -99,7 +108,7 @@ list display selectAction ( encoder, decoder ) items =
         items
             |> List.map renderItem
             |> Html.select
-                [ on "change" msgDecoder ]
+                [ HE.on "change" msgDecoder ]
 
 
 changeEventDecoder : JD.Decoder Event
@@ -114,13 +123,11 @@ changeEventDecoder =
         JP.decode Event
             |> JP.required "target" targetDecoder
 
-btn: String -> msg -> Html msg
+
+btn : String -> msg -> Html msg
 btn txt msg =
-    button
-        [ onClick msg
-        , class "ui button"
-        ]
-        [ text txt ]
+    button [ HE.onClick msg ] [ Html.text txt ]
+
 
 type alias Event =
     { target : Target

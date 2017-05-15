@@ -1,0 +1,20 @@
+/* Buttons */
+button:not(:active) {
+    border-top: 1px solid white;
+    border-left: 1px solid white;
+}
+
+button:active {
+    border-bottom: 1px solid white;
+    border-right: 1px solid white;
+}
+
+button {
+    border-width: 1px;
+    height: 1.6em;
+    width: 8em;
+}
+
+button:focus {
+    outline: 1px solid dimgrey;
+}

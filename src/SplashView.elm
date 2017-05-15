@@ -5,7 +5,7 @@ import Html.Events as HE
 import Html.Attributes as HA
 import Css exposing (..)
 import Game.Render
-
+import UI
 
 type Msg
     = NewGame
@@ -56,7 +56,7 @@ cotwSubtitleImg =
 newLoadOverview : Html Msg
 newLoadOverview =
     div []
-        [ button [ HE.onClick NewGame ] [ H.text "New Game" ]
-        , button [ HE.onClick LoadGame ] [ H.text "Load Game" ]
-        , button [ HE.onClick Overview ] [ H.text "Overview" ]
+        [ UI.btn "New Game" NewGame
+        , UI.btn "Load Game" LoadGame
+        , UI.btn "Overview" Overview
         ]
