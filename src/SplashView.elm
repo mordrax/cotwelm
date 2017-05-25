@@ -54,8 +54,17 @@ cotwSubtitleImg =
 
 newLoadOverview : Html Msg
 newLoadOverview =
-    div []
-        [ UI.btn "New Game" NewGame
-        , UI.btn "Load Game" LoadGame
+    div
+        [ styles
+            [ position absolute
+            , bottom (px 15)
+            , margin2 zero auto
+            , width (pct 70)
+            , displayFlex
+            , justifyContent spaceBetween
+            ]
+        ]
+        [ UI.btn "Start New Game" NewGame
+        , UI.btn "Load Saved Game" LoadGame
         , UI.btn "Overview" Overview
         ]
