@@ -4,8 +4,8 @@ import Html as H exposing (..)
 import Html.Events as HE
 import Html.Attributes as HA
 import Css exposing (..)
-import Game.Render
 import UI
+
 
 type Msg
     = NewGame
@@ -26,7 +26,6 @@ addStyle currentStyles style =
 -}
 view : Html Msg
 view =
-    --    Game.Render.viewRip
     div
         [ styles
             [ displayFlex

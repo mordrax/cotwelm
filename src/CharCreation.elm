@@ -11,10 +11,20 @@ module CharCreation
 -- where
 
 import Html exposing (..)
-import Html.Events exposing (onClick, onInput)
-import Html.Attributes exposing (..)
+import Html.Events as HE
+import Html.Attributes as HA
 import Attributes exposing (Attributes)
 import Types exposing (..)
+import UI
+import Css exposing (..)
+
+
+styles =
+    asPairs >> HA.style
+
+
+addStyle currentStyles style =
+    HA.style (asPairs <| style :: currentStyles)
 
 
 type CharCreation
@@ -44,7 +54,7 @@ type Msg
 init : CharCreation
 init =
     A
-        { name = "testing"
+        { name = "Conan the destroyer"
         , attributes = Attributes.init
         , gender = Female
         , difficulty = Hard
@@ -84,65 +94,94 @@ view (A model) =
     let
         bgStyle =
             [ ( "backgroundColor", "black" ) ]
+
+        viewGenderAndAvatar =
+            div []
+                [ viewGender model.gender
+                , viewAvatar
+                ]
     in
         div []
-            [ div [] [ text ("Name: " ++ model.name ++ " Difficulty: " ++ (toString model.difficulty) ++ " Gender: " ++ (toString model.gender)) ]
-            , div [ class "ui middle aligned center aligned grid" ]
-                [ div [ class "ui one column" ]
-                    [ div [ class "ui stacked vertical segment" ]
-                        [ -- name
-                          nameView model.name
-                        ]
-                    , div []
-                        [ Attributes.view model.attributes
-                            |> Html.map Attribute
-                        ]
-                    , div [ class "ui vertical segments" ]
-                        [ div [ class "ui vertical segment" ] [ text "Character Gender" ]
-                        , div [ class "ui vertical segment" ]
-                            [ genderView model.gender
-                            ]
-                        ]
-                    , difficultyView model.difficulty
-                    , button [ class "ui button primary", onClick StartGame ] [ text "Ok" ]
-                    , button [ class "ui button" ] [ text "Cancel" ]
-                    , button [ class "ui button" ] [ text "View Icon" ]
-                    , button [ class "ui button" ] [ text "Help" ]
-                    ]
-                ]
+            [ viewName model.name
+            , Attributes.view model.attributes |> Html.map Attribute
+            , viewGenderAndAvatar
+            , viewDifficulty model.difficulty
+            , viewButtons
             ]
 
 
 
+--        div []
+--            [ div [] [ text ("Name: " ++ model.name ++ " Difficulty: " ++ (toString model.difficulty) ++ " Gender: " ++ (toString model.gender)) ]
+--            , div [ class "ui middle aligned center aligned grid" ]
+--                [ div [ class "ui one column" ]
+--                    [ div [ class "ui stacked vertical segment" ]
+--                        [ -- name
+--                          nameView model.name
+--                        ]
+--                    , div []
+--                        [ Attributes.view model.attributes
+--                            |> Html.map Attribute
+--                        ]
+--                    , div [ class "ui vertical segments" ]
+--                        [ div [ class "ui vertical segment" ] [ text "Character Gender" ]
+--                        , div [ class "ui vertical segment" ]
+--                            [ genderView model.gender
+--                            ]
+--                        ]
+--                    , difficultyView model.difficulty
+--                    , button [ class "ui button primary", onClick StartGame ] [ text "Ok" ]
+--                    , button [ class "ui button" ] [ text "Cancel" ]
+--                    , button [ class "ui button" ] [ text "View Icon" ]
+--                    , button [ class "ui button" ] [ text "Help" ]
+--                    ]
+--                ]
+--            ]
 -- Name
 
 
-nameView : String -> Html Msg
-nameView playerName =
-    div [ class "ui vertical segment" ]
-        [ div [ class "ui labeled fluid input" ]
-            [ div [ class "ui label" ] []
-            , input
-                [ name "name"
-                , placeholder "What word did your mother utter as you came kicking and screaming into this world?"
-                , onInput Name
-                , value playerName
-                ]
-                []
+viewName : String -> Html Msg
+viewName playerName =
+    div
+        [ styles
+            [ displayFlex
+            , justifyContent spaceBetween
             ]
         ]
+        [ div [] [ Html.text "Character_name:" ]
+        , viewNameInput playerName
+        ]
+
+
+viewNameInput : String -> Html Msg
+viewNameInput playerName =
+    input
+        [ HA.name "name"
+        , HA.placeholder "What word did your mother utter as you came kicking and screaming into this world?"
+        , HE.onInput Name
+        , HA.value playerName
+        , styles
+            [ width (pct 100)
+            ]
+        ]
+        []
 
 
 
 -- Gender
 
 
-genderView : Gender -> Html Msg
-genderView gender =
-    div [ class "equal width column" ]
-        [ div [ class "ui large buttons" ]
+viewAvatar : Html msg
+viewAvatar =
+    Html.text "No custom avatar"
+
+
+viewGender : Gender -> Html Msg
+viewGender gender =
+    div [ HA.class "equal width column" ]
+        [ div [ HA.class "ui large buttons" ]
             [ genderButton Male (gender == Male)
-            , div [ class "or" ] []
+            , div [ HA.class "or" ] []
             , genderButton Female (gender == Female)
             ]
         ]
@@ -164,11 +203,14 @@ genderButton gender isActive =
                 "large female icon"
     in
         button
-            [ class ("ui labeled icon button " ++ active)
-            , onClick (Gender gender)
+            [ HA.class ("ui labeled icon button " ++ active)
+            , HE.onClick (Gender gender)
             ]
-            [ i [ class icon ] []
-            , text (toString gender)
+            [ i
+                [ HA.class icon
+                ]
+                []
+            , Html.text (toString gender)
             ]
 
 
@@ -176,8 +218,8 @@ genderButton gender isActive =
 -- Difficulty
 
 
-difficultyView : Difficulty -> Html Msg
-difficultyView difficulty =
+viewDifficulty : Difficulty -> Html Msg
+viewDifficulty difficulty =
     let
         activeEasy =
             if difficulty == Easy then
@@ -203,7 +245,7 @@ difficultyView difficulty =
             else
                 ""
     in
-        div [ class "four ui buttons" ]
+        div [ HA.class "four ui buttons" ]
             [ easyButton activeEasy
             , intermediateButton activeIntermediate
             , hardButton activeHard
@@ -211,17 +253,21 @@ difficultyView difficulty =
             ]
 
 
+
+-- difficulty
+
+
 iconButton : Difficulty -> String -> List (Html Msg) -> Html Msg
 iconButton diff active a =
-    button [ class ("ui icon button " ++ active), onClick (Difficulty diff) ] a
+    button [ HA.class ("ui icon button " ++ active), HE.onClick (Difficulty diff) ] a
 
 
 easyButton : String -> Html Msg
 easyButton active =
     iconButton Easy
         active
-        [ div [] [ i [ class "huge green circle icon" ] [] ]
-        , label [] [ text "Easy" ]
+        [ div [] [ i [ HA.class "huge green circle icon" ] [] ]
+        , label [] [ Html.text "Easy" ]
         ]
 
 
@@ -229,8 +275,8 @@ intermediateButton : String -> Html Msg
 intermediateButton active =
     iconButton Intermediate
         active
-        [ div [] [ i [ class "huge blue square icon" ] [] ]
-        , label [] [ text "Intermediate" ]
+        [ div [] [ i [ HA.class "huge blue square icon" ] [] ]
+        , label [] [ Html.text "Intermediate" ]
         ]
 
 
@@ -238,8 +284,8 @@ hardButton : String -> Html Msg
 hardButton active =
     iconButton Hard
         active
-        [ div [] [ i [ class "huge black square icon" ] [] ]
-        , label [] [ text "Hard" ]
+        [ div [] [ i [ HA.class "huge black square icon" ] [] ]
+        , label [] [ Html.text "Hard" ]
         ]
 
 
@@ -247,6 +293,16 @@ impossibleButton : String -> Html Msg
 impossibleButton active =
     iconButton Impossible
         active
-        [ div [] [ i [ class "huge yellow warning sign icon" ] [] ]
-        , label [] [ text "Impossible" ]
+        [ div [] [ i [ HA.class "huge yellow warning sign icon" ] [] ]
+        , label [] [ Html.text "Impossible" ]
+        ]
+
+
+viewButtons : Html Msg
+viewButtons =
+    div []
+        [ UI.btn "OK" StartGame
+        , UI.btn "Cancel" StartGame
+        , UI.btn "View Icon" StartGame
+        , UI.btn "Help" StartGame
         ]

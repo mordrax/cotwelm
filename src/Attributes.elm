@@ -21,6 +21,15 @@ This means that monsters such as giants, dragons, ghosts can go above or below t
 import Html exposing (..)
 import Html.Events as HE
 import Html.Attributes as HA
+import Css exposing (..)
+
+
+styles =
+    asPairs >> HA.style
+
+
+addStyle currentStyles style =
+    HA.style (asPairs <| style :: currentStyles)
 
 
 type Msg
@@ -120,7 +129,12 @@ set ( attribute, value ) model =
 
 view : Attributes -> Html Msg
 view model =
-    div []
+    div
+        [ styles
+            [ displayFlex
+            , justifyContent spaceBetween
+            ]
+        ]
         [ viewAttribute Available model False
         , viewAttribute Strength model True
         , viewAttribute Intelligence model True
@@ -146,30 +160,24 @@ viewAttribute attr model buttons =
         description =
             getDescription attr value
     in
-        div [ HA.class "ui segments" ]
-            [ div [ HA.class "ui segment left aligned" ]
-                [ h4 [ HA.class "ui header" ] [ text (toString attr) ]
-                , div [ HA.class "ui indicating progress", getDataPercent value ]
-                    [ div [ HA.class "bar", (progressBarStyle value) ] []
-                    , div [ HA.class "tick", (tickStyle 25) ] []
-                    , div [ HA.class "tick", (tickStyle 50) ] []
-                    , div [ HA.class "tick", (tickStyle 75) ] []
-                    , div [ HA.class "label" ] [ text description ]
-                    ]
-                , if buttons then
-                    viewButtons attr
-                  else
-                    div [] []
-                ]
+        div []
+            [ viewBars value
+            , div [] [ Html.text (toString attr) ]
+
+            --            , div [ HA.class "ui indicating progress", getDataPercent value ]
             ]
 
 
-progressBarStyle : Int -> Html.Attribute Msg
-progressBarStyle val =
-    HA.style
-        [ ( "width", (toString val) ++ "%" )
-        , ( "min-width", "0" )
+viewBars : Int -> Html Msg
+viewBars valueOf100 =
+    div
+        [ styles
+            [ border3 (px 1) solid (rgb 0 0 0)
+            , width (px 15)
+            , height (px 60)
+            ]
         ]
+        []
 
 
 tickStyle : Int -> Html.Attribute Msg
