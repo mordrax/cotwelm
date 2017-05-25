@@ -96,7 +96,13 @@ view (A model) =
             [ ( "backgroundColor", "black" ) ]
 
         viewGenderAndAvatar =
-            div []
+            div
+                [ styles
+                    [ displayFlex
+                    , justifyContent spaceBetween
+                    , margin (px 10)
+                    ]
+                ]
                 [ viewGender model.gender
                 , viewAvatar
                 ]
@@ -146,9 +152,14 @@ viewName playerName =
         [ styles
             [ displayFlex
             , justifyContent spaceBetween
+            , margin (px 10)
             ]
         ]
-        [ div [] [ Html.text "Character_name:" ]
+        [ div []
+            [ span
+                [ styles [ verticalAlign Css.sub ] ]
+                [ Html.text <| "Character" ++ UI.nbsp ++ "name:" ++ UI.nbsp ]
+            ]
         , viewNameInput playerName
         ]
 
@@ -178,39 +189,47 @@ viewAvatar =
 
 viewGender : Gender -> Html Msg
 viewGender gender =
-    div [ HA.class "equal width column" ]
-        [ div [ HA.class "ui large buttons" ]
-            [ genderButton Male (gender == Male)
-            , div [ HA.class "or" ] []
-            , genderButton Female (gender == Female)
-            ]
-        ]
-
-
-genderButton : Gender -> Bool -> Html Msg
-genderButton gender isActive =
     let
-        active =
-            if isActive then
-                "active"
-            else
-                ""
-
-        icon =
-            if gender == Male then
-                "large male icon"
-            else
-                "large female icon"
-    in
-        button
-            [ HA.class ("ui labeled icon button " ++ active)
-            , HE.onClick (Gender gender)
-            ]
-            [ i
-                [ HA.class icon
+        genderLabel =
+            div
+                [ styles
+                    [ position absolute
+                    , zIndex (int 1)
+                    , top (px -10)
+                    , backgroundColor (rgb 255 255 255)
+                    , padding2 zero (px 3)
+                    ]
                 ]
-                []
-            , Html.text (toString gender)
+                [ Html.text <| "Character" ++ UI.nbsp ++ "Gender" ]
+    in
+        div
+            [ styles
+                [ border3 (px 1) solid (rgb 200 200 200)
+                , position relative
+                , displayFlex
+                , padding2 (px 15) (px 10)
+                ]
+            ]
+            [ genderLabel
+            , div
+                [ styles [ marginRight (px 15) ] ]
+                [ input
+                    [ HA.type_ "radio"
+                    , HA.name "gender"
+                    , HA.checked (Male == gender)
+                    ]
+                    []
+                , Html.text "Male"
+                ]
+            , div []
+                [ input
+                    [ HA.type_ "radio"
+                    , HA.name "gender"
+                    , HA.checked (Female == gender)
+                    ]
+                    []
+                , Html.text "Female"
+                ]
             ]
 
 
@@ -245,7 +264,11 @@ viewDifficulty difficulty =
             else
                 ""
     in
-        div [ HA.class "four ui buttons" ]
+        div
+            [ styles
+                [ margin (px 10)
+                ]
+            ]
             [ easyButton activeEasy
             , intermediateButton activeIntermediate
             , hardButton activeHard
@@ -300,7 +323,11 @@ impossibleButton active =
 
 viewButtons : Html Msg
 viewButtons =
-    div []
+    div
+        [ styles
+            [ margin (px 20)
+            ]
+        ]
         [ UI.btn "OK" StartGame
         , UI.btn "Cancel" StartGame
         , UI.btn "View Icon" StartGame

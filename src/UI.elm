@@ -20,6 +20,7 @@ addStyle currentStyles style =
 type alias Label =
     String
 
+nbsp = "\xA0"
 
 labeledNumber_ : (String -> number -> number) -> Label -> number -> (number -> a) -> Html a
 labeledNumber_ convert label number msg =
@@ -137,3 +138,4 @@ type alias Event =
 type alias Target =
     { value : String
     }
+

@@ -22,6 +22,7 @@ import Html exposing (..)
 import Html.Events as HE
 import Html.Attributes as HA
 import Css exposing (..)
+import Json.Decode as JD
 
 
 styles =
@@ -34,6 +35,7 @@ addStyle currentStyles style =
 
 type Msg
     = Update Attribute Int
+    | Scroll String
 
 
 type Attribute
@@ -92,6 +94,13 @@ update msg model =
 
                 Dexterity ->
                     { model | dex = model.dex + value, ava = model.ava - value }
+
+        Scroll str ->
+            let
+                _ =
+                    Debug.log "Scrolling" 0
+            in
+                model
 
 
 scale : Float -> Float -> Float -> Float -> Attributes -> Attributes
@@ -159,22 +168,73 @@ viewAttribute attr model buttons =
 
         description =
             getDescription attr value
+
+        barAndScroll =
+            div
+                [ styles
+                    [ displayFlex
+                    , justifyContent center
+                    ]
+                ]
+                [ viewBar value
+                , viewScroll value
+                ]
     in
         div []
-            [ viewBars value
+            [ barAndScroll
             , div [] [ Html.text (toString attr) ]
-
-            --            , div [ HA.class "ui indicating progress", getDataPercent value ]
+              --            , div [ HA.class "ui indicating progress", getDataPercent value ]
             ]
 
 
-viewBars : Int -> Html Msg
-viewBars valueOf100 =
+viewScroll : Int -> Html Msg
+viewScroll valueOf100 =
+    div
+        [ styles
+            [ height (px 102)
+            , overflowY scroll
+            , width (px 16)
+            ]
+        , HE.on "scroll" scrollDecoder
+        ]
+        [ div
+            [ styles
+                [ height (px 1000)
+                ]
+            ]
+            []
+        ]
+
+
+scrollDecoder : JD.Decoder Msg
+scrollDecoder =
+    JD.succeed (Scroll "scrolling")
+
+
+viewBar : Int -> Html Msg
+viewBar valueOf100 =
     div
         [ styles
             [ border3 (px 1) solid (rgb 0 0 0)
-            , width (px 15)
-            , height (px 60)
+            , width (px 25)
+            , height (px 100)
+            , position relative
+            ]
+        ]
+        [ viewBarScale 25
+        , viewBarScale 50
+        , viewBarScale 75
+        ]
+
+
+viewBarScale : Float -> Html Msg
+viewBarScale yOffset =
+    i
+        [ styles
+            [ width (pct 100)
+            , position absolute
+            , top (px yOffset)
+            , borderTop3 (px 1) solid (rgb 0 0 0)
             ]
         ]
         []
