@@ -17,6 +17,7 @@ import Attributes exposing (Attributes)
 import Types exposing (..)
 import UI
 import Css exposing (..)
+import Colors
 
 
 styles =
@@ -104,46 +105,22 @@ view (A model) =
                     ]
                 ]
                 [ viewGender model.gender
-                , viewAvatar
+                , viewAvatar model.gender
+                , viewCustomAvatar
                 ]
     in
-        div []
+        div
+            [ styles
+                [ maxWidth (px 480)
+                , margin2 zero auto
+                ]
+            ]
             [ viewName model.name
             , Attributes.view model.attributes |> Html.map Attribute
             , viewGenderAndAvatar
             , viewDifficulty model.difficulty
             , viewButtons
             ]
-
-
-
---        div []
---            [ div [] [ text ("Name: " ++ model.name ++ " Difficulty: " ++ (toString model.difficulty) ++ " Gender: " ++ (toString model.gender)) ]
---            , div [ class "ui middle aligned center aligned grid" ]
---                [ div [ class "ui one column" ]
---                    [ div [ class "ui stacked vertical segment" ]
---                        [ -- name
---                          nameView model.name
---                        ]
---                    , div []
---                        [ Attributes.view model.attributes
---                            |> Html.map Attribute
---                        ]
---                    , div [ class "ui vertical segments" ]
---                        [ div [ class "ui vertical segment" ] [ text "Character Gender" ]
---                        , div [ class "ui vertical segment" ]
---                            [ genderView model.gender
---                            ]
---                        ]
---                    , difficultyView model.difficulty
---                    , button [ class "ui button primary", onClick StartGame ] [ text "Ok" ]
---                    , button [ class "ui button" ] [ text "Cancel" ]
---                    , button [ class "ui button" ] [ text "View Icon" ]
---                    , button [ class "ui button" ] [ text "Help" ]
---                    ]
---                ]
---            ]
--- Name
 
 
 viewName : String -> Html Msg
@@ -157,7 +134,7 @@ viewName playerName =
         ]
         [ div []
             [ span
-                [ styles [ verticalAlign Css.sub ] ]
+                []
                 [ Html.text <| "Character" ++ UI.nbsp ++ "name:" ++ UI.nbsp ]
             ]
         , viewNameInput playerName
@@ -182,15 +159,50 @@ viewNameInput playerName =
 -- Gender
 
 
-viewAvatar : Html msg
-viewAvatar =
-    Html.text "No custom avatar"
+viewAvatar : Gender -> Html msg
+viewAvatar gender =
+    let
+        heroBackgroundPosition =
+            if gender == Male then
+                backgroundPosition2 zero zero
+            else
+                backgroundPosition2 (px -32) zero
+    in
+        div
+            [ styles
+                [ backgroundImage (url "/assets/original/monsters.png")
+                , heroBackgroundPosition
+                , height (px 32)
+                , width (px 32)
+                ]
+            ]
+            []
+
+
+viewCustomAvatar : Html msg
+viewCustomAvatar =
+    div [] [ Html.text "No custom avatar" ]
 
 
 viewGender : Gender -> Html Msg
 viewGender gender =
+    boxWithLabel ("Character" ++ UI.nbsp ++ "Gender")
+        [ div
+            [ styles [ marginRight (px 15) ] ]
+            [ UI.radioBtn "gender" (Male == gender) (Gender Male)
+            , Html.text "Male"
+            ]
+        , div []
+            [ UI.radioBtn "gender" (Female == gender) (Gender Female)
+            , Html.text "Female"
+            ]
+        ]
+
+
+boxWithLabel : String -> List (Html msg) -> Html msg
+boxWithLabel label children =
     let
-        genderLabel =
+        boxLabel =
             div
                 [ styles
                     [ position absolute
@@ -200,37 +212,18 @@ viewGender gender =
                     , padding2 zero (px 3)
                     ]
                 ]
-                [ Html.text <| "Character" ++ UI.nbsp ++ "Gender" ]
+                [ Html.text label ]
     in
         div
             [ styles
-                [ border3 (px 1) solid (rgb 200 200 200)
+                [ border3 (px 1) solid Colors.gray
                 , position relative
                 , displayFlex
+                , justifyContent spaceBetween
                 , padding2 (px 15) (px 10)
                 ]
             ]
-            [ genderLabel
-            , div
-                [ styles [ marginRight (px 15) ] ]
-                [ input
-                    [ HA.type_ "radio"
-                    , HA.name "gender"
-                    , HA.checked (Male == gender)
-                    ]
-                    []
-                , Html.text "Male"
-                ]
-            , div []
-                [ input
-                    [ HA.type_ "radio"
-                    , HA.name "gender"
-                    , HA.checked (Female == gender)
-                    ]
-                    []
-                , Html.text "Female"
-                ]
-            ]
+            (boxLabel :: children)
 
 
 
@@ -240,39 +233,50 @@ viewGender gender =
 viewDifficulty : Difficulty -> Html Msg
 viewDifficulty difficulty =
     let
-        activeEasy =
-            if difficulty == Easy then
-                "active"
-            else
-                ""
+        spacing children =
+            div [ styles [ marginTop (px 10) ] ] children
 
-        activeIntermediate =
-            if difficulty == Intermediate then
-                "active"
-            else
-                ""
-
-        activeHard =
-            if difficulty == Hard then
-                "active"
-            else
-                ""
-
-        activeImpossible =
-            if difficulty == Impossible then
-                "active"
-            else
-                ""
-    in
-        div
-            [ styles
-                [ margin (px 10)
+        easy =
+            div []
+                [ viewIconEasy
+                , spacing
+                    [ UI.radioBtn "difficulty" (difficulty == Easy) (Difficulty Easy)
+                    , Html.text "Easy"
+                    ]
                 ]
-            ]
-            [ easyButton activeEasy
-            , intermediateButton activeIntermediate
-            , hardButton activeHard
-            , impossibleButton activeImpossible
+
+        intermediate =
+            div []
+                [ viewIconIntermediate
+                , spacing
+                    [ UI.radioBtn "difficulty" (difficulty == Intermediate) (Difficulty Intermediate)
+                    , Html.text "Intermediate"
+                    ]
+                ]
+
+        hard =
+            div []
+                [ viewIconHard
+                , spacing
+                    [ UI.radioBtn "difficulty" (difficulty == Hard) (Difficulty Hard)
+                    , Html.text "Difficult"
+                    ]
+                ]
+
+        impossible =
+            div []
+                [ viewIconImpossible
+                , spacing
+                    [ UI.radioBtn "difficulty" (difficulty == Impossible) (Difficulty Impossible)
+                    , Html.text "Impossible"
+                    ]
+                ]
+    in
+        boxWithLabel ("Game Difficulty")
+            [ easy
+            , intermediate
+            , hard
+            , impossible
             ]
 
 
@@ -280,44 +284,87 @@ viewDifficulty difficulty =
 -- difficulty
 
 
-iconButton : Difficulty -> String -> List (Html Msg) -> Html Msg
-iconButton diff active a =
-    button [ HA.class ("ui icon button " ++ active), HE.onClick (Difficulty diff) ] a
+viewIconEasy : Html Msg
+viewIconEasy =
+    i
+        [ styles
+            [ display block
+            , height (px 30)
+            , width (px 30)
+            , margin2 zero auto
+            , borderRadius (px 30)
+            , backgroundColor Colors.lightgreen
+            ]
+        ]
+        []
 
 
-easyButton : String -> Html Msg
-easyButton active =
-    iconButton Easy
-        active
-        [ div [] [ i [ HA.class "huge green circle icon" ] [] ]
-        , label [] [ Html.text "Easy" ]
+viewIconIntermediate : Html Msg
+viewIconIntermediate =
+    i
+        [ styles
+            [ display block
+            , height (px 30)
+            , width (px 30)
+            , margin2 zero auto
+            , backgroundColor Colors.blue
+            ]
+        ]
+        []
+
+
+viewIconHard : Html Msg
+viewIconHard =
+    div
+        [ styles
+            [ height (px 30)
+            , margin2 zero auto
+            ]
+        ]
+        [ i
+            [ styles
+                [ display block
+                , height (px 27)
+                , width (px 27)
+                , margin2 zero auto
+                , backgroundColor Colors.black
+                , transform (rotate (deg 45))
+                ]
+            ]
+            []
         ]
 
 
-intermediateButton : String -> Html Msg
-intermediateButton active =
-    iconButton Intermediate
-        active
-        [ div [] [ i [ HA.class "huge blue square icon" ] [] ]
-        , label [] [ Html.text "Intermediate" ]
+viewIconImpossible : Html Msg
+viewIconImpossible =
+    div
+        [ styles
+            [ position relative
+            , height (px 30)
+            , width (px 30)
+            , margin2 zero auto
+            ]
         ]
-
-
-hardButton : String -> Html Msg
-hardButton active =
-    iconButton Hard
-        active
-        [ div [] [ i [ HA.class "huge black square icon" ] [] ]
-        , label [] [ Html.text "Hard" ]
-        ]
-
-
-impossibleButton : String -> Html Msg
-impossibleButton active =
-    iconButton Impossible
-        active
-        [ div [] [ i [ HA.class "huge yellow warning sign icon" ] [] ]
-        , label [] [ Html.text "Impossible" ]
+        [ i
+            [ styles
+                [ width zero
+                , height zero
+                , borderLeft3 (px 20) solid transparent
+                , borderRight3 (px 20) solid transparent
+                , borderBottom3 (px 35) solid Colors.gold
+                , position absolute
+                ]
+            ]
+            []
+        , span
+            [ styles
+                [ fontSize (Css.em 2)
+                , position absolute
+                , left (px 15)
+                , zIndex (int 3)
+                ]
+            ]
+            [ Html.text "!" ]
         ]
 
 
@@ -326,6 +373,8 @@ viewButtons =
     div
         [ styles
             [ margin (px 20)
+            , displayFlex
+            , justifyContent spaceBetween
             ]
         ]
         [ UI.btn "OK" StartGame

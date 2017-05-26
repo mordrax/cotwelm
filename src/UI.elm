@@ -20,7 +20,10 @@ addStyle currentStyles style =
 type alias Label =
     String
 
-nbsp = "\xA0"
+
+nbsp =
+    " "
+
 
 labeledNumber_ : (String -> number -> number) -> Label -> number -> (number -> a) -> Html a
 labeledNumber_ convert label number msg =
@@ -130,6 +133,11 @@ btn txt msg =
     button [ HE.onClick msg ] [ Html.text txt ]
 
 
+radioBtn : String -> Bool -> msg -> Html msg
+radioBtn name checked msg =
+    input [ HA.type_ "radio", HA.name name, HA.checked checked, HE.onClick msg ] []
+
+
 type alias Event =
     { target : Target
     }
@@ -138,4 +146,3 @@ type alias Event =
 type alias Target =
     { value : String
     }
-

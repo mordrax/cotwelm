@@ -148,7 +148,11 @@ view model =
             else
                 "female-hero"
     in
-        div [ HA.class ("tile " ++ heroCss), HA.style (Misc.vectorToHtmlStyle model.position) ] []
+        div
+            [ HA.class ("tile " ++ heroCss)
+            , HA.style (Misc.vectorToHtmlStyle model.position)
+            ]
+            []
 
 
 viewStats : Hero -> Html a
