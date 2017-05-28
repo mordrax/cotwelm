@@ -21,10 +21,25 @@ This means that monsters such as giants, dragons, ghosts can go above or below t
 import Html exposing (..)
 import Html.Events as HE
 import Html.Attributes as HA
+import Css exposing (..)
+import Json.Decode as JD
+import Colors
+import Dom.Scroll
+import Task
+
+
+styles =
+    asPairs >> HA.style
+
+
+addStyle currentStyles style =
+    HA.style (asPairs <| style :: currentStyles)
 
 
 type Msg
     = Update Attribute Int
+    | Scroll Attribute Int
+    | NoOp
 
 
 type Attribute
@@ -44,14 +59,37 @@ type alias Attributes =
     }
 
 
-init : Attributes
+ids : Attribute -> String
+ids =
+    toString
+
+
+init : ( Attributes, Cmd Msg )
 init =
-    { ava = 100
-    , str = 20
-    , dex = 30
-    , con = 40
-    , int = 60
-    }
+    let
+        attributes =
+            { ava = 100
+            , str = 20
+            , dex = 30
+            , con = 40
+            , int = 60
+            }
+
+        ignoreResult _ =
+            NoOp
+
+        cmds =
+            Task.sequence
+                [ Dom.Scroll.toY (ids Strength) (toFloat (attributes.str * 10))
+                , Dom.Scroll.toY (ids Dexterity) (toFloat (attributes.dex * 10))
+                , Dom.Scroll.toY (ids Intelligence) (toFloat (attributes.int * 10))
+                , Dom.Scroll.toY (ids Constitution) (toFloat (attributes.con * 10))
+                ]
+                |> Task.attempt ignoreResult
+    in
+        ( attributes
+        , cmds
+        )
 
 
 initCustom : Int -> Int -> Int -> Int -> Attributes
@@ -64,25 +102,50 @@ initCustom str dex con int =
     }
 
 
+updateIfEnoughAvailable : Attribute -> Int -> Attributes -> Attributes
+updateIfEnoughAvailable attr val attributes =
+    if (attributes.ava < val) then
+        attributes
+    else
+        attributes
+            |> addAttribute attr val
+            |> addAttribute Available -val
+
+
+addAttribute : Attribute -> Int -> Attributes -> Attributes
+addAttribute attr val attributes =
+    case attr of
+        Strength ->
+            { attributes | str = attributes.str + val }
+
+        Intelligence ->
+            { attributes | int = attributes.int + val }
+
+        Constitution ->
+            { attributes | con = attributes.con + val }
+
+        Dexterity ->
+            { attributes | dex = attributes.dex + val }
+
+        Available ->
+            { attributes | ava = attributes.ava + val }
+
+
 update : Msg -> Attributes -> Attributes
-update msg model =
+update msg attributes =
     case msg of
         Update attribute value ->
-            case attribute of
-                Available ->
-                    { model | ava = model.ava + value }
+            updateIfEnoughAvailable attribute value attributes
 
-                Strength ->
-                    { model | str = model.str + value, ava = model.ava - value }
+        Scroll attribute value ->
+            let
+                valueDelta =
+                    value - (getAttributeValue attribute attributes)
+            in
+                updateIfEnoughAvailable attribute valueDelta attributes
 
-                Intelligence ->
-                    { model | int = model.int + value, ava = model.ava - value }
-
-                Constitution ->
-                    { model | con = model.con + value, ava = model.ava - value }
-
-                Dexterity ->
-                    { model | dex = model.dex + value, ava = model.ava - value }
+        NoOp ->
+            attributes
 
 
 scale : Float -> Float -> Float -> Float -> Attributes -> Attributes
@@ -120,7 +183,12 @@ set ( attribute, value ) model =
 
 view : Attributes -> Html Msg
 view model =
-    div []
+    div
+        [ styles
+            [ displayFlex
+            , justifyContent spaceBetween
+            ]
+        ]
         [ viewAttribute Available model False
         , viewAttribute Strength model True
         , viewAttribute Intelligence model True
@@ -145,31 +213,142 @@ viewAttribute attr model buttons =
 
         description =
             getDescription attr value
-    in
-        div [ HA.class "ui segments" ]
-            [ div [ HA.class "ui segment left aligned" ]
-                [ h4 [ HA.class "ui header" ] [ text (toString attr) ]
-                , div [ HA.class "ui indicating progress", getDataPercent value ]
-                    [ div [ HA.class "bar", (progressBarStyle value) ] []
-                    , div [ HA.class "tick", (tickStyle 25) ] []
-                    , div [ HA.class "tick", (tickStyle 50) ] []
-                    , div [ HA.class "tick", (tickStyle 75) ] []
-                    , div [ HA.class "label" ] [ text description ]
+
+        viewBarAndScroll =
+            div
+                [ styles
+                    [ displayFlex
+                    , justifyContent center
                     ]
-                , if buttons then
-                    viewButtons attr
-                  else
-                    div [] []
                 ]
+                [ viewBarWithScale value
+                , viewScroll attr value
+                ]
+
+        viewAttributeLabel =
+            div [] [ Html.text (toString attr) ]
+    in
+        case attr of
+            Available ->
+                div []
+                    [ viewBar value []
+                    ]
+
+            _ ->
+                div []
+                    [ viewBarAndScroll
+                    , viewAttributeLabel
+                      --            , div [ HA.class "ui indicating progress", getDataPercent value ]
+                    ]
+
+
+viewScroll : Attribute -> Int -> Html Msg
+viewScroll attr valueOf100 =
+    let
+        inverseValue =
+            100 - (toFloat valueOf100)
+
+        inputToInt strVal =
+            case String.toInt strVal of
+                Err str ->
+                    Debug.log ("Attributes.viewScroll: Cannot convert the string to int " ++ str) 0
+
+                Ok val ->
+                    val
+    in
+        div
+            [ styles
+                [ position relative
+                , height (px 100)
+                , width (px 20)
+                ]
+            ]
+            [ input
+                [ styles
+                    [ position absolute
+                    , height (px 20)
+                    , width (px 85)
+                    , transform (rotate <| deg 270)
+                    , top (px 36)
+                    , left (px -25)
+                    ]
+                , HE.onInput (inputToInt >> Scroll attr)
+                , HA.id (toString attr)
+                , HA.type_ "range"
+                , HA.value (toString valueOf100)
+                ]
+                []
             ]
 
 
-progressBarStyle : Int -> Html.Attribute Msg
-progressBarStyle val =
-    HA.style
-        [ ( "width", (toString val) ++ "%" )
-        , ( "min-width", "0" )
+type alias ScrollTarget =
+    { scrollTop : Int
+    }
+
+
+eventTargetDecoder : JD.Decoder ScrollTarget
+eventTargetDecoder =
+    JD.field "scrollTop" JD.int
+        |> JD.map ScrollTarget
+
+
+inputDecoder : Attribute -> JD.Decoder Msg
+inputDecoder attr =
+    JD.field "value" JD.int
+        |> JD.map (Scroll attr)
+
+
+viewBarWithScale : Int -> Html Msg
+viewBarWithScale valueOf100 =
+    viewBar valueOf100
+        [ viewBarScale 25
+        , viewBarScale 50
+        , viewBarScale 75
         ]
+
+
+viewBar : Int -> List (Html Msg) -> Html Msg
+viewBar valueOf100 children =
+    let
+        inverseOfValue =
+            100 - (toFloat valueOf100)
+
+        viewBlueBar =
+            div
+                [ styles
+                    [ position absolute
+                    , zIndex (int 0)
+                    , width (px 25)
+                    , height (px (toFloat valueOf100))
+                    , top (px inverseOfValue)
+                    , backgroundColor Colors.blue
+                    ]
+                ]
+                []
+    in
+        div
+            [ styles
+                [ border3 (px 1) solid (rgb 0 0 0)
+                , width (px 25)
+                , height (px 100)
+                , position relative
+                , zIndex (int 1)
+                ]
+            ]
+            (viewBlueBar :: children)
+
+
+viewBarScale : Float -> Html Msg
+viewBarScale yOffset =
+    i
+        [ styles
+            [ width (pct 100)
+            , position absolute
+            , top (px yOffset)
+            , borderTop3 (px 1) solid (rgb 0 0 0)
+            ]
+        ]
+        []
 
 
 tickStyle : Int -> Html.Attribute Msg

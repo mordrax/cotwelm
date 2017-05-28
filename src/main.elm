@@ -42,16 +42,18 @@ type Page
 init : Location -> ( Model, Cmd Msg )
 init location =
     let
-        model =
-            { currentPage = urlToPage location
-            , charCreation = CharCreation.init
-            , game = Nothing
-            , editor = Editor.init
-            , arena = PlayerArena.init
-            , pit = MonsterArena.init
-            }
+        ( charCreation, charCreationCmds ) =
+            CharCreation.init
     in
-        ( model, Cmd.none )
+        ( { currentPage = urlToPage location
+          , charCreation = charCreation
+          , game = Nothing
+          , editor = Editor.init
+          , arena = Nothing
+          , pit = Nothing
+          }
+        , Cmd.map CharCreationMsg charCreationCmds
+        )
 
 
 type alias Model =
@@ -59,8 +61,8 @@ type alias Model =
     , charCreation : CharCreation
     , game : Maybe Game
     , editor : Editor.Model
-    , arena : PlayerArena.Model
-    , pit : MonsterArena.Model
+    , arena : Maybe PlayerArena.Model
+    , pit : Maybe MonsterArena.Model
     }
 
 
@@ -84,7 +86,9 @@ subscriptions model =
     in
         case model.currentPage of
             PitPage ->
-                Sub.map PitMsg (MonsterArena.subs model.pit)
+                model.pit
+                    |> Maybe.map (MonsterArena.subs >> Sub.map PitMsg)
+                    |> Maybe.withDefault Sub.none
 
             _ ->
                 gameSub
@@ -146,19 +150,24 @@ update msg model =
         ArenaMsg msg ->
             let
                 ( arena_, cmds ) =
-                    PlayerArena.update msg model.arena
-
-                gameCmds =
-                    Cmd.map ArenaMsg cmds
+                    model.arena
+                        |> Maybe.map (PlayerArena.update msg)
+                        |> Maybe.map (\( m, c ) -> ( Just m, c ))
+                        |> Maybe.withDefault ( Nothing, Cmd.none )
             in
-                ( { model | arena = arena_ }, gameCmds )
+                ( { model | arena = arena_ }, Cmd.map ArenaMsg cmds )
 
         PitMsg msg ->
-            let
-                ( pit_, cmds ) =
-                    MonsterArena.update msg model.pit
-            in
-                ( { model | pit = pit_ }, Cmd.map PitMsg cmds )
+            case model.pit of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just pit ->
+                    let
+                        ( pit_, cmds ) =
+                            MonsterArena.update msg pit
+                    in
+                        ( { model | pit = Just pit_ }, Cmd.map PitMsg cmds )
 
         GenerateGame seed charCreation ->
             let
@@ -202,10 +211,20 @@ view model =
             Html.map EditorMsg (Editor.view model.editor)
 
         ArenaPage ->
-            Html.map ArenaMsg (PlayerArena.view model.arena)
+            case model.arena of
+                Nothing ->
+                    Html.map ArenaMsg (PlayerArena.view PlayerArena.init)
+
+                Just arena ->
+                    Html.map ArenaMsg (PlayerArena.view arena)
 
         PitPage ->
-            Html.map PitMsg (MonsterArena.view model.pit)
+            case model.pit of
+                Nothing ->
+                    Html.map PitMsg (MonsterArena.view (MonsterArena.init))
+
+                Just pit ->
+                    Html.map PitMsg (MonsterArena.view pit)
 
         _ ->
             h1 [] [ text "Page not implemented!" ]

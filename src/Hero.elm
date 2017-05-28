@@ -128,7 +128,7 @@ pickup_ item ( hero, messages, remainingItems ) =
             Equipment.Success ->
                 success
 
-            Equipment.ContainerMsg (Container.Ok) ->
+            Equipment.ContainerMsg Container.Ok ->
                 success
 
             other ->
@@ -148,7 +148,11 @@ view model =
             else
                 "female-hero"
     in
-        div [ HA.class ("tile " ++ heroCss), HA.style (Misc.vectorToHtmlStyle model.position) ] []
+        div
+            [ HA.class ("tile " ++ heroCss)
+            , HA.style (Misc.vectorToHtmlStyle model.position)
+            ]
+            []
 
 
 viewStats : Hero -> Html a

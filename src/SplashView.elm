@@ -4,8 +4,8 @@ import Html as H exposing (..)
 import Html.Events as HE
 import Html.Attributes as HA
 import Css exposing (..)
-import Game.Render
 import UI
+
 
 type Msg
     = NewGame
@@ -26,7 +26,6 @@ addStyle currentStyles style =
 -}
 view : Html Msg
 view =
-    --    Game.Render.viewRip
     div
         [ styles
             [ displayFlex
@@ -55,8 +54,17 @@ cotwSubtitleImg =
 
 newLoadOverview : Html Msg
 newLoadOverview =
-    div []
-        [ UI.btn "New Game" NewGame
-        , UI.btn "Load Game" LoadGame
+    div
+        [ styles
+            [ position absolute
+            , bottom (px 15)
+            , margin2 zero auto
+            , width (pct 70)
+            , displayFlex
+            , justifyContent spaceBetween
+            ]
+        ]
+        [ UI.btn "Start New Game" NewGame
+        , UI.btn "Load Saved Game" LoadGame
         , UI.btn "Overview" Overview
         ]

@@ -21,6 +21,10 @@ type alias Label =
     String
 
 
+nbsp =
+    " "
+
+
 labeledNumber_ : (String -> number -> number) -> Label -> number -> (number -> a) -> Html a
 labeledNumber_ convert label number msg =
     labeledNumberWithStep convert label number 1.0 msg
@@ -127,6 +131,11 @@ changeEventDecoder =
 btn : String -> msg -> Html msg
 btn txt msg =
     button [ HE.onClick msg ] [ Html.text txt ]
+
+
+radioBtn : String -> Bool -> msg -> Html msg
+radioBtn name checked msg =
+    input [ HA.type_ "radio", HA.name name, HA.checked checked, HE.onClick msg ] []
 
 
 type alias Event =
