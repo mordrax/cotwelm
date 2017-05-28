@@ -1,8 +1,6 @@
 module Colors exposing (..)
 
-{-|
-Some colors to use for the game, source: http://htmlcolorcodes.com/color-names/
-
+{-| Some colors to use for the game, source: <http://htmlcolorcodes.com/color-names/>
 -}
 
 import Css exposing (Color, hex)

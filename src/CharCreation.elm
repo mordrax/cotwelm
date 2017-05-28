@@ -52,14 +52,20 @@ type Msg
     | StartGame
 
 
-init : CharCreation
+init : ( CharCreation, Cmd Msg )
 init =
-    A
-        { name = "Conan the destroyer"
-        , attributes = Attributes.init
-        , gender = Female
-        , difficulty = Hard
-        }
+    let
+        ( attributes, attrCmds ) =
+            Attributes.init
+    in
+        ( A
+            { name = "Conan the destroyer"
+            , attributes = attributes
+            , gender = Female
+            , difficulty = Hard
+            }
+        , Cmd.map Attribute attrCmds
+        )
 
 
 update : Msg -> CharCreation -> ( CharCreation, Bool )
@@ -241,7 +247,7 @@ viewDifficulty difficulty =
                 [ viewIconEasy
                 , spacing
                     [ UI.radioBtn "difficulty" (difficulty == Easy) (Difficulty Easy)
-                    , Html.text "Easy"
+                    , Html.text (UI.nbsp ++ "Easy")
                     ]
                 ]
 

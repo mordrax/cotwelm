@@ -128,7 +128,7 @@ pickup_ item ( hero, messages, remainingItems ) =
             Equipment.Success ->
                 success
 
-            Equipment.ContainerMsg (Container.Ok) ->
+            Equipment.ContainerMsg Container.Ok ->
                 success
 
             other ->

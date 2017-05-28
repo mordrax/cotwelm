@@ -23,6 +23,9 @@ import Html.Events as HE
 import Html.Attributes as HA
 import Css exposing (..)
 import Json.Decode as JD
+import Colors
+import Dom.Scroll
+import Task
 
 
 styles =
@@ -35,7 +38,8 @@ addStyle currentStyles style =
 
 type Msg
     = Update Attribute Int
-    | Scroll String
+    | Scroll Int
+    | NoOp
 
 
 type Attribute
@@ -55,14 +59,37 @@ type alias Attributes =
     }
 
 
-init : Attributes
+ids : Attribute -> String
+ids =
+    toString
+
+
+init : ( Attributes, Cmd Msg )
 init =
-    { ava = 100
-    , str = 20
-    , dex = 30
-    , con = 40
-    , int = 60
-    }
+    let
+        attributes =
+            { ava = 100
+            , str = 20
+            , dex = 30
+            , con = 40
+            , int = 60
+            }
+
+        ignoreResult _ =
+            NoOp
+
+        cmds =
+            Task.sequence
+                [ Dom.Scroll.toY (ids Strength) (toFloat (attributes.str))
+                , Dom.Scroll.toY (ids Dexterity) (toFloat (attributes.dex))
+                , Dom.Scroll.toY (ids Intelligence) (toFloat (attributes.int))
+                , Dom.Scroll.toY (ids Constitution) (toFloat (attributes.con))
+                ]
+                |> Task.attempt ignoreResult
+    in
+        ( attributes
+        , cmds
+        )
 
 
 initCustom : Int -> Int -> Int -> Int -> Attributes
@@ -95,12 +122,15 @@ update msg model =
                 Dexterity ->
                     { model | dex = model.dex + value, ava = model.ava - value }
 
-        Scroll str ->
+        Scroll val ->
             let
                 _ =
-                    Debug.log "Scrolling" 0
+                    Debug.log "Scrolling" val
             in
                 model
+
+        NoOp ->
+            model
 
 
 scale : Float -> Float -> Float -> Float -> Attributes -> Attributes
@@ -169,62 +199,120 @@ viewAttribute attr model buttons =
         description =
             getDescription attr value
 
-        barAndScroll =
+        viewBarAndScroll =
             div
                 [ styles
                     [ displayFlex
                     , justifyContent center
                     ]
                 ]
-                [ viewBar value
-                , viewScroll value
+                [ viewBarWithScale value
+                , viewScroll attr value
                 ]
+
+        viewAttributeLabel =
+            div [] [ Html.text (toString attr) ]
     in
-        div []
-            [ barAndScroll
-            , div [] [ Html.text (toString attr) ]
-              --            , div [ HA.class "ui indicating progress", getDataPercent value ]
-            ]
+        case attr of
+            Available ->
+                div []
+                    [ viewBar value []
+                    ]
+
+            _ ->
+                div []
+                    [ viewBarAndScroll
+                    , viewAttributeLabel
+
+                    --            , div [ HA.class "ui indicating progress", getDataPercent value ]
+                    ]
 
 
-viewScroll : Int -> Html Msg
-viewScroll valueOf100 =
-    div
-        [ styles
-            [ height (px 102)
-            , overflowY scroll
-            , width (px 16)
-            ]
-        , HE.on "scroll" scrollDecoder
-        ]
-        [ div
+viewScroll : Attribute -> Int -> Html Msg
+viewScroll attr valueOf100 =
+    let
+        inverseValue =
+            100 - (toFloat valueOf100)
+    in
+        div
             [ styles
-                [ height (px 1000)
+                [ height (px 102)
+                , overflowY scroll
+                , width (px 20)
+                , position relative
                 ]
+            , HE.on "scroll" scrollDecoder
+            , HA.id (toString attr)
             ]
-            []
-        ]
+            [ div
+                [ styles
+                    [ height (px 1100)
+
+                    --                    , top (px <| inverseValue * -10)
+                    , position absolute
+                    , width (px 20)
+                    ]
+                ]
+                []
+            ]
+
+
+type alias ScrollTarget =
+    { scrollTop : Int
+    }
+
+
+eventTargetDecoder : JD.Decoder ScrollTarget
+eventTargetDecoder =
+    JD.field "scrollTop" JD.int
+        |> JD.map ScrollTarget
 
 
 scrollDecoder : JD.Decoder Msg
 scrollDecoder =
-    JD.succeed (Scroll "scrolling")
+    JD.field "target" eventTargetDecoder
+        |> JD.map (.scrollTop)
+        |> JD.map Scroll
 
 
-viewBar : Int -> Html Msg
-viewBar valueOf100 =
-    div
-        [ styles
-            [ border3 (px 1) solid (rgb 0 0 0)
-            , width (px 25)
-            , height (px 100)
-            , position relative
-            ]
-        ]
+viewBarWithScale : Int -> Html Msg
+viewBarWithScale valueOf100 =
+    viewBar valueOf100
         [ viewBarScale 25
         , viewBarScale 50
         , viewBarScale 75
         ]
+
+
+viewBar : Int -> List (Html Msg) -> Html Msg
+viewBar valueOf100 children =
+    let
+        inverseOfValue =
+            100 - (toFloat valueOf100)
+
+        viewBlueBar =
+            div
+                [ styles
+                    [ position absolute
+                    , zIndex (int 0)
+                    , width (px 25)
+                    , height (px (toFloat valueOf100))
+                    , top (px inverseOfValue)
+                    , backgroundColor Colors.blue
+                    ]
+                ]
+                []
+    in
+        div
+            [ styles
+                [ border3 (px 1) solid (rgb 0 0 0)
+                , width (px 25)
+                , height (px 100)
+                , position relative
+                , zIndex (int 1)
+                ]
+            ]
+            (viewBlueBar :: children)
 
 
 viewBarScale : Float -> Html Msg

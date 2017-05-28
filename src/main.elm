@@ -42,16 +42,18 @@ type Page
 init : Location -> ( Model, Cmd Msg )
 init location =
     let
-        model =
-            { currentPage = urlToPage location
-            , charCreation = CharCreation.init
-            , game = Nothing
-            , editor = Editor.init
-            , arena = Nothing
-            , pit = Nothing
-            }
+        ( charCreation, charCreationCmds ) =
+            CharCreation.init
     in
-        ( model, Cmd.none )
+        ( { currentPage = urlToPage location
+          , charCreation = charCreation
+          , game = Nothing
+          , editor = Editor.init
+          , arena = Nothing
+          , pit = Nothing
+          }
+        , Cmd.map CharCreationMsg charCreationCmds
+        )
 
 
 type alias Model =
@@ -95,7 +97,7 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SplashMsg (SplashView.NewGame) ->
+        SplashMsg SplashView.NewGame ->
             ( model, Navigation.newUrl "#/charCreation" )
 
         SplashMsg _ ->
