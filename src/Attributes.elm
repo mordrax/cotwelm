@@ -38,7 +38,7 @@ addStyle currentStyles style =
 
 type Msg
     = Update Attribute Int
-    | Scroll Int
+    | Scroll Attribute Int
     | NoOp
 
 
@@ -80,10 +80,10 @@ init =
 
         cmds =
             Task.sequence
-                [ Dom.Scroll.toY (ids Strength) (toFloat (attributes.str))
-                , Dom.Scroll.toY (ids Dexterity) (toFloat (attributes.dex))
-                , Dom.Scroll.toY (ids Intelligence) (toFloat (attributes.int))
-                , Dom.Scroll.toY (ids Constitution) (toFloat (attributes.con))
+                [ Dom.Scroll.toY (ids Strength) (toFloat (attributes.str * 10))
+                , Dom.Scroll.toY (ids Dexterity) (toFloat (attributes.dex * 10))
+                , Dom.Scroll.toY (ids Intelligence) (toFloat (attributes.int * 10))
+                , Dom.Scroll.toY (ids Constitution) (toFloat (attributes.con * 10))
                 ]
                 |> Task.attempt ignoreResult
     in
@@ -102,35 +102,50 @@ initCustom str dex con int =
     }
 
 
+updateIfEnoughAvailable : Attribute -> Int -> Attributes -> Attributes
+updateIfEnoughAvailable attr val attributes =
+    if (attributes.ava < val) then
+        attributes
+    else
+        attributes
+            |> addAttribute attr val
+            |> addAttribute Available -val
+
+
+addAttribute : Attribute -> Int -> Attributes -> Attributes
+addAttribute attr val attributes =
+    case attr of
+        Strength ->
+            { attributes | str = attributes.str + val }
+
+        Intelligence ->
+            { attributes | int = attributes.int + val }
+
+        Constitution ->
+            { attributes | con = attributes.con + val }
+
+        Dexterity ->
+            { attributes | dex = attributes.dex + val }
+
+        Available ->
+            { attributes | ava = attributes.ava + val }
+
+
 update : Msg -> Attributes -> Attributes
-update msg model =
+update msg attributes =
     case msg of
         Update attribute value ->
-            case attribute of
-                Available ->
-                    { model | ava = model.ava + value }
+            updateIfEnoughAvailable attribute value attributes
 
-                Strength ->
-                    { model | str = model.str + value, ava = model.ava - value }
-
-                Intelligence ->
-                    { model | int = model.int + value, ava = model.ava - value }
-
-                Constitution ->
-                    { model | con = model.con + value, ava = model.ava - value }
-
-                Dexterity ->
-                    { model | dex = model.dex + value, ava = model.ava - value }
-
-        Scroll val ->
+        Scroll attribute value ->
             let
-                _ =
-                    Debug.log "Scrolling" val
+                valueDelta =
+                    value - (getAttributeValue attribute attributes)
             in
-                model
+                updateIfEnoughAvailable attribute valueDelta attributes
 
         NoOp ->
-            model
+            attributes
 
 
 scale : Float -> Float -> Float -> Float -> Attributes -> Attributes
@@ -223,8 +238,7 @@ viewAttribute attr model buttons =
                 div []
                     [ viewBarAndScroll
                     , viewAttributeLabel
-
-                    --            , div [ HA.class "ui indicating progress", getDataPercent value ]
+                      --            , div [ HA.class "ui indicating progress", getDataPercent value ]
                     ]
 
 
@@ -233,25 +247,35 @@ viewScroll attr valueOf100 =
     let
         inverseValue =
             100 - (toFloat valueOf100)
+
+        inputToInt strVal =
+            case String.toInt strVal of
+                Err str ->
+                    Debug.log ("Attributes.viewScroll: Cannot convert the string to int " ++ str) 0
+
+                Ok val ->
+                    val
     in
         div
             [ styles
-                [ height (px 102)
-                , overflowY scroll
+                [ position relative
+                , height (px 100)
                 , width (px 20)
-                , position relative
                 ]
-            , HE.on "scroll" scrollDecoder
-            , HA.id (toString attr)
             ]
-            [ div
+            [ input
                 [ styles
-                    [ height (px 1100)
-
-                    --                    , top (px <| inverseValue * -10)
-                    , position absolute
-                    , width (px 20)
+                    [ position absolute
+                    , height (px 20)
+                    , width (px 85)
+                    , transform (rotate <| deg 270)
+                    , top (px 36)
+                    , left (px -25)
                     ]
+                , HE.onInput (inputToInt >> Scroll attr)
+                , HA.id (toString attr)
+                , HA.type_ "range"
+                , HA.value (toString valueOf100)
                 ]
                 []
             ]
@@ -268,11 +292,10 @@ eventTargetDecoder =
         |> JD.map ScrollTarget
 
 
-scrollDecoder : JD.Decoder Msg
-scrollDecoder =
-    JD.field "target" eventTargetDecoder
-        |> JD.map (.scrollTop)
-        |> JD.map Scroll
+inputDecoder : Attribute -> JD.Decoder Msg
+inputDecoder attr =
+    JD.field "value" JD.int
+        |> JD.map (Scroll attr)
 
 
 viewBarWithScale : Int -> Html Msg
