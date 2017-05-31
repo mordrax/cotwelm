@@ -1,8 +1,6 @@
 module Dungeon.Rooms.DiagonalSquares exposing (template)
 
-{-|
-
--}
+{-| -}
 
 import Dungeon.Rooms.Type exposing (..)
 

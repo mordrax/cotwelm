@@ -1,11 +1,11 @@
 module Equipment
     exposing
-        ( EquipmentSlot(..)
-        , Equipment
+        ( Equipment
+        , EquipmentSlot(..)
         , Msg(..)
         , calculateAC
+        , clearSlot_
         , equip
-        , setMany_
         , get
         , getArmour
         , getPack
@@ -15,31 +15,36 @@ module Equipment
         , init
         , putInPack
         , removeFromPack
+        , setMany_
         , setPurse
         , setSlot_
-        , clearSlot_
         , unequip
         )
 
 {-| Manages equipment slots and any items that are equipped in those slots.
 Does not render equipment but will provide a API to retrieve them.
 
+
 # Equipment basics
+
 @docs EquipmentSlot, Msg, Equipment
 
+
 # Ingame interactions
+
 @docs get, init, putInPack
+
 -}
 
 import Container
 import Html exposing (..)
+import Item
 import Item.Belt as Belt
 import Item.Data exposing (..)
-import Item
 import Item.Pack as Pack
 import Item.Purse as Purse
-import Utils.Misc as Misc
 import Utils.Mass as Mass
+import Utils.Misc as Misc
 
 
 type alias Model =
@@ -124,11 +129,11 @@ calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
                 |> Maybe.map .ac
                 |> Maybe.withDefault (AC 0)
     in
-        getAC armour
-            |> addAC (getAC shield)
-            |> addAC (getAC helmet)
-            |> addAC (getAC bracers)
-            |> addAC (getAC gauntlets)
+    getAC armour
+        |> addAC (getAC shield)
+        |> addAC (getAC helmet)
+        |> addAC (getAC bracers)
+        |> addAC (getAC gauntlets)
 
 
 equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg ( Equipment, Maybe Item )
@@ -148,52 +153,52 @@ setSlot_ : ( EquipmentSlot, Item ) -> Equipment -> Equipment
 setSlot_ ( slot, item ) (A model) =
     case ( slot, item ) of
         ( WeaponSlot, ItemWeapon weapon ) ->
-            (A { model | weapon = Just weapon })
+            A { model | weapon = Just weapon }
 
         ( FreehandSlot, item ) ->
-            (A { model | freehand = Just item })
+            A { model | freehand = Just item }
 
         ( ArmourSlot, ItemArmour armour ) ->
-            (A { model | armour = Just armour })
+            A { model | armour = Just armour }
 
         ( ShieldSlot, ItemShield shield ) ->
-            (A { model | shield = Just shield })
+            A { model | shield = Just shield }
 
         ( HelmetSlot, ItemHelmet helmet ) ->
-            (A { model | helmet = Just helmet })
+            A { model | helmet = Just helmet }
 
         ( BracersSlot, ItemBracers bracers ) ->
-            (A { model | bracers = Just bracers })
+            A { model | bracers = Just bracers }
 
         ( GauntletsSlot, ItemGauntlets gauntlets ) ->
-            (A { model | gauntlets = Just gauntlets })
+            A { model | gauntlets = Just gauntlets }
 
         ( BeltSlot, ItemBelt belt ) ->
-            (A { model | belt = Just belt })
+            A { model | belt = Just belt }
 
         ( PurseSlot, ItemPurse purse ) ->
-            (A { model | purse = Just purse })
+            A { model | purse = Just purse }
 
         ( PackSlot, ItemPack pack ) ->
-            (A { model | pack = Just pack })
+            A { model | pack = Just pack }
 
         ( NeckwearSlot, ItemNeckwear neckwear ) ->
-            (A { model | neckwear = Just neckwear })
+            A { model | neckwear = Just neckwear }
 
         ( OvergarmentSlot, ItemOvergarment overgarment ) ->
-            (A { model | overgarment = Just overgarment })
+            A { model | overgarment = Just overgarment }
 
         ( LeftRingSlot, ItemRing leftRing ) ->
-            (A { model | leftRing = Just leftRing })
+            A { model | leftRing = Just leftRing }
 
         ( RightRingSlot, ItemRing rightRing ) ->
-            (A { model | rightRing = Just rightRing })
+            A { model | rightRing = Just rightRing }
 
         ( BootsSlot, ItemBoots boots ) ->
-            (A { model | boots = Just boots })
+            A { model | boots = Just boots }
 
         _ ->
-            (A model)
+            A model
 
 
 unequip : EquipmentSlot -> Equipment -> Result Msg ( Equipment, Maybe Item )
@@ -207,15 +212,15 @@ unequip slot (A model) =
                 |> Maybe.map Item.isCursed
                 |> Maybe.withDefault False
     in
-        case ( maybeItem, itemCursed ) of
-            ( Just item, False ) ->
-                Result.Ok ( (A <| clearSlot_ slot model), Just item )
+    case ( maybeItem, itemCursed ) of
+        ( Just item, False ) ->
+            Result.Ok ( A <| clearSlot_ slot model, Just item )
 
-            ( Just item, True ) ->
-                Result.Err CannotUnequipCursedItem
+        ( Just item, True ) ->
+            Result.Err CannotUnequipCursedItem
 
-            ( Nothing, _ ) ->
-                Result.Ok ( (A model), Nothing )
+        ( Nothing, _ ) ->
+            Result.Ok ( A model, Nothing )
 
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
@@ -245,19 +250,19 @@ putInPack_ item (A model) =
         noChange =
             ( A model, Success )
     in
-        case ( model.pack, item ) of
-            ( Nothing, _ ) ->
-                ( A model, NoPackEquipped )
+    case ( model.pack, item ) of
+        ( Nothing, _ ) ->
+            ( A model, NoPackEquipped )
 
-            ( _, ItemPack _ ) ->
-                ( A model, CannotPutAPackInAPack )
+        ( _, ItemPack _ ) ->
+            ( A model, CannotPutAPackInAPack )
 
-            ( Just pack, _ ) ->
-                let
-                    ( packWithItem, msg ) =
-                        Pack.add item pack
-                in
-                    ( A { model | pack = Just packWithItem }, ContainerMsg msg )
+        ( Just pack, _ ) ->
+            let
+                ( packWithItem, msg ) =
+                    Pack.add item pack
+            in
+            ( A { model | pack = Just packWithItem }, ContainerMsg msg )
 
 
 putInPurse : Coins -> Equipment -> Equipment
@@ -268,21 +273,21 @@ putInPurse coins equipment =
                 |> Maybe.withDefault Purse.init
                 |> Purse.addCoins coins
     in
-        setPurse purse equipment
+    setPurse purse equipment
 
 
 removeFromPack : Item -> Equipment -> Equipment
 removeFromPack item (A model) =
     let
         noChange =
-            (A model)
+            A model
     in
-        case model.pack of
-            Nothing ->
-                noChange
+    case model.pack of
+        Nothing ->
+            noChange
 
-            Just pack ->
-                A { model | pack = Just (Pack.remove item pack) }
+        Just pack ->
+            A { model | pack = Just (Pack.remove item pack) }
 
 
 getPackContent : Equipment -> List Item

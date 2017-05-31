@@ -1,14 +1,14 @@
 module Stats
     exposing
-        ( Stats
-        , Msg(..)
+        ( Msg(..)
+        , Stats
+        , incLevel
         , init
         , initExperienced
-        , incLevel
-        , takeHit
         , isDead
         , printHP
         , printSP
+        , takeHit
         , tick
         )
 
@@ -94,20 +94,20 @@ init attributes =
         sp =
             spBonus attributes
     in
-        { currentHP = hp
-        , maxHP = hp
-        , hardMaxHP = hp
-        , currentSP = sp
-        , maxSP = sp
-        , hardMaxSP = sp
-        , effects = Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
-        , regeneration =
-            { hpRate = 10
-            , hpCounter = 10
-            , spRate = 10
-            , spCounter = 10
-            }
+    { currentHP = hp
+    , maxHP = hp
+    , hardMaxHP = hp
+    , currentSP = sp
+    , maxSP = sp
+    , hardMaxSP = sp
+    , effects = Effects NotPoisoned Calm NotBurning NotFrozen NotShocked
+    , regeneration =
+        { hpRate = 10
+        , hpCounter = 10
+        , spRate = 10
+        , spCounter = 10
         }
+    }
 
 
 initExperienced : Attributes -> Int -> Stats
@@ -135,14 +135,14 @@ incLevel newLevel attributes stats =
         totalSpBonus =
             newLevel * spBonus attributes
     in
-        { stats
-            | currentHP = stats.currentHP + totalHpBonus
-            , maxHP = stats.maxHP + totalHpBonus
-            , hardMaxHP = stats.hardMaxHP + totalHpBonus
-            , currentSP = stats.currentSP + totalSpBonus
-            , maxSP = stats.maxSP + totalSpBonus
-            , hardMaxSP = stats.hardMaxSP + totalSpBonus
-        }
+    { stats
+        | currentHP = stats.currentHP + totalHpBonus
+        , maxHP = stats.maxHP + totalHpBonus
+        , hardMaxHP = stats.hardMaxHP + totalHpBonus
+        , currentSP = stats.currentSP + totalSpBonus
+        , maxSP = stats.maxSP + totalSpBonus
+        , hardMaxSP = stats.hardMaxSP + totalSpBonus
+    }
 
 
 isDead : Stats -> Bool

@@ -1,9 +1,9 @@
-module SplashView exposing (view, Msg(..))
+module SplashView exposing (Msg(..), view)
 
-import Html as H exposing (..)
-import Html.Events as HE
-import Html.Attributes as HA
 import Css exposing (..)
+import Html as H exposing (..)
+import Html.Attributes as HA
+import Html.Events as HE
 import UI
 
 

@@ -38,7 +38,7 @@
                 "dir": "dist",
                 "ext": "js"
             },
-            "path": "dist/cotw.js"
+            "path": "dist/js/cotw.js"
         }
     }
 }

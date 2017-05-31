@@ -13,21 +13,21 @@ init beltType status idStatus =
             , beltContainer = initBeltContainer beltType
             }
     in
-        case beltType of
-            TwoSlotBelt ->
-                make "Two Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer TwoSlotBelt)
+    case beltType of
+        TwoSlotBelt ->
+            make "Two Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer TwoSlotBelt)
 
-            ThreeSlotBelt ->
-                make "Three Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer ThreeSlotBelt)
+        ThreeSlotBelt ->
+            make "Three Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer ThreeSlotBelt)
 
-            FourSlotBelt ->
-                make "Four Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer FourSlotBelt)
+        FourSlotBelt ->
+            make "Four Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer FourSlotBelt)
 
-            UtilityBelt ->
-                make "Utility Belt" (Mass.Mass 0 0) "utility-belt" (Prices 1350 1800) (initBeltContainer UtilityBelt)
+        UtilityBelt ->
+            make "Utility Belt" (Mass.Mass 0 0) "utility-belt" (Prices 1350 1800) (initBeltContainer UtilityBelt)
 
-            WandQuiverBelt ->
-                make "Wand Quiver Belt" (Mass.Mass 0 0) "wand-quiver-belt" (Prices 300 300) (initBeltContainer WandQuiverBelt)
+        WandQuiverBelt ->
+            make "Wand Quiver Belt" (Mass.Mass 0 0) "wand-quiver-belt" (Prices 300 300) (initBeltContainer WandQuiverBelt)
 
 
 initBeltContainer : BeltType -> BeltContainer a

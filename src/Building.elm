@@ -1,14 +1,14 @@
 module Building
     exposing
         ( Building
-        , Link
-        , BuildingType(..)
         , BuildingTile(..)
-        , new
-        , view
+        , BuildingType(..)
+        , Link
         , byType
         , isBuildingAtPosition
+        , new
         , newLink
+        , view
         )
 
 {-| A building is one of those yellow huts on the map. This module represents one of those huts.
@@ -21,11 +21,11 @@ Buildings are aware of their size and how to draw themselves on the map using cs
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Utils.Vector as Vector exposing (..)
-import Utils.Misc as Misc exposing (..)
-import Types exposing (..)
 import Shops exposing (StoreType)
 import String.Extra as StringX
+import Types exposing (..)
+import Utils.Misc as Misc exposing (..)
+import Utils.Vector as Vector exposing (..)
 
 
 type alias Building =
@@ -73,7 +73,7 @@ byType buildingType buildings =
 
 newLink : Area -> Vector -> BuildingType
 newLink area pos =
-    (Linked <| Link area pos)
+    Linked <| Link area pos
 
 
 view : Building -> Html a
@@ -91,7 +91,7 @@ view model =
                 |> StringX.dasherize
                 |> String.dropLeft 1
     in
-        div [ class ("tile " ++ tileCss), style (posStyle ++ pointEventStyle) ] []
+    div [ class ("tile " ++ tileCss), style (posStyle ++ pointEventStyle) ] []
 
 
 {-| Given a point and a building, will return true if the point is within the building
@@ -102,7 +102,7 @@ isBuildingAtPosition pos model =
         bottomLeft =
             Vector.sub (Vector.add model.position model.size) ( 1, 1 )
     in
-        boxIntersectVector pos ( model.position, bottomLeft )
+    boxIntersectVector pos ( model.position, bottomLeft )
 
 
 {-| Given a building type, the top right corner and a nem, will create a new building
@@ -114,33 +114,33 @@ new buildingTile pos name buildingType =
             \entry size ->
                 Building buildingTile entry pos name size buildingType
     in
-        case buildingTile of
-            Gate ->
-                newBuilding ( 1, 0 ) ( 3, 1 )
+    case buildingTile of
+        Gate ->
+            newBuilding ( 1, 0 ) ( 3, 1 )
 
-            Hut ->
-                newBuilding ( 0, 1 ) ( 2, 2 )
+        Hut ->
+            newBuilding ( 0, 1 ) ( 2, 2 )
 
-            StrawHouseEast ->
-                newBuilding ( 2, 1 ) ( 3, 3 )
+        StrawHouseEast ->
+            newBuilding ( 2, 1 ) ( 3, 3 )
 
-            StrawHouseWest ->
-                newBuilding ( 0, 1 ) ( 3, 3 )
+        StrawHouseWest ->
+            newBuilding ( 0, 1 ) ( 3, 3 )
 
-            BurntStrawHouseWest ->
-                newBuilding ( 0, 1 ) ( 3, 3 )
+        BurntStrawHouseWest ->
+            newBuilding ( 0, 1 ) ( 3, 3 )
 
-            HutTemple ->
-                newBuilding ( 2, 0 ) ( 5, 6 )
+        HutTemple ->
+            newBuilding ( 2, 0 ) ( 5, 6 )
 
-            MineEntrance ->
-                newBuilding ( 0, 0 ) ( 1, 1 )
+        MineEntrance ->
+            newBuilding ( 0, 0 ) ( 1, 1 )
 
-            Well ->
-                newBuilding ( 0, 0 ) ( 1, 1 )
+        Well ->
+            newBuilding ( 0, 0 ) ( 1, 1 )
 
-            StairsDown ->
-                newBuilding ( 0, 0 ) ( 1, 1 )
+        StairsDown ->
+            newBuilding ( 0, 0 ) ( 1, 1 )
 
-            StairsUp ->
-                newBuilding ( 0, 0 ) ( 1, 1 )
+        StairsUp ->
+            newBuilding ( 0, 0 ) ( 1, 1 )

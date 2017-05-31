@@ -2,21 +2,21 @@ module Utils.DragDrop
     exposing
         ( DragDrop
         , Msg
-        , init
-        , view
-        , update
         , draggable
         , droppable
-        , subscription
         , getSource
+        , init
+        , subscription
+        , update
+        , view
         )
 
-import Mouse
 import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
 import Maybe exposing (Maybe(Just, Nothing))
+import Mouse
 
 
 type DragDrop source target
@@ -61,32 +61,32 @@ getSource (A { source }) =
     source
 
 
-update : Msg s t -> DragDrop s t -> ( DragDrop s t, Maybe ( Maybe s, Maybe t ))
+update : Msg s t -> DragDrop s t -> ( DragDrop s t, Maybe ( Maybe s, Maybe t ) )
 update msg (A model) =
     let
         startDrag source html pos =
             Model source model.target pos (Just (Dragging pos pos html))
 
         atDrag source html pos =
-            Model source model.target model.position (Maybe.map (\{ start } -> (Dragging start pos html)) model.dragging)
+            Model source model.target model.position (Maybe.map (\{ start } -> Dragging start pos html) model.dragging)
     in
-        case msg of
-            Start source html pos ->
-                ( A (startDrag source html pos), Nothing )
+    case msg of
+        Start source html pos ->
+            ( A (startDrag source html pos), Nothing )
 
-            At source html pos ->
-                ( A <| atDrag source html pos, Nothing)
+        At source html pos ->
+            ( A <| atDrag source html pos, Nothing )
 
-            -- on drag end, check if it's over a droppable container
-            End s t _ ->
-                ( A model, Just ( s, t ))
+        -- on drag end, check if it's over a droppable container
+        End s t _ ->
+            ( A model, Just ( s, t ) )
 
-            --(handleMouseUp model)
-            MouseOver target ->
-                ( A { model | target = target }, Nothing)
+        --(handleMouseUp model)
+        MouseOver target ->
+            ( A { model | target = target }, Nothing )
 
-            MouseLeave ->
-                ( A { model | target = Nothing }, Nothing)
+        MouseLeave ->
+            ( A { model | target = Nothing }, Nothing )
 
 
 view : DragDrop s t -> Html (Msg s t)
@@ -109,12 +109,12 @@ view (A ({ source, position, dragging } as model)) =
         pointerEventStyle =
             HA.style [ ( "pointer-events", "none" ) ]
     in
-        case model.dragging of
-            Just { start, current, html } ->
-                H.div [ positionStyle, pointerEventStyle ] [ html ]
+    case model.dragging of
+        Just { start, current, html } ->
+            H.div [ positionStyle, pointerEventStyle ] [ html ]
 
-            _ ->
-                H.div [] []
+        _ ->
+            H.div [] []
 
 
 {-| DnDModel tracks where the mouse starts and where it currently is to get the absolute
@@ -150,7 +150,7 @@ draggable draggableHtml source (A model) =
                 Nothing ->
                     HA.style [ ( "pointer-events", "inherit" ) ]
     in
-        H.div [ onMouseDown, pointerEventStyle ] [ draggableHtml ]
+    H.div [ onMouseDown, pointerEventStyle ] [ draggableHtml ]
 
 
 droppable : t -> DragDrop s t -> Html (Msg s t) -> Html (Msg s t)
@@ -171,7 +171,7 @@ droppable dropTarget (A model) html =
         mouseLeaveStyle =
             HE.onMouseLeave MouseLeave
     in
-        H.div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
+    H.div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
 
 
 subscription : DragDrop s t -> Sub (Msg s t)

@@ -26,7 +26,7 @@ cleanRoom room maybeEntrance =
 
 
 {-| Removes active entrances from rooms and
-    end corridors that will hit walls with a single door room.
+end corridors that will hit walls with a single door room.
 -}
 clean : Types.Model -> Types.Model
 clean ({ rooms, corridors, activePoints } as model) =
@@ -59,41 +59,41 @@ clean ({ rooms, corridors, activePoints } as model) =
                 addCorridor c m =
                     { m | corridors = c :: m.corridors }
             in
-                case firstObstacle startDirectionVector startPosition modelWithRemainingPoints of
-                    -- hits map edge, no obstacles
-                    ( Maybe.Nothing, Maybe.Nothing, _, _ ) ->
-                        clean
-                            { modelWithInactiveCorridorRemainingPoints
-                                | rooms = Room.newDeadEnd (Vector.add startPosition startDirectionVector) :: rooms
-                            }
+            case firstObstacle startDirectionVector startPosition modelWithRemainingPoints of
+                -- hits map edge, no obstacles
+                ( Maybe.Nothing, Maybe.Nothing, _, _ ) ->
+                    clean
+                        { modelWithInactiveCorridorRemainingPoints
+                            | rooms = Room.newDeadEnd (Vector.add startPosition startDirectionVector) :: rooms
+                        }
 
-                    -- hits a room, join to the room with a door
-                    ( Just room, _, newCorridorEndPosition, newEntrancePosition ) ->
-                        let
-                            corridor_ =
-                                Corridor.add ( newCorridorEndPosition, startDirection ) corridor
+                -- hits a room, join to the room with a door
+                ( Just room, _, newCorridorEndPosition, newEntrancePosition ) ->
+                    let
+                        corridor_ =
+                            Corridor.add ( newCorridorEndPosition, startDirection ) corridor
 
-                            room_ =
-                                Room.addEntrance (Entrance.init Entrance.Door newEntrancePosition) room
-                        in
-                            modelWithRemainingPoints
-                                |> addCorridor corridor_
-                                |> findAndUpdateRoom room_
-                                |> clean
+                        room_ =
+                            Room.addEntrance (Entrance.init Entrance.Door newEntrancePosition) room
+                    in
+                    modelWithRemainingPoints
+                        |> addCorridor corridor_
+                        |> findAndUpdateRoom room_
+                        |> clean
 
-                    -- hits another corridor, join to the corridor with dungeon floor
-                    ( _, Just joinedCorridor, newCorridorEndPosition, joinedCorridorNewFloor ) ->
-                        let
-                            corridor_ =
-                                Corridor.add ( newCorridorEndPosition, startDirection ) corridor
+                -- hits another corridor, join to the corridor with dungeon floor
+                ( _, Just joinedCorridor, newCorridorEndPosition, joinedCorridorNewFloor ) ->
+                    let
+                        corridor_ =
+                            Corridor.add ( newCorridorEndPosition, startDirection ) corridor
 
-                            joinedCorridor_ =
-                                Corridor.addEntrance joinedCorridorNewFloor joinedCorridor
-                        in
-                            modelWithRemainingPoints
-                                |> addCorridor corridor_
-                                |> findAndUpdateCorridor joinedCorridor_
-                                |> clean
+                        joinedCorridor_ =
+                            Corridor.addEntrance joinedCorridorNewFloor joinedCorridor
+                    in
+                    modelWithRemainingPoints
+                        |> addCorridor corridor_
+                        |> findAndUpdateCorridor joinedCorridor_
+                        |> clean
 
         [] ->
             addWalls model
@@ -125,7 +125,7 @@ addWalls model =
                 |> List.filter isNotAMapPoint
                 |> List.map (calculateTypeOfWall map)
     in
-        { model | walls = walls }
+    { model | walls = walls }
 
 
 calculateTypeOfWall : Level.Map -> Vector -> Tile
@@ -183,9 +183,9 @@ allDirectionsAreFloors neighbourDirections position map =
                 |> List.map (Maybe.Extra.filter (\x -> x.type_ == Tile.Types.DarkDgn))
                 |> List.all ((/=) Nothing)
     in
-        neighbourDirections
-            |> List.map toNeighbours
-            |> List.any isFloorTiles
+    neighbourDirections
+        |> List.map toNeighbours
+        |> List.any isFloorTiles
 
 
 neighbours : Vector -> Level.Map -> ( Maybe Tile, Maybe Tile, Maybe Tile, Maybe Tile )
@@ -197,7 +197,7 @@ neighbours position map =
                 |> Vector.add position
                 |> flip Dict.get map
     in
-        ( getTile N, getTile E, getTile S, getTile W )
+    ( getTile N, getTile E, getTile S, getTile W )
 
 
 findAndUpdateRoom : Room -> Types.Model -> Types.Model
@@ -229,7 +229,7 @@ findAndUpdateRoom targetRoom ({ rooms, activePoints } as model) =
         activePoints_ =
             List.foldl updateActivePoints [] activePoints
     in
-        { model | rooms = rooms_, activePoints = activePoints_ }
+    { model | rooms = rooms_, activePoints = activePoints_ }
 
 
 findAndUpdateCorridor : Corridor -> Types.Model -> Types.Model
@@ -261,11 +261,11 @@ findAndUpdateCorridor targetCorridor ({ corridors, activePoints } as model) =
         activePoints_ =
             List.foldl updateActivePoints [] activePoints
     in
-        { model | corridors = corridors_, activePoints = activePoints_ }
+    { model | corridors = corridors_, activePoints = activePoints_ }
 
 
 {-| Returns the first room or corridor encountered and the point prior just before hitting
-    the obstacle as well as the point where it hits the obstacle.
+the obstacle as well as the point where it hits the obstacle.
 -}
 firstObstacle : Vector -> Vector -> Types.Model -> ( Maybe Room, Maybe Corridor, Vector, Vector )
 firstObstacle digDirectionVector (( x, y ) as currentPosition) ({ rooms, corridors, activePoints, config } as model) =
@@ -291,19 +291,19 @@ query position { rooms, corridors, activePoints } =
     let
         maybeRoom =
             (rooms
-                ++ (List.filterMap activePointToRoom activePoints)
+                ++ List.filterMap activePointToRoom activePoints
             )
                 |> List.filter (\room -> Room.isCollision room position)
                 |> List.head
 
         maybeCorridor =
             (corridors
-                ++ (List.filterMap activePointToCorridor activePoints)
+                ++ List.filterMap activePointToCorridor activePoints
             )
                 |> List.filter (Corridor.isCollision position)
                 |> List.head
     in
-        ( maybeRoom, maybeCorridor )
+    ( maybeRoom, maybeCorridor )
 
 
 activePointToRoom : Types.ActivePoint -> Maybe Room

@@ -2,12 +2,12 @@ module Monsters.Model exposing (..)
 
 import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
+import Item
+import Item.Data
 import Monsters.Types exposing (..)
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Vector as Vector exposing (Vector)
-import Item
-import Item.Data
 
 
 type alias Monster =

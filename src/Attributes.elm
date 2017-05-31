@@ -1,7 +1,7 @@
 module Attributes
     exposing
-        ( Attributes
-        , Attribute(..)
+        ( Attribute(..)
+        , Attributes
         , Msg
         , init
         , initCustom
@@ -18,13 +18,13 @@ This means that monsters such as giants, dragons, ghosts can go above or below t
 
 -}
 
-import Html exposing (..)
-import Html.Events as HE
-import Html.Attributes as HA
-import Css exposing (..)
-import Json.Decode as JD
 import Colors
+import Css exposing (..)
 import Dom.Scroll
+import Html exposing (..)
+import Html.Attributes as HA
+import Html.Events as HE
+import Json.Decode as JD
 import Task
 
 
@@ -87,9 +87,9 @@ init =
                 ]
                 |> Task.attempt ignoreResult
     in
-        ( attributes
-        , cmds
-        )
+    ( attributes
+    , cmds
+    )
 
 
 initCustom : Int -> Int -> Int -> Int -> Attributes
@@ -104,7 +104,7 @@ initCustom str dex con int =
 
 updateIfEnoughAvailable : Attribute -> Int -> Attributes -> Attributes
 updateIfEnoughAvailable attr val attributes =
-    if (attributes.ava < val) then
+    if attributes.ava < val then
         attributes
     else
         attributes
@@ -140,9 +140,9 @@ update msg attributes =
         Scroll attribute value ->
             let
                 valueDelta =
-                    value - (getAttributeValue attribute attributes)
+                    value - getAttributeValue attribute attributes
             in
-                updateIfEnoughAvailable attribute valueDelta attributes
+            updateIfEnoughAvailable attribute valueDelta attributes
 
         NoOp ->
             attributes
@@ -154,12 +154,12 @@ scale str dex con int attributes =
         scaleFn factor attr =
             floor (factor * toFloat attr)
     in
-        { attributes
-            | str = scaleFn str attributes.str
-            , int = scaleFn int attributes.int
-            , con = scaleFn con attributes.con
-            , dex = scaleFn dex attributes.dex
-        }
+    { attributes
+        | str = scaleFn str attributes.str
+        , int = scaleFn int attributes.int
+        , con = scaleFn con attributes.con
+        , dex = scaleFn dex attributes.dex
+    }
 
 
 set : ( Attribute, Int ) -> Attributes -> Attributes
@@ -228,25 +228,26 @@ viewAttribute attr model buttons =
         viewAttributeLabel =
             div [] [ Html.text (toString attr) ]
     in
-        case attr of
-            Available ->
-                div []
-                    [ viewBar value []
-                    ]
+    case attr of
+        Available ->
+            div []
+                [ viewBar value []
+                ]
 
-            _ ->
-                div []
-                    [ viewBarAndScroll
-                    , viewAttributeLabel
-                      --            , div [ HA.class "ui indicating progress", getDataPercent value ]
-                    ]
+        _ ->
+            div []
+                [ viewBarAndScroll
+                , viewAttributeLabel
+
+                --            , div [ HA.class "ui indicating progress", getDataPercent value ]
+                ]
 
 
 viewScroll : Attribute -> Int -> Html Msg
 viewScroll attr valueOf100 =
     let
         inverseValue =
-            100 - (toFloat valueOf100)
+            100 - toFloat valueOf100
 
         inputToInt strVal =
             case String.toInt strVal of
@@ -256,29 +257,29 @@ viewScroll attr valueOf100 =
                 Ok val ->
                     val
     in
-        div
+    div
+        [ styles
+            [ position relative
+            , height (px 100)
+            , width (px 20)
+            ]
+        ]
+        [ input
             [ styles
-                [ position relative
-                , height (px 100)
-                , width (px 20)
+                [ position absolute
+                , height (px 20)
+                , width (px 85)
+                , transform (rotate <| deg 270)
+                , top (px 36)
+                , left (px -25)
                 ]
+            , HE.onInput (inputToInt >> Scroll attr)
+            , HA.id (toString attr)
+            , HA.type_ "range"
+            , HA.value (toString valueOf100)
             ]
-            [ input
-                [ styles
-                    [ position absolute
-                    , height (px 20)
-                    , width (px 85)
-                    , transform (rotate <| deg 270)
-                    , top (px 36)
-                    , left (px -25)
-                    ]
-                , HE.onInput (inputToInt >> Scroll attr)
-                , HA.id (toString attr)
-                , HA.type_ "range"
-                , HA.value (toString valueOf100)
-                ]
-                []
-            ]
+            []
+        ]
 
 
 type alias ScrollTarget =
@@ -311,7 +312,7 @@ viewBar : Int -> List (Html Msg) -> Html Msg
 viewBar valueOf100 children =
     let
         inverseOfValue =
-            100 - (toFloat valueOf100)
+            100 - toFloat valueOf100
 
         viewBlueBar =
             div
@@ -326,16 +327,16 @@ viewBar valueOf100 children =
                 ]
                 []
     in
-        div
-            [ styles
-                [ border3 (px 1) solid (rgb 0 0 0)
-                , width (px 25)
-                , height (px 100)
-                , position relative
-                , zIndex (int 1)
-                ]
+    div
+        [ styles
+            [ border3 (px 1) solid (rgb 0 0 0)
+            , width (px 25)
+            , height (px 100)
+            , position relative
+            , zIndex (int 1)
             ]
-            (viewBlueBar :: children)
+        ]
+        (viewBlueBar :: children)
 
 
 viewBarScale : Float -> Html Msg
@@ -354,7 +355,7 @@ viewBarScale yOffset =
 tickStyle : Int -> Html.Attribute Msg
 tickStyle val =
     HA.style
-        [ ( "width", (toString val) ++ "%" )
+        [ ( "width", toString val ++ "%" )
         , ( "min-width", "0" )
         , ( "border-right", "1px solid gray" )
         , ( "height", "1.75em" )
@@ -407,10 +408,10 @@ getDescription attribute value =
         attributeDescriptions =
             descriptions attribute
     in
-        (List.filter (isLessThanAttribute value) attributeDescriptions)
-            |> List.head
-            |> Maybe.map Tuple.second
-            |> Maybe.withDefault ("No description matches the value " ++ toString value)
+    List.filter (isLessThanAttribute value) attributeDescriptions
+        |> List.head
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault ("No description matches the value " ++ toString value)
 
 
 descriptions : Attribute -> List Description

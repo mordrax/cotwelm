@@ -1,7 +1,7 @@
 module Utils.BresenhamLine exposing (line)
 
-import Utils.Vector exposing (Vector)
 import List
+import Utils.Vector exposing (Vector)
 
 
 line : Vector -> Vector -> List Vector
@@ -23,34 +23,34 @@ line_ ( ax, ay ) ( bx, by ) =
         dx =
             toFloat (bx - ax)
     in
-        if abs dx > abs dy then
-            let
-                f =
-                    \x ->
-                        slope * toFloat (x - ax)
+    if abs dx > abs dy then
+        let
+            f =
+                \x ->
+                    slope * toFloat (x - ax)
 
-                slope =
-                    dy / dx
-            in
-                if ax > bx then
-                    List.reverse (line_ ( bx, by ) ( ax, ay ))
-                else
-                    (List.range ax bx)
-                        |> List.map (\x -> ( x, round (f x) + ay ))
+            slope =
+                dy / dx
+        in
+        if ax > bx then
+            List.reverse (line_ ( bx, by ) ( ax, ay ))
         else
-            let
-                f =
-                    \y ->
-                        slope * toFloat (y - ay)
+            List.range ax bx
+                |> List.map (\x -> ( x, round (f x) + ay ))
+    else
+        let
+            f =
+                \y ->
+                    slope * toFloat (y - ay)
 
-                slope =
-                    dx / dy
-            in
-                if ay > by then
-                    List.reverse (line_ ( bx, by ) ( ax, ay ))
-                else
-                    (List.range ay by)
-                        |> List.map (\y -> ( round (f y) + ax, y ))
+            slope =
+                dx / dy
+        in
+        if ay > by then
+            List.reverse (line_ ( bx, by ) ( ax, ay ))
+        else
+            List.range ay by
+                |> List.map (\y -> ( round (f y) + ax, y ))
 
 
 hline : Int -> Int -> Int -> List Vector

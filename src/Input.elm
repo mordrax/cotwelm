@@ -1,18 +1,18 @@
 module Input
     exposing
-        ( Msg
-        , Input
+        ( Input
+        , Msg
         , init
-        , update
         , subscription
+        , update
         )
 
-import Keyboard exposing (..)
 import EveryDict exposing (EveryDict)
-import Utils.Vector as Vector exposing (Vector)
-import Utils.Direction as Direction exposing (Direction(..))
-import Keyboard.Extra as KeyboardX exposing (KeyChange(..), Key(..))
 import Game.Types
+import Keyboard exposing (..)
+import Keyboard.Extra as KeyboardX exposing (Key(..), KeyChange(..))
+import Utils.Direction as Direction exposing (Direction(..))
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Input =
@@ -52,7 +52,7 @@ update msg input =
                         |> Maybe.map (mapKeyboardEventToAction keyboardXState_)
                         |> Maybe.withDefault Game.Types.NoOp
             in
-                ( { input | keyboardState = keyboardXState_ }, gameAction )
+            ( { input | keyboardState = keyboardXState_ }, gameAction )
 
 
 mapKeyboardEventToAction : KeyboardX.State -> KeyboardX.KeyChange -> Game.Types.GameAction
@@ -61,8 +61,8 @@ mapKeyboardEventToAction state keyChange =
         isShiftPressed =
             KeyboardX.isPressed KeyboardX.Shift state
     in
-        EveryDict.get (Debug.log "Keypress: " ( keyChange, isShiftPressed )) playerKeymap
-            |> Maybe.withDefault Game.Types.NoOp
+    EveryDict.get (Debug.log "Keypress: " ( keyChange, isShiftPressed )) playerKeymap
+        |> Maybe.withDefault Game.Types.NoOp
 
 
 playerKeymap : KeyboardXToGameActionMap
@@ -73,7 +73,8 @@ playerKeymap =
         , ( ( KeyDown ArrowRight, False ), Game.Types.Move E )
         , ( ( KeyDown ArrowDown, False ), Game.Types.Move N )
         , ( ( KeyDown ArrowLeft, False ), Game.Types.Move W )
-          -- moving numpad
+
+        -- moving numpad
         , ( ( KeyDown Numpad1, False ), Game.Types.Move NW )
         , ( ( KeyDown End, False ), Game.Types.Move NW )
         , ( ( KeyDown Numpad2, False ), Game.Types.Move N )
@@ -87,12 +88,14 @@ playerKeymap =
         , ( ( KeyDown Numpad8, False ), Game.Types.Move S )
         , ( ( KeyDown Numpad9, False ), Game.Types.Move SE )
         , ( ( KeyDown PageUp, False ), Game.Types.Move SE )
-          -- walking arrows
+
+        -- walking arrows
         , ( ( KeyDown ArrowUp, True ), Game.Types.Walk S )
         , ( ( KeyDown ArrowRight, True ), Game.Types.Walk E )
         , ( ( KeyDown ArrowDown, True ), Game.Types.Walk N )
         , ( ( KeyDown ArrowLeft, True ), Game.Types.Walk W )
-          -- walking numpad
+
+        -- walking numpad
         , ( ( KeyDown Numpad1, True ), Game.Types.Walk NW )
         , ( ( KeyDown End, True ), Game.Types.Walk NW )
         , ( ( KeyDown Numpad2, True ), Game.Types.Walk N )
@@ -106,7 +109,8 @@ playerKeymap =
         , ( ( KeyDown Numpad8, True ), Game.Types.Walk S )
         , ( ( KeyDown Numpad9, True ), Game.Types.Walk SE )
         , ( ( KeyDown PageUp, True ), Game.Types.Walk SE )
-          -- dungeon
+
+        -- dungeon
         , ( ( KeyUp Escape, False ), Game.Types.BackToMapScreen )
         , ( ( KeyUp CharI, False ), Game.Types.OpenInventory )
         , ( ( KeyDown Period, True ), Game.Types.GoDownstairs )

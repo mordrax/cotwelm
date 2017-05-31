@@ -1,6 +1,7 @@
 module Tile.View exposing (view)
 
 import Container exposing (Container)
+import Css exposing (..)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
@@ -12,7 +13,6 @@ import Tile.Types exposing (..)
 import Types exposing (..)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
-import Css exposing (..)
 
 
 styles =
@@ -53,10 +53,8 @@ view ({ type_, position, ground, visible } as model) scaleTile neighbours onClic
 
         itemDiv item =
             div
-                [ HA.class ("tile cotw-item " ++ (Item.css item))
-                , addStyle
-                    [ transforms [ rotate (deg rotation), scale scaleTile ] ]
-                    [ ( "pointer-events", "none" ) ]
+                [ HA.class ("tile cotw-item " ++ Item.css item)
+                , HA.style (( "pointer-events", "none" ) :: Css.asPairs [ transforms [ rotate (deg rotation), scale scaleTile ] ])
                 , Misc.toScaledTilePosition position scaleTile
                 ]
                 []
@@ -67,18 +65,27 @@ view ({ type_, position, ground, visible } as model) scaleTile neighbours onClic
         baseTile =
             tileDiv (tileToCss type_)
     in
-        case ( itemsOnGround, visible ) of
-            ( _, Hidden ) ->
-                []
+    case ( itemsOnGround, visible ) of
+        ( _, Hidden ) ->
+            []
 
-            ( singleItem :: [], _ ) ->
-                [ baseTile, itemDiv singleItem ]
+        ( singleItem :: [], _ ) ->
+            [ baseTile, itemDiv singleItem ]
 
-            ( a :: b :: _, _ ) ->
-                [ baseTile, tileDiv <| tileToCss TreasurePile ]
+        ( a :: b :: _, _ ) ->
+            [ baseTile, tileDiv <| tileToCss TreasurePile ]
 
-            _ ->
-                [ baseTile ]
+        _ ->
+            [ baseTile ]
+
+
+styleTile : List Css.Mixin
+styleTile =
+    [ width (px 32)
+    , height (px 32)
+    , display inlineBlock
+    , position absolute
+    ]
 
 
 halfTiles : List HalfTileData
@@ -101,7 +108,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpLeft maybeUp maybeLeft =
             case ( maybeUp, maybeLeft ) of
                 ( Just up, Just left ) ->
-                    if (up.type_ == left.type_ && up.type_ == targetTileType) then
+                    if up.type_ == left.type_ && up.type_ == targetTileType then
                         90
                     else
                         0
@@ -112,7 +119,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkUpRight maybeUp maybeRight =
             case ( maybeUp, maybeRight ) of
                 ( Just up, Just right ) ->
-                    if (up.type_ == right.type_ && up.type_ == targetTileType) then
+                    if up.type_ == right.type_ && up.type_ == targetTileType then
                         180
                     else
                         0
@@ -124,7 +131,7 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
         checkDownRight maybeDown maybeRight =
             case ( maybeDown, maybeRight ) of
                 ( Just down, Just right ) ->
-                    if (down.type_ == right.type_ && down.type_ == targetTileType) then
+                    if down.type_ == right.type_ && down.type_ == targetTileType then
                         -90
                     else
                         0
@@ -132,12 +139,12 @@ rotateHalfTiles { type_, position } ( _, targetTileType, rotationOffset ) neighb
                 _ ->
                     0
     in
-        case neighbours of
-            ( Nothing, _, Nothing, _ ) ->
-                0
+    case neighbours of
+        ( Nothing, _, Nothing, _ ) ->
+            0
 
-            ( _, Nothing, _, Nothing ) ->
-                0
+        ( _, Nothing, _, Nothing ) ->
+            0
 
-            ( up, right, down, left ) ->
-                (checkUpLeft up left) + (checkUpRight up right) + (checkDownRight down right) + rotationOffset
+        ( up, right, down, left ) ->
+            checkUpLeft up left + checkUpRight up right + checkDownRight down right + rotationOffset

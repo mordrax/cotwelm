@@ -1,24 +1,24 @@
 module Shops
     exposing
-        ( Shops
+        ( Msg
+        , Shops
         , Store
         , StoreType(..)
-        , Msg
-        , init
         , buy
+        , init
+        , replenish
         , sell
         , shop
-        , wares
-        , replenish
-        , updateShop
         , tick
+        , updateShop
+        , wares
         )
 
 import EveryDict as Dict exposing (EveryDict)
-import Item.Data exposing (..)
 import Item
+import Item.Data exposing (..)
 import Item.Purse as Purse
-import Random.Pcg as Random exposing (step, initialSeed, list, Seed, Generator)
+import Random.Pcg as Random exposing (Generator, Seed, initialSeed, list, step)
 import Task exposing (perform)
 import Time exposing (now)
 import Utils.Misc
@@ -83,9 +83,9 @@ init seed =
                 ( emptyStores, seed )
                 [ WeaponSmith, GeneralStore, PotionStore, JunkShop ]
     in
-        ( { stores = stores, replenishCounter = replenishCounter }
-        , seed_
-        )
+    ( { stores = stores, replenishCounter = replenishCounter }
+    , seed_
+    )
 
 
 {-| The shop sells to the customer.
@@ -99,12 +99,12 @@ sell item purse (B items shopType) =
         itemsWithout item =
             Utils.Misc.removeFirst item Item.equals items
     in
-        case Purse.remove price purse of
-            Result.Ok purseMinusPriceOfItem ->
-                Result.Ok ( B (itemsWithout item) shopType, purseMinusPriceOfItem )
+    case Purse.remove price purse of
+        Result.Ok purseMinusPriceOfItem ->
+            Result.Ok ( B (itemsWithout item) shopType, purseMinusPriceOfItem )
 
-            Result.Err msg ->
-                Result.Err "Cannot afford item!"
+        Result.Err msg ->
+            Result.Err "Cannot afford item!"
 
 
 {-| The shop buys from the customer.
@@ -115,7 +115,7 @@ buy item purse (B items shopType) =
         cost =
             Debug.log "Item sell price:" (Item.costOf item)
     in
-        ( B (item :: items) shopType, Purse.add cost purse )
+    ( B (item :: items) shopType, Purse.add cost purse )
 
 
 replenishReducer : StoreType -> ( Stores, Seed ) -> ( Stores, Seed )
@@ -127,7 +127,7 @@ replenishReducer shopType ( currentStores, seed ) =
         newStores =
             Dict.insert shopType newItems currentStores
     in
-        ( newStores, seed_ )
+    ( newStores, seed_ )
 
 
 replenish : ItemTypes -> Seed -> ( List Item, Seed )
@@ -138,19 +138,19 @@ replenish itemTypes seed =
 
         ( generatedItemTypes, seed_ ) =
             Random.sample itemTypes
-                |> (Random.map defaultProduct)
+                |> Random.map defaultProduct
                 |> Random.list 10
-                |> \x -> Random.step x seed
+                |> (\x -> Random.step x seed)
 
         products =
             List.map Item.new generatedItemTypes
     in
-        ( products, seed_ )
+    ( products, seed_ )
 
 
 getSeed : Cmd Msg
 getSeed =
-    Task.perform (\a -> (PopulateShop (Time.inSeconds a |> round |> Random.initialSeed)))
+    Task.perform (\a -> PopulateShop (Time.inSeconds a |> round |> Random.initialSeed))
         Time.now
 
 

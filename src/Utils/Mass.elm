@@ -1,15 +1,15 @@
 module Utils.Mass
     exposing
-        ( Mass
-        , Capacity
+        ( Capacity
+        , Mass
         , Msg(..)
-        , withinCapacity
         , add
         , subtract
+        , withinCapacity
         )
 
 {-| A mass is anything with a bulk and a weight.
-    Capacity defines the limit of mass that a container of some sort can hold.
+Capacity defines the limit of mass that a container of some sort can hold.
 -}
 
 

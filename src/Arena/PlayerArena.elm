@@ -1,23 +1,22 @@
 module Arena.PlayerArena exposing (..)
 
-import Arena.Types exposing (..)
 import Arena.Match as Match
 import Arena.Round as Round exposing (RoundResult)
+import Arena.Types exposing (..)
 import Arena.View as View
 import Attributes exposing (Attributes)
 import Char
-import Game.Combat as Combat
 import Dice
 import Dict exposing (Dict)
 import Equipment exposing (Equipment)
-import Types exposing (..)
+import Game.Combat as Combat
 import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
+import Item
 import Item.Armour as Armour
 import Item.Data as ItemData
-import Item
 import Item.Weapon as Weapon
 import Monster exposing (Monster)
 import Process
@@ -26,6 +25,7 @@ import Random.Pcg as Random exposing (Generator)
 import Stats
 import Task
 import Time exposing (Time)
+import Types exposing (..)
 import UI
 import Utils.Vector as Vector exposing (Vector)
 
@@ -68,13 +68,13 @@ init =
                 |> Maybe.map .attributes
                 |> Maybe.withDefault (Attributes.initCustom 0 0 0 0)
     in
-        { matches = initMatches heroLookup customEquipment
-        , heroAttributes = attributesAtLevelOne
-        , heroLookup = heroLookup
-        , matchResults = Dict.fromList []
-        , resetCounter = 0
-        , customEquipment = customEquipment
-        }
+    { matches = initMatches heroLookup customEquipment
+    , heroAttributes = attributesAtLevelOne
+    , heroLookup = heroLookup
+    , matchResults = Dict.fromList []
+    , resetCounter = 0
+    , customEquipment = customEquipment
+    }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -92,81 +92,81 @@ update msg model =
         removeSpace str =
             String.filter (not << (==) spaceChar) str
     in
-        case msg of
-            Stop ->
-                ( { model | resetCounter = model.resetCounter + 1 }, Cmd.none )
+    case msg of
+        Stop ->
+            ( { model | resetCounter = model.resetCounter + 1 }, Cmd.none )
 
-            Sleep cmd resetCounter ->
-                if resetCounter == model.resetCounter then
-                    ( model, cmd )
-                else
-                    ( model, Cmd.none )
-
-            StartFight [] resetCounter ->
+        Sleep cmd resetCounter ->
+            if resetCounter == model.resetCounter then
+                ( model, cmd )
+            else
                 ( model, Cmd.none )
 
-            StartFight (nextMatch :: remainingMatches) resetCounter ->
-                ( { model | matchResults = Dict.fromList [], resetCounter = resetCounter }
+        StartFight [] resetCounter ->
+            ( model, Cmd.none )
+
+        StartFight (nextMatch :: remainingMatches) resetCounter ->
+            ( { model | matchResults = Dict.fromList [], resetCounter = resetCounter }
+            , fightResult nextMatch remainingMatches resetCounter
+            )
+
+        Fight match [] resetCounter ->
+            if model.resetCounter /= resetCounter then
+                ( model, Cmd.none )
+            else
+                ( { model
+                    | matchResults =
+                        Dict.insert (removeSpace match.red.name) match model.matchResults
+                  }
+                , Cmd.none
+                )
+
+        Fight match (nextMatch :: remainingMatches) resetCounter ->
+            if model.resetCounter /= resetCounter then
+                ( model, Cmd.none )
+            else
+                ( { model
+                    | matchResults = Dict.insert (removeSpace match.red.name) match model.matchResults
+                  }
                 , fightResult nextMatch remainingMatches resetCounter
                 )
 
-            Fight match [] resetCounter ->
-                if model.resetCounter /= resetCounter then
-                    ( model, Cmd.none )
-                else
-                    ( { model
-                        | matchResults =
-                            Dict.insert (removeSpace match.red.name) match model.matchResults
-                      }
-                    , Cmd.none
-                    )
+        SetAttribute attr val ->
+            let
+                attributes_ =
+                    Attributes.set ( attr, val ) model.heroAttributes
 
-            Fight match (nextMatch :: remainingMatches) resetCounter ->
-                if model.resetCounter /= resetCounter then
-                    ( model, Cmd.none )
-                else
-                    ( { model
-                        | matchResults = Dict.insert (removeSpace match.red.name) match model.matchResults
-                      }
-                    , fightResult nextMatch remainingMatches resetCounter
-                    )
+                heroLookup_ =
+                    initHeroLookup (initHero attributes_ model.customEquipment)
 
-            SetAttribute attr val ->
-                let
-                    attributes_ =
-                        Attributes.set ( attr, val ) model.heroAttributes
+                model_ =
+                    { model
+                        | heroLookup = heroLookup_
+                        , matches = initMatches heroLookup_ model.customEquipment
+                        , heroAttributes = attributes_
+                    }
+            in
+            ( model_, Cmd.none )
 
-                    heroLookup_ =
-                        initHeroLookup (initHero attributes_ model.customEquipment)
+        ChangeHeroWeapon weaponType ->
+            let
+                customEquipment_ =
+                    ( weaponType, Tuple.second model.customEquipment )
 
-                    model_ =
-                        { model
-                            | heroLookup = heroLookup_
-                            , matches = initMatches heroLookup_ model.customEquipment
-                            , heroAttributes = attributes_
-                        }
-                in
-                    ( model_, Cmd.none )
+                model_ =
+                    { model | customEquipment = customEquipment_ }
+            in
+            update (startNewFight model_) model_
 
-            ChangeHeroWeapon weaponType ->
-                let
-                    customEquipment_ =
-                        ( weaponType, Tuple.second model.customEquipment )
+        ChangeHeroArmour armourType ->
+            let
+                customEquipment_ =
+                    ( Tuple.first model.customEquipment, armourType )
 
-                    model_ =
-                        { model | customEquipment = customEquipment_ }
-                in
-                    update (startNewFight model_) model_
-
-            ChangeHeroArmour armourType ->
-                let
-                    customEquipment_ =
-                        ( Tuple.first model.customEquipment, armourType )
-
-                    model_ =
-                        { model | customEquipment = customEquipment_ }
-                in
-                    update (startNewFight model_) model_
+                model_ =
+                    { model | customEquipment = customEquipment_ }
+            in
+            update (startNewFight model_) model_
 
 
 
@@ -180,12 +180,12 @@ view model =
             Dict.get 1 model.heroLookup
                 |> Maybe.withDefault (initHero customAttributes model.customEquipment)
     in
-        div []
-            [ welcomeView
-            , menuView model
-            , heroView hero
-            , combatView model
-            ]
+    div []
+        [ welcomeView
+        , menuView model
+        , heroView hero
+        , combatView model
+        ]
 
 
 
@@ -211,12 +211,12 @@ heroStatsView hero =
                 |> Equipment.calculateAC
                 |> ItemData.acToInt
     in
-        div []
-            [ div [] [ text ("Hero HP: " ++ toString hero.stats.maxHP) ]
-            , div [] [ text ("Hero AC: " ++ toString ac) ]
-            , div [] [ text <| View.weaponToString hero.equipment ]
-            , div [] [ text <| View.armourToString hero.equipment ]
-            ]
+    div []
+        [ div [] [ text ("Hero HP: " ++ toString hero.stats.maxHP) ]
+        , div [] [ text ("Hero AC: " ++ toString ac) ]
+        , div [] [ text <| View.weaponToString hero.equipment ]
+        , div [] [ text <| View.armourToString hero.equipment ]
+        ]
 
 
 heroAttributesView : Hero -> Html Msg
@@ -250,10 +250,10 @@ heroEquipmentView hero =
         armour =
             List.map (\x -> ( x, armourTypeMatches x )) Armour.listTypes
     in
-        div []
-            [ UI.list (toString >> text) ChangeHeroWeapon ( Weapon.encode, Weapon.decoder ) weapons
-            , UI.list (toString >> text) ChangeHeroArmour ( Armour.encode, Armour.decoder ) armour
-            ]
+    div []
+        [ UI.list (toString >> text) ChangeHeroWeapon ( Weapon.encode, Weapon.decoder ) weapons
+        , UI.list (toString >> text) ChangeHeroArmour ( Armour.encode, Armour.decoder ) armour
+        ]
 
 
 
@@ -314,10 +314,10 @@ menuView model =
                 ]
                 [ text txt ]
     in
-        h1 []
-            [ btn "Fight!" (startNewFight model)
-            , btn "Stop" Stop
-            ]
+    h1 []
+        [ btn "Fight!" (startNewFight model)
+        , btn "Stop" Stop
+        ]
 
 
 startNewFight : Model -> Msg
@@ -345,7 +345,7 @@ type alias CustomEquipment =
 initHero : Attributes -> CustomEquipment -> Combat.Fighter Hero
 initHero attrs equipment =
     Hero.init "Heox" attrs Types.Male
-        |> \x -> equipHero x equipment
+        |> (\x -> equipHero x equipment)
 
 
 makeWeapon : ItemData.WeaponType -> ItemData.Item
@@ -400,12 +400,12 @@ equipHero hero ( customWeaponType, customArmourType ) =
             , ( Equipment.ShieldSlot, makeShield ItemData.LargeMeteoricSteelShield )
             ]
     in
-        if hero.expLevel <= 10 then
-            { hero | equipment = Equipment.setMany_ lowLevel hero.equipment }
-        else if hero.expLevel <= 20 then
-            { hero | equipment = Equipment.setMany_ midLevel hero.equipment }
-        else
-            { hero | equipment = Equipment.setMany_ highLevel hero.equipment }
+    if hero.expLevel <= 10 then
+        { hero | equipment = Equipment.setMany_ lowLevel hero.equipment }
+    else if hero.expLevel <= 20 then
+        { hero | equipment = Equipment.setMany_ midLevel hero.equipment }
+    else
+        { hero | equipment = Equipment.setMany_ highLevel hero.equipment }
 
 
 initHeroLookup : Hero -> Dict Int Hero
@@ -419,11 +419,11 @@ initHeroLookup hero =
                 n ->
                     let
                         nextLvlHero =
-                            (Hero.levelUp hero)
+                            Hero.levelUp hero
                     in
-                        reducer (Dict.insert n hero dict) nextLvlHero (n + 1)
+                    reducer (Dict.insert n hero dict) nextLvlHero (n + 1)
     in
-        reducer Dict.empty hero 1
+    reducer Dict.empty hero 1
 
 
 initMatches : Dict Int Hero -> CustomEquipment -> List ArenaMatch
@@ -451,9 +451,9 @@ initMatches heroLookup ( weaponType, armourType ) =
                         Nothing ->
                             Debug.crash "Could not look up a hero with exp level: " monster.expLevel
             in
-                Match.init hero monster
+            Match.init hero monster
     in
-        --        List.map newMatch (List.take 20 Monster.types)
-        List.map newMonster Monster.types
-            |> List.filter (.expLevel >> flip (>=) 5)
-            |> List.map newMatch
+    --        List.map newMatch (List.take 20 Monster.types)
+    List.map newMonster Monster.types
+        |> List.filter (.expLevel >> flip (>=) 5)
+        |> List.map newMatch

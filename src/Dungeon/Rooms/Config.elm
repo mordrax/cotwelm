@@ -5,6 +5,7 @@ max number of rooms on a floor, all details about the rooms, corridor lengths et
 
 The module has no model but rather are mostly a collection of constants used by the
 dungeon generator to create random dungeon levels.
+
 -}
 
 import Dungeon.Entrance as Entrance exposing (Entrance)
@@ -88,26 +89,26 @@ update msg model =
         _ =
             Debug.log "Config.update" msg
     in
-        case msg of
-            DungeonSize size ->
-                { model | dungeonSize = size }
+    case msg of
+        DungeonSize size ->
+            { model | dungeonSize = size }
 
-            RoomSize roomType val ->
-                let
-                    updateSizeRange sizeRange_ config =
-                        { config | sizeRange = sizeRange_ }
-                in
-                    { model | roomsConfig = updateRoomsConfig roomType (updateSizeRange val) model.roomsConfig }
+        RoomSize roomType val ->
+            let
+                updateSizeRange sizeRange_ config =
+                    { config | sizeRange = sizeRange_ }
+            in
+            { model | roomsConfig = updateRoomsConfig roomType (updateSizeRange val) model.roomsConfig }
 
-            ChangeFrequency roomType freq ->
-                let
-                    updateFrequency freq config =
-                        { config | frequency = freq }
-                in
-                    { model | roomsConfig = updateRoomsConfig roomType (updateFrequency freq) model.roomsConfig }
+        ChangeFrequency roomType freq ->
+            let
+                updateFrequency freq config =
+                    { config | frequency = freq }
+            in
+            { model | roomsConfig = updateRoomsConfig roomType (updateFrequency freq) model.roomsConfig }
 
-            MapScale scale ->
-                { model | mapScale = scale }
+        MapScale scale ->
+            { model | mapScale = scale }
 
 
 updateRoomsConfig : RoomType -> (RoomConfig -> RoomConfig) -> RoomsConfig -> RoomsConfig
@@ -141,27 +142,27 @@ roomSizeGenerator roomType ({ roomsConfig } as model) =
         tupleToGen =
             \( min, max ) -> Random.int min max
     in
-        case roomType of
-            Rectangular ->
-                tupleToGen model.roomsConfig.rectangular.sizeRange
+    case roomType of
+        Rectangular ->
+            tupleToGen model.roomsConfig.rectangular.sizeRange
 
-            Cross ->
-                tupleToGen model.roomsConfig.cross.sizeRange
+        Cross ->
+            tupleToGen model.roomsConfig.cross.sizeRange
 
-            Diamond ->
-                tupleToGen model.roomsConfig.diamond.sizeRange
+        Diamond ->
+            tupleToGen model.roomsConfig.diamond.sizeRange
 
-            Potion ->
-                tupleToGen model.roomsConfig.potion.sizeRange
+        Potion ->
+            tupleToGen model.roomsConfig.potion.sizeRange
 
-            Circular ->
-                tupleToGen model.roomsConfig.circular.sizeRange
+        Circular ->
+            tupleToGen model.roomsConfig.circular.sizeRange
 
-            DiagonalSquares ->
-                tupleToGen model.roomsConfig.diagonalSquares.sizeRange
+        DiagonalSquares ->
+            tupleToGen model.roomsConfig.diagonalSquares.sizeRange
 
-            DeadEnd ->
-                tupleToGen model.roomsConfig.deadEnd.sizeRange
+        DeadEnd ->
+            tupleToGen model.roomsConfig.deadEnd.sizeRange
 
 
 roomTypeGenerator : Model -> Generator RoomType
@@ -197,33 +198,33 @@ addEntrances nEntrances ( walls, fullWalls, entrances ) =
         createGenerator =
             constant ( walls ++ fullWalls, entrances )
     in
-        case ( nEntrances, walls ) of
-            ( 0, _ ) ->
-                createGenerator
+    case ( nEntrances, walls ) of
+        ( 0, _ ) ->
+            createGenerator
 
-            ( _, [] ) ->
-                createGenerator
+        ( _, [] ) ->
+            createGenerator
 
-            ( _, [] :: restOfWalls ) ->
-                createGenerator
+        ( _, [] :: restOfWalls ) ->
+            createGenerator
 
-            ( n, wall :: restOfWalls ) ->
-                let
-                    generateWall =
-                        wallSampler wall
+        ( n, wall :: restOfWalls ) ->
+            let
+                generateWall =
+                    wallSampler wall
 
-                    wallWithoutEntrance entrance =
-                        List.filter ((/=) (Entrance.position entrance)) wall
+                wallWithoutEntrance entrance =
+                    List.filter ((/=) (Entrance.position entrance)) wall
 
-                    recurse entrance =
-                        addEntrances (n - 1)
-                            ( restOfWalls ++ [ wallWithoutEntrance entrance ]
-                            , fullWalls
-                            , entrance :: entrances
-                            )
-                in
-                    (wallToEntrance generateWall)
-                        |> Random.andThen recurse
+                recurse entrance =
+                    addEntrances (n - 1)
+                        ( restOfWalls ++ [ wallWithoutEntrance entrance ]
+                        , fullWalls
+                        , entrance :: entrances
+                        )
+            in
+            wallToEntrance generateWall
+                |> Random.andThen recurse
 
 
 wallToEntrance : Generator Wall -> Generator Entrance
@@ -265,28 +266,28 @@ roomsConfigView model =
             , ( DiagonalSquares, model.roomsConfig.diagonalSquares )
             ]
     in
-        div []
-            (List.concat
-                <| List.map
-                    (\( roomType, config ) ->
-                        [ roomSizeView roomType config.sizeRange
-                        , roomFrequencyView roomType config.frequency
-                        ]
-                    )
-                    rooms
-            )
+    div []
+        (List.concat <|
+            List.map
+                (\( roomType, config ) ->
+                    [ roomSizeView roomType config.sizeRange
+                    , roomFrequencyView roomType config.frequency
+                    ]
+                )
+                rooms
+        )
 
 
 roomSizeView : RoomType -> MinMax -> Html Msg
 roomSizeView roomType ( min, max ) =
     let
         lbl =
-            (toString roomType) ++ " size: "
+            toString roomType ++ " size: "
     in
-        UI.labeled2TupleNumber lbl
-            ( min, max )
-            (\min_ -> RoomSize roomType ( min_, max ))
-            (\max_ -> RoomSize roomType ( min, max_ ))
+    UI.labeled2TupleNumber lbl
+        ( min, max )
+        (\min_ -> RoomSize roomType ( min_, max ))
+        (\max_ -> RoomSize roomType ( min, max_ ))
 
 
 roomFrequencyView : RoomType -> Int -> Html Msg

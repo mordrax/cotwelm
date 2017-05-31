@@ -47,7 +47,10 @@ type LightSource
     | Artificial
 
 
+
 -- Hero/Monster status effects
+
+
 type PoisonStatus
     = NotPoisoned
     | MinorPoison

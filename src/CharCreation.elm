@@ -2,22 +2,22 @@ module CharCreation
     exposing
         ( CharCreation
         , Msg
-        , view
+        , info
         , init
         , update
-        , info
+        , view
         )
 
 -- where
 
-import Html exposing (..)
-import Html.Events as HE
-import Html.Attributes as HA
 import Attributes exposing (Attributes)
+import Colors
+import Css exposing (..)
+import Html exposing (..)
+import Html.Attributes as HA
+import Html.Events as HE
 import Types exposing (..)
 import UI
-import Css exposing (..)
-import Colors
 
 
 styles =
@@ -58,14 +58,14 @@ init =
         ( attributes, attrCmds ) =
             Attributes.init
     in
-        ( A
-            { name = "Conan the destroyer"
-            , attributes = attributes
-            , gender = Female
-            , difficulty = Hard
-            }
-        , Cmd.map Attribute attrCmds
-        )
+    ( A
+        { name = "Conan the destroyer"
+        , attributes = attributes
+        , gender = Female
+        , difficulty = Hard
+        }
+    , Cmd.map Attribute attrCmds
+    )
 
 
 update : Msg -> CharCreation -> ( CharCreation, Bool )
@@ -84,7 +84,7 @@ update msg (A model) =
             ( A { model | attributes = Attributes.update msg model.attributes }, False )
 
         StartGame ->
-            ( (A model), True )
+            ( A model, True )
 
 
 info : CharCreation -> ( Name, Gender, Difficulty, Attributes )
@@ -115,18 +115,18 @@ view (A model) =
                 , viewCustomAvatar
                 ]
     in
-        div
-            [ styles
-                [ maxWidth (px 480)
-                , margin2 zero auto
-                ]
+    div
+        [ styles
+            [ maxWidth (px 480)
+            , margin2 zero auto
             ]
-            [ viewName model.name
-            , Attributes.view model.attributes |> Html.map Attribute
-            , viewGenderAndAvatar
-            , viewDifficulty model.difficulty
-            , viewButtons
-            ]
+        ]
+        [ viewName model.name
+        , Attributes.view model.attributes |> Html.map Attribute
+        , viewGenderAndAvatar
+        , viewDifficulty model.difficulty
+        , viewButtons
+        ]
 
 
 viewName : String -> Html Msg
@@ -174,15 +174,15 @@ viewAvatar gender =
             else
                 backgroundPosition2 (px -32) zero
     in
-        div
-            [ styles
-                [ backgroundImage (url "/assets/original/monsters.png")
-                , heroBackgroundPosition
-                , height (px 32)
-                , width (px 32)
-                ]
+    div
+        [ styles
+            [ backgroundImage (url "/assets/original/monsters.png")
+            , heroBackgroundPosition
+            , height (px 32)
+            , width (px 32)
             ]
-            []
+        ]
+        []
 
 
 viewCustomAvatar : Html msg
@@ -220,16 +220,16 @@ boxWithLabel label children =
                 ]
                 [ Html.text label ]
     in
-        div
-            [ styles
-                [ border3 (px 1) solid Colors.gray
-                , position relative
-                , displayFlex
-                , justifyContent spaceBetween
-                , padding2 (px 15) (px 10)
-                ]
+    div
+        [ styles
+            [ border3 (px 1) solid Colors.gray
+            , position relative
+            , displayFlex
+            , justifyContent spaceBetween
+            , padding2 (px 15) (px 10)
             ]
-            (boxLabel :: children)
+        ]
+        (boxLabel :: children)
 
 
 
@@ -278,12 +278,12 @@ viewDifficulty difficulty =
                     ]
                 ]
     in
-        boxWithLabel ("Game Difficulty")
-            [ easy
-            , intermediate
-            , hard
-            , impossible
-            ]
+    boxWithLabel "Game Difficulty"
+        [ easy
+        , intermediate
+        , hard
+        , impossible
+        ]
 
 
 

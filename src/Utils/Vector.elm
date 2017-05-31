@@ -1,11 +1,10 @@
 module Utils.Vector exposing (..)
 
 {-| 2D vector for representing coordinates as well as dimensions of objects
-
 -}
 
-import Utils.Direction as Direction exposing (..)
 import Dict exposing (..)
+import Utils.Direction as Direction exposing (..)
 
 
 type alias Vector =
@@ -67,9 +66,9 @@ distance ( v1x, v1y ) ( v2x, v2y ) =
         ( dx, dy ) =
             sub ( v1x, v1y ) ( v2x, v2y )
     in
-        (dx ^ 2 + dy ^ 2)
-            |> toFloat
-            |> sqrt
+    (dx ^ 2 + dy ^ 2)
+        |> toFloat
+        |> sqrt
 
 
 adjacent : Vector -> Vector -> Bool
@@ -112,7 +111,7 @@ rotate ( xInt, yInt ) dir =
         y_ =
             x * sin angle + y * cos angle
     in
-        ( round x_, round y_ )
+    ( round x_, round y_ )
 
 
 rotateCompass : Direction -> RotationDirection -> Direction
@@ -124,7 +123,7 @@ rotateCompass compass rotation =
 
 facing : Vector -> Vector -> Direction
 facing start end =
-    (sub end start)
+    sub end start
         |> unit
         |> toDirection
 
@@ -162,7 +161,7 @@ toDirection vector =
                 _ =
                     Debug.log "ERROR: Could not get a direction from the unit vector: " (unit vector)
             in
-                W
+            W
 
 
 neighbours : Vector -> Vectors
@@ -217,14 +216,14 @@ rotateUnlessCardinal currentDirection rotation =
         cardinalVectors =
             List.map fromDirection cardinalDirections
     in
-        if List.member currentDirection cardinalVectors then
-            currentDirection
-        else
-            rotate currentDirection rotation
+    if List.member currentDirection cardinalVectors then
+        currentDirection
+    else
+        rotate currentDirection rotation
 
 
 {-| a -> (topLeft, bottomRight) -> isIntersect
-  Checks if vector a's x/y values are within the bounding box created by the tuple (topLeft, bottomRight)
+Checks if vector a's x/y values are within the bounding box created by the tuple (topLeft, bottomRight)
 -}
 boxIntersectVector : Vector -> ( Vector, Vector ) -> Bool
 boxIntersectVector ( x, y ) ( ( topLeftX, topLeftY ), ( bottomRightX, bottomRightY ) ) =
@@ -235,7 +234,7 @@ boxIntersectVector ( x, y ) ( ( topLeftX, topLeftY ), ( bottomRightX, bottomRigh
         isWithinY =
             y >= topLeftY && y <= bottomRightY
     in
-        isWithinX && isWithinY
+    isWithinX && isWithinY
 
 
 boxIntersectXAxis : Int -> ( Vector, Vector ) -> Bool

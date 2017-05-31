@@ -1,13 +1,13 @@
 module Dungeon.Types exposing (..)
 
 import Building exposing (Building)
+import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (..)
 import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Room as Room exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
-import Tile exposing (Tile)
 import Game.Level as Level exposing (Level)
-import Dict exposing (Dict)
+import Tile exposing (Tile)
 import Utils.Vector exposing (Vector)
 
 
@@ -38,7 +38,7 @@ toLevel ({ buildings, rooms, corridors } as model) =
                 |> toTiles
                 |> Level.fromTiles
     in
-        Level.Level map buildings [] rooms corridors Dict.empty
+    Level.Level map buildings [] rooms corridors Dict.empty
 
 
 toOccupied : Model -> List Vector
@@ -57,7 +57,7 @@ toOccupied { rooms, corridors, activePoints } =
                 |> List.map Corridor.boundary
                 |> List.concat
     in
-        roomVectors ++ corridorVectors
+    roomVectors ++ corridorVectors
 
 
 toTiles : Model -> List Tile
@@ -76,7 +76,7 @@ toTiles { rooms, corridors, activePoints, walls } =
                 |> List.map Corridor.toTiles
                 |> List.concat
     in
-        roomTiles ++ corridorTiles ++ walls
+    roomTiles ++ corridorTiles ++ walls
 
 
 roomsAndCorridorsFromActivePoint : ActivePoint -> ( Rooms, Corridors ) -> ( Rooms, Corridors )

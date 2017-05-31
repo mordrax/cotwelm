@@ -1,10 +1,11 @@
 module Dungeon.Room exposing (..)
 
 {-| The room module will generate random rooms given a seed. It uses Config.elm for
-    all random parameters such as the type/size of room generated.
+all random parameters such as the type/size of room generated.
 
     Generated rooms have a list of walls, floors and entrances. These lists are just a
     list of 2D tuples. It is up to the caller to then convert these types.
+
 -}
 
 --    exposing
@@ -31,14 +32,14 @@ import Dungeon.Rooms.Potion as Potion
 import Dungeon.Rooms.Rectangular as Rectangular
 import Dungeon.Rooms.Type exposing (..)
 import List
-import Random.Pcg as Random exposing (Generator, constant, andThen)
+import Random.Pcg as Random exposing (Generator, andThen, constant)
 import Set exposing (Set)
 import Tile exposing (Tile)
+import Tile.Types
 import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
-import Tile.Types
 
 
 -- Model: Room
@@ -157,9 +158,9 @@ tooCloseToEntrances ( x, y ) entrances =
                     , abs (ey - y)
                     )
             in
-                (dx == 0 && dy <= 2) || (dy == 0 && dx <= 2)
+            (dx == 0 && dy <= 2) || (dy == 0 && dx <= 2)
     in
-        List.any tooCloseToEntrance entrances
+    List.any tooCloseToEntrance entrances
 
 
 {-| Add a door to the room using one of the room's remaining walls.
@@ -178,9 +179,9 @@ generateEntrance ({ entrances, worldPos, floors } as room) =
             , entrance
             )
     in
-        possibleEntrancePositions
-            |> generateEntranceHelper
-            |> Random.map toReturn
+    possibleEntrancePositions
+        |> generateEntranceHelper
+        |> Random.map toReturn
 
 
 adjacentToFloorsWithoutDiagonals : Floors -> List Vector
@@ -189,12 +190,12 @@ adjacentToFloorsWithoutDiagonals floors =
         lessFloors floorSet =
             Set.diff floorSet (Set.fromList floors)
     in
-        floors
-            |> List.map (Vector.cardinalNeighbours)
-            |> List.concat
-            |> Set.fromList
-            |> lessFloors
-            |> Set.toList
+    floors
+        |> List.map Vector.cardinalNeighbours
+        |> List.concat
+        |> Set.fromList
+        |> lessFloors
+        |> Set.toList
 
 
 adjacentToFloors : Floors -> List Vector
@@ -203,12 +204,12 @@ adjacentToFloors floors =
         lessFloors floorSet =
             Set.diff floorSet (Set.fromList floors)
     in
-        floors
-            |> List.map (Vector.neighbours)
-            |> List.concat
-            |> Set.fromList
-            |> lessFloors
-            |> Set.toList
+    floors
+        |> List.map Vector.neighbours
+        |> List.concat
+        |> Set.fromList
+        |> lessFloors
+        |> Set.toList
 
 
 boundary : Room -> List Vector
@@ -224,7 +225,7 @@ addEntrance entrance ({ worldPos, entrances } as room) =
         entrancePosition =
             Vector.sub (Entrance.position entrance) worldPos
     in
-        { room | entrances = entrance :: entrances }
+    { room | entrances = entrance :: entrances }
 
 
 removeEntrance : Entrance -> Room -> Room
@@ -233,7 +234,7 @@ removeEntrance entrance ({ entrances, worldPos } as model) =
         entrances_ =
             List.filter (Entrance.equal entrance >> not) entrances
     in
-        { model | entrances = entrances_ }
+    { model | entrances = entrances_ }
 
 
 toTiles : Room -> List Tile
@@ -255,8 +256,8 @@ toTiles { floors, entrances, worldPos, lightSource } =
                 |> List.map toWorldPos
                 |> List.map (\pos -> Tile.toTile pos tileType)
     in
-        List.map Entrance.toTile entrances
-            ++ List.concat (List.map makeTiles roomTileTypes)
+    List.map Entrance.toTile entrances
+        ++ List.concat (List.map makeTiles roomTileTypes)
 
 
 entrances : Room -> List Entrance
@@ -278,16 +279,16 @@ entranceFacing { floors, worldPos } entrance =
                 |> Vector.add entrancePos
                 |> (\x -> List.member x floors)
     in
-        if isFloor N then
-            S
-        else if isFloor S then
-            N
-        else if isFloor E then
-            W
-        else if isFloor W then
-            E
-        else
-            N
+    if isFloor N then
+        S
+    else if isFloor S then
+        N
+    else if isFloor E then
+        W
+    else if isFloor W then
+        E
+    else
+        N
 
 
 placeRoom : Vector.DirectedVector -> Room -> Generator Room
@@ -319,13 +320,13 @@ placeRoom ( endPoint, endDirection ) ({ dimension, floors } as room) =
                 roomWorldPosition =
                     Vector.sub entrancePosition wall
             in
-                constant
-                    { room
-                        | entrances = [ entrance ]
-                        , worldPos = roomWorldPosition
-                    }
+            constant
+                { room
+                    | entrances = [ entrance ]
+                    , worldPos = roomWorldPosition
+                }
     in
-        pickAWall candidateWalls |> andThen makeADoor
+    pickAWall candidateWalls |> andThen makeADoor
 
 
 wallsFacingDirection : Direction -> Walls -> Dimension -> Walls
@@ -343,21 +344,21 @@ wallsFacingDirection direction walls ( maxX, maxY ) =
         xEqualsMaxX ( x, _ ) =
             x == maxX - 1
     in
-        case direction of
-            N ->
-                List.filter yEqualsMaxY walls
+    case direction of
+        N ->
+            List.filter yEqualsMaxY walls
 
-            E ->
-                List.filter xEqualsMaxX walls
+        E ->
+            List.filter xEqualsMaxX walls
 
-            S ->
-                List.filter yEqualsZero walls
+        S ->
+            List.filter yEqualsZero walls
 
-            W ->
-                List.filter xEqualsZero walls
+        W ->
+            List.filter xEqualsZero walls
 
-            _ ->
-                []
+        _ ->
+            []
 
 
 position : Room -> Vector
@@ -389,7 +390,7 @@ isCollision { entrances, floors, worldPos } position =
         isPositionAdjacent =
             List.any ((==) localPosition) (adjacentToFloors floors)
     in
-        isPositionAEntrance || isPositionAdjacent
+    isPositionAEntrance || isPositionAdjacent
 
 
 pp : Room -> String
@@ -410,8 +411,8 @@ lightSourceGenerator room =
             else
                 { room | lightSource = Artificial }
     in
-        Random.oneIn 5
-            |> Random.map setArtificialLightSource
+    Random.oneIn 5
+        |> Random.map setArtificialLightSource
 
 
 roomTypeGenerator : Config.Model -> Room -> Generator Room
@@ -430,8 +431,8 @@ positionGenerator { dungeonSize } ({ dimension } as room) =
             ( dungeonSize - dimX - 1, dungeonSize - dimY - 1 )
                 |> Vector.map (max 0)
     in
-        (Dice.d2d maxX maxY)
-            |> Random.map (flip setWorldPos room)
+    Dice.d2d maxX maxY
+        |> Random.map (flip setWorldPos room)
 
 
 roomSizeGenerator : Config.Model -> Room -> Generator Room
@@ -459,9 +460,9 @@ generateEntranceHelper possibleEntrancePositions =
                 |> Misc.headWithDefault ( 0, 0 )
                 |> newEntrance
     in
-        possibleEntrancePositions
-            |> Misc.shuffle
-            |> Random.map makeADoor
+    possibleEntrancePositions
+        |> Misc.shuffle
+        |> Random.map makeADoor
 
 
 floorsGenerator : Room -> Generator Room
@@ -470,9 +471,9 @@ floorsGenerator ({ roomType, dimension } as room) =
         makeFloors =
             (templates roomType).makeFloors
     in
-        makeFloors dimension
-            |> flip setFloors room
-            |> constant
+    makeFloors dimension
+        |> flip setFloors room
+        |> constant
 
 
 templates : RoomType -> RoomTemplate

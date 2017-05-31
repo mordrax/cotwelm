@@ -1,36 +1,36 @@
 module Item
     exposing
         ( Items
-        , new
-        , view
-        , viewSlot
-        , css
-          -- item functions
-        , isCursed
-        , priceOf
+        , containerBuilder
         , costOf
           -- comparisons
+        , css
+          -- item functions
         , equals
-        , containerBuilder
-        , ppWeapon
+        , isCursed
+        , new
         , ppArmour
+        , ppWeapon
+        , priceOf
+        , view
+        , viewSlot
         )
 
 import Container exposing (Container)
+import Dice
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Item.Armour
 import Item.Belt as Belt
-import Item.Purse as Purse
-import Item.Pack as Pack
 import Item.Bracers
 import Item.Data exposing (..)
 import Item.Gauntlets
 import Item.Helmet
+import Item.Pack as Pack
+import Item.Purse as Purse
 import Item.Shield
 import Item.Weapon
 import Utils.Mass as Mass exposing (..)
-import Dice
 
 
 type alias Items =
@@ -56,7 +56,7 @@ priceOf item =
         (Prices buy sell) =
             getModel item |> .prices
     in
-        sell
+    sell
 
 
 {-| The price that shops are willing to buy an Item for, the sell field
@@ -67,7 +67,7 @@ costOf item =
         (Prices buy sell) =
             getModel item |> .prices
     in
-        buy
+    buy
 
 
 
@@ -92,7 +92,7 @@ isCursed =
         isCursed status =
             status == Cursed
     in
-        getModel >> .status >> isCursed
+    getModel >> .status >> isCursed
 
 
 equals : Item -> Item -> Bool
@@ -101,7 +101,7 @@ equals a b =
         ( baseA, baseB ) =
             ( getModel a, getModel b )
     in
-        baseA.name == baseB.name
+    baseA.name == baseB.name
 
 
 getModel : Item -> BaseItem
@@ -175,35 +175,35 @@ viewSlot item extraContent =
         model =
             getModel item
     in
-        div [ class "card" ]
-            [ div
-                {- [ class "ui item"
-                   , style
-                       [ ( "opacity", "1" )
-                       , ( "cursor", "move" )
-                       , ( "width", "32px" )
-                       , ( "height", "64px" )
-                       ]
+    div [ class "card" ]
+        [ div
+            {- [ class "ui item"
+               , style
+                   [ ( "opacity", "1" )
+                   , ( "cursor", "move" )
+                   , ( "width", "32px" )
+                   , ( "height", "64px" )
                    ]
-                -}
-                []
-                [ div [ class "image" ]
-                    [ i [ class ("cotw-item " ++ model.css) ] []
-                    ]
-                , div [ class "content" ]
-                    [ a [ class "header" ]
-                        [ text model.name
-                        ]
-                    , div [ class "meta" ]
-                        [ span [ class "date" ] [ text "" ]
-                        ]
-                    , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
-                        [ text ""
-                        ]
-                    ]
-                , div [ class "extra content" ] [ text extraContent ]
+               ]
+            -}
+            []
+            [ div [ class "image" ]
+                [ i [ class ("cotw-item " ++ model.css) ] []
                 ]
+            , div [ class "content" ]
+                [ a [ class "header" ]
+                    [ text model.name
+                    ]
+                , div [ class "meta" ]
+                    [ span [ class "date" ] [ text "" ]
+                    ]
+                , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
+                    [ text ""
+                    ]
+                ]
+            , div [ class "extra content" ] [ text extraContent ]
             ]
+        ]
 
 
 containerBuilder : Capacity -> Container Item

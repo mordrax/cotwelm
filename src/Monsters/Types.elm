@@ -106,8 +106,8 @@ cappedRank maxRank =
         lessThanMaxRank ( monsterType, rank ) =
             rank < maxRank
     in
-        List.filter lessThanMaxRank monsterRanking
-            |> List.map Tuple.first
+    List.filter lessThanMaxRank monsterRanking
+        |> List.map Tuple.first
 
 
 {-| generated from the pit

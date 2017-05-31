@@ -1,8 +1,6 @@
 module Dungeon.Rooms.Circular exposing (template)
 
-{-|
-
--}
+{-| -}
 
 import Dungeon.Rooms.Type exposing (..)
 

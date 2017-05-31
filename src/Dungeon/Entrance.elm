@@ -1,17 +1,18 @@
 module Dungeon.Entrance
     exposing
         ( Entrance
-        , Entrances
         , EntranceType(..)
-        , init
-        , toTile
-        , position
+        , Entrances
         , equal
+        , init
+        , position
+        , toTile
         )
 
-import Utils.Vector exposing (..)
 import Tile exposing (..)
 import Tile.Types exposing (..)
+import Utils.Vector exposing (..)
+
 
 type EntranceType
     = Door
@@ -53,7 +54,7 @@ toTile (A ( entranceType, pos )) =
                 NoDoor ->
                     DarkDgn
     in
-        Tile.toTile pos tileType
+    Tile.toTile pos tileType
 
 
 equal : Entrance -> Entrance -> Bool

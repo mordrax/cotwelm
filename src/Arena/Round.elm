@@ -5,8 +5,8 @@ module Arena.Round
         )
 
 import Arena.Types exposing (..)
-import Random.Pcg as Random exposing (Generator, constant)
 import Game.Combat as Combat
+import Random.Pcg as Random exposing (Generator, constant)
 import Stats
 
 
@@ -30,7 +30,7 @@ fight blue red =
 fighting : RoundResult a b -> Generator (RoundResult a b)
 fighting ({ blue, red, isBlueAttacking } as result) =
     let
-        updateRed newRed  =
+        updateRed newRed =
             { result
                 | red = newRed
                 , blueTurns = result.blueTurns + 1
@@ -38,7 +38,7 @@ fighting ({ blue, red, isBlueAttacking } as result) =
                 , blueHitRed = result.blueHitRed + oneIfDamaged result.red newRed
             }
 
-        updateBlue newBlue  =
+        updateBlue newBlue =
             { result
                 | blue = newBlue
                 , redTurns = result.redTurns + 1
@@ -55,13 +55,13 @@ fighting ({ blue, red, isBlueAttacking } as result) =
             else
                 0
     in
-        if Stats.isDead blue.stats then
-            Random.constant { result | hpRemaining = 0 }
-        else if Stats.isDead red.stats then
-            Random.constant { result | hpRemaining = blue.stats.currentHP }
-        else if isBlueAttacking == True then
-            Combat.attack blue red
-                |> Random.andThen (\( _, red_ ) -> fighting (updateRed red_ ))
-        else
-            Combat.attack red blue
-                |> Random.andThen (\( _, blue_ ) -> fighting (updateBlue blue_ ))
+    if Stats.isDead blue.stats then
+        Random.constant { result | hpRemaining = 0 }
+    else if Stats.isDead red.stats then
+        Random.constant { result | hpRemaining = blue.stats.currentHP }
+    else if isBlueAttacking == True then
+        Combat.attack blue red
+            |> Random.andThen (\( _, red_ ) -> fighting (updateRed red_))
+    else
+        Combat.attack red blue
+            |> Random.andThen (\( _, blue_ ) -> fighting (updateBlue blue_))

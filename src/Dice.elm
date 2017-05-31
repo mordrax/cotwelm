@@ -26,9 +26,9 @@ pp { nDice, sides, bonus } =
 
 
 {-| Create nDx + a where:
-    n - number of dice to roll, is a minimum of 1
-    x - the number of faces on the die
-    a - a constant bonus to add to the dice
+n - number of dice to roll, is a minimum of 1
+x - the number of faces on the die
+a - a constant bonus to add to the dice
 -}
 die : Int -> Sides -> Int -> Dice
 die nDice sides bonus =
@@ -52,12 +52,12 @@ roll_ nDice sides currentDieRoll =
         acc face =
             Random.map2 (+) currentDieRoll (d face)
     in
-        case nDice of
-            0 ->
-                currentDieRoll
+    case nDice of
+        0 ->
+            currentDieRoll
 
-            _ ->
-                roll_ (nDice - 1) sides (acc sides)
+        _ ->
+            roll_ (nDice - 1) sides (acc sides)
 
 
 d : Int -> Generator Int

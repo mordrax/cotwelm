@@ -1,11 +1,11 @@
 module Arena.MonsterArena
     exposing
-        ( init
-        , view
-        , update
-        , subs
+        ( Model
         , Msg
-        , Model
+        , init
+        , subs
+        , update
+        , view
         )
 
 {-| A round robin style tounament between all the monsters to determine the order in which
@@ -14,20 +14,21 @@ the hero will face them.
 Each monster will face each other monster a number of times. The win % and the hp remaining (win ease)
 will be used to determine how many points they get from the combat. This will be used to rank
 the monsters relative to each other.
+
 -}
 
+import Arena.Match as Match
+import Arena.Types exposing (..)
+import EveryDict exposing (EveryDict)
+import Game.Combat as Combat
 import Html exposing (..)
 import Html.Attributes as HA
 import Monster exposing (Monster)
-import Arena.Match as Match
-import Arena.Types exposing (..)
-import Game.Combat as Combat
-import EveryDict exposing (EveryDict)
 import Monsters.Types
-import Time exposing (Time)
 import Random.Pcg as Random exposing (Generator)
-import Utils.Misc as Misc
+import Time exposing (Time)
 import UI
+import Utils.Misc as Misc
 
 
 type Msg
@@ -72,11 +73,11 @@ init =
         vses =
             generateVSes [] monsterTypes
     in
-        { matches = initMatches vses
-        , vses = vses
-        , fightState = Started
-        , ranking = EveryDict.empty
-        }
+    { matches = initMatches vses
+    , vses = vses
+    , fightState = Started
+    , ranking = EveryDict.empty
+    }
 
 
 initMatches : List VS -> Matches
@@ -85,8 +86,8 @@ initMatches vses =
         toKVP vs =
             ( vs, initMatch vs )
     in
-        List.map toKVP vses
-            |> EveryDict.fromList
+    List.map toKVP vses
+        |> EveryDict.fromList
 
 
 initMatch : VS -> Match.Model Monster Monster
@@ -96,7 +97,7 @@ initMatch ( monsterType1, monsterType2 ) =
         createFighter =
             Monster.makeForArena
     in
-        Match.init (createFighter monsterType1) (createFighter monsterType2)
+    Match.init (createFighter monsterType1) (createFighter monsterType2)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -125,7 +126,7 @@ update msg model =
                     else
                         []
             in
-                ( { model | fightState = fightState }, Cmd.none )
+            ( { model | fightState = fightState }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -154,10 +155,10 @@ calculateRanking matches =
                 |> List.indexedMap (\a b -> ( b, a ))
                 |> EveryDict.fromList
     in
-        matches
-            |> EveryDict.toList
-            |> List.foldl addToWins EveryDict.empty
-            |> winsToRanking
+    matches
+        |> EveryDict.toList
+        |> List.foldl addToWins EveryDict.empty
+        |> winsToRanking
 
 
 fight : Model -> Generator Matches
@@ -168,10 +169,10 @@ fight { matches } =
             Match.fightSingleRound v
                 |> Random.map (\match -> ( k, match ))
     in
-        EveryDict.toList matches
-            |> List.map toGeneratorKVP
-            |> Misc.combine
-            |> Random.map EveryDict.fromList
+    EveryDict.toList matches
+        |> List.map toGeneratorKVP
+        |> Misc.combine
+        |> Random.map EveryDict.fromList
 
 
 view : Model -> Html Msg
@@ -180,11 +181,11 @@ view model =
         title =
             h1 [] [ text "Welcome to the pit!" ]
     in
-        div []
-            [ title
-            , viewUI
-            , viewTournament model
-            ]
+    div []
+        [ title
+        , viewUI
+        , viewTournament model
+        ]
 
 
 viewUI : Html Msg
@@ -216,12 +217,12 @@ viewTournament model =
                 [ div [ divStyle ] [ text headerText ]
                 ]
     in
-        div [ HA.style [ ( "width", "100%" ), ( "overflow", "scroll" ), ( "height", "800px" ) ] ]
-            [ table [ HA.class "ui very basic compact striped celled table" ]
-                [ thead [] [ tr [] (List.map header headers) ]
-                , tbody [] (List.map (viewMatches model) Monster.types)
-                ]
+    div [ HA.style [ ( "width", "100%" ), ( "overflow", "scroll" ), ( "height", "800px" ) ] ]
+        [ table [ HA.class "ui very basic compact striped celled table" ]
+            [ thead [] [ tr [] (List.map header headers) ]
+            , tbody [] (List.map (viewMatches model) Monster.types)
             ]
+        ]
 
 
 viewMatches : Model -> Monsters.Types.MonsterType -> Html msg
@@ -240,11 +241,11 @@ viewMatches { matches, ranking } contestant =
         tdata a =
             td [] [ text <| toString a ]
     in
-        tr []
-            (tdata contestant
-                :: tdata rank
-                :: List.map match monsterTypes
-            )
+    tr []
+        (tdata contestant
+            :: tdata rank
+            :: List.map match monsterTypes
+        )
 
 
 viewMatch : Match -> Html msg
@@ -274,7 +275,7 @@ viewMatch { blueWins, red, rounds } =
         winsToColor =
             ( "background-color", "hsl(" ++ hue ++ ", 100%, " ++ lightness ++ "%)" )
     in
-        td [ HA.style [ winsToColor ] ] [ text <| toRoundedPercent blueWins rounds ]
+    td [ HA.style [ winsToColor ] ] [ text <| toRoundedPercent blueWins rounds ]
 
 
 toRoundedPercent : Int -> Int -> String

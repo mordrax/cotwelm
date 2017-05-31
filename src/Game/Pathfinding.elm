@@ -6,14 +6,13 @@ module Game.Pathfinding
         )
 
 import AStar
-import Game.Model exposing (Game)
 import Game.Level as Level exposing (Level)
 import Set exposing (Set)
 import Utils.Vector as Vector exposing (Vector)
 
 
 {-| Manages pathfinding in the game. Is an adapter between the game code
- and the AStar pathing library being used.
+and the AStar pathing library being used.
 -}
 findPath : Vector -> Vector -> Level -> ( Level, List Vector )
 findPath from to level =
@@ -21,12 +20,12 @@ findPath from to level =
         astar =
             AStar.findPath heuristic (neighbours level creaturesAllowedFilter)
     in
-        case Level.getPath from to level of
-            Just path ->
-                ( level, Debug.log "using existing path" path )
+    case Level.getPath from to level of
+        Just path ->
+            ( level, Debug.log "using existing path" path )
 
-            _ ->
-                memoisePath from to level astar
+        _ ->
+            memoisePath from to level astar
 
 
 findPathForClickNavigation : Vector -> Vector -> Level -> List Vector
@@ -43,9 +42,9 @@ heuristic start end =
         ( dx, dy ) =
             Vector.sub start end
     in
-        (dx ^ 2 + dy ^ 2)
-            |> toFloat
-            |> sqrt
+    (dx ^ 2 + dy ^ 2)
+        |> toFloat
+        |> sqrt
 
 
 neighbours : Level -> (Level -> Vector -> Bool) -> Vector -> Set Vector
@@ -98,4 +97,4 @@ memoisePath from to level astar =
             astar from to
                 |> Maybe.withDefault []
     in
-        ( Level.insertPath from to newPath level, newPath )
+    ( Level.insertPath from to newPath level, newPath )

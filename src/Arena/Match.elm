@@ -1,27 +1,27 @@
 module Arena.Match
     exposing
         ( Model
-        , init
         , fight
         , fightSingleRound
+        , init
         , updateMatch
         , view
         )
 
 {-| A match is between two fighters, herein referred to as blue and red.
-  A match consists of a number of rounds, each round will have a victor with stats
+A match consists of a number of rounds, each round will have a victor with stats
 -}
 
 import Arena.Round as Round exposing (RoundResult)
+import Arena.Types exposing (..)
 import Arena.View
 import Attributes exposing (Attributes)
-import Game.Combat as Combat
 import Dice
 import Equipment exposing (Equipment)
+import Game.Combat as Combat
 import Html exposing (..)
 import Item
 import Random.Pcg as Random exposing (Generator)
-import Arena.Types exposing (..)
 
 
 type alias Model a b =
@@ -92,10 +92,10 @@ updateMatch { blueTurns, redTurns, hpRemaining, blueHitRed, redHitBlue } match =
         incBattle match =
             { match | rounds = match.rounds + 1 }
     in
-        match
-            |> addWin
-            |> addResult
-            |> incBattle
+    match
+        |> addWin
+        |> addResult
+        |> incBattle
 
 
 view : Model a b -> Html msg
@@ -140,7 +140,7 @@ view ({ red, hpRemaining, blueTurnsInRounds, redTurnsInRounds, rounds, blueWins,
                 ++ "/"
                 ++ toString cth.armourPenalty
                 ++ "/"
-                ++ toString (cth.sizeModifier)
+                ++ toString cth.sizeModifier
                 ++ " = ("
                 ++ toString blueCTHThreshold
                 ++ ")"
@@ -155,7 +155,7 @@ view ({ red, hpRemaining, blueTurnsInRounds, redTurnsInRounds, rounds, blueWins,
                 ++ "/"
                 ++ toString redCTH.armourPenalty
                 ++ "/"
-                ++ toString (redCTH.sizeModifier)
+                ++ toString redCTH.sizeModifier
                 ++ " = ("
                 ++ toString redCTHThreshold
                 ++ ")"
@@ -172,22 +172,22 @@ view ({ red, hpRemaining, blueTurnsInRounds, redTurnsInRounds, rounds, blueWins,
         redCTHThreshold =
             Combat.chanceToHit red blue |> Combat.cthThreshold
     in
-        tr []
-            [ td [] [ text <| red.name ]
-            , td [] [ text <| toString red.expLevel ]
-            , td [] [ text <| ppAttributes red.attributes ]
-            , td [] [ text <| weapon ]
-            , td [] [ text <| (armour ++ " " ++ totalArmour) ]
-            , td [] [ text <| toString red.bodySize ]
-            , td [] [ text <| toString red.stats.maxHP ]
-            , td [] [ text <| percent (toFloat blueWins * 100 / toFloat rounds) ]
-            , td [] [ text <| avgHpRemaining ++ " / " ++ toString blue.stats.maxHP ]
-            , td [] [ text <| toOneDecimal avgTurnsTaken ++ " " ++ brackets (toOneDecimal avgBlueTurnsTaken) ]
-            , td [] [ text <| toPercentage avgBlueHitRed ++ "%" ]
-            , td [] [ text <| toPercentage avgRedHitBlue ++ "%" ]
-            , td [] [ text <| cthText ]
-            , td [] [ text <| redCTHText ]
-            ]
+    tr []
+        [ td [] [ text <| red.name ]
+        , td [] [ text <| toString red.expLevel ]
+        , td [] [ text <| ppAttributes red.attributes ]
+        , td [] [ text <| weapon ]
+        , td [] [ text <| (armour ++ " " ++ totalArmour) ]
+        , td [] [ text <| toString red.bodySize ]
+        , td [] [ text <| toString red.stats.maxHP ]
+        , td [] [ text <| percent (toFloat blueWins * 100 / toFloat rounds) ]
+        , td [] [ text <| avgHpRemaining ++ " / " ++ toString blue.stats.maxHP ]
+        , td [] [ text <| toOneDecimal avgTurnsTaken ++ " " ++ brackets (toOneDecimal avgBlueTurnsTaken) ]
+        , td [] [ text <| toPercentage avgBlueHitRed ++ "%" ]
+        , td [] [ text <| toPercentage avgRedHitBlue ++ "%" ]
+        , td [] [ text <| cthText ]
+        , td [] [ text <| redCTHText ]
+        ]
 
 
 ppAttributes : Attributes -> String
@@ -213,11 +213,11 @@ toNSignificantPlaces num sig =
         factor =
             toFloat (10 ^ sig)
     in
-        num
-            |> (*) factor
-            |> Basics.round
-            |> toFloat
-            |> flip (/) factor
+    num
+        |> (*) factor
+        |> Basics.round
+        |> toFloat
+        |> flip (/) factor
 
 
 toPercentage : Float -> String

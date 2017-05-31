@@ -1,12 +1,12 @@
 module Item.Purse
     exposing
-        ( init
+        ( add
+        , addCoins
+        , init
         , initCoppers
-        , initSilvers
         , initGolds
         , initPlatinums
-        , add
-        , addCoins
+        , initSilvers
         , merge
         , remove
         )
@@ -66,13 +66,13 @@ add coppers ({ coins } as model) =
         leastCoins =
             toLeastCoins coppers
     in
-        { model
-            | coins =
-                Coins (coins.copper + leastCoins.copper)
-                    (coins.silver + leastCoins.silver)
-                    (coins.gold + leastCoins.gold)
-                    (coins.platinum + leastCoins.platinum)
-        }
+    { model
+        | coins =
+            Coins (coins.copper + leastCoins.copper)
+                (coins.silver + leastCoins.silver)
+                (coins.gold + leastCoins.gold)
+                (coins.platinum + leastCoins.platinum)
+    }
 
 
 addCoins : Coins -> Purse -> Purse
@@ -89,11 +89,10 @@ merge p1 p2 =
 -}
 merge_ : (Int -> Int -> Int) -> Coins -> Coins -> Coins
 merge_ op c1 c2 =
-    (Coins (op c1.copper c2.copper)
+    Coins (op c1.copper c2.copper)
         (op c1.silver c2.silver)
         (op c1.gold c2.gold)
         (op c1.platinum c2.platinum)
-    )
 
 
 remove : Int -> Purse -> Result String Purse
@@ -108,28 +107,28 @@ remove copperToRemove ({ coins } as model) =
         totalPlatinum =
             totalGold + coins.platinum * 1000000
     in
-        if (copperToRemove <= coins.copper) then
-            Result.Ok { model | coins = { coins | copper = coins.copper - copperToRemove } }
-        else if (copperToRemove <= totalSilvers) then
-            let
-                ( copper_, silver_ ) =
-                    toLeastSilvers (totalSilvers - copperToRemove)
-            in
-                Result.Ok { model | coins = { coins | copper = copper_, silver = silver_ } }
-        else if (copperToRemove <= totalGold) then
-            let
-                ( copper_, silver_, gold_ ) =
-                    toLeastGold (totalGold - copperToRemove)
-            in
-                Result.Ok { model | coins = { coins | copper = copper_, silver = silver_, gold = gold_ } }
-        else if (copperToRemove <= totalPlatinum) then
-            let
-                coins =
-                    toLeastCoins (totalPlatinum - copperToRemove)
-            in
-                Result.Ok { model | coins = { coins | copper = coins.copper, silver = coins.silver, gold = coins.gold, platinum = coins.platinum } }
-        else
-            Result.Err "Not enough coins to remove!"
+    if copperToRemove <= coins.copper then
+        Result.Ok { model | coins = { coins | copper = coins.copper - copperToRemove } }
+    else if copperToRemove <= totalSilvers then
+        let
+            ( copper_, silver_ ) =
+                toLeastSilvers (totalSilvers - copperToRemove)
+        in
+        Result.Ok { model | coins = { coins | copper = copper_, silver = silver_ } }
+    else if copperToRemove <= totalGold then
+        let
+            ( copper_, silver_, gold_ ) =
+                toLeastGold (totalGold - copperToRemove)
+        in
+        Result.Ok { model | coins = { coins | copper = copper_, silver = silver_, gold = gold_ } }
+    else if copperToRemove <= totalPlatinum then
+        let
+            coins =
+                toLeastCoins (totalPlatinum - copperToRemove)
+        in
+        Result.Ok { model | coins = { coins | copper = coins.copper, silver = coins.silver, gold = coins.gold, platinum = coins.platinum } }
+    else
+        Result.Err "Not enough coins to remove!"
 
 
 toLeastCoins : Int -> Coins
@@ -138,7 +137,7 @@ toLeastCoins coppers =
         ( copper, silver, gold ) =
             toLeastGold coppers
     in
-        Coins copper silver (gold % 100) (gold // 100)
+    Coins copper silver (gold % 100) (gold // 100)
 
 
 toLeastGold : Int -> ( Int, Int, Int )
@@ -147,7 +146,7 @@ toLeastGold coins =
         ( copper, silver ) =
             toLeastSilvers coins
     in
-        ( copper, silver % 100, silver // 100 )
+    ( copper, silver % 100, silver // 100 )
 
 
 toLeastSilvers : Int -> ( Int, Int )

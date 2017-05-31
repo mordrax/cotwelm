@@ -1,14 +1,14 @@
 module Tile.Model exposing (..)
 
+import Building exposing (Building)
 import Container exposing (Container)
 import Dict exposing (Dict)
+import Hero exposing (Hero)
 import Item.Data exposing (Item)
+import Monster exposing (Monster)
+import Tile.Types exposing (..)
 import Types exposing (..)
 import Utils.Vector as Vector exposing (Vector)
-import Building exposing (Building)
-import Monster exposing (Monster)
-import Hero exposing (Hero)
-import Tile.Types exposing (..)
 
 
 type alias Tile =

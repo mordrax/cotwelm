@@ -1,8 +1,6 @@
 module Dungeon.Rooms.DeadEnd exposing (template)
 
-{-|
-
--}
+{-| -}
 
 import Dungeon.Rooms.Type exposing (..)
 

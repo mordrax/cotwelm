@@ -1,8 +1,10 @@
 module ASCIIMaps exposing (..)
 
 {-| Holds all static map data:
-- ASCII maps for each area
-- Buildings, their location and purpose (inventory) for each area
+
+  - ASCII maps for each area
+  - Buildings, their location and purpose (inventory) for each area
+
 -}
 
 
@@ -90,7 +92,8 @@ dungeonLevelOneMap =
     , "^^^^^^^^^^^^^^^o^^^^dooo^ooo^^^^^^^^^^^^^"
     , "^^^^^^^^^^^^^^^o^^^^^dod^dod^^^^^^^^^^^^^"
     , "^^^^^^^^^^^^^^^od^^^^^^^^^^^^^^^^^^^^^^^^"
-      --10
+
+    --10
     , "^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^^"
     , "^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^^^^^"
     , "^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^^^^^"
@@ -101,7 +104,8 @@ dungeonLevelOneMap =
     , "^^^^^^^^^^^^^^^^^^^^dod^^^^^^^^^^^^^^^^^^"
     , "^^^^^^^^^^^^^^^^^^^^^do^^^^^^^^^^^^^^^^^^"
     , "^^^^^^^^^^^^dood^^^^^^o^^^^^^^^^^^^^^^^^^"
-      --20   (19, 13) Leather armour
+
+    --20   (19, 13) Leather armour
     , "^^^^^^^^^^^^ooood^^^^^o^^^^^^^^^^doood^^^"
     , "^^^^^^^^^^^^oooooo^^^^o^^^^^^^^^^ooooo^^^"
     , "^^^^^^^^^^^^dooooo^^^^o^^^^^^^^^^ooooo^^^"

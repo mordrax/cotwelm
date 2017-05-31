@@ -1,12 +1,12 @@
 module UI exposing (..)
 
+import Css exposing (..)
 import Html exposing (..)
-import Html.Events as HE
 import Html.Attributes as HA
-import String exposing (..)
+import Html.Events as HE
 import Json.Decode as JD
 import Json.Decode.Pipeline as JP
-import Css exposing (..)
+import String exposing (..)
 
 
 styles =
@@ -50,7 +50,7 @@ labeledNumber label number msg =
         toIntWithDefault str default =
             Result.withDefault default (String.toInt str)
     in
-        labeledNumber_ toIntWithDefault label number msg
+    labeledNumber_ toIntWithDefault label number msg
 
 
 labeledFloat : Label -> Float -> (Float -> a) -> Html a
@@ -59,7 +59,7 @@ labeledFloat label number msg =
         toFloatWithDefault str default =
             Result.withDefault default (String.toFloat str)
     in
-        labeledNumberWithStep toFloatWithDefault label number 0.1 msg
+    labeledNumberWithStep toFloatWithDefault label number 0.1 msg
 
 
 inputWithIncDec : Int -> (Int -> a) -> Html a
@@ -109,10 +109,10 @@ list display selectAction ( encoder, decoder ) items =
                 |> JD.map eventToString
                 |> JD.map selectAction
     in
-        items
-            |> List.map renderItem
-            |> Html.select
-                [ HE.on "change" msgDecoder ]
+    items
+        |> List.map renderItem
+        |> Html.select
+            [ HE.on "change" msgDecoder ]
 
 
 changeEventDecoder : JD.Decoder Event
@@ -124,8 +124,8 @@ changeEventDecoder =
         eventDecoder =
             JP.decode Event |> JP.required "target" targetDecoder
     in
-        JP.decode Event
-            |> JP.required "target" targetDecoder
+    JP.decode Event
+        |> JP.required "target" targetDecoder
 
 
 btn : String -> msg -> Html msg

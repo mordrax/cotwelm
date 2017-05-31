@@ -8,25 +8,24 @@ module Hero
         , setEquipment
         , setPosition
         , setStats
+        , tick
         , view
         , viewStats
-        , tick
         )
 
 import Attributes exposing (Attributes)
+import Container
+import Css
 import Equipment exposing (Equipment, EquipmentSlot)
-import Types exposing (..)
 import Html exposing (..)
 import Html.Attributes as HA
 import Item
+import Item.Data
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Direction as Direction exposing (Direction)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
-import Container
-import Item.Data
-import Css
 
 
 styles =
@@ -100,7 +99,7 @@ move direction model =
     direction
         |> Vector.fromDirection
         |> Vector.add model.position
-        |> \x -> { model | position = x }
+        |> (\x -> { model | position = x })
 
 
 pickup : List Item.Data.Item -> Hero -> ( Hero, List Item.Data.Item, List String )
@@ -109,7 +108,7 @@ pickup items hero =
         ( hero_, msgs, failedToPickup ) =
             List.foldl pickup_ ( hero, [], [] ) items
     in
-        ( hero_, failedToPickup, msgs )
+    ( hero_, failedToPickup, msgs )
 
 
 pickup_ : Item.Data.Item -> ( Hero, List String, List Item.Data.Item ) -> ( Hero, List String, List Item.Data.Item )
@@ -124,15 +123,15 @@ pickup_ item ( hero, messages, remainingItems ) =
         success =
             ( hero_, messages, remainingItems )
     in
-        case msg of
-            Equipment.Success ->
-                success
+    case msg of
+        Equipment.Success ->
+            success
 
-            Equipment.ContainerMsg Container.Ok ->
-                success
+        Equipment.ContainerMsg Container.Ok ->
+            success
 
-            other ->
-                ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, item :: remainingItems )
+        other ->
+            ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, item :: remainingItems )
 
 
 
@@ -148,11 +147,11 @@ view model =
             else
                 "female-hero"
     in
-        div
-            [ HA.class ("tile " ++ heroCss)
-            , HA.style (Misc.vectorToHtmlStyle model.position)
-            ]
-            []
+    div
+        [ HA.class ("tile " ++ heroCss)
+        , HA.style (Misc.vectorToHtmlStyle model.position)
+        ]
+        []
 
 
 viewStats : Hero -> Html a
@@ -170,8 +169,8 @@ viewStats model =
             else
                 styles []
     in
-        div []
-            [ div [] [ text "Stats:" ]
-            , div [ hpColor ] [ text <| "HP: " ++ (Stats.printHP model.stats) ]
-            , div [] [ text <| "SP: " ++ (Stats.printSP model.stats) ]
-            ]
+    div []
+        [ div [] [ text "Stats:" ]
+        , div [ hpColor ] [ text <| "HP: " ++ Stats.printHP model.stats ]
+        , div [] [ text <| "SP: " ++ Stats.printSP model.stats ]
+        ]

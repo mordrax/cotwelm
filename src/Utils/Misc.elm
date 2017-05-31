@@ -13,7 +13,7 @@ import Utils.Vector exposing (..)
 
 px : number -> String
 px a =
-    (toString a) ++ "px"
+    toString a ++ "px"
 
 
 vectorToHtmlStyle : Vector -> List ( String, String )
@@ -29,10 +29,10 @@ toScaledTilePosition ( x, y ) scale =
         size =
             round <| scale * 32
     in
-        style
-            [ ( "top", px (y * size) )
-            , ( "left", px (x * size) )
-            ]
+    style
+        [ ( "top", px (y * size) )
+        , ( "left", px (x * size) )
+        ]
 
 
 foldResult : (a -> b -> Result x b) -> Result x b -> List a -> Result x b
@@ -46,7 +46,7 @@ foldResult f acc list =
                 nextAcc =
                     Result.andThen (f x) acc
             in
-                foldResult f nextAcc xs
+            foldResult f nextAcc xs
 
 
 removeFirst : a -> (a -> a -> Bool) -> List a -> List a
@@ -68,10 +68,10 @@ removeFirst_ target equals list searched =
 
 
 {-| Removes all non alphabetical characters and condenses it into one hyphen.
-    Then lowercases the whole string.
-    kobold -> kobold
-    GiantRat -> giant-rat
-    giant_Rat -> giant-rat
+Then lowercases the whole string.
+kobold -> kobold
+GiantRat -> giant-rat
+giant_Rat -> giant-rat
 -}
 toCSS : String -> String
 toCSS str =
@@ -136,11 +136,11 @@ choose arr =
             gen =
                 Random.int 0 lastIndex
         in
-            Random.map
-                (\index ->
-                    ( Array.get index arr, Array.append (front index) (back index) )
-                )
-                gen
+        Random.map
+            (\index ->
+                ( Array.get index arr, Array.append (front index) (back index) )
+            )
+            gen
 
 
 {-| Shuffle the array using the Fisher-Yates algorithm. Takes O(_n_ log _n_)
@@ -165,18 +165,22 @@ shuffle_ arr =
                                     helper ( val :: done, shorter )
                         )
         in
-            Random.map (Tuple.first >> Array.fromList) (helper ( [], arr ))
+        Random.map (Tuple.first >> Array.fromList) (helper ( [], arr ))
 
 
 {-| Given a list, choose an element uniformly at random. `Nothing` is only
 produced if the list is empty.
 
-    type Direction = North | South | East | West
+    type Direction
+        = North
+        | South
+        | East
+        | West
 
     direction : Generator Direction
     direction =
-      sample [North, South, East, West]
-        |> map (Maybe.withDefault North)
+        sample [ North, South, East, West ]
+            |> map (Maybe.withDefault North)
 
 -}
 sample2 : List a -> Generator (Maybe a)
@@ -193,7 +197,7 @@ sample2 =
                     else
                         find (k - 1) zs
     in
-        \xs -> Random.map (\i -> find i xs) (Random.int 0 (List.length xs - 1))
+    \xs -> Random.map (\i -> find i xs) (Random.int 0 (List.length xs - 1))
 
 
 {-| Turn a list of generators into a generator of lists.

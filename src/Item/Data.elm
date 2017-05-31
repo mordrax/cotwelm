@@ -1,8 +1,8 @@
 module Item.Data exposing (..)
 
-import Utils.Mass exposing (..)
-import Dice exposing (Dice)
 import Container exposing (Container)
+import Dice exposing (Dice)
+import Utils.Mass exposing (..)
 
 
 type Msg

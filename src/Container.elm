@@ -2,22 +2,23 @@ module Container
     exposing
         ( Container
         , Msg(..)
+        , add
+        , capacity
         , init
         , list
-        , add
+        , mass
         , remove
         , set
-        , mass
-        , capacity
         )
 
 {-| A container holds Items with a Mass up to a certain amount specified by the container's capacity.
 You can add/remove Items and look through a list of them.
 
 Items can also be containers, so containers can hold containers.
+
 -}
 
-import Utils.Mass as Mass exposing (Mass, Capacity)
+import Utils.Mass as Mass exposing (Capacity, Mass)
 import Utils.Misc
 
 
@@ -51,8 +52,8 @@ mass (ContainerModel model) =
             model.getMass a
                 |> (\{ weight, bulk } -> { weight = weight + accMass.weight, bulk = bulk + accMass.bulk })
     in
-        model.items
-            |> List.foldl sumMass (Mass 0 0)
+    model.items
+        |> List.foldl sumMass (Mass 0 0)
 
 
 init : Capacity -> (a -> Mass) -> (a -> a -> Bool) -> Container a
@@ -84,17 +85,17 @@ add item (ContainerModel model) =
         isWithinCapacity =
             Mass.withinCapacity newMass model.capacity
     in
-        case isWithinCapacity of
-            Mass.Success ->
-                ( ContainerModel
-                    { model
-                        | items = item :: model.items
-                    }
-                , Ok
-                )
+    case isWithinCapacity of
+        Mass.Success ->
+            ( ContainerModel
+                { model
+                    | items = item :: model.items
+                }
+            , Ok
+            )
 
-            massMsg ->
-                ( ContainerModel model, MassMsg massMsg )
+        massMsg ->
+            ( ContainerModel model, MassMsg massMsg )
 
 
 {-| Takes an item out of the container if it exists.

@@ -1,8 +1,6 @@
 module Dungeon.Rooms.Potion exposing (template)
 
-{-|
-
--}
+{-| -}
 
 import Dungeon.Rooms.Type exposing (..)
 

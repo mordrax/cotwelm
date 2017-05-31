@@ -1,10 +1,11 @@
 module Monsters.View exposing (view)
 
-import Monsters.Model exposing (Monster)
 import Html exposing (..)
 import Html.Attributes as HA
-import Utils.Vector exposing (Vector)
+import Monsters.Model exposing (Monster)
 import Monsters.Types exposing (..)
+import Utils.Vector exposing (Vector)
+
 
 view : Monster -> Html a
 view { monsterType, position } =
@@ -20,7 +21,8 @@ vectorToHtmlStyle ( x, y ) =
 
 px : number -> String
 px a =
-    (toString a) ++ "px"
+    toString a ++ "px"
+
 
 monsterTypeToCSS : MonsterType -> String
 monsterTypeToCSS monsterType =
