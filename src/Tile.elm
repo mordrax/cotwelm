@@ -2,31 +2,28 @@ module Tile
     exposing
         ( Tile
         , TileNeighbours
-        , setVisibility
         , drop
-        , pickup
-        , updateGround
-        , setPosition
         , mapToTiles
+        , pickup
+        , setPosition
+        , setVisibility
         , toTile
+        , updateGround
         , view
         )
 
-import Building exposing (Building)
 import Container exposing (Container)
 import Dict exposing (Dict)
+import Html exposing (Html)
 import Item
 import Item.Data exposing (Item)
-import List.Extra as ListX
 import Random.Pcg as Random
-import String.Extra as StringX
 import Tile.Model exposing (..)
+import Tile.Types exposing (..)
+import Tile.View
 import Types exposing (..)
 import Utils.Mass as Mass exposing (Capacity)
-import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
-import Tile.View
-import Tile.Types exposing (..)
 
 
 type alias Tile =
@@ -37,6 +34,7 @@ type alias TileNeighbours =
     Tile.Model.TileNeighbours
 
 
+view : Tile.Model.Tile -> Float -> Tile.Model.TileNeighbours -> (Vector -> a) -> List (Html a)
 view =
     Tile.View.view
 
@@ -55,7 +53,7 @@ drop item model =
         ( groundWithItem, _ ) =
             Container.add item model.ground
     in
-        { model | ground = groundWithItem }
+    { model | ground = groundWithItem }
 
 
 pickup : Tile -> ( List Item, Tile )
@@ -89,7 +87,7 @@ mapToTiles asciiMap =
         tiles =
             List.indexedMap rowToTiles asciiMap
     in
-        List.concat tiles
+    List.concat tiles
 
 
 {-| Create a Tile from some x,y coordinates and a tile type
@@ -103,7 +101,7 @@ toTile ( x, y ) tileType =
         container =
             Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-        Tile tileType solid [] Empty ( x, y ) container Hidden False
+    Tile tileType solid [] Empty ( x, y ) container Hidden False
 
 
 asciiToTileType : Char -> TileType

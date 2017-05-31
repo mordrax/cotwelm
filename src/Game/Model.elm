@@ -1,18 +1,16 @@
 module Game.Model exposing (..)
 
-import Building exposing (Building)
-import Hero exposing (Hero)
-import Inventory exposing (Inventory)
+import Game.Level as Level exposing (Level)
 import Game.Maps as Maps exposing (Maps)
 import Game.Types exposing (..)
+import Hero exposing (Hero)
+import Input exposing (Input)
+import Inventory exposing (Inventory)
 import Random.Pcg as Random
 import Shops exposing (Shops)
 import Types exposing (..)
-import Window
-import Game.Level as Level exposing (Level)
-import Utils.Direction as Direction exposing (Direction)
 import Utils.Vector as Vector exposing (Vector)
-import Input exposing (Input)
+import Window
 
 
 type Msg
@@ -128,6 +126,7 @@ game that may be needed in another part. We keep track of these things and refre
 at the beginning of each turn.
 
 heroMoved - Whether the hero's position has changed.
+
 -}
 type alias Turn =
     {}
@@ -144,9 +143,9 @@ hasHeroMoved ({ previousState, hero } as game) =
         heroPosition game =
             game.hero.position
     in
-        case previousState of
-            Empty ->
-                False
+    case previousState of
+        Empty ->
+            False
 
-            State previousGame ->
-                heroPosition previousGame /= heroPosition game
+        State previousGame ->
+            heroPosition previousGame /= heroPosition game

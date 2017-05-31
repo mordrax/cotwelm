@@ -2,21 +2,21 @@ module Dungeon.Corridor
     exposing
         ( Corridor
         , Corridors
-        , init
-        , generate
-        , extend
         , add
         , addEntrance
         , boundary
         , end
-        , toTiles
-        , pp
+        , extend
+        , generate
+        , init
         , isCollision
+        , pp
+        , toTiles
         )
 
 {-| A corridor is a single width line of tiles that can be either horizontal/vertical or
-    at 45 degrees. It can have between 0 to a few bends in it depending on the original
-    game.
+at 45 degrees. It can have between 0 to a few bends in it depending on the original
+game.
 
     Corridors can also intersect with other corridors forming 'entrances' where another
     corridor intersects with this one.
@@ -49,22 +49,22 @@ module Dungeon.Corridor
     Corridors will be generated based on whatever coordinate system is passed into it so
     it does not know about world/local coordinates. It just uses whatever it's given and makes
     the corridor relative to that coordinate system.
+
 -}
 
 import Dice
-import Dict exposing (Dict)
 import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Rooms.Config as Config
-import Dungeon.Rooms.Type exposing (..)
 import List
 import Random.Pcg as Random exposing (..)
 import Set
 import Tile exposing (Tile)
+import Tile.Types
 import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Utils.Misc as Misc
-import Utils.Vector as Vector exposing (Vector, DirectedVector)
-import Tile.Types
+import Utils.Vector as Vector exposing (DirectedVector, Vector)
+
 
 type Corridor
     = A Model
@@ -97,7 +97,7 @@ init start entranceFacing =
 
 
 {-| Generate a new corridor given a directed vector.
-    The corridor will go in a random direction and be of random length.
+The corridor will go in a random direction and be of random length.
 
     entranceFacing is the direction the entrance of the corridor is facing.
     i.e if the corridor starts at E(ntrance) and travels north-east, the entranceFacing
@@ -111,6 +111,7 @@ init start entranceFacing =
     R <-E###
     RRRR####
     ########
+
 -}
 generate : Vector -> Direction -> Config.Model -> Generator Corridor
 generate startPosition entranceFacing config =
@@ -126,16 +127,16 @@ generate startPosition entranceFacing config =
                 corridor =
                     init start entranceFacing
             in
-                extend corridor config
+            extend corridor config
     in
-        startDirectionGen
-            |> Random.map (\dir -> ( startPosition, dir ))
-            |> andThen makeCorridor
-            |> andThen lightSourceGenerator
+    startDirectionGen
+        |> Random.map (\dir -> ( startPosition, dir ))
+        |> andThen makeCorridor
+        |> andThen lightSourceGenerator
 
 
 {-| Generate another point in the corridor by digging a random length from
-    the last point's direction and picking a new random direction.
+the last point's direction and picking a new random direction.
 -}
 extend : Corridor -> Config.Model -> Generator Corridor
 extend corridor config =
@@ -149,8 +150,8 @@ extend corridor config =
         directionGen =
             onePossibleCardinalDirection lastFacing
     in
-        Random.map2 (,) lengthGen directionGen
-            |> Random.map (\( len, dir ) -> add ( stepsFromPoint lastPoint len, dir ) corridor)
+    Random.map2 (,) lengthGen directionGen
+        |> Random.map (\( len, dir ) -> add ( stepsFromPoint lastPoint len, dir ) corridor)
 
 
 lightSourceGenerator : Corridor -> Generator Corridor
@@ -162,8 +163,8 @@ lightSourceGenerator (A corridor) =
             else
                 A corridor
     in
-        Random.bool
-            |> Random.map setArtificialLightSource
+    Random.bool
+        |> Random.map setArtificialLightSource
 
 
 stepsFromPoint : DirectedVector -> Int -> Vector
@@ -208,19 +209,34 @@ the 3 remaining cardinal directions
 
 #######
 ###1###
-#2   3#
-### ###
-### ###
+#2 3#
+
+
+###
+
+
+###
 
 Diagonal corridors must end facing a cardinal direction
 
 #######
 ###1###
-### ###
-###  2#
-## ####
-# #####
- ######
+
+
+###
+
+
+### 2
+
+
+##
+
+
+#
+
+
+######
+
 -}
 possibleEnds : Vector -> Corridor -> List DirectedVector
 possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
@@ -243,9 +259,9 @@ possibleEnds lastPoint ((A ({ start, points } as model)) as corridor) =
         makeDirectedVector direction =
             ( lastPoint, direction )
     in
-        [ facing, facingLeft, facingRight ]
-            |> List.filter Direction.isCardinal
-            |> List.map makeDirectedVector
+    [ facing, facingLeft, facingRight ]
+        |> List.filter Direction.isCardinal
+        |> List.map makeDirectedVector
 
 
 add : DirectedVector -> Corridor -> Corridor
@@ -258,11 +274,11 @@ add (( newVector, newFacing ) as newPoint) (A ({ points, start } as model)) =
             path (Tuple.first lastCorridorPoint) newVector
                 |> List.map (\x -> Tile.toTile x Tile.Types.DarkDgn)
     in
-        A
-            { model
-                | points = newPoint :: points
-                , paths = newPath ++ model.paths
-            }
+    A
+        { model
+            | points = newPoint :: points
+            , paths = newPath ++ model.paths
+        }
 
 
 addEntrance : Vector -> Corridor -> Corridor
@@ -324,20 +340,20 @@ boundaryHelper ({ start, points, paths, entranceFacing } as model) =
                 |> Set.fromList
                 |> Set.diff positionSet
     in
-        paths
-            |> List.map .position
-            |> List.map Vector.neighbours
-            |> List.concat
-            |> Set.fromList
-            |> lessPaths
-            |> flip Set.diff entranceExceptions
-            |> flip Set.diff exitExceptions
-            |> Set.toList
+    paths
+        |> List.map .position
+        |> List.map Vector.neighbours
+        |> List.concat
+        |> Set.fromList
+        |> lessPaths
+        |> flip Set.diff entranceExceptions
+        |> flip Set.diff exitExceptions
+        |> Set.toList
 
 
 pp : Corridor -> String
 pp (A { start }) =
-    "Corridor at (" ++ (toString start) ++ ")"
+    "Corridor at (" ++ toString start ++ ")"
 
 
 
@@ -345,13 +361,13 @@ pp (A { start }) =
 
 
 {-| The path between any two vectors is the linear line that connects them.
-   e.g path (5, 0) (0, 5) = [(5, 0), (4, 1), (3, 2), (2, 3), (1, 4), (0, 5)]
+e.g path (5, 0) (0, 5) = [(5, 0), (4, 1), (3, 2), (2, 3), (1, 4), (0, 5)]
 -}
 path : Vector -> Vector -> List Vector
 path ( x1, y1 ) ( x2, y2 ) =
     let
         length =
-            (max (abs (x1 - x2)) (abs (y1 - y2))) + 1
+            max (abs (x1 - x2)) (abs (y1 - y2)) + 1
 
         rangeX =
             if x1 == x2 then
@@ -365,4 +381,4 @@ path ( x1, y1 ) ( x2, y2 ) =
             else
                 Misc.range y1 y2
     in
-        List.map2 (,) rangeX rangeY
+    List.map2 (,) rangeX rangeY

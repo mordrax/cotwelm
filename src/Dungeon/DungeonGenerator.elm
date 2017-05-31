@@ -1,27 +1,21 @@
 module Dungeon.DungeonGenerator
     exposing
-        ( step
-        , steps
-        , generate
+        ( generate
         , init
+        , step
+        , steps
         )
 
-import Dice exposing (..)
-import Dict exposing (Dict)
+import Building exposing (Building)
 import Dungeon.Clean
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Room as Room exposing (Room)
 import Dungeon.Rooms.Config as Config
-import Dungeon.Rooms.Type exposing (..)
 import Dungeon.Types exposing (..)
-import Building exposing (Building)
-import Types exposing (..)
 import Game.Level as Level
-import List.Extra exposing (dropWhile)
 import Random.Pcg as Random exposing (Generator, constant)
 import Set
-import Tile exposing (Tile)
 import Utils.Direction exposing (Direction)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
@@ -36,20 +30,22 @@ The strategy used here is like that of a miner with the overarching goal of maki
 a dungeon that looks like the original Castle of the Winds.
 
 The algorithm is as follows:
-1. On initialise, create a room, this will be the entrance to the level with a
-   randomly generated up staircase.
 
-2. On each call to 'step', look through the 'active' rooms and corridors. Pick the
-   first active room found. Or the first active corridor if there is no active rooms.
-   If there are neither active rooms nor corridor, end the step.
+1.  On initialise, create a room, this will be the entrance to the level with a
+    randomly generated up staircase.
+
+2.  On each call to 'step', look through the 'active' rooms and corridors. Pick the
+    first active room found. Or the first active corridor if there is no active rooms.
+    If there are neither active rooms nor corridor, end the step.
 
 3a Given a active room, if there is an unconnected entrance
 
 Active -
-   A room or corridor which is still being explored. Once a room or corridor
-   has all their entrances connected, and cannot hold any more entrances as
-   dictated by the config model, they are no longer active and moved out of
-   activePoints.
+A room or corridor which is still being explored. Once a room or corridor
+has all their entrances connected, and cannot hold any more entrances as
+dictated by the config model, they are no longer active and moved out of
+activePoints.
+
 -}
 
 
@@ -94,8 +90,8 @@ generate_ config =
             else
                 generate_ config
     in
-        candidate config
-            |> Random.andThen regenerateIfNotFit
+    candidate config
+        |> Random.andThen regenerateIfNotFit
 
 
 addStairs : Model -> Generator Model
@@ -120,11 +116,11 @@ addStairs model =
                 _ ->
                     Debug.log "ERROR: Tis not good, dungeon does not have two tiles of floors." model
     in
-        model.rooms
-            |> List.map Room.floors
-            |> List.concat
-            |> Misc.shuffle
-            |> Random.map makeUpDownStairs
+    model.rooms
+        |> List.map Room.floors
+        |> List.concat
+        |> Misc.shuffle
+        |> Random.map makeUpDownStairs
 
 
 steps : Int -> Model -> Generator Model
@@ -133,12 +129,12 @@ steps steps model =
         oneStep _ gen =
             Random.andThen step gen
     in
-        case steps of
-            0 ->
-                constant model
+    case steps of
+        0 ->
+            constant model
 
-            n ->
-                List.foldl oneStep (constant model) (List.range 0 (n - 1))
+        n ->
+            List.foldl oneStep (constant model) (List.range 0 (n - 1))
 
 
 {-| For each of the active rooms and corridors, generate another 'step'.
@@ -156,12 +152,12 @@ step model =
                 ActiveCorridor corridor ->
                     Corridor.pp corridor
     in
-        Misc.shuffle model.activePoints
-            |> Random.andThen
-                (\x ->
-                    step_ { model | activePoints = x }
-                        |> Random.andThen Random.constant
-                )
+    Misc.shuffle model.activePoints
+        |> Random.andThen
+            (\x ->
+                step_ { model | activePoints = x }
+                    |> Random.andThen Random.constant
+            )
 
 
 step_ : Model -> Generator Model
@@ -173,12 +169,12 @@ step_ ({ activePoints } as model) =
                 addRoomToModel room =
                     { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [] }
             in
-                if List.length model.rooms == 0 && List.length model.corridors == 0 then
-                    Random.map addRoomToModel (Room.generate model.config)
-                else
-                    constant model
+            if List.length model.rooms == 0 && List.length model.corridors == 0 then
+                Random.map addRoomToModel (Room.generate model.config)
+            else
+                constant model
 
-        (ActiveRoom room (Maybe.Nothing)) :: remainingPoints ->
+        (ActiveRoom room Maybe.Nothing) :: remainingPoints ->
             generateEntrance room { model | activePoints = remainingPoints }
 
         -- make a corridor from a existing entrance
@@ -188,7 +184,7 @@ step_ ({ activePoints } as model) =
                     { model
                         | activePoints =
                             ActiveCorridor corridor
-                                :: ActiveRoom room (Maybe.Nothing)
+                                :: ActiveRoom room Maybe.Nothing
                                 :: remainingPoints
                     }
 
@@ -201,8 +197,8 @@ step_ ({ activePoints } as model) =
                 ( startPosition, entranceFacing ) =
                     corridorStartFromRoomEntrance room entrance
             in
-                Corridor.generate startPosition entranceFacing model.config
-                    |> Random.map updateModel
+            Corridor.generate startPosition entranceFacing model.config
+                |> Random.map updateModel
 
         -- pick a active corridor and dig a room
         (ActiveCorridor corridor) :: remainingPoints ->
@@ -213,26 +209,26 @@ step_ ({ activePoints } as model) =
                 modelWithInactiveCorridor =
                     { modelWithoutActiveCorridor | corridors = corridor :: model.corridors }
             in
-                generateActivePointFromCorridor corridor model
-                    |> Random.map
-                        (\activePoint ->
-                            case activePoint of
-                                (ActiveCorridor corridor) as activePoint ->
-                                    if canFitCorridor modelWithoutActiveCorridor corridor then
-                                        { modelWithoutActiveCorridor
-                                            | activePoints = activePoint :: remainingPoints
-                                        }
-                                    else
-                                        model
+            generateActivePointFromCorridor corridor model
+                |> Random.map
+                    (\activePoint ->
+                        case activePoint of
+                            (ActiveCorridor corridor) as activePoint ->
+                                if canFitCorridor modelWithoutActiveCorridor corridor then
+                                    { modelWithoutActiveCorridor
+                                        | activePoints = activePoint :: remainingPoints
+                                    }
+                                else
+                                    model
 
-                                (ActiveRoom room _) as activePoint ->
-                                    if canFitRoom model room then
-                                        { modelWithInactiveCorridor
-                                            | activePoints = activePoint :: remainingPoints
-                                        }
-                                    else
-                                        model
-                        )
+                            (ActiveRoom room _) as activePoint ->
+                                if canFitRoom model room then
+                                    { modelWithInactiveCorridor
+                                        | activePoints = activePoint :: remainingPoints
+                                    }
+                                else
+                                    model
+                    )
 
 
 corridorStartFromRoomEntrance : Room -> Entrance -> ( Vector, Direction )
@@ -252,7 +248,7 @@ corridorStartFromRoomEntrance room entrance =
                 |> Vector.fromDirection
                 |> Vector.add roomEntrancePosition
     in
-        ( corridorStartPosition, corridorEntranceFacing )
+    ( corridorStartPosition, corridorEntranceFacing )
 
 
 generateActivePointFromCorridor : Corridor -> Model -> Generator ActivePoint
@@ -260,7 +256,7 @@ generateActivePointFromCorridor corridor model =
     let
         activeRoom =
             generateRoom corridorEnd model.config
-                |> Random.map (\room -> ActiveRoom room (Maybe.Nothing))
+                |> Random.map (\room -> ActiveRoom room Maybe.Nothing)
 
         activeCorridor =
             Corridor.extend corridor model.config
@@ -269,11 +265,11 @@ generateActivePointFromCorridor corridor model =
         corridorEnd =
             Corridor.end corridor
     in
-        Random.choices [ activeRoom, activeCorridor ]
+    Random.choices [ activeRoom, activeCorridor ]
 
 
 {-| Generate a new entrance for a room, then adds the room/entrance as a
-    active point
+active point
 -}
 generateEntrance : Room -> Model -> Generator Model
 generateEntrance room ({ config } as model) =
@@ -289,10 +285,10 @@ generateEntrance room ({ config } as model) =
                 | activePoints = ActiveRoom room_ (Just entrance) :: model.activePoints
             }
     in
-        if isRoomAtMaxEntrances then
-            constant modelWithActiveRoomRemoved
-        else
-            Random.map mapEntranceToModel (Room.generateEntrance room)
+    if isRoomAtMaxEntrances then
+        constant modelWithActiveRoomRemoved
+    else
+        Random.map mapEntranceToModel (Room.generateEntrance room)
 
 
 generateRoom : Vector.DirectedVector -> Config.Model -> Generator Room
@@ -314,8 +310,8 @@ canFitCorridor model corridor =
             toOccupied model
 
         corridorPositions =
-            (List.map .position (Corridor.toTiles corridor))
-                ++ (Corridor.boundary corridor)
+            List.map .position (Corridor.toTiles corridor)
+                ++ Corridor.boundary corridor
 
         inModelTiles tile =
             List.any ((==) tile) occupiedPositions
@@ -336,7 +332,7 @@ canFitCorridor model corridor =
         --                , corridor = Corridor.pp corridor
         --                }
     in
-        canFit && withinBounds
+    canFit && withinBounds
 
 
 canFitRoom : Model -> Room -> Bool
@@ -351,7 +347,7 @@ canFitRoom model room =
                 |> Room.toTiles
                 |> List.map .position
             )
-                ++ (Room.boundary room)
+                ++ Room.boundary room
 
         roomPositionSet =
             Set.fromList roomPositions
@@ -368,4 +364,4 @@ canFitRoom model room =
         --                , roomPosition = roomPositions
         --                }
     in
-        withinBounds && List.isEmpty collisions
+    withinBounds && List.isEmpty collisions

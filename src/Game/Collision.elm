@@ -1,8 +1,8 @@
 module Game.Collision
     exposing
-        ( move
+        ( autoOpenAnyDoorHeroIsOn
+        , move
         , moveMonsters
-        , autoOpenAnyDoorHeroIsOn
         )
 
 import Building exposing (Building)
@@ -10,8 +10,8 @@ import Game.Combat as Combat
 import Game.Level as Level exposing (Level)
 import Game.Maps as Maps
 import Game.Model exposing (Game)
-import Game.Types
 import Game.Pathfinding as Pathfinding
+import Game.Types
 import Hero exposing (Hero)
 import Inventory exposing (Inventory)
 import Item
@@ -20,10 +20,9 @@ import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Seed)
 import Shops exposing (Shops)
 import Stats
+import Types exposing (..)
 import Utils.Direction exposing (Direction)
 import Utils.Vector as Vector exposing (Vector)
-import Utils.FieldOfView as FieldOfView
-import Types exposing (..)
 
 
 {-| Handles all logic to do with movements and collision of hero and monsters.
@@ -47,21 +46,21 @@ move dir ({ level } as game) =
         heroMoved =
             Hero.move dir game.hero
     in
-        case Level.queryPosition heroMoved.position level of
-            ( _, _, Just monster ) ->
-                attack monster game
+    case Level.queryPosition heroMoved.position level of
+        ( _, _, Just monster ) ->
+            attack monster game
 
-            -- entering a building
-            ( _, Just building, _ ) ->
-                enterBuilding building game
+        -- entering a building
+        ( _, Just building, _ ) ->
+            enterBuilding building game
 
-            -- path blocked
-            ( True, _, _ ) ->
-                game
+        -- path blocked
+        ( True, _, _ ) ->
+            game
 
-            -- path free, moved
-            ( False, _, _ ) ->
-                { game | hero = heroMoved }
+        -- path free, moved
+        ( False, _, _ ) ->
+            { game | hero = heroMoved }
 
 
 autoOpenAnyDoorHeroIsOn : Game -> Game
@@ -93,12 +92,12 @@ attack monster ({ hero, seed, messages, level } as model) =
                 , messages = combatMsg :: messages
             }
     in
-        case resolvedMonster of
-            Just monster ->
-                modelAfterCombat
+    case resolvedMonster of
+        Just monster ->
+            modelAfterCombat
 
-            Nothing ->
-                addLoot monster modelAfterCombat
+        Nothing ->
+            addLoot monster modelAfterCombat
 
 
 resolveCombat : Hero -> Monster -> Seed -> ( Maybe Monster, Seed, String )
@@ -107,10 +106,10 @@ resolveCombat hero monster seed =
         ( ( combatMsg, monsterAfterBeingHit ), seed_ ) =
             Random.step (Combat.attack hero monster) seed
     in
-        if Stats.isDead monster.stats then
-            ( Nothing, seed_, combatMsg )
-        else
-            ( Just monsterAfterBeingHit, seed_, combatMsg )
+    if Stats.isDead monster.stats then
+        ( Nothing, seed_, combatMsg )
+    else
+        ( Just monsterAfterBeingHit, seed_, combatMsg )
 
 
 addLoot : Monster -> Game -> Game
@@ -119,10 +118,10 @@ addLoot monster ({ level } as game) =
         loot =
             Item.new (Item.Data.ItemTypeCopper 1234)
     in
-        { game
-            | seed = game.seed
-            , level = Level.drop ( monster.position, loot ) level
-        }
+    { game
+        | seed = game.seed
+        , level = Level.drop ( monster.position, loot ) level
+    }
 
 
 
@@ -137,31 +136,31 @@ enterBuilding building ({ hero, level, maps } as game) =
         teleportHero position model =
             { model | hero = Hero.setPosition position hero }
     in
-        case building.buildingType of
-            Building.Linked link ->
-                Maps.saveLoadArea level link.area maps
-                    |> (\( newLevel, newMaps ) ->
-                            { game
-                                | level = newLevel
-                                , maps = newMaps
-                                , hero = Hero.setPosition link.position hero
-                            }
-                       )
+    case building.buildingType of
+        Building.Linked link ->
+            Maps.saveLoadArea level link.area maps
+                |> (\( newLevel, newMaps ) ->
+                        { game
+                            | level = newLevel
+                            , maps = newMaps
+                            , hero = Hero.setPosition link.position hero
+                        }
+                   )
 
-            Building.Shop shopType ->
-                { game
-                    | currentScreen = Game.Types.BuildingScreen building
-                    , inventory = Inventory.init (Inventory.Shop <| Shops.shop shopType game.shops) hero.equipment
-                }
+        Building.Shop shopType ->
+            { game
+                | currentScreen = Game.Types.BuildingScreen building
+                , inventory = Inventory.init (Inventory.Shop <| Shops.shop shopType game.shops) hero.equipment
+            }
 
-            Building.Ordinary ->
-                { game | currentScreen = Game.Types.BuildingScreen building }
+        Building.Ordinary ->
+            { game | currentScreen = Game.Types.BuildingScreen building }
 
-            Building.StairUp ->
-                teleportHero building.position game
+        Building.StairUp ->
+            teleportHero building.position game
 
-            Building.StairDown ->
-                teleportHero building.position game
+        Building.StairDown ->
+            teleportHero building.position game
 
 
 
@@ -188,11 +187,11 @@ moveMonsters ({ hero, maps, level } as game) =
         detectionDistance =
             10
     in
-        level.monsters
-            |> List.filter (\monster -> monster.visible /= Hidden)
-            |> sortByDistance
-            |> List.filter (\monster -> distance monster hero <= detectionDistance)
-            |> List.foldl moveMonster game
+    level.monsters
+        |> List.filter (\monster -> monster.visible /= Hidden)
+        |> sortByDistance
+        |> List.filter (\monster -> distance monster hero <= detectionDistance)
+        |> List.foldl moveMonster game
 
 
 moveMonster : Monster -> Game -> Game
@@ -204,24 +203,24 @@ moveMonster monster ({ hero } as game) =
         obstructed monster =
             Level.queryPosition movedMonster.position newLevel
     in
-        if Vector.adjacent monster.position hero.position then
-            attackHero monster game
-        else
-            case obstructed monster of
-                ( True, _, _ ) ->
-                    game
+    if Vector.adjacent monster.position hero.position then
+        attackHero monster game
+    else
+        case obstructed monster of
+            ( True, _, _ ) ->
+                game
 
-                ( _, Just _, _ ) ->
-                    game
+            ( _, Just _, _ ) ->
+                game
 
-                ( _, _, Just _ ) ->
-                    game
+            ( _, _, Just _ ) ->
+                game
 
-                _ ->
-                    newLevel.monsters
-                        |> Monster.replaceMoved monster movedMonster
-                        |> flip Level.setMonsters newLevel
-                        |> flip Game.Model.setLevel game
+            _ ->
+                newLevel.monsters
+                    |> Monster.replaceMoved monster movedMonster
+                    |> flip Level.setMonsters newLevel
+                    |> flip Game.Model.setLevel game
 
 
 pathMonster : Monster -> Hero -> Level -> ( Level, Monster )
@@ -233,8 +232,8 @@ pathMonster monster hero level =
                 |> Maybe.map (\step -> { monster | position = step })
                 |> Maybe.withDefault m
     in
-        Pathfinding.findPath monster.position hero.position level
-            |> (\( newLevel, path ) -> ( newLevel, monsterFollowPath monster path ))
+    Pathfinding.findPath monster.position hero.position level
+        |> (\( newLevel, path ) -> ( newLevel, monsterFollowPath monster path ))
 
 
 attackHero : Monster -> Game -> Game
@@ -243,8 +242,8 @@ attackHero monster ({ hero, seed, messages } as game) =
         ( ( msg, heroAfterHit ), seed_ ) =
             Random.step (Combat.attack monster hero) seed
     in
-        { game
-            | messages = msg :: messages
-            , hero = heroAfterHit
-            , seed = seed_
-        }
+    { game
+        | messages = msg :: messages
+        , hero = heroAfterHit
+        , seed = seed_
+    }

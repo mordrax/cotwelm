@@ -1,7 +1,6 @@
 module Dungeon.Rooms.Type exposing (..)
 
 import Utils.Vector exposing (..)
-import Dungeon.Entrance exposing (..)
 
 
 type RoomType

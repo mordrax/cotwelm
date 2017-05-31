@@ -6,20 +6,20 @@ module Game.Level
         , draw
         , drop
         , drops
-        , pickup
         , fromTiles
         , generateMonsters
         , getPath
         , getTile
         , ground
-        , tick
         , initNonDungeon
         , insertPath
         , obstructed
         , openDoor
+        , pickup
         , queryPosition
         , setMonsters
         , size
+        , tick
         , toScreenCoords
         , updateFOV
         , updateGround
@@ -32,20 +32,18 @@ import Container exposing (Container)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
-import Item
+import Html exposing (..)
 import Item.Data exposing (Item)
+import List.Extra as ListX
 import Monster exposing (Monster)
+import Random.Pcg as Random exposing (Generator)
+import Set
 import Tile exposing (Tile)
 import Tile.Types
 import Types exposing (..)
-import Utils.BresenhamLine as BresenhamLine
-import Utils.Vector as Vector exposing (Vector)
 import Utils.FieldOfView
-import Set
-import Random.Pcg as Random exposing (Generator)
 import Utils.Misc as Misc
-import Html exposing (..)
-import List.Extra as ListX
+import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Map =
@@ -118,9 +116,9 @@ fromTiles tiles =
         toKVPair tile =
             ( tile.position, tile )
     in
-        tiles
-            |> List.map toKVPair
-            |> Dict.fromList
+    tiles
+        |> List.map toKVPair
+        |> Dict.fromList
 
 
 upstairs : Level -> Maybe Building
@@ -146,7 +144,7 @@ size { map } =
         ( maxX, maxY ) =
             List.foldr (\( a, b ) ( c, d ) -> ( max a c, max b d )) ( 0, 0 ) positions
     in
-        ( maxX + 1, maxY + 1 )
+    ( maxX + 1, maxY + 1 )
 
 
 roomAtPosition : Vector -> List Room -> Maybe Room
@@ -160,12 +158,12 @@ buildingAtPosition pos buildings =
         buildingsAtTile =
             List.filter (Building.isBuildingAtPosition pos) buildings
     in
-        case buildingsAtTile of
-            b :: rest ->
-                Just b
+    case buildingsAtTile of
+        b :: rest ->
+            Just b
 
-            _ ->
-                Nothing
+        _ ->
+            Nothing
 
 
 toScreenCoords : Map -> Int -> Map
@@ -174,10 +172,10 @@ toScreenCoords map mapSize =
         invertY ( ( x, y ), tile ) =
             ( ( x, mapSize - y ), Tile.setPosition ( x, mapSize - y ) tile )
     in
-        map
-            |> Dict.toList
-            |> List.map invertY
-            |> Dict.fromList
+    map
+        |> Dict.toList
+        |> List.map invertY
+        |> Dict.fromList
 
 
 updateGround : Vector -> List Item -> Level -> Level
@@ -187,12 +185,12 @@ updateGround pos payload model =
             Dict.get pos model.map
                 |> Maybe.map (Tile.updateGround payload)
     in
-        case maybeTile of
-            Nothing ->
-                model
+    case maybeTile of
+        Nothing ->
+            model
 
-            Just tile ->
-                { model | map = Dict.insert pos tile model.map }
+        Just tile ->
+            { model | map = Dict.insert pos tile model.map }
 
 
 pickup : Vector -> Level -> ( Level, List Item )
@@ -201,11 +199,11 @@ pickup position level =
         levelWithClearedTile ( items, clearedTile ) =
             ( setTile level clearedTile, items )
     in
-        level
-            |> getTile position
-            |> Maybe.map Tile.pickup
-            |> Maybe.map levelWithClearedTile
-            |> Maybe.withDefault ( level, [] )
+    level
+        |> getTile position
+        |> Maybe.map Tile.pickup
+        |> Maybe.map levelWithClearedTile
+        |> Maybe.withDefault ( level, [] )
 
 
 ground : Vector -> Level -> List Item
@@ -258,7 +256,7 @@ queryPosition position ({ monsters, buildings, map } as level) =
                 |> Maybe.map .solid
                 |> Maybe.withDefault True
     in
-        ( tileObstruction, maybeBuilding, maybeMonster )
+    ( tileObstruction, maybeBuilding, maybeMonster )
 
 
 obstructed : Vector -> Level -> Bool
@@ -292,14 +290,14 @@ view ( start, size ) onClick level =
                 |> getTile building.position
                 |> Maybe.map .visible
                 |> Maybe.withDefault Hidden
-                |> ((/=) Hidden)
+                |> (/=) Hidden
 
         buildingsHtml =
             level.buildings
                 |> List.filter onVisibleTile
                 |> List.map Building.view
     in
-        div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
+    div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
 
 
 draw :
@@ -321,10 +319,10 @@ draw viewport map scale onClick =
             tile.position
                 |> flip Vector.boxIntersectVector ( viewport.start, Vector.add viewport.start viewport.size )
     in
-        mapTiles
-            |> List.filter withinViewport
-            |> List.map toHtml
-            |> List.concat
+    mapTiles
+        |> List.filter withinViewport
+        |> List.map toHtml
+        |> List.concat
 
 
 
@@ -344,12 +342,12 @@ calculateMonsterVisibility monster heroPosition ({ map } as level) =
         isInLOS =
             Utils.FieldOfView.los monster.position heroPosition (isSeeThrough level)
     in
-        if isInLOS then
-            { monster | visible = LineOfSight }
-        else if monster.visible /= Hidden then
-            { monster | visible = Known }
-        else
-            monster
+    if isInLOS then
+        { monster | visible = LineOfSight }
+    else if monster.visible /= Hidden then
+        { monster | visible = Known }
+    else
+        monster
 
 
 isDarkRoom : List Room -> Vector -> Bool
@@ -367,21 +365,21 @@ isSeeThrough ({ map, rooms } as level) position =
             .solid >> not
 
         notClosedDoor =
-            .type_ >> ((/=) Tile.Types.DoorClosed)
+            .type_ >> (/=) Tile.Types.DoorClosed
 
         notDarkRoom =
             isDarkRoom rooms >> not
     in
-        level
-            |> getTile position
-            |> Maybe.map (\tile -> (notSolid tile && notClosedDoor tile && notDarkRoom position))
-            |> Maybe.withDefault False
+    level
+        |> getTile position
+        |> Maybe.map (\tile -> notSolid tile && notClosedDoor tile && notDarkRoom position)
+        |> Maybe.withDefault False
 
 
 {-| FOV:
-    Every lit room should be explored on entry.
-    Lit tiles count as being see through, unlit ones as solid.
-    View extends from the source to the first solid tile.
+Every lit room should be explored on entry.
+Lit tiles count as being see through, unlit ones as solid.
+View extends from the source to the first solid tile.
 
     1. In a lit room
      a Room is explored - do nothing
@@ -389,6 +387,7 @@ isSeeThrough ({ map, rooms } as level) position =
 
     Then run the FOV algo because a room counts it's door which will
     open into the corridor.
+
 -}
 updateFOV : Vector -> Level -> Level
 updateFOV heroPosition ({ map, rooms, corridors, monsters } as level) =
@@ -416,7 +415,7 @@ markTilesVisible tilePositions ({ map } as level) =
                 |> Maybe.map (\x -> Dict.insert x.position x map)
                 |> Maybe.withDefault map
     in
-        { level | map = List.foldl markTileVisible map tilePositions }
+    { level | map = List.foldl markTileVisible map tilePositions }
 
 
 exploreUnlitTiles : Vector -> Level -> Level
@@ -427,9 +426,9 @@ exploreUnlitTiles heroPosition ({ map } as level) =
                 |> Maybe.map (.visible >> (==) Known)
                 |> Maybe.withDefault True
     in
-        Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList) isTileVisible
-            |> Set.toList
-            |> flip markTilesVisible level
+    Utils.FieldOfView.find heroPosition (isSeeThrough level) (Vector.neighbours >> Set.fromList) isTileVisible
+        |> Set.toList
+        |> flip markTilesVisible level
 
 
 {-| If the hero is in a lit, unexplored room, then explore that room.
@@ -467,13 +466,13 @@ cardinalTileNeighbours map center =
             Vector.add center
 
         getNeighbour =
-            addTilePosition >> (flip Dict.get map)
+            addTilePosition >> flip Dict.get map
     in
-        ( getNeighbour ( 0, -1 )
-        , getNeighbour ( 1, 0 )
-        , getNeighbour ( 0, 1 )
-        , getNeighbour ( -1, 0 )
-        )
+    ( getNeighbour ( 0, -1 )
+    , getNeighbour ( 1, 0 )
+    , getNeighbour ( 0, 1 )
+    , getNeighbour ( -1, 0 )
+    )
 
 
 {-| If there is a door at the position, then change it to opened
@@ -487,7 +486,7 @@ openDoor pos level =
             else
                 tile
     in
-        Dict.get pos level.map
-            |> Maybe.map ifDoorThenOpen
-            |> Maybe.map (setTile level)
-            |> Maybe.withDefault level
+    Dict.get pos level.map
+        |> Maybe.map ifDoorThenOpen
+        |> Maybe.map (setTile level)
+        |> Maybe.withDefault level

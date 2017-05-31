@@ -5,3 +5,4 @@ dist/js
 .idea
 node_modules
 analyse
+assets

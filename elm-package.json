@@ -30,5 +30,15 @@
         "ohanhi/keyboard-extra": "2.1.0 <= v < 3.0.0",
         "rtfeldman/elm-css": "8.2.0 <= v < 9.0.0"
     },
-    "elm-version": "0.18.0 <= v < 0.19.0"
+    "elm-version": "0.18.0 <= v < 0.19.0",
+    "sublime-build": {
+        "main": "src/main.elm",
+        "output": {
+            "components": {
+                "dir": "dist",
+                "ext": "js"
+            },
+            "path": "dist/cotw.js"
+        }
+    }
 }

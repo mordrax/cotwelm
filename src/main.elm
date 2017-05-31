@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Arena.MonsterArena as MonsterArena
 import Arena.PlayerArena as PlayerArena
 import CharCreation exposing (CharCreation)
 import Dungeon.Editor as Editor exposing (..)
@@ -7,13 +8,11 @@ import Game
 import Game.Model exposing (Game)
 import Hero exposing (Hero)
 import Html exposing (..)
-import Html.Attributes as HA
 import Navigation exposing (Location)
 import Random.Pcg as Random exposing (initialSeed)
 import SplashView
 import Task exposing (perform)
 import Time exposing (inSeconds, now)
-import Arena.MonsterArena as MonsterArena
 
 
 type Msg
@@ -45,15 +44,15 @@ init location =
         ( charCreation, charCreationCmds ) =
             CharCreation.init
     in
-        ( { currentPage = urlToPage location
-          , charCreation = charCreation
-          , game = Nothing
-          , editor = Editor.init
-          , arena = Nothing
-          , pit = Nothing
-          }
-        , Cmd.map CharCreationMsg charCreationCmds
-        )
+    ( { currentPage = urlToPage location
+      , charCreation = charCreation
+      , game = Nothing
+      , editor = Editor.init
+      , arena = Nothing
+      , pit = Nothing
+      }
+    , Cmd.map CharCreationMsg charCreationCmds
+    )
 
 
 type alias Model =
@@ -84,14 +83,14 @@ subscriptions model =
                 |> Maybe.map (Game.subscription >> Sub.map GameMsg)
                 |> Maybe.withDefault Sub.none
     in
-        case model.currentPage of
-            PitPage ->
-                model.pit
-                    |> Maybe.map (MonsterArena.subs >> Sub.map PitMsg)
-                    |> Maybe.withDefault Sub.none
+    case model.currentPage of
+        PitPage ->
+            model.pit
+                |> Maybe.map (MonsterArena.subs >> Sub.map PitMsg)
+                |> Maybe.withDefault Sub.none
 
-            _ ->
-                gameSub
+        _ ->
+            gameSub
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -108,17 +107,17 @@ update msg model =
                 ( charCreation_, isComplete ) =
                     CharCreation.update msg model.charCreation
             in
-                case isComplete of
-                    False ->
-                        ( { model | charCreation = charCreation_ }, Cmd.none )
+            case isComplete of
+                False ->
+                    ( { model | charCreation = charCreation_ }, Cmd.none )
 
-                    True ->
-                        ( { model | charCreation = charCreation_ }
-                        , Cmd.batch
-                            [ Navigation.newUrl "#/game"
-                            , startNewGame charCreation_
-                            ]
-                        )
+                True ->
+                    ( { model | charCreation = charCreation_ }
+                    , Cmd.batch
+                        [ Navigation.newUrl "#/game"
+                        , startNewGame charCreation_
+                        ]
+                    )
 
         GameMsg msg ->
             case model.game of
@@ -130,12 +129,12 @@ update msg model =
                         ( game_, cmd, isQuit ) =
                             Game.update msg game
                     in
-                        case isQuit of
-                            False ->
-                                ( { model | game = Just game_ }, Cmd.map GameMsg cmd )
+                    case isQuit of
+                        False ->
+                            ( { model | game = Just game_ }, Cmd.map GameMsg cmd )
 
-                            True ->
-                                ( { model | currentPage = SplashPage }, Cmd.none )
+                        True ->
+                            ( { model | currentPage = SplashPage }, Cmd.none )
 
         EditorMsg msg ->
             let
@@ -145,7 +144,7 @@ update msg model =
                 gameCmds =
                     Cmd.map EditorMsg cmds
             in
-                ( { model | editor = editor_ }, gameCmds )
+            ( { model | editor = editor_ }, gameCmds )
 
         ArenaMsg msg ->
             let
@@ -155,7 +154,7 @@ update msg model =
                         |> Maybe.map (\( m, c ) -> ( Just m, c ))
                         |> Maybe.withDefault ( Nothing, Cmd.none )
             in
-                ( { model | arena = arena_ }, Cmd.map ArenaMsg cmds )
+            ( { model | arena = arena_ }, Cmd.map ArenaMsg cmds )
 
         PitMsg msg ->
             case model.pit of
@@ -167,7 +166,7 @@ update msg model =
                         ( pit_, cmds ) =
                             MonsterArena.update msg pit
                     in
-                        ( { model | pit = Just pit_ }, Cmd.map PitMsg cmds )
+                    ( { model | pit = Just pit_ }, Cmd.map PitMsg cmds )
 
         GenerateGame seed charCreation ->
             let
@@ -183,7 +182,7 @@ update msg model =
                 mainCmds =
                     Cmd.map GameMsg gameCmds
             in
-                ( { model | game = Just game }, mainCmds )
+            ( { model | game = Just game }, mainCmds )
 
         ChangePage page ->
             ( { model | currentPage = page }, Cmd.none )
@@ -221,7 +220,7 @@ view model =
         PitPage ->
             case model.pit of
                 Nothing ->
-                    Html.map PitMsg (MonsterArena.view (MonsterArena.init))
+                    Html.map PitMsg (MonsterArena.view MonsterArena.init)
 
                 Just pit ->
                     Html.map PitMsg (MonsterArena.view pit)
@@ -265,6 +264,6 @@ startNewGame charCreation =
                 |> Time.inSeconds
                 |> round
                 |> Random.initialSeed
-                |> \seed -> GenerateGame seed charCreation
+                |> (\seed -> GenerateGame seed charCreation)
     in
-        Task.perform success Time.now
+    Task.perform success Time.now

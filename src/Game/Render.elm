@@ -1,25 +1,23 @@
 module Game.Render
     exposing
-        ( viewport
-        , game
+        ( game
         , viewRip
+        , viewport
         )
 
 import Building exposing (Building)
+import Css exposing (..)
 import Game.Level as Level
-import Game.Maps as Maps
 import Game.Model exposing (..)
+import Game.Types
 import Hero
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Lazy
 import Inventory exposing (Inventory)
 import Monster exposing (Monster)
-import Shops exposing (Store)
 import Types exposing (..)
-import Game.Types
 import Utils.Vector as Vector exposing (Vector)
-import Css exposing (..)
 
 
 styles =
@@ -55,7 +53,7 @@ viewport ({ windowSize, viewport, maps, hero, level } as model) =
             }
 
         ( mapWidth, mapHeight ) =
-            (Level.size level)
+            Level.size level
 
         newX =
             if scroll.left || scroll.right then
@@ -69,7 +67,7 @@ viewport ({ windowSize, viewport, maps, hero, level } as model) =
             else
                 viewport.y
     in
-        { model | viewport = { x = newX, y = newY } }
+    { model | viewport = { x = newX, y = newY } }
 
 
 game : Game -> Html Msg
@@ -109,7 +107,7 @@ viewMap ({ windowSize, viewport } as model) =
             h1 [] [ Html.text ("Welcome to Castle of the Winds: " ++ model.name) ]
 
         px x =
-            (toString x) ++ "px"
+            toString x ++ "px"
 
         adjustViewport html =
             div
@@ -139,16 +137,16 @@ viewMap ({ windowSize, viewport } as model) =
         lazyLevelView =
             Html.Lazy.lazy3 Level.view ( viewStart, viewSize ) ClickTile model.level
     in
-        div []
-            [ viewMenu
-            , viewQuickMenu
-            , adjustViewport
-                [ lazyLevelView
-                , Hero.view model.hero
-                , viewMonsters model
-                ]
-            , viewStatus model
+    div []
+        [ viewMenu
+        , viewQuickMenu
+        , adjustViewport
+            [ lazyLevelView
+            , Hero.view model.hero
+            , viewMonsters model
             ]
+        , viewStatus model
+        ]
 
 
 viewStatus : Game -> Html Msg
@@ -169,7 +167,7 @@ viewMessages model =
         msg txt =
             div [] [ Html.text txt ]
     in
-        div [] (List.map msg model.messages)
+    div [] (List.map msg model.messages)
 
 
 viewMenu : Html Msg
@@ -229,15 +227,15 @@ viewRip =
             { killedBy = "Killed by: " ++ "Giant Ego"
             , lastMessage =
                 "Conan looked down his nose on the pathetic ant and failed to notice the giant queen behind him."
-            , turns = "He" ++ " survived " ++ (toString 1234) ++ " turns."
+            , turns = "He" ++ " survived " ++ toString 1234 ++ " turns."
             }
     in
-        viewTombstone
-            [ viewInscription
-                [ inscribeName name
-                , inscribeDeathMessage deathMessage
-                ]
+    viewTombstone
+        [ viewInscription
+            [ inscribeName name
+            , inscribeDeathMessage deathMessage
             ]
+        ]
 
 
 viewTombstone : List (Html msg) -> Html msg
@@ -295,19 +293,19 @@ inscribeDeathMessage { killedBy, lastMessage, turns } =
                 ]
                 [ Html.text str ]
     in
-        div
-            [ styles
-                [ marginTop (vw 8)
-                , displayFlex
-                , flexDirection column
-                , justifyContent spaceBetween
-                , height (vw 28)
-                ]
+    div
+        [ styles
+            [ marginTop (vw 8)
+            , displayFlex
+            , flexDirection column
+            , justifyContent spaceBetween
+            , height (vw 28)
             ]
-            [ inscribe killedBy
-            , inscribeParagraph lastMessage
-            , inscribe turns
-            ]
+        ]
+        [ inscribe killedBy
+        , inscribeParagraph lastMessage
+        , inscribe turns
+        ]
 
 
 inscribeParagraph : String -> Html msg

@@ -5,11 +5,10 @@ import Dungeon.Clean
 import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Dungeon.Types
+import Game.Level as Level
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
-import Game.Level as Level
-import Game.Maps as Maps
 import Random.Pcg as Random exposing (Generator, constant)
 
 
@@ -47,14 +46,14 @@ generateCandidate model =
         fitness dungeonModel =
             List.length dungeonModel.rooms > model.config.minRooms
     in
-        Random.map Dungeon.Clean.clean newCandidate
-            |> Random.andThen
-                (\dungeonModel ->
-                    if fitness dungeonModel then
-                        constant dungeonModel
-                    else
-                        generateCandidate model
-                )
+    Random.map Dungeon.Clean.clean newCandidate
+        |> Random.andThen
+            (\dungeonModel ->
+                if fitness dungeonModel then
+                    constant dungeonModel
+                else
+                    generateCandidate model
+            )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -70,12 +69,12 @@ update msg model =
                         cleanedModel =
                             Dungeon.Clean.clean dungeonModel
                     in
-                        ( { model
-                            | dungeonSteps = cleanedModel :: model.dungeonSteps
-                            , map = updateMap cleanedModel
-                          }
-                        , Cmd.none
-                        )
+                    ( { model
+                        | dungeonSteps = cleanedModel :: model.dungeonSteps
+                        , map = updateMap cleanedModel
+                      }
+                    , Cmd.none
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -88,7 +87,7 @@ update msg model =
                         |> List.head
                         |> Maybe.withDefault (DungeonGenerator.init model.config)
             in
-                ( model, Random.generate Dungeon (DungeonGenerator.steps nSteps dungeonModel) )
+            ( model, Random.generate Dungeon (DungeonGenerator.steps nSteps dungeonModel) )
 
         Dungeon dungeonModel ->
             ( { model | dungeonSteps = dungeonModel :: [], map = updateMap dungeonModel }
@@ -124,19 +123,19 @@ view model =
         clickTile position =
             Noop
     in
-        div []
-            [ div []
-                [ --roomSizeView model,
-                  button [ HA.class "ui button", HE.onClick <| GenerateMap 1 ] [ text "Step" ]
-                , button [ HA.class "ui button", HE.onClick <| GenerateMap 50 ] [ text "Step x50" ]
-                , button [ HA.class "ui button", HE.onClick <| Clean ] [ text "Clean" ]
-                , button [ HA.class "ui button", HE.onClick <| ResetMap ] [ text "Destroy!" ]
-                , button [ HA.class "ui button", HE.onClick <| NewCandidate ] [ text "NewCandidate" ]
-                , mapSizeView model
-                ]
-            , div [ HA.style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-                (Level.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
+    div []
+        [ div []
+            [ --roomSizeView model,
+              button [ HA.class "ui button", HE.onClick <| GenerateMap 1 ] [ text "Step" ]
+            , button [ HA.class "ui button", HE.onClick <| GenerateMap 50 ] [ text "Step x50" ]
+            , button [ HA.class "ui button", HE.onClick <| Clean ] [ text "Clean" ]
+            , button [ HA.class "ui button", HE.onClick <| ResetMap ] [ text "Destroy!" ]
+            , button [ HA.class "ui button", HE.onClick <| NewCandidate ] [ text "NewCandidate" ]
+            , mapSizeView model
             ]
+        , div [ HA.style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
+            (Level.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
+        ]
 
 
 mapSizeView : Model -> Html Msg

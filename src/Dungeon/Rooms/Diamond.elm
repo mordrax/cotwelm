@@ -1,6 +1,7 @@
 module Dungeon.Rooms.Diamond exposing (..)
 
 {-|
+
     Diamond rooms looks like this with potential entrances on it's single flat wall
     and cornices around the flat wall.
 
@@ -30,7 +31,6 @@ module Dungeon.Rooms.Diamond exposing (..)
 -}
 
 import Dungeon.Rooms.Type exposing (..)
-import Utils.Vector exposing (..)
 import List exposing (map2, reverse)
 
 
@@ -61,11 +61,11 @@ walls dimension =
         model =
             info dimension
     in
-        [ [ ( 0, model.mid ) ]
-        , [ ( model.max, model.mid ) ]
-        , [ ( model.mid, 0 ) ]
-        , [ ( model.mid, model.max ) ]
-        ]
+    [ [ ( 0, model.mid ) ]
+    , [ ( model.max, model.mid ) ]
+    , [ ( model.mid, 0 ) ]
+    , [ ( model.mid, model.max ) ]
+    ]
 
 
 floors : Dimension -> Floors
@@ -98,18 +98,18 @@ floors dimension =
         midToMaxX =
             List.range (model.mid + 1) model.max
     in
-        List.concat
-            [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
-              List.concat <| List.map floorsLeft zeroToMidX
-            , -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
-              List.concat <| List.map floorsRight midToMaxX
-            , List.map ((,) model.mid) <| List.range 1 (model.max - 1)
-            ]
+    List.concat
+        [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
+          List.concat <| List.map floorsLeft zeroToMidX
+        , -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
+          List.concat <| List.map floorsRight midToMaxX
+        , List.map ((,) model.mid) <| List.range 1 (model.max - 1)
+        ]
 
 
 {-| For a diagonal room, the corners are the diagonal walls. They cannot have entrances.
-    To calculate the diagonal positions, picture a diamond on a cartesian plane
-    with the diamond being in the +x, -y quadrant (screen coords)
+To calculate the diagonal positions, picture a diamond on a cartesian plane
+with the diamond being in the +x, -y quadrant (screen coords)
 -}
 corners : Dimension -> Walls
 corners dimension =
@@ -135,14 +135,15 @@ corners dimension =
         midToMaxX =
             List.range (model.mid + 1) model.max
     in
-        List.concat
-            [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
-              List.map leftToTop zeroToMidX
-            , List.map leftToBottom zeroToMidX
-              -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
-            , List.map topToRight midToMaxX
-            , List.map bottomToRight midToMaxX
-            ]
+    List.concat
+        [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
+          List.map leftToTop zeroToMidX
+        , List.map leftToBottom zeroToMidX
+
+        -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
+        , List.map topToRight midToMaxX
+        , List.map bottomToRight midToMaxX
+        ]
 
 
 info : Dimension -> Model
@@ -157,14 +158,14 @@ info dimension =
         max =
             size - 1
     in
-        { size = size
-        , mid = mid
-        , max = max
-        }
+    { size = size
+    , mid = mid
+    , max = max
+    }
 
 
 {-| Given a dimension (4, 7), work out the largest equilateral diamond that will fit in it.
-    In the above case, it will be (3, 3) because diamonds have to be odd and same sided.
+In the above case, it will be (3, 3) because diamonds have to be odd and same sided.
 -}
 largestEquilaterialDimension : Dimension -> RoomSize
 largestEquilaterialDimension ( x, y ) =
@@ -175,4 +176,4 @@ largestEquilaterialDimension ( x, y ) =
         smallestSide =
             min x_ y_
     in
-        smallestSide
+    smallestSide
