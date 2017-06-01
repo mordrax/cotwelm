@@ -167,4 +167,4 @@ printSP model =
 
 printAOverB : a -> b -> String
 printAOverB a b =
-    toString a ++ " / " ++ toString b
+    toString a ++ " [" ++ toString b ++ "]"

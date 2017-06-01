@@ -10,7 +10,6 @@ module Hero
         , setStats
         , tick
         , view
-        , viewStats
         )
 
 import Attributes exposing (Attributes)
@@ -152,25 +151,3 @@ view model =
         , HA.style (Misc.vectorToHtmlStyle model.position)
         ]
         []
-
-
-viewStats : Hero -> Html a
-viewStats model =
-    let
-        hpLessThanTwentyPercent =
-            toFloat model.stats.currentHP / toFloat model.stats.maxHP < 0.2
-
-        hpLessThanTen =
-            model.stats.currentHP < 10
-
-        hpColor =
-            if hpLessThanTwentyPercent || hpLessThanTen then
-                styles [ Css.color (Css.rgb 255 0 0) ]
-            else
-                styles []
-    in
-    div []
-        [ div [] [ text "Stats:" ]
-        , div [ hpColor ] [ text <| "HP: " ++ Stats.printHP model.stats ]
-        , div [] [ text <| "SP: " ++ Stats.printSP model.stats ]
-        ]

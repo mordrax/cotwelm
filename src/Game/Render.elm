@@ -1,9 +1,4 @@
-module Game.Render
-    exposing
-        ( game
-        , viewRip
-        , viewport
-        )
+module Game.Render exposing (game, viewRip, viewport)
 
 import Building exposing (Building)
 import Css exposing (..)
@@ -16,7 +11,9 @@ import Html.Attributes as HA
 import Html.Lazy
 import Inventory exposing (Inventory)
 import Monster exposing (Monster)
+import Stats exposing (Stats)
 import Types exposing (..)
+import UI
 import Utils.Vector as Vector exposing (Vector)
 
 
@@ -151,29 +148,72 @@ viewMap ({ windowSize, viewport } as model) =
 
 viewStatus : Game -> Html Msg
 viewStatus model =
-    div []
-        [ div [ HA.class "ui padded grid" ]
-            [ div [ HA.style [ ( "overflow", "auto" ), ( "height", "100px" ) ], HA.class "ui twelve wide column" ]
-                [ viewMessages model ]
-            , div [ HA.class "ui four wide column" ]
-                [ Hero.viewStats model.hero ]
-            ]
+    let
+        messagesStyle =
+            styles [ height (px 100), flexGrow (int 4), Css.border2 (px 1) solid, overflowY scroll ]
+
+        statsStyle =
+            styles [ height (px 100), flexGrow (int 1), Css.border2 (px 1) solid ]
+    in
+    div [ HA.class "game-bottom-hud" ]
+        [ viewMessages model
+        , viewStats model.hero.stats
         ]
 
 
 viewMessages : Game -> Html Msg
 viewMessages model =
     let
-        msg txt =
-            div [] [ Html.text txt ]
+        viewMessage msg =
+            div [ HA.class "messages__message" ] [ Html.text msg ]
     in
-    div [] (List.map msg model.messages)
+    div [ HA.class "game-bottom-hud__messages" ]
+        (List.map viewMessage model.messages)
+
+
+viewStats : Stats -> Html Msg
+viewStats stats =
+    let
+        hpLow =
+            toFloat stats.currentHP / toFloat stats.maxHP < 0.2
+
+        hpLessThanTen =
+            stats.currentHP < 10
+
+        hpColor =
+            if hpLow || hpLessThanTen then
+                styles [ Css.color (Css.rgb 255 0 0) ]
+            else
+                styles []
+    in
+    div [ HA.class "game-bottom-hud__stats" ]
+        [ viewStat "HP" (Stats.printHP stats)
+        , viewStat "Mana" (Stats.printSP stats)
+        , viewStat "Speed" "100% / 200%"
+        , viewStat "Time" "0d, 00:02:57"
+        , div [] [ Html.text "A Tiny Hamlet" ]
+        ]
+
+
+viewStat : String -> String -> Html never
+viewStat label value =
+    let
+        statLabel lbl =
+            div [ HA.class "stat__label" ] [ Html.text lbl ]
+
+        statValue val =
+            div [ HA.class "stat__value" ] [ Html.text val ]
+    in
+    div [ HA.class "game-bottom-hud__stat" ]
+        [ statLabel label
+        , statValue value
+        ]
 
 
 viewMenu : Html Msg
 viewMenu =
     div [ HA.class "ui buttons" ]
-        (List.map simpleBtn
+        (List.map (\lbl -> UI.btn lbl Died)
             [ "File"
             , "Character!"
             , "Inventory!"
@@ -191,7 +231,7 @@ viewMenu =
 viewQuickMenu : Html Msg
 viewQuickMenu =
     div []
-        (List.map simpleBtn
+        (List.map (\lbl -> UI.btn lbl Died)
             [ "Get"
             , "Free Hand"
             , "Search"
