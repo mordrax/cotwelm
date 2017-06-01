@@ -69,24 +69,33 @@ viewport ({ windowSize, viewport, maps, hero, level } as model) =
 
 game : Game -> Html Msg
 game model =
+    let
+        viewGame child =
+            div [ HA.class "game" ] [ child ]
+    in
     case model.currentScreen of
         Game.Types.MapScreen ->
             viewMap model
+                |> viewGame
 
         Game.Types.BuildingScreen building ->
             case building.buildingType of
                 Building.Shop shopType ->
                     Html.map InventoryMsg (Inventory.view model.inventory)
+                        |> viewGame
 
                 _ ->
                     viewBuilding building
+                        |> viewGame
 
         Game.Types.InventoryScreen ->
             Html.map InventoryMsg (Inventory.view model.inventory)
+                |> viewGame
 
         Game.Types.RipScreen ->
             --            viewRip model
             viewRip
+                |> viewGame
 
 
 viewMonsters : Game -> Html Msg

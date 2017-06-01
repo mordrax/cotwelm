@@ -22,3 +22,8 @@ button {
 button:focus {
     outline: 1px solid dimgrey;
 }
+
+.game {
+    max-width: 960px;
+    margin: 0 auto;
+}
