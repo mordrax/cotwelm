@@ -6,6 +6,7 @@
 /* Messages */
 .game-bottom-hud__messages {
     flex-basis: 70%;
+    overflow-y: scroll;
 }
 
 .messages__message {
