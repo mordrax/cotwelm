@@ -1,0 +1,38 @@
+.inventory {
+    display: flex;
+}
+
+.inventory__equipment {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 40%
+}
+
+.equipment__slot-name {
+    font-size: 0.85em;
+    margin-top: 20px;
+    text-align: center;
+}
+.equipment__top-row,
+.equipment__bottom-row {
+    display: flex;    
+}
+
+.equipment-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.equipment__slot {
+    width: 77px;
+    height: 120px;
+    border: 1px solid #d4d4d4;
+}
+
+.inventory__containers {
+    flex-basis: 60%
+}
+
+.inventory__container {
+    display: flex;
+}
