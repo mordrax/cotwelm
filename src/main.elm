@@ -6,6 +6,7 @@ import CharCreation exposing (CharCreation)
 import Dungeon.Editor as Editor exposing (..)
 import Game
 import Game.Model exposing (Game)
+import Game.Types
 import Hero exposing (Hero)
 import Html exposing (..)
 import Navigation exposing (Location)
@@ -36,6 +37,7 @@ type Page
     | ArenaPage
     | PitPage
     | NotImplementedPage
+    | InventoryPage
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -43,6 +45,9 @@ init location =
     let
         ( charCreation, charCreationCmds ) =
             CharCreation.init
+
+        newGameMsg =
+            startNewGame charCreation
     in
     ( { currentPage = urlToPage location
       , charCreation = charCreation
@@ -51,7 +56,7 @@ init location =
       , arena = Nothing
       , pit = Nothing
       }
-    , Cmd.map CharCreationMsg charCreationCmds
+    , Cmd.batch [ Cmd.map CharCreationMsg charCreationCmds, newGameMsg ]
     )
 
 
@@ -192,8 +197,7 @@ view : Model -> Html Msg
 view model =
     case model.currentPage of
         CharCreationPage ->
-            Html.map CharCreationMsg
-                (CharCreation.view model.charCreation)
+            Html.map CharCreationMsg (CharCreation.view model.charCreation)
 
         SplashPage ->
             Html.map SplashMsg SplashView.view
@@ -205,6 +209,16 @@ view model =
 
                 Just game ->
                     Html.map GameMsg (Game.view game)
+
+        InventoryPage ->
+            case model.game of
+                Nothing ->
+                    h1 [] [ text "There is no game state. A possible reason is that you have not created a character." ]
+
+                Just game ->
+                    game
+                        |> (\game -> { game | currentScreen = Game.Types.InventoryScreen })
+                        |> (\game -> Html.map GameMsg (Game.view game))
 
         EditorPage ->
             Html.map EditorMsg (Editor.view model.editor)
@@ -244,6 +258,8 @@ urlToPage { hash } =
         CharCreationPage
     else if hash == "#/game" then
         GamePage
+    else if hash == "#/inventory" then
+        InventoryPage
     else if hash == "#/editor" then
         EditorPage
     else if hash == "#/arena" then

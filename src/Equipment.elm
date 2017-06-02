@@ -18,6 +18,7 @@ module Equipment
         , setMany_
         , setPurse
         , setSlot_
+        , slotDisplayName
         , unequip
         )
 
@@ -37,14 +38,12 @@ Does not render equipment but will provide a API to retrieve them.
 -}
 
 import Container
-import Html exposing (..)
+import EveryDict exposing (EveryDict)
 import Item
-import Item.Belt as Belt
 import Item.Data exposing (..)
 import Item.Pack as Pack
 import Item.Purse as Purse
 import Utils.Mass as Mass
-import Utils.Misc as Misc
 
 
 type alias Model =
@@ -427,3 +426,35 @@ clearSlot_ slot model =
 
         BootsSlot ->
             { model | boots = Nothing }
+
+
+slotDisplayName : EquipmentSlot -> String
+slotDisplayName =
+    getFromDict displayNameDict
+        >> Maybe.withDefault "UnknownSlot"
+
+
+getFromDict : EveryDict a b -> a -> Maybe b
+getFromDict =
+    flip EveryDict.get
+
+
+displayNameDict : EveryDict EquipmentSlot String
+displayNameDict =
+    EveryDict.fromList
+        [ ( WeaponSlot, "Weapon" )
+        , ( FreehandSlot, "Free hand" )
+        , ( ArmourSlot, "Armour" )
+        , ( ShieldSlot, "Shield" )
+        , ( HelmetSlot, "Helmet" )
+        , ( BracersSlot, "Bracers" )
+        , ( GauntletsSlot, "Gauntlets" )
+        , ( BeltSlot, "Belt" )
+        , ( PurseSlot, "Purse" )
+        , ( PackSlot, "Pack" )
+        , ( NeckwearSlot, "Neckwear" )
+        , ( OvergarmentSlot, "Overgarment" )
+        , ( LeftRingSlot, "Left ring" )
+        , ( RightRingSlot, "Right ring" )
+        , ( BootsSlot, "Boots" )
+        ]

@@ -23,15 +23,12 @@ to know about hero equipment, items, containers etc...
 import Container exposing (Container)
 import Equipment exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as HA
 import Item exposing (..)
 import Item.Data exposing (..)
 import Item.Pack as Pack
-import Item.Purse as Purse exposing (..)
 import Shops exposing (Shops, Store)
-import Task
 import Utils.DragDrop as DragDrop exposing (DragDrop)
-import Utils.Mass as Mass exposing (..)
 import Utils.Misc
 
 
@@ -357,23 +354,17 @@ view : Inventory -> Html (Msg Draggable Droppable)
 view (A ({ equipment, dnd } as model)) =
     let
         header title =
-            div [ class "ui block header" ] [ text title ]
+            div [ HA.class "ui block header" ] [ text title ]
 
         heading title =
-            span [ class "ui text container segment" ] [ text title ]
+            span [ HA.class "ui text container segment" ] [ text title ]
 
         columnWidth width children =
-            div [ class (width ++ " wide column") ] children
-
-        equipmentColumn =
-            columnWidth "six" [ viewEquipment equipment dnd ]
+            div [ HA.class (width ++ " wide column") ] children
     in
-    div []
-        [ heading "Inventory screen"
-        , div [ class "ui two column grid" ]
-            [ Html.map DnDMsg equipmentColumn
-            , viewShopPackPurse model
-            ]
+    div [ HA.class "inventory" ]
+        [ viewEquipment equipment dnd
+        , viewShopPackPurse model
         , Html.map DnDMsg (DragDrop.view dnd)
         ]
 
@@ -382,30 +373,21 @@ viewShopPackPurse : Model -> Html (Msg Draggable Droppable)
 viewShopPackPurse ({ equipment, merchant, dnd } as model) =
     let
         header title =
-            div [ class "ui block header" ] [ text title ]
+            div [ HA.class "ui block header" ] [ text title ]
 
-        columnWidth width children =
-            div [ class (width ++ " wide column") ] children
-
-        groundHtml items =
-            div [] [ header "Ground", viewGround items dnd ]
-
-        shopHtml shop =
-            div []
-                [ header "Shop"
-                , viewShop shop dnd
-                ]
+        viewContainers =
+            div [ HA.class "inventory__containers" ]
 
         maybePack =
             Equipment.getPack equipment
 
-        shopGroundHtml =
+        viewShopOrGround =
             case merchant of
                 Shop shop ->
-                    shopHtml shop
+                    viewShop shop dnd
 
                 Ground items ->
-                    groundHtml items
+                    viewGround items dnd
 
         packHtml =
             div []
@@ -420,8 +402,8 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
                 ]
     in
     Html.map DnDMsg
-        (columnWidth "ten"
-            [ shopGroundHtml
+        (viewContainers
+            [ viewShopOrGround
             , packHtml
             , purseHtml
             ]
@@ -432,18 +414,18 @@ viewGround : List Item -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Dra
 viewGround items dnd =
     let
         styles =
-            style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
+            HA.style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
 
         makeDraggable items item =
             DragDrop.draggable (Item.view item) (DragMerchant item (Ground items)) dnd
 
         droppableDiv =
-            div [ class "ui cards", styles ] (List.map (makeDraggable items) items)
+            div [ HA.class "ui cards", styles ] (List.map (makeDraggable items) items)
 
         droppableGround =
             DragDrop.droppable (DropMerchant (Ground items)) dnd droppableDiv
     in
-    droppableGround
+    div [ HA.class "inventory__container" ] [ droppableGround ]
 
 
 viewPackInfo : Maybe (Pack Item) -> String
@@ -473,7 +455,7 @@ viewPack : Maybe (Pack Item) -> Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPack maybePack ({ dnd } as model) =
     let
         packStyle =
-            style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
+            HA.style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
 
         droppableHtml pack =
             div [ packStyle ] [ viewContainer pack model ]
@@ -508,14 +490,14 @@ viewShop store dnd =
             DragDrop.draggable (Item.view item) (DragMerchant item (Shop shop)) dnd
 
         droppableDiv =
-            div [ class "ui cards" ] (List.map (makeDraggable store) wares)
+            div [ HA.class "ui cards" ] (List.map (makeDraggable store) wares)
 
         droppableShop =
             DragDrop.droppable (DropMerchant (Shop store)) dnd droppableDiv
 
         --DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
     in
-    droppableShop
+    div [ HA.class "inventory__container" ] [ droppableShop ]
 
 
 viewContainer : Pack Item -> Model -> Html (DragDrop.Msg Draggable Droppable)
@@ -527,7 +509,7 @@ viewContainer pack ({ equipment, dnd } as model) =
         makeDraggable pack item =
             DragDrop.draggable (Item.view item) (DragPack item pack) dnd
     in
-    div [ class "ui cards" ]
+    div [ HA.class "ui cards" ]
         (List.map (makeDraggable pack) items)
 
 
@@ -537,47 +519,72 @@ viewContainer pack ({ equipment, dnd } as model) =
 --------------------
 
 
-viewEquipment : Equipment -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable Droppable)
+viewEquipment : Equipment -> DragDrop Draggable Droppable -> Html (Msg Draggable Droppable)
 viewEquipment equipment dnd =
     let
-        getEquipment slot =
-            Equipment.get slot equipment
+        viewTopRow =
+            div [ HA.class "equipment__top-row" ]
+
+        viewBottomRow =
+            div [ HA.class "equipment__bottom-row" ]
+
+        viewPanel =
+            div [ HA.class "equipment-panel" ]
+
+        viewEquipmentDude =
+            div [ HA.class "equipment-dude" ] []
+    in
+    div [ HA.class "inventory__equipment" ]
+        [ viewTopRow
+            [ viewSlot Equipment.ArmourSlot dnd equipment
+            , viewSlot Equipment.NeckwearSlot dnd equipment
+            , viewSlot Equipment.OvergarmentSlot dnd equipment
+            , viewSlot Equipment.HelmetSlot dnd equipment
+            , viewSlot Equipment.ShieldSlot dnd equipment
+            ]
+        , viewBottomRow
+            [ viewPanel
+                [ viewSlot Equipment.BracersSlot dnd equipment
+                , viewSlot Equipment.WeaponSlot dnd equipment
+                , viewSlot Equipment.RightRingSlot dnd equipment
+                , viewSlot Equipment.BeltSlot dnd equipment
+                , viewSlot Equipment.PackSlot dnd equipment
+                ]
+            , viewEquipmentDude
+            , viewPanel
+                [ viewSlot Equipment.GauntletsSlot dnd equipment
+                , viewSlot Equipment.FreehandSlot dnd equipment
+                , viewSlot Equipment.LeftRingSlot dnd equipment
+                , viewSlot Equipment.BootsSlot dnd equipment
+                , viewSlot Equipment.PurseSlot dnd equipment
+                ]
+            ]
+        ]
+
+
+viewSlot : EquipmentSlot -> DragDrop Draggable Droppable -> Equipment -> Html (Msg Draggable Droppable)
+viewSlot slot dnd equipment =
+    let
+        viewSlotName =
+            div [ HA.class "equipment__slot-name" ] [ text (Equipment.slotDisplayName slot) ]
+
+        draggableHtml item =
+            Item.viewSlot item ("Slot: " ++ toString slot)
 
         drawItem item slot =
-            DragDrop.draggable (Item.viewSlot item ("Slot: " ++ toString slot)) (DragSlot item slot) dnd
-
-        drawSlot slot =
-            let
-                slotName =
-                    "Slot: [" ++ toString slot ++ "]"
-            in
-            case getEquipment slot of
-                Just item ->
-                    div [ class "three wide column equipmentSlot" ]
-                        [ drawItem item slot ]
-
-                Nothing ->
-                    div [ class "three wide column equipmentSlot" ]
-                        [ DragDrop.droppable (DropEquipment slot) dnd (div [] [ text slotName ])
-                        ]
+            DragDrop.draggable (draggableHtml item) (DragSlot item slot) dnd
+                |> Html.map DnDMsg
     in
-    div [ class "ui grid" ]
-        [ drawSlot Equipment.WeaponSlot
-        , drawSlot Equipment.FreehandSlot
-        , drawSlot Equipment.ArmourSlot
-        , drawSlot Equipment.ShieldSlot
-        , drawSlot Equipment.HelmetSlot
-        , drawSlot Equipment.BracersSlot
-        , drawSlot Equipment.GauntletsSlot
-        , drawSlot Equipment.BeltSlot
-        , drawSlot Equipment.PurseSlot
-        , drawSlot Equipment.PackSlot
-        , drawSlot Equipment.NeckwearSlot
-        , drawSlot Equipment.OvergarmentSlot
-        , drawSlot Equipment.LeftRingSlot
-        , drawSlot Equipment.RightRingSlot
-        , drawSlot Equipment.BootsSlot
-        ]
+    case Equipment.get slot equipment of
+        Just item ->
+            div [ HA.class "equipment__slot" ]
+                [ drawItem item slot ]
+
+        Nothing ->
+            div [ HA.class "equipment__slot" ]
+                [ DragDrop.droppable (DropEquipment slot) dnd viewSlotName
+                    |> Html.map DnDMsg
+                ]
 
 
 
@@ -590,11 +597,11 @@ viewPurse : Model -> Html (DragDrop.Msg Draggable Droppable)
 viewPurse ({ equipment } as model) =
     let
         coinView { copper, silver, gold, platinum } =
-            div [ class "ui grid" ]
-                [ div [ class "coins-copper cotw-item" ] [ text (toString copper) ]
-                , div [ class "coins-silver cotw-item" ] [ text (toString silver) ]
-                , div [ class "coins-gold cotw-item" ] [ text (toString gold) ]
-                , div [ class "coins-platinum cotw-item" ] [ text (toString platinum) ]
+            div [ HA.class "ui grid" ]
+                [ div [ HA.class "coins-copper cotw-item" ] [ text (toString copper) ]
+                , div [ HA.class "coins-silver cotw-item" ] [ text (toString silver) ]
+                , div [ HA.class "coins-gold cotw-item" ] [ text (toString gold) ]
+                , div [ HA.class "coins-platinum cotw-item" ] [ text (toString platinum) ]
                 ]
     in
     Equipment.getPurse equipment

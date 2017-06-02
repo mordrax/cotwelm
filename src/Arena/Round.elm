@@ -4,7 +4,6 @@ module Arena.Round
         , fight
         )
 
-import Arena.Types exposing (..)
 import Game.Combat as Combat
 import Random.Pcg as Random exposing (Generator, constant)
 import Stats

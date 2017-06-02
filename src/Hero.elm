@@ -18,21 +18,12 @@ import Css
 import Equipment exposing (Equipment, EquipmentSlot)
 import Html exposing (..)
 import Html.Attributes as HA
-import Item
 import Item.Data
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Direction as Direction exposing (Direction)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
-
-
-styles =
-    Css.asPairs >> HA.style
-
-
-addStyle currentStyles style =
-    HA.style (Css.asPairs <| style :: currentStyles)
 
 
 type alias Hero =

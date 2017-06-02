@@ -1,12 +1,9 @@
 module Arena.PlayerArena exposing (..)
 
 import Arena.Match as Match
-import Arena.Round as Round exposing (RoundResult)
-import Arena.Types exposing (..)
 import Arena.View as View
 import Attributes exposing (Attributes)
 import Char
-import Dice
 import Dict exposing (Dict)
 import Equipment exposing (Equipment)
 import Game.Combat as Combat
@@ -20,14 +17,10 @@ import Item.Data as ItemData
 import Item.Weapon as Weapon
 import Monster exposing (Monster)
 import Process
-import Random.Extra as RandomX
 import Random.Pcg as Random exposing (Generator)
-import Stats
 import Task
-import Time exposing (Time)
 import Types exposing (..)
 import UI
-import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Model =
@@ -334,6 +327,7 @@ welcomeView =
 -- Constants
 
 
+customAttributes : Attributes
 customAttributes =
     Attributes.initCustom 70 70 70 50
 

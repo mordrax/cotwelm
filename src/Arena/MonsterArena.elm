@@ -18,7 +18,6 @@ the monsters relative to each other.
 -}
 
 import Arena.Match as Match
-import Arena.Types exposing (..)
 import EveryDict exposing (EveryDict)
 import Game.Combat as Combat
 import Html exposing (..)

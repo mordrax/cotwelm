@@ -13,14 +13,11 @@ A match consists of a number of rounds, each round will have a victor with stats
 -}
 
 import Arena.Round as Round exposing (RoundResult)
-import Arena.Types exposing (..)
 import Arena.View
 import Attributes exposing (Attributes)
-import Dice
 import Equipment exposing (Equipment)
 import Game.Combat as Combat
 import Html exposing (..)
-import Item
 import Random.Pcg as Random exposing (Generator)
 
 

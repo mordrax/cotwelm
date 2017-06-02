@@ -17,12 +17,9 @@ import UI
 import Utils.Vector as Vector exposing (Vector)
 
 
+styles : List Css.Mixin -> Html.Attribute a
 styles =
     asPairs >> HA.style
-
-
-addStyle currentStyles style =
-    HA.style (asPairs <| style :: currentStyles)
 
 
 {-| Handles all logic and rendering of the game to screen.

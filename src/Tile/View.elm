@@ -15,12 +15,9 @@ import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
 
+styles : List Css.Mixin -> Html.Attribute msg
 styles =
     Css.asPairs >> HA.style
-
-
-addStyle cssStyles extras =
-    HA.style (asPairs cssStyles ++ extras)
 
 
 view : Tile -> Float -> TileNeighbours -> (Vector -> a) -> List (Html a)
