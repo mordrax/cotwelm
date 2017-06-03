@@ -46,6 +46,7 @@
     flex-basis: 60%;
     display: flex;
     flex-wrap: wrap;
+    padding: 10px 0;
 }
 .container-group__empty-child {
     width:  100%;
@@ -81,4 +82,12 @@
 .item__name {
     font-size: 0.9em;
     line-height: 0.8em;
+}
+
+/* Purse */
+.purse__coin {
+    text-align: center;
+    width: 80px;
+    font-size: 0.9em;
+    padding: 5px;
 }

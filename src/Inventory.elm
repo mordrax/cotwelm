@@ -590,8 +590,19 @@ viewSlot slot dnd equipment =
 viewPurse : Model -> Html never
 viewPurse ({ equipment } as model) =
     let
+        viewCoinDescription coinAsString value =
+            div [ HA.class "coin__description" ]
+                [ text <| value ++ " pieces of " ++ coinAsString ]
+
+        viewCoinImg coinAsString =
+            div [ HA.class "coin__image" ]
+                [ i [ HA.class ("coins-" ++ coinAsString ++ " cotw-item") ] [] ]
+
         viewCoin coinAsString value =
-            div [ HA.class ("coins-" ++ coinAsString ++ " cotw-item") ] [ text (toString value) ]
+            div [ HA.class "purse__coin" ]
+                [ viewCoinImg coinAsString
+                , viewCoinDescription coinAsString (toString value)
+                ]
 
         coinView { copper, silver, gold, platinum } =
             viewAsContainer "Purse"
