@@ -19,7 +19,7 @@ module Item
 import Container exposing (Container)
 import Dice
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as HA
 import Item.Armour
 import Item.Belt as Belt
 import Item.Bracers
@@ -30,7 +30,7 @@ import Item.Pack as Pack
 import Item.Purse as Purse
 import Item.Shield
 import Item.Weapon
-import Utils.Mass as Mass exposing (..)
+import Utils.Mass as Mass exposing (Mass)
 
 
 type alias Items =
@@ -175,38 +175,26 @@ viewSlot item extraContent =
         model =
             getModel item
     in
-    div [ class "card" ]
-        [ div
-            {- [ class "ui item"
-               , style
-                   [ ( "opacity", "1" )
-                   , ( "cursor", "move" )
-                   , ( "width", "32px" )
-                   , ( "height", "64px" )
-                   ]
-               ]
-            -}
-            []
-            [ div [ class "image" ]
-                [ i [ class ("cotw-item " ++ model.css) ] []
-                ]
-            , div [ class "content" ]
-                [ a [ class "header" ]
-                    [ text model.name
-                    ]
-                , div [ class "meta" ]
-                    [ span [ class "date" ] [ text "" ]
-                    ]
-                , div [ class "description", style [ ( "maxWidth", "7em" ) ] ]
-                    [ text ""
-                    ]
-                ]
-            , div [ class "extra content" ] [ text extraContent ]
+    div [ HA.class "item" ]
+        [ div [ HA.class "item__img" ]
+            [ i [ HA.class ("cotw-item " ++ model.css) ] []
             ]
+        , div [ HA.class "item__name" ]
+            [ a [ HA.class "header" ]
+                [ text model.name
+                ]
+            , div [ HA.class "meta" ]
+                [ span [ HA.class "date" ] [ text "" ]
+                ]
+            , div [ HA.class "description", HA.style [ ( "maxWidth", "7em" ) ] ]
+                [ text ""
+                ]
+            ]
+        , div [ HA.class "extra content" ] [ text extraContent ]
         ]
 
 
-containerBuilder : Capacity -> Container Item
+containerBuilder : Mass.Capacity -> Container Item
 containerBuilder capacity =
     Container.init capacity mass equals
 

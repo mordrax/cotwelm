@@ -9,10 +9,8 @@ module Input
 
 import EveryDict exposing (EveryDict)
 import Game.Types
-import Keyboard exposing (..)
 import Keyboard.Extra as KeyboardX exposing (Key(..), KeyChange(..))
 import Utils.Direction as Direction exposing (Direction(..))
-import Utils.Vector as Vector exposing (Vector)
 
 
 type alias Input =

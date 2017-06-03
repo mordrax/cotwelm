@@ -27,3 +27,8 @@ button:focus {
     max-width: 960px;
     margin: 0 auto;
 }
+
+.expand-to-fill {
+    height: 100%;
+    width: 100%;
+}

@@ -2,7 +2,6 @@ module Monsters.Model exposing (..)
 
 import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
-import Item
 import Item.Data
 import Monsters.Types exposing (..)
 import Stats exposing (Stats)

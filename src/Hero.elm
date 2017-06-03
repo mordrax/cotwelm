@@ -14,7 +14,6 @@ module Hero
 
 import Attributes exposing (Attributes)
 import Container
-import Css
 import Equipment exposing (Equipment, EquipmentSlot)
 import Html exposing (..)
 import Html.Attributes as HA

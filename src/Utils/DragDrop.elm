@@ -111,7 +111,7 @@ view (A ({ source, position, dragging } as model)) =
     in
     case model.dragging of
         Just { start, current, html } ->
-            H.div [ positionStyle, pointerEventStyle ] [ html ]
+            H.div [ positionStyle, pointerEventStyle, HA.class "draggable" ] [ html ]
 
         _ ->
             H.div [] []
@@ -153,6 +153,8 @@ draggable draggableHtml source (A model) =
     H.div [ onMouseDown, pointerEventStyle ] [ draggableHtml ]
 
 
+{-| Creates a piece of html which will accept things dropped onto it.
+-}
 droppable : t -> DragDrop s t -> Html (Msg s t) -> Html (Msg s t)
 droppable dropTarget (A model) html =
     let
@@ -163,7 +165,7 @@ droppable dropTarget (A model) html =
             if model.target == target then
                 HA.style [ ( "border", "1px solid" ) ]
             else
-                HA.style [ ( "border", "none" ) ]
+                HA.style [ ( "border", "" ) ]
 
         mouseOverStyle =
             HE.on "mouseover" (JD.succeed <| MouseOver target)
@@ -171,7 +173,7 @@ droppable dropTarget (A model) html =
         mouseLeaveStyle =
             HE.onMouseLeave MouseLeave
     in
-    H.div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
+    H.div [ mouseOverStyle, mouseLeaveStyle, borderStyle, HA.class "expand-to-fill" ] [ html ]
 
 
 subscription : DragDrop s t -> Sub (Msg s t)

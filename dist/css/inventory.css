@@ -2,6 +2,7 @@
     display: flex;
 }
 
+/* Equipment */
 .inventory__equipment {
     display: flex;
     flex-direction: column;
@@ -29,6 +30,7 @@
     border: 1px solid #d4d4d4;
 }
 
+/* Containers */
 .inventory__containers {
     flex-basis: 60%;
     display: flex;
@@ -37,8 +39,22 @@
 
 .inventory__container {
     display: flex;
+    min-height: 100px;
+    background-color: lightblue;
+    border: 2px solid #d4d4d4
 }
 
 .container__pack {
 
+}
+
+.droppable {
+    display: flex;
+}
+
+/* Items */
+.item {
+    width:  60px;
+    height: 80px;
+    display: block;
 }

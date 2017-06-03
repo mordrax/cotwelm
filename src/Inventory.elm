@@ -372,13 +372,13 @@ view (A ({ equipment, dnd } as model)) =
 viewShopPackPurse : Model -> Html Msg
 viewShopPackPurse ({ equipment, merchant, dnd } as model) =
     let
-        viewContainers =
+        viewAsContainers =
             div [ HA.class "inventory__containers" ]
 
         maybePack =
             Equipment.getPack equipment
     in
-    viewContainers
+    viewAsContainers
         [ viewMerchant merchant dnd
         , viewPack maybePack model
         , viewPurse model
@@ -398,25 +398,23 @@ viewMerchant merchant dnd =
 viewGround : List Item -> DragDrop Draggable Droppable -> Html Msg
 viewGround items dnd =
     let
-        styles =
-            HA.style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
-
         makeDraggable items item =
             DragDrop.draggable (Item.view item) (DragMerchant item (Ground items)) dnd
 
         droppableDiv =
-            div [ HA.class "ui cards", styles ] (List.map (makeDraggable items) items)
+            div [ HA.class "droppable" ]
+                (List.map (makeDraggable items) items)
 
         droppableGround =
             DragDrop.droppable (DropMerchant (Ground items)) dnd droppableDiv
                 |> Html.map DnDMsg
     in
-    viewAsContainer droppableGround
+    viewAsContainer [ droppableGround ]
 
 
-viewAsContainer : Html msg -> Html msg
-viewAsContainer child =
-    div [ HA.class "inventory__container" ] [ child ]
+viewAsContainer : List (Html msg) -> Html msg
+viewAsContainer =
+    div [ HA.class "inventory__container" ]
 
 
 viewPackInfo : Maybe (Pack Item) -> String
@@ -474,12 +472,12 @@ viewShop store dnd =
         wares =
             Shops.wares store
 
-        makeDraggable : Store -> Item -> Html (DragDrop.Msg Draggable a)
-        makeDraggable shop item =
-            DragDrop.draggable (Item.view item) (DragMerchant item (Shop shop)) dnd
+        makeDraggable : Item -> Html (DragDrop.Msg Draggable a)
+        makeDraggable item =
+            DragDrop.draggable (Item.view item) (DragMerchant item (Shop store)) dnd
 
         droppableDiv =
-            div [ HA.class "ui cards" ] (List.map (makeDraggable store) wares)
+            div [ HA.class "droppable" ] (List.map makeDraggable wares)
 
         droppableShop =
             DragDrop.droppable (DropMerchant (Shop store)) dnd droppableDiv
@@ -487,7 +485,7 @@ viewShop store dnd =
 
         --DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
     in
-    viewAsContainer droppableShop
+    viewAsContainer [ droppableShop ]
 
 
 viewContainer : Pack Item -> Model -> Html (DragDrop.Msg Draggable Droppable)

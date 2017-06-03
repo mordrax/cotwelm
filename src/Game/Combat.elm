@@ -75,13 +75,10 @@ than beginners in general.
 -}
 
 import Attributes exposing (Attributes)
-import Debug exposing (log)
 import Dice exposing (Dice)
 import Equipment exposing (Equipment)
-import Hero exposing (Hero)
 import Item.Data
 import Item.Weapon as Weapon
-import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Generator, Seed)
 import Stats exposing (Stats)
 import String
