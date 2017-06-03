@@ -174,23 +174,14 @@ viewSlot item extraContent =
     let
         model =
             getModel item
+
+        itemImg =
+            i [ HA.class ("cotw-item " ++ model.css) ] []
     in
     div [ HA.class "item" ]
         [ div [ HA.class "item__img" ]
-            [ i [ HA.class ("cotw-item " ++ model.css) ] []
-            ]
-        , div [ HA.class "item__name" ]
-            [ a [ HA.class "header" ]
-                [ text model.name
-                ]
-            , div [ HA.class "meta" ]
-                [ span [ HA.class "date" ] [ text "" ]
-                ]
-            , div [ HA.class "description", HA.style [ ( "maxWidth", "7em" ) ] ]
-                [ text ""
-                ]
-            ]
-        , div [ HA.class "extra content" ] [ text extraContent ]
+            [ itemImg ]
+        , div [ HA.class "item__name" ] [ text model.name ]
         ]
 
 
