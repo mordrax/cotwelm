@@ -60,12 +60,8 @@ type Droppable
     | DropMerchant Merchant
 
 
-type Msg source target
-    = DnDMsg (DragDrop.Msg source target)
-
-
-type alias DragDropMsg =
-    Msg Draggable Droppable
+type Msg
+    = DnDMsg (DragDrop.Msg Draggable Droppable)
 
 
 init : Merchant -> Equipment -> Inventory
@@ -83,7 +79,7 @@ init merchant equipment =
 ------------
 
 
-update : Msg Draggable Droppable -> Inventory -> Inventory
+update : Msg -> Inventory -> Inventory
 update msg (A ({ dnd } as model)) =
     case msg of
         DnDMsg dragDropMsg ->
@@ -354,7 +350,7 @@ handleDrop droppable item model =
 ----------
 
 
-view : Inventory -> Html DragDropMsg
+view : Inventory -> Html Msg
 view (A ({ equipment, dnd } as model)) =
     let
         header title =
@@ -373,7 +369,7 @@ view (A ({ equipment, dnd } as model)) =
         ]
 
 
-viewShopPackPurse : Model -> Html DragDropMsg
+viewShopPackPurse : Model -> Html Msg
 viewShopPackPurse ({ equipment, merchant, dnd } as model) =
     let
         viewContainers =
@@ -389,7 +385,7 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
         ]
 
 
-viewMerchant : Merchant -> DragDrop Draggable Droppable -> Html DragDropMsg
+viewMerchant : Merchant -> DragDrop Draggable Droppable -> Html Msg
 viewMerchant merchant dnd =
     case merchant of
         Shop shop ->
@@ -399,7 +395,7 @@ viewMerchant merchant dnd =
             viewGround items dnd
 
 
-viewGround : List Item -> DragDrop Draggable Droppable -> Html DragDropMsg
+viewGround : List Item -> DragDrop Draggable Droppable -> Html Msg
 viewGround items dnd =
     let
         styles =
@@ -446,7 +442,7 @@ viewPackInfo maybeItem =
 ---------------
 
 
-viewPack : Maybe (Pack Item) -> Model -> Html DragDropMsg
+viewPack : Maybe (Pack Item) -> Model -> Html Msg
 viewPack maybePack ({ dnd } as model) =
     let
         droppableHtml pack =
@@ -472,7 +468,7 @@ viewPack maybePack ({ dnd } as model) =
             div [] [ text "You have no pack! Equip a pack to use this space." ]
 
 
-viewShop : Store -> DragDrop Draggable Droppable -> Html DragDropMsg
+viewShop : Store -> DragDrop Draggable Droppable -> Html Msg
 viewShop store dnd =
     let
         wares =
@@ -513,7 +509,7 @@ viewContainer pack ({ equipment, dnd } as model) =
 --------------------
 
 
-viewEquipment : Equipment -> DragDrop Draggable Droppable -> Html DragDropMsg
+viewEquipment : Equipment -> DragDrop Draggable Droppable -> Html Msg
 viewEquipment equipment dnd =
     let
         viewTopRow =
@@ -556,7 +552,7 @@ viewEquipment equipment dnd =
         ]
 
 
-viewSlot : EquipmentSlot -> DragDrop Draggable Droppable -> Equipment -> Html DragDropMsg
+viewSlot : EquipmentSlot -> DragDrop Draggable Droppable -> Equipment -> Html Msg
 viewSlot slot dnd equipment =
     let
         viewSlotName =
@@ -604,6 +600,6 @@ viewPurse ({ equipment } as model) =
         |> Maybe.withDefault (div [] [])
 
 
-subscription : Inventory -> Sub DragDropMsg
+subscription : Inventory -> Sub Msg
 subscription (A { dnd }) =
     Sub.map DnDMsg (DragDrop.subscription dnd)

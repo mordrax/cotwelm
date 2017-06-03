@@ -15,7 +15,7 @@ import Window
 
 type Msg
     = InputMsg Input.Msg
-    | InventoryMsg (Inventory.Msg Inventory.Draggable Inventory.Droppable)
+    | InventoryMsg Inventory.Msg
     | WindowSize Window.Size
     | ClickTile Vector
     | PathTo (List Vector) ClickedStairs
