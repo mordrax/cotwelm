@@ -173,7 +173,7 @@ droppable dropTarget (A model) html =
         mouseLeaveStyle =
             HE.onMouseLeave MouseLeave
     in
-    H.div [ mouseOverStyle, mouseLeaveStyle, borderStyle ] [ html ]
+    H.div [ mouseOverStyle, mouseLeaveStyle, borderStyle, HA.class "dragdrop-droppable" ] [ html ]
 
 
 subscription : DragDrop s t -> Sub (Msg s t)

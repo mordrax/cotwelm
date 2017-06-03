@@ -31,6 +31,10 @@
 }
 
 /* Containers */
+.inventory__containers {
+    display: flex;
+    flex-direction: column;
+}
 .inventory__container-group {
     border: 2px solid #d4d4d4;
 }
@@ -41,7 +45,12 @@
 .container-group__contents {
     flex-basis: 60%;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+}
+.container-group__empty-child {
+    width:  100%;
+    text-align: center;
+    padding: 40px;
 }
 
 .inventory__container {

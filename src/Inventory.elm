@@ -414,9 +414,18 @@ viewGround items dnd =
 
 viewAsContainer : String -> List (Html msg) -> Html msg
 viewAsContainer name children =
+    let
+        childrenWithEmptyChild =
+            case children of
+                [] ->
+                    [ div [ HA.class "container-group__empty-child" ] [ text "Empty" ] ]
+
+                x ->
+                    x
+    in
     div [ HA.class "inventory__container-group" ]
         [ div [ HA.class "container-group__name" ] [ text name ]
-        , div [ HA.class "container-group__contents" ] children
+        , div [ HA.class "container-group__contents" ] childrenWithEmptyChild
         ]
 
 
@@ -446,8 +455,8 @@ viewPackInfo maybeItem =
 viewPack : Maybe (Pack Item) -> Model -> Html Msg
 viewPack maybePack ({ dnd } as model) =
     let
-        droppableHtml pack =
-            div [ HA.class "container__pack" ] [ viewContainer pack model ]
+        packDiv pack =
+            viewContainer pack model
 
         isDraggingPack =
             case DragDrop.getSource dnd of
@@ -462,7 +471,7 @@ viewPack maybePack ({ dnd } as model) =
             div [] [ text "Pack being dragged." ]
 
         ( Just pack, _ ) ->
-            DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
+            DragDrop.droppable (DropPack pack) dnd (packDiv pack)
                 |> Html.map DnDMsg
 
         _ ->
@@ -479,16 +488,11 @@ viewShop store dnd =
         makeDraggable item =
             DragDrop.draggable (Item.view item) (DragMerchant item (Shop store)) dnd
 
-        droppableDiv =
-            div [ HA.class "droppable" ] (List.map makeDraggable wares)
-
-        droppableShop =
-            DragDrop.droppable (DropMerchant (Shop store)) dnd droppableDiv
-                |> Html.map DnDMsg
-
-        --DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
+        shopDiv =
+            viewAsContainer "Store" (List.map makeDraggable wares)
     in
-    viewAsContainer "Store" [ droppableShop ]
+    DragDrop.droppable (DropMerchant (Shop store)) dnd shopDiv
+        |> Html.map DnDMsg
 
 
 viewContainer : Pack Item -> Model -> Html (DragDrop.Msg Draggable Droppable)
@@ -586,12 +590,15 @@ viewSlot slot dnd equipment =
 viewPurse : Model -> Html never
 viewPurse ({ equipment } as model) =
     let
+        viewCoin coinAsString value =
+            div [ HA.class ("coins-" ++ coinAsString ++ " cotw-item") ] [ text (toString value) ]
+
         coinView { copper, silver, gold, platinum } =
-            div [ HA.class "ui grid" ]
-                [ div [ HA.class "coins-copper cotw-item" ] [ text (toString copper) ]
-                , div [ HA.class "coins-silver cotw-item" ] [ text (toString silver) ]
-                , div [ HA.class "coins-gold cotw-item" ] [ text (toString gold) ]
-                , div [ HA.class "coins-platinum cotw-item" ] [ text (toString platinum) ]
+            viewAsContainer "Purse"
+                [ viewCoin "copper" copper
+                , viewCoin "silver" silver
+                , viewCoin "gold" gold
+                , viewCoin "platinum" platinum
                 ]
     in
     Equipment.getPurse equipment
