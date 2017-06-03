@@ -64,6 +64,10 @@ type Msg source target
     = DnDMsg (DragDrop.Msg source target)
 
 
+type alias DragDropMsg =
+    Msg Draggable Droppable
+
+
 init : Merchant -> Equipment -> Inventory
 init merchant equipment =
     A
@@ -350,7 +354,7 @@ handleDrop droppable item model =
 ----------
 
 
-view : Inventory -> Html (Msg Draggable Droppable)
+view : Inventory -> Html DragDropMsg
 view (A ({ equipment, dnd } as model)) =
     let
         header title =
@@ -369,48 +373,33 @@ view (A ({ equipment, dnd } as model)) =
         ]
 
 
-viewShopPackPurse : Model -> Html (Msg Draggable Droppable)
+viewShopPackPurse : Model -> Html DragDropMsg
 viewShopPackPurse ({ equipment, merchant, dnd } as model) =
     let
-        header title =
-            div [ HA.class "ui block header" ] [ text title ]
-
         viewContainers =
             div [ HA.class "inventory__containers" ]
 
         maybePack =
             Equipment.getPack equipment
-
-        viewShopOrGround =
-            case merchant of
-                Shop shop ->
-                    viewShop shop dnd
-
-                Ground items ->
-                    viewGround items dnd
-
-        packHtml =
-            div []
-                [ header ("Pack: (" ++ viewPackInfo maybePack ++ ")")
-                , viewPack maybePack model
-                ]
-
-        purseHtml =
-            div []
-                [ header "Purse"
-                , viewPurse model
-                ]
     in
-    Html.map DnDMsg
-        (viewContainers
-            [ viewShopOrGround
-            , packHtml
-            , purseHtml
-            ]
-        )
+    viewContainers
+        [ viewMerchant merchant dnd
+        , viewPack maybePack model
+        , viewPurse model
+        ]
 
 
-viewGround : List Item -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable Droppable)
+viewMerchant : Merchant -> DragDrop Draggable Droppable -> Html DragDropMsg
+viewMerchant merchant dnd =
+    case merchant of
+        Shop shop ->
+            viewShop shop dnd
+
+        Ground items ->
+            viewGround items dnd
+
+
+viewGround : List Item -> DragDrop Draggable Droppable -> Html DragDropMsg
 viewGround items dnd =
     let
         styles =
@@ -424,8 +413,14 @@ viewGround items dnd =
 
         droppableGround =
             DragDrop.droppable (DropMerchant (Ground items)) dnd droppableDiv
+                |> Html.map DnDMsg
     in
-    div [ HA.class "inventory__container" ] [ droppableGround ]
+    viewAsContainer droppableGround
+
+
+viewAsContainer : Html msg -> Html msg
+viewAsContainer child =
+    div [ HA.class "inventory__container" ] [ child ]
 
 
 viewPackInfo : Maybe (Pack Item) -> String
@@ -451,14 +446,11 @@ viewPackInfo maybeItem =
 ---------------
 
 
-viewPack : Maybe (Pack Item) -> Model -> Html (DragDrop.Msg Draggable Droppable)
+viewPack : Maybe (Pack Item) -> Model -> Html DragDropMsg
 viewPack maybePack ({ dnd } as model) =
     let
-        packStyle =
-            HA.style [ ( "background", "lightblue" ), ( "min-height", "100px" ) ]
-
         droppableHtml pack =
-            div [ packStyle ] [ viewContainer pack model ]
+            div [ HA.class "container__pack" ] [ viewContainer pack model ]
 
         isDraggingPack =
             case DragDrop.getSource dnd of
@@ -474,12 +466,13 @@ viewPack maybePack ({ dnd } as model) =
 
         ( Just pack, _ ) ->
             DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
+                |> Html.map DnDMsg
 
         _ ->
             div [] [ text "You have no pack! Equip a pack to use this space." ]
 
 
-viewShop : Store -> DragDrop Draggable Droppable -> Html (DragDrop.Msg Draggable Droppable)
+viewShop : Store -> DragDrop Draggable Droppable -> Html DragDropMsg
 viewShop store dnd =
     let
         wares =
@@ -494,10 +487,11 @@ viewShop store dnd =
 
         droppableShop =
             DragDrop.droppable (DropMerchant (Shop store)) dnd droppableDiv
+                |> Html.map DnDMsg
 
         --DragDrop.droppable (DropPack pack) dnd (droppableHtml pack)
     in
-    div [ HA.class "inventory__container" ] [ droppableShop ]
+    viewAsContainer droppableShop
 
 
 viewContainer : Pack Item -> Model -> Html (DragDrop.Msg Draggable Droppable)
@@ -519,7 +513,7 @@ viewContainer pack ({ equipment, dnd } as model) =
 --------------------
 
 
-viewEquipment : Equipment -> DragDrop Draggable Droppable -> Html (Msg Draggable Droppable)
+viewEquipment : Equipment -> DragDrop Draggable Droppable -> Html DragDropMsg
 viewEquipment equipment dnd =
     let
         viewTopRow =
@@ -562,7 +556,7 @@ viewEquipment equipment dnd =
         ]
 
 
-viewSlot : EquipmentSlot -> DragDrop Draggable Droppable -> Equipment -> Html (Msg Draggable Droppable)
+viewSlot : EquipmentSlot -> DragDrop Draggable Droppable -> Equipment -> Html DragDropMsg
 viewSlot slot dnd equipment =
     let
         viewSlotName =
@@ -593,7 +587,7 @@ viewSlot slot dnd equipment =
 ----------------
 
 
-viewPurse : Model -> Html (DragDrop.Msg Draggable Droppable)
+viewPurse : Model -> Html never
 viewPurse ({ equipment } as model) =
     let
         coinView { copper, silver, gold, platinum } =
@@ -610,6 +604,6 @@ viewPurse ({ equipment } as model) =
         |> Maybe.withDefault (div [] [])
 
 
-subscription : Inventory -> Sub (Msg Draggable Droppable)
+subscription : Inventory -> Sub DragDropMsg
 subscription (A { dnd }) =
     Sub.map DnDMsg (DragDrop.subscription dnd)

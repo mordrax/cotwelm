@@ -15,7 +15,7 @@
 }
 .equipment__top-row,
 .equipment__bottom-row {
-    display: flex;    
+    display: flex;
 }
 
 .equipment-panel {
@@ -30,9 +30,15 @@
 }
 
 .inventory__containers {
-    flex-basis: 60%
+    flex-basis: 60%;
+    display: flex;
+    flex-direction: column;
 }
 
 .inventory__container {
     display: flex;
+}
+
+.container__pack {
+
 }
