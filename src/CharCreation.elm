@@ -351,7 +351,7 @@ viewIconImpossible =
             , margin2 zero auto
             ]
         ]
-        [ i
+        [ span
             [ styles
                 [ width zero
                 , height zero
@@ -361,16 +361,16 @@ viewIconImpossible =
                 , position absolute
                 ]
             ]
-            []
-        , span
-            [ styles
-                [ fontSize (Css.em 2)
-                , position absolute
-                , left (px 15)
-                , zIndex (int 3)
+            [ span
+                [ styles
+                    [ fontSize (Css.em 2)
+                    , position absolute
+                    , left (px -3)
+                    , top (px 5)
+                    ]
                 ]
+                [ Html.text "!" ]
             ]
-            [ Html.text "!" ]
         ]
 
 

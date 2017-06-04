@@ -11,7 +11,7 @@
 
 .equipment__slot-name {
     font-size: 0.85em;
-    margin-top: 20px;
+    padding-top: 20px;
     text-align: center;
 }
 .equipment__top-row,
@@ -25,9 +25,23 @@
 }
 
 .equipment__slot {
-    width: 77px;
+    width: 80px;
     height: 120px;
-    border: 1px solid #d4d4d4;
+    border: 1px solid #d4d4d4
+}
+
+.equipment__top-row .equipment__slot {
+}
+
+.equipment__bottom-row .equipment__slot {
+}
+
+.equipment-dude {
+    height: 480px;
+    width: 240px;
+    display: inline-block;
+    padding: 0;
+    background: url('/assets/original/equipment-dude.jpg') no-repeat;
 }
 
 /* Containers */
@@ -37,6 +51,7 @@
 }
 .inventory__container-group {
     border: 2px solid #d4d4d4;
+    height: 100%;
 }
 .container-group__name {
     font-weight: bold;
@@ -53,6 +68,10 @@
     width:  100%;
     text-align: center;
     padding: 40px;
+    color: darkgray;
+}
+.container__purse {
+    height: 120px
 }
 
 .inventory__container {
@@ -91,4 +110,9 @@
     width: 80px;
     font-size: 0.9em;
     padding: 5px;
+}
+
+/* Dragdrop */
+.dragdrop-droppable {
+    height: 100%;
 }

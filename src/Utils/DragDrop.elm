@@ -162,18 +162,20 @@ droppable dropTarget (A model) html =
             Just dropTarget
 
         borderStyle =
-            if model.target == target then
-                HA.style [ ( "border", "1px solid" ) ]
+            if model.target == target && model.source /= Nothing then
+                HA.style [ ( "background-color", "lightblue" ) ]
             else
-                HA.style [ ( "border", "" ) ]
+                HA.style []
 
-        mouseOverStyle =
-            HE.on "mouseover" (JD.succeed <| MouseOver target)
+        mouseEvents =
+            [ HE.on "mouseover" (JD.succeed <| MouseOver target)
+            , HE.onMouseLeave MouseLeave
+            ]
 
-        mouseLeaveStyle =
-            HE.onMouseLeave MouseLeave
+        dragDropClass =
+            HA.class "dragdrop-droppable"
     in
-    H.div [ mouseOverStyle, mouseLeaveStyle, borderStyle, HA.class "dragdrop-droppable" ] [ html ]
+    H.div (borderStyle :: dragDropClass :: mouseEvents) [ html ]
 
 
 subscription : DragDrop s t -> Sub (Msg s t)

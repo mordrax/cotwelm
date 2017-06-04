@@ -414,6 +414,16 @@ viewGround items dnd =
 
 viewAsContainer : String -> List (Html msg) -> Html msg
 viewAsContainer name children =
+    viewAsContainer_ name [] children
+
+
+viewAsPurse : List (Html msg) -> Html msg
+viewAsPurse =
+    viewAsContainer_ "Purse" [ HA.class "container__purse" ]
+
+
+viewAsContainer_ : String -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
+viewAsContainer_ name attrs children =
     let
         childrenWithEmptyChild =
             case children of
@@ -423,7 +433,7 @@ viewAsContainer name children =
                 x ->
                     x
     in
-    div [ HA.class "inventory__container-group" ]
+    div (HA.class "inventory__container-group" :: attrs)
         [ div [ HA.class "container-group__name" ] [ text name ]
         , div [ HA.class "container-group__contents" ] childrenWithEmptyChild
         ]
@@ -605,7 +615,7 @@ viewPurse ({ equipment } as model) =
                 ]
 
         coinView { copper, silver, gold, platinum } =
-            viewAsContainer "Purse"
+            viewAsPurse
                 [ viewCoin "copper" copper
                 , viewCoin "silver" silver
                 , viewCoin "gold" gold
