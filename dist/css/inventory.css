@@ -40,7 +40,8 @@
 }
 .container-group__name {
     font-weight: bold;
-    background-color: lightgray;
+    color: ivory;
+    background: linear-gradient(to right, darkgray, white)
 }
 .container-group__contents {
     flex-basis: 60%;
@@ -81,7 +82,7 @@
 
 .item__name {
     font-size: 0.9em;
-    line-height: 0.8em;
+    line-height: 1em;
 }
 
 /* Purse */
