@@ -59,15 +59,18 @@ regenerateHP : Stats -> Stats
 regenerateHP ({ regeneration, currentHP, maxHP } as stats) =
     case regeneration.hpCounter of
         0 ->
-            { stats
-                | regeneration = { regeneration | hpCounter = regeneration.hpRate }
-                , currentHP = min (currentHP + 1) maxHP
-            }
+            { regeneration | hpCounter = regeneration.hpRate }
+                |> (\regen ->
+                        { stats
+                            | regeneration = regen
+                            , currentHP = min (currentHP + 1) maxHP
+                        }
+                   )
 
         _ ->
-            { stats
-                | regeneration = { regeneration | hpCounter = regeneration.hpCounter - 1 }
-            }
+            (regeneration.hpCounter - 1)
+                |> (\counter -> { regeneration | hpCounter = counter })
+                |> (\regen -> { stats | regeneration = regen })
 
 
 regenerateSP : Stats -> Stats
@@ -88,11 +91,17 @@ regenerateSP ({ regeneration, currentSP, maxSP } as stats) =
 init : Attributes -> Stats
 init attributes =
     let
+        baseHp =
+            10
+
         hp =
-            hpBonus attributes
+            hpBonus attributes + baseHp
+
+        baseSp =
+            5
 
         sp =
-            spBonus attributes
+            spBonus attributes + baseSp
     in
     { currentHP = hp
     , maxHP = hp
@@ -118,7 +127,7 @@ initExperienced attributes level =
 
 hpBonus : Attributes -> Int
 hpBonus { str, con } =
-    con // 15 + str // 25
+    con // 10 + str // 20
 
 
 spBonus : Attributes -> Int

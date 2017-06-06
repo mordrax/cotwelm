@@ -177,11 +177,27 @@ viewSlot item extraContent =
 
         itemImg =
             i [ HA.class ("cotw-item " ++ model.css) ] []
+
+        itemName =
+            case item of
+                ItemCopper coins ->
+                    toString coins.value ++ " Copper pieces"
+
+                ItemSilver coins ->
+                    toString coins.value ++ " Silver pieces"
+
+                ItemGold coins ->
+                    toString coins.value ++ " Gold pieces"
+
+                ItemPlatinum coins ->
+                    toString coins.value ++ " Platinum pieces"
+
+                _ ->
+                    model.name
     in
     div [ HA.class "item" ]
-        [ div [ HA.class "item__img" ]
-            [ itemImg ]
-        , div [ HA.class "item__name" ] [ text model.name ]
+        [ div [ HA.class "item__img" ] [ itemImg ]
+        , div [ HA.class "item__name" ] [ text itemName ]
         ]
 
 

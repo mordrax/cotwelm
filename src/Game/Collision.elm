@@ -8,6 +8,7 @@ module Game.Collision
 import Building exposing (Building)
 import Game.Combat as Combat
 import Game.Level as Level exposing (Level)
+import Game.Loot as Loot
 import Game.Maps as Maps
 import Game.Model exposing (Game)
 import Game.Pathfinding as Pathfinding
@@ -113,14 +114,17 @@ resolveCombat hero monster seed =
 
 
 addLoot : Monster -> Game -> Game
-addLoot monster ({ level } as game) =
+addLoot monster ({ level, seed } as game) =
     let
-        loot =
-            Item.new (Item.Data.ItemTypeCopper 1234)
+        ( loots, seed_ ) =
+            Random.step Loot.generate seed
+
+        dropAtPosition loot level =
+            Level.drop ( monster.position, loot ) level
     in
     { game
-        | seed = game.seed
-        , level = Level.drop ( monster.position, loot ) level
+        | seed = seed_
+        , level = List.foldl dropAtPosition level loots
     }
 
 
