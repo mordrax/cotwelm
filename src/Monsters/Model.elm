@@ -66,9 +66,16 @@ setEquipment val monster =
     { monster | equipment = val }
 
 
-setEquipmentSlot : ( Equipment.EquipmentSlot, Item.Data.Item ) -> Monster -> Monster
+setEquipmentSlot : ( Equipment.EquipmentSlot, Item.Data.Item ) -> Monster -> Result Equipment.Msg Monster
 setEquipmentSlot slot ({ equipment } as monster) =
-    { monster | equipment = Equipment.setSlot_ slot equipment }
+    Equipment.setSlot_ slot equipment
+        |> Result.map (\eq -> { monster | equipment = eq })
+
+
+setEquipmentSlotIfAble : ( Equipment.EquipmentSlot, Item.Data.Item ) -> Monster -> Monster
+setEquipmentSlotIfAble slot monster =
+    setEquipmentSlot slot monster
+        |> Result.withDefault monster
 
 
 setExpLevel : Int -> Monster -> Monster

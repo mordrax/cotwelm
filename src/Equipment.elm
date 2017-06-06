@@ -44,6 +44,7 @@ import Item.Data exposing (..)
 import Item.Pack as Pack
 import Item.Purse as Purse
 import Utils.Mass as Mass
+import Utils.Misc
 
 
 type alias Model =
@@ -137,67 +138,75 @@ calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
 
 equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg ( Equipment, Maybe Item )
 equip ( slot, item ) (A model) =
+    let
+        andThenEquipItem ( equipmentAfterUnequip, unequippedItem ) =
+            setSlot_ ( slot, item ) equipmentAfterUnequip
+                |> Result.andThen (\eq -> Result.Ok ( eq, unequippedItem ))
+    in
     unequip slot (A model)
-        |> Result.map (\( equipmentAfterUnequip, unequippedItem ) -> ( setSlot_ ( slot, item ) equipmentAfterUnequip, unequippedItem ))
+        |> Result.andThen andThenEquipItem
 
 
+{-| setMany_ ignores all equiping errors
+-}
 setMany_ : List ( EquipmentSlot, Item ) -> Equipment -> Equipment
 setMany_ itemSlotPairs equipment =
-    List.foldl (\itemSlotPair -> setSlot_ itemSlotPair) equipment itemSlotPairs
+    Utils.Misc.foldResult (\itemSlotPair -> setSlot_ itemSlotPair) (Ok equipment) itemSlotPairs
+        |> Result.withDefault equipment
 
 
 {-| WARNING: This will destroy the item in the equipment slot.
 -}
-setSlot_ : ( EquipmentSlot, Item ) -> Equipment -> Equipment
+setSlot_ : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
 setSlot_ ( slot, item ) (A model) =
     case ( slot, item ) of
         ( WeaponSlot, ItemWeapon weapon ) ->
-            A { model | weapon = Just weapon }
+            Result.Ok (A { model | weapon = Just weapon })
 
         ( FreehandSlot, item ) ->
-            A { model | freehand = Just item }
+            Result.Ok (A { model | freehand = Just item })
 
         ( ArmourSlot, ItemArmour armour ) ->
-            A { model | armour = Just armour }
+            Result.Ok (A { model | armour = Just armour })
 
         ( ShieldSlot, ItemShield shield ) ->
-            A { model | shield = Just shield }
+            Result.Ok (A { model | shield = Just shield })
 
         ( HelmetSlot, ItemHelmet helmet ) ->
-            A { model | helmet = Just helmet }
+            Result.Ok (A { model | helmet = Just helmet })
 
         ( BracersSlot, ItemBracers bracers ) ->
-            A { model | bracers = Just bracers }
+            Result.Ok (A { model | bracers = Just bracers })
 
         ( GauntletsSlot, ItemGauntlets gauntlets ) ->
-            A { model | gauntlets = Just gauntlets }
+            Result.Ok (A { model | gauntlets = Just gauntlets })
 
         ( BeltSlot, ItemBelt belt ) ->
-            A { model | belt = Just belt }
+            Result.Ok (A { model | belt = Just belt })
 
         ( PurseSlot, ItemPurse purse ) ->
-            A { model | purse = Just purse }
+            Result.Ok (A { model | purse = Just purse })
 
         ( PackSlot, ItemPack pack ) ->
-            A { model | pack = Just pack }
+            Result.Ok (A { model | pack = Just pack })
 
         ( NeckwearSlot, ItemNeckwear neckwear ) ->
-            A { model | neckwear = Just neckwear }
+            Result.Ok (A { model | neckwear = Just neckwear })
 
         ( OvergarmentSlot, ItemOvergarment overgarment ) ->
-            A { model | overgarment = Just overgarment }
+            Result.Ok (A { model | overgarment = Just overgarment })
 
         ( LeftRingSlot, ItemRing leftRing ) ->
-            A { model | leftRing = Just leftRing }
+            Result.Ok (A { model | leftRing = Just leftRing })
 
         ( RightRingSlot, ItemRing rightRing ) ->
-            A { model | rightRing = Just rightRing }
+            Result.Ok (A { model | rightRing = Just rightRing })
 
         ( BootsSlot, ItemBoots boots ) ->
-            A { model | boots = Just boots }
+            Result.Ok (A { model | boots = Just boots })
 
         _ ->
-            A model
+            Result.Err WrongSlotForItemType
 
 
 unequip : EquipmentSlot -> Equipment -> Result Msg ( Equipment, Maybe Item )
@@ -212,14 +221,14 @@ unequip slot (A model) =
                 |> Maybe.withDefault False
     in
     case ( maybeItem, itemCursed ) of
-        ( Just item, False ) ->
-            Result.Ok ( A <| clearSlot_ slot model, Just item )
-
-        ( Just item, True ) ->
-            Result.Err CannotUnequipCursedItem
-
         ( Nothing, _ ) ->
             Result.Ok ( A model, Nothing )
+
+        ( _, True ) ->
+            Result.Err CannotUnequipCursedItem
+
+        ( _, False ) ->
+            Result.Ok ( A <| clearSlot_ slot model, maybeItem )
 
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.

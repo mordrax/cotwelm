@@ -250,22 +250,22 @@ make monsterType position =
                 |> Model.scaleAttributes 0.5 1.5 0.5 1
                 |> Model.setBodySize Types.Small
                 |> Model.setAttackTypes [ Melee, Ranged ]
-                |> Model.setEquipmentSlot (weaponSlot Crossbow)
+                |> Model.setEquipmentSlotIfAble (weaponSlot Crossbow)
 
         Goblin ->
             addPosition makeHumanoid Goblin
                 |> Model.scaleAttributes 0.5 1 0.6 1
                 |> Model.setBodySize Types.Small
-                |> Model.setEquipmentSlot (weaponSlot Club)
+                |> Model.setEquipmentSlotIfAble (weaponSlot Club)
 
         Hobgoblin ->
             addPosition makeHumanoid Hobgoblin
                 |> Model.scaleAttributes 0.7 1 0.7 1
-                |> Model.setEquipmentSlot (weaponSlot Spear)
+                |> Model.setEquipmentSlotIfAble (weaponSlot Spear)
 
         Bandit ->
             addPosition makeHumanoid Bandit
-                |> Model.setEquipmentSlot (weaponSlot Bow)
+                |> Model.setEquipmentSlotIfAble (weaponSlot Bow)
                 |> Model.setAttackTypes [ Ranged ]
 
         SmirkingSneakThief ->
@@ -276,7 +276,7 @@ make monsterType position =
             addPosition makeHumanoid EvilWarrior
                 |> Model.scaleAttributes 1.5 1.5 1.5 1
                 |> Model.setEquipment ironEquipment
-                |> Model.setEquipmentSlot (weaponSlot BastardSword)
+                |> Model.setEquipmentSlotIfAble (weaponSlot BastardSword)
 
         -------------
         -- Insects --
@@ -373,7 +373,7 @@ make monsterType position =
         Shadow ->
             addPosition makeUndead Shadow
                 |> Model.scaleAttributes 0.8 1 1 0.5
-                |> Model.setEquipmentSlot (weaponSlot BroadSword)
+                |> Model.setEquipmentSlotIfAble (weaponSlot BroadSword)
 
         EerieGhost ->
             addPosition makeUndead EerieGhost
@@ -505,41 +505,41 @@ make monsterType position =
         HugeOgre ->
             addPosition makeGiant HugeOgre
                 |> Model.scaleAttributes 0.9 1 0.8 0.5
-                |> Model.setEquipmentSlot (weaponSlot Pike)
+                |> Model.setEquipmentSlotIfAble (weaponSlot Pike)
 
         HillGiant ->
             addPosition makeGiant HillGiant
-                |> Model.setEquipmentSlot (weaponSlot LargeClub)
+                |> Model.setEquipmentSlotIfAble (weaponSlot LargeClub)
 
         StoneGiant ->
             addPosition makeGiant StoneGiant
                 |> Model.scaleAttributes 1.2 1 1.5 0.5
-                |> Model.setEquipmentSlot (weaponSlot StoneClub)
+                |> Model.setEquipmentSlotIfAble (weaponSlot StoneClub)
 
         FrostGiant ->
             addPosition makeGiant FrostGiant
                 |> Model.scaleAttributes 1 1.5 1 1
                 |> Model.setAttackTypes [ Ice ]
-                |> Model.setEquipmentSlot (weaponSlot GiantAxe)
+                |> Model.setEquipmentSlotIfAble (weaponSlot GiantAxe)
 
         TwoHeadedGiant ->
             addPosition makeGiant TwoHeadedGiant
                 |> Model.scaleAttributes 1 2 2 1
                 |> Model.setAttackTypes [ Ranged, Melee ]
-                |> Model.setEquipmentSlot (weaponSlot Boulder)
+                |> Model.setEquipmentSlotIfAble (weaponSlot Boulder)
 
         FireGiant ->
             addPosition makeGiant FireGiant
                 |> Model.scaleAttributes 1 1 1 1
                 |> Model.setAttackTypes [ Fire ]
                 |> Model.setEquipment ironEquipment
-                |> Model.setEquipmentSlot (weaponSlot TwoHandedSword)
+                |> Model.setEquipmentSlotIfAble (weaponSlot TwoHandedSword)
 
         HillGiantKing ->
             addPosition makeGiant HillGiantKing
                 |> Model.scaleAttributes 2 1 2 1
                 |> Model.setEquipment plateEquipment
-                |> Model.setEquipmentSlot (weaponSlot GiantMaul)
+                |> Model.setEquipmentSlotIfAble (weaponSlot GiantMaul)
 
         FireGiantKing ->
             addPosition makeGiant FireGiantKing
@@ -558,7 +558,7 @@ make monsterType position =
                 |> Model.scaleAttributes 3 1 4 1
                 |> Model.setAttackTypes [ Ranged ]
                 |> Model.setEquipment plateEquipment
-                |> Model.setEquipmentSlot (weaponSlot Boulder)
+                |> Model.setEquipmentSlotIfAble (weaponSlot Boulder)
 
         -------------
         -- Dragons --
