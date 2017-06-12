@@ -77,7 +77,7 @@ than beginners in general.
 import Attributes exposing (Attributes)
 import Dice exposing (Dice)
 import Equipment exposing (Equipment)
-import Item.Data
+import Item.Data exposing (BasicItem, Item)
 import Item.Weapon as Weapon
 import Random.Pcg as Random exposing (Generator, Seed)
 import Stats exposing (Stats)
@@ -346,9 +346,8 @@ damageCalculator { attributes, equipment } =
 
         dice =
             case maybeWeapon of
-                Just weapon ->
-                    Weapon.damage weapon
-                        |> addStrToBonus attributes.str
+                Just { damage } ->
+                    addStrToBonus attributes.str damage
 
                 _ ->
                     Dice 1 (attributes.str // 10) 0
@@ -363,7 +362,7 @@ damageCalculator { attributes, equipment } =
 ------------------
 
 
-attackSpeed : Item.Data.Weapon -> Attributes -> Float
+attackSpeed : Item.Data.Weapon compatible -> Attributes -> Float
 attackSpeed weapon { str, dex, int, con } =
     1
 

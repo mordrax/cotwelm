@@ -2,7 +2,7 @@ module Monsters.Model exposing (..)
 
 import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
-import Item.Data
+import Item.Data exposing (BasicItem, Item)
 import Monsters.Types exposing (..)
 import Stats exposing (Stats)
 import Types exposing (..)
@@ -66,13 +66,13 @@ setEquipment val monster =
     { monster | equipment = val }
 
 
-setEquipmentSlot : ( Equipment.EquipmentSlot, Item.Data.Item ) -> Monster -> Result Equipment.Msg Monster
+setEquipmentSlot : ( Equipment.EquipmentSlot, Item BasicItem ) -> Monster -> Result Equipment.Msg Monster
 setEquipmentSlot slot ({ equipment } as monster) =
     Equipment.setSlot_ slot equipment
         |> Result.map (\eq -> { monster | equipment = eq })
 
 
-setEquipmentSlotIfAble : ( Equipment.EquipmentSlot, Item.Data.Item ) -> Monster -> Monster
+setEquipmentSlotIfAble : ( Equipment.EquipmentSlot, Item BasicItem ) -> Monster -> Monster
 setEquipmentSlotIfAble slot monster =
     setEquipmentSlot slot monster
         |> Result.withDefault monster
