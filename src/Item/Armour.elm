@@ -15,7 +15,7 @@ init armourType status idStatus =
 
 setArmourData : ArmourType -> ArmourData -> Armour BasicItem
 setArmourData armourType (ArmourData ac baseItem) =
-    initBasicItem baseItem
+    initBasicItem baseItem BIT_Armour
         |> setArmourType armourType
         |> setAC ac
 

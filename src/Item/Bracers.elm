@@ -16,7 +16,7 @@ init bracersType status idStatus =
 
 setBracersData : BracersType -> BracersData -> Bracers BasicItem
 setBracersData bracersType (BracersData ac baseItem) =
-    initBasicItem baseItem
+    initBasicItem baseItem BIT_Bracers
         |> setBracersType bracersType
         |> setAC ac
 

@@ -17,7 +17,7 @@ import Utils.Mass as Mass exposing (Mass)
 
 init : Purse BasicItem
 init =
-    initBasicItem (BaseItem "Purse" (Prices 0 0) "Purse" (Mass 0 0) Normal Identified)
+    initBasicItem (BaseItem "Purse" (Prices 0 0) "Purse" (Mass 0 0) Normal Identified) BIT_Purse
         |> setCoins (Coins 100 10 1 1)
 
 
@@ -28,25 +28,25 @@ initCoinBaseItem name css value =
 
 initCoppers : Int -> CopperCoins BasicItem
 initCoppers value =
-    initBasicItem (initCoinBaseItem "Copper" "coins-copper" value)
+    initBasicItem (initCoinBaseItem "Copper" "coins-copper" value) BIT_Copper
         |> setValue value
 
 
 initSilvers : Int -> SilverCoins BasicItem
 initSilvers value =
-    initBasicItem (initCoinBaseItem "Silver" "coins-silver" value)
+    initBasicItem (initCoinBaseItem "Silver" "coins-silver" value) BIT_Silver
         |> setValue value
 
 
 initGolds : Int -> GoldCoins BasicItem
 initGolds value =
-    initBasicItem (initCoinBaseItem "Gold" "coins-gold" value)
+    initBasicItem (initCoinBaseItem "Gold" "coins-gold" value) BIT_Gold
         |> setValue value
 
 
 initPlatinums : Int -> PlatinumCoins BasicItem
 initPlatinums value =
-    initBasicItem (initCoinBaseItem "Platinum" "coins-platinum" value)
+    initBasicItem (initCoinBaseItem "Platinum" "coins-platinum" value) BIT_Platinum
         |> setValue value
 
 

@@ -14,7 +14,7 @@ init shieldType status idStatus =
 
 setShieldData : ShieldType -> ShieldData -> Shield BasicItem
 setShieldData shieldType (ShieldData ac baseItem) =
-    initBasicItem baseItem
+    initBasicItem baseItem BIT_Shield
         |> setShieldType shieldType
         |> setAC ac
 

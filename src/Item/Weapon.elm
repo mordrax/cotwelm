@@ -52,7 +52,7 @@ init weaponType status idStatus =
 
 setWeaponData : WeaponType -> WeaponData -> Weapon BasicItem
 setWeaponData weaponType (WeaponData damage baseItem) =
-    initBasicItem baseItem
+    initBasicItem baseItem BIT_Weapon
         |> setWeaponType weaponType
         |> setDamage damage
 

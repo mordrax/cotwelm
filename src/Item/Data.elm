@@ -40,6 +40,13 @@ type alias ItemTypes =
     List ItemType
 
 
+type alias Item compatible =
+    { compatible
+        | base : BaseItem
+        , item : ItemCompatible
+    }
+
+
 
 --type Item compatible
 --    = ItemWeapon Weapon
@@ -59,6 +66,26 @@ type alias ItemTypes =
 --    | ItemSilver SilverCoins
 --    | ItemGold GoldCoins
 --    | ItemPlatinum PlatinumCoins
+
+
+type BasicItemType
+    = BIT_Weapon
+    | BIT_Armour
+    | BIT_Shield
+    | BIT_Helmet
+    | BIT_Bracers
+    | BIT_Gauntlets
+    | BIT_Belt
+    | BIT_Pack
+    | BIT_Purse
+    | BIT_Neckwear
+    | BIT_Overgarment
+    | BIT_Ring
+    | BIT_Boots
+    | BIT_Copper
+    | BIT_Silver
+    | BIT_Gold
+    | BIT_Platinum
 
 
 type ItemType
@@ -118,9 +145,11 @@ initBaseItem name prices css mass status idStatus =
     }
 
 
-initBasicItem : BaseItem -> BasicItem
-initBasicItem baseItem =
+initBasicItem : BaseItem -> BasicItemType -> BasicItem
+initBasicItem baseItem basicItemType =
     { base = baseItem
+    , type_ = basicItemType
+    , item = ItemCompatible
 
     -- stubs
     , weapon = ItemCompatible
@@ -181,6 +210,8 @@ fakeMass _ =
 -}
 type alias BasicItem =
     { base : BaseItem
+    , type_ : BasicItemType
+    , item : ItemCompatible
 
     -- weapon
     , weapon : ItemCompatible
@@ -322,6 +353,8 @@ type alias Weapon compatible =
     { compatible
         | base : BaseItem
         , weapon : ItemCompatible
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , weaponType : WeaponType
         , damage : Dice
     }
@@ -331,6 +364,8 @@ type alias Armour compatible =
     { compatible
         | armour : ItemCompatible
         , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , armourType : ArmourType
         , ac : AC
     }
@@ -340,6 +375,8 @@ type alias Gauntlets compatible =
     { compatible
         | gauntlets : ItemCompatible
         , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , gauntletsType : GauntletsType
         , ac : AC
     }
@@ -349,6 +386,8 @@ type alias Helmet compatible =
     { compatible
         | helmet : ItemCompatible
         , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , helmetType : HelmetType
         , ac : AC
     }
@@ -358,6 +397,8 @@ type alias Bracers compatible =
     { compatible
         | bracers : ItemCompatible
         , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , bracersType : BracersType
         , ac : AC
     }
@@ -367,6 +408,8 @@ type alias Shield compatible =
     { compatible
         | shield : ItemCompatible
         , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , shieldType : ShieldType
         , ac : AC
     }
@@ -376,6 +419,8 @@ type alias Boots compatible =
     { compatible
         | base : BaseItem
         , bootsType : BootsType
+        , item : ItemCompatible
+        , type_ : BasicItemType
     }
 
 
@@ -383,6 +428,8 @@ type alias Neckwear compatible =
     { compatible
         | base : BaseItem
         , neckwearType : NeckwearType
+        , item : ItemCompatible
+        , type_ : BasicItemType
     }
 
 
@@ -390,6 +437,8 @@ type alias Overgarment compatible =
     { compatible
         | base : BaseItem
         , overgarmentType : OvergarmentType
+        , item : ItemCompatible
+        , type_ : BasicItemType
     }
 
 
@@ -397,6 +446,8 @@ type alias Ring compatible =
     { compatible
         | base : BaseItem
         , ringType : RingType
+        , item : ItemCompatible
+        , type_ : BasicItemType
     }
 
 
@@ -404,6 +455,8 @@ type alias Belt compatible =
     { compatible
         | base : BaseItem
         , beltType : BeltType
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , beltContainer : BeltOfItems
     }
 
@@ -412,6 +465,8 @@ type alias Pack compatible =
     { compatible
         | base : BaseItem
         , packType : PackType
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , container : PackOfItems
     }
 
@@ -432,6 +487,8 @@ type alias Purse compatible =
     { compatible
         | base : BaseItem
         , purse : ItemCompatible
+        , item : ItemCompatible
+        , type_ : BasicItemType
         , coins : Coins
     }
 
@@ -439,7 +496,9 @@ type alias Purse compatible =
 type alias CopperCoins compatible =
     { compatible
         | coin : ItemCompatible
+        , item : ItemCompatible
         , base : BaseItem
+        , type_ : BasicItemType
         , value : Int
     }
 
@@ -447,7 +506,9 @@ type alias CopperCoins compatible =
 type alias SilverCoins compatible =
     { compatible
         | coin : ItemCompatible
+        , item : ItemCompatible
         , base : BaseItem
+        , type_ : BasicItemType
         , value : Int
     }
 
@@ -455,7 +516,9 @@ type alias SilverCoins compatible =
 type alias GoldCoins compatible =
     { compatible
         | coin : ItemCompatible
+        , item : ItemCompatible
         , base : BaseItem
+        , type_ : BasicItemType
         , value : Int
     }
 
@@ -463,7 +526,9 @@ type alias GoldCoins compatible =
 type alias PlatinumCoins compatible =
     { compatible
         | coin : ItemCompatible
+        , item : ItemCompatible
         , base : BaseItem
+        , type_ : BasicItemType
         , value : Int
     }
 

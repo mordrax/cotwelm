@@ -14,7 +14,7 @@ init beltType status idStatus =
 
 setBeltData : BeltType -> BeltData -> Belt BasicItem
 setBeltData beltType (BeltData beltContainer baseItem) =
-    initBasicItem baseItem
+    initBasicItem baseItem BIT_Belt
         |> setBeltType beltType
         |> setBeltContainer beltContainer
 

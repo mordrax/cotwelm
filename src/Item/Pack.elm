@@ -69,7 +69,7 @@ init packType toContainer status idStatus =
 
 setPackData : PackType -> (Capacity -> Container BasicItem) -> PackData -> Pack BasicItem
 setPackData packType toContainer (PackData capacity baseItem) =
-    initBasicItem baseItem
+    initBasicItem baseItem BIT_Pack
         |> setPackType packType
         |> setContainer (PackOfItems (toContainer capacity))
 

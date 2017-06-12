@@ -14,7 +14,7 @@ init helmetType status idStatus =
 
 setHelmetData : HelmetType -> HelmetData -> Helmet BasicItem
 setHelmetData helmetType (HelmetData ac baseItem) =
-    initBasicItem baseItem
+    initBasicItem baseItem BIT_Helmet
         |> setHelmetType helmetType
         |> setAC ac
 

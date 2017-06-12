@@ -14,7 +14,7 @@ init gauntletsType status idStatus =
 
 setGauntletsData : GauntletsType -> GauntletsData -> Gauntlets BasicItem
 setGauntletsData gauntletsType (GauntletsData ac baseItem) =
-    initBasicItem baseItem
+    initBasicItem baseItem BIT_Gauntlets
         |> setGauntletsType gauntletsType
         |> setAC ac
 
