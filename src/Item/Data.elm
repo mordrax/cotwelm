@@ -153,8 +153,14 @@ initBasicItem baseItem =
     , neckwearType = NeckwearType
     , overgarmentType = OvergarmentType
     , ringType = RingType
+
+    -- belt
     , beltType = TwoSlotBelt
     , beltContainer = TwoSlot Nothing Nothing
+
+    -- pack
+    , pack = ItemCompatible
+    , packType = SmallBag
     , container = PackOfItems (Container.init (Capacity 0 0) fakeMass (==))
 
     -- purse and single pile of coins
@@ -198,8 +204,14 @@ type alias BasicItem =
     , neckwearType : NeckwearType
     , overgarmentType : OvergarmentType
     , ringType : RingType
+
+    -- belt
     , beltType : BeltType
     , beltContainer : BeltOfItems
+
+    -- pack
+    , pack : ItemCompatible
+    , packType : PackType
     , container : PackOfItems
 
     -- purse and single pile of coins
@@ -277,6 +289,11 @@ setRingType val model =
 setBeltType : BeltType -> BasicItem -> BasicItem
 setBeltType val model =
     { model | beltType = val }
+
+
+setPackType : PackType -> BasicItem -> BasicItem
+setPackType val model =
+    { model | packType = val }
 
 
 setBeltContainer : BeltOfItems -> BasicItem -> BasicItem
