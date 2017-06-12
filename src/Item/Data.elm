@@ -158,7 +158,9 @@ initBasicItem baseItem =
     , container = PackOfItems (Container.init (Capacity 0 0) fakeMass (==))
 
     -- purse and single pile of coins
+    , purse = ItemCompatible
     , coins = Coins 0 0 0 0
+    , coin = ItemCompatible
     , value = 0
     }
 
@@ -201,7 +203,9 @@ type alias BasicItem =
     , container : PackOfItems
 
     -- purse and single pile of coins
+    , purse : ItemCompatible
     , coins : Coins
+    , coin : ItemCompatible
     , value : Int
     }
 
@@ -408,34 +412,39 @@ type alias Coins =
 type alias Purse compatible =
     { compatible
         | base : BaseItem
+        , purse : ItemCompatible
         , coins : Coins
     }
 
 
 type alias CopperCoins compatible =
     { compatible
-        | base : BaseItem
+        | coin : ItemCompatible
+        , base : BaseItem
         , value : Int
     }
 
 
 type alias SilverCoins compatible =
     { compatible
-        | base : BaseItem
+        | coin : ItemCompatible
+        , base : BaseItem
         , value : Int
     }
 
 
 type alias GoldCoins compatible =
     { compatible
-        | base : BaseItem
+        | coin : ItemCompatible
+        , base : BaseItem
         , value : Int
     }
 
 
 type alias PlatinumCoins compatible =
     { compatible
-        | base : BaseItem
+        | coin : ItemCompatible
+        , base : BaseItem
         , value : Int
     }
 
