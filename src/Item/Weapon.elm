@@ -43,12 +43,12 @@ import Json.Decode as JD
 import Utils.Mass as Mass exposing (Mass)
 
 
-damage : Weapon -> Dice
+damage : Weapon compatible -> Dice
 damage { damage } =
     damage
 
 
-init : WeaponType -> ItemStatus -> IdentificationStatus -> Weapon
+init : WeaponType -> ItemStatus -> IdentificationStatus -> Weapon compatible
 init weaponType status idStatus =
     let
         make name ( weight, bulk ) css ( buy, sell ) damage =

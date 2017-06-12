@@ -4,7 +4,7 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : HelmetType -> ItemStatus -> IdentificationStatus -> Helmet
+init : HelmetType -> ItemStatus -> IdentificationStatus -> Helmet compatible
 init helmetType status idStatus =
     let
         make name mass css prices ac =

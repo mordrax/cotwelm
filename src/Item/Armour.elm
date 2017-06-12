@@ -5,7 +5,7 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : ArmourType -> ItemStatus -> IdentificationStatus -> Armour
+init : ArmourType -> ItemStatus -> IdentificationStatus -> Armour compatible
 init armourType status idStatus =
     let
         make name ( weight, bulk ) css ( buy, sell ) ac =

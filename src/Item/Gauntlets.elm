@@ -4,7 +4,7 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : GauntletsType -> ItemStatus -> IdentificationStatus -> Gauntlets
+init : GauntletsType -> ItemStatus -> IdentificationStatus -> Gauntlets compatible
 init gauntletsType status idStatus =
     let
         make name mass css prices ac =
