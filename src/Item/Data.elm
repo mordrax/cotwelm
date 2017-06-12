@@ -92,6 +92,10 @@ type Prices
     = Prices Buy Sell
 
 
+type ItemCompatible
+    = ItemCompatible
+
+
 {-| The common set of data for all items.
 -}
 type alias BaseItem =
@@ -101,84 +105,190 @@ type alias BaseItem =
     , mass : Mass
     , status : ItemStatus
     , isIdentified : IdentificationStatus
-    }
 
-
-type alias Weapon =
-    { base : BaseItem
+    -- weapon
+    , weapon : ItemCompatible
     , weaponType : WeaponType
     , damage : Dice
-    }
 
-
-type alias Armour =
-    { base : BaseItem
+    -- armour
     , armourType : ArmourType
-    , ac : AC
-    }
-
-
-type alias Gauntlets =
-    { base : BaseItem
     , gauntletsType : GauntletsType
-    , ac : AC
-    }
-
-
-type alias Helmet =
-    { base : BaseItem
     , helmetType : HelmetType
-    , ac : AC
-    }
-
-
-type alias Bracers =
-    { base : BaseItem
     , bracersType : BracersType
-    , ac : AC
-    }
-
-
-type alias Shield =
-    { base : BaseItem
     , shieldType : ShieldType
     , ac : AC
-    }
 
-
-type alias Boots =
-    { base : BaseItem, bootsType : BootsType }
-
-
-type alias Neckwear =
-    { base : BaseItem, neckwearType : NeckwearType }
-
-
-type alias Overgarment =
-    { base : BaseItem, overgarmentType : OvergarmentType }
-
-
-type alias Ring =
-    { base : BaseItem, ringType : RingType }
-
-
-type BeltContainer a
-    = TwoSlot ( Maybe a, Maybe a )
-    | ThreeSlot ( Maybe a, Maybe a, Maybe a )
-    | FourSlot ( Maybe a, Maybe a, Maybe a, Maybe a )
-
-
-type alias Belt a =
-    { base : BaseItem
+    -- misc
+    , bootsType : BootsType
+    , neckwearType : NeckwearType
+    , overgarmentType : OvergarmentType
+    , ringType : RingType
     , beltType : BeltType
-    , beltContainer : BeltContainer a
+    , beltContainer : BeltContainer
+    , container : Container
+
+    -- purse and single pile of coins
+    , coins : Coins
+    , value : Int
     }
 
 
-type alias Pack a =
-    { base : BaseItem
-    , packType : PackType
-    , container : Container a
+type alias Weapon compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , weapon : ItemCompatible
+        , weaponType : WeaponType
+        , damage : Dice
+    }
+
+
+type alias Armour compatible =
+    { compatible
+        | armour : ItemCompatible
+        , name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , armourType : ArmourType
+        , ac : AC
+    }
+
+
+type alias Gauntlets compatible =
+    { compatible
+        | gauntlets : ItemCompatible
+        , name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , gauntletsType : GauntletsType
+        , ac : AC
+    }
+
+
+type alias Helmet compatible =
+    { compatible
+        | helmet : ItemCompatible
+        , name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , helmetType : HelmetType
+        , ac : AC
+    }
+
+
+type alias Bracers compatible =
+    { compatible
+        | bracers : ItemCompatible
+        , name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , bracersType : BracersType
+        , ac : AC
+    }
+
+
+type alias Shield compatible =
+    { compatible
+        | shield : ItemCompatible
+        , name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , shieldType : ShieldType
+        , ac : AC
+    }
+
+
+type alias Boots compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , bootsType : BootsType
+    }
+
+
+type alias Neckwear compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , neckwearType : NeckwearType
+    }
+
+
+type alias Overgarment compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , overgarmentType : OvergarmentType
+    }
+
+
+type alias Ring compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , ringType : RingType
+    }
+
+
+type alias Belt compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , beltType : BeltType
+        , beltContainer : BeltContainer Item
+    }
+
+
+type alias Pack compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , packType : PackType
+        , container : Container Item
     }
 
 
@@ -190,26 +300,70 @@ type alias Coins =
     }
 
 
-type alias Purse =
-    { base : BaseItem
-    , coins : Coins
+type alias Purse compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , coins : Coins
     }
 
 
-type alias CopperCoins =
-    { base : BaseItem, value : Int }
+type alias CopperCoins compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , value : Int
+    }
 
 
-type alias SilverCoins =
-    { base : BaseItem, value : Int }
+type alias SilverCoins compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , value : Int
+    }
 
 
-type alias GoldCoins =
-    { base : BaseItem, value : Int }
+type alias GoldCoins compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , value : Int
+    }
 
 
-type alias PlatinumCoins =
-    { base : BaseItem, value : Int }
+type alias PlatinumCoins compatible =
+    { compatible
+        | name : String
+        , prices : Prices
+        , css : String
+        , mass : Mass
+        , status : ItemStatus
+        , isIdentified : IdentificationStatus
+        , value : Int
+    }
+
+
+type BeltContainer a
+    = TwoSlot ( Maybe a, Maybe a )
+    | ThreeSlot ( Maybe a, Maybe a, Maybe a )
+    | FourSlot ( Maybe a, Maybe a, Maybe a, Maybe a )
 
 
 
