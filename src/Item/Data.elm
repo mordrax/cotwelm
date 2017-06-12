@@ -154,7 +154,7 @@ initBasicItem baseItem =
     , overgarmentType = OvergarmentType
     , ringType = RingType
     , beltType = TwoSlotBelt
-    , beltContainer = TwoSlot ( Nothing, Nothing )
+    , beltContainer = TwoSlot Nothing Nothing
     , container = PackOfItems (Container.init (Capacity 0 0) fakeMass (==))
 
     -- purse and single pile of coins
@@ -441,13 +441,13 @@ type alias PlatinumCoins compatible =
 
 
 type BeltOfItems
-    = TwoSlot ( Maybe BasicItem, Maybe BasicItem )
-    | ThreeSlot ( Maybe BasicItem, Maybe BasicItem, Maybe BasicItem )
-    | FourSlot ( Maybe BasicItem, Maybe BasicItem, Maybe BasicItem, Maybe BasicItem )
+    = TwoSlot (Maybe BasicItem) (Maybe BasicItem)
+    | ThreeSlot (Maybe BasicItem) (Maybe BasicItem) (Maybe BasicItem)
+    | FourSlot (Maybe BasicItem) (Maybe BasicItem) (Maybe BasicItem) (Maybe BasicItem)
 
 
 
--- Sub item types
+--Sub item types
 
 
 type WeaponType
