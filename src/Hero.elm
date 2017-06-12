@@ -17,7 +17,7 @@ import Container
 import Equipment exposing (Equipment, EquipmentSlot)
 import Html exposing (..)
 import Html.Attributes as HA
-import Item.Data
+import Item.Data exposing (BasicItem, Item)
 import Stats exposing (Stats)
 import Types exposing (..)
 import Utils.Direction as Direction exposing (Direction)
@@ -91,7 +91,7 @@ move direction model =
         |> (\x -> { model | position = x })
 
 
-pickup : List Item.Data.Item -> Hero -> ( Hero, List Item.Data.Item, List String )
+pickup : List (Item BasicItem) -> Hero -> ( Hero, List (Item BasicItem), List String )
 pickup items hero =
     let
         ( hero_, msgs, failedToPickup ) =
@@ -100,7 +100,7 @@ pickup items hero =
     ( hero_, failedToPickup, msgs )
 
 
-pickup_ : Item.Data.Item -> ( Hero, List String, List Item.Data.Item ) -> ( Hero, List String, List Item.Data.Item )
+pickup_ : Item BasicItem -> ( Hero, List String, List (Item BasicItem) ) -> ( Hero, List String, List (Item BasicItem) )
 pickup_ item ( hero, messages, remainingItems ) =
     let
         ( equipment_, msg ) =
