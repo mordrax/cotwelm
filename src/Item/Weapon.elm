@@ -39,13 +39,19 @@ module Item.Weapon
 import Dice exposing (Dice)
 import Dict exposing (Dict)
 import Item.Data exposing (..)
-import Json.Decode as JD
 import Utils.Mass as Mass exposing (Mass)
 
 
 damage : Weapon compatible -> Dice
 damage { damage } =
     damage
+
+
+type alias WeaponData =
+    ( BaseItem, Damage )
+
+
+makeWeaponData : BaseItem
 
 
 init : WeaponType -> ItemStatus -> IdentificationStatus -> Weapon compatible

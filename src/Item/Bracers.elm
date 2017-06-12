@@ -5,44 +5,36 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-setBracers : BracersType -> ( BaseItem, AC ) -> Bracers BasicItem
-setBracers bracersType ( baseItem, ac ) =
+{-| Given a bracers type, will make a new pair of bracers
+-}
+init : BracersType -> Bracers BasicItem
+init bracersType =
+    EveryDict.get bracersType data
+        |> Maybe.withDefault normalBracers
+        |> setAsBracers bracersType
+
+
+setAsBracers : BracersType -> BracersData -> Bracers BasicItem
+setAsBracers bracersType (BracersData ac baseItem) =
     initBasicItem baseItem
         |> setBracersType bracersType
         |> setAC ac
 
 
-init : BracersType -> ItemStatus -> IdentificationStatus -> Bracers BasicItem
-init bracersType status idStatus =
-    EveryDict.get bracersType data
-        |> Maybe.withDefault normalBracers
-        |> setBracers bracersType
+type BracersData
+    = BracersData AC BaseItem
 
 
-normalBracers : ( BaseItem, AC )
+normalBracers : BracersData
 normalBracers =
-    ( initBaseItem "Bracers" (Prices 108 60) "bracers" (Mass.Mass 500 2000) Normal Identified
-    , AC 3
-    )
+    BracersData (AC 3) (BaseItem "Bracers" (Prices 108 60) "bracers" (Mass 500 2000) Normal Identified)
 
 
-data : EveryDict BracersType ( BaseItem, AC )
+data : EveryDict BracersType BracersData
 data =
     EveryDict.fromList
         [ ( NormalBracers, normalBracers )
-        , ( BracersOfDefenseNormal
-          , ( initBaseItem "Bracers Of Defense Normal" (Prices 1836 1020) "bracers-enchanted" (Mass.Mass 500 2000) Normal Identified
-            , AC 8
-            )
-          )
-        , ( BracersOfDefenseS
-          , ( initBaseItem "Bracers Of Defense Strong" (Prices 5616 3120) "bracers-enchanted" (Mass.Mass 500 2000) Normal Identified
-            , AC 13
-            )
-          )
-        , ( BracersOfDefenseVS
-          , ( initBaseItem "Bracers Of Defense Very Strong" (Prices 11556 6420) "bracers-enchanted" (Mass.Mass 500 2000) Normal Identified
-            , AC 18
-            )
-          )
+        , ( BracersOfDefenseNormal, BracersData (AC 8) (BaseItem "Bracers Of Defense" (Prices 1836 1020) "bracers-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( BracersOfDefenseS, BracersData (AC 13) (BaseItem "Bracers Of Defense" (Prices 5616 3120) "bracers-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( BracersOfDefenseVS, BracersData (AC 18) (BaseItem "Bracers Of Defense" (Prices 11556 6420) "bracers-enchanted" (Mass 500 2000) Normal Identified) )
         ]
