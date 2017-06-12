@@ -155,6 +155,7 @@ initBasicItem baseItem =
     , ringType = RingType
 
     -- belt
+    , belt = ItemCompatible
     , beltType = TwoSlotBelt
     , beltContainer = TwoSlot Nothing Nothing
 
@@ -206,6 +207,7 @@ type alias BasicItem =
     , ringType : RingType
 
     -- belt
+    , belt : ItemCompatible
     , beltType : BeltType
     , beltContainer : BeltOfItems
 
