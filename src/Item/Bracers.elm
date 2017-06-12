@@ -7,15 +7,15 @@ import Utils.Mass as Mass exposing (Mass)
 
 {-| Given a bracers type, will make a new pair of bracers
 -}
-init : BracersType -> Bracers BasicItem
-init bracersType =
+init : BracersType -> ItemStatus -> IdentificationStatus -> Bracers BasicItem
+init bracersType status idStatus =
     EveryDict.get bracersType data
         |> Maybe.withDefault normalBracers
-        |> setAsBracers bracersType
+        |> setBracersData bracersType
 
 
-setAsBracers : BracersType -> BracersData -> Bracers BasicItem
-setAsBracers bracersType (BracersData ac baseItem) =
+setBracersData : BracersType -> BracersData -> Bracers BasicItem
+setBracersData bracersType (BracersData ac baseItem) =
     initBasicItem baseItem
         |> setBracersType bracersType
         |> setAC ac
