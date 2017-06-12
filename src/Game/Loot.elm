@@ -1,12 +1,12 @@
 module Game.Loot exposing (..)
 
 import Item
-import Item.Data exposing (Item)
+import Item.Data exposing (BasicItem, Item)
 import Random.Pcg as Random exposing (Generator)
 
 
 type alias Loot =
-    List Item
+    List (Item BasicItem)
 
 
 generate : Generator Loot

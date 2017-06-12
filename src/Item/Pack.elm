@@ -27,7 +27,7 @@ contents { container } =
             Container.list contents
 
 
-add : BasicItem -> Pack compatible -> ( Pack compatible, Container.Msg )
+add : BasicItem -> Pack BasicItem -> ( Pack BasicItem, Container.Msg )
 add item ({ container } as pack) =
     let
         packContainer =
@@ -41,7 +41,7 @@ add item ({ container } as pack) =
     ( { pack | container = PackOfItems newContainer }, msgs )
 
 
-remove : BasicItem -> Pack compatible -> Pack compatible
+remove : BasicItem -> Pack BasicItem -> Pack BasicItem
 remove item ({ container } as pack) =
     let
         packContainer =
