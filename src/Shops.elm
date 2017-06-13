@@ -43,11 +43,11 @@ type StoreType
 
 
 type alias Stores =
-    EveryDict StoreType (List Item)
+    EveryDict StoreType (List (Item BasicItem))
 
 
 type Store
-    = B (List Item) StoreType
+    = B (List (Item BasicItem)) StoreType
 
 
 {-| Time taken for the shop to change it's wares
@@ -90,7 +90,7 @@ init seed =
 
 {-| The shop sells to the customer.
 -}
-sell : Item -> Purse -> Store -> Result String ( Store, Purse )
+sell : Item BasicItem -> Purse BasicItem -> Store -> Result String ( Store, Purse BasicItem )
 sell item purse (B items shopType) =
     let
         price =
@@ -109,7 +109,7 @@ sell item purse (B items shopType) =
 
 {-| The shop buys from the customer.
 -}
-buy : Item -> Purse -> Store -> ( Store, Purse )
+buy : Item BasicItem -> Purse BasicItem -> Store -> ( Store, Purse BasicItem )
 buy item purse (B items shopType) =
     let
         cost =
@@ -130,7 +130,7 @@ replenishReducer shopType ( currentStores, seed ) =
     ( newStores, seed_ )
 
 
-replenish : ItemTypes -> Seed -> ( List Item, Seed )
+replenish : ItemTypes -> Seed -> ( List (Item BasicItem), Seed )
 replenish itemTypes seed =
     let
         defaultProduct =
@@ -154,12 +154,12 @@ getSeed =
         Time.now
 
 
-wares : Store -> List Item
+wares : Store -> List (Item BasicItem)
 wares (B items _) =
     items
 
 
-list : StoreType -> Stores -> List Item
+list : StoreType -> Stores -> List (Item BasicItem)
 list shopType stores =
     stores
         |> Dict.get shopType

@@ -38,125 +38,76 @@ module Item.Weapon
 
 import Dice exposing (Dice)
 import Dict exposing (Dict)
+import EveryDict exposing (EveryDict)
 import Item.Data exposing (..)
-import Json.Decode as JD
 import Utils.Mass as Mass exposing (Mass)
 
 
-damage : Weapon -> Dice
-damage { damage } =
-    damage
-
-
-init : WeaponType -> ItemStatus -> IdentificationStatus -> Weapon
+init : WeaponType -> ItemStatus -> IdentificationStatus -> Weapon BasicItem
 init weaponType status idStatus =
-    let
-        make name ( weight, bulk ) css ( buy, sell ) damage =
-            { base = BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus
-            , weaponType = weaponType
-            , damage = damage
-            }
+    EveryDict.get weaponType data
+        |> Maybe.withDefault brokenSword
+        |> setWeaponData weaponType
 
-        makeMonsterWeapon name damage =
-            make name ( 0, 0 ) "" ( 0, 0 ) damage
 
-        d n faces bonus =
-            Dice n faces bonus
-    in
-    case weaponType of
-        BrokenSword ->
-            make "Broken Sword" ( 1000, 5000 ) "broken-sword" ( 0, 25 ) (d 1 6 -2)
+setWeaponData : WeaponType -> WeaponData -> Weapon BasicItem
+setWeaponData weaponType (WeaponData damage baseItem) =
+    initBasicItem baseItem BIT_Weapon
+        |> setWeaponType weaponType
+        |> setDamage damage
 
-        Club ->
-            make "Club" ( 2500, 3000 ) "club" ( 105, 60 ) (d 3 2 0)
 
-        Dagger ->
-            make "Dagger" ( 500, 500 ) "sword" ( 420, 240 ) (d 1 4 0)
+type WeaponData
+    = WeaponData Dice BaseItem
 
-        Hammer ->
-            make "Hammer" ( 1500, 3000 ) "hammer" ( 420, 240 ) (d 2 2 0)
 
-        HandAxe ->
-            make "Hand Axe" ( 1000, 3000 ) "axe" ( 472, 270 ) (d 1 5 0)
+brokenSword : WeaponData
+brokenSword =
+    WeaponData (damage 1 6 -2) (BaseItem "Broken Sword" (Prices 0 25) "broken-sword" (Mass 1000 5000) Normal Identified)
 
-        Quarterstaff ->
-            make "Quarterstaff" ( 1000, 5000 ) "spear" ( 648, 360 ) (d 3 1 0)
 
-        Spear ->
-            make "Spear" ( 2500, 5000 ) "spear" ( 840, 480 ) (d 1 9 0)
+damage : Int -> Int -> Int -> Dice
+damage n faces bonus =
+    Dice n faces bonus
 
-        ShortSword ->
-            make "Short Sword" ( 1500, 5000 ) "sword" ( 1470, 840 ) (d 1 6 0)
 
-        Mace ->
-            make "Mace" ( 2500, 4375 ) "mace" ( 1728, 960 ) (d 3 2 0)
-
-        Flail ->
-            make "Flail" ( 4500, 3250 ) "flail" ( 1512, 840 ) (d 4 3 0)
-
-        Axe ->
-            make "Axe" ( 3000, 5000 ) "axe" ( 1944, 1080 ) (d 1 9 0)
-
-        WarHammer ->
-            make "War Hammer" ( 4000, 7500 ) "hammer" ( 2160, 1200 ) (d 4 3 -1)
-
-        LongSword ->
-            make "Long Sword" ( 2500, 8000 ) "sword" ( 3240, 1800 ) (d 1 8 0)
-
-        BattleAxe ->
-            make "Battle Axe" ( 3500, 6000 ) "axe" ( 2160, 1200 ) (d 2 5 0)
-
-        BroadSword ->
-            make "Broad Sword" ( 3000, 9000 ) "sword" ( 3240, 1800 ) (d 1 9 0)
-
-        MorningStar ->
-            make "Morning Star" ( 3000, 9000 ) "morning-star" ( 2160, 1200 ) (d 4 2 0)
-
-        BastardSword ->
-            make "Bastard Sword" ( 4500, 10000 ) "sword" ( 4320, 2400 ) (d 2 7 0)
-
-        TwoHandedSword ->
-            make "Two Handed Sword" ( 5000, 12000 ) "sword" ( 6360, 3600 ) (d 2 8 0)
+data : EveryDict WeaponType WeaponData
+data =
+    EveryDict.fromList
+        [ ( BrokenSword, WeaponData (damage 1 6 -2) (BaseItem "Broken Sword" (Prices 0 25) "broken-sword" (Mass 1000 5000) Normal Identified) )
+        , ( Club, WeaponData (damage 3 2 0) (BaseItem "Club" (Prices 105 60) "club" (Mass 2500 3000) Normal Identified) )
+        , ( Dagger, WeaponData (damage 1 4 0) (BaseItem "Dagger" (Prices 420 240) "sword" (Mass 500 500) Normal Identified) )
+        , ( Hammer, WeaponData (damage 2 2 0) (BaseItem "Hammer" (Prices 420 240) "hammer" (Mass 1500 3000) Normal Identified) )
+        , ( HandAxe, WeaponData (damage 1 5 0) (BaseItem "Hand Axe" (Prices 472 270) "axe" (Mass 1000 3000) Normal Identified) )
+        , ( Quarterstaff, WeaponData (damage 3 1 0) (BaseItem "Quarterstaff" (Prices 648 360) "spear" (Mass 1000 5000) Normal Identified) )
+        , ( Spear, WeaponData (damage 1 9 0) (BaseItem "Spear" (Prices 840 480) "spear" (Mass 2500 5000) Normal Identified) )
+        , ( ShortSword, WeaponData (damage 1 6 0) (BaseItem "Short Sword" (Prices 1470 840) "sword" (Mass 1500 5000) Normal Identified) )
+        , ( Mace, WeaponData (damage 3 2 0) (BaseItem "Mace" (Prices 1728 960) "mace" (Mass 2500 4375) Normal Identified) )
+        , ( Flail, WeaponData (damage 4 3 0) (BaseItem "Flail" (Prices 1512 840) "flail" (Mass 4500 3250) Normal Identified) )
+        , ( Axe, WeaponData (damage 1 9 0) (BaseItem "Axe" (Prices 1944 1080) "axe" (Mass 3000 5000) Normal Identified) )
+        , ( WarHammer, WeaponData (damage 4 3 -1) (BaseItem "War Hammer" (Prices 2160 1200) "hammer" (Mass 4000 7500) Normal Identified) )
+        , ( LongSword, WeaponData (damage 1 8 0) (BaseItem "Long Sword" (Prices 3240 1800) "sword" (Mass 2500 8000) Normal Identified) )
+        , ( BattleAxe, WeaponData (damage 2 5 0) (BaseItem "Battle Axe" (Prices 2160 1200) "axe" (Mass 3500 6000) Normal Identified) )
+        , ( BroadSword, WeaponData (damage 1 9 0) (BaseItem "Broad Sword" (Prices 3240 1800) "sword" (Mass 3000 9000) Normal Identified) )
+        , ( MorningStar, WeaponData (damage 4 2 0) (BaseItem "Morning Star" (Prices 2160 1200) "morning-star" (Mass 3000 9000) Normal Identified) )
+        , ( BastardSword, WeaponData (damage 2 7 0) (BaseItem "Bastard Sword" (Prices 4320 2400) "sword" (Mass 4500 10000) Normal Identified) )
+        , ( TwoHandedSword, WeaponData (damage 2 8 0) (BaseItem "Two Handed Sword" (Prices 6360 3600) "sword" (Mass 5000 12000) Normal Identified) )
 
         -- monster weapons
-        SmallClaws ->
-            makeMonsterWeapon "Small Claws" (d 1 4 0)
-
-        SmallBite ->
-            makeMonsterWeapon "Small Bite" (d 1 5 0)
-
-        Crossbow ->
-            makeMonsterWeapon "Crossbow" (d 1 10 0)
-
-        Fangs ->
-            makeMonsterWeapon "Fangs" (d 1 4 0)
-
-        Pincers ->
-            makeMonsterWeapon "Pincers" (d 4 2 0)
-
-        Bow ->
-            makeMonsterWeapon "Bow" (d 1 6 0)
-
-        LargeClaws ->
-            makeMonsterWeapon "Large Claws" (d 1 8 0)
-
-        LargeClub ->
-            makeMonsterWeapon "Large Club" (d 3 4 2)
-
-        Pike ->
-            makeMonsterWeapon "Pike" (d 1 15 2)
-
-        StoneClub ->
-            makeMonsterWeapon "Stone Club" (d 3 8 5)
-
-        GiantAxe ->
-            makeMonsterWeapon "Giant Axe" (d 2 10 5)
-
-        Boulder ->
-            makeMonsterWeapon "Boulder" (d 3 3 3)
-
-        GiantMaul ->
-            makeMonsterWeapon "Giant Maul" (d 4 6 10)
+        , ( SmallClaws, WeaponData (damage 1 4 0) (BaseItem "Small Claws" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( SmallBite, WeaponData (damage 1 5 0) (BaseItem "Small Bite" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( Crossbow, WeaponData (damage 1 10 0) (BaseItem "Crossbow" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( Fangs, WeaponData (damage 1 4 0) (BaseItem "Fangs" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( Pincers, WeaponData (damage 4 2 0) (BaseItem "Pincers" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( Bow, WeaponData (damage 1 6 0) (BaseItem "Bow" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( LargeClaws, WeaponData (damage 1 8 0) (BaseItem "Large Claws" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( LargeClub, WeaponData (damage 3 4 2) (BaseItem "Large Club" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( Pike, WeaponData (damage 1 15 2) (BaseItem "Pike" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( StoneClub, WeaponData (damage 3 8 5) (BaseItem "Stone Club" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( GiantAxe, WeaponData (damage 2 10 5) (BaseItem "Giant Axe" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( Boulder, WeaponData (damage 3 3 3) (BaseItem "Boulder" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        , ( GiantMaul, WeaponData (damage 4 6 10) (BaseItem "Giant Maul" (Prices 0 0) "" (Mass 0 0) Normal Identified) )
+        ]
 
 
 listTypes : List WeaponType

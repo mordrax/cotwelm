@@ -33,7 +33,7 @@ import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
 import Html exposing (..)
-import Item.Data exposing (Item)
+import Item.Data exposing (BasicItem, Item)
 import List.Extra as ListX
 import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Generator)
@@ -48,6 +48,10 @@ import Utils.Vector as Vector exposing (Vector)
 
 type alias Map =
     Dict Vector Tile
+
+
+type alias Items =
+    List (Item BasicItem)
 
 
 type alias MemoisedPaths =
@@ -178,7 +182,7 @@ toScreenCoords map mapSize =
         |> Dict.fromList
 
 
-updateGround : Vector -> List Item -> Level -> Level
+updateGround : Vector -> Items -> Level -> Level
 updateGround pos payload model =
     let
         maybeTile =
@@ -193,7 +197,7 @@ updateGround pos payload model =
             { model | map = Dict.insert pos tile model.map }
 
 
-pickup : Vector -> Level -> ( Level, List Item )
+pickup : Vector -> Level -> ( Level, Items )
 pickup position level =
     let
         levelWithClearedTile ( items, clearedTile ) =
@@ -206,7 +210,7 @@ pickup position level =
         |> Maybe.withDefault ( level, [] )
 
 
-ground : Vector -> Level -> List Item
+ground : Vector -> Level -> Items
 ground position { map } =
     Dict.get position map
         |> Maybe.map (.ground >> Container.list)
@@ -215,7 +219,7 @@ ground position { map } =
 
 {-| Drop an item on the level.
 -}
-drop : ( Vector, Item ) -> Level -> Level
+drop : ( Vector, Item BasicItem ) -> Level -> Level
 drop ( position, item ) ({ map } as level) =
     level
         |> getTile position
@@ -223,7 +227,7 @@ drop ( position, item ) ({ map } as level) =
         |> Maybe.withDefault level
 
 
-drops : ( Vector, List Item ) -> Level -> Level
+drops : ( Vector, Items ) -> Level -> Level
 drops ( position, items ) level =
     List.foldl drop level (ListX.lift2 (,) [ position ] items)
 

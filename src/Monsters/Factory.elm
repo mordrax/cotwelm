@@ -11,7 +11,7 @@ module Monsters.Factory
 import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
 import Item
-import Item.Data as ItemData exposing (..)
+import Item.Data exposing (..)
 import Monsters.Model as Model exposing (Monster)
 import Monsters.Types exposing (..)
 import Random.Pcg as Random exposing (Generator)
@@ -43,17 +43,17 @@ randomMonster maxRank position =
         |> Random.map (flip make position)
 
 
-weaponSlot : WeaponType -> ( Equipment.EquipmentSlot, Item )
+weaponSlot : WeaponType -> ( Equipment.EquipmentSlot, Item BasicItem )
 weaponSlot weaponType =
     ( Equipment.WeaponSlot, Item.new (ItemTypeWeapon weaponType) )
 
 
-armourSlot : ArmourType -> ( Equipment.EquipmentSlot, Item )
+armourSlot : ArmourType -> ( Equipment.EquipmentSlot, Item BasicItem )
 armourSlot armourType =
     ( Equipment.ArmourSlot, Item.new (ItemTypeArmour armourType) )
 
 
-makeShield : ShieldType -> Item
+makeShield : ShieldType -> Item BasicItem
 makeShield shieldType =
     Item.new (ItemTypeShield shieldType)
 

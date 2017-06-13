@@ -16,7 +16,7 @@ import Container exposing (Container)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Item
-import Item.Data exposing (Item)
+import Item.Data exposing (BasicItem, Item)
 import Random.Pcg as Random
 import Tile.Model exposing (..)
 import Tile.Types exposing (..)
@@ -47,7 +47,7 @@ view =
 
 {-| Drop something onto the ground (which is a container on the tile.
 -}
-drop : Item -> Tile -> Tile
+drop : Item BasicItem -> Tile -> Tile
 drop item model =
     let
         ( groundWithItem, _ ) =
@@ -56,12 +56,12 @@ drop item model =
     { model | ground = groundWithItem }
 
 
-pickup : Tile -> ( List Item, Tile )
+pickup : Tile -> ( List (Item BasicItem), Tile )
 pickup ({ ground } as tile) =
     ( Container.list ground, { tile | ground = Container.set [] ground } )
 
 
-updateGround : List Item -> Tile -> Tile
+updateGround : List (Item BasicItem) -> Tile -> Tile
 updateGround items model =
     { model | ground = Container.set items model.ground }
 

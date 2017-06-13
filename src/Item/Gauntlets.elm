@@ -1,54 +1,47 @@
 module Item.Gauntlets exposing (..)
 
+import EveryDict exposing (EveryDict)
 import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : GauntletsType -> ItemStatus -> IdentificationStatus -> Gauntlets
+init : GauntletsType -> ItemStatus -> IdentificationStatus -> Gauntlets BasicItem
 init gauntletsType status idStatus =
-    let
-        make name mass css prices ac =
-            { base = BaseItem name prices css mass status idStatus
-            , gauntletsType = gauntletsType
-            , ac = ac
-            }
-    in
-    case gauntletsType of
-        NormalGauntlets ->
-            make "Gauntlet" (Mass.Mass 500 2000) "gauntlet" (Prices 105 60) (AC 5)
+    EveryDict.get gauntletsType data
+        |> Maybe.withDefault normalGauntlets
+        |> setGauntletsData gauntletsType
 
-        GauntletOfProtection ->
-            make "Gauntlet Of Protection" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 2625 1500) (AC 10)
 
-        GauntletOfProtectionS ->
-            make "Gauntlet Of Protection Strong" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 6300 3600) (AC 15)
+setGauntletsData : GauntletsType -> GauntletsData -> Gauntlets BasicItem
+setGauntletsData gauntletsType (GauntletsData ac baseItem) =
+    initBasicItem baseItem BIT_Gauntlets
+        |> setGauntletsType gauntletsType
+        |> setAC ac
 
-        GauntletOfProtectionVS ->
-            make "Gauntlet Of Protection Very Strong" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 12420 6900) (AC 20)
 
-        GauntletOfSlaying ->
-            make "Gauntlet Of Slaying" (Mass.Mass 500 2000) "gauntlet-of-slaying" (Prices 3780 2100) (AC 0)
+type GauntletsData
+    = GauntletsData AC BaseItem
 
-        GauntletOfSlayingS_S ->
-            make "Gauntlet Of Slaying Strong" (Mass.Mass 500 2000) "gauntlet-of-slaying" (Prices 7560 4200) (AC 0)
 
-        GauntletOfSlayingVS_VS ->
-            make "Gauntlet Of Slaying Very Strong" (Mass.Mass 500 2000) "gauntlet-of-slaying" (Prices 13125 7500) (AC 0)
+normalGauntlets : GauntletsData
+normalGauntlets =
+    GauntletsData (AC 3) (BaseItem "Gauntlets" (Prices 108 60) "gauntlets" (Mass 500 2000) Normal Identified)
 
-        GauntletOfDexterity ->
-            make "Gauntlet Of Dexterity" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 3240 1800) (AC 5)
 
-        GauntletOfDexterityS ->
-            make "Gauntlet Of Dexterity Strong" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 7020 3900) (AC 5)
-
-        GauntletOfDexterityVS ->
-            make "Gauntlet Of Dexterity Very Strong" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 12960 7200) (AC 5)
-
-        GauntletOfStrength ->
-            make "Gauntlet Of Strength" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 3240 1800) (AC 5)
-
-        GauntletOfStrengthS ->
-            make "Gauntlet Of Strength Strong" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 0 0) (AC 5)
-
-        GauntletOfStrengthVS ->
-            make "Gauntlet Of Strength Very Strong" (Mass.Mass 500 2000) "gauntlet-enchanted" (Prices 12960 7200) (AC 5)
+data : EveryDict GauntletsType GauntletsData
+data =
+    EveryDict.fromList
+        [ ( NormalGauntlets, GauntletsData (AC 5) (BaseItem "Gauntlet" (Prices 105 60) "gauntlet" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfProtection, GauntletsData (AC 10) (BaseItem "Gauntlet Of Protection" (Prices 2625 1500) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfProtectionS, GauntletsData (AC 15) (BaseItem "Gauntlet Of Protection Strong" (Prices 6300 3600) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfProtectionVS, GauntletsData (AC 20) (BaseItem "Gauntlet Of Protection Very Strong" (Prices 12420 6900) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfSlaying, GauntletsData (AC 0) (BaseItem "Gauntlet Of Slaying" (Prices 3780 2100) "gauntlet-of-slaying" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfSlayingS_S, GauntletsData (AC 0) (BaseItem "Gauntlet Of Slaying Strong" (Prices 7560 4200) "gauntlet-of-slaying" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfSlayingVS_VS, GauntletsData (AC 0) (BaseItem "Gauntlet Of Slaying Very Strong" (Prices 13125 7500) "gauntlet-of-slaying" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfDexterity, GauntletsData (AC 5) (BaseItem "Gauntlet Of Dexterity" (Prices 3240 1800) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfDexterityS, GauntletsData (AC 5) (BaseItem "Gauntlet Of Dexterity Strong" (Prices 7020 3900) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfDexterityVS, GauntletsData (AC 5) (BaseItem "Gauntlet Of Dexterity Very Strong" (Prices 12960 7200) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfStrength, GauntletsData (AC 5) (BaseItem "Gauntlet Of Strength" (Prices 3240 1800) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfStrengthS, GauntletsData (AC 5) (BaseItem "Gauntlet Of Strength Strong" (Prices 0 0) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        , ( GauntletOfStrengthVS, GauntletsData (AC 5) (BaseItem "Gauntlet Of Strength Very Strong" (Prices 12960 7200) "gauntlet-enchanted" (Mass 500 2000) Normal Identified) )
+        ]

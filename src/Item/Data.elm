@@ -40,24 +40,52 @@ type alias ItemTypes =
     List ItemType
 
 
-type Item
-    = ItemWeapon Weapon
-    | ItemArmour Armour
-    | ItemShield Shield
-    | ItemHelmet Helmet
-    | ItemBracers Bracers
-    | ItemGauntlets Gauntlets
-    | ItemBelt (Belt Item)
-    | ItemPack (Pack Item)
-    | ItemPurse Purse
-    | ItemNeckwear Neckwear
-    | ItemOvergarment Overgarment
-    | ItemRing Ring
-    | ItemBoots Boots
-    | ItemCopper CopperCoins
-    | ItemSilver SilverCoins
-    | ItemGold GoldCoins
-    | ItemPlatinum PlatinumCoins
+type alias Item compatible =
+    { compatible
+        | base : BaseItem
+        , item : ItemCompatible
+    }
+
+
+
+--type Item compatible
+--    = ItemWeapon Weapon
+--    | ItemArmour Armour
+--    | ItemShield Shield
+--    | ItemHelmet Helmet
+--    | ItemBracers Bracers
+--    | ItemGauntlets Gauntlets
+--    | ItemBelt (Belt Item)
+--    | ItemPack (Pack Item)
+--    | ItemPurse Purse
+--    | ItemNeckwear Neckwear
+--    | ItemOvergarment Overgarment
+--    | ItemRing Ring
+--    | ItemBoots Boots
+--    | ItemCopper CopperCoins
+--    | ItemSilver SilverCoins
+--    | ItemGold GoldCoins
+--    | ItemPlatinum PlatinumCoins
+
+
+type BasicItemType
+    = BIT_Weapon
+    | BIT_Armour
+    | BIT_Shield
+    | BIT_Helmet
+    | BIT_Bracers
+    | BIT_Gauntlets
+    | BIT_Belt
+    | BIT_Pack
+    | BIT_Purse
+    | BIT_Neckwear
+    | BIT_Overgarment
+    | BIT_Ring
+    | BIT_Boots
+    | BIT_Copper
+    | BIT_Silver
+    | BIT_Gold
+    | BIT_Platinum
 
 
 type ItemType
@@ -92,94 +120,359 @@ type Prices
     = Prices Buy Sell
 
 
-{-| The common set of data for all items.
--}
+type ItemCompatible
+    = ItemCompatible
+
+
 type alias BaseItem =
     { name : String
     , prices : Prices
     , css : String
     , mass : Mass
     , status : ItemStatus
-    , isIdentified : IdentificationStatus
+    , idStatus : IdentificationStatus
     }
 
 
-type alias Weapon =
+initBaseItem : String -> Prices -> String -> Mass -> ItemStatus -> IdentificationStatus -> BaseItem
+initBaseItem name prices css mass status idStatus =
+    { name = name
+    , prices = prices
+    , css = css
+    , mass = mass
+    , status = status
+    , idStatus = idStatus
+    }
+
+
+initBasicItem : BaseItem -> BasicItemType -> BasicItem
+initBasicItem baseItem basicItemType =
+    { base = baseItem
+    , type_ = basicItemType
+    , item = ItemCompatible
+
+    -- stubs
+    , weapon = ItemCompatible
+    , weaponType = BrokenSword
+    , damage = Dice.die 0 0 0
+
+    -- armour
+    , armour = ItemCompatible
+    , ac = AC 0
+    , armourType = RustyArmour
+
+    -- gauntlets
+    , gauntlets = ItemCompatible
+    , gauntletsType = NormalGauntlets
+
+    -- helmet
+    , helmet = ItemCompatible
+    , helmetType = BrokenHelmet
+
+    -- bracers
+    , bracers = ItemCompatible
+    , bracersType = NormalBracers
+
+    -- shield
+    , shield = ItemCompatible
+    , shieldType = BrokenShield
+
+    -- misc
+    , bootsType = BootsType
+    , neckwearType = NeckwearType
+    , overgarmentType = OvergarmentType
+    , ringType = RingType
+
+    -- belt
+    , belt = ItemCompatible
+    , beltType = TwoSlotBelt
+    , beltContainer = TwoSlot Nothing Nothing
+
+    -- pack
+    , pack = ItemCompatible
+    , packType = SmallBag
+    , container = PackOfItems (Container.init (Capacity 0 0) fakeMass (==))
+
+    -- purse and single pile of coins
+    , purse = ItemCompatible
+    , coins = Coins 0 0 0 0
+    , coin = ItemCompatible
+    , value = 0
+    }
+
+
+fakeMass : a -> Mass
+fakeMass _ =
+    Mass 0 0
+
+
+{-| The common set of data for all items.
+-}
+type alias BasicItem =
     { base : BaseItem
+    , type_ : BasicItemType
+    , item : ItemCompatible
+
+    -- weapon
+    , weapon : ItemCompatible
     , weaponType : WeaponType
     , damage : Dice
-    }
 
-
-type alias Armour =
-    { base : BaseItem
+    -- armour
+    , armour : ItemCompatible
     , armourType : ArmourType
-    , ac : AC
-    }
-
-
-type alias Gauntlets =
-    { base : BaseItem
+    , gauntlets : ItemCompatible
     , gauntletsType : GauntletsType
-    , ac : AC
-    }
-
-
-type alias Helmet =
-    { base : BaseItem
+    , helmet : ItemCompatible
     , helmetType : HelmetType
-    , ac : AC
-    }
-
-
-type alias Bracers =
-    { base : BaseItem
+    , bracers : ItemCompatible
     , bracersType : BracersType
-    , ac : AC
-    }
-
-
-type alias Shield =
-    { base : BaseItem
+    , shield : ItemCompatible
     , shieldType : ShieldType
     , ac : AC
-    }
 
+    -- misc
+    , bootsType : BootsType
+    , neckwearType : NeckwearType
+    , overgarmentType : OvergarmentType
+    , ringType : RingType
 
-type alias Boots =
-    { base : BaseItem, bootsType : BootsType }
-
-
-type alias Neckwear =
-    { base : BaseItem, neckwearType : NeckwearType }
-
-
-type alias Overgarment =
-    { base : BaseItem, overgarmentType : OvergarmentType }
-
-
-type alias Ring =
-    { base : BaseItem, ringType : RingType }
-
-
-type BeltContainer a
-    = TwoSlot ( Maybe a, Maybe a )
-    | ThreeSlot ( Maybe a, Maybe a, Maybe a )
-    | FourSlot ( Maybe a, Maybe a, Maybe a, Maybe a )
-
-
-type alias Belt a =
-    { base : BaseItem
+    -- belt
+    , belt : ItemCompatible
     , beltType : BeltType
-    , beltContainer : BeltContainer a
-    }
+    , beltContainer : BeltOfItems
 
-
-type alias Pack a =
-    { base : BaseItem
+    -- pack
+    , pack : ItemCompatible
     , packType : PackType
-    , container : Container a
+    , container : PackOfItems
+
+    -- purse and single pile of coins
+    , purse : ItemCompatible
+    , coins : Coins
+    , coin : ItemCompatible
+    , value : Int
     }
+
+
+
+-- set Item field helpers
+
+
+setWeaponType : WeaponType -> BasicItem -> BasicItem
+setWeaponType val model =
+    { model | weaponType = val }
+
+
+setDamage : Dice -> BasicItem -> BasicItem
+setDamage val model =
+    { model | damage = val }
+
+
+setArmourType : ArmourType -> BasicItem -> BasicItem
+setArmourType val model =
+    { model | armourType = val }
+
+
+setGauntletsType : GauntletsType -> BasicItem -> BasicItem
+setGauntletsType val model =
+    { model | gauntletsType = val }
+
+
+setHelmetType : HelmetType -> BasicItem -> BasicItem
+setHelmetType val model =
+    { model | helmetType = val }
+
+
+setBracersType : BracersType -> BasicItem -> BasicItem
+setBracersType val model =
+    { model | bracersType = val }
+
+
+setShieldType : ShieldType -> BasicItem -> BasicItem
+setShieldType val model =
+    { model | shieldType = val }
+
+
+setAC : AC -> BasicItem -> BasicItem
+setAC val model =
+    { model | ac = val }
+
+
+setBootsType : BootsType -> BasicItem -> BasicItem
+setBootsType val model =
+    { model | bootsType = val }
+
+
+setNeckwearType : NeckwearType -> BasicItem -> BasicItem
+setNeckwearType val model =
+    { model | neckwearType = val }
+
+
+setOvergarmentType : OvergarmentType -> BasicItem -> BasicItem
+setOvergarmentType val model =
+    { model | overgarmentType = val }
+
+
+setRingType : RingType -> BasicItem -> BasicItem
+setRingType val model =
+    { model | ringType = val }
+
+
+setBeltType : BeltType -> BasicItem -> BasicItem
+setBeltType val model =
+    { model | beltType = val }
+
+
+setPackType : PackType -> BasicItem -> BasicItem
+setPackType val model =
+    { model | packType = val }
+
+
+setBeltContainer : BeltOfItems -> BasicItem -> BasicItem
+setBeltContainer val model =
+    { model | beltContainer = val }
+
+
+setContainer : PackOfItems -> BasicItem -> BasicItem
+setContainer val model =
+    { model | container = val }
+
+
+setCoins : Coins -> BasicItem -> BasicItem
+setCoins val model =
+    { model | coins = val }
+
+
+setValue : Int -> BasicItem -> BasicItem
+setValue val model =
+    { model | value = val }
+
+
+type alias Weapon compatible =
+    { compatible
+        | base : BaseItem
+        , weapon : ItemCompatible
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , weaponType : WeaponType
+        , damage : Dice
+    }
+
+
+type alias Armour compatible =
+    { compatible
+        | armour : ItemCompatible
+        , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , armourType : ArmourType
+        , ac : AC
+    }
+
+
+type alias Gauntlets compatible =
+    { compatible
+        | gauntlets : ItemCompatible
+        , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , gauntletsType : GauntletsType
+        , ac : AC
+    }
+
+
+type alias Helmet compatible =
+    { compatible
+        | helmet : ItemCompatible
+        , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , helmetType : HelmetType
+        , ac : AC
+    }
+
+
+type alias Bracers compatible =
+    { compatible
+        | bracers : ItemCompatible
+        , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , bracersType : BracersType
+        , ac : AC
+    }
+
+
+type alias Shield compatible =
+    { compatible
+        | shield : ItemCompatible
+        , base : BaseItem
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , shieldType : ShieldType
+        , ac : AC
+    }
+
+
+type alias Boots compatible =
+    { compatible
+        | base : BaseItem
+        , bootsType : BootsType
+        , item : ItemCompatible
+        , type_ : BasicItemType
+    }
+
+
+type alias Neckwear compatible =
+    { compatible
+        | base : BaseItem
+        , neckwearType : NeckwearType
+        , item : ItemCompatible
+        , type_ : BasicItemType
+    }
+
+
+type alias Overgarment compatible =
+    { compatible
+        | base : BaseItem
+        , overgarmentType : OvergarmentType
+        , item : ItemCompatible
+        , type_ : BasicItemType
+    }
+
+
+type alias Ring compatible =
+    { compatible
+        | base : BaseItem
+        , ringType : RingType
+        , item : ItemCompatible
+        , type_ : BasicItemType
+    }
+
+
+type alias Belt compatible =
+    { compatible
+        | base : BaseItem
+        , beltType : BeltType
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , beltContainer : BeltOfItems
+    }
+
+
+type alias Pack compatible =
+    { compatible
+        | base : BaseItem
+        , packType : PackType
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , container : PackOfItems
+    }
+
+
+type PackOfItems
+    = PackOfItems (Container BasicItem)
 
 
 type alias Coins =
@@ -190,30 +483,64 @@ type alias Coins =
     }
 
 
-type alias Purse =
-    { base : BaseItem
-    , coins : Coins
+type alias Purse compatible =
+    { compatible
+        | base : BaseItem
+        , purse : ItemCompatible
+        , item : ItemCompatible
+        , type_ : BasicItemType
+        , coins : Coins
     }
 
 
-type alias CopperCoins =
-    { base : BaseItem, value : Int }
+type alias CopperCoins compatible =
+    { compatible
+        | coin : ItemCompatible
+        , item : ItemCompatible
+        , base : BaseItem
+        , type_ : BasicItemType
+        , value : Int
+    }
 
 
-type alias SilverCoins =
-    { base : BaseItem, value : Int }
+type alias SilverCoins compatible =
+    { compatible
+        | coin : ItemCompatible
+        , item : ItemCompatible
+        , base : BaseItem
+        , type_ : BasicItemType
+        , value : Int
+    }
 
 
-type alias GoldCoins =
-    { base : BaseItem, value : Int }
+type alias GoldCoins compatible =
+    { compatible
+        | coin : ItemCompatible
+        , item : ItemCompatible
+        , base : BaseItem
+        , type_ : BasicItemType
+        , value : Int
+    }
 
 
-type alias PlatinumCoins =
-    { base : BaseItem, value : Int }
+type alias PlatinumCoins compatible =
+    { compatible
+        | coin : ItemCompatible
+        , item : ItemCompatible
+        , base : BaseItem
+        , type_ : BasicItemType
+        , value : Int
+    }
+
+
+type BeltOfItems
+    = TwoSlot (Maybe BasicItem) (Maybe BasicItem)
+    | ThreeSlot (Maybe BasicItem) (Maybe BasicItem) (Maybe BasicItem)
+    | FourSlot (Maybe BasicItem) (Maybe BasicItem) (Maybe BasicItem) (Maybe BasicItem)
 
 
 
--- Sub item types
+--Sub item types
 
 
 type WeaponType
@@ -343,16 +670,16 @@ type BeltType
 
 
 type NeckwearType
-    = NoOp1
+    = NeckwearType
 
 
 type OvergarmentType
-    = NoOp2
+    = OvergarmentType
 
 
 type RingType
-    = NoOp3
+    = RingType
 
 
 type BootsType
-    = NoOp4
+    = BootsType

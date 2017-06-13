@@ -27,7 +27,7 @@ import Building exposing (Building)
 import Dungeon.DungeonGenerator as DungeonGenerator
 import Dungeon.Rooms.Config as Config
 import Game.Level as Level exposing (Level)
-import Item.Data exposing (Item)
+import Item.Data exposing (BasicItem, Item)
 import Random.Pcg as Random exposing (Generator)
 import Shops
 import Tile exposing (Tile)
@@ -43,7 +43,7 @@ type alias Maps =
     }
 
 
-init : Item -> Random.Seed -> ( Maps, Random.Seed )
+init : Item BasicItem -> Random.Seed -> ( Maps, Random.Seed )
 init armour seed =
     let
         areaToTiles area visibility =

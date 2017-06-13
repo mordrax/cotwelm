@@ -13,7 +13,7 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Item
 import Item.Armour as Armour
-import Item.Data as ItemData
+import Item.Data exposing (..)
 import Item.Weapon as Weapon
 import Monster exposing (Monster)
 import Process
@@ -43,15 +43,15 @@ type Msg
     | Sleep (Cmd Msg) Int
     | Stop
     | SetAttribute Attributes.Attribute Int
-    | ChangeHeroWeapon ItemData.WeaponType
-    | ChangeHeroArmour ItemData.ArmourType
+    | ChangeHeroWeapon WeaponType
+    | ChangeHeroArmour ArmourType
 
 
 init : Model
 init =
     let
         customEquipment =
-            ( ItemData.ShortSword, ItemData.LeatherArmour )
+            ( ShortSword, LeatherArmour )
 
         heroLookup =
             initHeroLookup (initHero customAttributes customEquipment)
@@ -202,7 +202,7 @@ heroStatsView hero =
         ac =
             hero.equipment
                 |> Equipment.calculateAC
-                |> ItemData.acToInt
+                |> Item.Data.acToInt
     in
     div []
         [ div [] [ text ("Hero HP: " ++ toString hero.stats.maxHP) ]
@@ -333,7 +333,7 @@ customAttributes =
 
 
 type alias CustomEquipment =
-    ( ItemData.WeaponType, ItemData.ArmourType )
+    ( WeaponType, ArmourType )
 
 
 initHero : Attributes -> CustomEquipment -> Combat.Fighter Hero
@@ -342,56 +342,56 @@ initHero attrs equipment =
         |> (\x -> equipHero x equipment)
 
 
-makeWeapon : ItemData.WeaponType -> ItemData.Item
+makeWeapon : WeaponType -> Item BasicItem
 makeWeapon weaponType =
-    Item.new (ItemData.ItemTypeWeapon weaponType)
+    Item.new (ItemTypeWeapon weaponType)
 
 
-makeArmour : ItemData.ArmourType -> ItemData.Item
+makeArmour : ArmourType -> Item BasicItem
 makeArmour armourType =
-    Item.new (ItemData.ItemTypeArmour armourType)
+    Item.new (ItemTypeArmour armourType)
 
 
-equipHero : Hero -> ( ItemData.WeaponType, ItemData.ArmourType ) -> Hero
+equipHero : Hero -> ( WeaponType, ArmourType ) -> Hero
 equipHero hero ( customWeaponType, customArmourType ) =
     let
         makeShield shieldType =
-            Item.new (ItemData.ItemTypeShield shieldType)
+            Item.new (ItemTypeShield shieldType)
 
         makeHelmet helmetType =
-            Item.new (ItemData.ItemTypeHelmet helmetType)
+            Item.new (ItemTypeHelmet helmetType)
 
         makeGauntlets gauntletsType =
-            Item.new (ItemData.ItemTypeGauntlets gauntletsType)
+            Item.new (ItemTypeGauntlets gauntletsType)
 
         makeBracers bracersType =
-            Item.new (ItemData.ItemTypeBracers bracersType)
+            Item.new (ItemTypeBracers bracersType)
 
         lowLevel =
             [ ( Equipment.WeaponSlot, makeWeapon customWeaponType )
             , ( Equipment.ArmourSlot, makeArmour customArmourType )
-            , ( Equipment.HelmetSlot, makeHelmet ItemData.LeatherHelmet )
-            , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
-            , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
-            , ( Equipment.ShieldSlot, makeShield ItemData.SmallWoodenShield )
+            , ( Equipment.HelmetSlot, makeHelmet LeatherHelmet )
+            , ( Equipment.GauntletsSlot, makeGauntlets NormalGauntlets )
+            , ( Equipment.BracersSlot, makeBracers NormalBracers )
+            , ( Equipment.ShieldSlot, makeShield SmallWoodenShield )
             ]
 
         midLevel =
             [ ( Equipment.WeaponSlot, makeWeapon customWeaponType )
             , ( Equipment.ArmourSlot, makeArmour customArmourType )
-            , ( Equipment.HelmetSlot, makeHelmet ItemData.IronHelmet )
-            , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
-            , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
-            , ( Equipment.ShieldSlot, makeShield ItemData.LargeIronShield )
+            , ( Equipment.HelmetSlot, makeHelmet IronHelmet )
+            , ( Equipment.GauntletsSlot, makeGauntlets NormalGauntlets )
+            , ( Equipment.BracersSlot, makeBracers NormalBracers )
+            , ( Equipment.ShieldSlot, makeShield LargeIronShield )
             ]
 
         highLevel =
             [ ( Equipment.WeaponSlot, makeWeapon customWeaponType )
             , ( Equipment.ArmourSlot, makeArmour customArmourType )
-            , ( Equipment.HelmetSlot, makeHelmet ItemData.MeteoricSteelHelmet )
-            , ( Equipment.GauntletsSlot, makeGauntlets ItemData.NormalGauntlets )
-            , ( Equipment.BracersSlot, makeBracers ItemData.NormalBracers )
-            , ( Equipment.ShieldSlot, makeShield ItemData.LargeMeteoricSteelShield )
+            , ( Equipment.HelmetSlot, makeHelmet MeteoricSteelHelmet )
+            , ( Equipment.GauntletsSlot, makeGauntlets NormalGauntlets )
+            , ( Equipment.BracersSlot, makeBracers NormalBracers )
+            , ( Equipment.ShieldSlot, makeShield LargeMeteoricSteelShield )
             ]
     in
     if hero.expLevel <= 10 then

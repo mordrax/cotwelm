@@ -36,9 +36,13 @@ type Inventory
     = A Model
 
 
+type alias Items =
+    List (Item BasicItem)
+
+
 type Merchant
     = Shop Store
-    | Ground (List Item)
+    | Ground Items
 
 
 type alias Model =
@@ -49,13 +53,13 @@ type alias Model =
 
 
 type Draggable
-    = DragSlot Item EquipmentSlot
-    | DragPack Item (Pack Item)
-    | DragMerchant Item Merchant
+    = DragSlot (Item BasicItem) EquipmentSlot
+    | DragPack (Item BasicItem) (Pack BasicItem)
+    | DragMerchant (Item BasicItem) Merchant
 
 
 type Droppable
-    = DropPack (Pack Item)
+    = DropPack (Pack BasicItem)
     | DropEquipment EquipmentSlot
     | DropMerchant Merchant
 
@@ -202,7 +206,7 @@ handleDragDrop dragSource dropTarget model =
       - Nothing
 
 -}
-handleDrag : Draggable -> Model -> Result String ( Model, Item )
+handleDrag : Draggable -> Model -> Result String ( Model, Item BasicItem )
 handleDrag draggable model =
     case draggable of
         DragSlot item slot ->
@@ -231,7 +235,7 @@ handleDrag draggable model =
             transactWithMerchant item model
 
 
-transactWithMerchant : Item -> Model -> Result String ( Model, Item )
+transactWithMerchant : Item BasicItem -> Model -> Result String ( Model, Item BasicItem )
 transactWithMerchant item ({ merchant, equipment } as model) =
     let
         maybePurse =
@@ -279,7 +283,7 @@ transactWithMerchant item ({ merchant, equipment } as model) =
       - Check pack capacity
 
 -}
-handleDrop : Droppable -> Item -> Model -> Result String Model
+handleDrop : Droppable -> Item BasicItem -> Model -> Result String Model
 handleDrop droppable item model =
     case droppable of
         DropPack pack ->
@@ -395,7 +399,7 @@ viewMerchant merchant dnd =
             viewGround items dnd
 
 
-viewGround : List Item -> DragDrop Draggable Droppable -> Html Msg
+viewGround : Items -> DragDrop Draggable Droppable -> Html Msg
 viewGround items dnd =
     let
         makeDraggable items item =
@@ -439,7 +443,7 @@ viewAsContainer_ name attrs children =
         ]
 
 
-viewPackInfo : Maybe (Pack Item) -> String
+viewPackInfo : Maybe (Pack BasicItem) -> String
 viewPackInfo maybeItem =
     case maybeItem of
         Just pack ->
@@ -462,7 +466,7 @@ viewPackInfo maybeItem =
 ---------------
 
 
-viewPack : Maybe (Pack Item) -> Model -> Html Msg
+viewPack : Maybe (Pack BasicItem) -> Model -> Html Msg
 viewPack maybePack ({ dnd } as model) =
     let
         packDiv pack =
@@ -494,7 +498,7 @@ viewShop store dnd =
         wares =
             Shops.wares store
 
-        makeDraggable : Item -> Html (DragDrop.Msg Draggable a)
+        makeDraggable : Item BasicItem -> Html (DragDrop.Msg Draggable a)
         makeDraggable item =
             DragDrop.draggable (Item.view item) (DragMerchant item (Shop store)) dnd
 
@@ -505,7 +509,7 @@ viewShop store dnd =
         |> Html.map DnDMsg
 
 
-viewContainer : Pack Item -> Model -> Html (DragDrop.Msg Draggable Droppable)
+viewContainer : Pack BasicItem -> Model -> Html (DragDrop.Msg Draggable Droppable)
 viewContainer pack ({ equipment, dnd } as model) =
     let
         items =
