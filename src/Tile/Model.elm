@@ -4,7 +4,7 @@ import Building exposing (Building)
 import Container exposing (Container)
 import Dict exposing (Dict)
 import Hero exposing (Hero)
-import Item.Data exposing (Item)
+import Item.Data exposing (BasicItem, Item)
 import Monster exposing (Monster)
 import Tile.Types exposing (..)
 import Types exposing (..)
@@ -14,10 +14,10 @@ import Utils.Vector as Vector exposing (Vector)
 type alias Tile =
     { type_ : TileType
     , solid : Bool
-    , items : List Item
+    , items : List (Item BasicItem)
     , occupant : Occupant
     , position : Vector
-    , ground : Container Item
+    , ground : Container (Item BasicItem)
     , visible : Visibility
     , isLit : Bool
     }
