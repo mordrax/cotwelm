@@ -90,7 +90,7 @@ init seed =
 
 {-| The shop sells to the customer.
 -}
-sell : Item compatible -> Purse compatible -> Store -> Result String ( Store, Purse compatible )
+sell : Item BasicItem -> Purse BasicItem -> Store -> Result String ( Store, Purse BasicItem )
 sell item purse (B items shopType) =
     let
         price =
@@ -109,7 +109,7 @@ sell item purse (B items shopType) =
 
 {-| The shop buys from the customer.
 -}
-buy : Item compatible -> Purse compatible -> Store -> ( Store, Purse compatible )
+buy : Item BasicItem -> Purse BasicItem -> Store -> ( Store, Purse BasicItem )
 buy item purse (B items shopType) =
     let
         cost =
@@ -130,7 +130,7 @@ replenishReducer shopType ( currentStores, seed ) =
     ( newStores, seed_ )
 
 
-replenish : ItemTypes -> Seed -> ( List (Item compatible), Seed )
+replenish : ItemTypes -> Seed -> ( List (Item BasicItem), Seed )
 replenish itemTypes seed =
     let
         defaultProduct =
@@ -154,12 +154,12 @@ getSeed =
         Time.now
 
 
-wares : Store -> List (Item compatible)
+wares : Store -> List (Item BasicItem)
 wares (B items _) =
     items
 
 
-list : StoreType -> Stores -> List (Item compatible)
+list : StoreType -> Stores -> List (Item BasicItem)
 list shopType stores =
     stores
         |> Dict.get shopType
