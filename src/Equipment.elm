@@ -48,7 +48,7 @@ import Utils.Misc
 
 
 type alias Model =
-    { weapon : Maybe ( BaseItem, Weapon )
+    { weapon : Maybe Weapon
     , freehand : Maybe Item
     , armour : Maybe Armour
     , shield : Maybe Shield

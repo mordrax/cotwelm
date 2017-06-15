@@ -105,8 +105,58 @@ equals a b =
 
 
 getModel : Item -> BaseItem
-getModel (Item base _) =
-    base
+getModel anItem =
+    case anItem of
+        ItemWeapon { base } ->
+            base
+
+        ItemArmour { base } ->
+            base
+
+        ItemShield { base } ->
+            base
+
+        ItemHelmet { base } ->
+            base
+
+        ItemBracers { base } ->
+            base
+
+        ItemGauntlets { base } ->
+            base
+
+        ItemBelt { base } ->
+            base
+
+        ItemPack { base } ->
+            base
+
+        ItemPurse { base } ->
+            base
+
+        ItemNeckwear { base } ->
+            base
+
+        ItemOvergarment { base } ->
+            base
+
+        ItemRing { base } ->
+            base
+
+        ItemBoots { base } ->
+            base
+
+        ItemCopper { base } ->
+            base
+
+        ItemSilver { base } ->
+            base
+
+        ItemGold { base } ->
+            base
+
+        ItemPlatinum { base } ->
+            base
 
 
 view : Item -> Html msg
