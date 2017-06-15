@@ -4,14 +4,15 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : BeltType -> ItemStatus -> IdentificationStatus -> Belt a
+init : BeltType -> ItemStatus -> IdentificationStatus -> ( BaseItem, BeltDetails a )
 init beltType status idStatus =
     let
         make name mass css prices container =
-            { base = BaseItem name prices css mass status idStatus
-            , beltType = beltType
-            , beltContainer = initBeltContainer beltType
-            }
+            ( BaseItem name prices css mass status idStatus
+            , { beltType = beltType
+              , beltContainer = initBeltContainer beltType
+              }
+            )
     in
     case beltType of
         TwoSlotBelt ->

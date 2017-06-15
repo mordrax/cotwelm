@@ -1,7 +1,6 @@
 module Item.Weapon
     exposing
-        ( damage
-        , decoder
+        ( decoder
         , encode
         , init
         , listTypes
@@ -39,23 +38,18 @@ module Item.Weapon
 import Dice exposing (Dice)
 import Dict exposing (Dict)
 import Item.Data exposing (..)
-import Json.Decode as JD
 import Utils.Mass as Mass exposing (Mass)
 
 
-damage : Weapon -> Dice
-damage { damage } =
-    damage
-
-
-init : WeaponType -> ItemStatus -> IdentificationStatus -> Weapon
+init : WeaponType -> ItemStatus -> IdentificationStatus -> ( BaseItem, WeaponDetails )
 init weaponType status idStatus =
     let
         make name ( weight, bulk ) css ( buy, sell ) damage =
-            { base = BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus
-            , weaponType = weaponType
-            , damage = damage
-            }
+            ( BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus
+            , { weaponType = weaponType
+              , damage = damage
+              }
+            )
 
         makeMonsterWeapon name damage =
             make name ( 0, 0 ) "" ( 0, 0 ) damage

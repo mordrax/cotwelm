@@ -4,14 +4,15 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : BracersType -> ItemStatus -> IdentificationStatus -> Bracers
+init : BracersType -> ItemStatus -> IdentificationStatus -> ( BaseItem, BracersDetails )
 init bracersType status idStatus =
     let
         make name mass css prices ac =
-            { base = BaseItem name prices css mass status idStatus
-            , bracersType = bracersType
-            , ac = ac
-            }
+            ( BaseItem name prices css mass status idStatus
+            , { bracersType = bracersType
+              , ac = ac
+              }
+            )
     in
     case bracersType of
         NormalBracers ->

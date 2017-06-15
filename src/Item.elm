@@ -120,16 +120,13 @@ css =
 
 
 viewSlot : Item -> String -> Html msg
-viewSlot item extraContent =
+viewSlot (Item base specific) extraContent =
     let
-        model =
-            getModel item
-
         itemImg =
-            i [ HA.class ("cotw-item " ++ model.css) ] []
+            i [ HA.class ("cotw-item " ++ base.css) ] []
 
         itemName =
-            case item of
+            case specific of
                 ItemCopper coins ->
                     toString coins.value ++ " Copper pieces"
 
@@ -143,7 +140,7 @@ viewSlot item extraContent =
                     toString coins.value ++ " Platinum pieces"
 
                 _ ->
-                    model.name
+                    base.name
     in
     div [ HA.class "item" ]
         [ div [ HA.class "item__img" ] [ itemImg ]

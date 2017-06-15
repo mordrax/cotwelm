@@ -15,11 +15,12 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : Purse
+init : ( BaseItem, PurseDetails )
 init =
-    { base = BaseItem "Purse" (Prices 0 0) "Purse" (Mass.Mass 0 0) Normal Identified
-    , coins = Coins 100 10 1 1
-    }
+    ( BaseItem "Purse" (Prices 0 0) "Purse" (Mass.Mass 0 0) Normal Identified
+    , { coins = Coins 100 10 1 1
+      }
+    )
 
 
 initCoinBaseItem : String -> String -> Int -> BaseItem
@@ -27,32 +28,36 @@ initCoinBaseItem name css value =
     BaseItem name (Prices value value) css (Mass.Mass 0 0) Normal Identified
 
 
-initCoppers : Int -> CopperCoins
+initCoppers : Int -> ( BaseItem, CopperCoinsDetails )
 initCoppers value =
-    { base = initCoinBaseItem "Copper" "coins-copper" value
-    , value = value
-    }
+    ( initCoinBaseItem "Copper" "coins-copper" value
+    , { value = value
+      }
+    )
 
 
-initSilvers : Int -> SilverCoins
+initSilvers : Int -> ( BaseItem, SilverCoinsDetails )
 initSilvers value =
-    { base = initCoinBaseItem "Silver" "coins-silver" value
-    , value = value
-    }
+    ( initCoinBaseItem "Silver" "coins-silver" value
+    , { value = value
+      }
+    )
 
 
-initGolds : Int -> GoldCoins
+initGolds : Int -> ( BaseItem, GoldCoinsDetails )
 initGolds value =
-    { base = initCoinBaseItem "Gold" "coins-gold" value
-    , value = value
-    }
+    ( initCoinBaseItem "Gold" "coins-gold" value
+    , { value = value
+      }
+    )
 
 
-initPlatinums : Int -> PlatinumCoins
+initPlatinums : Int -> ( BaseItem, PlatinumCoinsDetails )
 initPlatinums value =
-    { base = initCoinBaseItem "Platinum" "coins-platinum" value
-    , value = value
-    }
+    ( initCoinBaseItem "Platinum" "coins-platinum" value
+    , { value = value
+      }
+    )
 
 
 type Msg
@@ -60,7 +65,7 @@ type Msg
     | NotEnoughCoins
 
 
-add : Int -> Purse -> Purse
+add : Int -> PurseDetails -> PurseDetails
 add coppers ({ coins } as model) =
     let
         leastCoins =
@@ -75,14 +80,14 @@ add coppers ({ coins } as model) =
     }
 
 
-addCoins : Coins -> Purse -> Purse
-addCoins coins purse =
-    Purse purse.base (merge_ (+) coins purse.coins)
+addCoins : Coins -> PurseDetails -> PurseDetails
+addCoins newCoins { coins } =
+    { coins = merge_ (+) newCoins coins }
 
 
-merge : Purse -> Purse -> Purse
+merge : PurseDetails -> PurseDetails -> PurseDetails
 merge p1 p2 =
-    Purse p1.base (merge_ (+) p1.coins p2.coins)
+    { coins = merge_ (+) p1.coins p2.coins }
 
 
 {-| Perform an operation (+, -, etc...) on each denomination of two purses
@@ -95,7 +100,7 @@ merge_ op c1 c2 =
         (op c1.platinum c2.platinum)
 
 
-remove : Int -> Purse -> Result String Purse
+remove : Int -> PurseDetails -> Result String PurseDetails
 remove copperToRemove ({ coins } as model) =
     let
         totalSilvers =
