@@ -409,7 +409,7 @@ viewGround items dnd =
             DragDrop.droppable (DropMerchant (Ground items)) dnd droppableDiv
                 |> Html.map DnDMsg
     in
-    viewAsContainer "Groud" [ droppableGround ]
+    viewAsContainer "Ground" [ droppableGround ]
 
 
 viewAsContainer : String -> List (Html msg) -> Html msg

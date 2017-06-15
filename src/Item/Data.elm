@@ -41,6 +41,10 @@ type alias ItemTypes =
 
 
 type Item
+    = Item BaseItem DetailItem
+
+
+type DetailItem
     = ItemWeapon Weapon
     | ItemArmour Armour
     | ItemShield Shield
