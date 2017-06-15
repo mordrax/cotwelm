@@ -56,7 +56,7 @@ priceOf item =
         (Prices buy sell) =
             getModel item |> .prices
     in
-        sell
+    sell
 
 
 {-| The price that shops are willing to buy an Item for, the sell field
@@ -67,7 +67,7 @@ costOf item =
         (Prices buy sell) =
             getModel item |> .prices
     in
-        buy
+    buy
 
 
 
@@ -92,7 +92,7 @@ isCursed =
         isCursed status =
             status == Cursed
     in
-        getModel >> .status >> isCursed
+    getModel >> .status >> isCursed
 
 
 equals : Item -> Item -> Bool
@@ -101,7 +101,7 @@ equals a b =
         ( baseA, baseB ) =
             ( getModel a, getModel b )
     in
-        baseA.name == baseB.name
+    baseA.name == baseB.name
 
 
 getModel : Item -> BaseItem
@@ -145,10 +145,10 @@ viewSlot item extraContent =
                 _ ->
                     model.name
     in
-        div [ HA.class "item" ]
-            [ div [ HA.class "item__img" ] [ itemImg ]
-            , div [ HA.class "item__name" ] [ text itemName ]
-            ]
+    div [ HA.class "item" ]
+        [ div [ HA.class "item__img" ] [ itemImg ]
+        , div [ HA.class "item__name" ] [ text itemName ]
+        ]
 
 
 containerBuilder : Mass.Capacity -> Container Item
