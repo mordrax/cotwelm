@@ -129,11 +129,11 @@ calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
                 |> Maybe.map .ac
                 |> Maybe.withDefault (AC 0)
     in
-        getAC armour
-            |> addAC (getAC shield)
-            |> addAC (getAC helmet)
-            |> addAC (getAC bracers)
-            |> addAC (getAC gauntlets)
+    getAC armour
+        |> addAC (getAC shield)
+        |> addAC (getAC helmet)
+        |> addAC (getAC bracers)
+        |> addAC (getAC gauntlets)
 
 
 equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg ( Equipment, Maybe Item )
@@ -143,8 +143,8 @@ equip ( slot, item ) (A model) =
             setSlot_ ( slot, item ) equipmentAfterUnequip
                 |> Result.andThen (\eq -> Result.Ok ( eq, unequippedItem ))
     in
-        unequip slot (A model)
-            |> Result.andThen andThenEquipItem
+    unequip slot (A model)
+        |> Result.andThen andThenEquipItem
 
 
 {-| setMany_ ignores all equiping errors
@@ -220,15 +220,15 @@ unequip slot (A model) =
                 |> Maybe.map Item.isCursed
                 |> Maybe.withDefault False
     in
-        case ( maybeItem, itemCursed ) of
-            ( Nothing, _ ) ->
-                Result.Ok ( A model, Nothing )
+    case ( maybeItem, itemCursed ) of
+        ( Nothing, _ ) ->
+            Result.Ok ( A model, Nothing )
 
-            ( _, True ) ->
-                Result.Err CannotUnequipCursedItem
+        ( _, True ) ->
+            Result.Err CannotUnequipCursedItem
 
-            ( _, False ) ->
-                Result.Ok ( A <| clearSlot_ slot model, maybeItem )
+        ( _, False ) ->
+            Result.Ok ( A <| clearSlot_ slot model, maybeItem )
 
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
@@ -258,19 +258,19 @@ putInPack_ item (A model) =
         noChange =
             ( A model, Success )
     in
-        case ( model.pack, item ) of
-            ( Nothing, _ ) ->
-                ( A model, NoPackEquipped )
+    case ( model.pack, item ) of
+        ( Nothing, _ ) ->
+            ( A model, NoPackEquipped )
 
-            ( _, ItemPack _ ) ->
-                ( A model, CannotPutAPackInAPack )
+        ( _, ItemPack _ ) ->
+            ( A model, CannotPutAPackInAPack )
 
-            ( Just pack, _ ) ->
-                let
-                    ( packWithItem, msg ) =
-                        Pack.add item pack
-                in
-                    ( A { model | pack = Just packWithItem }, ContainerMsg msg )
+        ( Just pack, _ ) ->
+            let
+                ( packWithItem, msg ) =
+                    Pack.add item pack
+            in
+            ( A { model | pack = Just packWithItem }, ContainerMsg msg )
 
 
 putInPurse : Coins -> Equipment -> Equipment
@@ -281,7 +281,7 @@ putInPurse coins equipment =
                 |> Maybe.withDefault Purse.init
                 |> Purse.addCoins coins
     in
-        setPurse purse equipment
+    setPurse purse equipment
 
 
 removeFromPack : Item -> Equipment -> Equipment
@@ -290,12 +290,12 @@ removeFromPack item (A model) =
         noChange =
             A model
     in
-        case model.pack of
-            Nothing ->
-                noChange
+    case model.pack of
+        Nothing ->
+            noChange
 
-            Just pack ->
-                A { model | pack = Just (Pack.remove item pack) }
+        Just pack ->
+            A { model | pack = Just (Pack.remove item pack) }
 
 
 getPackContent : Equipment -> List Item
