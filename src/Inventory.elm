@@ -623,6 +623,7 @@ viewPurse ({ equipment } as model) =
                 ]
     in
     Equipment.getPurse equipment
+        |> Maybe.map Item.detail
         |> Maybe.map .coins
         |> Maybe.map coinView
         |> Maybe.withDefault (div [] [])

@@ -1,11 +1,11 @@
 module Item
     exposing
         ( Items
+        , base
         , containerBuilder
         , costOf
-          -- comparisons
         , css
-          -- item functions
+        , detail
         , equals
         , isCursed
         , new
@@ -210,6 +210,16 @@ newWithOptions itemType status idStatus =
         --        Boots
         _ ->
             makeItem WeaponDetail (Item.Weapon.init Dagger status idStatus)
+
+
+base : ( BaseItem, specific ) -> BaseItem
+base =
+    Tuple.first
+
+
+detail : ( BaseItem, specific ) -> specific
+detail =
+    Tuple.second
 
 
 ppWeapon : Weapon -> String
