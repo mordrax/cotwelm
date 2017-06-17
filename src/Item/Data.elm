@@ -41,23 +41,31 @@ type alias ItemTypes =
 
 
 type Item
-    = ItemWeapon Weapon
-    | ItemArmour Armour
-    | ItemShield Shield
-    | ItemHelmet Helmet
-    | ItemBracers Bracers
-    | ItemGauntlets Gauntlets
-    | ItemBelt (Belt Item)
-    | ItemPack (Pack Item)
-    | ItemPurse Purse
-    | ItemNeckwear Neckwear
-    | ItemOvergarment Overgarment
-    | ItemRing Ring
-    | ItemBoots Boots
-    | ItemCopper CopperCoins
-    | ItemSilver SilverCoins
-    | ItemGold GoldCoins
-    | ItemPlatinum PlatinumCoins
+    = Item BaseItem ItemDetail
+
+
+type alias AmountOfCoins =
+    Int
+
+
+type ItemDetail
+    = WeaponDetail WeaponDetails
+    | ArmourDetail ArmourDetails
+    | ShieldDetail ShieldDetails
+    | HelmetDetail HelmetDetails
+    | BracersDetail BracersDetails
+    | GauntletsDetail GauntletsDetails
+    | BeltDetail (BeltDetails Item)
+    | PackDetail (PackDetails Item)
+    | PurseDetail PurseDetails
+    | NeckwearDetail NeckwearDetails
+    | OvergarmentDetail OvergarmentDetails
+    | RingDetail RingDetails
+    | BootsDetail BootsDetails
+    | CopperDetail AmountOfCoins
+    | SilverDetail AmountOfCoins
+    | GoldDetail AmountOfCoins
+    | PlatinumDetail AmountOfCoins
 
 
 type ItemType
@@ -74,10 +82,10 @@ type ItemType
     | ItemTypeOvergarment OvergarmentType
     | ItemTypeRing RingType
     | ItemTypeBoots BootsType
-    | ItemTypeCopper Int
-    | ItemTypeSilver Int
-    | ItemTypeGold Int
-    | ItemTypePlatinum Int
+    | ItemTypeCopper AmountOfCoins
+    | ItemTypeSilver AmountOfCoins
+    | ItemTypeGold AmountOfCoins
+    | ItemTypePlatinum AmountOfCoins
 
 
 type alias Buy =
@@ -105,81 +113,150 @@ type alias BaseItem =
 
 
 type alias Weapon =
-    { base : BaseItem
-    , weaponType : WeaponType
+    ( BaseItem, WeaponDetails )
+
+
+type alias WeaponDetails =
+    { weaponType : WeaponType
     , damage : Dice
     }
 
 
 type alias Armour =
-    { base : BaseItem
-    , armourType : ArmourType
+    ( BaseItem, ArmourDetails )
+
+
+type alias ArmourDetails =
+    { armourType : ArmourType
     , ac : AC
     }
 
 
 type alias Gauntlets =
-    { base : BaseItem
-    , gauntletsType : GauntletsType
+    ( BaseItem, GauntletsDetails )
+
+
+type alias GauntletsDetails =
+    { gauntletsType : GauntletsType
     , ac : AC
     }
 
 
 type alias Helmet =
-    { base : BaseItem
-    , helmetType : HelmetType
+    ( BaseItem, HelmetDetails )
+
+
+type alias HelmetDetails =
+    { helmetType : HelmetType
     , ac : AC
     }
 
 
 type alias Bracers =
-    { base : BaseItem
-    , bracersType : BracersType
+    ( BaseItem, BracersDetails )
+
+
+type alias BracersDetails =
+    { bracersType : BracersType
     , ac : AC
     }
 
 
 type alias Shield =
-    { base : BaseItem
-    , shieldType : ShieldType
+    ( BaseItem, ShieldDetails )
+
+
+type alias ShieldDetails =
+    { shieldType : ShieldType
     , ac : AC
     }
 
 
 type alias Boots =
-    { base : BaseItem, bootsType : BootsType }
+    ( BaseItem, BootsDetails )
+
+
+type alias BootsDetails =
+    { bootsType : BootsType
+    }
 
 
 type alias Neckwear =
-    { base : BaseItem, neckwearType : NeckwearType }
+    ( BaseItem, NeckwearDetails )
+
+
+type alias NeckwearDetails =
+    { neckwearType : NeckwearType
+    }
 
 
 type alias Overgarment =
-    { base : BaseItem, overgarmentType : OvergarmentType }
+    ( BaseItem, OvergarmentDetails )
+
+
+type alias OvergarmentDetails =
+    { overgarmentType : OvergarmentType
+    }
 
 
 type alias Ring =
-    { base : BaseItem, ringType : RingType }
+    ( BaseItem, RingDetails )
+
+
+type alias RingDetails =
+    { ringType : RingType
+    }
 
 
 type BeltContainer a
-    = TwoSlot ( Maybe a, Maybe a )
-    | ThreeSlot ( Maybe a, Maybe a, Maybe a )
-    | FourSlot ( Maybe a, Maybe a, Maybe a, Maybe a )
+    = TwoSlot (Maybe a) (Maybe a)
+    | ThreeSlot (Maybe a) (Maybe a) (Maybe a)
+    | FourSlot (Maybe a) (Maybe a) (Maybe a) (Maybe a)
 
 
 type alias Belt a =
-    { base : BaseItem
-    , beltType : BeltType
+    ( BaseItem, BeltDetails a )
+
+
+type alias BeltDetails a =
+    { beltType : BeltType
     , beltContainer : BeltContainer a
     }
 
 
 type alias Pack a =
-    { base : BaseItem
-    , packType : PackType
+    ( BaseItem, PackDetails a )
+
+
+type alias PackDetails a =
+    { packType : PackType
     , container : Container a
     }
+
+
+type alias Purse =
+    ( BaseItem, PurseDetails )
+
+
+type alias PurseDetails =
+    { coins : Coins
+    }
+
+
+type alias CopperCoins =
+    ( BaseItem, AmountOfCoins )
+
+
+type alias SilverCoins =
+    ( BaseItem, AmountOfCoins )
+
+
+type alias GoldCoins =
+    ( BaseItem, AmountOfCoins )
+
+
+type alias PlatinumCoins =
+    ( BaseItem, AmountOfCoins )
 
 
 type alias Coins =
@@ -188,28 +265,6 @@ type alias Coins =
     , gold : Int
     , platinum : Int
     }
-
-
-type alias Purse =
-    { base : BaseItem
-    , coins : Coins
-    }
-
-
-type alias CopperCoins =
-    { base : BaseItem, value : Int }
-
-
-type alias SilverCoins =
-    { base : BaseItem, value : Int }
-
-
-type alias GoldCoins =
-    { base : BaseItem, value : Int }
-
-
-type alias PlatinumCoins =
-    { base : BaseItem, value : Int }
 
 
 

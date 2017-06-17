@@ -77,8 +77,8 @@ than beginners in general.
 import Attributes exposing (Attributes)
 import Dice exposing (Dice)
 import Equipment exposing (Equipment)
+import Item
 import Item.Data
-import Item.Weapon as Weapon
 import Random.Pcg as Random exposing (Generator, Seed)
 import Stats exposing (Stats)
 import String
@@ -210,15 +210,13 @@ cthThreshold cth =
 chanceToHit : Attacker a -> Defender b -> CTH
 chanceToHit attacker defender =
     let
-        ( weapon, armour ) =
-            ( Equipment.getWeapon attacker.equipment, Equipment.getArmour attacker.equipment )
-
         ac =
             Equipment.calculateAC defender.equipment
 
         armourMass =
-            armour
-                |> Maybe.map (.base >> .mass)
+            Equipment.getArmour attacker.equipment
+                |> Maybe.map Item.base
+                |> Maybe.map .mass
                 |> Maybe.withDefault (Mass.Mass 0 0)
 
         -- At max str, can use max weight armour (plate) without penalty.
@@ -228,8 +226,9 @@ chanceToHit attacker defender =
                 |> clamp -20 0
 
         weaponMass =
-            weapon
-                |> Maybe.map (.base >> .mass)
+            Equipment.getWeapon attacker.equipment
+                |> Maybe.map Item.base
+                |> Maybe.map .mass
                 |> Maybe.withDefault (Mass.Mass 0 0)
 
         -- Weak users are penalised for heavy weapons. The base curve is y = x*3 where
@@ -346,9 +345,8 @@ damageCalculator { attributes, equipment } =
 
         dice =
             case maybeWeapon of
-                Just weapon ->
-                    Weapon.damage weapon
-                        |> addStrToBonus attributes.str
+                Just ( base, { damage } ) ->
+                    addStrToBonus attributes.str damage
 
                 _ ->
                     Dice 1 (attributes.str // 10) 0

@@ -4,14 +4,15 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : HelmetType -> ItemStatus -> IdentificationStatus -> Helmet
+init : HelmetType -> ItemStatus -> IdentificationStatus -> ( BaseItem, HelmetDetails )
 init helmetType status idStatus =
     let
         make name mass css prices ac =
-            { base = BaseItem name prices css mass status idStatus
-            , helmetType = helmetType
-            , ac = ac
-            }
+            ( BaseItem name prices css mass status idStatus
+            , { helmetType = helmetType
+              , ac = ac
+              }
+            )
     in
     case helmetType of
         BrokenHelmet ->

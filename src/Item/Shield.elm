@@ -4,14 +4,15 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : ShieldType -> ItemStatus -> IdentificationStatus -> Shield
+init : ShieldType -> ItemStatus -> IdentificationStatus -> ( BaseItem, ShieldDetails )
 init shieldType status idStatus =
     let
         make name mass css prices ac =
-            { base = BaseItem name prices css mass status idStatus
-            , shieldType = shieldType
-            , ac = ac
-            }
+            ( BaseItem name prices css mass status idStatus
+            , { shieldType = shieldType
+              , ac = ac
+              }
+            )
     in
     case shieldType of
         BrokenShield ->

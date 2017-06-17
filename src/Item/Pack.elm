@@ -13,31 +13,31 @@ import Utils.Mass as Mass exposing (..)
 
 
 info : Pack a -> ( Mass, Capacity )
-info { container } =
+info ( base, { container } ) =
     ( Container.mass container, Container.capacity container )
 
 
 contents : Pack a -> List a
-contents { container } =
+contents ( base, { container } ) =
     Container.list container
 
 
 add : a -> Pack a -> ( Pack a, Container.Msg )
-add item pack =
+add item ( base, pack ) =
     let
         ( newContainer, msgs ) =
             Container.add item pack.container
     in
-    ( { pack | container = newContainer }, msgs )
+    ( ( base, { pack | container = newContainer } ), msgs )
 
 
 remove : a -> Pack a -> Pack a
-remove item pack =
+remove item ( base, pack ) =
     let
         newContainer =
             Container.remove item pack.container
     in
-    { pack | container = newContainer }
+    ( base, { pack | container = newContainer } )
 
 
 init :
@@ -49,10 +49,11 @@ init :
 init packType toContainer status idStatus =
     let
         make name price css mass capacity =
-            { base = BaseItem name price css mass status idStatus
-            , packType = packType
-            , container = toContainer capacity
-            }
+            ( BaseItem name price css mass status idStatus
+            , { packType = packType
+              , container = toContainer capacity
+              }
+            )
     in
     case packType of
         SmallBag ->

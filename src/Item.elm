@@ -1,11 +1,11 @@
 module Item
     exposing
         ( Items
+        , base
         , containerBuilder
         , costOf
-          -- comparisons
         , css
-          -- item functions
+        , detail
         , equals
         , isCursed
         , new
@@ -105,58 +105,8 @@ equals a b =
 
 
 getModel : Item -> BaseItem
-getModel anItem =
-    case anItem of
-        ItemWeapon { base } ->
-            base
-
-        ItemArmour { base } ->
-            base
-
-        ItemShield { base } ->
-            base
-
-        ItemHelmet { base } ->
-            base
-
-        ItemBracers { base } ->
-            base
-
-        ItemGauntlets { base } ->
-            base
-
-        ItemBelt { base } ->
-            base
-
-        ItemPack { base } ->
-            base
-
-        ItemPurse { base } ->
-            base
-
-        ItemNeckwear { base } ->
-            base
-
-        ItemOvergarment { base } ->
-            base
-
-        ItemRing { base } ->
-            base
-
-        ItemBoots { base } ->
-            base
-
-        ItemCopper { base } ->
-            base
-
-        ItemSilver { base } ->
-            base
-
-        ItemGold { base } ->
-            base
-
-        ItemPlatinum { base } ->
-            base
+getModel (Item base _) =
+    base
 
 
 view : Item -> Html msg
@@ -170,30 +120,27 @@ css =
 
 
 viewSlot : Item -> String -> Html msg
-viewSlot item extraContent =
+viewSlot (Item base specific) extraContent =
     let
-        model =
-            getModel item
-
         itemImg =
-            i [ HA.class ("cotw-item " ++ model.css) ] []
+            i [ HA.class ("cotw-item " ++ base.css) ] []
 
         itemName =
-            case item of
-                ItemCopper coins ->
-                    toString coins.value ++ " Copper pieces"
+            case specific of
+                CopperDetail coins ->
+                    toString coins ++ " Copper pieces"
 
-                ItemSilver coins ->
-                    toString coins.value ++ " Silver pieces"
+                SilverDetail coins ->
+                    toString coins ++ " Silver pieces"
 
-                ItemGold coins ->
-                    toString coins.value ++ " Gold pieces"
+                GoldDetail coins ->
+                    toString coins ++ " Gold pieces"
 
-                ItemPlatinum coins ->
-                    toString coins.value ++ " Platinum pieces"
+                PlatinumDetail coins ->
+                    toString coins ++ " Platinum pieces"
 
                 _ ->
-                    model.name
+                    base.name
     in
     div [ HA.class "item" ]
         [ div [ HA.class "item__img" ] [ itemImg ]
@@ -213,59 +160,73 @@ new itemType =
 
 newWithOptions : ItemType -> ItemStatus -> IdentificationStatus -> Item
 newWithOptions itemType status idStatus =
+    let
+        makeItem tag ( base, detail ) =
+            Item base (tag detail)
+    in
     case itemType of
         ItemTypeWeapon weaponType ->
-            ItemWeapon <| Item.Weapon.init weaponType status idStatus
+            makeItem WeaponDetail (Item.Weapon.init weaponType status idStatus)
 
         ItemTypeArmour armourType ->
-            ItemArmour <| Item.Armour.init armourType status idStatus
+            makeItem ArmourDetail (Item.Armour.init armourType status idStatus)
 
         ItemTypeShield shieldType ->
-            ItemShield <| Item.Shield.init shieldType status idStatus
+            makeItem ShieldDetail (Item.Shield.init shieldType status idStatus)
 
         ItemTypeHelmet helmetType ->
-            ItemHelmet <| Item.Helmet.init helmetType status idStatus
+            makeItem HelmetDetail (Item.Helmet.init helmetType status idStatus)
 
         ItemTypeBracers bracersType ->
-            ItemBracers <| Item.Bracers.init bracersType status idStatus
+            makeItem BracersDetail (Item.Bracers.init bracersType status idStatus)
 
         ItemTypeGauntlets gauntletsType ->
-            ItemGauntlets <| Item.Gauntlets.init gauntletsType status idStatus
+            makeItem GauntletsDetail (Item.Gauntlets.init gauntletsType status idStatus)
 
         ItemTypeBelt beltType ->
-            ItemBelt <| Belt.init beltType status idStatus
+            makeItem BeltDetail (Belt.init beltType status idStatus)
 
         ItemTypePack packType ->
-            ItemPack <| Pack.init packType containerBuilder status idStatus
+            makeItem PackDetail (Pack.init packType containerBuilder status idStatus)
 
         ItemTypePurse ->
-            ItemPurse Purse.init
+            makeItem PurseDetail Purse.init
 
         ItemTypeCopper value ->
-            ItemCopper <| Purse.initCoppers value
+            makeItem CopperDetail (Purse.initCoppers value)
 
         ItemTypeSilver value ->
-            ItemSilver <| Purse.initSilvers value
+            makeItem SilverDetail (Purse.initSilvers value)
 
         ItemTypeGold value ->
-            ItemGold <| Purse.initGolds value
+            makeItem GoldDetail (Purse.initGolds value)
 
         ItemTypePlatinum value ->
-            ItemPlatinum <| Purse.initPlatinums value
+            makeItem PlatinumDetail (Purse.initPlatinums value)
 
         -- Neckwear
         --        Overgarment
         --        Ring
         --        Boots
         _ ->
-            ItemWeapon <| Item.Weapon.init Dagger status idStatus
+            makeItem WeaponDetail (Item.Weapon.init Dagger status idStatus)
+
+
+base : ( BaseItem, specific ) -> BaseItem
+base =
+    Tuple.first
+
+
+detail : ( BaseItem, specific ) -> specific
+detail =
+    Tuple.second
 
 
 ppWeapon : Weapon -> String
-ppWeapon weapon =
-    weapon.base.name ++ " ( " ++ Dice.pp weapon.damage ++ " )"
+ppWeapon ( base, weapon ) =
+    base.name ++ " ( " ++ Dice.pp weapon.damage ++ " )"
 
 
 ppArmour : Armour -> String
-ppArmour armour =
-    armour.base.name ++ " ( " ++ toString armour.ac ++ " )"
+ppArmour ( base, armour ) =
+    base.name ++ " ( " ++ toString armour.ac ++ " )"
