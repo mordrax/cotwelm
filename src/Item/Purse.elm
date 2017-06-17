@@ -15,7 +15,7 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : ( BaseItem, PurseDetails )
+init : Purse
 init =
     ( BaseItem "Purse" (Prices 0 0) "Purse" (Mass.Mass 0 0) Normal Identified
     , { coins = Coins 100 10 1 1
@@ -28,36 +28,24 @@ initCoinBaseItem name css value =
     BaseItem name (Prices value value) css (Mass.Mass 0 0) Normal Identified
 
 
-initCoppers : Int -> ( BaseItem, CopperCoinsDetails )
+initCoppers : Int -> ( BaseItem, Int )
 initCoppers value =
-    ( initCoinBaseItem "Copper" "coins-copper" value
-    , { value = value
-      }
-    )
+    ( initCoinBaseItem "Copper" "coins-copper" value, value )
 
 
-initSilvers : Int -> ( BaseItem, SilverCoinsDetails )
+initSilvers : Int -> ( BaseItem, Int )
 initSilvers value =
-    ( initCoinBaseItem "Silver" "coins-silver" value
-    , { value = value
-      }
-    )
+    ( initCoinBaseItem "Silver" "coins-silver" value, value )
 
 
-initGolds : Int -> ( BaseItem, GoldCoinsDetails )
+initGolds : Int -> ( BaseItem, Int )
 initGolds value =
-    ( initCoinBaseItem "Gold" "coins-gold" value
-    , { value = value
-      }
-    )
+    ( initCoinBaseItem "Gold" "coins-gold" value, value )
 
 
-initPlatinums : Int -> ( BaseItem, PlatinumCoinsDetails )
+initPlatinums : Int -> ( BaseItem, Int )
 initPlatinums value =
-    ( initCoinBaseItem "Platinum" "coins-platinum" value
-    , { value = value
-      }
-    )
+    ( initCoinBaseItem "Platinum" "coins-platinum" value, value )
 
 
 type Msg
@@ -65,29 +53,31 @@ type Msg
     | NotEnoughCoins
 
 
-add : Int -> PurseDetails -> PurseDetails
-add coppers ({ coins } as model) =
+add : Int -> Purse -> Purse
+add coppers ( base, { coins } as detail ) =
     let
         leastCoins =
             toLeastCoins coppers
     in
-    { model
+    ( base
+    , { detail
         | coins =
             Coins (coins.copper + leastCoins.copper)
                 (coins.silver + leastCoins.silver)
                 (coins.gold + leastCoins.gold)
                 (coins.platinum + leastCoins.platinum)
-    }
+      }
+    )
 
 
-addCoins : Coins -> PurseDetails -> PurseDetails
-addCoins newCoins { coins } =
-    { coins = merge_ (+) newCoins coins }
+addCoins : Coins -> Purse -> Purse
+addCoins newCoins ( base, { coins } ) =
+    ( base, { coins = merge_ (+) newCoins coins } )
 
 
-merge : PurseDetails -> PurseDetails -> PurseDetails
-merge p1 p2 =
-    { coins = merge_ (+) p1.coins p2.coins }
+merge : Purse -> Purse -> Purse
+merge ( base1, detail1 ) ( base2, detail2 ) =
+    ( base1, { coins = merge_ (+) detail1.coins detail2.coins } )
 
 
 {-| Perform an operation (+, -, etc...) on each denomination of two purses
@@ -100,8 +90,8 @@ merge_ op c1 c2 =
         (op c1.platinum c2.platinum)
 
 
-remove : Int -> PurseDetails -> Result String PurseDetails
-remove copperToRemove ({ coins } as model) =
+remove : Int -> Purse -> Result String Purse
+remove copperToRemove ( base, { coins } as detail ) =
     let
         totalSilvers =
             coins.copper + coins.silver * 100
@@ -113,25 +103,25 @@ remove copperToRemove ({ coins } as model) =
             totalGold + coins.platinum * 1000000
     in
     if copperToRemove <= coins.copper then
-        Result.Ok { model | coins = { coins | copper = coins.copper - copperToRemove } }
+        Result.Ok ( base, { detail | coins = { coins | copper = coins.copper - copperToRemove } } )
     else if copperToRemove <= totalSilvers then
         let
             ( copper_, silver_ ) =
                 toLeastSilvers (totalSilvers - copperToRemove)
         in
-        Result.Ok { model | coins = { coins | copper = copper_, silver = silver_ } }
+        Result.Ok ( base, { detail | coins = { coins | copper = copper_, silver = silver_ } } )
     else if copperToRemove <= totalGold then
         let
             ( copper_, silver_, gold_ ) =
                 toLeastGold (totalGold - copperToRemove)
         in
-        Result.Ok { model | coins = { coins | copper = copper_, silver = silver_, gold = gold_ } }
+        Result.Ok ( base, { detail | coins = { coins | copper = copper_, silver = silver_, gold = gold_ } } )
     else if copperToRemove <= totalPlatinum then
         let
             coins =
                 toLeastCoins (totalPlatinum - copperToRemove)
         in
-        Result.Ok { model | coins = { coins | copper = coins.copper, silver = coins.silver, gold = coins.gold, platinum = coins.platinum } }
+        Result.Ok ( base, { detail | coins = { coins | copper = coins.copper, silver = coins.silver, gold = coins.gold, platinum = coins.platinum } } )
     else
         Result.Err "Not enough coins to remove!"
 

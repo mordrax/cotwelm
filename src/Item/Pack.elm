@@ -12,32 +12,32 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (..)
 
 
-info : PackDetails a -> ( Mass, Capacity )
-info { container } =
+info : Pack a -> ( Mass, Capacity )
+info ( base, { container } ) =
     ( Container.mass container, Container.capacity container )
 
 
-contents : PackDetails a -> List a
-contents { container } =
+contents : Pack a -> List a
+contents ( base, { container } ) =
     Container.list container
 
 
-add : a -> PackDetails a -> ( PackDetails a, Container.Msg )
-add item pack =
+add : a -> Pack a -> ( Pack a, Container.Msg )
+add item ( base, pack ) =
     let
         ( newContainer, msgs ) =
             Container.add item pack.container
     in
-    ( { pack | container = newContainer }, msgs )
+    ( ( base, { pack | container = newContainer } ), msgs )
 
 
-remove : a -> PackDetails a -> PackDetails a
-remove item pack =
+remove : a -> Pack a -> Pack a
+remove item ( base, pack ) =
     let
         newContainer =
             Container.remove item pack.container
     in
-    { pack | container = newContainer }
+    ( base, { pack | container = newContainer } )
 
 
 init :
@@ -45,7 +45,7 @@ init :
     -> (Capacity -> Container a)
     -> ItemStatus
     -> IdentificationStatus
-    -> ( BaseItem, PackDetails a )
+    -> Pack a
 init packType toContainer status idStatus =
     let
         make name price css mass capacity =

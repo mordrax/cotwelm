@@ -44,8 +44,8 @@ type Item
     = Item BaseItem ItemDetail
 
 
-type AmountOfCoins
-    = Int
+type alias AmountOfCoins =
+    Int
 
 
 type ItemDetail
@@ -82,10 +82,10 @@ type ItemType
     | ItemTypeOvergarment OvergarmentType
     | ItemTypeRing RingType
     | ItemTypeBoots BootsType
-    | ItemTypeCopper
-    | ItemTypeSilver
-    | ItemTypeGold
-    | ItemTypePlatinum
+    | ItemTypeCopper AmountOfCoins
+    | ItemTypeSilver AmountOfCoins
+    | ItemTypeGold AmountOfCoins
+    | ItemTypePlatinum AmountOfCoins
 
 
 type alias Buy =
@@ -244,39 +244,19 @@ type alias PurseDetails =
 
 
 type alias CopperCoins =
-    ( BaseItem, CopperCoinsDetails )
-
-
-type alias CopperCoinsDetails =
-    { value : Int
-    }
+    ( BaseItem, AmountOfCoins )
 
 
 type alias SilverCoins =
-    ( BaseItem, SilverCoinsDetails )
-
-
-type alias SilverCoinsDetails =
-    { value : Int
-    }
+    ( BaseItem, AmountOfCoins )
 
 
 type alias GoldCoins =
-    ( BaseItem, GoldCoinsDetails )
-
-
-type alias GoldCoinsDetails =
-    { value : Int
-    }
+    ( BaseItem, AmountOfCoins )
 
 
 type alias PlatinumCoins =
-    ( BaseItem, PlatinumCoinsDetails )
-
-
-type alias PlatinumCoinsDetails =
-    { value : Int
-    }
+    ( BaseItem, AmountOfCoins )
 
 
 type alias Coins =
