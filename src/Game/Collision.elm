@@ -15,8 +15,6 @@ import Game.Pathfinding as Pathfinding
 import Game.Types
 import Hero exposing (Hero)
 import Inventory exposing (Inventory)
-import Item
-import Item.Data
 import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Seed)
 import Shops exposing (Shops)
