@@ -63,6 +63,7 @@ newLoadOverview =
             , displayFlex
             , justifyContent spaceBetween
             ]
+        , HA.class "splash-screen-buttons"
         ]
         [ UI.btn "Start New Game" NewGame
         , UI.btn "Load Saved Game" LoadGame

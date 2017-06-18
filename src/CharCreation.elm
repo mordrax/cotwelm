@@ -24,10 +24,6 @@ styles =
     asPairs >> HA.style
 
 
-addStyle currentStyles style =
-    HA.style (asPairs <| style :: currentStyles)
-
-
 type CharCreation
     = A Model
 
@@ -117,8 +113,10 @@ view (A model) =
     in
     div
         [ styles
-            [ maxWidth (px 480)
+            [ maxWidth (px 580)
             , margin2 zero auto
+            , Css.backgroundColor Colors.white
+            , padding (px 50)
             ]
         ]
         [ viewName model.name
@@ -378,10 +376,11 @@ viewButtons : Html Msg
 viewButtons =
     div
         [ styles
-            [ margin (px 20)
+            [ margin2 (px 20) zero
             , displayFlex
             , justifyContent spaceBetween
             ]
+        , HA.class "char-creation-buttons"
         ]
         [ UI.btn "OK" StartGame
         , UI.btn "Cancel" StartGame
