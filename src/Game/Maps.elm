@@ -52,19 +52,19 @@ init armour seed =
                 |> Tile.mapToTiles
                 |> List.map (Tile.setVisibility visibility)
 
-        levelOfArea area visibility =
-            Level.initNonDungeon (areaToTiles area visibility) (buildingsOfArea area) []
+        levelOfArea title area visibility =
+            Level.initNonDungeon title (areaToTiles area visibility) (buildingsOfArea area) []
 
         mineEntryLevel =
-            levelOfArea DungeonLevelOne Hidden
+            levelOfArea "Abandoned Mines" DungeonLevelOne Hidden
 
         mineEntryLevelWithArmour =
             Level.drop ( ( 13, 19 ), armour ) mineEntryLevel
     in
     ( { currentArea = Village
       , abandonedMines = Array.fromList []
-      , village = levelOfArea Village Known
-      , farm = levelOfArea Farm Known
+      , village = levelOfArea "A Tiny Hamlet" Village Known
+      , farm = levelOfArea "Your parents' farm" Farm Known
       , abandonedMinesEntry = mineEntryLevelWithArmour
       }
     , seed

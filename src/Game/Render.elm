@@ -163,7 +163,7 @@ viewStatus model =
     in
     div [ HA.class "game-bottom-hud" ]
         [ viewMessages model
-        , viewStats model.hero.stats
+        , viewStats model.hero.stats model.level.title
         ]
 
 
@@ -177,8 +177,8 @@ viewMessages model =
         (List.map viewMessage model.messages)
 
 
-viewStats : Stats -> Html Msg
-viewStats stats =
+viewStats : Stats -> String -> Html Msg
+viewStats stats levelTitle =
     let
         hpLow =
             toFloat stats.currentHP / toFloat stats.maxHP < 0.2
@@ -197,7 +197,7 @@ viewStats stats =
         , viewStat "Mana" (Stats.printSP stats)
         , viewStat "Speed" "100% / 200%"
         , viewStat "Time" "0d, 00:02:57"
-        , div [] [ Html.text "A Tiny Hamlet" ]
+        , div [] [ Html.text levelTitle ]
         ]
 
 

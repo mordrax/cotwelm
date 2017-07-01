@@ -61,6 +61,7 @@ type alias Level =
     , rooms : List Room
     , corridors : List Corridor
     , paths : MemoisedPaths
+    , title : String
     }
 
 
@@ -91,14 +92,15 @@ setMonsters monsters level =
     { level | monsters = monsters }
 
 
-initNonDungeon : List Tile -> List Building -> List Monster -> Level
-initNonDungeon tiles buildings monsters =
+initNonDungeon : String -> List Tile -> List Building -> List Monster -> Level
+initNonDungeon title tiles buildings monsters =
     { map = fromTiles tiles
     , buildings = buildings
     , monsters = monsters
     , rooms = []
     , corridors = []
     , paths = Dict.empty
+    , title = title
     }
 
 

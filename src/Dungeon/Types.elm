@@ -38,7 +38,7 @@ toLevel ({ buildings, rooms, corridors } as model) =
                 |> toTiles
                 |> Level.fromTiles
     in
-    Level.Level map buildings [] rooms corridors Dict.empty
+    Level.Level map buildings [] rooms corridors Dict.empty "Under the mines"
 
 
 toOccupied : Model -> List Vector
