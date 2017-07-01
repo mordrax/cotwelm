@@ -171,7 +171,7 @@ actionTakeStairs ({ level, hero, maps } as game) =
             , level = newLevel
             , hero = heroTakeStairs (Level.upstairs newLevel)
             , seed = seed_
-            , messages = "You go downstairs" :: game.messages
+            , messages = "You venture down the dark staircase..." :: game.messages
         }
     else
         { game | messages = "You need to be on some stairs!" :: game.messages }
