@@ -1,6 +1,7 @@
 module Game.Render exposing (game, viewRip, viewport)
 
 import Building exposing (Building)
+import Colors
 import Css exposing (..)
 import Game.Level as Level
 import Game.Model exposing (..)
@@ -15,6 +16,7 @@ import Stats exposing (Stats)
 import Types exposing (..)
 import UI
 import Utils.Vector as Vector exposing (Vector)
+import Window
 
 
 styles : List Css.Mixin -> Html.Attribute a
@@ -22,19 +24,27 @@ styles =
     asPairs >> HA.style
 
 
+screenWidth : Window.Size -> Int
+screenWidth windowSize =
+    min windowSize.width 768
+
+
 {-| Handles all logic and rendering of the game to screen.
 -}
 viewport : Game -> Game
-viewport ({ windowSize, viewport, maps, hero, level } as model) =
+viewport ({ windowSize, viewport, hero, level } as model) =
     let
         tileSize =
             32
+
+        width =
+            screenWidth windowSize
 
         ( curX, curY ) =
             Vector.scale tileSize hero.position
 
         ( xOff, yOff ) =
-            ( windowSize.width // 2, windowSize.height // 2 )
+            ( width // 2, windowSize.height // 2 )
 
         tolerance =
             tileSize * 4
@@ -43,7 +53,7 @@ viewport ({ windowSize, viewport, maps, hero, level } as model) =
             { up = viewport.y + curY <= tolerance
             , down = viewport.y + curY >= (windowSize.height * 4 // 5) - tolerance
             , left = viewport.x + curX <= tolerance
-            , right = viewport.x + curX >= windowSize.width - tolerance
+            , right = viewport.x + curX >= width - tolerance
             }
 
         ( mapWidth, mapHeight ) =
@@ -51,7 +61,7 @@ viewport ({ windowSize, viewport, maps, hero, level } as model) =
 
         newX =
             if scroll.left || scroll.right then
-                clamp (windowSize.width - mapWidth * tileSize) 0 (xOff - curX)
+                clamp (width - mapWidth * tileSize) 0 (xOff - curX)
             else
                 viewport.x
 
@@ -106,42 +116,51 @@ viewMonsters { level } =
 viewMap : Game -> Html Msg
 viewMap ({ windowSize, viewport } as model) =
     let
-        title =
-            h1 [] [ Html.text ("Welcome to Castle of the Winds: " ++ model.name) ]
-
-        px x =
-            toString x ++ "px"
+        actualWidth =
+            screenWidth windowSize
 
         adjustViewport html =
             div
-                [ HA.style
-                    [ ( "position", "relative" )
-                    , ( "overflow", "hidden" )
-                    , ( "width", px windowSize.width )
-                    , ( "height", px (windowSize.height * 4 // 5) )
+                [ styles
+                    [ position relative
+                    , overflow hidden
+                    , width (px <| toFloat actualWidth)
+                    , height (px <| toFloat <| windowSize.height * 4 // 5)
+                    , Css.borderTop3 (px 2) solid Colors.darkgray
+                    , Css.borderBottom3 (px 2) solid Colors.darkgray
                     ]
                 ]
                 [ div
-                    [ HA.style
-                        [ ( "position", "relative" )
-                        , ( "top", px viewport.y )
-                        , ( "left", px viewport.x )
+                    [ styles
+                        [ position relative
+                        , top (px <| toFloat viewport.y)
+                        , left (px <| toFloat viewport.x)
                         ]
                     ]
                     html
                 ]
 
+        tupleMap2 fn ( x, y ) =
+            ( fn x, fn y )
+
+        divideBy32 x =
+            x // 32
+
         viewSize =
-            ( windowSize.width // 32, windowSize.height // 32 )
+            ( actualWidth, windowSize.height )
+                |> tupleMap2 divideBy32
 
         viewStart =
-            ( abs <| viewport.x // 32, abs <| viewport.y // 32 )
+            ( viewport.x, viewport.y )
+                |> tupleMap2 divideBy32
+                |> tupleMap2 abs
 
         lazyLevelView =
             Html.Lazy.lazy3 Level.view ( viewStart, viewSize ) ClickTile model.level
     in
     div []
-        [ viewMenu
+        [ viewTitle
+        , viewMenu
         , viewQuickMenu
         , adjustViewport
             [ lazyLevelView
@@ -216,10 +235,19 @@ viewStat label value =
         ]
 
 
+viewTitle : Html never
+viewTitle =
+    div [ HA.class "game__title" ] [ Html.text "Castle of the Winds" ]
+
+
 viewMenu : Html Msg
 viewMenu =
-    div [ HA.class "ui buttons" ]
-        (List.map (\lbl -> UI.btn lbl Died)
+    let
+        viewMenuItem label =
+            div [ HA.class "file-menu__item" ] [ Html.text label ]
+    in
+    div [ HA.class "file-menu" ]
+        (List.map viewMenuItem
             [ "File"
             , "Character!"
             , "Inventory!"
@@ -236,16 +264,32 @@ viewMenu =
 
 viewQuickMenu : Html Msg
 viewQuickMenu =
-    div []
-        (List.map (\lbl -> UI.btn lbl Died)
-            [ "Get"
-            , "Free Hand"
-            , "Search"
-            , "Disarm"
-            , "Rest"
-            , "Save"
-            ]
-        )
+    div [ HA.class "game-top-hud__quick-menu" ]
+        [ div [ HA.class "quick-menu__quick-buttons" ]
+            (List.map (\lbl -> UI.btn lbl Died)
+                [ "Get"
+                , "Free Hand"
+                , "Search"
+                , "Disarm"
+                , "Rest"
+                , "Save"
+                ]
+            )
+        , div [ HA.class "quick-menu__quick-spells" ]
+            (List.map (\lbl -> UI.btn lbl Died)
+                [ ""
+                , ""
+                , ""
+                , ""
+                , ""
+                , ""
+                , ""
+                , ""
+                , ""
+                , ""
+                ]
+            )
+        ]
 
 
 viewHUD : Game -> Html Msg

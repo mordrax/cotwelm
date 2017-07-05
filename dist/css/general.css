@@ -7,6 +7,7 @@ body, html {
     height: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+    background-color: lightgray;
 }
 
 *, *:before, *:after {
@@ -31,19 +32,88 @@ button:active {
 button {
     border-width: 1px;
     height: 1.6em;
-    width: 10em;
 }
 
 button:focus {
     outline: 1px solid dimgrey;
 }
 
+.splash-screen-buttons button {
+    width: 10em;
+}
+
+.char-creation-buttons button {
+    width: 10em;
+}
 .game {
-    max-width: 960px;
+    max-width: 768px;
     margin: 0 auto;
+    background-color: snow;
 }
 
 .expand-to-fill {
     height: 100%;
     width: 100%;
+}
+
+/********* game huds *********/
+
+.game__title {
+    background-color: darkblue;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    padding: 2px 0;
+}
+
+/*game file menu*/
+.file-menu {
+    background-color: white;
+    border: 1px solid black;
+    display: flex;
+}
+
+.file-menu__item {
+    flex-grow: 1;
+    text-align: center;
+    padding: 3px 0;
+    cursor: pointer;
+}
+
+.file-menu__item:hover {
+    background-color: lightgray;
+}
+
+/*game top hud*/
+.game-top-hud__quick-menu {
+    padding: 2px 15px;
+    border: 1px solid black;
+    border-top: 0;
+    background-color: lightgray;
+    display: flex;
+    width: 100%;    
+}
+
+.game-top-hud__quick-menu button {
+    height: 25px;
+}
+
+.quick-menu__quick-buttons {
+    display: flex; 
+    flex-basis: 50%;
+    justify-content: center;
+}
+
+.quick-menu__quick-buttons button {
+    padding: 2px 10px;
+}
+
+.quick-menu__quick-spells {
+    display: flex; 
+    flex-basis: 50%;
+    justify-content: center;
+}
+
+.quick-menu__quick-spells button {
+    width: 25px;
 }

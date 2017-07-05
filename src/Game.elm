@@ -274,6 +274,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> actionMove dir
                 |> checkHeroAlive
                 |> updatePreviousState
+                |> Render.viewport
                 |> noCmd
 
         GameAction (Walk dir) ->
@@ -284,6 +285,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                     |> tick
                     |> actionMove dir
                     |> updatePreviousState
+                    |> Render.viewport
                     |> actionKeepOnWalking dir
 
         GameAction BackToMapScreen ->

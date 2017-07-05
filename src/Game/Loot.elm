@@ -16,5 +16,15 @@ generate =
 
 generateCoins : Generator Loot
 generateCoins =
-    Random.int 1 100
-        |> Random.map (\coppers -> [ Item.new (Item.Data.ItemTypeCopper coppers) ])
+    let
+        coinTypeGenerator =
+            Random.sample [ Item.Data.ItemTypeCopper, Item.Data.ItemTypeSilver, Item.Data.ItemTypeGold, Item.Data.ItemTypePlatinum ]
+                |> Random.map (Maybe.withDefault Item.Data.ItemTypeCopper)
+
+        coinQuantityGenerator =
+            Random.int 1 100
+
+        makeCoins coinType coinQuantity =
+            [ Item.new (coinType coinQuantity) ]
+    in
+    Random.map2 makeCoins coinTypeGenerator coinQuantityGenerator

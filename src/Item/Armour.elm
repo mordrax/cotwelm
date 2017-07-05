@@ -5,14 +5,15 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : ArmourType -> ItemStatus -> IdentificationStatus -> Armour
+init : ArmourType -> ItemStatus -> IdentificationStatus -> ( BaseItem, ArmourDetails )
 init armourType status idStatus =
     let
         make name ( weight, bulk ) css ( buy, sell ) ac =
-            { base = BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus
-            , armourType = armourType
-            , ac = ac
-            }
+            ( BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus
+            , { armourType = armourType
+              , ac = ac
+              }
+            )
 
         makeMonsterArmour name ac =
             make name ( 0, 0 ) "" ( 0, 0 ) ac

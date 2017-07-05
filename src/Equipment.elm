@@ -123,9 +123,10 @@ init =
 calculateAC : Equipment -> AC
 calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
     let
-        getAC : Maybe { b | ac : AC } -> AC
+        getAC : Maybe ( base, { b | ac : AC } ) -> AC
         getAC item =
             item
+                |> Maybe.map Tuple.second
                 |> Maybe.map .ac
                 |> Maybe.withDefault (AC 0)
     in
@@ -158,52 +159,52 @@ setMany_ itemSlotPairs equipment =
 {-| WARNING: This will destroy the item in the equipment slot.
 -}
 setSlot_ : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
-setSlot_ ( slot, item ) (A model) =
-    case ( slot, item ) of
-        ( WeaponSlot, ItemWeapon weapon ) ->
-            Result.Ok (A { model | weapon = Just weapon })
+setSlot_ ( slot, (Item base specific) as item ) (A model) =
+    case ( slot, specific ) of
+        ( WeaponSlot, WeaponDetail weapon ) ->
+            Result.Ok (A { model | weapon = Just ( base, weapon ) })
 
-        ( FreehandSlot, item ) ->
+        ( FreehandSlot, _ ) ->
             Result.Ok (A { model | freehand = Just item })
 
-        ( ArmourSlot, ItemArmour armour ) ->
-            Result.Ok (A { model | armour = Just armour })
+        ( ArmourSlot, ArmourDetail armour ) ->
+            Result.Ok (A { model | armour = Just ( base, armour ) })
 
-        ( ShieldSlot, ItemShield shield ) ->
-            Result.Ok (A { model | shield = Just shield })
+        ( ShieldSlot, ShieldDetail shield ) ->
+            Result.Ok (A { model | shield = Just ( base, shield ) })
 
-        ( HelmetSlot, ItemHelmet helmet ) ->
-            Result.Ok (A { model | helmet = Just helmet })
+        ( HelmetSlot, HelmetDetail helmet ) ->
+            Result.Ok (A { model | helmet = Just ( base, helmet ) })
 
-        ( BracersSlot, ItemBracers bracers ) ->
-            Result.Ok (A { model | bracers = Just bracers })
+        ( BracersSlot, BracersDetail bracers ) ->
+            Result.Ok (A { model | bracers = Just ( base, bracers ) })
 
-        ( GauntletsSlot, ItemGauntlets gauntlets ) ->
-            Result.Ok (A { model | gauntlets = Just gauntlets })
+        ( GauntletsSlot, GauntletsDetail gauntlets ) ->
+            Result.Ok (A { model | gauntlets = Just ( base, gauntlets ) })
 
-        ( BeltSlot, ItemBelt belt ) ->
-            Result.Ok (A { model | belt = Just belt })
+        ( BeltSlot, BeltDetail belt ) ->
+            Result.Ok (A { model | belt = Just ( base, belt ) })
 
-        ( PurseSlot, ItemPurse purse ) ->
-            Result.Ok (A { model | purse = Just purse })
+        ( PurseSlot, PurseDetail purse ) ->
+            Result.Ok (A { model | purse = Just ( base, purse ) })
 
-        ( PackSlot, ItemPack pack ) ->
-            Result.Ok (A { model | pack = Just pack })
+        ( PackSlot, PackDetail pack ) ->
+            Result.Ok (A { model | pack = Just ( base, pack ) })
 
-        ( NeckwearSlot, ItemNeckwear neckwear ) ->
-            Result.Ok (A { model | neckwear = Just neckwear })
+        ( NeckwearSlot, NeckwearDetail neckwear ) ->
+            Result.Ok (A { model | neckwear = Just ( base, neckwear ) })
 
-        ( OvergarmentSlot, ItemOvergarment overgarment ) ->
-            Result.Ok (A { model | overgarment = Just overgarment })
+        ( OvergarmentSlot, OvergarmentDetail overgarment ) ->
+            Result.Ok (A { model | overgarment = Just ( base, overgarment ) })
 
-        ( LeftRingSlot, ItemRing leftRing ) ->
-            Result.Ok (A { model | leftRing = Just leftRing })
+        ( LeftRingSlot, RingDetail leftRing ) ->
+            Result.Ok (A { model | leftRing = Just ( base, leftRing ) })
 
-        ( RightRingSlot, ItemRing rightRing ) ->
-            Result.Ok (A { model | rightRing = Just rightRing })
+        ( RightRingSlot, RingDetail rightRing ) ->
+            Result.Ok (A { model | rightRing = Just ( base, rightRing ) })
 
-        ( BootsSlot, ItemBoots boots ) ->
-            Result.Ok (A { model | boots = Just boots })
+        ( BootsSlot, BootsDetail boots ) ->
+            Result.Ok (A { model | boots = Just ( base, boots ) })
 
         _ ->
             Result.Err WrongSlotForItemType
@@ -234,35 +235,35 @@ unequip slot (A model) =
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
 -}
 putInPack : Item -> Equipment -> ( Equipment, Msg )
-putInPack item equipment =
-    case item of
-        ItemCopper { value } ->
+putInPack (Item base specific) equipment =
+    case specific of
+        CopperDetail value ->
             ( putInPurse (Coins value 0 0 0) equipment, Success )
 
-        ItemSilver { value } ->
+        SilverDetail value ->
             ( putInPurse (Coins 0 value 0 0) equipment, Success )
 
-        ItemGold { value } ->
+        GoldDetail value ->
             ( putInPurse (Coins 0 0 value 0) equipment, Success )
 
-        ItemPlatinum { value } ->
+        PlatinumDetail value ->
             ( putInPurse (Coins 0 0 0 value) equipment, Success )
 
         _ ->
-            putInPack_ item equipment
+            putInPack_ (Item base specific) equipment
 
 
 putInPack_ : Item -> Equipment -> ( Equipment, Msg )
-putInPack_ item (A model) =
+putInPack_ ((Item base specific) as item) (A model) =
     let
         noChange =
             ( A model, Success )
     in
-    case ( model.pack, item ) of
+    case ( model.pack, specific ) of
         ( Nothing, _ ) ->
             ( A model, NoPackEquipped )
 
-        ( _, ItemPack _ ) ->
+        ( _, PackDetail _ ) ->
             ( A model, CannotPutAPackInAPack )
 
         ( Just pack, _ ) ->
@@ -341,51 +342,55 @@ getArmour (A model) =
 
 get : EquipmentSlot -> Equipment -> Maybe Item
 get slot (A model) =
+    let
+        toItem tag ( base, detail ) =
+            Item base (tag detail)
+    in
     case slot of
         WeaponSlot ->
-            model.weapon |> Maybe.map ItemWeapon
+            Maybe.map (toItem WeaponDetail) model.weapon
 
         FreehandSlot ->
             model.freehand
 
         ArmourSlot ->
-            model.armour |> Maybe.map ItemArmour
+            Maybe.map (toItem ArmourDetail) model.armour
 
         ShieldSlot ->
-            model.shield |> Maybe.map ItemShield
+            Maybe.map (toItem ShieldDetail) model.shield
 
         HelmetSlot ->
-            model.helmet |> Maybe.map ItemHelmet
+            Maybe.map (toItem HelmetDetail) model.helmet
 
         BracersSlot ->
-            model.bracers |> Maybe.map ItemBracers
+            Maybe.map (toItem BracersDetail) model.bracers
 
         GauntletsSlot ->
-            model.gauntlets |> Maybe.map ItemGauntlets
+            Maybe.map (toItem GauntletsDetail) model.gauntlets
 
         BeltSlot ->
-            model.belt |> Maybe.map ItemBelt
+            Maybe.map (toItem BeltDetail) model.belt
 
         PurseSlot ->
-            model.purse |> Maybe.map ItemPurse
+            Maybe.map (toItem PurseDetail) model.purse
 
         PackSlot ->
-            model.pack |> Maybe.map ItemPack
+            Maybe.map (toItem PackDetail) model.pack
 
         NeckwearSlot ->
-            model.neckwear |> Maybe.map ItemNeckwear
+            Maybe.map (toItem NeckwearDetail) model.neckwear
 
         OvergarmentSlot ->
-            model.overgarment |> Maybe.map ItemOvergarment
+            Maybe.map (toItem OvergarmentDetail) model.overgarment
 
         LeftRingSlot ->
-            model.leftRing |> Maybe.map ItemRing
+            Maybe.map (toItem RingDetail) model.leftRing
 
         RightRingSlot ->
-            model.rightRing |> Maybe.map ItemRing
+            Maybe.map (toItem RingDetail) model.rightRing
 
         BootsSlot ->
-            model.boots |> Maybe.map ItemBoots
+            Maybe.map (toItem BootsDetail) model.boots
 
 
 clearSlot_ : EquipmentSlot -> Model -> Model

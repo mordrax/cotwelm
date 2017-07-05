@@ -69,10 +69,10 @@ init =
     let
         attributes =
             { ava = 100
-            , str = 20
-            , dex = 30
-            , con = 40
-            , int = 60
+            , str = 50
+            , dex = 50
+            , con = 50
+            , int = 50
             }
 
         ignoreResult _ =
@@ -102,14 +102,17 @@ initCustom str dex con int =
     }
 
 
-updateIfEnoughAvailable : Attribute -> Int -> Attributes -> Attributes
-updateIfEnoughAvailable attr val attributes =
-    if attributes.ava < val then
-        attributes
-    else
-        attributes
-            |> addAttribute attr val
-            |> addAttribute Available -val
+{-| Will increase the given attribute by `min ( value, available attribute points )`
+-}
+updateAsMuchAsAvailable : Attribute -> Int -> Attributes -> Attributes
+updateAsMuchAsAvailable attr val attributes =
+    let
+        actualPointsAdded =
+            min val attributes.ava
+    in
+    attributes
+        |> addAttribute attr actualPointsAdded
+        |> addAttribute Available -actualPointsAdded
 
 
 addAttribute : Attribute -> Int -> Attributes -> Attributes
@@ -135,14 +138,14 @@ update : Msg -> Attributes -> Attributes
 update msg attributes =
     case msg of
         Update attribute value ->
-            updateIfEnoughAvailable attribute value attributes
+            updateAsMuchAsAvailable attribute value attributes
 
         Scroll attribute value ->
             let
                 valueDelta =
                     value - getAttributeValue attribute attributes
             in
-            updateIfEnoughAvailable attribute valueDelta attributes
+            updateAsMuchAsAvailable attribute valueDelta attributes
 
         NoOp ->
             attributes

@@ -227,12 +227,14 @@ heroEquipmentView hero =
     let
         weaponTypeMatches weaponType =
             Equipment.getWeapon hero.equipment
+                |> Maybe.map Item.detail
                 |> Maybe.map .weaponType
                 |> Maybe.map ((==) weaponType)
                 |> Maybe.withDefault False
 
         armourTypeMatches armourType =
             Equipment.getArmour hero.equipment
+                |> Maybe.map Item.detail
                 |> Maybe.map .armourType
                 |> Maybe.map ((==) armourType)
                 |> Maybe.withDefault False

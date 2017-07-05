@@ -15,7 +15,6 @@ import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
-import Maybe exposing (Maybe(Just, Nothing))
 import Mouse
 
 
@@ -95,13 +94,14 @@ view (A ({ source, position, dragging } as model)) =
         px x =
             toString x ++ "px"
 
-        newPos =
+        ( newX, newY ) =
             getDisplacement model
+                |> (\pos -> ( pos.x - 40, pos.y - 40 ))
 
         positionStyle =
             HA.style
-                [ ( "top", px newPos.y )
-                , ( "left", px newPos.x )
+                [ ( "top", px newY )
+                , ( "left", px newX )
                 , ( "position", "absolute" )
                 , ( "cursor", "move" )
                 ]
