@@ -16,7 +16,7 @@ module Shops
 
 import EveryDict as Dict exposing (EveryDict)
 import Item
-import Item.Data exposing (..)
+import Item.Data exposing (Item, ItemTypes, Purse)
 import Item.Purse as Purse
 import Random.Pcg as Random exposing (Generator, Seed, initialSeed, list, step)
 import Task exposing (perform)
@@ -47,7 +47,7 @@ type alias Stores =
 
 
 type Store
-    = B (List Item) StoreType
+    = Store (List Item) StoreType
 
 
 config : { replenishCounter : Int, stock : Int }
@@ -72,7 +72,7 @@ tick ({ replenishCounter } as shops) =
 
 shop : StoreType -> Shops -> Store
 shop shopType shops =
-    B (list shopType shops.stores) shopType
+    Store (list shopType shops.stores) shopType
 
 
 init : Generator Shops
@@ -96,7 +96,7 @@ init =
 {-| The shop sells to the customer.
 -}
 sell : Item -> Purse -> Store -> Result String ( Store, Purse )
-sell item purse (B items shopType) =
+sell item purse (Store items shopType) =
     let
         price =
             Debug.log "Item purchase price:" (Item.priceOf item)
@@ -106,7 +106,7 @@ sell item purse (B items shopType) =
     in
     case Purse.remove price purse of
         Result.Ok purseMinusPriceOfItem ->
-            Result.Ok ( B (itemsWithout item) shopType, purseMinusPriceOfItem )
+            Result.Ok ( Store (itemsWithout item) shopType, purseMinusPriceOfItem )
 
         Result.Err msg ->
             Result.Err "Cannot afford item!"
@@ -115,12 +115,12 @@ sell item purse (B items shopType) =
 {-| The shop buys from the customer.
 -}
 buy : Item -> Purse -> Store -> ( Store, Purse )
-buy item purse (B items shopType) =
+buy item purse (Store items shopType) =
     let
         cost =
             Debug.log "Item sell price:" (Item.costOf item)
     in
-    ( B (item :: items) shopType, Purse.add cost purse )
+    ( Store (item :: items) shopType, Purse.add cost purse )
 
 
 replenishReducer : StoreType -> Generator Stores -> Generator Stores
@@ -141,7 +141,7 @@ replenish : ItemTypes -> Generator (List Item)
 replenish itemTypes =
     let
         defaultProduct =
-            ItemTypeWeapon BroadSword
+            Item.Data.ItemTypeWeapon Item.Data.BroadSword
     in
     Random.sample itemTypes
         |> Random.map (Maybe.withDefault defaultProduct)
@@ -156,7 +156,7 @@ getSeed =
 
 
 wares : Store -> List Item
-wares (B items _) =
+wares (Store items _) =
     items
 
 
@@ -168,7 +168,7 @@ list shopType stores =
 
 
 updateShop : Store -> Shops -> Shops
-updateShop (B items shopType) ({ stores } as shops) =
+updateShop (Store items shopType) ({ stores } as shops) =
     { shops | stores = Dict.insert shopType items stores }
 
 
@@ -180,114 +180,21 @@ inventoryStock : StoreType -> ItemTypes
 inventoryStock shop =
     case shop of
         WeaponSmith ->
-            weapons
+            Item.Data.allWeapons
 
         GeneralStore ->
-            List.concat [ armour, belt, bracers, gauntlets, helmet, pack, shield ]
+            List.concat
+                [ Item.Data.allArmours
+                , Item.Data.allBelts
+                , Item.Data.allBracers
+                , Item.Data.allGauntlets
+                , Item.Data.allHelmets
+                , Item.Data.allPacks
+                , Item.Data.allShields
+                ]
 
         PotionStore ->
             []
 
         JunkShop ->
             []
-
-
-weapons : ItemTypes
-weapons =
-    [ Item.Data.ItemTypeWeapon Club
-    , Item.Data.ItemTypeWeapon Dagger
-    , Item.Data.ItemTypeWeapon Hammer
-    , Item.Data.ItemTypeWeapon HandAxe
-    , Item.Data.ItemTypeWeapon Quarterstaff
-    , Item.Data.ItemTypeWeapon Spear
-    , Item.Data.ItemTypeWeapon ShortSword
-    , Item.Data.ItemTypeWeapon Mace
-    , Item.Data.ItemTypeWeapon Flail
-    , Item.Data.ItemTypeWeapon Axe
-    , Item.Data.ItemTypeWeapon WarHammer
-    , Item.Data.ItemTypeWeapon LongSword
-    , Item.Data.ItemTypeWeapon BattleAxe
-    , Item.Data.ItemTypeWeapon BroadSword
-    , Item.Data.ItemTypeWeapon MorningStar
-    , Item.Data.ItemTypeWeapon BastardSword
-    , Item.Data.ItemTypeWeapon TwoHandedSword
-    ]
-
-
-armour : ItemTypes
-armour =
-    [ Item.Data.ItemTypeArmour LeatherArmour
-    , Item.Data.ItemTypeArmour StuddedLeatherArmour
-    , Item.Data.ItemTypeArmour RingMail
-    , Item.Data.ItemTypeArmour ScaleMail
-    , Item.Data.ItemTypeArmour ChainMail
-    , Item.Data.ItemTypeArmour SplintMail
-    , Item.Data.ItemTypeArmour PlateMail
-    , Item.Data.ItemTypeArmour PlateArmour
-    , Item.Data.ItemTypeArmour MeteoricSteelPlate
-    , Item.Data.ItemTypeArmour ElvenChainMail
-    ]
-
-
-belt : ItemTypes
-belt =
-    [ Item.Data.ItemTypeBelt TwoSlotBelt
-    , Item.Data.ItemTypeBelt ThreeSlotBelt
-    , Item.Data.ItemTypeBelt FourSlotBelt
-    , Item.Data.ItemTypeBelt UtilityBelt
-    , Item.Data.ItemTypeBelt WandQuiverBelt
-    ]
-
-
-bracers : ItemTypes
-bracers =
-    [ Item.Data.ItemTypeBracers NormalBracers ]
-
-
-gauntlets : ItemTypes
-gauntlets =
-    [ Item.Data.ItemTypeGauntlets NormalGauntlets ]
-
-
-helmet : ItemTypes
-helmet =
-    [ Item.Data.ItemTypeHelmet LeatherHelmet
-    , Item.Data.ItemTypeHelmet IronHelmet
-    , Item.Data.ItemTypeHelmet SteelHelmet
-    , Item.Data.ItemTypeHelmet MeteoricSteelHelmet
-    , Item.Data.ItemTypeHelmet HelmetOfDetectMonsters
-    ]
-
-
-pack : ItemTypes
-pack =
-    [ Item.Data.ItemTypePack SmallBag
-    , Item.Data.ItemTypePack MediumBag
-    , Item.Data.ItemTypePack LargeBag
-    , Item.Data.ItemTypePack SmallPack
-    , Item.Data.ItemTypePack MediumPack
-    , Item.Data.ItemTypePack LargePack
-    , Item.Data.ItemTypePack SmallChest
-    , Item.Data.ItemTypePack MediumChest
-    , Item.Data.ItemTypePack LargeChest
-    , Item.Data.ItemTypePack EnchantedSmallPackOfHolding
-    , Item.Data.ItemTypePack EnchantedMediumPackOfHolding
-    , Item.Data.ItemTypePack EnchantedLargePackOfHolding
-    ]
-
-
-shield : ItemTypes
-shield =
-    [ Item.Data.ItemTypeShield SmallWoodenShield
-    , Item.Data.ItemTypeShield MediumWoodenShield
-    , Item.Data.ItemTypeShield LargeWoodenShield
-    , Item.Data.ItemTypeShield SmallIronShield
-    , Item.Data.ItemTypeShield MediumIronShield
-    , Item.Data.ItemTypeShield LargeIronShield
-    , Item.Data.ItemTypeShield SmallSteelShield
-    , Item.Data.ItemTypeShield MediumSteelShield
-    , Item.Data.ItemTypeShield LargeSteelShield
-    , Item.Data.ItemTypeShield SmallMeteoricSteelShield
-    , Item.Data.ItemTypeShield MediumMeteoricSteelShield
-    , Item.Data.ItemTypeShield LargeMeteoricSteelShield
-    ]

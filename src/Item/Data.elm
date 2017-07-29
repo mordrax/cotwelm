@@ -411,3 +411,110 @@ type RingType
 
 type BootsType
     = NoOp4
+
+
+allWeapons : ItemTypes
+allWeapons =
+    List.map ItemTypeWeapon
+        [ Club
+        , Dagger
+        , Hammer
+        , HandAxe
+        , Quarterstaff
+        , Spear
+        , ShortSword
+        , Mace
+        , Flail
+        , Axe
+        , WarHammer
+        , LongSword
+        , BattleAxe
+        , BroadSword
+        , MorningStar
+        , BastardSword
+        , TwoHandedSword
+        ]
+
+
+allArmours : ItemTypes
+allArmours =
+    List.map ItemTypeArmour
+        [ LeatherArmour
+        , StuddedLeatherArmour
+        , RingMail
+        , ScaleMail
+        , ChainMail
+        , SplintMail
+        , PlateMail
+        , PlateArmour
+        , MeteoricSteelPlate
+        , ElvenChainMail
+        ]
+
+
+allBelts : ItemTypes
+allBelts =
+    List.map ItemTypeBelt
+        [ TwoSlotBelt
+        , ThreeSlotBelt
+        , FourSlotBelt
+        , UtilityBelt
+        , WandQuiverBelt
+        ]
+
+
+allBracers : ItemTypes
+allBracers =
+    List.map ItemTypeBracers [ NormalBracers ]
+
+
+allGauntlets : ItemTypes
+allGauntlets =
+    List.map ItemTypeGauntlets [ NormalGauntlets ]
+
+
+allHelmets : ItemTypes
+allHelmets =
+    List.map ItemTypeHelmet
+        [ LeatherHelmet
+        , IronHelmet
+        , SteelHelmet
+        , MeteoricSteelHelmet
+        , HelmetOfDetectMonsters
+        ]
+
+
+allPacks : ItemTypes
+allPacks =
+    List.map ItemTypePack
+        [ SmallBag
+        , MediumBag
+        , LargeBag
+        , SmallPack
+        , MediumPack
+        , LargePack
+        , SmallChest
+        , MediumChest
+        , LargeChest
+        , EnchantedSmallPackOfHolding
+        , EnchantedMediumPackOfHolding
+        , EnchantedLargePackOfHolding
+        ]
+
+
+allShields : ItemTypes
+allShields =
+    List.map ItemTypeShield
+        [ SmallWoodenShield
+        , MediumWoodenShield
+        , LargeWoodenShield
+        , SmallIronShield
+        , MediumIronShield
+        , LargeIronShield
+        , SmallSteelShield
+        , MediumSteelShield
+        , LargeSteelShield
+        , SmallMeteoricSteelShield
+        , MediumMeteoricSteelShield
+        , LargeMeteoricSteelShield
+        ]
