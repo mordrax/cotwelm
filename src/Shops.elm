@@ -50,21 +50,24 @@ type Store
     = B (List Item) StoreType
 
 
-{-| Time taken for the shop to change it's wares
--}
-replenishCounter : Int
-replenishCounter =
-    200
+config : { replenishCounter : Int, stock : Int }
+config =
+    { -- Time taken for the shop to change it's wares
+      replenishCounter = 200
+
+    -- number of items in the shop
+    , stock = 10
+    }
 
 
-tick : Shops -> Seed -> ( Shops, Seed )
-tick ({ replenishCounter } as shops) seed =
+tick : Shops -> Generator Shops
+tick ({ replenishCounter } as shops) =
     case replenishCounter of
         0 ->
-            init seed
+            init
 
         _ ->
-            ( { shops | replenishCounter = replenishCounter - 1 }, seed )
+            Random.constant { shops | replenishCounter = replenishCounter - 1 }
 
 
 shop : StoreType -> Shops -> Store
@@ -72,20 +75,22 @@ shop shopType shops =
     B (list shopType shops.stores) shopType
 
 
-init : Seed -> ( Shops, Seed )
-init seed =
+init : Generator Shops
+init =
     let
         emptyStores =
-            Dict.fromList []
+            Random.constant (Dict.fromList [])
 
-        ( stores, seed_ ) =
-            List.foldl replenishReducer
-                ( emptyStores, seed )
-                [ WeaponSmith, GeneralStore, PotionStore, JunkShop ]
+        storesGen =
+            List.foldl replenishReducer emptyStores [ WeaponSmith, GeneralStore, PotionStore, JunkShop ]
     in
-    ( { stores = stores, replenishCounter = replenishCounter }
-    , seed_
-    )
+    storesGen
+        |> Random.map
+            (\stores ->
+                { stores = stores
+                , replenishCounter = config.replenishCounter
+                }
+            )
 
 
 {-| The shop sells to the customer.
@@ -118,34 +123,30 @@ buy item purse (B items shopType) =
     ( B (item :: items) shopType, Purse.add cost purse )
 
 
-replenishReducer : StoreType -> ( Stores, Seed ) -> ( Stores, Seed )
-replenishReducer shopType ( currentStores, seed ) =
+replenishReducer : StoreType -> Generator Stores -> Generator Stores
+replenishReducer shopType currentStoresGen =
     let
-        ( newItems, seed_ ) =
-            replenish (inventoryStock shopType) seed
+        newItemsGen : Generator (List Item)
+        newItemsGen =
+            replenish (inventoryStock shopType)
 
-        newStores =
-            Dict.insert shopType newItems currentStores
+        addToStores : List Item -> Stores -> Stores
+        addToStores items stores =
+            Dict.insert shopType items stores
     in
-    ( newStores, seed_ )
+    Random.map2 addToStores newItemsGen currentStoresGen
 
 
-replenish : ItemTypes -> Seed -> ( List Item, Seed )
-replenish itemTypes seed =
+replenish : ItemTypes -> Generator (List Item)
+replenish itemTypes =
     let
         defaultProduct =
-            Maybe.withDefault (ItemTypeWeapon BroadSword)
-
-        ( generatedItemTypes, seed_ ) =
-            Random.sample itemTypes
-                |> Random.map defaultProduct
-                |> Random.list 10
-                |> (\x -> Random.step x seed)
-
-        products =
-            List.map Item.new generatedItemTypes
+            ItemTypeWeapon BroadSword
     in
-    ( products, seed_ )
+    Random.sample itemTypes
+        |> Random.map (Maybe.withDefault defaultProduct)
+        |> Random.list config.stock
+        |> Random.map (List.map Item.new)
 
 
 getSeed : Cmd Msg

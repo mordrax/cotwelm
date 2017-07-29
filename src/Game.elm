@@ -52,13 +52,13 @@ init seed hero difficulty =
             donDefaultGarb hero
 
         ( shops, seed_ ) =
-            Shops.init seed
+            Random.step Shops.init seed
 
         leatherArmour =
             Item.new (ItemTypeArmour LeatherArmour)
 
-        ( maps, seed__ ) =
-            Maps.init leatherArmour seed_
+        maps =
+            Maps.init leatherArmour
 
         level =
             Maps.getCurrentLevel maps
@@ -73,7 +73,7 @@ init seed hero difficulty =
       , shops = shops
       , level = level
       , inventory = Inventory.init (Inventory.Ground []) Equipment.init
-      , seed = seed__
+      , seed = seed_
       , messages = [ "Welcome to castle of the winds!" ]
       , difficulty = difficulty
       , windowSize = { width = 640, height = 640 }
@@ -213,7 +213,7 @@ tick : Game -> Game
 tick ({ maps, shops, hero, seed } as game) =
     let
         ( shops_, seed_ ) =
-            Shops.tick shops seed
+            Random.step (Shops.tick shops) seed
     in
     { game
         | maps = Maps.tick maps

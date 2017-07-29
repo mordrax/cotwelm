@@ -170,7 +170,8 @@ view : Model -> Html Msg
 view model =
     let
         hero =
-            Dict.get 1 model.heroLookup
+            model.heroLookup
+                |> Dict.get 1
                 |> Maybe.withDefault (initHero customAttributes model.customEquipment)
     in
     div []

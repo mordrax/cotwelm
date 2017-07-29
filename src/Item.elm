@@ -8,6 +8,7 @@ module Item
         , detail
         , equals
         , isCursed
+        , mass
         , new
         , ppArmour
         , ppWeapon
@@ -51,10 +52,10 @@ type alias Items =
 {-| The price that shops are willing to sell an Item for, the buy field
 -}
 priceOf : Item -> Int
-priceOf item =
+priceOf (Item base _) =
     let
         (Prices buy sell) =
-            getModel item |> .prices
+            base.prices
     in
     sell
 
@@ -62,10 +63,10 @@ priceOf item =
 {-| The price that shops are willing to buy an Item for, the sell field
 -}
 costOf : Item -> Int
-costOf item =
+costOf (Item base _) =
     let
         (Prices buy sell) =
-            getModel item |> .prices
+            base.prices
     in
     buy
 
@@ -77,36 +78,18 @@ costOf item =
 
 
 mass : Item -> Mass
-mass =
-    getModel >> .mass
-
-
-baseItemMass : BaseItem -> Mass
-baseItemMass { mass } =
-    mass
+mass (Item base _) =
+    base.mass
 
 
 isCursed : Item -> Bool
-isCursed =
-    let
-        isCursed status =
-            status == Cursed
-    in
-    getModel >> .status >> isCursed
+isCursed (Item base _) =
+    base.status == Cursed
 
 
 equals : Item -> Item -> Bool
-equals a b =
-    let
-        ( baseA, baseB ) =
-            ( getModel a, getModel b )
-    in
+equals (Item baseA _) (Item baseB _) =
     baseA.name == baseB.name
-
-
-getModel : Item -> BaseItem
-getModel (Item base _) =
-    base
 
 
 view : Item -> Html msg
@@ -115,8 +98,8 @@ view item =
 
 
 css : Item -> String
-css =
-    getModel >> .css
+css (Item base _) =
+    base.css
 
 
 viewSlot : Item -> String -> Html msg

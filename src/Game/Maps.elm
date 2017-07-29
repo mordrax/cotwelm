@@ -43,8 +43,8 @@ type alias Maps =
     }
 
 
-init : Item -> Random.Seed -> ( Maps, Random.Seed )
-init armour seed =
+init : Item -> Maps
+init armour =
     let
         areaToTiles area visibility =
             area
@@ -61,14 +61,12 @@ init armour seed =
         mineEntryLevelWithArmour =
             Level.drop ( ( 13, 19 ), armour ) mineEntryLevel
     in
-    ( { currentArea = Village
-      , abandonedMines = Array.fromList []
-      , village = levelOfArea Village Known
-      , farm = levelOfArea Farm Known
-      , abandonedMinesEntry = mineEntryLevelWithArmour
-      }
-    , seed
-    )
+    { currentArea = Village
+    , abandonedMines = Array.fromList []
+    , village = levelOfArea Village Known
+    , farm = levelOfArea Farm Known
+    , abandonedMinesEntry = mineEntryLevelWithArmour
+    }
 
 
 tick : Maps -> Maps
