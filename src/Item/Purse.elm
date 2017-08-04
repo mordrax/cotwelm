@@ -17,7 +17,7 @@ import Utils.Mass as Mass exposing (Mass)
 
 init : Purse
 init =
-    ( BaseItem "Purse" (Prices 0 0) "Purse" (Mass.Mass 0 0) Normal Identified
+    ( BaseItem "Purse" (ItemValue 0) "Purse" (Mass.Mass 0 0) Normal Identified
     , { coins = Coins 100 10 1 1
       }
     )
@@ -25,7 +25,7 @@ init =
 
 initCoinBaseItem : String -> String -> Int -> BaseItem
 initCoinBaseItem name css value =
-    BaseItem name (Prices value value) css (Mass.Mass 0 0) Normal Identified
+    BaseItem name (ItemValue value) css (Mass.Mass 0 0) Normal Identified
 
 
 initCoppers : Int -> ( BaseItem, Int )

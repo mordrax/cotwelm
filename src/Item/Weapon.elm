@@ -44,73 +44,73 @@ import Utils.Mass as Mass exposing (Mass)
 init : WeaponType -> ItemStatus -> IdentificationStatus -> ( BaseItem, WeaponDetails )
 init weaponType status idStatus =
     let
-        make name ( weight, bulk ) css ( buy, sell ) damage =
-            ( BaseItem name (Prices buy sell) css (Mass.Mass weight bulk) status idStatus
+        make name mass css itemValue damage =
+            ( BaseItem name itemValue css mass status idStatus
             , { weaponType = weaponType
               , damage = damage
               }
             )
 
         makeMonsterWeapon name damage =
-            make name ( 0, 0 ) "" ( 0, 0 ) damage
+            make name (Mass 0 0) "" (ItemValue 0) damage
 
         d n faces bonus =
             Dice n faces bonus
     in
     case weaponType of
         BrokenSword ->
-            make "Broken Sword" ( 1000, 5000 ) "broken-sword" ( 0, 25 ) (d 1 6 -2)
+            make "Broken Sword" (Mass 1000 5000) "broken-sword" (ItemValue 25) (d 1 6 -2)
 
         Club ->
-            make "Club" ( 2500, 3000 ) "club" ( 105, 60 ) (d 3 2 0)
+            make "Club" (Mass 2500 3000) "club" (ItemValue 105) (d 3 2 0)
 
         Dagger ->
-            make "Dagger" ( 500, 500 ) "sword" ( 420, 240 ) (d 1 4 0)
+            make "Dagger" (Mass 500 500) "sword" (ItemValue 420) (d 1 4 0)
 
         Hammer ->
-            make "Hammer" ( 1500, 3000 ) "hammer" ( 420, 240 ) (d 2 2 0)
+            make "Hammer" (Mass 1500 3000) "hammer" (ItemValue 420) (d 2 2 0)
 
         HandAxe ->
-            make "Hand Axe" ( 1000, 3000 ) "axe" ( 472, 270 ) (d 1 5 0)
+            make "Hand Axe" (Mass 1000 3000) "axe" (ItemValue 472) (d 1 5 0)
 
         Quarterstaff ->
-            make "Quarterstaff" ( 1000, 5000 ) "spear" ( 648, 360 ) (d 3 1 0)
+            make "Quarterstaff" (Mass 1000 5000) "spear" (ItemValue 648) (d 3 1 0)
 
         Spear ->
-            make "Spear" ( 2500, 5000 ) "spear" ( 840, 480 ) (d 1 9 0)
+            make "Spear" (Mass 2500 5000) "spear" (ItemValue 840) (d 1 9 0)
 
         ShortSword ->
-            make "Short Sword" ( 1500, 5000 ) "sword" ( 1470, 840 ) (d 1 6 0)
+            make "Short Sword" (Mass 1500 5000) "sword" (ItemValue 1470) (d 1 6 0)
 
         Mace ->
-            make "Mace" ( 2500, 4375 ) "mace" ( 1728, 960 ) (d 3 2 0)
+            make "Mace" (Mass 2500 4375) "mace" (ItemValue 1728) (d 3 2 0)
 
         Flail ->
-            make "Flail" ( 4500, 3250 ) "flail" ( 1512, 840 ) (d 4 3 0)
+            make "Flail" (Mass 4500 3250) "flail" (ItemValue 1512) (d 4 3 0)
 
         Axe ->
-            make "Axe" ( 3000, 5000 ) "axe" ( 1944, 1080 ) (d 1 9 0)
+            make "Axe" (Mass 3000 5000) "axe" (ItemValue 1944) (d 1 9 0)
 
         WarHammer ->
-            make "War Hammer" ( 4000, 7500 ) "hammer" ( 2160, 1200 ) (d 4 3 -1)
+            make "War Hammer" (Mass 4000 7500) "hammer" (ItemValue 2160) (d 4 3 -1)
 
         LongSword ->
-            make "Long Sword" ( 2500, 8000 ) "sword" ( 3240, 1800 ) (d 1 8 0)
+            make "Long Sword" (Mass 2500 8000) "sword" (ItemValue 3240) (d 1 8 0)
 
         BattleAxe ->
-            make "Battle Axe" ( 3500, 6000 ) "axe" ( 2160, 1200 ) (d 2 5 0)
+            make "Battle Axe" (Mass 3500 6000) "axe" (ItemValue 2160) (d 2 5 0)
 
         BroadSword ->
-            make "Broad Sword" ( 3000, 9000 ) "sword" ( 3240, 1800 ) (d 1 9 0)
+            make "Broad Sword" (Mass 3000 9000) "sword" (ItemValue 3240) (d 1 9 0)
 
         MorningStar ->
-            make "Morning Star" ( 3000, 9000 ) "morning-star" ( 2160, 1200 ) (d 4 2 0)
+            make "Morning Star" (Mass 3000 9000) "morning-star" (ItemValue 1200) (d 4 2 0)
 
         BastardSword ->
-            make "Bastard Sword" ( 4500, 10000 ) "sword" ( 4320, 2400 ) (d 2 7 0)
+            make "Bastard Sword" (Mass 4500 10000) "sword" (ItemValue 4320) (d 2 7 0)
 
         TwoHandedSword ->
-            make "Two Handed Sword" ( 5000, 12000 ) "sword" ( 6360, 3600 ) (d 2 8 0)
+            make "Two Handed Sword" (Mass 5000 12000) "sword" (ItemValue 6360) (d 2 8 0)
 
         -- monster weapons
         SmallClaws ->

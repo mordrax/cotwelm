@@ -7,8 +7,8 @@ import Utils.Mass as Mass exposing (Mass)
 init : BeltType -> ItemStatus -> IdentificationStatus -> ( BaseItem, BeltDetails a )
 init beltType status idStatus =
     let
-        make name mass css prices container =
-            ( BaseItem name prices css mass status idStatus
+        make name mass css itemValue container =
+            ( BaseItem name itemValue css mass status idStatus
             , { beltType = beltType
               , beltContainer = initBeltContainer beltType
               }
@@ -16,19 +16,19 @@ init beltType status idStatus =
     in
     case beltType of
         TwoSlotBelt ->
-            make "Two Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer TwoSlotBelt)
+            make "Two Slot Belt" (Mass.Mass 0 0) "slot-belt" (ItemValue 300) (initBeltContainer TwoSlotBelt)
 
         ThreeSlotBelt ->
-            make "Three Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer ThreeSlotBelt)
+            make "Three Slot Belt" (Mass.Mass 0 0) "slot-belt" (ItemValue 300) (initBeltContainer ThreeSlotBelt)
 
         FourSlotBelt ->
-            make "Four Slot Belt" (Mass.Mass 0 0) "slot-belt" (Prices 300 300) (initBeltContainer FourSlotBelt)
+            make "Four Slot Belt" (Mass.Mass 0 0) "slot-belt" (ItemValue 300) (initBeltContainer FourSlotBelt)
 
         UtilityBelt ->
-            make "Utility Belt" (Mass.Mass 0 0) "utility-belt" (Prices 1350 1800) (initBeltContainer UtilityBelt)
+            make "Utility Belt" (Mass.Mass 0 0) "utility-belt" (ItemValue 1350) (initBeltContainer UtilityBelt)
 
         WandQuiverBelt ->
-            make "Wand Quiver Belt" (Mass.Mass 0 0) "wand-quiver-belt" (Prices 300 300) (initBeltContainer WandQuiverBelt)
+            make "Wand Quiver Belt" (Mass.Mass 0 0) "wand-quiver-belt" (ItemValue 300) (initBeltContainer WandQuiverBelt)
 
 
 initBeltContainer : BeltType -> BeltContainer a

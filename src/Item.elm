@@ -21,16 +21,12 @@ import Container exposing (Container)
 import Dice
 import Html exposing (..)
 import Html.Attributes as HA
-import Item.Armour
 import Item.Belt as Belt
-import Item.Bracers
 import Item.Data exposing (..)
-import Item.Gauntlets
-import Item.Helmet
 import Item.Pack as Pack
 import Item.Purse as Purse
-import Item.Shield
 import Item.Weapon
+import Item.Wearable
 import Utils.Mass as Mass exposing (Mass)
 
 
@@ -54,10 +50,13 @@ type alias Items =
 priceOf : Item -> Int
 priceOf (Item base _) =
     let
-        (Prices buy sell) =
-            base.prices
+        (ItemValue value) =
+            base.itemValue
     in
-    sell
+    (value + 25)
+        |> toFloat
+        |> (*) 1.2
+        |> round
 
 
 {-| The price that shops are willing to buy an Item for, the sell field
@@ -65,10 +64,12 @@ priceOf (Item base _) =
 costOf : Item -> Int
 costOf (Item base _) =
     let
-        (Prices buy sell) =
-            base.prices
+        (ItemValue value) =
+            base.itemValue
     in
-    buy
+    toFloat value
+        |> (*) 0.8
+        |> round
 
 
 
@@ -152,19 +153,19 @@ newWithOptions itemType status idStatus =
             makeItem WeaponDetail (Item.Weapon.init weaponType status idStatus)
 
         ItemTypeArmour armourType ->
-            makeItem ArmourDetail (Item.Armour.init armourType status idStatus)
+            makeItem ArmourDetail (Item.Wearable.initArmour armourType status idStatus)
 
         ItemTypeShield shieldType ->
-            makeItem ShieldDetail (Item.Shield.init shieldType status idStatus)
+            makeItem ShieldDetail (Item.Wearable.initShield shieldType status idStatus)
 
         ItemTypeHelmet helmetType ->
-            makeItem HelmetDetail (Item.Helmet.init helmetType status idStatus)
+            makeItem HelmetDetail (Item.Wearable.initHelmet helmetType status idStatus)
 
         ItemTypeBracers bracersType ->
-            makeItem BracersDetail (Item.Bracers.init bracersType status idStatus)
+            makeItem BracersDetail (Item.Wearable.initBracers bracersType status idStatus)
 
         ItemTypeGauntlets gauntletsType ->
-            makeItem GauntletsDetail (Item.Gauntlets.init gauntletsType status idStatus)
+            makeItem GauntletsDetail (Item.Wearable.initGauntlets gauntletsType status idStatus)
 
         ItemTypeBelt beltType ->
             makeItem BeltDetail (Belt.init beltType status idStatus)

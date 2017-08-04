@@ -88,23 +88,17 @@ type ItemType
     | ItemTypePlatinum AmountOfCoins
 
 
-type alias Buy =
-    Int
-
-
-type alias Sell =
-    Int
-
-
-type Prices
-    = Prices Buy Sell
+{-| The value of an item in copper, shops will mark up for purchases and down when purchasing
+-}
+type ItemValue
+    = ItemValue Int
 
 
 {-| The common set of data for all items.
 -}
 type alias BaseItem =
     { name : String
-    , prices : Prices
+    , itemValue : ItemValue
     , css : String
     , mass : Mass
     , status : ItemStatus

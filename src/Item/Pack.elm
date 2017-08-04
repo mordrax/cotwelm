@@ -48,8 +48,8 @@ init :
     -> Pack a
 init packType toContainer status idStatus =
     let
-        make name price css mass capacity =
-            ( BaseItem name price css mass status idStatus
+        make name itemValue css mass capacity =
+            ( BaseItem name itemValue css mass status idStatus
             , { packType = packType
               , container = toContainer capacity
               }
@@ -57,37 +57,37 @@ init packType toContainer status idStatus =
     in
     case packType of
         SmallBag ->
-            make "Small Bag" (Prices 300 500) "bag" (Mass.Mass 0 0) (Capacity 6000 5000)
+            make "Small Bag" (ItemValue 300) "bag" (Mass.Mass 0 0) (Capacity 6000 5000)
 
         MediumBag ->
-            make "Medium Bag" (Prices 500 700) "bag" (Mass.Mass 0 0) (Capacity 12000 10000)
+            make "Medium Bag" (ItemValue 500) "bag" (Mass.Mass 0 0) (Capacity 12000 10000)
 
         LargeBag ->
-            make "Large Bag" (Prices 900 900) "bag" (Mass.Mass 0 0) (Capacity 18000 15000)
+            make "Large Bag" (ItemValue 900) "bag" (Mass.Mass 0 0) (Capacity 18000 15000)
 
         SmallPack ->
-            make "Small Pack" (Prices 1000 1000) "pack" (Mass.Mass 0 0) (Capacity 50000 12000)
+            make "Small Pack" (ItemValue 1000) "pack" (Mass.Mass 0 0) (Capacity 50000 12000)
 
         MediumPack ->
-            make "Medium Pack" (Prices 2000 1500) "pack" (Mass.Mass 0 0) (Capacity 75000 22000)
+            make "Medium Pack" (ItemValue 2000) "pack" (Mass.Mass 0 0) (Capacity 75000 22000)
 
         LargePack ->
-            make "Large Pack" (Prices 4000 100000) "pack" (Mass.Mass 0 0) (Capacity 100000 35000)
+            make "Large Pack" (ItemValue 4000) "pack" (Mass.Mass 0 0) (Capacity 100000 35000)
 
         SmallChest ->
-            make "Small Chest" (Prices 5000 100000) "chest" (Mass.Mass 0 0) (Capacity 50000 100000)
+            make "Small Chest" (ItemValue 5000) "chest" (Mass.Mass 0 0) (Capacity 50000 100000)
 
         MediumChest ->
-            make "Medium Chest" (Prices 15000 150000) "chest" (Mass.Mass 0 0) (Capacity 150000 100000)
+            make "Medium Chest" (ItemValue 15000) "chest" (Mass.Mass 0 0) (Capacity 150000 100000)
 
         LargeChest ->
-            make "Large Chest" (Prices 25000 250000) "chest" (Mass.Mass 0 0) (Capacity 250000 100000)
+            make "Large Chest" (ItemValue 25000) "chest" (Mass.Mass 0 0) (Capacity 250000 100000)
 
         EnchantedSmallPackOfHolding ->
-            make "Enchanted Small Pack Of Holding" (Prices 5000 75000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 150000 50000)
+            make "Enchanted Small Pack Of Holding" (ItemValue 5000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 150000 50000)
 
         EnchantedMediumPackOfHolding ->
-            make "Enchanted Medium Pack Of Holding" (Prices 7500 100000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 200000 75000)
+            make "Enchanted Medium Pack Of Holding" (ItemValue 7500) "enchanted-pack" (Mass.Mass 0 0) (Capacity 200000 75000)
 
         EnchantedLargePackOfHolding ->
-            make "Enchanted Large Pack Of Holding" (Prices 10000 125000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 250000 100000)
+            make "Enchanted Large Pack Of Holding" (ItemValue 10000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 250000 100000)

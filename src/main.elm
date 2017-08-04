@@ -53,8 +53,8 @@ init location =
       , charCreation = charCreation
       , game = Nothing
       , editor = Editor.init
-      , arena = Nothing
-      , pit = Nothing
+      , arena = Just PlayerArena.init
+      , pit = Just MonsterArena.init
       }
     , Cmd.batch [ Cmd.map CharCreationMsg charCreationCmds, newGameMsg ]
     )

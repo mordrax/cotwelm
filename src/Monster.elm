@@ -24,11 +24,14 @@ size and type.
 
 -}
 
+import Html exposing (Html)
 import Monsters.Factory exposing (make)
 import Monsters.Model
 import Monsters.Types exposing (..)
 import Monsters.View
+import Random.Pcg exposing (Generator)
 import Stats exposing (Stats)
+import Utils.Vector exposing (Vector)
 
 
 -- types
@@ -38,6 +41,7 @@ type alias Monster =
     Monsters.Model.Monster
 
 
+types : List MonsterType
 types =
     Monsters.Types.monsterTypesToList
 
@@ -46,14 +50,17 @@ types =
 -- maker functions
 
 
+makeForArena : MonsterType -> Monster
 makeForArena =
     Monsters.Factory.makeForArena
 
 
+makeRandomMonsters : Int -> List Vector -> Generator (List Monster)
 makeRandomMonsters =
     Monsters.Factory.makeRandomMonsters
 
 
+make : MonsterType -> Vector -> Monster
 make =
     Monsters.Factory.make
 
@@ -62,6 +69,7 @@ make =
 -- view
 
 
+view : Monster -> Html a
 view =
     Monsters.View.view
 

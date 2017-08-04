@@ -12,9 +12,9 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
 import Item
-import Item.Armour as Armour
 import Item.Data as ItemData
 import Item.Weapon as Weapon
+import Item.Wearable as Wearable
 import Monster exposing (Monster)
 import Process
 import Random.Pcg as Random exposing (Generator)
@@ -96,9 +96,17 @@ update msg model =
                 ( model, Cmd.none )
 
         StartFight [] resetCounter ->
+            let
+                _ =
+                    Debug.log "starting a fight with no one" 1
+            in
             ( model, Cmd.none )
 
         StartFight (nextMatch :: remainingMatches) resetCounter ->
+            let
+                _ =
+                    Debug.log "starting a fight" nextMatch
+            in
             ( { model | matchResults = Dict.fromList [], resetCounter = resetCounter }
             , fightResult nextMatch remainingMatches resetCounter
             )
@@ -244,11 +252,11 @@ heroEquipmentView hero =
             List.map (\x -> ( x, weaponTypeMatches x )) Weapon.listTypes
 
         armour =
-            List.map (\x -> ( x, armourTypeMatches x )) Armour.listTypes
+            List.map (\x -> ( x, armourTypeMatches x )) Wearable.armourTypes
     in
     div []
         [ UI.list (toString >> text) ChangeHeroWeapon ( Weapon.encode, Weapon.decoder ) weapons
-        , UI.list (toString >> text) ChangeHeroArmour ( Armour.encode, Armour.decoder ) armour
+        , UI.list (toString >> text) ChangeHeroArmour ( Wearable.encodeArmour, Wearable.decodeArmour ) armour
         ]
 
 
@@ -449,8 +457,17 @@ initMatches heroLookup ( weaponType, armourType ) =
                             Debug.crash "Could not look up a hero with exp level: " monster.expLevel
             in
             Match.init hero monster
+
+        monstersHigherThanLevel x =
+            .expLevel >> flip (>=) x
     in
-    --        List.map newMatch (List.take 20 Monster.types)
-    List.map newMonster Monster.types
-        |> List.filter (.expLevel >> flip (>=) 5)
+    Monster.types
+        |> List.take 20
+        |> List.map Monster.makeForArena
         |> List.map newMatch
+
+
+
+--List.map newMonster Monster.types
+--    |> List.filter (monstersHigherThanLevel 5)
+--    |> List.map newMatch
