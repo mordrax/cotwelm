@@ -1,0 +1,1 @@
+elm make --debug src/main.elm --output dist/js/cotw.js
