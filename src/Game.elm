@@ -122,16 +122,6 @@ isOnStairs upOrDownStairs position level =
 ---------------
 
 
-actionMove : Direction -> Game -> Game
-actionMove dir ({ level } as game) =
-    game
-        |> Collision.move dir
-        |> Collision.autoOpenAnyDoorHeroIsOn
-        |> updateFOV
-        |> Collision.moveMonsters
-        |> Render.viewport
-
-
 actionKeepOnWalking : Direction -> Game -> ( Game, Cmd Msg, Quit )
 actionKeepOnWalking walkDirection game =
     case Game.Model.hasHeroMoved game of
@@ -271,7 +261,10 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
         GameAction (Move dir) ->
             game
                 |> tick
-                |> actionMove dir
+                |> Collision.move dir
+                |> Collision.autoOpenAnyDoorHeroIsOn
+                |> updateFOV
+                |> Collision.moveMonsters
                 |> checkHeroAlive
                 |> updatePreviousState
                 |> Render.viewport
@@ -292,7 +285,10 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
             else
                 game
                     |> tick
-                    |> actionMove dir
+                    |> Collision.move dir
+                    |> Collision.autoOpenAnyDoorHeroIsOn
+                    |> updateFOV
+                    |> Collision.moveMonsters
                     |> updatePreviousState
                     |> Render.viewport
                     |> actionKeepOnWalking dir
