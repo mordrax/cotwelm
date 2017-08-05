@@ -27,6 +27,7 @@ import Html.Attributes as HA
 import Item exposing (..)
 import Item.Data exposing (..)
 import Item.Pack as Pack
+import Item.Purse as Purse
 import Shops exposing (Shops, Store)
 import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Utils.Misc
@@ -377,9 +378,18 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
 
         maybePack =
             Equipment.getPack equipment
+
+        storeMsgs =
+            case merchant of
+                Ground _ ->
+                    div [] []
+
+                Shop _ ->
+                    viewStoreMessages dnd
     in
     viewAsContainers
         [ viewMerchant merchant dnd
+        , storeMsgs
         , viewPack maybePack model
         , viewPurse model
         ]
@@ -393,6 +403,38 @@ viewMerchant merchant dnd =
 
         Ground items ->
             viewGround items dnd
+
+
+viewStoreMessages : DragDrop Draggable Droppable -> Html Msg
+viewStoreMessages dnd =
+    let
+        buying item =
+            text ("Ah yes, I can part with this fine " ++ name item ++ " for a measly sum of " ++ markupPrice item ++ ". A bargain!")
+
+        selling item =
+            text ("This " ++ name item ++ " has seen better days, I'll need to put in alot of work to restore it. The most I can offer is " ++ basePrice item ++ ".")
+
+        name =
+            Item.name
+
+        basePrice =
+            Item.baseValue >> Purse.toLeastCoins >> Purse.ppCoins
+
+        markupPrice =
+            Item.markupValue >> Purse.toLeastCoins >> Purse.ppCoins
+    in
+    case DragDrop.source dnd of
+        Just (DragSlot item _) ->
+            selling item
+
+        Just (DragPack item _) ->
+            selling item
+
+        Just (DragMerchant item _) ->
+            buying item
+
+        Nothing ->
+            text "Welcome to my humble store. What would you like to purchase today?"
 
 
 viewGround : List Item -> DragDrop Draggable Droppable -> Html Msg
@@ -409,7 +451,7 @@ viewGround items dnd =
             DragDrop.droppable (DropMerchant (Ground items)) dnd droppableDiv
                 |> Html.map DnDMsg
     in
-    viewAsContainer "Groud" [ droppableGround ]
+    viewAsContainer "Ground" [ droppableGround ]
 
 
 viewAsContainer : String -> List (Html msg) -> Html msg
@@ -469,7 +511,7 @@ viewPack maybePack ({ dnd } as model) =
             viewContainer pack model
 
         isDraggingPack =
-            case DragDrop.getSource dnd of
+            case DragDrop.source dnd of
                 Just (DragSlot _ PackSlot) ->
                     True
 

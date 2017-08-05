@@ -4,9 +4,10 @@ module Utils.DragDrop
         , Msg
         , draggable
         , droppable
-        , getSource
         , init
+        , source
         , subscription
+        , target
         , update
         , view
         )
@@ -55,9 +56,14 @@ init =
         }
 
 
-getSource : DragDrop s t -> Maybe s
-getSource (A { source }) =
+source : DragDrop s t -> Maybe s
+source (A { source }) =
     source
+
+
+target : DragDrop s t -> Maybe t
+target (A { target }) =
+    target
 
 
 update : Msg s t -> DragDrop s t -> ( DragDrop s t, Maybe ( Maybe s, Maybe t ) )

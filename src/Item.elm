@@ -2,17 +2,18 @@ module Item
     exposing
         ( Items
         , base
+        , baseValue
         , containerBuilder
-        , costOf
         , css
         , detail
         , equals
         , isCursed
+        , markupValue
         , mass
+        , name
         , new
         , ppArmour
         , ppWeapon
-        , priceOf
         , view
         , viewSlot
         )
@@ -45,31 +46,30 @@ type alias Items =
 -- for exporting
 
 
-{-| The price that shops are willing to sell an Item for, the buy field
--}
-priceOf : Item -> Int
-priceOf (Item base _) =
+markupValue : Item -> Int
+markupValue (Item base _) =
     let
         (ItemValue value) =
             base.itemValue
     in
     (value + 25)
         |> toFloat
-        |> (*) 1.2
+        |> (*) 1.5
         |> round
 
 
-{-| The price that shops are willing to buy an Item for, the sell field
--}
-costOf : Item -> Int
-costOf (Item base _) =
+baseValue : Item -> Int
+baseValue (Item base _) =
     let
         (ItemValue value) =
             base.itemValue
     in
-    toFloat value
-        |> (*) 0.8
-        |> round
+    value
+
+
+name : Item -> String
+name (Item base _) =
+    base.name
 
 
 

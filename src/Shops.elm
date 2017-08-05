@@ -99,7 +99,7 @@ sell : Item -> Purse -> Store -> Result String ( Store, Purse )
 sell item purse (Store items shopType) =
     let
         price =
-            Debug.log "Item purchase price:" (Item.priceOf item)
+            Debug.log "Shop sell price:" (Item.markupValue item)
 
         itemsWithout item =
             Utils.Misc.removeFirst item Item.equals items
@@ -118,7 +118,7 @@ buy : Item -> Purse -> Store -> ( Store, Purse )
 buy item purse (Store items shopType) =
     let
         cost =
-            Debug.log "Item sell price:" (Item.costOf item)
+            Debug.log "Shop buy price:" (Item.baseValue item)
     in
     ( Store (item :: items) shopType, Purse.add cost purse )
 

@@ -8,7 +8,9 @@ module Item.Purse
         , initPlatinums
         , initSilvers
         , merge
+        , ppCoins
         , remove
+        , toLeastCoins
         )
 
 import Item.Data exposing (..)
@@ -124,6 +126,27 @@ remove copperToRemove ( base, { coins } as detail ) =
         Result.Ok ( base, { detail | coins = { coins | copper = coins.copper, silver = coins.silver, gold = coins.gold, platinum = coins.platinum } } )
     else
         Result.Err "Not enough coins to remove!"
+
+
+ppCoins : Coins -> String
+ppCoins { copper, silver, gold, platinum } =
+    let
+        coins : List ( Int, String )
+        coins =
+            [ ( copper, "coppers" ), ( silver, "silvers" ), ( gold, "gold" ), ( platinum, "platinum" ) ]
+
+        greaterThanZero : ( Int, String ) -> Bool
+        greaterThanZero ( x, _ ) =
+            x > 0
+
+        joinValueToUnit : ( Int, String ) -> String
+        joinValueToUnit ( val, unit ) =
+            toString val ++ " " ++ unit
+    in
+    coins
+        |> List.filter greaterThanZero
+        |> List.map joinValueToUnit
+        |> String.join ", "
 
 
 toLeastCoins : Int -> Coins
