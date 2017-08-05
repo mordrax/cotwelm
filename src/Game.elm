@@ -277,6 +277,15 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> Render.viewport
                 |> noCmd
 
+        GameAction WaitATurn ->
+            game
+                |> tick
+                |> Collision.moveMonsters
+                |> checkHeroAlive
+                |> updatePreviousState
+                |> Render.viewport
+                |> noCmd
+
         GameAction (Walk dir) ->
             if isNewArea game then
                 noCmd game

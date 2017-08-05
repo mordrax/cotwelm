@@ -114,6 +114,7 @@ playerKeymap =
         , ( ( KeyDown Period, True ), Game.Types.GoDownstairs )
         , ( ( KeyDown Comma, True ), Game.Types.GoUpstairs )
         , ( ( KeyDown CharG, False ), Game.Types.Pickup )
+        , ( ( KeyDown Period, False ), Game.Types.WaitATurn )
         ]
 
 
