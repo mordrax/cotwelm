@@ -199,29 +199,32 @@ viewMessages model =
 viewStats : Stats -> Html Msg
 viewStats stats =
     let
-        hpLow =
-            toFloat stats.currentHP / toFloat stats.maxHP < 0.2
-
-        hpLessThanTen =
-            stats.currentHP < 10
-
-        hpColor =
-            if hpLow || hpLessThanTen then
-                styles [ Css.color (Css.rgb 255 0 0) ]
+        hpStyles =
+            if Stats.hpLow stats then
+                [ styles [ Css.color (Css.rgb 255 0 0) ] ]
             else
-                styles []
+                []
+
+        spStyles =
+            if Stats.spLow stats then
+                [ styles [ Css.color (Css.rgb 255 0 0) ] ]
+            else
+                []
+
+        ( ppHP, ppSP ) =
+            ( Stats.printHP stats, Stats.printSP stats )
     in
     div [ HA.class "game-bottom-hud__stats" ]
-        [ viewStat "HP" (Stats.printHP stats)
-        , viewStat "Mana" (Stats.printSP stats)
-        , viewStat "Speed" "100% / 200%"
-        , viewStat "Time" "0d, 00:02:57"
+        [ viewStat hpStyles "HP" ppHP
+        , viewStat spStyles "Mana" ppSP
+        , viewStat [] "Speed" "100% / 200%"
+        , viewStat [] "Time" "0d, 00:02:57"
         , div [] [ Html.text "A Tiny Hamlet" ]
         ]
 
 
-viewStat : String -> String -> Html never
-viewStat label value =
+viewStat : List (Html.Attribute never) -> String -> String -> Html never
+viewStat customAttributes label value =
     let
         statLabel lbl =
             div [ HA.class "stat__label" ] [ Html.text lbl ]
@@ -229,7 +232,7 @@ viewStat label value =
         statValue val =
             div [ HA.class "stat__value" ] [ Html.text val ]
     in
-    div [ HA.class "game-bottom-hud__stat" ]
+    div (HA.class "game-bottom-hud__stat" :: customAttributes)
         [ statLabel label
         , statValue value
         ]

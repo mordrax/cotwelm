@@ -131,9 +131,9 @@ remove copperToRemove ( base, { coins } as detail ) =
 ppCoins : Coins -> String
 ppCoins { copper, silver, gold, platinum } =
     let
-        coins : List ( Int, String )
-        coins =
-            [ ( copper, "coppers" ), ( silver, "silvers" ), ( gold, "gold" ), ( platinum, "platinum" ) ]
+        coinPairs : List ( Int, String )
+        coinPairs =
+            [ ( platinum, "platinum" ), ( gold, "gold" ), ( silver, "silver" ), ( copper, "copper" ) ]
 
         greaterThanZero : ( Int, String ) -> Bool
         greaterThanZero ( x, _ ) =
@@ -143,10 +143,27 @@ ppCoins { copper, silver, gold, platinum } =
         joinValueToUnit ( val, unit ) =
             toString val ++ " " ++ unit
     in
-    coins
+    coinPairs
         |> List.filter greaterThanZero
         |> List.map joinValueToUnit
-        |> String.join ", "
+        |> flip ppCoins_ ""
+
+
+ppCoins_ : List String -> String -> String
+ppCoins_ coinPairs currentString =
+    case coinPairs of
+        [] ->
+            currentString
+
+        a :: [] ->
+            currentString ++ " " ++ a ++ " pieces"
+
+        a :: b :: [] ->
+            currentString ++ " " ++ a ++ " and " ++ b ++ " pieces"
+
+        a :: rest ->
+            (currentString ++ a ++ ", ")
+                |> ppCoins_ rest
 
 
 toLeastCoins : Int -> Coins

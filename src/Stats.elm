@@ -2,12 +2,14 @@ module Stats
     exposing
         ( Msg(..)
         , Stats
+        , hpLow
         , incLevel
         , init
         , initExperienced
         , isDead
         , printHP
         , printSP
+        , spLow
         , takeHit
         , tick
         )
@@ -162,6 +164,30 @@ isDead model =
 takeHit : Int -> Stats -> Stats
 takeHit damage model =
     { model | currentHP = model.currentHP - damage }
+
+
+hpLow : Stats -> Bool
+hpLow { currentHP, maxHP } =
+    let
+        hpLessThanTen =
+            currentHP < 10
+
+        hpLowerThanThreshold =
+            toFloat currentHP / toFloat maxHP < 0.2
+    in
+    hpLessThanTen || hpLowerThanThreshold
+
+
+spLow : Stats -> Bool
+spLow { currentSP, maxSP } =
+    let
+        spLessThanTen =
+            currentSP < 10
+
+        spLowerThanThreshold =
+            toFloat currentSP / toFloat maxSP < 0.2
+    in
+    spLessThanTen || spLowerThanThreshold
 
 
 printHP : Stats -> String
