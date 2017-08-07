@@ -96,13 +96,13 @@ remove : Int -> Purse -> Result String Purse
 remove copperToRemove ( base, { coins } as detail ) =
     let
         totalSilvers =
-            coins.copper + coins.silver * 100
+            coins.copper + coins.silver * 10
 
         totalGold =
-            totalSilvers + coins.gold * 10000
+            totalSilvers + coins.gold * 100
 
         totalPlatinum =
-            totalGold + coins.platinum * 1000000
+            totalGold + coins.platinum * 1000
     in
     if copperToRemove <= coins.copper then
         Result.Ok ( base, { detail | coins = { coins | copper = coins.copper - copperToRemove } } )
@@ -176,7 +176,7 @@ toLeastCoins coppers =
         ( copper, silver, gold ) =
             toLeastGold coppers
     in
-    Coins copper silver (gold % 100) (gold // 100)
+    Coins copper silver (gold % 10) (gold // 10)
 
 
 toLeastGold : Int -> ( Int, Int, Int )
@@ -185,9 +185,9 @@ toLeastGold coins =
         ( copper, silver ) =
             toLeastSilvers coins
     in
-    ( copper, silver % 100, silver // 100 )
+    ( copper, silver % 10, silver // 10 )
 
 
 toLeastSilvers : Int -> ( Int, Int )
 toLeastSilvers coins =
-    ( coins % 100, coins // 100 )
+    ( coins % 10, coins // 10 )
