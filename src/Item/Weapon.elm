@@ -31,7 +31,8 @@ module Item.Weapon
         4500 - 2D7 / 4D3  / D16
         5000 - 2D8 / 5D3  / D18
 
-    Speed by weight/bulk:
+    -- A hero who's not strong enough for the weapon incurs a CTH penalty
+    Max (Weight - Str, 0) = CTH Penalty
 
 -}
 
@@ -59,58 +60,61 @@ init weaponType status idStatus =
     in
     case weaponType of
         BrokenSword ->
-            make "Broken Sword" (Mass 1000 5000) "broken-sword" (ItemValue 25) (d 1 6 -2)
+            make "Broken Sword" (Mass 20 100) "broken-sword" (ItemValue 1) (d 1 6 -2)
 
-        Club ->
-            make "Club" (Mass 2500 3000) "club" (ItemValue 105) (d 3 2 0)
-
+        -- blades
         Dagger ->
-            make "Dagger" (Mass 500 500) "sword" (ItemValue 420) (d 1 4 0)
-
-        Hammer ->
-            make "Hammer" (Mass 1500 3000) "hammer" (ItemValue 420) (d 2 2 0)
-
-        HandAxe ->
-            make "Hand Axe" (Mass 1000 3000) "axe" (ItemValue 472) (d 1 5 0)
-
-        Quarterstaff ->
-            make "Quarterstaff" (Mass 1000 5000) "spear" (ItemValue 648) (d 3 1 0)
-
-        Spear ->
-            make "Spear" (Mass 2500 5000) "spear" (ItemValue 840) (d 1 9 0)
+            make "Dagger" (Mass 10 10) "sword" (ItemValue 16) (d 1 4 0)
 
         ShortSword ->
-            make "Short Sword" (Mass 1500 5000) "sword" (ItemValue 1470) (d 1 6 0)
-
-        Mace ->
-            make "Mace" (Mass 2500 4375) "mace" (ItemValue 1728) (d 3 2 0)
-
-        Flail ->
-            make "Flail" (Mass 4500 3250) "flail" (ItemValue 1512) (d 4 3 0)
-
-        Axe ->
-            make "Axe" (Mass 3000 5000) "axe" (ItemValue 1944) (d 1 9 0)
-
-        WarHammer ->
-            make "War Hammer" (Mass 4000 7500) "hammer" (ItemValue 2160) (d 4 3 -1)
+            make "Short Sword" (Mass 30 100) "sword" (ItemValue 36) (d 1 6 0)
 
         LongSword ->
-            make "Long Sword" (Mass 2500 8000) "sword" (ItemValue 3240) (d 1 8 0)
-
-        BattleAxe ->
-            make "Battle Axe" (Mass 3500 6000) "axe" (ItemValue 2160) (d 2 5 0)
+            make "Long Sword" (Mass 50 160) "sword" (ItemValue 64) (d 1 8 0)
 
         BroadSword ->
-            make "Broad Sword" (Mass 3000 9000) "sword" (ItemValue 3240) (d 1 9 0)
-
-        MorningStar ->
-            make "Morning Star" (Mass 3000 9000) "morning-star" (ItemValue 1200) (d 4 2 0)
+            make "Broad Sword" (Mass 60 180) "sword" (ItemValue 59) (d 1 7 1)
 
         BastardSword ->
-            make "Bastard Sword" (Mass 4500 10000) "sword" (ItemValue 4320) (d 2 7 0)
+            make "Bastard Sword" (Mass 70 200) "sword" (ItemValue 100) (d 1 10 0)
 
         TwoHandedSword ->
-            make "Two Handed Sword" (Mass 5000 12000) "sword" (ItemValue 6360) (d 2 8 0)
+            make "Two Handed Sword" (Mass 80 240) "sword" (ItemValue 225) (d 1 15 0)
+
+        -- blunts
+        Club ->
+            make "Club" (Mass 70 120) "club" (ItemValue 12) (d 2 2 1)
+
+        Hammer ->
+            make "Hammer" (Mass 40 60) "hammer" (ItemValue 24) (d 2 2 0)
+
+        Quarterstaff ->
+            make "Quarterstaff" (Mass 20 50) "spear" (ItemValue 36) (d 1 6 0)
+
+        Mace ->
+            make "Mace" (Mass 50 90) "mace" (ItemValue 54) (d 2 3 0)
+
+        MorningStar ->
+            make "Morning Star" (Mass 60 180) "morning-star" (ItemValue 92) (d 2 4 0)
+
+        WarHammer ->
+            make "War Hammer" (Mass 70 150) "hammer" (ItemValue 288) (d 3 4 0)
+
+        Flail ->
+            make "Flail" (Mass 90 200) "flail" (ItemValue 450) (d 3 5 0)
+
+        -- axes
+        HandAxe ->
+            make "Hand Axe" (Mass 20 60) "axe" (ItemValue 35) (d 1 5 1)
+
+        Axe ->
+            make "Axe" (Mass 60 100) "axe" (ItemValue 110) (d 1 10 1)
+
+        Spear ->
+            make "Spear" (Mass 50 120) "spear" (ItemValue 144) (d 1 12 0)
+
+        BattleAxe ->
+            make "Battle Axe" (Mass 70 120) "axe" (ItemValue 164) (d 1 12 2)
 
         -- monster weapons
         SmallClaws ->

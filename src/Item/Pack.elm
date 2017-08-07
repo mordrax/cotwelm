@@ -57,37 +57,37 @@ init packType toContainer status idStatus =
     in
     case packType of
         SmallBag ->
-            make "Small Bag" (ItemValue 300) "bag" (Mass.Mass 0 0) (Capacity 6000 5000)
+            make "Small Bag" (ItemValue 12) "bag" (Mass.Mass 0 0) (Capacity 120 100)
 
         MediumBag ->
-            make "Medium Bag" (ItemValue 500) "bag" (Mass.Mass 0 0) (Capacity 12000 10000)
+            make "Medium Bag" (ItemValue 20) "bag" (Mass.Mass 0 0) (Capacity 240 200)
 
         LargeBag ->
-            make "Large Bag" (ItemValue 900) "bag" (Mass.Mass 0 0) (Capacity 18000 15000)
+            make "Large Bag" (ItemValue 36) "bag" (Mass.Mass 0 0) (Capacity 360 300)
 
         SmallPack ->
-            make "Small Pack" (ItemValue 1000) "pack" (Mass.Mass 0 0) (Capacity 50000 12000)
+            make "Small Pack" (ItemValue 40) "pack" (Mass.Mass 0 0) (Capacity 1000 240)
 
         MediumPack ->
-            make "Medium Pack" (ItemValue 2000) "pack" (Mass.Mass 0 0) (Capacity 75000 22000)
+            make "Medium Pack" (ItemValue 80) "pack" (Mass.Mass 0 0) (Capacity 1500 440)
 
         LargePack ->
-            make "Large Pack" (ItemValue 4000) "pack" (Mass.Mass 0 0) (Capacity 100000 35000)
+            make "Large Pack" (ItemValue 160) "pack" (Mass.Mass 0 0) (Capacity 2000 700)
 
         SmallChest ->
-            make "Small Chest" (ItemValue 5000) "chest" (Mass.Mass 0 0) (Capacity 50000 100000)
+            make "Small Chest" (ItemValue 200) "chest" (Mass.Mass 0 0) (Capacity 1000 2000)
 
         MediumChest ->
-            make "Medium Chest" (ItemValue 15000) "chest" (Mass.Mass 0 0) (Capacity 150000 100000)
+            make "Medium Chest" (ItemValue 600) "chest" (Mass.Mass 0 0) (Capacity 3000 2000)
 
         LargeChest ->
-            make "Large Chest" (ItemValue 25000) "chest" (Mass.Mass 0 0) (Capacity 250000 100000)
+            make "Large Chest" (ItemValue 1000) "chest" (Mass.Mass 0 0) (Capacity 5000 2000)
 
         EnchantedSmallPackOfHolding ->
-            make "Enchanted Small Pack Of Holding" (ItemValue 5000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 150000 50000)
+            make "Enchanted Small Pack Of Holding" (ItemValue 2000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 3000 1000)
 
         EnchantedMediumPackOfHolding ->
-            make "Enchanted Medium Pack Of Holding" (ItemValue 7500) "enchanted-pack" (Mass.Mass 0 0) (Capacity 200000 75000)
+            make "Enchanted Medium Pack Of Holding" (ItemValue 300) "enchanted-pack" (Mass.Mass 0 0) (Capacity 4000 1500)
 
         EnchantedLargePackOfHolding ->
-            make "Enchanted Large Pack Of Holding" (ItemValue 10000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 250000 100000)
+            make "Enchanted Large Pack Of Holding" (ItemValue 4000) "enchanted-pack" (Mass.Mass 0 0) (Capacity 5000 2000)

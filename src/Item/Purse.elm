@@ -128,6 +128,8 @@ remove copperToRemove ( base, { coins } as detail ) =
         Result.Err "Not enough coins to remove!"
 
 
+{-| Prints coins out in a nice readable way: 4 platinum, 3 silver and 10 copper pieces
+-}
 ppCoins : Coins -> String
 ppCoins { copper, silver, gold, platinum } =
     let
@@ -166,6 +168,8 @@ ppCoins_ coinPairs currentString =
                 |> ppCoins_ rest
 
 
+{-| Simplifies x coppers to the least number of coins of each denomination
+-}
 toLeastCoins : Int -> Coins
 toLeastCoins coppers =
     let
