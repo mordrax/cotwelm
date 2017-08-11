@@ -6,3 +6,4 @@ dist/js
 node_modules
 analyse
 assets
+.DS_Store
