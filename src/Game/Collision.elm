@@ -114,7 +114,7 @@ resolveCombat hero monster seed =
 addLoot : Monster -> Game -> Game
 addLoot monster ({ level, seed } as game) =
     let
-        ( loots, seed_ ) =
+        ( loot, seed_ ) =
             Random.step Loot.generate seed
 
         dropAtPosition loot level =
@@ -122,7 +122,7 @@ addLoot monster ({ level, seed } as game) =
     in
     { game
         | seed = seed_
-        , level = List.foldl dropAtPosition level loots
+        , level = List.foldl dropAtPosition level [ loot ]
     }
 
 

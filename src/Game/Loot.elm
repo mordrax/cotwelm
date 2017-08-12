@@ -18,14 +18,20 @@ type alias Loot =
     List Item
 
 
-generate : Generator Loot
+generate : Generator Item
 generate =
     Random.frequency
         [ ( 1, coinLoot 30 20 )
         , ( 1, weaponLoot Item.Weapon.listTypes )
         , ( 1, armourLoot Item.Wearable.armourTypes )
         ]
-        |> Random.map (flip (::) [])
+
+
+{-| Make a random loot based on the level passed in, currently it's based on the dungeon level.
+-}
+makeRandomLoot : Int -> Generator Item
+makeRandomLoot lootLevel =
+    generate
 
 
 {-| Given a average number of coins, generate any number between (avg - range) to (avg + range)

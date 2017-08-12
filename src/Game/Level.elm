@@ -7,6 +7,7 @@ module Game.Level
         , drop
         , drops
         , fromTiles
+        , generateLoot
         , generateMonsters
         , getPath
         , getTile
@@ -32,6 +33,7 @@ import Container exposing (Container)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
+import Game.Loot as Loot
 import Html exposing (..)
 import Item.Data exposing (Item)
 import List.Extra as ListX
@@ -108,6 +110,35 @@ generateMonsters dungeonLevel level =
         |> Random.map (List.take 15)
         |> Random.andThen (Monster.makeRandomMonsters ((dungeonLevel + 1) * 5))
         |> Random.map (\monsters -> { level | monsters = monsters })
+
+
+generateLoot : Int -> Level -> Generator Level
+generateLoot dungeonLevel level =
+    let
+        randomLootToMake =
+            15
+
+        addToLevel positions loot level =
+            case ( positions, loot ) of
+                ( pos :: restOfPositions, item :: restOfLoot ) ->
+                    drop ( pos, item ) level
+                        |> addToLevel restOfPositions restOfLoot
+
+                _ ->
+                    level
+
+        randomTiles =
+            level
+                |> floors
+                |> Misc.shuffle
+                |> Random.map (List.take randomLootToMake)
+
+        randomLoot =
+            dungeonLevel
+                |> Loot.makeRandomLoot
+                |> Random.list randomLootToMake
+    in
+    Random.map2 (\positions loot -> addToLevel positions loot level) randomTiles randomLoot
 
 
 fromTiles : List Tile -> Map
