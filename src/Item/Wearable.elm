@@ -18,7 +18,7 @@ import Utils.Mass as Mass exposing (Mass)
 -- Armour
 
 
-initArmour : ArmourType -> ItemStatus -> IdentificationStatus -> ( BaseItem, ArmourDetails )
+initArmour : ArmourType -> ItemStatus -> IdentificationStatus -> Armour
 initArmour armourType status idStatus =
     let
         make name mass css itemValue ac =

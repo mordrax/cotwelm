@@ -3,6 +3,7 @@ module Item.Weapon
         ( decoder
         , encode
         , init
+        , initBasic
         , listTypes
         )
 
@@ -42,7 +43,12 @@ import Item.Data exposing (..)
 import Utils.Mass as Mass exposing (Mass)
 
 
-init : WeaponType -> ItemStatus -> IdentificationStatus -> ( BaseItem, WeaponDetails )
+initBasic : WeaponType -> Weapon
+initBasic weaponType =
+    init weaponType Normal Identified
+
+
+init : WeaponType -> ItemStatus -> IdentificationStatus -> Weapon
 init weaponType status idStatus =
     let
         make name mass css itemValue damage =
