@@ -120,6 +120,11 @@ new entrances floors roomType dimension worldPos =
     }
 
 
+floorsAndBoundaries : Room -> List Vector
+floorsAndBoundaries room =
+    floors room ++ boundary room
+
+
 newDeadEnd : Vector -> Room
 newDeadEnd worldPos =
     new [ Entrance.init Entrance.Door worldPos ] [] DeadEnd ( 1, 1 ) worldPos

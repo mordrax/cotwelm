@@ -7,6 +7,7 @@ import Dungeon.Entrance as Entrance exposing (..)
 import Dungeon.Room as Room exposing (..)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Game.Level as Level exposing (Level)
+import Set exposing (Set)
 import Tile exposing (Tile)
 import Utils.Vector exposing (Vector)
 
@@ -18,6 +19,7 @@ type alias Model =
     , activePoints : ActivePoints
     , walls : List Tile
     , buildings : List Building
+    , occupied : Set Vector
     }
 
 
@@ -79,6 +81,8 @@ toTiles { rooms, corridors, activePoints, walls } =
     roomTiles ++ corridorTiles ++ walls
 
 
+{-| Add an active point which is a room or corridor, to the rooms and corridors
+-}
 roomsAndCorridorsFromActivePoint : ActivePoint -> ( Rooms, Corridors ) -> ( Rooms, Corridors )
 roomsAndCorridorsFromActivePoint point ( rooms, corridors ) =
     case point of

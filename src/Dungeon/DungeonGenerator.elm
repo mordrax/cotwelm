@@ -15,7 +15,7 @@ import Dungeon.Rooms.Config as Config
 import Dungeon.Types exposing (..)
 import Game.Level as Level
 import Random.Pcg as Random exposing (Generator, constant)
-import Set
+import Set exposing (Set)
 import Utils.Direction exposing (Direction)
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
@@ -55,7 +55,7 @@ activePoints.
 
 init : Config.Model -> Model
 init config =
-    Model config [] [] [] [] []
+    Model config [] [] [] [] [] Set.empty
 
 
 
@@ -160,6 +160,22 @@ step model =
             )
 
 
+addActivePointToOccupiedTiles : ActivePoint -> Set Vector -> Set Vector
+addActivePointToOccupiedTiles activePoint occupied =
+    case activePoint of
+        ActiveRoom room _ ->
+            room
+                |> Room.floorsAndBoundaries
+                |> Set.fromList
+                |> Set.union occupied
+
+        ActiveCorridor corridor ->
+            corridor
+                |> Corridor.boundary
+                |> Set.fromList
+                |> Set.union occupied
+
+
 step_ : Model -> Generator Model
 step_ ({ activePoints } as model) =
     case activePoints of
@@ -167,7 +183,11 @@ step_ ({ activePoints } as model) =
         [] ->
             let
                 addRoomToModel room =
-                    { model | activePoints = [ ActiveRoom room Maybe.Nothing ], rooms = [] }
+                    { model
+                        | activePoints = [ ActiveRoom room Nothing ]
+                        , rooms = []
+                        , occupied = addActivePointToOccupiedTiles (ActiveRoom room Nothing) model.occupied
+                    }
             in
             if List.length model.rooms == 0 && List.length model.corridors == 0 then
                 Random.map addRoomToModel (Room.generate model.config)
@@ -186,6 +206,7 @@ step_ ({ activePoints } as model) =
                             ActiveCorridor corridor
                                 :: ActiveRoom room Maybe.Nothing
                                 :: remainingPoints
+                        , occupied = addActivePointToOccupiedTiles (ActiveCorridor corridor) model.occupied
                     }
 
                 updateModel corridor =
@@ -207,7 +228,10 @@ step_ ({ activePoints } as model) =
                     { model | activePoints = remainingPoints }
 
                 modelWithInactiveCorridor =
-                    { modelWithoutActiveCorridor | corridors = corridor :: model.corridors }
+                    { modelWithoutActiveCorridor
+                        | corridors = corridor :: model.corridors
+                        , occupied = addActivePointToOccupiedTiles (ActiveCorridor corridor) model.occupied
+                    }
             in
             generateActivePointFromCorridor corridor model
                 |> Random.map
@@ -217,6 +241,7 @@ step_ ({ activePoints } as model) =
                                 if canFitCorridor modelWithoutActiveCorridor corridor then
                                     { modelWithoutActiveCorridor
                                         | activePoints = activePoint :: remainingPoints
+                                        , occupied = addActivePointToOccupiedTiles (ActiveCorridor corridor) modelWithoutActiveCorridor.occupied
                                     }
                                 else
                                     model
@@ -306,62 +331,28 @@ generateRoom corridorEnding config =
 canFitCorridor : Model -> Corridor -> Bool
 canFitCorridor model corridor =
     let
-        occupiedPositions =
-            toOccupied model
-
-        corridorPositions =
-            List.map .position (Corridor.toTiles corridor)
-                ++ Corridor.boundary corridor
-
-        inModelTiles tile =
-            List.any ((==) tile) occupiedPositions
+        corridorBoundary =
+            Corridor.boundary corridor
 
         withinBounds =
-            List.all (\x -> Config.withinDungeonBounds x model.config) corridorPositions
+            List.all (\x -> Config.withinDungeonBounds x model.config) corridorBoundary
 
-        overlappingTiles =
-            corridorPositions
-                |> List.filter inModelTiles
-
-        canFit =
-            List.isEmpty overlappingTiles
-
-        --        _ =
-        --            Debug.log "DungeonGenerator.canFitCorridor"
-        --                { canFit = canFit
-        --                , corridor = Corridor.pp corridor
-        --                }
+        overlapping =
+            List.any (\x -> Set.member x model.occupied) corridorBoundary
     in
-    canFit && withinBounds
+    not overlapping && withinBounds
 
 
 canFitRoom : Model -> Room -> Bool
 canFitRoom model room =
     let
-        modelPositions =
-            toOccupied model
-                |> Set.fromList
-
         roomPositions =
-            (room
-                |> Room.toTiles
-                |> List.map .position
-            )
-                ++ Room.boundary room
-
-        roomPositionSet =
-            Set.fromList roomPositions
+            Room.floorsAndBoundaries room
 
         withinBounds =
             List.all (\x -> Config.withinDungeonBounds x model.config) roomPositions
 
-        collisions =
-            Set.toList <| Set.intersect roomPositionSet modelPositions
-
-        --        _ =
-        --            Debug.log "DungeonGenerator.canFitRoom"
-        --                { collisions = collisions
-        --                , roomPosition = roomPositions
-        --                }
+        overlapping =
+            List.any (\x -> Set.member x model.occupied) roomPositions
     in
-    withinBounds && List.isEmpty collisions
+    withinBounds && not overlapping
