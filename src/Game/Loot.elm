@@ -27,6 +27,14 @@ generate =
         ]
 
 
+generateMonsterDrop : Generator Loot
+generateMonsterDrop =
+    Random.frequency
+        [ ( 15, generate |> Random.map (\x -> [ x ]) )
+        , ( 85, Random.constant [] )
+        ]
+
+
 {-| Make a random loot based on the level passed in, currently it's based on the dungeon level.
 -}
 makeRandomLoot : Int -> Generator Item

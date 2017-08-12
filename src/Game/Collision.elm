@@ -115,14 +115,14 @@ addLoot : Monster -> Game -> Game
 addLoot monster ({ level, seed } as game) =
     let
         ( loot, seed_ ) =
-            Random.step Loot.generate seed
+            Random.step Loot.generateMonsterDrop seed
 
         dropAtPosition loot level =
             Level.drop ( monster.position, loot ) level
     in
     { game
         | seed = seed_
-        , level = List.foldl dropAtPosition level [ loot ]
+        , level = List.foldl dropAtPosition level loot
     }
 
 
