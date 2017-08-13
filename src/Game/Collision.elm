@@ -96,7 +96,9 @@ attack monster ({ hero, seed, messages, level } as model) =
             modelAfterCombat
 
         Nothing ->
-            addLoot monster modelAfterCombat
+            modelAfterCombat
+                |> addLoot monster
+                |> addExperience monster
 
 
 resolveCombat : Hero -> Monster -> Seed -> ( Maybe Monster, Seed, String )
@@ -111,8 +113,13 @@ resolveCombat hero monster seed =
         ( Just monsterAfterBeingHit, seed_, combatMsg )
 
 
+addExperience : Monster -> Game -> Game
+addExperience monster ({ hero } as game) =
+    { game | hero = Hero.addExperience (monster.expLevel * 15) hero }
+
+
 addLoot : Monster -> Game -> Game
-addLoot monster ({ level, seed } as game) =
+addLoot monster ({ level, seed, hero } as game) =
     let
         ( loot, seed_ ) =
             Random.step Loot.generateMonsterDrop seed

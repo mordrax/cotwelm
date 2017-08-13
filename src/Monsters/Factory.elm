@@ -12,6 +12,7 @@ import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
 import Item
 import Item.Data as ItemData exposing (..)
+import LexicalRandom
 import Monsters.Model as Model exposing (Monster)
 import Monsters.Types exposing (..)
 import Random.Pcg as Random exposing (Generator)
@@ -22,25 +23,89 @@ import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
 
+monsterNameLexicon : String
+monsterNameLexicon =
+    """
+# this is a comment
+
+streetType
+    # definitions can be separed by comma or newline, it's the same
+    street,road,avenue,drive,
+    parade,square,plaza
+
+namePrefix
+    Georg,Smiths,Johns
+
+nameSuffix
+    chester,ington,ton,roy
+
+surname
+    {namePrefix}son
+    {namePrefix}{nameSuffix}
+
+address
+    {surname} {streetType}
+"""
+
+
+monsterNamesLexicon : LexicalRandom.Lexicon
+monsterNamesLexicon =
+    LexicalRandom.fromString monsterNameLexicon
+
+
+
+--monsterNameGenerator : Generator String
+--monsterNameGenerator =
+--    LexicalRandom.generator "???" monsterNamesLexicon "address"
+
+
 {-| Give a list of positions, fill those places in with random monsters
 -}
-makeRandomMonsters : Int -> List Vector -> Generator (List Monster)
+makeRandomMonsters : Int -> List Vector -> Random.Generator (List Monster)
 makeRandomMonsters maxRank positions =
     List.foldl (randomMonstersReducer maxRank) (Random.constant []) positions
 
 
-randomMonstersReducer : Int -> Vector -> Generator (List Monster) -> Generator (List Monster)
+randomMonstersReducer : Int -> Vector -> Random.Generator (List Monster) -> Random.Generator (List Monster)
 randomMonstersReducer maxRank position monsters =
     randomMonster maxRank position
         |> (\monster -> Random.map2 (::) monster monsters)
 
 
-randomMonster : Int -> Vector -> Generator Monster
+
+--
+--coreToPcgAndThen : (a -> Random.Pcg.Generator b) -> Random.Generator a -> Random.Pcg.Generator b
+--coreToPcgAndThen callback coreGenA =
+--    Random.Pcg.Generator <|
+--        \seed ->
+--            let
+--                ( result, newSeed ) =
+--                    Random.step coreGenA seed
+--
+----                (Random.Pcg.Generator genB) =
+--                pcgGenB =
+--                    callback result
+--            in
+--            Random. genB newSeed
+
+
+randomMonster : Int -> Vector -> Random.Generator Monster
 randomMonster maxRank position =
-    Misc.shuffle (cappedRank maxRank)
-        |> Random.map List.head
-        |> Random.map (Maybe.withDefault GiantRat)
-        |> Random.map (flip make position)
+    let
+        nameGenerator =
+            Random.constant "Bob"
+
+        --            monsterNameGenerator
+        monsterGenerator =
+            Misc.shuffle (cappedRank maxRank)
+                |> Random.map List.head
+                |> Random.map (Maybe.withDefault GiantRat)
+                |> Random.map (flip make position)
+
+        updateMonsterName name monster =
+            { monster | name = name ++ " The " ++ monster.name }
+    in
+    Random.map2 updateMonsterName nameGenerator monsterGenerator
 
 
 weaponSlot : WeaponType -> ( Equipment.EquipmentSlot, Item )

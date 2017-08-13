@@ -1,6 +1,7 @@
 module Hero
     exposing
         ( Hero
+        , addExperience
         , init
         , levelUp
         , move
@@ -34,6 +35,7 @@ type alias Hero =
     , attributes : Attributes
     , equipment : Equipment
     , expLevel : Int
+    , expPoints : Int
     , bodySize : Types.BodySize
     , attacks : Int
     }
@@ -53,9 +55,33 @@ init name ({ str, int, con } as attributes) gender =
     , attributes = attributes
     , equipment = Equipment.init
     , expLevel = 1
+    , expPoints = 0
     , bodySize = Types.Medium
     , attacks = 1
     }
+
+
+{-| Experience level increases
+2 - 225
+3 - 337
+-}
+addExperience : Int -> Hero -> Hero
+addExperience expIncrease ({ expLevel, expPoints } as hero) =
+    let
+        increasedExperiencePoints =
+            expPoints + expIncrease
+
+        pointsRequiredToLevel =
+            expLevel * 100
+    in
+    case increasedExperiencePoints > pointsRequiredToLevel of
+        True ->
+            hero
+                |> levelUp
+                |> addExperience (increasedExperiencePoints - pointsRequiredToLevel)
+
+        False ->
+            { hero | expPoints = increasedExperiencePoints }
 
 
 setEquipment : Equipment -> Hero -> Hero
