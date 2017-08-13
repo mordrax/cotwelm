@@ -12,13 +12,13 @@ import Attributes exposing (Attributes)
 import Equipment exposing (Equipment)
 import Item
 import Item.Data as ItemData exposing (..)
-import LexicalRandom
 import Monsters.Model as Model exposing (Monster)
 import Monsters.Types exposing (..)
 import Random.Pcg as Random exposing (Generator)
 import Stats exposing (Stats)
 import String.Extra as StringX
 import Types exposing (..)
+import Utils.LexicalRandom as LexicalRandom
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
@@ -26,25 +26,74 @@ import Utils.Vector as Vector exposing (Vector)
 monsterNameLexicon : String
 monsterNameLexicon =
     """
-# this is a comment
 
-streetType
-    # definitions can be separed by comma or newline, it's the same
-    street,road,avenue,drive,
-    parade,square,plaza
+# This defines how to generate a `fleet` name
+# It is used to generate the list *headers* you can see on the right ->
+fleet
+    # Three different ways of generating a fleet name
+    # (Try to add one and see what happens!)
+    {color} Fleet
+    {properNoun} Fleet
+    {noun} Fleet
 
-namePrefix
-    Georg,Smiths,Johns
+# This defines how to generate a `ship` name
+# It is used to generate the list *entries* you can see on the right ->
+ship
+    {noun}
+    {properNoun}
+    {color} {properNoun}
+    {color} {noun}
+    {superlativeAdjective}
+    {pretentious}
 
-nameSuffix
-    chester,ington,ton,roy
+adverb
+    # you can divide the options by comma or newline, there is no difference
+    always,inevitably,necessarily
+    surely,inescapably,assuredly
 
-surname
-    {namePrefix}son
-    {namePrefix}{nameSuffix}
+superlativeAdjective
+    flawless,victorious,favoured,triumphant,successful,fortunate,lucky,outstanding,strong,illustrious,splendid,fierce
+    auspicious,crowned,extraordinary,unbeaten,undefeated,unconquered,prevailing,excellent,superior,greatest
+    amazing,awesome,excellent,fabulous,fantastic,favorable,fortuitous,ineffable,perfect,propitious,spectacular,wondrous
 
-address
-    {surname} {streetType}
+color
+    blue,red,gray,purple,vermillion,yellow,black,white,azure
+
+noun
+    champion,challenger,defender,conqueror,guardian,paladin,vanquisher,victor,warrior,augury
+    hammer,mallet,anvil,sword,mercy,blade,sabre,dagger,scimitar,foil,glaive
+    arrow,fury,anger,wrath,storm,lightning,thunder,omen,vengeance,light,sunrise,peace
+    Sun,Moon,Daystar,cross
+
+potentiallyQualifiedNoun
+    {noun}
+    {noun}
+    {noun} of {properNoun}
+    {noun} of {properNoun}
+    {noun} of the Gods
+
+pretentious
+    {adverb} {superlativeAdjective}
+    {adverb} {superlativeAdjective} {potentiallyQualifiedNoun}
+    {superlativeAdjective} {potentiallyQualifiedNoun}
+
+properNoun
+    {ini}{end}
+    {ini}{mid}{end}
+
+# Phonems can be generated from dictionaries or lists of words.
+# Check inside the tools/ directory!
+ini
+    in,re,un,con,de,dis,ex,im,an,com,en,al,pro,pre,per,over,as,ar,di,mis,be,ac,sub,ad,ma,mar,car,out,ap,au,or,for,ob,
+    par,co,se,em,man,vi,non,am,mo,su,ab,cor,ca,pa,es,hy,can,bar,mi,col,so,mon,at,up,ir,ver,ra,mer,lu,gen,trans,pe,ro,
+
+mid
+    i,ti,a,o,er,ter,u,ri,to,si,cal,di,ca,al,ta,li,ni,tion,per,der,ra,tu,e,ful,na,ma,la,ing,fi,sa,ci,ous,con,is,en,re,
+
+end
+    ly,es,ness,er,est,ers,tions,ty,tion,able,ic,ings,ments,ry,ties,tors,al,cal,man,ters,less,cy,ous,tive,ful,men,
+    ates,ble,an,tic,ists,gy,na,ies,sions,son,ans,ta,ment,ton,ism,ries,ics,bles,bly,als,fies,fy,la,da,en,lates,
+
 """
 
 
@@ -53,10 +102,9 @@ monsterNamesLexicon =
     LexicalRandom.fromString monsterNameLexicon
 
 
-
---monsterNameGenerator : Generator String
---monsterNameGenerator =
---    LexicalRandom.generator "???" monsterNamesLexicon "address"
+monsterNameGenerator : Generator String
+monsterNameGenerator =
+    LexicalRandom.generator "???" monsterNamesLexicon "ship"
 
 
 {-| Give a list of positions, fill those places in with random monsters
@@ -72,30 +120,12 @@ randomMonstersReducer maxRank position monsters =
         |> (\monster -> Random.map2 (::) monster monsters)
 
 
-
---
---coreToPcgAndThen : (a -> Random.Pcg.Generator b) -> Random.Generator a -> Random.Pcg.Generator b
---coreToPcgAndThen callback coreGenA =
---    Random.Pcg.Generator <|
---        \seed ->
---            let
---                ( result, newSeed ) =
---                    Random.step coreGenA seed
---
-----                (Random.Pcg.Generator genB) =
---                pcgGenB =
---                    callback result
---            in
---            Random. genB newSeed
-
-
 randomMonster : Int -> Vector -> Random.Generator Monster
 randomMonster maxRank position =
     let
         nameGenerator =
-            Random.constant "Bob"
+            monsterNameGenerator
 
-        --            monsterNameGenerator
         monsterGenerator =
             Misc.shuffle (cappedRank maxRank)
                 |> Random.map List.head

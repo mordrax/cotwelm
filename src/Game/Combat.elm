@@ -511,10 +511,10 @@ attackerName { type_, name } adjective =
             "You "
 
         ( _, Possessive ) ->
-            "The " ++ String.toLower name ++ "'s"
+            String.toLower name ++ "'s"
 
         ( _, NonPossessive ) ->
-            "The " ++ String.toLower name
+            String.toLower name
 
 
 defenderName : Defender a -> Adjective -> String
@@ -527,7 +527,7 @@ defenderName { type_, name } adjective =
             "you"
 
         ( _, Possessive ) ->
-            "the " ++ String.toLower name ++ "'s"
+            String.toLower name ++ "'s"
 
         ( _, NonPossessive ) ->
-            "the " ++ String.toLower name
+            String.toLower name

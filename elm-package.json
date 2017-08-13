@@ -28,8 +28,7 @@
         "krisajenkins/elm-astar": "2.0.4 <= v < 3.0.0",
         "mgold/elm-random-pcg": "4.0.2 <= v < 5.0.0",
         "ohanhi/keyboard-extra": "2.1.0 <= v < 3.0.0",
-        "rtfeldman/elm-css": "8.2.0 <= v < 9.0.0",
-        "xarvh/lexical-random-generator": "1.0.0 <= v < 2.0.0"
+        "rtfeldman/elm-css": "8.2.0 <= v < 9.0.0"
     },
     "elm-version": "0.18.0 <= v < 0.19.0"
 }
