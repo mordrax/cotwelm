@@ -78,7 +78,10 @@ game : Game -> Html Msg
 game model =
     let
         viewGame child =
-            div [ HA.class "game" ] [ child ]
+            div [ HA.class "game" ]
+                [ child
+                , viewStatus model
+                ]
     in
     case model.currentScreen of
         Game.Types.MapScreen ->
@@ -167,7 +170,6 @@ viewMap ({ windowSize, viewport } as model) =
             , Hero.view model.hero
             , viewMonsters model
             ]
-        , viewStatus model
         ]
 
 

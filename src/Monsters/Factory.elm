@@ -19,6 +19,7 @@ import Stats exposing (Stats)
 import String.Extra as StringX
 import Types exposing (..)
 import Utils.LexicalRandom as LexicalRandom
+import Utils.LexicalRandomNames
 import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (Vector)
 
@@ -99,12 +100,12 @@ end
 
 monsterNamesLexicon : LexicalRandom.Lexicon
 monsterNamesLexicon =
-    LexicalRandom.fromString monsterNameLexicon
+    LexicalRandom.fromString Utils.LexicalRandomNames.nameLexicons
 
 
 monsterNameGenerator : Generator String
 monsterNameGenerator =
-    LexicalRandom.generator "???" monsterNamesLexicon "ship"
+    LexicalRandom.generator "Bob" monsterNamesLexicon "compound"
 
 
 {-| Give a list of positions, fill those places in with random monsters
