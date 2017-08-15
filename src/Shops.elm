@@ -104,12 +104,8 @@ sell item purse (Store items shopType) =
         itemsWithout item =
             Utils.Misc.removeFirst item Item.equals items
     in
-    case Purse.remove price purse of
-        Result.Ok purseMinusPriceOfItem ->
-            Result.Ok ( Store (itemsWithout item) shopType, purseMinusPriceOfItem )
-
-        Result.Err msg ->
-            Result.Err "Cannot afford item!"
+    Purse.remove price purse
+        |> Result.map (\purse -> ( Store (itemsWithout item) shopType, purse ))
 
 
 {-| The shop buys from the customer.

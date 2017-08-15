@@ -125,7 +125,7 @@ remove copperToRemove ( base, { coins } as detail ) =
         in
         Result.Ok ( base, { detail | coins = { coins | copper = coins.copper, silver = coins.silver, gold = coins.gold, platinum = coins.platinum } } )
     else
-        Result.Err "Not enough coins to remove!"
+        Result.Err "Ops! Looks like you don't have enough coins."
 
 
 {-| Prints coins out in a nice readable way: 4 platinum, 3 silver and 10 copper pieces

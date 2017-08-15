@@ -244,7 +244,7 @@ transactWithMerchant item ({ merchant, equipment } as model) =
                     Shops.sell item purse shop
 
                 Nothing ->
-                    Result.Err "No purse to buy anything with!"
+                    Result.Err "Where is your purse? It doesn't look like you have one, or if you did... perhaps some shady fellow helped themselves to it."
 
         updateModelFromPurchase ( shop, purse ) =
             Result.Ok
