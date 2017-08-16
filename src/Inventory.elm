@@ -28,13 +28,11 @@ import Item exposing (..)
 import Item.Data exposing (..)
 import Item.Pack as Pack
 import Item.Purse as Purse
+import Job exposing (Job)
+import Message
 import Shops exposing (Shops, Store)
 import Utils.DragDrop as DragDrop exposing (DragDrop)
 import Utils.Misc
-
-
-type Inventory
-    = A Model
 
 
 type Merchant
@@ -42,7 +40,7 @@ type Merchant
     | Ground (List Item)
 
 
-type alias Model =
+type alias Inventory =
     { dnd : DragDrop Draggable Droppable
     , merchant : Merchant
     , equipment : Equipment
@@ -67,11 +65,10 @@ type Msg
 
 init : Merchant -> Equipment -> Inventory
 init merchant equipment =
-    A
-        { dnd = DragDrop.init
-        , merchant = merchant
-        , equipment = equipment
-        }
+    { dnd = DragDrop.init
+    , merchant = merchant
+    , equipment = equipment
+    }
 
 
 
@@ -80,37 +77,37 @@ init merchant equipment =
 ------------
 
 
-update : Msg -> Inventory -> Inventory
-update msg (A ({ dnd } as model)) =
+update : Msg -> Inventory -> ( Inventory, Job Msg )
+update msg ({ dnd } as inventory) =
     case msg of
         DnDMsg dragDropMsg ->
             let
                 ( dnd_, end ) =
-                    DragDrop.update dragDropMsg model.dnd
+                    DragDrop.update dragDropMsg inventory.dnd
 
                 modelNewDnD =
-                    { model | dnd = DragDrop.init }
+                    { inventory | dnd = DragDrop.init }
             in
             case end of
                 Nothing ->
-                    A { model | dnd = dnd_ }
+                    ( { inventory | dnd = dnd_ }, Job.init )
 
                 Just ( Nothing, _ ) ->
-                    A modelNewDnD
+                    ( modelNewDnD, Job.init )
 
                 Just ( _, Nothing ) ->
-                    A modelNewDnD
+                    ( modelNewDnD, Job.init )
 
                 {- On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
                    then call a function to handle the transaction, otherwise just clear the dndModel and return.
                 -}
                 Just ( Just drag, Just drop ) ->
-                    A <| handleDragDrop drag drop modelNewDnD
+                    ( handleDragDrop drag drop modelNewDnD, Job.init )
 
 
 exit : Inventory -> ( Inventory, Equipment, Merchant )
-exit (A model) =
-    ( A model, model.equipment, model.merchant )
+exit inventory =
+    ( inventory, inventory.equipment, inventory.merchant )
 
 
 
@@ -155,7 +152,7 @@ Drop
   - Pack: Check pack capacity
 
 -}
-handleDragDrop : Draggable -> Droppable -> Model -> Model
+handleDragDrop : Draggable -> Droppable -> Inventory -> Inventory
 handleDragDrop dragSource dropTarget model =
     let
         dragResult =
@@ -203,7 +200,7 @@ handleDragDrop dragSource dropTarget model =
       - Nothing
 
 -}
-handleDrag : Draggable -> Model -> Result String ( Model, Item )
+handleDrag : Draggable -> Inventory -> Result Message.Message ( Inventory, Item )
 handleDrag draggable model =
     case draggable of
         DragSlot item slot ->
@@ -216,7 +213,7 @@ handleDrag draggable model =
                     Result.Ok ( { model | equipment = equipment }, item )
 
                 Result.Err msg ->
-                    Result.Err (toString msg)
+                    Result.Err (Message.bad (toString msg))
 
         DragPack item pack ->
             let
@@ -232,33 +229,24 @@ handleDrag draggable model =
             transactWithMerchant item model
 
 
-transactWithMerchant : Item -> Model -> Result String ( Model, Item )
+transactWithMerchant : Item -> Inventory -> Result Message.Message ( Inventory, Item )
 transactWithMerchant item ({ merchant, equipment } as model) =
     let
-        maybePurse =
-            Equipment.getPurse equipment
-
-        buyFrom shop =
-            case maybePurse of
-                Just purse ->
-                    Shops.sell item purse shop
-
-                Nothing ->
-                    Result.Err "Where is your purse? It doesn't look like you have one, or if you did... perhaps some shady fellow helped themselves to it."
-
         updateModelFromPurchase ( shop, purse ) =
-            Result.Ok
-                ( { model
-                    | merchant = Shop shop
-                    , equipment = Equipment.setPurse purse equipment
-                  }
-                , item
-                )
+            ( { model
+                | merchant = Shop shop
+                , equipment = Equipment.setPurse purse equipment
+              }
+            , item
+            )
     in
     case merchant of
         Shop shop ->
-            buyFrom shop
-                |> Result.andThen updateModelFromPurchase
+            equipment
+                |> Equipment.getPurse
+                |> Result.fromMaybe (Message.bad "Where is your purse? It doesn't look like you have one, or if you did... perhaps some shady fellow helped themselves to it.")
+                |> Result.andThen (\purse -> Shops.sell item purse shop)
+                |> Result.map updateModelFromPurchase
 
         Ground items ->
             let
@@ -280,16 +268,16 @@ transactWithMerchant item ({ merchant, equipment } as model) =
       - Check pack capacity
 
 -}
-handleDrop : Droppable -> Item -> Model -> Result String Model
-handleDrop droppable item model =
+handleDrop : Droppable -> Item -> Inventory -> Result String Inventory
+handleDrop droppable item inventory =
     case droppable of
         DropPack pack ->
             let
                 ( equipment_, equipMsg ) =
-                    Equipment.putInPack item model.equipment
+                    Equipment.putInPack item inventory.equipment
 
                 success =
-                    Result.Ok { model | equipment = equipment_ }
+                    Result.Ok { inventory | equipment = equipment_ }
             in
             case equipMsg of
                 Equipment.Success ->
@@ -308,9 +296,9 @@ handleDrop droppable item model =
                     Result.Err ("Dropping into pack failed with unhanded msg: " ++ toString msg)
 
         DropEquipment slot ->
-            case Equipment.equip ( slot, item ) model.equipment of
+            case Equipment.equip ( slot, item ) inventory.equipment of
                 Result.Ok ( equipment_, Nothing ) ->
-                    Result.Ok { model | equipment = equipment_ }
+                    Result.Ok { inventory | equipment = equipment_ }
 
                 Result.Ok ( _, Just _ ) ->
                     Result.Err "The slot is not empty!"
@@ -321,7 +309,7 @@ handleDrop droppable item model =
         DropMerchant merchant ->
             let
                 getPurseResult =
-                    model.equipment
+                    inventory.equipment
                         |> Equipment.getPurse
                         |> Result.fromMaybe "No purse to hold coins!"
 
@@ -331,9 +319,9 @@ handleDrop droppable item model =
                             Shops.buy item purse shop
                     in
                     Result.Ok
-                        { model
+                        { inventory
                             | merchant = Shop shopAfterBought
-                            , equipment = Equipment.setPurse purseAfterPaid model.equipment
+                            , equipment = Equipment.setPurse purseAfterPaid inventory.equipment
                         }
             in
             case merchant of
@@ -342,7 +330,7 @@ handleDrop droppable item model =
                         |> Result.andThen (sellTo shop)
 
                 Ground items ->
-                    Result.Ok { model | merchant = Ground (item :: items) }
+                    Result.Ok { inventory | merchant = Ground (item :: items) }
 
 
 
@@ -352,7 +340,7 @@ handleDrop droppable item model =
 
 
 view : Inventory -> Html Msg
-view (A ({ equipment, dnd } as model)) =
+view ({ equipment, dnd } as model) =
     let
         header title =
             div [ HA.class "ui block header" ] [ text title ]
@@ -370,8 +358,8 @@ view (A ({ equipment, dnd } as model)) =
         ]
 
 
-viewShopPackPurse : Model -> Html Msg
-viewShopPackPurse ({ equipment, merchant, dnd } as model) =
+viewShopPackPurse : Inventory -> Html Msg
+viewShopPackPurse ({ equipment, merchant, dnd } as inventory) =
     let
         viewAsContainers =
             div [ HA.class "inventory__containers" ]
@@ -390,8 +378,8 @@ viewShopPackPurse ({ equipment, merchant, dnd } as model) =
     viewAsContainers
         [ viewMerchant merchant dnd
         , storeMsgs
-        , viewPack maybePack model
-        , viewPurse model
+        , viewPack maybePack inventory
+        , viewPurse inventory
         ]
 
 
@@ -504,11 +492,11 @@ viewPackInfo maybeItem =
 ---------------
 
 
-viewPack : Maybe (Pack Item) -> Model -> Html Msg
-viewPack maybePack ({ dnd } as model) =
+viewPack : Maybe (Pack Item) -> Inventory -> Html Msg
+viewPack maybePack ({ dnd } as inventory) =
     let
         packDiv pack =
-            viewContainer pack model
+            viewContainer pack inventory
 
         isDraggingPack =
             case DragDrop.source dnd of
@@ -547,7 +535,7 @@ viewShop store dnd =
         |> Html.map DnDMsg
 
 
-viewContainer : Pack Item -> Model -> Html (DragDrop.Msg Draggable Droppable)
+viewContainer : Pack Item -> Inventory -> Html (DragDrop.Msg Draggable Droppable)
 viewContainer pack ({ equipment, dnd } as model) =
     let
         items =
@@ -639,8 +627,8 @@ viewSlot slot dnd equipment =
 ----------------
 
 
-viewPurse : Model -> Html never
-viewPurse ({ equipment } as model) =
+viewPurse : Inventory -> Html never
+viewPurse ({ equipment } as inventory) =
     let
         viewCoinDescription coinAsString value =
             div [ HA.class "coin__description" ]
@@ -672,5 +660,5 @@ viewPurse ({ equipment } as model) =
 
 
 subscription : Inventory -> Sub Msg
-subscription (A { dnd }) =
+subscription { dnd } =
     Sub.map DnDMsg (DragDrop.subscription dnd)

@@ -18,6 +18,7 @@ import EveryDict as Dict exposing (EveryDict)
 import Item
 import Item.Data exposing (Item, ItemTypes, Purse)
 import Item.Purse as Purse
+import Message
 import Random.Pcg as Random exposing (Generator, Seed, initialSeed, list, step)
 import Task exposing (perform)
 import Time exposing (now)
@@ -95,7 +96,7 @@ init =
 
 {-| The shop sells to the customer.
 -}
-sell : Item -> Purse -> Store -> Result String ( Store, Purse )
+sell : Item -> Purse -> Store -> Result Message.Message ( Store, Purse )
 sell item purse (Store items shopType) =
     let
         price =
@@ -103,9 +104,13 @@ sell item purse (Store items shopType) =
 
         itemsWithout item =
             Utils.Misc.removeFirst item Item.equals items
+
+        storeWithout item =
+            Store (itemsWithout item) shopType
     in
-    Purse.remove price purse
-        |> Result.map (\purse -> ( Store (itemsWithout item) shopType, purse ))
+    purse
+        |> Purse.remove price
+        |> Result.map (\pursePaid -> ( storeWithout item, pursePaid ))
 
 
 {-| The shop buys from the customer.

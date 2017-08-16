@@ -22,6 +22,7 @@ import Input exposing (Input)
 import Inventory exposing (Inventory)
 import Item
 import Item.Data exposing (..)
+import Job
 import Random.Pcg as Random exposing (Generator, Seed)
 import Shops exposing (Shops)
 import Stats exposing (Stats)
@@ -250,6 +251,9 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
         noCmd game =
             ( game, Cmd.none, False )
 
+        withJobs job game =
+            ( game, Job.attempt job, False )
+
         updatePreviousState newGameState =
             { newGameState | previousState = Game.Model.State game }
     in
@@ -323,9 +327,16 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                     ( game, Cmd.none, True )
 
         InventoryMsg msg ->
-            { game | inventory = Inventory.update msg game.inventory }
+            let
+                ( inventory_, job ) =
+                    Inventory.update msg game.inventory
+            in
+            { game
+                | inventory = inventory_
+                , messages = job.messages ++ game.messages
+            }
                 |> updatePreviousState
-                |> noCmd
+                |> withJobs (job |> Job.map InventoryMsg)
 
         GameAction OpenInventory ->
             let

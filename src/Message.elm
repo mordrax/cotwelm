@@ -9,6 +9,14 @@ plain =
     text
 
 
+type Msg
+    = Combat CombatOutcome
+
+
+type Message
+    = Message (Html Never)
+
+
 type CombatOutcome
     = HeroSuccess
     | HeroFail
@@ -23,3 +31,8 @@ combatMessage combatOutcome heroName monsterName =
 
         _ ->
             Random.constant (text "boo!")
+
+
+bad : String -> Message
+bad a =
+    Message (text "")
