@@ -20,6 +20,7 @@ to know about hero equipment, items, containers etc...
 
 -}
 
+import Comms exposing (Comms)
 import Container exposing (Container)
 import Equipment exposing (..)
 import Html exposing (..)
@@ -28,7 +29,6 @@ import Item exposing (..)
 import Item.Data exposing (..)
 import Item.Pack as Pack
 import Item.Purse as Purse
-import Job exposing (Job)
 import Message
 import Shops exposing (Shops, Store)
 import Utils.DragDrop as DragDrop exposing (DragDrop)
@@ -77,7 +77,7 @@ init merchant equipment =
 ------------
 
 
-update : Msg -> Inventory -> ( Inventory, Job Msg )
+update : Msg -> Inventory -> ( Inventory, Comms Msg )
 update msg ({ dnd } as inventory) =
     case msg of
         DnDMsg dragDropMsg ->
@@ -90,19 +90,27 @@ update msg ({ dnd } as inventory) =
             in
             case end of
                 Nothing ->
-                    ( { inventory | dnd = dnd_ }, Job.init )
+                    ( { inventory | dnd = dnd_ }, Comms.init )
 
                 Just ( Nothing, _ ) ->
-                    ( modelNewDnD, Job.init )
+                    ( modelNewDnD, Comms.init )
 
                 Just ( _, Nothing ) ->
-                    ( modelNewDnD, Job.init )
+                    ( modelNewDnD, Comms.init )
 
                 {- On mouse up, if there was something being dragged and a it's being dragged over a droppable container,
                    then call a function to handle the transaction, otherwise just clear the dndModel and return.
                 -}
                 Just ( Just drag, Just drop ) ->
-                    ( handleDragDrop drag drop modelNewDnD, Job.init )
+                    case handleDragDrop drag drop modelNewDnD of
+                        Result.Ok inventory_ ->
+                            ( inventory_, Comms.init )
+
+                        Result.Err str ->
+                            ( inventory
+                            , Comms.init
+                                |> Comms.addMessage (Message.bad str)
+                            )
 
 
 exit : Inventory -> ( Inventory, Equipment, Merchant )
@@ -152,40 +160,13 @@ Drop
   - Pack: Check pack capacity
 
 -}
-handleDragDrop : Draggable -> Droppable -> Inventory -> Inventory
+handleDragDrop : Draggable -> Droppable -> Inventory -> Result String Inventory
 handleDragDrop dragSource dropTarget model =
-    let
-        dragResult =
-            handleDrag dragSource model
-
-        noChange =
-            model
-
-        handleDrop_ item modelWithDrag =
-            case handleDrop dropTarget item modelWithDrag of
-                Result.Ok modelWithDragDrop ->
-                    modelWithDragDrop
-
-                Err msg ->
-                    let
-                        _ =
-                            Debug.log "Drop failed: " msg
-                    in
-                    noChange
-    in
     if dragSourceSameAsDropTarget dragSource dropTarget then
-        noChange
+        Result.Ok model
     else
-        case dragResult of
-            Result.Ok ( modelWithDrag, item ) ->
-                handleDrop_ item modelWithDrag
-
-            Err msg ->
-                let
-                    _ =
-                        Debug.log "Drag failed: " msg
-                in
-                noChange
+        handleDrag dragSource model
+            |> Result.andThen (\( inv, item ) -> handleDrop dropTarget item inv)
 
 
 {-| handleDrag
@@ -200,7 +181,7 @@ handleDragDrop dragSource dropTarget model =
       - Nothing
 
 -}
-handleDrag : Draggable -> Inventory -> Result Message.Message ( Inventory, Item )
+handleDrag : Draggable -> Inventory -> Result String ( Inventory, Item )
 handleDrag draggable model =
     case draggable of
         DragSlot item slot ->
@@ -213,7 +194,7 @@ handleDrag draggable model =
                     Result.Ok ( { model | equipment = equipment }, item )
 
                 Result.Err msg ->
-                    Result.Err (Message.bad (toString msg))
+                    Result.Err (toString msg)
 
         DragPack item pack ->
             let
@@ -229,10 +210,10 @@ handleDrag draggable model =
             transactWithMerchant item model
 
 
-transactWithMerchant : Item -> Inventory -> Result Message.Message ( Inventory, Item )
+transactWithMerchant : Item -> Inventory -> Result String ( Inventory, Item )
 transactWithMerchant item ({ merchant, equipment } as model) =
     let
-        updateModelFromPurchase ( shop, purse ) =
+        updateModelFromPurchase shop purse =
             ( { model
                 | merchant = Shop shop
                 , equipment = Equipment.setPurse purse equipment
@@ -244,9 +225,9 @@ transactWithMerchant item ({ merchant, equipment } as model) =
         Shop shop ->
             equipment
                 |> Equipment.getPurse
-                |> Result.fromMaybe (Message.bad "Where is your purse? It doesn't look like you have one, or if you did... perhaps some shady fellow helped themselves to it.")
-                |> Result.andThen (\purse -> Shops.sell item purse shop)
-                |> Result.map updateModelFromPurchase
+                |> Result.fromMaybe "Where is your purse? It doesn't look like you have one, or if you did... perhaps some shady fellow helped themselves to it."
+                |> Result.andThen (Purse.remove (Item.markupValue item))
+                |> Result.map2 updateModelFromPurchase (Shops.remove item shop)
 
         Ground items ->
             let
@@ -316,7 +297,7 @@ handleDrop droppable item inventory =
                 sellTo shop purse =
                     let
                         ( shopAfterBought, purseAfterPaid ) =
-                            Shops.buy item purse shop
+                            Shops.buyFromHero item purse shop
                     in
                     Result.Ok
                         { inventory

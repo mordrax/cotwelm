@@ -4,10 +4,11 @@ module Shops
         , Shops
         , Store
         , StoreType(..)
-        , buy
+        , buyFromHero
         , init
+        , remove
         , replenish
-        , sell
+        , sellToHero
         , shop
         , tick
         , updateShop
@@ -18,7 +19,6 @@ import EveryDict as Dict exposing (EveryDict)
 import Item
 import Item.Data exposing (Item, ItemTypes, Purse)
 import Item.Purse as Purse
-import Message
 import Random.Pcg as Random exposing (Generator, Seed, initialSeed, list, step)
 import Task exposing (perform)
 import Time exposing (now)
@@ -94,12 +94,19 @@ init =
             )
 
 
+remove : Item -> Store -> Result String Store
+remove item (Store items shopType) =
+    items
+        |> Utils.Misc.removeFirst item Item.equals
+        |> (\remainingItems -> Result.Ok (Store remainingItems shopType))
+
+
 {-| The shop sells to the customer.
 -}
-sell : Item -> Purse -> Store -> Result Message.Message ( Store, Purse )
-sell item purse (Store items shopType) =
+sellToHero : Item -> Purse -> Store -> Result String ( Store, Purse )
+sellToHero item purse (Store items shopType) =
     let
-        price =
+        itemCost =
             Debug.log "Shop sell price:" (Item.markupValue item)
 
         itemsWithout item =
@@ -109,14 +116,14 @@ sell item purse (Store items shopType) =
             Store (itemsWithout item) shopType
     in
     purse
-        |> Purse.remove price
-        |> Result.map (\pursePaid -> ( storeWithout item, pursePaid ))
+        |> Purse.remove itemCost
+        |> Result.map (\purse_ -> ( storeWithout item, purse_ ))
 
 
 {-| The shop buys from the customer.
 -}
-buy : Item -> Purse -> Store -> ( Store, Purse )
-buy item purse (Store items shopType) =
+buyFromHero : Item -> Purse -> Store -> ( Store, Purse )
+buyFromHero item purse (Store items shopType) =
     let
         cost =
             Debug.log "Shop buy price:" (Item.baseValue item)

@@ -14,7 +14,6 @@ module Item.Purse
         )
 
 import Item.Data exposing (..)
-import Message
 import Utils.Mass as Mass exposing (Mass)
 
 
@@ -49,11 +48,6 @@ initGolds value =
 initPlatinums : Int -> ( BaseItem, Int )
 initPlatinums value =
     ( initCoinBaseItem "Platinum" "coins-platinum" value, value )
-
-
-type Msg
-    = Ok
-    | NotEnoughCoins
 
 
 add : Int -> Purse -> Purse
@@ -93,7 +87,7 @@ merge_ op c1 c2 =
         (op c1.platinum c2.platinum)
 
 
-remove : Int -> Purse -> Result Message.Message Purse
+remove : Int -> Purse -> Result String Purse
 remove copperToRemove ( base, { coins } as detail ) =
     let
         totalSilvers =
@@ -126,7 +120,7 @@ remove copperToRemove ( base, { coins } as detail ) =
         in
         Result.Ok ( base, { detail | coins = { coins | copper = coins.copper, silver = coins.silver, gold = coins.gold, platinum = coins.platinum } } )
     else
-        Result.Err <| Message.bad "Ops! Looks like you don't have enough coins."
+        Result.Err "Ops! Looks like you don't have enough coins."
 
 
 {-| Prints coins out in a nice readable way: 4 platinum, 3 silver and 10 copper pieces

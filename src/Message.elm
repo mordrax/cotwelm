@@ -14,7 +14,7 @@ type Msg
 
 
 type Message
-    = Message (Html Never)
+    = Message String
 
 
 type CombatOutcome
@@ -35,4 +35,9 @@ combatMessage combatOutcome heroName monsterName =
 
 bad : String -> Message
 bad a =
-    Message (text "")
+    Message a
+
+
+pp : Message -> String
+pp (Message a) =
+    a
