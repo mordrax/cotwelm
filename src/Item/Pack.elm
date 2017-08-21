@@ -22,13 +22,10 @@ contents ( base, { container } ) =
     Container.list container
 
 
-add : a -> Pack a -> ( Pack a, Container.Msg )
+add : a -> Pack a -> Result String (Pack a)
 add item ( base, pack ) =
-    let
-        ( newContainer, msgs ) =
-            Container.add item pack.container
-    in
-    ( ( base, { pack | container = newContainer } ), msgs )
+    Container.add item pack.container
+        |> Result.andThen (\container -> Result.Ok ( base, { pack | container = container } ))
 
 
 remove : a -> Pack a -> Pack a

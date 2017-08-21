@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (init)
 
 import Arena.MonsterArena as MonsterArena
 import Arena.PlayerArena as PlayerArena

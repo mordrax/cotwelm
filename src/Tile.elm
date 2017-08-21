@@ -48,12 +48,10 @@ view =
 {-| Drop something onto the ground (which is a container on the tile.
 -}
 drop : Item -> Tile -> Tile
-drop item model =
-    let
-        ( groundWithItem, _ ) =
-            Container.add item model.ground
-    in
-    { model | ground = groundWithItem }
+drop item tile =
+    Container.add item tile.ground
+        |> Result.map (\itemOnGround -> { tile | ground = itemOnGround })
+        |> Result.withDefault tile
 
 
 pickup : Tile -> ( List Item, Tile )

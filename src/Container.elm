@@ -1,7 +1,6 @@
 module Container
     exposing
         ( Container
-        , Msg(..)
         , add
         , capacity
         , init
@@ -20,12 +19,6 @@ Items can also be containers, so containers can hold containers.
 
 import Utils.Mass as Mass exposing (Capacity, Mass)
 import Utils.Misc
-
-
-type Msg
-    = Ok
-    | MassMsg Mass.Msg
-    | NestedItem
 
 
 type alias Model a =
@@ -75,27 +68,25 @@ set items (ContainerModel model) =
 
 {-| Try to add a new item to the container. Makes sure that the item obeys mass/capacity rules.
 -}
-add : a -> Container a -> ( Container a, Msg )
+add : a -> Container a -> Result String (Container a)
 add item (ContainerModel model) =
     let
         newMass =
             Mass.add (model.getMass item)
                 (mass (ContainerModel model))
 
-        isWithinCapacity =
+        ( withinBulkLimit, withinWeightLimit ) =
             Mass.withinCapacity newMass model.capacity
     in
-    case isWithinCapacity of
-        Mass.Success ->
-            ( ContainerModel
-                { model
-                    | items = item :: model.items
-                }
-            , Ok
-            )
+    case ( withinBulkLimit, withinWeightLimit ) of
+        ( False, _ ) ->
+            Result.Err "Its too bulky to fit!"
 
-        massMsg ->
-            ( ContainerModel model, MassMsg massMsg )
+        ( _, False ) ->
+            Result.Err "Its too heavy for the container!"
+
+        ( True, True ) ->
+            Result.Ok (ContainerModel { model | items = item :: model.items })
 
 
 {-| Takes an item out of the container if it exists.

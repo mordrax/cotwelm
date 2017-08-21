@@ -90,8 +90,6 @@ type EquipmentSlot
 
 type Msg
     = Success
-    | MassResult Mass.Msg
-    | ContainerMsg Container.Msg
     | NoPackEquipped
     | WrongSlotForItemType
     | ItemAlreadyEquipped
@@ -137,15 +135,25 @@ calculateAC (A { armour, shield, helmet, bracers, gauntlets }) =
         |> addAC (getAC gauntlets)
 
 
-equip : ( EquipmentSlot, Item ) -> Equipment -> Result Msg ( Equipment, Maybe Item )
+equip : ( EquipmentSlot, Item ) -> Equipment -> Result String ( Equipment, Maybe Item, String )
 equip ( slot, item ) (A model) =
     let
-        andThenEquipItem ( equipmentAfterUnequip, unequippedItem ) =
+        equip_ ( equipmentAfterUnequip, unequippedItem ) =
             setSlot_ ( slot, item ) equipmentAfterUnequip
-                |> Result.andThen (\eq -> Result.Ok ( eq, unequippedItem ))
+                |> Result.andThen (\eq -> Result.Ok ( eq, unequippedItem, equipMessage slot item ))
     in
     unequip slot (A model)
-        |> Result.andThen andThenEquipItem
+        |> Result.andThen equip_
+
+
+equipMessage : EquipmentSlot -> Item -> String
+equipMessage slot item =
+    case slot of
+        WeaponSlot ->
+            "You brandish your " ++ Item.name item ++ " ... _impressively_"
+
+        _ ->
+            "You put on your new shiny armour."
 
 
 {-| setMany_ ignores all equiping errors
@@ -158,7 +166,7 @@ setMany_ itemSlotPairs equipment =
 
 {-| WARNING: This will destroy the item in the equipment slot.
 -}
-setSlot_ : ( EquipmentSlot, Item ) -> Equipment -> Result Msg Equipment
+setSlot_ : ( EquipmentSlot, Item ) -> Equipment -> Result String Equipment
 setSlot_ ( slot, (Item base specific) as item ) (A model) =
     case ( slot, specific ) of
         ( WeaponSlot, WeaponDetail weapon ) ->
@@ -207,10 +215,10 @@ setSlot_ ( slot, (Item base specific) as item ) (A model) =
             Result.Ok (A { model | boots = Just ( base, boots ) })
 
         _ ->
-            Result.Err WrongSlotForItemType
+            Result.Err "Hum, it doesn't want to fit, weird..."
 
 
-unequip : EquipmentSlot -> Equipment -> Result Msg ( Equipment, Maybe Item )
+unequip : EquipmentSlot -> Equipment -> Result String ( Equipment, Maybe Item )
 unequip slot (A model) =
     let
         maybeItem =
@@ -226,7 +234,7 @@ unequip slot (A model) =
             Result.Ok ( A model, Nothing )
 
         ( _, True ) ->
-            Result.Err CannotUnequipCursedItem
+            Result.Err "Urgh, you can't seem to take the item off! Cursed..."
 
         ( _, False ) ->
             Result.Ok ( A <| clearSlot_ slot model, maybeItem )
@@ -234,44 +242,37 @@ unequip slot (A model) =
 
 {-| Puts an item in the pack slot of the equipment if there is currently a pack there.
 -}
-putInPack : Item -> Equipment -> ( Equipment, Msg )
+putInPack : Item -> Equipment -> Result String Equipment
 putInPack (Item base specific) equipment =
     case specific of
         CopperDetail value ->
-            ( putInPurse (Coins value 0 0 0) equipment, Success )
+            Result.Ok (putInPurse (Coins value 0 0 0) equipment)
 
         SilverDetail value ->
-            ( putInPurse (Coins 0 value 0 0) equipment, Success )
+            Result.Ok (putInPurse (Coins 0 value 0 0) equipment)
 
         GoldDetail value ->
-            ( putInPurse (Coins 0 0 value 0) equipment, Success )
+            Result.Ok (putInPurse (Coins 0 0 value 0) equipment)
 
         PlatinumDetail value ->
-            ( putInPurse (Coins 0 0 0 value) equipment, Success )
+            Result.Ok (putInPurse (Coins 0 0 0 value) equipment)
 
         _ ->
             putInPack_ (Item base specific) equipment
 
 
-putInPack_ : Item -> Equipment -> ( Equipment, Msg )
+putInPack_ : Item -> Equipment -> Result String Equipment
 putInPack_ ((Item base specific) as item) (A model) =
-    let
-        noChange =
-            ( A model, Success )
-    in
     case ( model.pack, specific ) of
         ( Nothing, _ ) ->
-            ( A model, NoPackEquipped )
+            Result.Err "You try to put it in your pack, only to find that you don't actually have any."
 
         ( _, PackDetail _ ) ->
-            ( A model, CannotPutAPackInAPack )
+            Result.Err "Cannot Put A Pack In A Pack In A Pack In a Pack inap Ackin ap AK on a donkey."
 
         ( Just pack, _ ) ->
-            let
-                ( packWithItem, msg ) =
-                    Pack.add item pack
-            in
-            ( A { model | pack = Just packWithItem }, ContainerMsg msg )
+            Pack.add item pack
+                |> Result.andThen (\pack -> Result.Ok <| A { model | pack = Just pack })
 
 
 putInPurse : Coins -> Equipment -> Equipment

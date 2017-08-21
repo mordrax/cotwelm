@@ -5,12 +5,6 @@ import Dice exposing (Dice)
 import Utils.Mass exposing (..)
 
 
-type Msg
-    = ItemOk
-    | NestedItem
-    | MassMsg Utils.Mass.Msg
-
-
 type ItemStatus
     = Normal
     | Cursed

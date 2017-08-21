@@ -14,7 +14,12 @@ type Msg
 
 
 type Message
-    = Message String
+    = Message MessageKind String
+
+
+type MessageKind
+    = Good
+    | Bad
 
 
 type CombatOutcome
@@ -35,9 +40,14 @@ combatMessage combatOutcome heroName monsterName =
 
 bad : String -> Message
 bad a =
-    Message a
+    Message Bad a
+
+
+good : String -> Message
+good a =
+    Message Good a
 
 
 pp : Message -> String
-pp (Message a) =
+pp (Message _ a) =
     a

@@ -18,6 +18,7 @@ import Container
 import Equipment exposing (Equipment, EquipmentSlot)
 import Html exposing (..)
 import Html.Attributes as HA
+import Item
 import Item.Data
 import Stats exposing (Stats)
 import Types exposing (..)
@@ -129,24 +130,15 @@ pickup items hero =
 pickup_ : Item.Data.Item -> ( Hero, List String, List Item.Data.Item ) -> ( Hero, List String, List Item.Data.Item )
 pickup_ item ( hero, messages, remainingItems ) =
     let
-        ( equipment_, msg ) =
-            Equipment.putInPack item hero.equipment
-
-        hero_ =
-            { hero | equipment = equipment_ }
-
-        success =
-            ( hero_, messages, remainingItems )
+        heroUpdate equipment =
+            { hero | equipment = equipment }
     in
-    case msg of
-        Equipment.Success ->
-            success
+    case Equipment.putInPack item hero.equipment of
+        Result.Ok eq ->
+            ( heroUpdate eq, messages, remainingItems )
 
-        Equipment.ContainerMsg Container.Ok ->
-            success
-
-        other ->
-            ( hero_, ("Failed to pick up item: " ++ toString other) :: messages, item :: remainingItems )
+        Result.Err errMsg ->
+            ( hero, ("Failed to pick up item: " ++ Item.name item ++ " because: " ++ errMsg) :: messages, item :: remainingItems )
 
 
 

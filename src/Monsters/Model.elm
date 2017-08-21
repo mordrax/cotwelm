@@ -66,7 +66,7 @@ setEquipment val monster =
     { monster | equipment = val }
 
 
-setEquipmentSlot : ( Equipment.EquipmentSlot, Item.Data.Item ) -> Monster -> Result Equipment.Msg Monster
+setEquipmentSlot : ( Equipment.EquipmentSlot, Item.Data.Item ) -> Monster -> Result String Monster
 setEquipmentSlot slot ({ equipment } as monster) =
     Equipment.setSlot_ slot equipment
         |> Result.map (\eq -> { monster | equipment = eq })
