@@ -1,17 +1,25 @@
 module Utils.LexicalRandomNames exposing (..)
 
+--compound
+--    {noun} {noun}
+--    {noun} {verb}
+--    {noun} {adverb}
+--    {verb} {noun}
+--    {verb} {adverb}
+--    {adverb} {verb}
+--    {color} {noun}
+--    {adjective} {noun}
+--    {adjective} {verb}
+
+
 nameLexicons : String
-
-
-nameLexicons = """
+nameLexicons =
+    """
 
 compound
     {noun} {noun}
     {noun} {verb}
-    {noun} {adverb}
     {verb} {noun}
-    {verb} {adverb}
-    {adverb} {verb}
     {color} {noun}
     {adjective} {noun}
     {adjective} {verb}
