@@ -21,7 +21,6 @@ to know about hero equipment, items, containers etc...
 -}
 
 import Comms exposing (Comms)
-import Container exposing (Container)
 import Equipment exposing (..)
 import Html exposing (..)
 import Html.Attributes as HA

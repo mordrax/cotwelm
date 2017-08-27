@@ -9,6 +9,18 @@ plain =
     text
 
 
+type alias Messages =
+    { messages : List (List Message)
+    }
+
+
+init : Messages
+init =
+    { messages =
+        []
+    }
+
+
 type Msg
     = Combat CombatOutcome
 
@@ -20,6 +32,7 @@ type Message
 type MessageKind
     = Good
     | Bad
+    | Neutral
 
 
 type CombatOutcome
@@ -48,6 +61,46 @@ good a =
     Message Good a
 
 
+neutral : String -> Message
+neutral a =
+    Message Neutral a
+
+
 pp : Message -> String
 pp (Message _ a) =
     a
+
+
+add : Message -> Messages -> Messages
+add message ({ messages } as model) =
+    case messages of
+        [] ->
+            { model | messages = [ [ message ] ] }
+
+        a :: rest ->
+            { model | messages = (message :: a) :: rest }
+
+
+all : Messages -> List (List String)
+all { messages } =
+    List.map (List.map pp) messages
+
+
+addNeutral : String -> Messages -> Messages
+addNeutral msg messages =
+    msg
+        |> neutral
+        |> flip add messages
+
+
+tick : Messages -> Messages
+tick ({ messages } as model) =
+    case messages of
+        [] ->
+            model
+
+        [] :: _ ->
+            model
+
+        _ :: _ ->
+            { model | messages = [] :: messages }

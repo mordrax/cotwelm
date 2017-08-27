@@ -6,6 +6,7 @@ import Game.Types exposing (..)
 import Hero exposing (Hero)
 import Input exposing (Input)
 import Inventory exposing (Inventory)
+import Message exposing (Messages)
 import Random.Pcg as Random
 import Shops exposing (Shops)
 import Types exposing (..)
@@ -36,7 +37,7 @@ type alias Game =
     , shops : Shops
     , seed : Random.Seed
     , windowSize : Window.Size
-    , messages : List String
+    , messages : Messages
     , viewport : { x : Int, y : Int }
     , difficulty : Difficulty
     , inventory : Inventory
@@ -86,7 +87,7 @@ setWindowSize windowSize game =
     { game | windowSize = windowSize }
 
 
-setMessages : List String -> Game -> Game
+setMessages : Messages -> Game -> Game
 setMessages messages game =
     { game | messages = messages }
 

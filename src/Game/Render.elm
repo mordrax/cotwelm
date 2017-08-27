@@ -11,6 +11,7 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Html.Lazy
 import Inventory exposing (Inventory)
+import Message
 import Monster exposing (Monster)
 import Stats exposing (Stats)
 import Types exposing (..)
@@ -190,12 +191,22 @@ viewStatus model =
 
 viewMessages : Game -> Html Msg
 viewMessages model =
+    div [ HA.class "game-bottom-hud__messages" ]
+        (viewMessages_ 1 (Message.all model.messages))
+
+
+viewMessages_ : Int -> List (List String) -> List (Html Msg)
+viewMessages_ level messages =
     let
         viewMessage msg =
-            div [ HA.class "messages__message" ] [ Html.text msg ]
+            div [ HA.class "messages__message", HA.class ("messages__message-level" ++ toString level) ] [ Html.text msg ]
     in
-    div [ HA.class "game-bottom-hud__messages" ]
-        (List.map viewMessage model.messages)
+    case messages of
+        [] ->
+            [ Html.text "" ]
+
+        msgs :: rest ->
+            List.map viewMessage msgs ++ viewMessages_ (level + 1) rest
 
 
 viewStats : Stats -> Html Msg

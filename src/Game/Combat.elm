@@ -375,12 +375,12 @@ attackSpeed weapon { str, dex, int, con } =
 missMsg : Names -> Generator AttackMessage
 missMsg { att, attr, def, defr } =
     Random.sample
-        [ attr ++ " half arsed attack failed to hit " ++ def
-        , attr ++ " fancy footwork did not fool " ++ def
+        [ attr ++ " half arsed attack failed to hit " ++ def ++ "."
+        , attr ++ " fancy footwork did not fool " ++ def ++ "."
         , att ++ " could not hit the broadside of a barn with that pathetic attempt."
         , att ++ " perform a decent attack but " ++ def ++ " perfectly parried the shot."
         ]
-        |> Random.map (Maybe.withDefault <| attr ++ " fumbled attack complete missed " ++ def)
+        |> Random.map (Maybe.withDefault <| attr ++ " fumbled attack complete missed " ++ def ++ ".")
 
 
 blockedMsg : Names -> Generator AttackMessage
@@ -413,7 +413,7 @@ hitMsg { att, attr, def, defr } ( damageRoll, maxDamage ) defender =
                     msg
 
                 _ ->
-                    msg ++ statusMsg defenderAfterDamage.stats
+                    msg ++ " " ++ statusMsg defenderAfterDamage.stats
     in
     if damageRoll >= maxDamage then
         Random.sample critMsgs
@@ -511,10 +511,10 @@ attackerName { type_, name } adjective =
             "You "
 
         ( _, Possessive ) ->
-            String.toLower name ++ "'s"
+            name ++ "'s"
 
         ( _, NonPossessive ) ->
-            String.toLower name
+            name
 
 
 defenderName : Defender a -> Adjective -> String
@@ -527,7 +527,7 @@ defenderName { type_, name } adjective =
             "you"
 
         ( _, Possessive ) ->
-            String.toLower name ++ "'s"
+            name ++ "'s"
 
         ( _, NonPossessive ) ->
-            String.toLower name
+            name

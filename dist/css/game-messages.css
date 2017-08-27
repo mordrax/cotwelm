@@ -1,5 +1,5 @@
 .game-bottom-hud {
-    height: 100px;
+    height: 120px;
     display: flex;
 }
 
@@ -11,10 +11,33 @@
     border: 1px solid black; 
 }
 
-.messages__message {
-
+.messages__message:nth-child(2n) {
+    background-color: #e4e4e4
 }
 
+.messages__message:nth-child(2n+1) {
+    background-color: #f3f3f3
+}
+
+.messages__message.messages__message-level1 {
+    font-size: 1em;
+    font-weight:bold;
+}
+.messages__message.messages__message-level2 {
+    font-size: 1em;
+}
+.messages__message.messages__message-level3 {
+    font-size: 0.9em;
+}
+.messages__message.messages__message-level4 {
+    font-size: 0.8em;
+}
+.messages__message.messages__message-level5 {
+    font-size: 0.7em;
+}
+.messages__message {
+    font-size: 0.6em;
+}
 /* Stats */
 .game-bottom-hud__stats {
     flex-basis: 30%;

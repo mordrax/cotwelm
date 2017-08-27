@@ -106,6 +106,7 @@ monsterNamesLexicon =
 monsterNameGenerator : Generator String
 monsterNameGenerator =
     LexicalRandom.generator "Bob" monsterNamesLexicon "compound"
+        |> Random.map StringX.toTitleCase
 
 
 {-| Give a list of positions, fill those places in with random monsters
@@ -134,7 +135,7 @@ randomMonster maxRank position =
                 |> Random.map (flip make position)
 
         updateMonsterName name monster =
-            { monster | name = name ++ " The " ++ monster.name }
+            { monster | name = name ++ " the " ++ monster.name }
     in
     Random.map2 updateMonsterName nameGenerator monsterGenerator
 
@@ -203,7 +204,7 @@ plateEquipment =
 
 make_ : Attributes -> MonsterType -> Monster
 make_ attributes monsterType =
-    { name = StringX.toTitleCase (toString monsterType)
+    { name = monsterType |> toString |> StringX.humanize |> StringX.toTitleCase
     , type_ = Types.Monster
     , monsterType = monsterType
     , position = ( 0, 0 )

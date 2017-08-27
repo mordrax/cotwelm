@@ -15,6 +15,7 @@ import Game.Pathfinding as Pathfinding
 import Game.Types
 import Hero exposing (Hero)
 import Inventory exposing (Inventory)
+import Message
 import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Seed)
 import Shops exposing (Shops)
@@ -88,7 +89,7 @@ attack monster ({ hero, seed, messages, level } as model) =
             { model
                 | seed = seed_
                 , level = Level.setMonsters monsters_ level
-                , messages = combatMsg :: messages
+                , messages = Message.addNeutral combatMsg messages
             }
     in
     case resolvedMonster of
@@ -252,7 +253,7 @@ attackHero monster ({ hero, seed, messages } as game) =
             Random.step (Combat.attack monster hero) seed
     in
     { game
-        | messages = msg :: messages
+        | messages = Message.addNeutral msg messages
         , hero = heroAfterHit
         , seed = seed_
     }

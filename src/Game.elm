@@ -76,7 +76,7 @@ init seed hero difficulty =
       , level = level
       , inventory = Inventory.init (Inventory.Ground []) Equipment.init
       , seed = seed_
-      , messages = [ "Welcome to castle of the winds!" ]
+      , messages = Message.addNeutral "Welcome to castle of the winds!" Message.init
       , difficulty = difficulty
       , windowSize = { width = 640, height = 640 }
       , viewport = { x = 0, y = 0 }
@@ -151,7 +151,7 @@ actionTakeStairs ({ level, hero, maps } as game) =
             | maps = newMaps
             , level = newLevel
             , hero = heroTakeStairs (Level.downstairs newLevel)
-            , messages = "You climb back up the stairs" :: game.messages
+            , messages = Message.addNeutral "You climb back up the stairs" game.messages
         }
     else if isOnStairs Level.downstairs hero.position game.level then
         let
@@ -163,10 +163,10 @@ actionTakeStairs ({ level, hero, maps } as game) =
             , level = newLevel
             , hero = heroTakeStairs (Level.upstairs newLevel)
             , seed = seed_
-            , messages = "You go downstairs" :: game.messages
+            , messages = Message.addNeutral "You go downstairs" game.messages
         }
     else
-        { game | messages = "You need to be on some stairs!" :: game.messages }
+        { game | messages = Message.addNeutral "You need to be on some stairs!" game.messages }
 
 
 actionPickup : Game -> Game
@@ -184,7 +184,7 @@ actionPickup ({ hero, level } as game) =
     { game
         | level = levelWithLeftOvers
         , hero = heroWithItems
-        , messages = pickMsgs ++ game.messages
+        , messages = List.foldl Message.addNeutral game.messages pickMsgs
     }
 
 
@@ -212,6 +212,7 @@ tick ({ maps, shops, hero, seed } as game) =
         , shops = shops_
         , hero = Hero.tick hero
         , seed = seed_
+        , messages = Message.tick game.messages
     }
 
 
@@ -334,7 +335,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
             in
             { game
                 | inventory = inventory_
-                , messages = List.map Message.pp comms.messages ++ game.messages
+                , messages = List.foldl Message.add game.messages comms.messages
             }
                 |> updatePreviousState
                 |> withComms (Comms.map InventoryMsg comms)
