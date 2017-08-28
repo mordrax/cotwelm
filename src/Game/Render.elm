@@ -185,7 +185,7 @@ viewStatus model =
     in
     div [ HA.class "game-bottom-hud" ]
         [ viewMessages model
-        , viewStats model.hero.stats
+        , viewStats model.hero.expLevel model.hero.stats
         ]
 
 
@@ -209,8 +209,8 @@ viewMessages_ level messages =
             List.map viewMessage msgs ++ viewMessages_ (level + 1) rest
 
 
-viewStats : Stats -> Html Msg
-viewStats stats =
+viewStats : Int -> Stats -> Html Msg
+viewStats expLevel stats =
     let
         hpStyles =
             if Stats.hpLow stats then
@@ -228,7 +228,8 @@ viewStats stats =
             ( Stats.printHP stats, Stats.printSP stats )
     in
     div [ HA.class "game-bottom-hud__stats" ]
-        [ viewStat hpStyles "HP" ppHP
+        [ viewStat [] "Level" (toString expLevel)
+        , viewStat hpStyles "HP" ppHP
         , viewStat spStyles "Mana" ppSP
         , viewStat [] "Speed" "100% / 200%"
         , viewStat [] "Time" "0d, 00:02:57"

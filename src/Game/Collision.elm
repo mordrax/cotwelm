@@ -116,7 +116,20 @@ resolveCombat hero monster seed =
 
 addExperience : Monster -> Game -> Game
 addExperience monster ({ hero } as game) =
-    { game | hero = Hero.addExperience (monster.expLevel * 15) hero }
+    let
+        hero_ =
+            Hero.addExperience (monster.expLevel * 15) hero
+
+        messages_ =
+            if hero_.expLevel == hero.expLevel then
+                game.messages
+            else
+                Message.addNeutral "You feel... Stronger!" game.messages
+    in
+    { game
+        | hero = hero_
+        , messages = messages_
+    }
 
 
 addLoot : Monster -> Game -> Game

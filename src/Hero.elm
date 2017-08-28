@@ -14,7 +14,6 @@ module Hero
         )
 
 import Attributes exposing (Attributes)
-import Container
 import Equipment exposing (Equipment, EquipmentSlot)
 import Html exposing (..)
 import Html.Attributes as HA
@@ -107,7 +106,10 @@ tick hero =
 
 levelUp : Hero -> Hero
 levelUp hero =
-    { hero | stats = Stats.incLevel 1 hero.attributes hero.stats }
+    { hero
+        | stats = Stats.incLevel 1 hero.attributes hero.stats
+        , expLevel = hero.expLevel + 1
+    }
 
 
 move : Direction -> Hero -> Hero
