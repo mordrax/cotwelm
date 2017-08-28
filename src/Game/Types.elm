@@ -19,7 +19,7 @@ type GameAction
     | GoUpstairs
     | GoDownstairs
     | Pickup
-    | WaitATurn
+    | WaitATurn Bool
     | WaitUntilHealed
     | KillHero
     | NoOp

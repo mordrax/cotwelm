@@ -79,7 +79,7 @@ playerKeymap =
         , ( ( KeyDown Numpad3, False ), Game.Types.Move NE )
         , ( ( KeyDown PageDown, False ), Game.Types.Move NE )
         , ( ( KeyDown Numpad4, False ), Game.Types.Move W )
-        , ( ( KeyDown Numpad5, False ), Game.Types.WaitATurn )
+        , ( ( KeyDown Numpad5, False ), Game.Types.WaitATurn False )
         , ( ( KeyDown Numpad6, False ), Game.Types.Move E )
         , ( ( KeyDown Numpad7, False ), Game.Types.Move SW )
         , ( ( KeyDown Home, False ), Game.Types.Move SW )
@@ -100,7 +100,7 @@ playerKeymap =
         , ( ( KeyDown Numpad3, True ), Game.Types.Walk NE )
         , ( ( KeyDown PageDown, True ), Game.Types.Walk NE )
         , ( ( KeyDown Numpad4, True ), Game.Types.Walk W )
-        , ( ( KeyDown Numpad5, True ), Game.Types.WaitUntilHealed )
+        , ( ( KeyDown Numpad5, True ), Game.Types.WaitATurn True )
         , ( ( KeyDown Numpad6, True ), Game.Types.Walk E )
         , ( ( KeyDown Numpad7, True ), Game.Types.Walk SW )
         , ( ( KeyDown Home, True ), Game.Types.Walk SW )
@@ -114,7 +114,7 @@ playerKeymap =
         , ( ( KeyDown Period, True ), Game.Types.GoDownstairs )
         , ( ( KeyDown Comma, True ), Game.Types.GoUpstairs )
         , ( ( KeyDown CharG, False ), Game.Types.Pickup )
-        , ( ( KeyDown Period, False ), Game.Types.WaitATurn )
+        , ( ( KeyDown Period, False ), Game.Types.WaitATurn False )
         ]
 
 

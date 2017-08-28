@@ -276,14 +276,24 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> Render.viewport
                 |> noCmd
 
-        GameAction WaitATurn ->
+        GameAction (WaitATurn keepWaiting) ->
+            let
+                heroAlive =
+                    not <| Stats.isDead game.hero.stats
+
+                waitCmd =
+                    if keepWaiting && Hero.injured game.hero && heroAlive then
+                        Task.perform GameAction (Task.succeed (WaitATurn True))
+                    else
+                        Cmd.none
+            in
             game
                 |> tick
                 |> Collision.moveMonsters
                 |> checkHeroAlive
                 |> updatePreviousState
                 |> Render.viewport
-                |> noCmd
+                |> (\game_ -> ( game_, waitCmd, False ))
 
         GameAction (Walk dir) ->
             if isNewArea game then

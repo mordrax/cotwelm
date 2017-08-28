@@ -3,6 +3,7 @@ module Hero
         ( Hero
         , addExperience
         , init
+        , injured
         , levelUp
         , move
         , pickup
@@ -102,6 +103,11 @@ setStats stats model =
 tick : Hero -> Hero
 tick hero =
     { hero | stats = Stats.tick hero.stats }
+
+
+injured : Hero -> Bool
+injured { stats } =
+    stats.currentHP < stats.maxHP
 
 
 levelUp : Hero -> Hero
