@@ -81,7 +81,6 @@ import Item
 import Item.Data
 import Random.Pcg as Random exposing (Generator, Seed)
 import Stats exposing (Stats)
-import String
 import Types exposing (..)
 import Utils.Mass as Mass
 

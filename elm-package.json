@@ -25,6 +25,7 @@
         "elm-lang/navigation": "2.0.0 <= v < 3.0.0",
         "elm-lang/window": "1.0.1 <= v < 2.0.0",
         "evancz/url-parser": "2.0.0 <= v < 3.0.0",
+        "jinjor/elm-inline-hover": "1.0.2 <= v < 2.0.0",
         "krisajenkins/elm-astar": "2.0.4 <= v < 3.0.0",
         "mgold/elm-random-pcg": "4.0.2 <= v < 5.0.0",
         "ohanhi/keyboard-extra": "2.1.0 <= v < 3.0.0",

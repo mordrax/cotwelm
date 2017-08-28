@@ -37,13 +37,11 @@ Does not render equipment but will provide a API to retrieve them.
 
 -}
 
-import Container
 import EveryDict exposing (EveryDict)
 import Item
 import Item.Data exposing (..)
 import Item.Pack as Pack
 import Item.Purse as Purse
-import Utils.Mass as Mass
 import Utils.Misc
 
 
