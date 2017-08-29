@@ -8,7 +8,7 @@ browser-sync start --proxy "localhost:8844" --port 8888 --files "dist/js/cotw.js
 # elm test
 
 # cd tests
-# elm reactor --port 1234 &
+elm reactor --port 8000 &
 # sleep 2
 # browser-sync start --proxy "localhost:1234" --port 1235 --files "**/*.elm" &
 # cd ..

@@ -226,7 +226,6 @@ updateEquipmentAndMerchant ( equipment, merchant ) ({ hero, shops, level } as ga
         game_ =
             { game
                 | hero = Hero.setEquipment equipment hero
-                , currentScreen = MapScreen
             }
 
         updateLevel items =
@@ -309,7 +308,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                     |> Render.viewport
                     |> actionKeepOnWalking dir
 
-        GameAction BackToMapScreen ->
+        GameAction (GoToScreen MapScreen) ->
             let
                 updatedGameFromInventory inventory =
                     Inventory.exit inventory
@@ -318,25 +317,36 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                                     |> Game.Model.setInventory i
                                     |> updateEquipmentAndMerchant ( e, m )
                            )
+
+                backToMapScreen model =
+                    { model | currentScreen = MapScreen }
             in
             case game.currentScreen of
                 MapScreen ->
                     game
                         |> updatePreviousState
+                        |> backToMapScreen
                         |> noCmd
 
                 BuildingScreen _ ->
                     updatedGameFromInventory game.inventory
                         |> updatePreviousState
+                        |> backToMapScreen
                         |> noCmd
 
                 InventoryScreen ->
                     updatedGameFromInventory game.inventory
                         |> updatePreviousState
+                        |> backToMapScreen
                         |> noCmd
 
                 RipScreen ->
                     ( game, Cmd.none, True )
+
+                CharacterInfoScreen ->
+                    game
+                        |> backToMapScreen
+                        |> noCmd
 
         InventoryMsg msg ->
             let
@@ -435,6 +445,9 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
 
         Died ->
             noCmd { game | currentScreen = RipScreen }
+
+        GameAction (GoToScreen CharacterInfoScreen) ->
+            noCmd { game | currentScreen = CharacterInfoScreen }
 
         other ->
             let

@@ -58,7 +58,7 @@ button:focus {
 
 /********* game huds *********/
 
-.game__title {
+.window__title {
     background-color: darkblue;
     text-align: center;
     color: white;

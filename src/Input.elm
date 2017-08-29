@@ -109,12 +109,15 @@ playerKeymap =
         , ( ( KeyDown PageUp, True ), Game.Types.Walk SE )
 
         -- dungeon
-        , ( ( KeyUp Escape, False ), Game.Types.BackToMapScreen )
+        , ( ( KeyUp Escape, False ), Game.Types.GoToScreen Game.Types.MapScreen )
         , ( ( KeyUp CharI, False ), Game.Types.OpenInventory )
         , ( ( KeyDown Period, True ), Game.Types.GoDownstairs )
         , ( ( KeyDown Comma, True ), Game.Types.GoUpstairs )
         , ( ( KeyDown CharG, False ), Game.Types.Pickup )
         , ( ( KeyDown Period, False ), Game.Types.WaitATurn False )
+
+        -- general
+        , ( ( KeyDown CharC, False ), Game.Types.GoToScreen Game.Types.CharacterInfoScreen )
         ]
 
 

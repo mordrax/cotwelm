@@ -9,12 +9,12 @@ type Screen
     | InventoryScreen
     | BuildingScreen Building
     | RipScreen
+    | CharacterInfoScreen
 
 
 type GameAction
     = Move Direction
     | Walk Direction
-    | BackToMapScreen
     | OpenInventory
     | GoUpstairs
     | GoDownstairs
@@ -22,4 +22,5 @@ type GameAction
     | WaitATurn Bool
     | WaitUntilHealed
     | KillHero
+    | GoToScreen Screen
     | NoOp

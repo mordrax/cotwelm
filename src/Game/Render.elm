@@ -6,7 +6,7 @@ import Css exposing (..)
 import Game.Level as Level
 import Game.Model exposing (..)
 import Game.Types
-import Hero
+import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Lazy
@@ -17,6 +17,7 @@ import Stats exposing (Stats)
 import Types exposing (..)
 import UI
 import Utils.Vector as Vector exposing (Vector)
+import View.Components
 import Window
 
 
@@ -108,6 +109,9 @@ game model =
             viewRip
                 |> viewGame
 
+        Game.Types.CharacterInfoScreen ->
+            viewCharInfo model.hero
+
 
 viewMonsters : Game -> Html Msg
 viewMonsters { level } =
@@ -115,6 +119,41 @@ viewMonsters { level } =
         |> List.filter (.visible >> (==) LineOfSight)
         |> List.map Monster.view
         |> div []
+
+
+viewCharInfo : Hero -> Html Msg
+viewCharInfo hero =
+    div [ HA.class " column" ]
+        [ div [ HA.class "window__title" ]
+            [ Html.text "Character Info" ]
+        , div [ HA.class "container" ]
+            [ div [ HA.class "row" ]
+                [ Html.span [] [ Html.text "Character Name" ]
+                , Html.span [] [ Html.text hero.name ]
+                ]
+            , div [ HA.class "row" ]
+                [ div [ HA.class "column" ]
+                    [ div [ HA.class "row" ] [ Html.text "attributes" ]
+                    , div [ HA.class "row" ]
+                        [ View.Components.labeledBox "Game Difficulty" [ Html.text "easy" ]
+                        , Html.text "icon"
+                        ]
+                    ]
+                , div [ HA.class "column" ]
+                    [ div [] [ Html.text "Level" ]
+                    , div [] [ Html.text "Experience" ]
+                    , div [] [ Html.text "Next Level" ]
+                    , div [] [ Html.text "Weight" ]
+                    , div [] [ Html.text "Bulk" ]
+                    , div [] [ Html.text "Speed" ]
+                    , div [] [ Html.text "Hit Points" ]
+                    , div [] [ Html.text "Mana Points" ]
+                    , div [] [ Html.text "Copper" ]
+                    , div [] [ Html.text "Armour Value" ]
+                    ]
+                ]
+            ]
+        ]
 
 
 viewMap : Game -> Html Msg
@@ -254,7 +293,7 @@ viewStat customAttributes label value =
 
 viewTitle : Html never
 viewTitle =
-    div [ HA.class "game__title" ] [ Html.text "Castle of the Winds" ]
+    div [ HA.class "window__title" ] [ Html.text "Castle of the Winds" ]
 
 
 viewMenu : Html Msg
