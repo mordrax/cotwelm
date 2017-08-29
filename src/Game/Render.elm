@@ -3,6 +3,7 @@ module Game.Render exposing (game, viewRip, viewport)
 import Building exposing (Building)
 import Colors
 import Css exposing (..)
+import Equipment
 import Game.Level as Level
 import Game.Model exposing (..)
 import Game.Types
@@ -11,13 +12,13 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Html.Lazy
 import Inventory exposing (Inventory)
+import Item.Pack
 import Message
 import Monster exposing (Monster)
 import Stats exposing (Stats)
 import Types exposing (..)
 import UI
 import Utils.Vector as Vector exposing (Vector)
-import View.Components
 import Window
 
 
@@ -123,33 +124,51 @@ viewMonsters { level } =
 
 viewCharInfo : Hero -> Html Msg
 viewCharInfo hero =
+    let
+        stats lbl val =
+            div [ HA.class "row" ]
+                [ div [ HA.class "block" ] [ Html.text lbl ]
+                , div [ HA.class "block", styles [ textAlign right ] ] [ Html.text val ]
+                ]
+
+        { weight, bulk } =
+            hero.equipment
+                |> Equipment.getPack
+                |> Maybe.map (Item.Pack.info >> Tuple.first)
+                |> Maybe.withDefault { weight = 0, bulk = 0 }
+    in
     div [ HA.class " column" ]
         [ div [ HA.class "window__title" ]
             [ Html.text "Character Info" ]
         , div [ HA.class "container" ]
             [ div [ HA.class "row" ]
-                [ Html.span [] [ Html.text "Character Name" ]
+                [ Html.span [] [ Html.text ("Character Name:" ++ UI.nbsp) ]
                 , Html.span [] [ Html.text hero.name ]
                 ]
             , div [ HA.class "row" ]
-                [ div [ HA.class "column" ]
-                    [ div [ HA.class "row" ] [ Html.text "attributes" ]
+                [ div [ HA.class "column block--large" ]
+                    [ div [ HA.class "row" ]
+                        [ UI.viewBarWithScale 50
+                        , UI.viewBarWithScale 50
+                        , UI.viewBarWithScale 50
+                        , UI.viewBarWithScale 50
+                        ]
                     , div [ HA.class "row" ]
-                        [ View.Components.labeledBox "Game Difficulty" [ Html.text "easy" ]
-                        , Html.text "icon"
+                        [ div [ styles [ flex (int 2) ] ] [ UI.labeledBox "Game Difficulty" [ Html.text "easy" ] ]
+                        , div [ styles [ flex (int 1), alignItems center ] ] [ Html.text "icon" ]
                         ]
                     ]
-                , div [ HA.class "column" ]
-                    [ div [] [ Html.text "Level" ]
-                    , div [] [ Html.text "Experience" ]
-                    , div [] [ Html.text "Next Level" ]
-                    , div [] [ Html.text "Weight" ]
-                    , div [] [ Html.text "Bulk" ]
-                    , div [] [ Html.text "Speed" ]
-                    , div [] [ Html.text "Hit Points" ]
-                    , div [] [ Html.text "Mana Points" ]
-                    , div [] [ Html.text "Copper" ]
-                    , div [] [ Html.text "Armour Value" ]
+                , div [ HA.class "column block" ]
+                    [ stats "Level:" (toString hero.expLevel)
+                    , stats "Experience:" (toString hero.expPoints)
+                    , stats "Next Level:" "100"
+                    , stats "Weight:" (toString weight)
+                    , stats "Bulk:" (toString bulk)
+                    , stats "Speed:" "1"
+                    , stats "Hit Points:" (toString hero.stats.maxHP)
+                    , stats "Mana Points:" (toString hero.stats.maxSP)
+                    , stats "Copper:" "Lots!"
+                    , stats "Armour Value:" "Vulnerable"
                     ]
                 ]
             ]

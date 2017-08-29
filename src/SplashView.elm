@@ -3,7 +3,6 @@ module SplashView exposing (Msg(..), view)
 import Css exposing (..)
 import Html as H exposing (..)
 import Html.Attributes as HA
-import Html.Events as HE
 import UI
 
 
@@ -13,10 +12,12 @@ type Msg
     | Overview
 
 
+styles : List Mixin -> Attribute msg
 styles =
     Css.asPairs >> HA.style
 
 
+addStyle : List Mixin -> Mixin -> Attribute msg
 addStyle currentStyles style =
     HA.style (Css.asPairs <| style :: currentStyles)
 

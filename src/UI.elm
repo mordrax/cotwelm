@@ -1,18 +1,21 @@
 module UI exposing (..)
 
+import Colors
 import Css exposing (..)
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
 import Json.Decode.Pipeline as JP
-import String exposing (..)
+import String
 
 
+styles : List Mixin -> Attribute msg
 styles =
     asPairs >> HA.style
 
 
+addStyle : List Mixin -> Mixin -> Attribute msg
 addStyle currentStyles style =
     HA.style (asPairs <| style :: currentStyles)
 
@@ -21,6 +24,7 @@ type alias Label =
     String
 
 
+nbsp : String
 nbsp =
     " "
 
@@ -30,7 +34,13 @@ labeledNumber_ convert label number msg =
     labeledNumberWithStep convert label number 1.0 msg
 
 
-labeledNumberWithStep : (String -> number -> number) -> Label -> number -> Float -> (number -> a) -> Html a
+labeledNumberWithStep :
+    (String -> number -> number)
+    -> Label
+    -> number
+    -> Float
+    -> (number -> a)
+    -> Html a
 labeledNumberWithStep convert label number inc msg =
     div [ HA.class "ui labeled input" ]
         [ div [ HA.class "ui label" ] [ Html.text label ]
@@ -84,6 +94,33 @@ labeled2TupleNumber label ( min, max ) minMsg maxMsg =
             , labeledNumber "Max" max maxMsg
             ]
         ]
+
+
+labeledBox : String -> List (Html msg) -> Html msg
+labeledBox label children =
+    let
+        boxLabel =
+            div
+                [ styles
+                    [ position absolute
+                    , zIndex (int 1)
+                    , top (px -10)
+                    , backgroundColor (rgb 255 255 255)
+                    , padding2 zero (px 3)
+                    ]
+                ]
+                [ Html.text label ]
+    in
+    div
+        [ styles
+            [ border3 (px 1) solid Colors.gray
+            , position relative
+            , displayFlex
+            , justifyContent spaceBetween
+            , padding2 (px 15) (px 10)
+            ]
+        ]
+        (boxLabel :: children)
 
 
 list :
@@ -146,3 +183,56 @@ type alias Event =
 type alias Target =
     { value : String
     }
+
+
+viewBarWithScale : Int -> Html never
+viewBarWithScale valueOf100 =
+    viewBar valueOf100
+        [ viewBarScale 25
+        , viewBarScale 50
+        , viewBarScale 75
+        ]
+
+
+viewBar : Int -> List (Html never) -> Html never
+viewBar valueOf100 children =
+    let
+        inverseOfValue =
+            100 - toFloat valueOf100
+
+        viewBlueBar =
+            div
+                [ styles
+                    [ position absolute
+                    , zIndex (int 0)
+                    , width (px 25)
+                    , height (px (toFloat valueOf100))
+                    , top (px inverseOfValue)
+                    , backgroundColor Colors.blue
+                    ]
+                ]
+                []
+    in
+    div
+        [ styles
+            [ border3 (px 1) solid (rgb 0 0 0)
+            , width (px 25)
+            , height (px 100)
+            , position relative
+            , zIndex (int 1)
+            ]
+        ]
+        (viewBlueBar :: children)
+
+
+viewBarScale : Float -> Html never
+viewBarScale yOffset =
+    i
+        [ styles
+            [ width (pct 100)
+            , position absolute
+            , top (px yOffset)
+            , borderTop3 (px 1) solid (rgb 0 0 0)
+            ]
+        ]
+        []

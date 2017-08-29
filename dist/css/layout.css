@@ -1,15 +1,19 @@
 .row {
     display: flex;
-    justify-content: space-between;
     flex-direction: row;
 }
-
 .column {
     display: flex;
     justify-content: space-between;
     flex-direction: column;
 }
-
 .container {
     padding: 0 10px;
+}
+
+.block--large {
+    flex: 2
+}
+.block {
+    flex: 1
 }

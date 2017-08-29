@@ -26,6 +26,7 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
 import Task
+import UI
 
 
 styles =
@@ -224,7 +225,7 @@ viewAttribute attr model buttons =
                     , justifyContent center
                     ]
                 ]
-                [ viewBarWithScale value
+                [ UI.viewBarWithScale value
                 , viewScroll attr value
                 ]
 
@@ -234,7 +235,7 @@ viewAttribute attr model buttons =
     case attr of
         Available ->
             div []
-                [ viewBar value []
+                [ UI.viewBar value []
                 ]
 
         _ ->
@@ -300,59 +301,6 @@ inputDecoder : Attribute -> JD.Decoder Msg
 inputDecoder attr =
     JD.field "value" JD.int
         |> JD.map (Scroll attr)
-
-
-viewBarWithScale : Int -> Html Msg
-viewBarWithScale valueOf100 =
-    viewBar valueOf100
-        [ viewBarScale 25
-        , viewBarScale 50
-        , viewBarScale 75
-        ]
-
-
-viewBar : Int -> List (Html Msg) -> Html Msg
-viewBar valueOf100 children =
-    let
-        inverseOfValue =
-            100 - toFloat valueOf100
-
-        viewBlueBar =
-            div
-                [ styles
-                    [ position absolute
-                    , zIndex (int 0)
-                    , width (px 25)
-                    , height (px (toFloat valueOf100))
-                    , top (px inverseOfValue)
-                    , backgroundColor Colors.blue
-                    ]
-                ]
-                []
-    in
-    div
-        [ styles
-            [ border3 (px 1) solid (rgb 0 0 0)
-            , width (px 25)
-            , height (px 100)
-            , position relative
-            , zIndex (int 1)
-            ]
-        ]
-        (viewBlueBar :: children)
-
-
-viewBarScale : Float -> Html Msg
-viewBarScale yOffset =
-    i
-        [ styles
-            [ width (pct 100)
-            , position absolute
-            , top (px yOffset)
-            , borderTop3 (px 1) solid (rgb 0 0 0)
-            ]
-        ]
-        []
 
 
 tickStyle : Int -> Html.Attribute Msg

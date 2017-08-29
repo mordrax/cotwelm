@@ -18,7 +18,6 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Types exposing (..)
 import UI
-import View.Components as Components
 
 
 styles : List Mixin -> Attribute msg
@@ -192,7 +191,7 @@ viewCustomAvatar =
 
 viewGender : Gender -> Html Msg
 viewGender gender =
-    Components.labeledBox ("Character" ++ UI.nbsp ++ "Gender")
+    UI.labeledBox ("Character" ++ UI.nbsp ++ "Gender")
         [ div
             [ styles [ marginRight (px 15) ] ]
             [ UI.radioBtn "gender" (Male == gender) (Gender Male)
@@ -251,7 +250,7 @@ viewDifficulty difficulty =
                     ]
                 ]
     in
-    Components.labeledBox "Game Difficulty"
+    UI.labeledBox "Game Difficulty"
         [ easy
         , intermediate
         , hard
