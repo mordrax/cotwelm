@@ -185,17 +185,28 @@ type alias Target =
     }
 
 
-viewBarWithScale : Int -> Html never
-viewBarWithScale valueOf100 =
-    viewBar valueOf100
+scaledBar : Int -> Html never
+scaledBar valueOf100 =
+    viewBar Colors.blue
+        valueOf100
         [ viewBarScale 25
         , viewBarScale 50
         , viewBarScale 75
         ]
 
 
-viewBar : Int -> List (Html never) -> Html never
-viewBar valueOf100 children =
+greenScaledBar : Int -> Html never
+greenScaledBar valueOf100 =
+    viewBar Colors.chartreuse
+        valueOf100
+        [ viewBarScale 25
+        , viewBarScale 50
+        , viewBarScale 75
+        ]
+
+
+viewBar : Color -> Int -> List (Html never) -> Html never
+viewBar barColor valueOf100 children =
     let
         inverseOfValue =
             100 - toFloat valueOf100
@@ -205,10 +216,10 @@ viewBar valueOf100 children =
                 [ styles
                     [ position absolute
                     , zIndex (int 0)
-                    , width (px 25)
-                    , height (px (toFloat valueOf100))
+                    , width (px 23)
+                    , height (px (toFloat (valueOf100 - 2)))
                     , top (px inverseOfValue)
-                    , backgroundColor Colors.blue
+                    , backgroundColor barColor
                     ]
                 ]
                 []
@@ -236,3 +247,36 @@ viewBarScale yOffset =
             ]
         ]
         []
+
+
+
+-- difficulty
+
+
+viewIconEasy : Html never
+viewIconEasy =
+    i [ HA.class "difficulty__easy" ]
+        []
+
+
+viewIconIntermediate : Html never
+viewIconIntermediate =
+    i [ HA.class "difficulty__intermediate" ] []
+
+
+viewIconHard : Html never
+viewIconHard =
+    div [ HA.class "difficulty__hard-outer" ]
+        [ i [ HA.class "difficulty__hard-inner" ]
+            []
+        ]
+
+
+viewIconImpossible : Html never
+viewIconImpossible =
+    div [ HA.class "difficulty__impossible-outer" ]
+        [ span [ HA.class "difficulty__impossible-inner" ]
+            [ span [ HA.class "difficulty__impossible-inner-inner" ]
+                [ Html.text "!" ]
+            ]
+        ]

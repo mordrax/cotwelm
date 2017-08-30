@@ -111,7 +111,7 @@ game model =
                 |> viewGame
 
         Game.Types.CharacterInfoScreen ->
-            viewCharInfo model.hero
+            viewCharInfo model
 
 
 viewMonsters : Game -> Html Msg
@@ -122,8 +122,8 @@ viewMonsters { level } =
         |> div []
 
 
-viewCharInfo : Hero -> Html Msg
-viewCharInfo hero =
+viewCharInfo : Game -> Html Msg
+viewCharInfo { hero, difficulty } =
     let
         stats lbl val =
             div [ HA.class "row" ]
@@ -136,26 +136,72 @@ viewCharInfo hero =
                 |> Equipment.getPack
                 |> Maybe.map (Item.Pack.info >> Tuple.first)
                 |> Maybe.withDefault { weight = 0, bulk = 0 }
+
+        icon =
+            case difficulty of
+                Easy ->
+                    UI.viewIconEasy
+
+                Intermediate ->
+                    UI.viewIconIntermediate
+
+                Hard ->
+                    UI.viewIconHard
+
+                Impossible ->
+                    UI.viewIconImpossible
     in
-    div [ HA.class " column" ]
+    div [ HA.class " column", styles [ maxWidth (px 640), margin auto ] ]
         [ div [ HA.class "window__title" ]
             [ Html.text "Character Info" ]
-        , div [ HA.class "container" ]
-            [ div [ HA.class "row" ]
+        , div [ HA.class "container", styles [ backgroundColor Colors.white ] ]
+            [ div [ HA.class "row", styles [ margin2 (px 15) zero ] ]
                 [ Html.span [] [ Html.text ("Character Name:" ++ UI.nbsp) ]
                 , Html.span [] [ Html.text hero.name ]
                 ]
             , div [ HA.class "row" ]
                 [ div [ HA.class "column block--large" ]
-                    [ div [ HA.class "row" ]
-                        [ UI.viewBarWithScale 50
-                        , UI.viewBarWithScale 50
-                        , UI.viewBarWithScale 50
-                        , UI.viewBarWithScale 50
+                    [ div [ HA.class "row", styles [ justifyContent spaceBetween, padding2 zero (px 10) ] ]
+                        [ div [ HA.class "column", styles [ alignItems center ] ]
+                            [ div [ HA.class "row" ]
+                                [ UI.scaledBar hero.attributes.str
+                                , UI.greenScaledBar hero.attributes.str
+                                ]
+                            , div [ styles [ textAlign center ] ] [ Html.text "Strength" ]
+                            ]
+                        , div [ HA.class "column", styles [ alignItems center ] ]
+                            [ div [ HA.class "row" ]
+                                [ UI.scaledBar hero.attributes.dex
+                                , UI.greenScaledBar hero.attributes.dex
+                                ]
+                            , div [ styles [ textAlign center ] ] [ Html.text "Dexterity" ]
+                            ]
+                        , div [ HA.class "column", styles [ alignItems center ] ]
+                            [ div [ HA.class "row" ]
+                                [ UI.scaledBar hero.attributes.int
+                                , UI.greenScaledBar hero.attributes.int
+                                ]
+                            , div [ styles [ textAlign center ] ] [ Html.text "Intelligence" ]
+                            ]
+                        , div [ HA.class "column", styles [ alignItems center ] ]
+                            [ div [ HA.class "row" ]
+                                [ UI.scaledBar hero.attributes.con
+                                , UI.greenScaledBar hero.attributes.con
+                                ]
+                            , div [ styles [ textAlign center ] ] [ Html.text "Constitution" ]
+                            ]
                         ]
-                    , div [ HA.class "row" ]
-                        [ div [ styles [ flex (int 2) ] ] [ UI.labeledBox "Game Difficulty" [ Html.text "easy" ] ]
-                        , div [ styles [ flex (int 1), alignItems center ] ] [ Html.text "icon" ]
+                    , div [ HA.class "row", styles [ marginTop (px 20) ] ]
+                        [ div [ styles [ flex (int 2) ] ]
+                            [ UI.labeledBox "Game Difficulty"
+                                [ div [ HA.class "row", styles [ width (pct 100) ] ]
+                                    [ div [ styles [ margin2 auto (px 15) ] ] [ Html.text (toString difficulty) ]
+                                    , icon
+                                    ]
+                                ]
+                            ]
+                        , div [ styles [ flex (int 1), alignItems center ] ]
+                            []
                         ]
                     ]
                 , div [ HA.class "column block" ]

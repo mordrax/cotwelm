@@ -216,7 +216,7 @@ viewDifficulty difficulty =
 
         easy =
             div []
-                [ viewIconEasy
+                [ UI.viewIconEasy
                 , spacing
                     [ UI.radioBtn "difficulty" (difficulty == Easy) (Difficulty Easy)
                     , Html.text (UI.nbsp ++ "Easy")
@@ -225,7 +225,7 @@ viewDifficulty difficulty =
 
         intermediate =
             div []
-                [ viewIconIntermediate
+                [ UI.viewIconIntermediate
                 , spacing
                     [ UI.radioBtn "difficulty" (difficulty == Intermediate) (Difficulty Intermediate)
                     , Html.text "Intermediate"
@@ -234,7 +234,7 @@ viewDifficulty difficulty =
 
         hard =
             div []
-                [ viewIconHard
+                [ UI.viewIconHard
                 , spacing
                     [ UI.radioBtn "difficulty" (difficulty == Hard) (Difficulty Hard)
                     , Html.text "Difficult"
@@ -243,7 +243,7 @@ viewDifficulty difficulty =
 
         impossible =
             div []
-                [ viewIconImpossible
+                [ UI.viewIconImpossible
                 , spacing
                     [ UI.radioBtn "difficulty" (difficulty == Impossible) (Difficulty Impossible)
                     , Html.text "Impossible"
@@ -255,94 +255,6 @@ viewDifficulty difficulty =
         , intermediate
         , hard
         , impossible
-        ]
-
-
-
--- difficulty
-
-
-viewIconEasy : Html Msg
-viewIconEasy =
-    i
-        [ styles
-            [ display block
-            , height (px 30)
-            , width (px 30)
-            , margin2 zero auto
-            , borderRadius (px 30)
-            , backgroundColor Colors.lightgreen
-            ]
-        ]
-        []
-
-
-viewIconIntermediate : Html Msg
-viewIconIntermediate =
-    i
-        [ styles
-            [ display block
-            , height (px 30)
-            , width (px 30)
-            , margin2 zero auto
-            , backgroundColor Colors.blue
-            ]
-        ]
-        []
-
-
-viewIconHard : Html Msg
-viewIconHard =
-    div
-        [ styles
-            [ height (px 30)
-            , margin2 zero auto
-            ]
-        ]
-        [ i
-            [ styles
-                [ display block
-                , height (px 27)
-                , width (px 27)
-                , margin2 zero auto
-                , backgroundColor Colors.black
-                , transform (rotate (deg 45))
-                ]
-            ]
-            []
-        ]
-
-
-viewIconImpossible : Html Msg
-viewIconImpossible =
-    div
-        [ styles
-            [ position relative
-            , height (px 30)
-            , width (px 30)
-            , margin2 zero auto
-            ]
-        ]
-        [ span
-            [ styles
-                [ width zero
-                , height zero
-                , borderLeft3 (px 20) solid transparent
-                , borderRight3 (px 20) solid transparent
-                , borderBottom3 (px 35) solid Colors.gold
-                , position absolute
-                ]
-            ]
-            [ span
-                [ styles
-                    [ fontSize (Css.em 2)
-                    , position absolute
-                    , left (px -3)
-                    , top (px 5)
-                    ]
-                ]
-                [ Html.text "!" ]
-            ]
         ]
 
 

@@ -29,12 +29,9 @@ import Task
 import UI
 
 
+styles : List Mixin -> Html.Attribute msg
 styles =
     asPairs >> HA.style
-
-
-addStyle currentStyles style =
-    HA.style (asPairs <| style :: currentStyles)
 
 
 type Msg
@@ -225,7 +222,7 @@ viewAttribute attr model buttons =
                     , justifyContent center
                     ]
                 ]
-                [ UI.viewBarWithScale value
+                [ UI.scaledBar value
                 , viewScroll attr value
                 ]
 
@@ -235,7 +232,7 @@ viewAttribute attr model buttons =
     case attr of
         Available ->
             div []
-                [ UI.viewBar value []
+                [ UI.viewBar Colors.blue value []
                 ]
 
         _ ->
