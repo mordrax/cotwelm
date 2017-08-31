@@ -1,0 +1,27 @@
+.charCreation {
+    max-width: 580px;
+    margin: 0px auto;
+    background-color: rgb(255, 255, 255);
+    padding: 50px;
+}
+.charCreation .name {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px;
+}
+.charCreation .name__label {
+    margin: auto;
+}
+.charCreation .name__input {
+    width: 100%;
+}
+.gender-avatar {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px;
+}
+.avatar {
+    background-image: url(/assets/original/monsters.png);
+    height: 32px;
+    width: 32px;
+}

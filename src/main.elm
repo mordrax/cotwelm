@@ -14,6 +14,7 @@ import Random.Pcg as Random exposing (initialSeed)
 import SplashView
 import Task exposing (perform)
 import Time exposing (inSeconds, now)
+import View.CharCreation
 
 
 type Msg
@@ -197,7 +198,7 @@ view : Model -> Html Msg
 view model =
     case model.currentPage of
         CharCreationPage ->
-            Html.map CharCreationMsg (CharCreation.view model.charCreation)
+            Html.map CharCreationMsg (View.CharCreation.view model.charCreation)
 
         SplashPage ->
             Html.map SplashMsg SplashView.view

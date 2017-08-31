@@ -19,6 +19,7 @@ import Stats exposing (Stats)
 import Types exposing (..)
 import UI
 import Utils.Vector as Vector exposing (Vector)
+import View.Difficulty
 import Window
 
 
@@ -140,16 +141,16 @@ viewCharInfo { hero, difficulty } =
         icon =
             case difficulty of
                 Easy ->
-                    UI.viewIconEasy
+                    View.Difficulty.easy
 
                 Intermediate ->
-                    UI.viewIconIntermediate
+                    View.Difficulty.intermediate
 
                 Hard ->
-                    UI.viewIconHard
+                    View.Difficulty.hard
 
                 Impossible ->
-                    UI.viewIconImpossible
+                    View.Difficulty.impossible
     in
     div [ HA.class " column", styles [ maxWidth (px 640), margin auto ] ]
         [ div [ HA.class "window__title" ]

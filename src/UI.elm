@@ -209,7 +209,7 @@ viewBar : Color -> Int -> List (Html never) -> Html never
 viewBar barColor valueOf100 children =
     let
         inverseOfValue =
-            100 - toFloat valueOf100
+            98 - toFloat valueOf100
 
         viewBlueBar =
             div
@@ -217,7 +217,7 @@ viewBar barColor valueOf100 children =
                     [ position absolute
                     , zIndex (int 0)
                     , width (px 23)
-                    , height (px (toFloat (valueOf100 - 2)))
+                    , height (px (toFloat valueOf100))
                     , top (px inverseOfValue)
                     , backgroundColor barColor
                     ]
@@ -231,6 +231,7 @@ viewBar barColor valueOf100 children =
             , height (px 100)
             , position relative
             , zIndex (int 1)
+            , overflow hidden
             ]
         ]
         (viewBlueBar :: children)
@@ -251,32 +252,3 @@ viewBarScale yOffset =
 
 
 -- difficulty
-
-
-viewIconEasy : Html never
-viewIconEasy =
-    i [ HA.class "difficulty__easy" ]
-        []
-
-
-viewIconIntermediate : Html never
-viewIconIntermediate =
-    i [ HA.class "difficulty__intermediate" ] []
-
-
-viewIconHard : Html never
-viewIconHard =
-    div [ HA.class "difficulty__hard-outer" ]
-        [ i [ HA.class "difficulty__hard-inner" ]
-            []
-        ]
-
-
-viewIconImpossible : Html never
-viewIconImpossible =
-    div [ HA.class "difficulty__impossible-outer" ]
-        [ span [ HA.class "difficulty__impossible-inner" ]
-            [ span [ HA.class "difficulty__impossible-inner-inner" ]
-                [ Html.text "!" ]
-            ]
-        ]

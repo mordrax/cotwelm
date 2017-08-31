@@ -1,0 +1,51 @@
+.difficulty__easy {
+    display: block;
+    height: 30px;
+    width: 30px;
+    margin: 0 auto;
+    border-radius: 30px;
+    background: chartreuse;
+}
+
+.difficulty__intermediate {
+    display: block;
+    height: 30px;
+    width: 30px;
+    margin: 0 auto;
+    background: blue;
+}
+
+.difficulty__hard-outer {
+    height: 30px;
+    margin: 0 auto;
+}
+
+.difficulty__hard-inner {
+    display: block;
+    height: 27px;
+    width: 27px;
+    margin: 0 auto;
+    background-color: black;
+    transform: rotate(45deg);
+}
+
+.difficulty__impossible-outer {
+    position: relative;
+    height: 30px;
+    width: 30px;
+    margin: 0px auto;
+}
+.difficulty__impossible-inner {
+    width: 0px;
+    height: 0px;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 35px solid rgb(255, 215, 0);
+    position: absolute;
+}
+.difficulty__impossible-inner-inner {
+    font-size: 2em;
+    position: absolute;
+    left: -3px;
+    top: 5px;
+}
