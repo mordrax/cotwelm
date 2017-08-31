@@ -1,6 +1,10 @@
 .game-bottom-hud {
     height: 120px;
     display: flex;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    max-width: 768px;
 }
 
 /* Messages */

@@ -49,6 +49,7 @@ button:focus {
     max-width: 768px;
     margin: 0 auto;
     background-color: snow;
+    height: 100%;
 }
 
 .expand-to-fill {

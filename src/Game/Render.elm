@@ -107,9 +107,7 @@ game model =
                 |> viewGame
 
         Game.Types.RipScreen ->
-            --            viewRip model
-            viewRip
-                |> viewGame
+            viewGame (viewRip model.lastMonsterToAttackHero (Message.last model.messages) model.turn)
 
         Game.Types.CharacterInfoScreen ->
             viewCharInfo model
@@ -424,108 +422,62 @@ viewBuilding building =
     div [] [ h1 [] [ Html.text "TODO: Get the internal view of the building" ] ]
 
 
-
---viewRip : Game -> Html Msg
---viewRip model =
-
-
-viewRip : Html msg
-viewRip =
+viewRip : Maybe Monster -> List String -> Int -> Html msg
+viewRip lastMonster lastMsgs turn =
     let
         name =
             "Conan the destroyer"
 
+        monsterName =
+            Maybe.map .name >> Maybe.withDefault "Foolishness"
+
         deathMessage =
-            { killedBy = "Killed by: " ++ "Giant Ego"
-            , lastMessage =
-                "Conan looked down his nose on the pathetic ant and failed to notice the giant queen behind him."
-            , turns = "He" ++ " survived " ++ toString 1234 ++ " turns."
+            { killedBy = "Killed by: " ++ monsterName lastMonster
+            , lastMessages = lastMsgs
+            , turns = "He" ++ " survived " ++ toString turn ++ " turns."
             }
     in
-    viewTombstone
-        [ viewInscription
-            [ inscribeName name
-            , inscribeDeathMessage deathMessage
-            ]
-        ]
-
-
-viewTombstone : List (Html msg) -> Html msg
-viewTombstone =
-    div
-        [ styles
-            [ backgroundImage (url "/assets/original/RIP_blank.png")
-            , backgroundSize contain
-            , backgroundRepeat noRepeat
-            , width (pct 100)
-            , height (pct 100)
-            , displayFlex
-            , justifyContent center
-            ]
-        ]
-
-
-viewInscription : List (Html msg) -> Html msg
-viewInscription =
-    div
-        [ styles
-            [ marginLeft (vw -10)
-            , marginTop (vw 24)
-            , width (vw 40)
+    div [ HA.class "rip" ]
+        [ div [ HA.class "rip__tombstone" ]
+            [ div [ HA.class "tombstone__inscription" ]
+                [ inscribeName name
+                , inscribeDeathMessage deathMessage
+                ]
             ]
         ]
 
 
 inscribeName : String -> Html a
 inscribeName name =
-    span
-        [ styles
-            [ fontSize (vw 4) ]
-        ]
-        [ Html.text name ]
+    span [ HA.class "inscription__name" ] [ Html.text name ]
 
 
 type alias DeathMessage =
     { killedBy : String
-    , lastMessage : String
+    , lastMessages : List String
     , turns : String
     }
 
 
 inscribeDeathMessage : DeathMessage -> Html msg
-inscribeDeathMessage { killedBy, lastMessage, turns } =
+inscribeDeathMessage { killedBy, lastMessages, turns } =
     let
         inscribe str =
-            span
-                [ styles
-                    [ fontSize (vw 2)
-                    , display block
-                    , textAlign center
-                    ]
-                ]
-                [ Html.text str ]
+            span [ HA.class "inscription__text" ] [ Html.text str ]
     in
-    div
-        [ styles
-            [ marginTop (vw 8)
-            , displayFlex
-            , flexDirection column
-            , justifyContent spaceBetween
-            , height (vw 28)
-            ]
-        ]
+    div [ HA.class "inscription__message" ]
         [ inscribe killedBy
-        , inscribeParagraph lastMessage
+        , inscribeParagraph lastMessages
         , inscribe turns
         ]
 
 
-inscribeParagraph : String -> Html msg
+inscribeParagraph : List String -> Html msg
 inscribeParagraph paragraph =
-    span
-        []
-        [ Html.text paragraph
-        ]
+    paragraph
+        |> List.map Html.text
+        |> List.intersperse (Html.br [] [])
+        |> p []
 
 
 simpleBtn : String -> Html Msg

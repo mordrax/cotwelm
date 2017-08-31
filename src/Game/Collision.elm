@@ -269,4 +269,5 @@ attackHero monster ({ hero, seed, messages } as game) =
         | messages = Message.addNeutral msg messages
         , hero = heroAfterHit
         , seed = seed_
+        , lastMonsterToAttackHero = Just monster
     }

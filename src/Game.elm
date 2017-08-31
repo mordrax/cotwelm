@@ -83,6 +83,7 @@ init seed hero difficulty =
       , turn = Game.Model.initTurn
       , previousState = Game.Model.Empty
       , input = Input.init
+      , lastMonsterToAttackHero = Nothing
       }
     , cmd
     )
@@ -213,6 +214,7 @@ tick ({ maps, shops, hero, seed } as game) =
         , hero = Hero.tick hero
         , seed = seed_
         , messages = Message.tick game.messages
+        , turn = game.turn + 1
     }
 
 

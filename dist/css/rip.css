@@ -1,0 +1,43 @@
+.rip {
+    height: 100vh;
+}
+.rip__tombstone {
+    background-image: url(/assets/original/RIP_blank.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 100%;
+}
+/* RIP_blank is 428 x 336, w/h = 1.27 */
+.tombstone__inscription {
+    max-width: 768px;
+    width: 100%;
+    position: relative;
+    height: 100%
+}
+.inscription__name {
+    text-align: center;
+    font-size: 170%;
+    position: absolute;
+    width: 100%;
+    left: -7%;
+    margin-top: 23%;
+}
+.inscription__message {
+    margin-top: 35%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    left: -7%;
+    padding: 0 29%;
+    /* assuming 768px max-width and RIP_blank ratio of 1.27 */
+    height: 30vw;
+    max-height: 223px;
+}
+.inscription__text {
+    font-size: 1.2em;
+    display: block;
+    text-align: center;
+}

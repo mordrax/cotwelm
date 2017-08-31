@@ -248,7 +248,3 @@ viewBarScale yOffset =
             ]
         ]
         []
-
-
-
--- difficulty

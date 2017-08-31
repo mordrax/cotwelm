@@ -7,6 +7,7 @@ import Hero exposing (Hero)
 import Input exposing (Input)
 import Inventory exposing (Inventory)
 import Message exposing (Messages)
+import Monster exposing (Monster)
 import Random.Pcg as Random
 import Shops exposing (Shops)
 import Types exposing (..)
@@ -44,6 +45,7 @@ type alias Game =
     , turn : Turn
     , previousState : GameState
     , input : Input
+    , lastMonsterToAttackHero : Maybe Monster
     }
 
 
@@ -130,12 +132,12 @@ heroMoved - Whether the hero's position has changed.
 
 -}
 type alias Turn =
-    {}
+    Int
 
 
 initTurn : Turn
 initTurn =
-    {}
+    0
 
 
 hasHeroMoved : Game -> Bool

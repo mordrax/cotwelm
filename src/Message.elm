@@ -51,6 +51,11 @@ combatMessage combatOutcome heroName monsterName =
             Random.constant (text "boo!")
 
 
+last : Messages -> List String
+last =
+    .messages >> List.head >> Maybe.withDefault [] >> List.map pp
+
+
 bad : String -> Message
 bad a =
     Message Bad a
