@@ -1,10 +1,8 @@
 module Dungeon.Editor exposing (..)
 
 import Dict exposing (Dict)
-import Dungeon.Clean
-import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
+import Dungeon.AdvancedDungeonGenerator as DungeonGenerator exposing (Dungeon)
 import Dungeon.Rooms.Config as Config exposing (..)
-import Dungeon.Types
 import Game.Level as Level
 import Html exposing (..)
 import Html.Attributes as HA
@@ -14,14 +12,14 @@ import Random.Pcg as Random exposing (Generator, constant)
 
 type alias Model =
     { map : Level.Map
-    , config : Config.Model
-    , dungeonSteps : List Dungeon.Types.Model
+    , config : Config.Config
+    , dungeonSteps : List Dungeon
     }
 
 
 type Msg
     = GenerateMap Int
-    | Dungeon Dungeon.Types.Model
+    | Dungeon Dungeon
     | ConfigMsg Config.Msg
     | ResetMap
     | Clean
@@ -37,7 +35,7 @@ init =
     }
 
 
-generateCandidate : Model -> Generator Dungeon.Types.Model
+generateCandidate : Model -> Generator Dungeon
 generateCandidate model =
     let
         newCandidate =
@@ -46,7 +44,7 @@ generateCandidate model =
         fitness dungeonModel =
             List.length dungeonModel.rooms > model.config.minRooms
     in
-    Random.map Dungeon.Clean.clean newCandidate
+    Random.map DungeonGenerator.clean newCandidate
         |> Random.andThen
             (\dungeonModel ->
                 if fitness dungeonModel then
@@ -67,7 +65,7 @@ update msg model =
                 Just dungeonModel ->
                     let
                         cleanedModel =
-                            Dungeon.Clean.clean dungeonModel
+                            DungeonGenerator.clean dungeonModel
                     in
                     ( { model
                         | dungeonSteps = cleanedModel :: model.dungeonSteps
@@ -104,10 +102,10 @@ update msg model =
             ( model, Cmd.none )
 
 
-updateMap : Dungeon.Types.Model -> Level.Map
-updateMap dungeonModel =
-    dungeonModel
-        |> Dungeon.Types.toTiles
+updateMap : Dungeon -> Level.Map
+updateMap dungeon =
+    dungeon
+        |> DungeonGenerator.toTiles
         |> Level.fromTiles
 
 

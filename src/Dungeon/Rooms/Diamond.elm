@@ -36,7 +36,7 @@ import List exposing (map2, reverse)
 
 template : RoomTemplate
 template =
-    { makeWalls = walls
+    { makeWalls = \_ -> []
     , makeCorners = corners
     , makeFloors = floors
     }
@@ -53,22 +53,25 @@ type alias RoomSize =
     Int
 
 
-{-| Diamons have 4 corners which are also the only walls that can support entrancess.
+{-| Diamonds have 4 corners which are also the only walls that can support entrancess.
 -}
-walls : Dimension -> List Walls
-walls dimension =
-    let
-        model =
-            info dimension
-    in
-    [ [ ( 0, model.mid ) ]
-    , [ ( model.max, model.mid ) ]
-    , [ ( model.mid, 0 ) ]
-    , [ ( model.mid, model.max ) ]
-    ]
 
 
-floors : Dimension -> Floors
+
+--walls : Dimension -> List LocalVector
+--walls dimension =
+--    let
+--        model =
+--            info dimension
+--    in
+--    [ [ ( 0, model.mid ) ]
+--    , [ ( model.max, model.mid ) ]
+--    , [ ( model.mid, 0 ) ]
+--    , [ ( model.mid, model.max ) ]
+--    ]
+
+
+floors : Dimension -> List LocalVector
 floors dimension =
     let
         model =
@@ -105,13 +108,14 @@ floors dimension =
           List.concat <| List.map floorsRight midToMaxX
         , List.map ((,) model.mid) <| List.range 1 (model.max - 1)
         ]
+        |> List.map vectorToLocal
 
 
 {-| For a diagonal room, the corners are the diagonal walls. They cannot have entrances.
 To calculate the diagonal positions, picture a diamond on a cartesian plane
 with the diamond being in the +x, -y quadrant (screen coords)
 -}
-corners : Dimension -> Walls
+corners : Dimension -> List LocalVector
 corners dimension =
     let
         model =
@@ -144,6 +148,7 @@ corners dimension =
         , List.map topToRight midToMaxX
         , List.map bottomToRight midToMaxX
         ]
+        |> List.map vectorToLocal
 
 
 info : Dimension -> Model

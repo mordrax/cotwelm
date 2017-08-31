@@ -113,7 +113,7 @@ The corridor will go in a random direction and be of random length.
     ########
 
 -}
-generate : Vector -> Direction -> Config.Model -> Generator Corridor
+generate : Vector -> Direction -> Config.Config -> Generator Corridor
 generate startPosition entranceFacing config =
     let
         facingEntrance =
@@ -138,7 +138,7 @@ generate startPosition entranceFacing config =
 {-| Generate another point in the corridor by digging a random length from
 the last point's direction and picking a new random direction.
 -}
-extend : Corridor -> Config.Model -> Generator Corridor
+extend : Corridor -> Config.Config -> Generator Corridor
 extend corridor config =
     let
         (( _, lastFacing ) as lastPoint) =

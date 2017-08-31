@@ -8,6 +8,7 @@ dungeon generator to create random dungeon levels.
 
 -}
 
+import Dice
 import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Rooms.Type exposing (..)
 import Html exposing (..)
@@ -16,7 +17,7 @@ import UI exposing (..)
 import Utils.Vector as Vector exposing (Vector)
 
 
-type alias Model =
+type alias Config =
     { -- Width and height dimensions of the dungeon level
       dungeonSize : Int
     , roomsConfig : RoomsConfig
@@ -61,7 +62,7 @@ type Msg
     | MapScale Float
 
 
-init : Model
+init : Config
 init =
     { dungeonSize = 50
     , corridor =
@@ -83,7 +84,25 @@ init =
     }
 
 
-update : Msg -> Model -> Model
+maxRoomSize : Config -> MinMax
+maxRoomSize { roomsConfig } =
+    let
+        keepLargest ( x, y ) ( a, b ) =
+            ( max x a, max y b )
+    in
+    [ roomsConfig.rectangular
+    , roomsConfig.cross
+    , roomsConfig.diamond
+    , roomsConfig.potion
+    , roomsConfig.circular
+    , roomsConfig.diagonalSquares
+    , roomsConfig.deadEnd
+    ]
+        |> List.map .sizeRange
+        |> List.foldl keepLargest ( 0, 0 )
+
+
+update : Msg -> Config -> Config
 update msg model =
     let
         _ =
@@ -136,36 +155,44 @@ updateRoomsConfig roomType updater roomsConfig =
             { roomsConfig | deadEnd = updater roomsConfig.deadEnd }
 
 
-roomSizeGenerator : RoomType -> Model -> Generator Int
-roomSizeGenerator roomType ({ roomsConfig } as model) =
+roomSizeGenerator : Config -> RoomType -> Generator ( Int, Int )
+roomSizeGenerator { roomsConfig } roomType =
     let
-        tupleToGen =
-            \( min, max ) -> Random.int min max
+        sizeGen =
+            Random.int minRoomSize maxRoomSize
+
+        ( minRoomSize, maxRoomSize ) =
+            sizeRange roomType roomsConfig
     in
+    Random.map2 (\x y -> ( x, y )) sizeGen sizeGen
+
+
+sizeRange : RoomType -> RoomsConfig -> MinMax
+sizeRange roomType roomsConfig =
     case roomType of
         Rectangular ->
-            tupleToGen model.roomsConfig.rectangular.sizeRange
+            roomsConfig.rectangular.sizeRange
 
         Cross ->
-            tupleToGen model.roomsConfig.cross.sizeRange
+            roomsConfig.cross.sizeRange
 
         Diamond ->
-            tupleToGen model.roomsConfig.diamond.sizeRange
+            roomsConfig.diamond.sizeRange
 
         Potion ->
-            tupleToGen model.roomsConfig.potion.sizeRange
+            roomsConfig.potion.sizeRange
 
         Circular ->
-            tupleToGen model.roomsConfig.circular.sizeRange
+            roomsConfig.circular.sizeRange
 
         DiagonalSquares ->
-            tupleToGen model.roomsConfig.diagonalSquares.sizeRange
+            roomsConfig.diagonalSquares.sizeRange
 
         DeadEnd ->
-            tupleToGen model.roomsConfig.deadEnd.sizeRange
+            roomsConfig.deadEnd.sizeRange
 
 
-roomTypeGenerator : Model -> Generator RoomType
+roomTypeGenerator : Config -> Generator RoomType
 roomTypeGenerator { roomsConfig } =
     Random.frequency
         [ ( toFloat roomsConfig.rectangular.frequency, constant Rectangular )
@@ -178,11 +205,11 @@ roomTypeGenerator { roomsConfig } =
         ]
 
 
-wallSampler : Walls -> Generator Wall
+wallSampler : List WorldVector -> Generator WorldVector
 wallSampler walls =
     case walls of
         [] ->
-            constant ( 0, 0 )
+            constant (World ( 0, 0 ))
 
         wall :: restOfWalls ->
             Random.sample walls
@@ -191,8 +218,8 @@ wallSampler walls =
 
 addEntrances :
     Int
-    -> ( List Walls, List Walls, List Entrance )
-    -> Generator ( List Walls, List Entrance )
+    -> ( List (List WorldVector), List (List WorldVector), List Entrance )
+    -> Generator ( List (List WorldVector), List Entrance )
 addEntrances nEntrances ( walls, fullWalls, entrances ) =
     let
         createGenerator =
@@ -227,13 +254,13 @@ addEntrances nEntrances ( walls, fullWalls, entrances ) =
                 |> Random.andThen recurse
 
 
-wallToEntrance : Generator Wall -> Generator Entrance
+wallToEntrance : Generator WorldVector -> Generator Entrance
 wallToEntrance wallGen =
     Random.map (Entrance.init Entrance.Door) wallGen
 
 
-withinDungeonBounds : Vector -> Model -> Bool
-withinDungeonBounds ( x, y ) { dungeonSize } =
+withinDungeonBounds : WorldVector -> Config -> Bool
+withinDungeonBounds (World ( x, y )) { dungeonSize } =
     (x >= 0)
         && (y >= 0)
         && (x <= dungeonSize)
@@ -246,7 +273,7 @@ withinDungeonBounds ( x, y ) { dungeonSize } =
 -----------
 
 
-dungeonSizeView : Model -> Html Msg
+dungeonSizeView : Config -> Html Msg
 dungeonSizeView model =
     div []
         [ UI.labeledNumber "Dungeon size" model.dungeonSize DungeonSize
@@ -254,7 +281,7 @@ dungeonSizeView model =
         ]
 
 
-roomsConfigView : Model -> Html Msg
+roomsConfigView : Config -> Html Msg
 roomsConfigView model =
     let
         rooms =

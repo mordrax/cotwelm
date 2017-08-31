@@ -33,6 +33,8 @@ import Container exposing (Container)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
+import Dungeon.Rooms.Type exposing (WorldVector(World))
+import EveryDict
 import Game.Loot as Loot
 import Html exposing (..)
 import Item.Data exposing (Item)
@@ -180,7 +182,7 @@ size { map } =
 
 roomAtPosition : Vector -> List Room -> Maybe Room
 roomAtPosition position rooms =
-    ListX.find (\room -> Room.isInRectangularRoom room position) rooms
+    ListX.find (Room.hit (World position)) rooms
 
 
 buildingAtPosition : Vector -> List Building -> Maybe Building
@@ -344,7 +346,9 @@ draw viewport map scale onClick =
                 |> List.map Tuple.second
 
         toHtml tile =
-            Tile.view tile scale (cardinalTileNeighbours map tile.position) onClick
+            tile
+                |> Tile.setVisibility Types.LineOfSight
+                |> Tile.view scale (cardinalTileNeighbours map tile.position) onClick
 
         withinViewport tile =
             tile.position
@@ -469,10 +473,9 @@ exploreRooms position ({ rooms, map } as level) =
     case roomAtPosition position rooms of
         Just room ->
             if room.lightSource /= Dark then
-                room
-                    |> Room.toTiles
-                    |> List.map .position
-                    |> (++) (Room.boundary room)
+                room.tiles
+                    |> EveryDict.keys
+                    |> List.map Dungeon.Rooms.Type.worldToVector
                     |> flip markTilesVisible level
             else
                 level

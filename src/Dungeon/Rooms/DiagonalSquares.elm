@@ -13,16 +13,16 @@ template =
     }
 
 
-corners : Dimension -> Walls
+corners : Dimension -> List LocalVector
 corners dimension =
     []
 
 
-floors : Dimension -> Floors
+floors : Dimension -> List LocalVector
 floors dimension =
     []
 
 
-walls : Dimension -> List Walls
+walls : Dimension -> List LocalVector
 walls dimension =
     []

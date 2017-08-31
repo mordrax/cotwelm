@@ -24,7 +24,7 @@ Mines lvl 1 - 8
 import ASCIIMaps exposing (..)
 import Array.Hamt as Array exposing (Array)
 import Building exposing (Building)
-import Dungeon.DungeonGenerator as DungeonGenerator
+import Dungeon.AdvancedDungeonGenerator as DungeonGenerator
 import Dungeon.Rooms.Config as Config
 import Game.Level as Level exposing (Level)
 import Item.Data exposing (Item)

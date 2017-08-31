@@ -23,65 +23,66 @@ type alias WallSize =
 
 template : RoomTemplate
 template =
-    { makeWalls = walls
-    , makeCorners = corners
+    { makeWalls = \_ -> []
+    , makeCorners = \_ -> []
     , makeFloors = floors
     }
 
 
-walls : Dimension -> List Walls
-walls ( roomSize, _ ) =
-    let
-        wallSize =
-            toWallSize roomSize
 
-        between =
-            betweenDots wallSize
-
-        left =
-            between 0 1
-
-        middle =
-            between 1 2
-
-        right =
-            between 2 3
-
-        axis =
-            dot wallSize
-
-        topAxis =
-            axis 0
-
-        bottomAxis =
-            axis 3
-
-        horizontalTop =
-            lift2 (,) middle [ topAxis ]
-
-        horizontalBottom =
-            lift2 (,) middle [ bottomAxis ]
-
-        verticalTop =
-            lift2 (,) [ topAxis ] middle
-
-        verticalBottom =
-            lift2 (,) [ bottomAxis ] middle
-
-        horizontalMiddles =
-            lift2 (,) left [ axis 1, axis 2 ]
-                ++ lift2 (,) right [ axis 1, axis 2 ]
-
-        verticalMiddles =
-            lift2 (,) [ axis 1, axis 2 ] left
-                ++ lift2 (,) [ axis 1, axis 2 ] right
-    in
-    [ horizontalTop ]
-        ++ [ horizontalBottom ]
-        ++ [ verticalTop ]
-        ++ [ verticalBottom ]
-        ++ [ horizontalMiddles ]
-        ++ [ verticalMiddles ]
+--walls : Dimension -> List LocalVector
+--walls ( roomSize, _ ) =
+--    let
+--        wallSize =
+--            toWallSize roomSize
+--
+--        between =
+--            betweenDots wallSize
+--
+--        left =
+--            between 0 1
+--
+--        middle =
+--            between 1 2
+--
+--        right =
+--            between 2 3
+--
+--        axis =
+--            dot wallSize
+--
+--        topAxis =
+--            axis 0
+--
+--        bottomAxis =
+--            axis 3
+--
+--        horizontalTop =
+--            lift2 (,) middle [ topAxis ]
+--
+--        horizontalBottom =
+--            lift2 (,) middle [ bottomAxis ]
+--
+--        verticalTop =
+--            lift2 (,) [ topAxis ] middle
+--
+--        verticalBottom =
+--            lift2 (,) [ bottomAxis ] middle
+--
+--        horizontalMiddles =
+--            lift2 (,) left [ axis 1, axis 2 ]
+--                ++ lift2 (,) right [ axis 1, axis 2 ]
+--
+--        verticalMiddles =
+--            lift2 (,) [ axis 1, axis 2 ] left
+--                ++ lift2 (,) [ axis 1, axis 2 ] right
+--    in
+--    [ horizontalTop ]
+--        ++ [ horizontalBottom ]
+--        ++ [ verticalTop ]
+--        ++ [ verticalBottom ]
+--        ++ [ horizontalMiddles ]
+--        ++ [ verticalMiddles ]
 
 
 toWallSize : Dungeon.Rooms.Type.RoomSize -> WallSize
@@ -103,28 +104,30 @@ dot wallSize axis =
     (wallSize + 1) * axis
 
 
-corners : Dimension -> Walls
-corners ( roomSize, _ ) =
-    let
-        wallSize =
-            toWallSize roomSize
 
-        axis =
-            dot wallSize
-
-        allDots =
-            dots wallSize
-
-        grid =
-            lift2 (,) allDots allDots
-
-        corners =
-            lift2 (,) [ 0, axis 3 ] [ 0, axis 3 ]
-
-        isNotCorner =
-            not << flip List.member corners
-    in
-    List.filter isNotCorner grid
+--
+--corners : Dimension -> List LocalVector
+--corners ( roomSize, _ ) =
+--    let
+--        wallSize =
+--            toWallSize roomSize
+--
+--        axis =
+--            dot wallSize
+--
+--        allDots =
+--            dots wallSize
+--
+--        grid =
+--            lift2 (,) allDots allDots
+--
+--        corners =
+--            lift2 (,) [ 0, axis 3 ] [ 0, axis 3 ]
+--
+--        isNotCorner =
+--            not << flip List.member corners
+--    in
+--    List.filter isNotCorner grid
 
 
 {-| F denotes the floor. To get all floor, add up
@@ -141,7 +144,7 @@ and all Ys in the same way
     "..###.."
 
 -}
-floors : Dimension -> Floors
+floors : Dimension -> List LocalVector
 floors ( roomSize, _ ) =
     let
         wallSize =
@@ -159,7 +162,10 @@ floors ( roomSize, _ ) =
         horizontal =
             lift2 (,) (List.range (axis 0 + 1) (axis 3 - 1)) floorMiddles
     in
-    Set.toList <| Set.fromList (vertical ++ horizontal)
+    (vertical ++ horizontal)
+        |> Set.fromList
+        |> Set.toList
+        |> List.map vectorToLocal
 
 
 {-| The room below is of wallSize 1, to get the coordinates between the corners of interest
