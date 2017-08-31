@@ -70,9 +70,9 @@ generateRooms tries config dungeonGen =
                 |> generateRooms (n - 1) config
 
 
-steps : Int -> Dungeon -> Generator Dungeon
-steps _ dungeon =
-    generateRooms 20 dungeon.config (Random.constant (init dungeon.config))
+steps : Int -> Config -> Dungeon -> Generator Dungeon
+steps _ config dungeon =
+    generateRooms 20 config (Random.constant dungeon)
 
 
 clean : Dungeon -> Dungeon

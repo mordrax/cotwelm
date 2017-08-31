@@ -39,7 +39,7 @@ generateCandidate : Model -> Generator Dungeon
 generateCandidate model =
     let
         newCandidate =
-            DungeonGenerator.steps 200 (DungeonGenerator.init model.config)
+            DungeonGenerator.steps 200 model.config (DungeonGenerator.init model.config)
 
         fitness dungeonModel =
             List.length dungeonModel.rooms > model.config.minRooms
@@ -85,10 +85,13 @@ update msg model =
                         |> List.head
                         |> Maybe.withDefault (DungeonGenerator.init model.config)
             in
-            ( model, Random.generate Dungeon (DungeonGenerator.steps nSteps dungeonModel) )
+            ( model, Random.generate Dungeon (DungeonGenerator.steps nSteps model.config dungeonModel) )
 
         Dungeon dungeonModel ->
-            ( { model | dungeonSteps = dungeonModel :: [], map = updateMap dungeonModel }
+            ( { model
+                | dungeonSteps = dungeonModel :: []
+                , map = updateMap dungeonModel
+              }
             , Cmd.none
             )
 
@@ -118,21 +121,31 @@ view model =
         screenMap =
             Level.toScreenCoords model.map model.config.dungeonSize
 
+        viewportSize =
+            --            ( 200, 200 )
+            ( model.config.dungeonSize, model.config.dungeonSize )
+
         clickTile position =
             Noop
     in
-    div []
-        [ div []
-            [ --roomSizeView model,
-              button [ HA.class "ui button", HE.onClick <| GenerateMap 1 ] [ text "Step" ]
+    div [ HA.style [ ( "width", "100%" ), ( "height", "100%" ) ] ]
+        [ div [ HA.style [ ( "position", "absolute" ) ] ]
+            [ button [ HA.class "ui button", HE.onClick <| GenerateMap 1 ] [ text "Step" ]
             , button [ HA.class "ui button", HE.onClick <| GenerateMap 50 ] [ text "Step x50" ]
             , button [ HA.class "ui button", HE.onClick <| Clean ] [ text "Clean" ]
             , button [ HA.class "ui button", HE.onClick <| ResetMap ] [ text "Destroy!" ]
             , button [ HA.class "ui button", HE.onClick <| NewCandidate ] [ text "NewCandidate" ]
             , mapSizeView model
             ]
-        , div [ HA.style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-            (Level.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
+        , div [ HA.style [ ( "left", "300px" ), ( "position", "absolute" ), ( "top", "0px" ), ( "width", "100%" ), ( "height", "100%" ) ] ]
+            (Level.draw
+                { start = ( 0, 0 )
+                , size = viewportSize
+                }
+                screenMap
+                model.config.mapScale
+                clickTile
+            )
         ]
 
 

@@ -64,7 +64,7 @@ type Msg
 
 init : Config
 init =
-    { dungeonSize = 50
+    { dungeonSize = 100
     , corridor =
         { minLength = 10
         , maxLength = 20
