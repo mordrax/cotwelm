@@ -122,24 +122,29 @@ generate config =
             )
 
 
+
+--  +---+
+--+-------+
+--| |   | |
+--+-------+
+--  |   |
+--  +---+
+-- Fig 1, Two rooms who's corners are not inside the other room but still overlaps
+
+
 {-| Checks if two rooms overlap in any way. A room overlaps if any of either room's
 corners is inside the other room.
+
+This failed to catch the configuration in Fig.1 above, so we also check if either
+of the centres is within the other.
+
 -}
 overlap : Room -> Room -> Bool
-overlap r1 r2 =
-    let
-        r1Box =
-            vectorBox r1
-
-        r2Box =
-            vectorBox r2
-
-        intersect box cornerInWorldCoords =
-            worldToVector cornerInWorldCoords
-                |> flip Vector.boxIntersectVector box
-    in
-    List.any (intersect r1Box) r2.corners
-        || List.any (intersect r2Box) r1.corners
+overlap a b =
+    List.any (\cornerOfB -> hit cornerOfB a) b.corners
+        || List.any (\cornerOfA -> hit cornerOfA b) a.corners
+        || hit (centre a) b
+        || hit (centre b) a
 
 
 {-| True if the world position is within the room
@@ -212,10 +217,27 @@ templates roomType =
 -------------
 
 
-vectorBox : Room -> ( Vector, Vector )
+type alias TopLeft =
+    Vector
+
+
+type alias BottomRight =
+    Vector
+
+
+vectorBox : Room -> ( TopLeft, BottomRight )
 vectorBox { worldPos, dimension } =
     worldToVector worldPos
         |> (\topLeft -> ( topLeft, Vector.add topLeft dimension ))
+
+
+centre : Room -> WorldVector
+centre { worldPos, dimension } =
+    let
+        halfDimension =
+            Vector.scale 0.5 dimension
+    in
+    worldAddScalar worldPos halfDimension
 
 
 {-| Given a list of vectors, will get all unique vectors adjacent to them.

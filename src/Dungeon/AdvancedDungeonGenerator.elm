@@ -95,13 +95,13 @@ toTiles dungeon =
 addRoom : Room -> Dungeon -> Dungeon
 addRoom room dungeon =
     let
-        withinBounds =
+        withinDungeonBounds =
             List.all (\x -> Config.withinDungeonBounds x dungeon.config) room.corners
 
         overlapping =
             List.any (Room.overlap room) dungeon.rooms
     in
-    if withinBounds && not overlapping then
+    if withinDungeonBounds && not overlapping then
         { dungeon | rooms = room :: dungeon.rooms }
     else
         dungeon

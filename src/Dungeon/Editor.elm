@@ -122,8 +122,7 @@ view model =
             Level.toScreenCoords model.map model.config.dungeonSize
 
         viewportSize =
-            --            ( 200, 200 )
-            ( model.config.dungeonSize, model.config.dungeonSize )
+            ( 200, 200 )
 
         clickTile position =
             Noop
