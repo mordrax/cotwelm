@@ -19,7 +19,7 @@ corners ( w, h ) =
             ( w - 1, h - 1 )
     in
     [ ( 0, 0 ), ( xMax, 0 ), ( 0, yMax ), ( xMax, yMax ) ]
-        |> List.map vectorToLocal
+        |> List.map Local
 
 
 floors : Dimension -> List LocalVector
@@ -29,7 +29,7 @@ floors ( w, h ) =
             ( w - 1, h - 1 )
     in
     List.Extra.lift2 (,) (List.range 1 (xMax - 1)) (List.range 1 (yMax - 1))
-        |> List.map vectorToLocal
+        |> List.map Local
 
 
 

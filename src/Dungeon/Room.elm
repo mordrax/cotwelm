@@ -1,6 +1,8 @@
 module Dungeon.Room
     exposing
         ( Room
+        , faceOff
+        , facesPoint
         , generate
         , hit
         , overlap
@@ -15,6 +17,7 @@ all random parameters such as the type/size of room generated.
 -}
 
 import Dice
+import Dict exposing (Dict)
 import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Rooms.Circular as Circular
 import Dungeon.Rooms.Config as Config
@@ -34,40 +37,56 @@ import Tile.Types
 import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Utils.Misc as Misc
-import Utils.Vector as Vector exposing (Vector)
+import Utils.Vector as Vector exposing (DirectedVector, Vector)
 
 
 type alias Room =
     { entrances : List Entrance
-    , floors : List WorldVector
+    , floors : List Vector
     , roomType : RoomType
     , dimension : Dimension
-    , worldPos : WorldVector
+    , worldPos : Vector
     , lightSource : LightSource
-    , walls : List WorldVector
-    , corners : List WorldVector
-    , tiles : EveryDict WorldVector Tile
+    , walls : List Vector
+    , candidateEntrancesByDirection : EveryDict Direction (List DirectedVector)
+    , corners : List Vector
+    , tiles : Dict Vector Tile
     }
 
 
-new : RoomType -> Dimension -> LightSource -> WorldVector -> Room
-new roomType (( width, height ) as dimension) lightSource roomPosition =
+new : RoomType -> Dimension -> LightSource -> Vector -> Room
+new roomType (( width, height ) as dimension) lightSource (( minX, minY ) as roomPosition) =
     let
         floors =
             calculateFloors roomType dimension
                 |> toWorldVectors roomPosition
 
         walls =
-            floors
-                |> List.map Dungeon.Rooms.Type.worldToVector
-                |> adjacent
-                |> List.map Dungeon.Rooms.Type.vectorToWorld
+            adjacent floors
+
+        -- walls that are not diagonal to floors are candidates for entrances
+        entranceWalls =
+            cardinallyAdjacent floors
+
+        maxX =
+            minX + width - 1
+
+        maxY =
+            minY + height - 1
+
+        candidateEntrancesByDirection =
+            [ ( N, List.filter (\( x, y ) -> y == maxY) entranceWalls |> List.map (Vector.toDirected N) )
+            , ( S, List.filter (\( x, y ) -> y == minY) entranceWalls |> List.map (Vector.toDirected S) )
+            , ( E, List.filter (\( x, y ) -> x == maxX) entranceWalls |> List.map (Vector.toDirected E) )
+            , ( W, List.filter (\( x, y ) -> x == minX) entranceWalls |> List.map (Vector.toDirected W) )
+            ]
+                |> EveryDict.fromList
 
         corners =
             [ roomPosition
-            , worldAddScalar roomPosition ( width, 0 )
-            , worldAddScalar roomPosition ( 0, height )
-            , worldAddScalar roomPosition dimension
+            , Vector.add roomPosition ( width, 0 )
+            , Vector.add roomPosition ( 0, height )
+            , Vector.add roomPosition dimension
             ]
 
         floorType =
@@ -78,15 +97,15 @@ new roomType (( width, height ) as dimension) lightSource roomPosition =
                 _ ->
                     Tile.Types.LitDgn
 
-        addFloorTile : WorldVector -> EveryDict WorldVector Tile -> EveryDict WorldVector Tile
-        addFloorTile ((World tileVector) as tileWorldVector) dict =
-            EveryDict.insert tileWorldVector (Tile.toTile tileVector floorType) dict
+        addFloorTile : Vector -> Dict Vector Tile -> Dict Vector Tile
+        addFloorTile (tileVector as tileWorldVector) dict =
+            Dict.insert tileWorldVector (Tile.toTile tileVector floorType) dict
 
-        addWallTile ((World tileVector) as tileWorldVector) dict =
-            EveryDict.insert tileWorldVector (Tile.toTile tileVector Tile.Types.Rock) dict
+        addWallTile (tileVector as tileWorldVector) dict =
+            Dict.insert tileWorldVector (Tile.toTile tileVector Tile.Types.Rock) dict
 
         tiles =
-            List.foldl addFloorTile EveryDict.empty floors
+            List.foldl addFloorTile Dict.empty floors
                 |> (\dict -> List.foldl addWallTile dict walls)
     in
     { entrances = []
@@ -96,12 +115,13 @@ new roomType (( width, height ) as dimension) lightSource roomPosition =
     , worldPos = roomPosition
     , lightSource = lightSource
     , walls = walls
+    , candidateEntrancesByDirection = candidateEntrancesByDirection
     , corners = corners
     , tiles = tiles
     }
 
 
-newDeadEnd : WorldVector -> Room
+newDeadEnd : Vector -> Room
 newDeadEnd roomPosition =
     new DeadEnd ( 1, 1 ) Artificial roomPosition
         |> setEntrances [ Entrance.init Entrance.Door roomPosition ]
@@ -149,9 +169,34 @@ overlap a b =
 
 {-| True if the world position is within the room
 -}
-hit : WorldVector -> Room -> Bool
-hit (World v) room =
+hit : Vector -> Room -> Bool
+hit v room =
     Vector.boxIntersectVector v (vectorBox room)
+
+
+{-| Given a point in the world and a room, work out which faces of the room can reach that
+point with a corridor.
+Remember that corridors must only have one bend and travel in 45/90 degree angles other than
+straight.
+If the point is in the room, return nothing.
+-}
+facesPoint : Vector -> Room -> List Direction
+facesPoint (( x, y ) as point) ({ worldPos, dimension } as room) =
+    let
+        ( minX, minY ) =
+            worldPos
+
+        ( maxX, maxY ) =
+            Vector.add ( minX, minY ) dimension
+    in
+    [ ( x < minX, W ), ( x > maxX, E ), ( y < minY, S ), ( y > maxY, N ) ]
+        |> List.filter Tuple.first
+        |> List.map Tuple.second
+
+
+faceOff : Room -> Room -> ( List Direction, List Direction )
+faceOff a b =
+    ( facesPoint (centre b) a, facesPoint (centre a) b )
 
 
 
@@ -164,7 +209,7 @@ lightSourceGenerator =
         |> Random.map (Maybe.withDefault Artificial)
 
 
-positionGenerator : Config.Config -> Generator WorldVector
+positionGenerator : Config.Config -> Generator Vector
 positionGenerator ({ dungeonSize } as config) =
     let
         ( dimX, dimY ) =
@@ -175,7 +220,6 @@ positionGenerator ({ dungeonSize } as config) =
                 |> Vector.map (max 0)
     in
     Dice.d2d maxX maxY
-        |> Random.map World
 
 
 {-| Given a room type and the dimensions of the room, will return a list of all floor tiles
@@ -217,27 +261,27 @@ templates roomType =
 -------------
 
 
-type alias TopLeft =
+type alias BottomLeft =
     Vector
 
 
-type alias BottomRight =
+type alias TopRight =
     Vector
 
 
-vectorBox : Room -> ( TopLeft, BottomRight )
+vectorBox : Room -> ( BottomLeft, TopRight )
 vectorBox { worldPos, dimension } =
-    worldToVector worldPos
+    worldPos
         |> (\topLeft -> ( topLeft, Vector.add topLeft dimension ))
 
 
-centre : Room -> WorldVector
+centre : Room -> Vector
 centre { worldPos, dimension } =
     let
         halfDimension =
             Vector.scale 0.5 dimension
     in
-    worldAddScalar worldPos halfDimension
+    Vector.add worldPos halfDimension
 
 
 {-| Given a list of vectors, will get all unique vectors adjacent to them.
@@ -283,7 +327,7 @@ setEntrances val room =
     { room | entrances = val }
 
 
-setFloors : List WorldVector -> Room -> Room
+setFloors : List Vector -> Room -> Room
 setFloors val room =
     { room | floors = val }
 
@@ -298,7 +342,7 @@ setDimension val room =
     { room | dimension = val }
 
 
-setWorldPos : WorldVector -> Room -> Room
+setWorldPos : Vector -> Room -> Room
 setWorldPos val room =
     { room | worldPos = val }
 

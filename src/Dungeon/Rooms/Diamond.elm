@@ -108,7 +108,7 @@ floors dimension =
           List.concat <| List.map floorsRight midToMaxX
         , List.map ((,) model.mid) <| List.range 1 (model.max - 1)
         ]
-        |> List.map vectorToLocal
+        |> List.map Local
 
 
 {-| For a diagonal room, the corners are the diagonal walls. They cannot have entrances.
@@ -148,7 +148,7 @@ corners dimension =
         , List.map topToRight midToMaxX
         , List.map bottomToRight midToMaxX
         ]
-        |> List.map vectorToLocal
+        |> List.map Local
 
 
 info : Dimension -> Model

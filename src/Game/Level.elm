@@ -33,7 +33,6 @@ import Container exposing (Container)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
-import Dungeon.Rooms.Type exposing (WorldVector(World))
 import EveryDict
 import Game.Loot as Loot
 import Html exposing (..)
@@ -182,7 +181,7 @@ size { map } =
 
 roomAtPosition : Vector -> List Room -> Maybe Room
 roomAtPosition position rooms =
-    ListX.find (Room.hit (World position)) rooms
+    ListX.find (Room.hit position) rooms
 
 
 buildingAtPosition : Vector -> List Building -> Maybe Building
@@ -474,8 +473,7 @@ exploreRooms position ({ rooms, map } as level) =
         Just room ->
             if room.lightSource /= Dark then
                 room.tiles
-                    |> EveryDict.keys
-                    |> List.map Dungeon.Rooms.Type.worldToVector
+                    |> Dict.keys
                     |> flip markTilesVisible level
             else
                 level

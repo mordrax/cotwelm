@@ -9,7 +9,7 @@ module Dungeon.Entrance
         , toTile
         )
 
-import Dungeon.Rooms.Type exposing (WorldVector(World))
+import Dungeon.Rooms.Type
 import Tile exposing (..)
 import Tile.Types exposing (..)
 import Utils.Vector exposing (..)
@@ -21,7 +21,7 @@ type EntranceType
 
 
 type alias Model =
-    ( EntranceType, WorldVector )
+    ( EntranceType, Vector )
 
 
 type Entrance
@@ -32,18 +32,18 @@ type alias Entrances =
     List Entrance
 
 
-init : EntranceType -> WorldVector -> Entrance
+init : EntranceType -> Vector -> Entrance
 init t v =
     A ( t, v )
 
 
-position : Entrance -> WorldVector
+position : Entrance -> Vector
 position (A ( entranceType, position )) =
     position
 
 
 toTile : Entrance -> Tile
-toTile (A ( entranceType, World position )) =
+toTile (A ( entranceType, position )) =
     let
         tileType =
             case entranceType of

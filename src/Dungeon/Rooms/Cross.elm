@@ -165,7 +165,7 @@ floors ( roomSize, _ ) =
     (vertical ++ horizontal)
         |> Set.fromList
         |> Set.toList
-        |> List.map vectorToLocal
+        |> List.map Local
 
 
 {-| The room below is of wallSize 1, to get the coordinates between the corners of interest

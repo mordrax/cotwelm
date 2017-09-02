@@ -39,16 +39,16 @@ import Utils.Vector as Vector exposing (Vector)
 
 type alias Room =
     { entrances : List Entrance
-    , floors : List WorldVector
+    , floors : List Vector
     , roomType : RoomType
     , dimension : Dimension
-    , worldPos : WorldVector
+    , worldPos : Vector
     , lightSource : LightSource
-    , walls : List WorldVector
+    , walls : List Vector
     }
 
 
-new : RoomType -> Dimension -> LightSource -> WorldVector -> Room
+new : RoomType -> Dimension -> LightSource -> Vector -> Room
 new roomType dimension lightSource worldVector =
     let
         floors =
@@ -58,7 +58,7 @@ new roomType dimension lightSource worldVector =
         walls =
             floors
                 |> List.map Dungeon.Rooms.Type.worldToVector
-                |> adjacent
+                |> isAdjacent
                 |> List.map Dungeon.Rooms.Type.vectorToWorld
     in
     { entrances = []
@@ -249,7 +249,7 @@ placeRoom ( endPoint, endDirection ) ({ dimension, floors } as room) =
     pickAWall candidateWalls |> andThen makeADoor
 
 
-wallsFacingDirection : Direction -> List WorldVector -> Dimension -> List WorldVector
+wallsFacingDirection : Direction -> List Vector -> Dimension -> List Vector
 wallsFacingDirection direction walls ( maxX, maxY ) =
     let
         yEqualsZero ( _, y ) =
@@ -308,7 +308,7 @@ isCollision { entrances, floors, worldPos } position =
                 |> List.any ((==) position)
 
         isPositionAdjacent =
-            List.any ((==) localPosition) (adjacent floors)
+            List.any ((==) localPosition) (isAdjacent floors)
     in
     isPositionAEntrance || isPositionAdjacent
 
@@ -328,7 +328,7 @@ lightSourceGenerator =
         |> Random.map (Maybe.withDefault Artificial)
 
 
-positionGenerator : Config.Config -> Generator WorldVector
+positionGenerator : Config.Config -> Generator Vector
 positionGenerator ({ dungeonSize } as config) =
     let
         ( dimX, dimY ) =
@@ -341,7 +341,7 @@ positionGenerator ({ dungeonSize } as config) =
     Dice.d2d maxX maxY
 
 
-headOfWalls : List (List WorldVector) -> WorldVector
+headOfWalls : List (List Vector) -> Vector
 headOfWalls walls =
     walls
         |> List.concat
@@ -447,7 +447,7 @@ setEntrances val room =
     { room | entrances = val }
 
 
-setFloors : List WorldVector -> Room -> Room
+setFloors : List Vector -> Room -> Room
 setFloors val room =
     { room | floors = val }
 
@@ -462,7 +462,7 @@ setDimension val room =
     { room | dimension = val }
 
 
-setWorldPos : WorldVector -> Room -> Room
+setWorldPos : Vector -> Room -> Room
 setWorldPos val room =
     { room | worldPos = val }
 

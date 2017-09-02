@@ -150,6 +150,11 @@ oppositeDirection dir =
         |> toDirection
 
 
+toDirected : Direction -> Vector -> DirectedVector
+toDirected d v =
+    ( v, d )
+
+
 toDirection : Vector -> Direction
 toDirection vector =
     case Dict.get (unit vector) directions of
@@ -166,12 +171,14 @@ toDirection vector =
 
 neighbours : Vector -> Vectors
 neighbours position =
-    Direction.directions
-        |> List.map (neighbourInDirection position)
+    List.map (\direction -> ( position, direction )) Direction.directions
+        |> List.map advance
 
 
-neighbourInDirection : Vector -> Direction -> Vector
-neighbourInDirection vector direction =
+{-| Given a directed vector, 'walk' it in the direction and return the new vector
+-}
+advance : DirectedVector -> Vector
+advance ( vector, direction ) =
     add vector (fromDirection direction)
 
 
@@ -208,6 +215,16 @@ fromDirection dir =
 
         SW ->
             ( -1, -1 )
+
+
+toComparable : DirectedVector -> ( Vector, Vector )
+toComparable ( vector, direction ) =
+    ( vector, fromDirection direction )
+
+
+fromComparable : ( Vector, Vector ) -> DirectedVector
+fromComparable ( vector, direction ) =
+    ( vector, toDirection direction )
 
 
 rotateUnlessCardinal : Vector -> RotationDirection -> Vector

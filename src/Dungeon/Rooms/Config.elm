@@ -205,11 +205,11 @@ roomTypeGenerator { roomsConfig } =
         ]
 
 
-wallSampler : List WorldVector -> Generator WorldVector
+wallSampler : List Vector -> Generator Vector
 wallSampler walls =
     case walls of
         [] ->
-            constant (World ( 0, 0 ))
+            constant ( 0, 0 )
 
         wall :: restOfWalls ->
             Random.sample walls
@@ -218,8 +218,8 @@ wallSampler walls =
 
 addEntrances :
     Int
-    -> ( List (List WorldVector), List (List WorldVector), List Entrance )
-    -> Generator ( List (List WorldVector), List Entrance )
+    -> ( List (List Vector), List (List Vector), List Entrance )
+    -> Generator ( List (List Vector), List Entrance )
 addEntrances nEntrances ( walls, fullWalls, entrances ) =
     let
         createGenerator =
@@ -254,13 +254,13 @@ addEntrances nEntrances ( walls, fullWalls, entrances ) =
                 |> Random.andThen recurse
 
 
-wallToEntrance : Generator WorldVector -> Generator Entrance
+wallToEntrance : Generator Vector -> Generator Entrance
 wallToEntrance wallGen =
     Random.map (Entrance.init Entrance.Door) wallGen
 
 
-withinDungeonBounds : WorldVector -> Config -> Bool
-withinDungeonBounds (World ( x, y )) { dungeonSize } =
+withinDungeonBounds : Vector -> Config -> Bool
+withinDungeonBounds ( x, y ) { dungeonSize } =
     (x >= 0)
         && (y >= 0)
         && (x <= dungeonSize)
