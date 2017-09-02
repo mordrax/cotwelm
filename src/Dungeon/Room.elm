@@ -189,7 +189,15 @@ facesPoint (( x, y ) as point) ({ worldPos, dimension } as room) =
         ( maxX, maxY ) =
             Vector.add ( minX, minY ) dimension
     in
-    [ ( x < minX, W ), ( x > maxX, E ), ( y < minY, S ), ( y > maxY, N ) ]
+    [ ( x < minX, W )
+    , ( x > maxX, E )
+    , ( y < minY, S )
+    , ( y > maxY, N )
+    , ( x < minX && y < minY, SW )
+    , ( x < minX && y > maxY, NW )
+    , ( x > maxX && y < minY, SE )
+    , ( x > maxX && y > maxY, NE )
+    ]
         |> List.filter Tuple.first
         |> List.map Tuple.second
 

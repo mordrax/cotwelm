@@ -189,6 +189,11 @@ cardinalNeighbours ( x, y ) =
         |> List.map (add ( x, y ))
 
 
+mul : Vector -> Vector -> Vector
+mul ( x, y ) ( a, b ) =
+    ( x * a, y * b )
+
+
 fromDirection : Direction -> Vector
 fromDirection dir =
     case dir of

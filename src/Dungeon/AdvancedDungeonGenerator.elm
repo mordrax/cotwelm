@@ -7,6 +7,7 @@ module Dungeon.AdvancedDungeonGenerator
         , init
         , moveFn
         , possibleMoves
+        , possiblePaths
         , steps
         , toTiles
         )
@@ -167,28 +168,34 @@ possibleMoves faces =
 connectPoints : Dungeon -> List Direction -> ( DirectedVector, DirectedVector ) -> Generator Dungeon
 connectPoints dungeon faces ( ( startVector, direction ), ( endVector, _ ) ) =
     let
-        directionChanges =
-            0
-
         _ =
-            Debug.log "Between" ( startVector, endVector )
+            Debug.log "Between" ( startVector, endVector, faces )
 
-        hashFn ( v1, _, _, _ ) =
-            v1
+        pathData =
+            { currentPosition = startVector
+            , goal = endVector
+            , validDirections = faces
+            , directionChanges = 0
+            }
 
-        path =
-            AStar.findPath
-                costFn
-                (moveFn dungeon.config)
-                hashFn
-                ( startVector, Vector.fromDirection direction, possibleMoves faces, directionChanges )
-                ( endVector, ( 0, 0 ), [ ( 1, 2 ) ], 42 )
+        goalData =
+            { currentPosition = endVector
+            , goal = endVector
+            , validDirections = []
+            , directionChanges = 0
+            }
+
+        hashFn { currentPosition } =
+            currentPosition
     in
-    path
-        |> Maybe.withDefault []
-        |> List.map hashFn
-        |> Corridor.init
-        |> flip addCorridor dungeon
+    AStar.findPath costFn (moveFn dungeon) hashFn pathData goalData
+        |> Maybe.map
+            (List.map hashFn
+                >> (::) startVector
+                >> Corridor.init
+                >> flip addCorridor dungeon
+            )
+        |> Maybe.withDefault dungeon
         |> Random.constant
 
 
@@ -210,28 +217,57 @@ type alias LastMove =
 
 
 type alias PathData =
-    ( Vector, LastMove, PossibleMoves, DirectionChanges )
+    { currentPosition : Vector
+    , goal : Vector
+    , validDirections : List Direction
+    , directionChanges : Int
+    }
 
 
+{-| Use a simple pythagorean distance which will favor the longest path first as
+that will get closest to the goal.
+-}
 costFn : PathData -> PathData -> Float
-costFn ( v1, _, _, _ ) ( v2, _, _, _ ) =
-    Vector.distance v1 v2
+costFn a b =
+    Vector.distance a.currentPosition b.currentPosition
 
 
-moveFn : Config -> PathData -> EverySet PathData
-moveFn config ( vector, lastMove, possibleMoves, directionChanges ) =
+{-| A corridor can have one of the three orientations:
+horizontal, vertical, diagonal (45 deg)
+
+Therefore, between two points, the shortest path is either:
+
+1.  A straight line if the x or y axis align or they both align in a 45 deg fashion.
+    ( eg ( 0, 0) to ( 5, 5) )
+2.  A bend with the bend either being 45deg or 90deg.
+    eg from (0,0) to (2, 3) there are 4 possible outcomes with one bend ending at (2, 3)
+    a. along the y (0, 1) and (0,3)
+    b. along the x (2, 0) and (2, 2)
+
+An additional requirement is that the path leading out of the room cannot turn 90deg right away.
+
+-}
+moveFn : Dungeon -> PathData -> EverySet PathData
+moveFn dungeon ({ currentPosition, goal, validDirections, directionChanges } as pathData) =
     let
         _ =
-            Debug.log "Path: " vector
+            Debug.log "Path: " currentPosition
 
-        advance direction =
-            ( Vector.add vector direction, direction, possibleMoves, directionChanges + 1 )
+        nextPositions =
+            possiblePaths validDirections currentPosition goal
+                |> List.filter (flip Config.withinDungeonBounds dungeon.config)
+                |> List.filter (\movedTo -> isPathClear dungeon ( currentPosition, movedTo ))
+
+        toPathData position =
+            { pathData | currentPosition = position }
     in
-    if not <| Config.withinDungeonBounds vector config then
-        Set.empty
-    else
-        List.map advance possibleMoves
-            |> Set.fromList
+    List.map toPathData nextPositions
+        |> Set.fromList
+
+
+isPathClear : Dungeon -> ( Vector, Vector ) -> Bool
+isPathClear dungeon ( start, end ) =
+    True
 
 
 
@@ -267,3 +303,45 @@ addCorridor corridor dungeon =
         -- walls that overlap with bits of the rooms that they connect
         , map = Dict.union dungeon.map corridor.tiles
     }
+
+
+{-| This is a move function helper. Given two points, returns the shortest path between them
+with at most one bend.
+
+e.g
+Therefore, between two points, the shortest path is either:
+
+         1.  A straight line if the x or y axis align or they both align in a 45 deg fashion.
+             ( eg ( 0, 0) to ( 5, 5) )
+         2.  A bend with the bend either being 45deg or 90deg.
+             eg from (0,0) to (2, 3) there are 4 possible outcomes with one bend ending at (2, 3)
+             a. along the y (0, 1) and (0,3)
+             b. along the x (2, 0) and (2, 2)
+
+-}
+possiblePaths : List Direction -> Vector -> Vector -> List Vector
+possiblePaths validDirections (( x_a, y_a ) as a) (( x_b, y_b ) as b) =
+    let
+        (( d_x, d_y ) as d_vector) =
+            ( abs (x_b - x_a), abs (y_b - y_a) )
+
+        pathFromDirection direction =
+            let
+                alongAxis =
+                    Vector.mul (Vector.fromDirection direction) d_vector
+                        |> Vector.add a
+
+                diagonal =
+                    Vector.scaleInt (min d_x d_y) (Vector.fromDirection direction)
+                        |> Vector.add a
+
+                diagonalToB =
+                    Vector.sub b diagonal
+                        |> Vector.add a
+            in
+            if Direction.isCardinal direction then
+                [ alongAxis ]
+            else
+                [ diagonal, diagonalToB ]
+    in
+    List.concatMap pathFromDirection validDirections
