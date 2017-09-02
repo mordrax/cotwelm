@@ -47,6 +47,7 @@ type alias Dungeon =
     , config : Config
     , corridors : List Corridor
     , map : Dict Vector Tile
+    , connectedRooms : List Room
     }
 
 
@@ -56,12 +57,13 @@ init _ =
     , config = Config.init
     , corridors = []
     , map = Dict.empty
+    , connectedRooms = []
     }
 
 
 generate : Config -> Generator Level
 generate config =
-    generateRooms 20 config (Random.constant (init config))
+    generateRooms 5 config (Random.constant (init config))
         |> Random.map toLevel
 
 
@@ -84,8 +86,10 @@ generateRooms tries config dungeonGen =
 
 steps : Int -> Config -> Dungeon -> Generator Dungeon
 steps _ config dungeon =
-    generateRooms 20 config (Random.constant dungeon)
-        |> Random.andThen connectRooms
+    if dungeon.rooms == [] && dungeon.connectedRooms == [] then
+        generateRooms 15 config (Random.constant dungeon)
+    else
+        connectRooms dungeon
 
 
 clean : Dungeon -> Dungeon
@@ -102,7 +106,7 @@ connectRooms : Dungeon -> Generator Dungeon
 connectRooms dungeon =
     case dungeon.rooms of
         a :: b :: rest ->
-            connectTwoRooms a b dungeon
+            connectTwoRooms a b { dungeon | rooms = rest }
 
         _ ->
             Random.constant dungeon
@@ -140,7 +144,7 @@ connectTwoRooms a b dungeon =
             Random.map2 (,)
                 (samplerWithDefault aWall aRestWalls)
                 (samplerWithDefault bWall bRestWalls)
-                |> Random.andThen (connectPoints dungeon aFaces)
+                |> Random.andThen (connectPoints dungeon aFaces ( a, b ))
 
 
 possibleMoves : List Direction -> List Vector
@@ -165,11 +169,23 @@ possibleMoves faces =
                 |> List.map Vector.fromDirection
 
 
-connectPoints : Dungeon -> List Direction -> ( DirectedVector, DirectedVector ) -> Generator Dungeon
-connectPoints dungeon faces ( ( startVector, direction ), ( endVector, _ ) ) =
+connectPoints : Dungeon -> List Direction -> ( Room, Room ) -> ( DirectedVector, DirectedVector ) -> Generator Dungeon
+connectPoints dungeon faces ( a, b ) ( start, end ) =
     let
         _ =
-            Debug.log "Between" ( startVector, endVector, faces )
+            Debug.log "Between" ( startVector, end, faces )
+
+        aWithDoor =
+            Room.makeDoor a (Tuple.first start)
+
+        bWithDoor =
+            Room.makeDoor b (Tuple.first end)
+
+        startVector =
+            Vector.advance start
+
+        endVector =
+            Vector.advance end
 
         pathData =
             { currentPosition = startVector
@@ -194,14 +210,17 @@ connectPoints dungeon faces ( ( startVector, direction ), ( endVector, _ ) ) =
                 >> (::) startVector
                 >> Corridor.init
                 >> flip addCorridor dungeon
+                >> (\d -> { d | connectedRooms = aWithDoor :: bWithDoor :: d.connectedRooms })
+                >> refreshMapWithRoom aWithDoor
+                >> refreshMapWithRoom bWithDoor
             )
         |> Maybe.withDefault dungeon
         |> Random.constant
 
 
-
---        |> Debug.log ("PATH between " ++ toString startVector ++ " " ++ toString endVector)
---        |> (\_ -> Random.constant dungeon)
+refreshMapWithRoom : Room -> Dungeon -> Dungeon
+refreshMapWithRoom room dungeon =
+    { dungeon | map = Dict.union room.tiles dungeon.map }
 
 
 type alias DirectionChanges =
@@ -267,7 +286,11 @@ moveFn dungeon ({ currentPosition, goal, validDirections, directionChanges } as 
 
 isPathClear : Dungeon -> ( Vector, Vector ) -> Bool
 isPathClear dungeon ( start, end ) =
-    True
+    let
+        isObstructed position =
+            Debug.log ("position obstructed: " ++ toString position) (Dict.member position dungeon.map)
+    in
+    not <| List.any isObstructed (Vector.path start end)
 
 
 

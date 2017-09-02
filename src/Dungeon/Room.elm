@@ -5,6 +5,7 @@ module Dungeon.Room
         , facesPoint
         , generate
         , hit
+        , makeDoor
         , overlap
         )
 
@@ -52,6 +53,14 @@ type alias Room =
     , corners : List Vector
     , tiles : Dict Vector Tile
     }
+
+
+addToDictOfList : key -> value -> EveryDict key (List value) -> EveryDict key (List value)
+addToDictOfList key value dict =
+    EveryDict.get key dict
+        |> Maybe.withDefault []
+        |> (::) value
+        |> (\v -> EveryDict.insert key v dict)
 
 
 new : RoomType -> Dimension -> LightSource -> Vector -> Room
@@ -140,6 +149,26 @@ generate config =
                     lightSourceGenerator
                     (positionGenerator config)
             )
+
+
+makeDoor : Room -> Vector -> Room
+makeDoor room position =
+    case List.member position room.walls of
+        False ->
+            room
+
+        True ->
+            { room
+                | entrances = Entrance.init Entrance.Door position :: room.entrances
+                , walls = List.filter ((/=) position) room.walls
+                , candidateEntrancesByDirection =
+                    room.candidateEntrancesByDirection
+                        |> EveryDict.values
+                        |> List.concat
+                        |> List.filter (Tuple.first >> (/=) position)
+                        |> List.foldl (\( vector, direction ) dict -> addToDictOfList direction ( vector, direction ) dict) EveryDict.empty
+                , tiles = Dict.insert position (Tile.toTile position Tile.Types.DoorClosed) room.tiles
+            }
 
 
 

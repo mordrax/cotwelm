@@ -3,7 +3,6 @@ module Utils.Misc exposing (..)
 import Array exposing (Array)
 import Html exposing (..)
 import Html.Attributes exposing (style)
-import List exposing (reverse)
 import Maybe exposing (withDefault)
 import Random.Pcg as Random exposing (Generator, constant)
 import Regex
@@ -98,14 +97,6 @@ headWithDefault default xs =
 without : a -> List a -> List a
 without x xs =
     List.filter ((/=) x) xs
-
-
-range : Int -> Int -> List Int
-range x y =
-    if x < y then
-        List.range x y
-    else
-        reverse <| List.range y x
 
 
 {-| Sample without replacement: produce a randomly selected element of the

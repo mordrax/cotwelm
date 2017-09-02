@@ -47,7 +47,6 @@ import Set exposing (Set)
 import Tile exposing (Tile)
 import Tile.Types
 import Types exposing (..)
-import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (DirectedVector, Vector)
 
 
@@ -118,28 +117,4 @@ paths points =
             []
 
         a :: b :: rest ->
-            path a b ++ paths (b :: rest)
-
-
-{-| The path between any two vectors is the linear line that connects them.
-e.g path (5, 0) (0, 5) = [(5, 0), (4, 1), (3, 2), (2, 3), (1, 4), (0, 5)]
--}
-path : Vector -> Vector -> List Vector
-path ( x1, y1 ) ( x2, y2 ) =
-    let
-        length =
-            max (abs (x1 - x2)) (abs (y1 - y2)) + 1
-
-        rangeX =
-            if x1 == x2 then
-                List.repeat length x1
-            else
-                Misc.range x1 x2
-
-        rangeY =
-            if y1 == y2 then
-                List.repeat length y1
-            else
-                Misc.range y1 y2
-    in
-    List.map2 (,) rangeX rangeY
+            Vector.path a b ++ paths (b :: rest)

@@ -2,7 +2,6 @@ module Dungeon.Entrance
     exposing
         ( Entrance
         , EntranceType(..)
-        , Entrances
         , equal
         , init
         , position
@@ -20,30 +19,24 @@ type EntranceType
     | NoDoor
 
 
-type alias Model =
-    ( EntranceType, Vector )
-
-
-type Entrance
-    = A Model
-
-
-type alias Entrances =
-    List Entrance
+type alias Entrance =
+    { entranceType : EntranceType
+    , position : Vector
+    }
 
 
 init : EntranceType -> Vector -> Entrance
-init t v =
-    A ( t, v )
+init =
+    Entrance
 
 
 position : Entrance -> Vector
-position (A ( entranceType, position )) =
+position { entranceType, position } =
     position
 
 
 toTile : Entrance -> Tile
-toTile (A ( entranceType, position )) =
+toTile { entranceType, position } =
     let
         tileType =
             case entranceType of
@@ -59,5 +52,5 @@ toTile (A ( entranceType, position )) =
 
 
 equal : Entrance -> Entrance -> Bool
-equal (A e1) (A e2) =
-    Tuple.second e1 == Tuple.second e2
+equal e1 e2 =
+    e1.position == e2.position
