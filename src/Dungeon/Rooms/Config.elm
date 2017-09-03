@@ -82,7 +82,7 @@ init =
         , deadEnd = RoomConfig ( 1, 1 ) 0
         }
     , nAttemptsAtRoomGen = 15
-    , nAttemptsAtRoomConnection = 10
+    , nAttemptsAtRoomConnection = 20
     , mapScale = 0.2
     , maxEntrances = 4
     }

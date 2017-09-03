@@ -1,6 +1,7 @@
 module Dungeon.Room
     exposing
         ( Room
+        , entrancesFromFaces
         , faceOff
         , facesPoint
         , generate
@@ -169,6 +170,17 @@ makeDoor room position =
                         |> List.foldl (\( vector, direction ) dict -> addToDictOfList direction ( vector, direction ) dict) EveryDict.empty
                 , tiles = Dict.insert position (Tile.toTile position Tile.Types.DoorClosed) room.tiles
             }
+
+
+entrancesFromFaces : Room -> List Direction -> List DirectedVector
+entrancesFromFaces room faces =
+    let
+        addEntrances dict face entrances =
+            EveryDict.get face dict
+                |> Maybe.withDefault []
+                |> (++) entrances
+    in
+    List.foldl (addEntrances room.candidateEntrancesByDirection) [] faces
 
 
 

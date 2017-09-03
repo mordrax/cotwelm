@@ -1,7 +1,7 @@
 module Dungeon.Editor exposing (..)
 
 import Dict exposing (Dict)
-import Dungeon.AdvancedDungeonGenerator as DungeonGenerator exposing (Dungeon)
+import Dungeon.DungeonGenerator as DungeonGenerator exposing (Dungeon)
 import Dungeon.Rooms.Config as Config exposing (..)
 import Game.Level as Level
 import Html exposing (..)
