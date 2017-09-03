@@ -34,7 +34,7 @@ type alias TileNeighbours =
     Tile.Model.TileNeighbours
 
 
-view : Tile.Model.Tile -> Float -> Tile.Model.TileNeighbours -> (Vector -> a) -> List (Html a)
+view : Float -> Tile.Model.TileNeighbours -> (Vector -> a) -> Tile.Model.Tile -> List (Html a)
 view =
     Tile.View.view
 

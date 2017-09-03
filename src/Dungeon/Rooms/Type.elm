@@ -1,6 +1,6 @@
 module Dungeon.Rooms.Type exposing (..)
 
-import Utils.Vector exposing (..)
+import Utils.Vector as Vector exposing (..)
 
 
 type RoomType
@@ -13,20 +13,12 @@ type RoomType
     | DeadEnd
 
 
+type LocalVector
+    = Local Vector
+
+
 type alias Dimension =
     Vector
-
-
-type alias Wall =
-    Vector
-
-
-type alias Walls =
-    List Wall
-
-
-type alias Floors =
-    List Vector
 
 
 type alias RoomSize =
@@ -34,7 +26,17 @@ type alias RoomSize =
 
 
 type alias RoomTemplate =
-    { makeWalls : Dimension -> List Walls
-    , makeCorners : Dimension -> Walls
-    , makeFloors : Dimension -> Floors
+    { makeWalls : Dimension -> List LocalVector
+    , makeCorners : Dimension -> List LocalVector
+    , makeFloors : Dimension -> List LocalVector
     }
+
+
+localToWorld : Vector -> LocalVector -> Vector
+localToWorld worldVector (Local localVector) =
+    Vector.add localVector worldVector
+
+
+toWorldVectors : Vector -> List LocalVector -> List Vector
+toWorldVectors worldVector =
+    List.map (localToWorld worldVector)

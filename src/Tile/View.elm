@@ -20,8 +20,8 @@ styles =
     Css.asPairs >> HA.style
 
 
-view : Tile -> Float -> TileNeighbours -> (Vector -> a) -> List (Html a)
-view ({ type_, position, ground, visible } as model) scaleTile neighbours onClick =
+view : Float -> TileNeighbours -> (Vector -> a) -> Tile -> List (Html a)
+view scaleTile neighbours onClick ({ type_, position, ground, visible } as model) =
     let
         rotation =
             case ListX.find (\( halfTileType, _, _ ) -> type_ == halfTileType) halfTiles of

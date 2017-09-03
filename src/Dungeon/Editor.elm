@@ -1,10 +1,8 @@
 module Dungeon.Editor exposing (..)
 
 import Dict exposing (Dict)
-import Dungeon.Clean
-import Dungeon.DungeonGenerator as DungeonGenerator exposing (..)
+import Dungeon.DungeonGenerator as DungeonGenerator exposing (Dungeon)
 import Dungeon.Rooms.Config as Config exposing (..)
-import Dungeon.Types
 import Game.Level as Level
 import Html exposing (..)
 import Html.Attributes as HA
@@ -14,14 +12,14 @@ import Random.Pcg as Random exposing (Generator, constant)
 
 type alias Model =
     { map : Level.Map
-    , config : Config.Model
-    , dungeonSteps : List Dungeon.Types.Model
+    , config : Config.Config
+    , dungeonSteps : List Dungeon
     }
 
 
 type Msg
     = GenerateMap Int
-    | Dungeon Dungeon.Types.Model
+    | Dungeon Dungeon
     | ConfigMsg Config.Msg
     | ResetMap
     | Clean
@@ -37,23 +35,11 @@ init =
     }
 
 
-generateCandidate : Model -> Generator Dungeon.Types.Model
+generateCandidate : Model -> Generator Dungeon
 generateCandidate model =
-    let
-        newCandidate =
-            DungeonGenerator.steps 200 (DungeonGenerator.init model.config)
-
-        fitness dungeonModel =
-            List.length dungeonModel.rooms > model.config.minRooms
-    in
-    Random.map Dungeon.Clean.clean newCandidate
-        |> Random.andThen
-            (\dungeonModel ->
-                if fitness dungeonModel then
-                    constant dungeonModel
-                else
-                    generateCandidate model
-            )
+    DungeonGenerator.candidate model.config (DungeonGenerator.init model.config)
+        |> Random.map DungeonGenerator.clean
+        |> Random.andThen (\dungeonModel -> constant dungeonModel)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -67,7 +53,7 @@ update msg model =
                 Just dungeonModel ->
                     let
                         cleanedModel =
-                            Dungeon.Clean.clean dungeonModel
+                            DungeonGenerator.clean dungeonModel
                     in
                     ( { model
                         | dungeonSteps = cleanedModel :: model.dungeonSteps
@@ -87,10 +73,13 @@ update msg model =
                         |> List.head
                         |> Maybe.withDefault (DungeonGenerator.init model.config)
             in
-            ( model, Random.generate Dungeon (DungeonGenerator.steps nSteps dungeonModel) )
+            ( model, Random.generate Dungeon (DungeonGenerator.steps nSteps model.config dungeonModel) )
 
         Dungeon dungeonModel ->
-            ( { model | dungeonSteps = dungeonModel :: [], map = updateMap dungeonModel }
+            ( { model
+                | dungeonSteps = dungeonModel :: []
+                , map = updateMap dungeonModel
+              }
             , Cmd.none
             )
 
@@ -104,10 +93,10 @@ update msg model =
             ( model, Cmd.none )
 
 
-updateMap : Dungeon.Types.Model -> Level.Map
-updateMap dungeonModel =
-    dungeonModel
-        |> Dungeon.Types.toTiles
+updateMap : Dungeon -> Level.Map
+updateMap dungeon =
+    dungeon
+        |> DungeonGenerator.toTiles
         |> Level.fromTiles
 
 
@@ -120,21 +109,31 @@ view model =
         screenMap =
             Level.toScreenCoords model.map model.config.dungeonSize
 
+        viewportSize =
+            ( 200, 200 )
+
         clickTile position =
             Noop
     in
-    div []
-        [ div []
-            [ --roomSizeView model,
-              button [ HA.class "ui button", HE.onClick <| GenerateMap 1 ] [ text "Step" ]
-            , button [ HA.class "ui button", HE.onClick <| GenerateMap 50 ] [ text "Step x50" ]
+    div [ HA.style [ ( "width", "100%" ), ( "height", "100%" ) ] ]
+        [ div [ HA.style [ ( "position", "absolute" ) ] ]
+            [ button [ HA.class "ui button", HE.onClick <| GenerateMap 1 ] [ text "Step" ]
+            , button [ HA.class "ui button", HE.onClick <| GenerateMap 5 ] [ text "Step x5" ]
+            , button [ HA.class "ui button", HE.onClick <| GenerateMap 15 ] [ text "Step x15" ]
             , button [ HA.class "ui button", HE.onClick <| Clean ] [ text "Clean" ]
             , button [ HA.class "ui button", HE.onClick <| ResetMap ] [ text "Destroy!" ]
             , button [ HA.class "ui button", HE.onClick <| NewCandidate ] [ text "NewCandidate" ]
             , mapSizeView model
             ]
-        , div [ HA.style [ ( "position", "absolute" ), ( "left", "300px" ), ( "top", "0px" ) ] ]
-            (Level.draw { start = ( 0, 0 ), size = ( 100, 100 ) } screenMap model.config.mapScale clickTile)
+        , div [ HA.style [ ( "left", "300px" ), ( "position", "absolute" ), ( "top", "30px" ), ( "width", "100%" ), ( "height", "100%" ) ] ]
+            (Level.draw
+                { start = ( 0, 0 )
+                , size = viewportSize
+                }
+                screenMap
+                model.config.mapScale
+                clickTile
+            )
         ]
 
 
