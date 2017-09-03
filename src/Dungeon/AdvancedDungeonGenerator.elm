@@ -1,6 +1,7 @@
 module Dungeon.AdvancedDungeonGenerator
     exposing
         ( Dungeon
+        , candidate
         , clean
         , costFn
         , generate
@@ -28,6 +29,7 @@ at the collision point, pass through or remove the corridor.
 
 -}
 
+import Building exposing (Building)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
@@ -39,31 +41,35 @@ import Random.Pcg as Random exposing (Generator)
 import Tile.Model exposing (Tile)
 import Utils.AStarCustom as AStar
 import Utils.Direction as Direction exposing (Direction)
+import Utils.Misc
 import Utils.Vector as Vector exposing (DirectedVector, Vector)
 
 
 type alias Dungeon =
-    { rooms : List Room
+    { rooms : Dict Vector Room
+    , connectedRooms : Dict Vector Room
     , config : Config
     , corridors : List Corridor
     , map : Dict Vector Tile
-    , connectedRooms : List Room
+    , buildings : List Building
     }
 
 
 init : Config -> Dungeon
 init _ =
-    { rooms = []
+    { rooms = Dict.empty
+    , connectedRooms = Dict.empty
     , config = Config.init
     , corridors = []
     , map = Dict.empty
-    , connectedRooms = []
+    , buildings = []
     }
 
 
 generate : Config -> Generator Level
 generate config =
-    generateRooms 5 config (Random.constant (init config))
+    generateRooms config.nAttemptsAtRoomGen config (Random.constant (init config))
+        |> Random.andThen (connectRooms config.nAttemptsAtRoomConnection)
         |> Random.map toLevel
 
 
@@ -84,12 +90,47 @@ generateRooms tries config dungeonGen =
                 |> generateRooms (n - 1) config
 
 
+candidate : Config -> Dungeon -> Generator Dungeon
+candidate config dungeon =
+    generateRooms config.nAttemptsAtRoomGen config (Random.constant dungeon)
+        |> Random.andThen (connectRooms config.nAttemptsAtRoomConnection)
+        |> Random.andThen (addStair (\pos -> Building.new Building.StairsUp pos "UpStairs" Building.StairUp))
+        |> Random.andThen (addStair (\pos -> Building.new Building.StairsDown pos "DownStairs" Building.StairDown))
+
+
+addBuilding : Building -> Dungeon -> Dungeon
+addBuilding building dungeon =
+    { dungeon
+        | buildings = building :: dungeon.buildings
+    }
+
+
+addStair : (Vector -> Building) -> Dungeon -> Generator Dungeon
+addStair stairsAt dungeon =
+    let
+        addStairAt pos =
+            addBuilding (stairsAt pos) dungeon
+
+        addStairToRoom : Room -> Generator Dungeon
+        addStairToRoom room =
+            Random.sample room.floors
+                |> Random.map (Maybe.map addStairAt)
+                |> Random.map (Maybe.withDefault dungeon)
+    in
+    Random.sample (Dict.values dungeon.connectedRooms)
+        |> Random.andThen (Maybe.map addStairToRoom >> Maybe.withDefault (Random.constant dungeon))
+
+
 steps : Int -> Config -> Dungeon -> Generator Dungeon
-steps _ config dungeon =
-    if dungeon.rooms == [] && dungeon.connectedRooms == [] then
-        generateRooms 15 config (Random.constant dungeon)
+steps n config dungeon =
+    if n == 0 then
+        Random.constant dungeon
+    else if Dict.isEmpty dungeon.rooms then
+        generateRooms config.nAttemptsAtRoomGen config (Random.constant dungeon)
+            |> Random.andThen (steps (n - 1) config)
     else
-        connectRooms dungeon
+        connectRooms config.nAttemptsAtRoomConnection dungeon
+            |> Random.andThen (steps (n - 1) config)
 
 
 clean : Dungeon -> Dungeon
@@ -102,18 +143,43 @@ toTiles dungeon =
     Dict.values dungeon.map
 
 
-connectRooms : Dungeon -> Generator Dungeon
-connectRooms dungeon =
-    case dungeon.rooms of
-        a :: b :: rest ->
-            connectTwoRooms a b { dungeon | rooms = rest }
-
-        _ ->
+{-| Tries to connect all rooms with corridors
+-}
+connectRooms : Int -> Dungeon -> Generator Dungeon
+connectRooms nTries dungeon =
+    case nTries of
+        0 ->
             Random.constant dungeon
 
+        n ->
+            selectTwoRooms dungeon
+                |> Maybe.map (Random.andThen (connectTwoRooms dungeon >> Random.andThen (connectRooms (n - 1))))
+                |> Maybe.withDefault (Random.constant dungeon)
 
-connectTwoRooms : Room -> Room -> Dungeon -> Generator Dungeon
-connectTwoRooms a b dungeon =
+
+{-| Pick a room from the connected rooms and try to connect to an unconnected room
+-}
+selectTwoRooms : Dungeon -> Maybe (Generator ( Room, Room ))
+selectTwoRooms dungeon =
+    case ( Dict.values dungeon.rooms, Dict.values dungeon.connectedRooms ) of
+        ( a :: restRooms, b :: restConnectedRooms ) ->
+            Random.map2 (,)
+                (samplerWithDefault a restRooms)
+                (samplerWithDefault b restConnectedRooms)
+                |> Just
+
+        ( a :: b :: restRooms, [] ) ->
+            Just (Random.constant ( a, b ))
+
+        ( [], _ ) ->
+            Nothing
+
+        _ ->
+            Nothing
+
+
+connectTwoRooms : Dungeon -> ( Room, Room ) -> Generator Dungeon
+connectTwoRooms dungeon ( a, b ) =
     let
         ( aFaces, bFaces ) =
             Room.faceOff a b
@@ -128,10 +194,6 @@ connectTwoRooms a b dungeon =
 
         bWalls =
             List.foldl (addWallsFromCandidates b.candidateEntrancesByDirection) [] bFaces
-
-        samplerWithDefault wall walls =
-            Random.sample (wall :: walls)
-                |> Random.map (Maybe.withDefault wall)
     in
     case ( aWalls, bWalls ) of
         ( [], _ ) ->
@@ -141,10 +203,14 @@ connectTwoRooms a b dungeon =
             Random.constant dungeon
 
         ( aWall :: aRestWalls, bWall :: bRestWalls ) ->
-            Random.map2 (,)
-                (samplerWithDefault aWall aRestWalls)
-                (samplerWithDefault bWall bRestWalls)
-                |> Random.andThen (connectPoints dungeon aFaces ( a, b ))
+            Random.map2 (,) (samplerWithDefault aWall aRestWalls) (samplerWithDefault bWall bRestWalls)
+                |> Random.map (connectPoints dungeon aFaces ( a, b ))
+
+
+samplerWithDefault : a -> List a -> Generator a
+samplerWithDefault default list =
+    Random.sample (default :: list)
+        |> Random.map (Maybe.withDefault default)
 
 
 possibleMoves : List Direction -> List Vector
@@ -169,17 +235,18 @@ possibleMoves faces =
                 |> List.map Vector.fromDirection
 
 
-connectPoints : Dungeon -> List Direction -> ( Room, Room ) -> ( DirectedVector, DirectedVector ) -> Generator Dungeon
-connectPoints dungeon faces ( a, b ) ( start, end ) =
+{-| -}
+connectPoints : Dungeon -> List Direction -> ( Room, Room ) -> ( DirectedVector, DirectedVector ) -> Dungeon
+connectPoints dungeon faces ( room1, room2 ) ( start, end ) =
     let
         _ =
             Debug.log "Between" ( startVector, end, faces )
 
-        aWithDoor =
-            Room.makeDoor a (Tuple.first start)
+        room1WithDoor =
+            Room.makeDoor room1 (Tuple.first start)
 
-        bWithDoor =
-            Room.makeDoor b (Tuple.first end)
+        room2WithDoor =
+            Room.makeDoor room2 (Tuple.first end)
 
         startVector =
             Vector.advance start
@@ -210,29 +277,19 @@ connectPoints dungeon faces ( a, b ) ( start, end ) =
                 >> (::) startVector
                 >> Corridor.init
                 >> flip addCorridor dungeon
-                >> (\d -> { d | connectedRooms = aWithDoor :: bWithDoor :: d.connectedRooms })
-                >> refreshMapWithRoom aWithDoor
-                >> refreshMapWithRoom bWithDoor
+                >> addConnectedRoom room1WithDoor
+                >> addConnectedRoom room2WithDoor
             )
         |> Maybe.withDefault dungeon
-        |> Random.constant
 
 
-refreshMapWithRoom : Room -> Dungeon -> Dungeon
-refreshMapWithRoom room dungeon =
-    { dungeon | map = Dict.union room.tiles dungeon.map }
-
-
-type alias DirectionChanges =
-    Int
-
-
-type alias PossibleMoves =
-    List Vector
-
-
-type alias LastMove =
-    Vector
+addConnectedRoom : Room -> Dungeon -> Dungeon
+addConnectedRoom room dungeon =
+    { dungeon
+        | map = Dict.union room.tiles dungeon.map
+        , rooms = Dict.remove room.worldPos dungeon.rooms
+        , connectedRooms = Dict.insert room.worldPos room dungeon.connectedRooms
+    }
 
 
 type alias PathData =
@@ -275,7 +332,7 @@ moveFn dungeon ({ currentPosition, goal, validDirections, directionChanges } as 
         nextPositions =
             possiblePaths validDirections currentPosition goal
                 |> List.filter (flip Config.withinDungeonBounds dungeon.config)
-                |> List.filter (\movedTo -> isPathClear dungeon ( currentPosition, movedTo ))
+                |> List.filterMap (\movedTo -> toLastUnobstructedTile dungeon (Vector.path currentPosition movedTo))
 
         toPathData position =
             { pathData | currentPosition = position }
@@ -284,13 +341,28 @@ moveFn dungeon ({ currentPosition, goal, validDirections, directionChanges } as 
         |> Set.fromList
 
 
-isPathClear : Dungeon -> ( Vector, Vector ) -> Bool
-isPathClear dungeon ( start, end ) =
-    let
-        isObstructed position =
-            Debug.log ("position obstructed: " ++ toString position) (Dict.member position dungeon.map)
-    in
-    not <| List.any isObstructed (Vector.path start end)
+toLastUnobstructedTile : Dungeon -> List Vector -> Maybe Vector
+toLastUnobstructedTile dungeon path =
+    case path of
+        [] ->
+            Nothing
+
+        [ a ] ->
+            if obstructed dungeon a then
+                Nothing
+            else
+                Just a
+
+        a :: b :: rest ->
+            if obstructed dungeon b then
+                Just a
+            else
+                toLastUnobstructedTile dungeon (b :: rest)
+
+
+obstructed : Dungeon -> Vector -> Bool
+obstructed dungeon position =
+    Dict.member position dungeon.map
 
 
 
@@ -306,11 +378,11 @@ addRoom room dungeon =
             List.all (\x -> Config.withinDungeonBounds x dungeon.config) room.corners
 
         overlapping =
-            List.any (Room.overlap room) dungeon.rooms
+            List.any (Room.overlap room) (Dict.values dungeon.rooms)
     in
     if withinDungeonBounds && not overlapping then
         { dungeon
-            | rooms = room :: dungeon.rooms
+            | rooms = Dict.insert room.worldPos room dungeon.rooms
             , map = Dict.union room.tiles dungeon.map
         }
     else

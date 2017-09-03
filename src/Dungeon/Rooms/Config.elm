@@ -24,7 +24,8 @@ type alias Config =
     , mapScale : Float
     , maxEntrances : Int
     , corridor : CorridorConfig
-    , minRooms : Int
+    , nAttemptsAtRoomGen : Int
+    , nAttemptsAtRoomConnection : Int
     }
 
 
@@ -60,6 +61,8 @@ type Msg
     | RoomSize RoomType MinMax
     | ChangeFrequency RoomType Int
     | MapScale Float
+    | NumberOfRooms Int
+    | NumberOfConnections Int
 
 
 init : Config
@@ -78,7 +81,8 @@ init =
         , diagonalSquares = RoomConfig ( 4, 10 ) 0
         , deadEnd = RoomConfig ( 1, 1 ) 0
         }
-    , minRooms = 4
+    , nAttemptsAtRoomGen = 15
+    , nAttemptsAtRoomConnection = 10
     , mapScale = 0.2
     , maxEntrances = 4
     }
@@ -128,6 +132,12 @@ update msg model =
 
         MapScale scale ->
             { model | mapScale = scale }
+
+        NumberOfRooms x ->
+            { model | nAttemptsAtRoomGen = x }
+
+        NumberOfConnections x ->
+            { model | nAttemptsAtRoomConnection = x }
 
 
 updateRoomsConfig : RoomType -> (RoomConfig -> RoomConfig) -> RoomsConfig -> RoomsConfig
@@ -278,6 +288,8 @@ dungeonSizeView model =
     div []
         [ UI.labeledNumber "Dungeon size" model.dungeonSize DungeonSize
         , UI.labeledFloat "Map scale" model.mapScale MapScale
+        , UI.labeledNumber "Attempts at room gen" model.nAttemptsAtRoomGen NumberOfRooms
+        , UI.labeledNumber "Attempts at room connections" model.nAttemptsAtRoomConnection NumberOfConnections
         ]
 
 

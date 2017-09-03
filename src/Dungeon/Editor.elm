@@ -37,21 +37,9 @@ init =
 
 generateCandidate : Model -> Generator Dungeon
 generateCandidate model =
-    let
-        newCandidate =
-            DungeonGenerator.steps 200 model.config (DungeonGenerator.init model.config)
-
-        fitness dungeonModel =
-            List.length dungeonModel.rooms > model.config.minRooms
-    in
-    Random.map DungeonGenerator.clean newCandidate
-        |> Random.andThen
-            (\dungeonModel ->
-                if fitness dungeonModel then
-                    constant dungeonModel
-                else
-                    generateCandidate model
-            )
+    DungeonGenerator.candidate model.config (DungeonGenerator.init model.config)
+        |> Random.map DungeonGenerator.clean
+        |> Random.andThen (\dungeonModel -> constant dungeonModel)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -130,13 +118,14 @@ view model =
     div [ HA.style [ ( "width", "100%" ), ( "height", "100%" ) ] ]
         [ div [ HA.style [ ( "position", "absolute" ) ] ]
             [ button [ HA.class "ui button", HE.onClick <| GenerateMap 1 ] [ text "Step" ]
-            , button [ HA.class "ui button", HE.onClick <| GenerateMap 50 ] [ text "Step x50" ]
+            , button [ HA.class "ui button", HE.onClick <| GenerateMap 5 ] [ text "Step x5" ]
+            , button [ HA.class "ui button", HE.onClick <| GenerateMap 15 ] [ text "Step x15" ]
             , button [ HA.class "ui button", HE.onClick <| Clean ] [ text "Clean" ]
             , button [ HA.class "ui button", HE.onClick <| ResetMap ] [ text "Destroy!" ]
             , button [ HA.class "ui button", HE.onClick <| NewCandidate ] [ text "NewCandidate" ]
             , mapSizeView model
             ]
-        , div [ HA.style [ ( "left", "300px" ), ( "position", "absolute" ), ( "top", "0px" ), ( "width", "100%" ), ( "height", "100%" ) ] ]
+        , div [ HA.style [ ( "left", "300px" ), ( "position", "absolute" ), ( "top", "30px" ), ( "width", "100%" ), ( "height", "100%" ) ] ]
             (Level.draw
                 { start = ( 0, 0 )
                 , size = viewportSize
