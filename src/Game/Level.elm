@@ -33,7 +33,6 @@ import Container exposing (Container)
 import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
-import EveryDict
 import Game.Loot as Loot
 import Html exposing (..)
 import Item.Data exposing (Item)

@@ -32,153 +32,40 @@ module Dungeon.Rooms.Diamond exposing (..)
 
 import Dungeon.Rooms.Type exposing (..)
 import List exposing (map2, reverse)
+import Set exposing (Set)
+import Utils.Vector exposing (Vector)
 
 
 template : RoomTemplate
 template =
     { makeWalls = \_ -> []
-    , makeCorners = corners
+    , makeCorners = \_ -> []
     , makeFloors = floors
     }
 
 
-type alias Model =
-    { size : RoomSize
-    , mid : Int
-    , max : Int
-    }
-
-
-type alias RoomSize =
-    Int
-
-
 {-| Diamonds have 4 corners which are also the only walls that can support entrancess.
 -}
-
-
-
---walls : Dimension -> List LocalVector
---walls dimension =
---    let
---        model =
---            info dimension
---    in
---    [ [ ( 0, model.mid ) ]
---    , [ ( model.max, model.mid ) ]
---    , [ ( model.mid, 0 ) ]
---    , [ ( model.mid, model.max ) ]
---    ]
-
-
 floors : Dimension -> List LocalVector
-floors dimension =
+floors ( width, _ ) =
     let
-        model =
-            info dimension
-
-        leftToTop =
-            \x -> model.mid + 1 + x
-
-        leftToBottom =
-            \x -> model.mid - 1 - x
-
-        topToRight =
-            \x -> (-1 - model.mid) + x
-
-        bottomToRight =
-            \x -> (model.max + 1 + model.mid) - x
-
-        floorsLeft =
-            \x -> List.map ((,) x) <| List.range (leftToBottom x) (leftToTop x)
-
-        floorsRight =
-            \x -> List.map ((,) x) <| List.range (topToRight x) (bottomToRight x)
-
-        zeroToMidX =
-            List.range 0 (model.mid - 1)
-
-        midToMaxX =
-            List.range (model.mid + 1) model.max
+        -- get nearest odd number for size
+        growth =
+            (width + (1 - width % 2)) // 2
     in
-    List.concat
-        [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
-          List.concat <| List.map floorsLeft zeroToMidX
-        , -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
-          List.concat <| List.map floorsRight midToMaxX
-        , List.map ((,) model.mid) <| List.range 1 (model.max - 1)
-        ]
+    floors_ growth (Set.singleton ( width, width ))
+        |> Set.toList
         |> List.map Local
 
 
-{-| For a diagonal room, the corners are the diagonal walls. They cannot have entrances.
-To calculate the diagonal positions, picture a diamond on a cartesian plane
-with the diamond being in the +x, -y quadrant (screen coords)
--}
-corners : Dimension -> List LocalVector
-corners dimension =
-    let
-        model =
-            info dimension
+floors_ : Int -> Set Vector -> Set Vector
+floors_ growth currentFloors =
+    case growth of
+        0 ->
+            currentFloors
 
-        leftToTop =
-            \x -> ( x, model.mid + 1 + x )
-
-        leftToBottom =
-            \x -> ( x, model.mid - 1 - x )
-
-        topToRight =
-            \x -> ( x, (-1 - model.mid) + x )
-
-        bottomToRight =
-            \x -> ( x, (model.max + 1 + model.mid) - x )
-
-        zeroToMidX =
-            List.range 0 (model.mid - 1)
-
-        midToMaxX =
-            List.range (model.mid + 1) model.max
-    in
-    List.concat
-        [ -- x goes from left to middle(1 to mid - 1), y goes from middle up and down
-          List.map leftToTop zeroToMidX
-        , List.map leftToBottom zeroToMidX
-
-        -- x goes from middle to right (mid+1, max-1), y goes from zero to middle and max to middle
-        , List.map topToRight midToMaxX
-        , List.map bottomToRight midToMaxX
-        ]
-        |> List.map Local
-
-
-info : Dimension -> Model
-info dimension =
-    let
-        size =
-            largestEquilaterialDimension dimension
-
-        mid =
-            size // 2
-
-        max =
-            size - 1
-    in
-    { size = size
-    , mid = mid
-    , max = max
-    }
-
-
-{-| Given a dimension (4, 7), work out the largest equilateral diamond that will fit in it.
-In the above case, it will be (3, 3) because diamonds have to be odd and same sided.
--}
-largestEquilaterialDimension : Dimension -> RoomSize
-largestEquilaterialDimension ( x, y ) =
-    let
-        ( x_, y_ ) =
-            ( x - ((x + 1) % 2), y - ((y + 1) % 2) )
-
-        smallestSide =
-            min x_ y_
-    in
-    smallestSide
+        n ->
+            List.concatMap Utils.Vector.cardinalNeighbours (Set.toList currentFloors)
+                |> Set.fromList
+                |> Set.union currentFloors
+                |> floors_ (n - 1)

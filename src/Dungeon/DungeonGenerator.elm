@@ -103,7 +103,7 @@ candidate config dungeon =
             .buildings >> List.length >> flip (<) 2
 
         connections =
-            .connectedRooms >> Dict.keys >> List.length >> flip (<) 8
+            .connectedRooms >> Dict.keys >> List.length >> flip (<) 6
     in
     generateRooms config.nAttemptsAtRoomGen config (Random.constant dungeon)
         |> Random.andThen (connectRooms config.nAttemptsAtRoomConnection)

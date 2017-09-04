@@ -38,7 +38,6 @@ import Tile exposing (Tile)
 import Tile.Types
 import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
-import Utils.Misc as Misc
 import Utils.Vector as Vector exposing (DirectedVector, Vector)
 
 
@@ -65,10 +64,24 @@ addToDictOfList key value dict =
 
 
 new : RoomType -> Dimension -> LightSource -> Vector -> Room
-new roomType (( width, height ) as dimension) lightSource (( minX, minY ) as roomPosition) =
+new roomType (( sizeX, sizeY ) as roomSize) lightSource (( minX, minY ) as roomPosition) =
     let
+        (( width, height ) as dimension) =
+            case roomType of
+                Rectangular ->
+                    roomSize
+
+                Cross ->
+                    ( 3 * sizeX + 4, 3 * sizeX + 4 )
+
+                Diamond ->
+                    ( sizeX + (1 - sizeX % 2), sizeX + (1 - sizeX % 2) )
+
+                _ ->
+                    roomSize
+
         floors =
-            calculateFloors roomType dimension
+            calculateFloors roomType roomSize
                 |> toWorldVectors roomPosition
 
         walls =
