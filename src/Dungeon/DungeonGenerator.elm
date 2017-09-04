@@ -298,6 +298,7 @@ connectPoints dungeon faces ( room1, room2 ) start end =
 
         pathData =
             { currentPosition = startVector
+            , currentDirection = Tuple.second start
             , goal = endVector
             , validDirections = faces
             , directionChanges = 0
@@ -305,7 +306,8 @@ connectPoints dungeon faces ( room1, room2 ) start end =
 
         goalData =
             { currentPosition = endVector
-            , goal = endVector
+            , currentDirection = N
+            , goal = ( 0, 0 )
             , validDirections = []
             , directionChanges = 0
             }
@@ -336,18 +338,33 @@ addConnectedRoom room dungeon =
 
 type alias PathData =
     { currentPosition : Vector
+    , currentDirection : Direction
     , goal : Vector
     , validDirections : List Direction
     , directionChanges : Int
     }
 
 
-{-| Use a simple pythagorean distance which will favor the longest path first as
-that will get closest to the goal.
+{-| cotw had alot of diagonals, so favor diagonal paths.
 -}
 costFn : PathData -> PathData -> Float
 costFn a b =
-    Vector.distance a.currentPosition b.currentPosition
+    case a.directionChanges of
+        1 ->
+            5
+
+        2 ->
+            3
+
+        3 ->
+            1
+
+        _ ->
+            10
+
+
+
+--    Vector.distance a.currentPosition b.currentPosition
 
 
 {-| A corridor can have one of the three orientations:
@@ -366,17 +383,31 @@ An additional requirement is that the path leading out of the room cannot turn 9
 
 -}
 moveFn : Dungeon -> PathData -> EverySet PathData
-moveFn dungeon ({ currentPosition, goal, validDirections, directionChanges } as pathData) =
+moveFn dungeon ({ currentPosition, currentDirection, goal, validDirections, directionChanges } as pathData) =
     let
         --        _ =
         --            Debug.log "Path: " currentPosition
         nextPositions =
             possiblePaths validDirections currentPosition goal
-                |> List.filter (flip Config.withinDungeonBounds dungeon.config)
-                |> List.filterMap (\movedTo -> toLastUnobstructedTile dungeon (Vector.path currentPosition movedTo))
+                |> List.filter (\( pos, dir ) -> Config.withinDungeonBounds pos dungeon.config)
+                |> List.filterMap
+                    (\( pos, dir ) ->
+                        toLastUnobstructedTile dungeon (Vector.path currentPosition pos)
+                            |> Maybe.map (\newPos -> ( newPos, dir ))
+                    )
 
-        toPathData position =
-            { pathData | currentPosition = position }
+        plusDirectionChange newDirection =
+            if newDirection == currentDirection then
+                0
+            else
+                1
+
+        toPathData ( position, newDirection ) =
+            { pathData
+                | currentPosition = position
+                , currentDirection = newDirection
+                , directionChanges = pathData.directionChanges + plusDirectionChange newDirection
+            }
     in
     List.map toPathData nextPositions
         |> Set.fromList
@@ -455,13 +486,15 @@ Therefore, between two points, the shortest path is either:
              b. along the x (2, 0) and (2, 2)
 
 -}
-possiblePaths : List Direction -> Vector -> Vector -> List Vector
+possiblePaths : List Direction -> Vector -> Vector -> List DirectedVector
 possiblePaths validDirections (( x_a, y_a ) as a) (( x_b, y_b ) as b) =
     let
+        -- d_vector is the magnitude of the difference of a to b
+        -- useful for calculating distance travelled on either axis
         (( d_x, d_y ) as d_vector) =
             ( abs (x_b - x_a), abs (y_b - y_a) )
 
-        pathFromDirection direction =
+        pathInDirection direction =
             let
                 alongAxis =
                     Vector.mul (Vector.fromDirection direction) d_vector
@@ -476,11 +509,11 @@ possiblePaths validDirections (( x_a, y_a ) as a) (( x_b, y_b ) as b) =
                         |> Vector.add a
             in
             if Direction.isCardinal direction then
-                [ alongAxis ]
+                [ ( alongAxis, direction ) ]
             else
-                [ diagonal, diagonalToB ]
+                [ ( diagonal, direction ), ( diagonalToB, direction ) ]
     in
-    List.concatMap pathFromDirection validDirections
+    List.concatMap pathInDirection validDirections
 
 
 
