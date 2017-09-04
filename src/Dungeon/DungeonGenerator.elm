@@ -34,7 +34,6 @@ import Dict exposing (Dict)
 import Dungeon.Corridor as Corridor exposing (Corridor)
 import Dungeon.Room as Room exposing (Room)
 import Dungeon.Rooms.Config as Config exposing (Config)
-import EveryDict
 import EverySet as Set exposing (EverySet)
 import Game.Level exposing (Level)
 import Maybe.Extra
@@ -44,7 +43,6 @@ import Tile.Model exposing (Tile)
 import Tile.Types
 import Utils.AStarCustom as AStar
 import Utils.Direction as Direction exposing (Direction(..))
-import Utils.Misc
 import Utils.Vector as Vector exposing (DirectedVector, Vector)
 
 
@@ -298,7 +296,6 @@ connectPoints dungeon faces ( room1, room2 ) start end =
 
         pathData =
             { currentPosition = startVector
-            , currentDirection = Tuple.second start
             , goal = endVector
             , validDirections = faces
             , directionChanges = 0
@@ -306,8 +303,7 @@ connectPoints dungeon faces ( room1, room2 ) start end =
 
         goalData =
             { currentPosition = endVector
-            , currentDirection = N
-            , goal = ( 0, 0 )
+            , goal = endVector
             , validDirections = []
             , directionChanges = 0
             }
@@ -338,7 +334,6 @@ addConnectedRoom room dungeon =
 
 type alias PathData =
     { currentPosition : Vector
-    , currentDirection : Direction
     , goal : Vector
     , validDirections : List Direction
     , directionChanges : Int
@@ -349,22 +344,7 @@ type alias PathData =
 -}
 costFn : PathData -> PathData -> Float
 costFn a b =
-    case a.directionChanges of
-        1 ->
-            5
-
-        2 ->
-            3
-
-        3 ->
-            1
-
-        _ ->
-            10
-
-
-
---    Vector.distance a.currentPosition b.currentPosition
+    1 / Vector.distance a.currentPosition b.currentPosition
 
 
 {-| A corridor can have one of the three orientations:
@@ -383,31 +363,21 @@ An additional requirement is that the path leading out of the room cannot turn 9
 
 -}
 moveFn : Dungeon -> PathData -> EverySet PathData
-moveFn dungeon ({ currentPosition, currentDirection, goal, validDirections, directionChanges } as pathData) =
+moveFn dungeon ({ currentPosition, goal, validDirections, directionChanges } as pathData) =
     let
         --        _ =
         --            Debug.log "Path: " currentPosition
         nextPositions =
             possiblePaths validDirections currentPosition goal
-                |> List.filter (\( pos, dir ) -> Config.withinDungeonBounds pos dungeon.config)
+                |> List.filter (\( pos, _ ) -> Config.withinDungeonBounds pos dungeon.config)
                 |> List.filterMap
                     (\( pos, dir ) ->
                         toLastUnobstructedTile dungeon (Vector.path currentPosition pos)
-                            |> Maybe.map (\newPos -> ( newPos, dir ))
+                            |> Maybe.map (\p -> ( p, dir ))
                     )
 
-        plusDirectionChange newDirection =
-            if newDirection == currentDirection then
-                0
-            else
-                1
-
         toPathData ( position, newDirection ) =
-            { pathData
-                | currentPosition = position
-                , currentDirection = newDirection
-                , directionChanges = pathData.directionChanges + plusDirectionChange newDirection
-            }
+            { pathData | currentPosition = position }
     in
     List.map toPathData nextPositions
         |> Set.fromList
