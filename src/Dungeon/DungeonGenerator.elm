@@ -497,6 +497,7 @@ clean dungeon =
                 |> (\newTile -> Dict.insert newTile.position newTile dict)
     in
     Dict.values dungeon.map
+        |> List.filter (.type_ >> (==) Tile.Types.Rock)
         |> List.foldl replaceTile dungeon.map
         |> (\newMap -> { dungeon | map = newMap })
 
