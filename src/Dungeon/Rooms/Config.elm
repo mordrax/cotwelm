@@ -76,12 +76,12 @@ init =
         { rectangular = RoomConfig ( 6, 12 ) 1
 
         -- denotes one wall size, a cross is made of 3 sections of walls on each side
-        , cross = RoomConfig ( 1, 3 ) 1
+        , cross = RoomConfig ( 2, 4 ) 1
 
         -- can only be regular, and takes the largest odd size
-        , diamond = RoomConfig ( 5, 11 ) 0
+        , diamond = RoomConfig ( 2, 4 ) 1
         , potion = RoomConfig ( 4, 10 ) 0
-        , circular = RoomConfig ( 4, 10 ) 0
+        , circular = RoomConfig ( 4, 10 ) 1
         , diagonalSquares = RoomConfig ( 4, 10 ) 0
         , deadEnd = RoomConfig ( 1, 1 ) 0
         }
