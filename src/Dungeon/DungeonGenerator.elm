@@ -163,7 +163,7 @@ addStair stairsAt dungeon =
 
 steps : Int -> Config -> Dungeon -> Generator Dungeon
 steps n config dungeon =
-    if n == 0 then
+    if Debug.log "last step" n == 0 then
         Random.constant dungeon
     else if Dict.isEmpty dungeon.rooms && Dict.isEmpty dungeon.connectedRooms then
         generateRooms config.nAttemptsAtRoomGen config (Random.constant dungeon)
@@ -424,7 +424,7 @@ addRoom room dungeon =
     in
     if withinDungeonBounds && not overlapping then
         { dungeon
-            | rooms = Dict.insert room.worldPos room dungeon.rooms
+            | rooms = Dict.insert (Debug.log ("adding room of size " ++ toString room.dimension ++ " at ") room.worldPos) room dungeon.rooms
             , map = Dict.union room.tiles dungeon.map
         }
     else

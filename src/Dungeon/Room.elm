@@ -75,7 +75,7 @@ new roomType (( sizeX, sizeY ) as roomSize) lightSource (( minX, minY ) as roomP
                     ( 3 * sizeX + 4, 3 * sizeX + 4 )
 
                 Diamond ->
-                    ( sizeX + (1 - sizeX % 2), sizeX + (1 - sizeX % 2) )
+                    ( sizeX * 2 + 3, sizeX * 2 + 3 )
 
                 _ ->
                     roomSize

@@ -47,13 +47,8 @@ template =
 {-| Diamonds have 4 corners which are also the only walls that can support entrancess.
 -}
 floors : Dimension -> List LocalVector
-floors ( width, _ ) =
-    let
-        -- get nearest odd number for size
-        growth =
-            (width + (1 - width % 2)) // 2
-    in
-    floors_ growth (Set.singleton ( width, width ))
+floors ( radius, _ ) =
+    floors_ radius (Set.singleton ( radius + 1, radius + 1 ))
         |> Set.toList
         |> List.map Local
 
