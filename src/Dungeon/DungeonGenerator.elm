@@ -240,12 +240,12 @@ connectTwoRooms dungeon ( roomA, roomB ) =
 
         connectIfValid roomPoints =
             Maybe.map2 (connectPoints dungeon aFaces ( roomA, roomB )) roomPoints.a roomPoints.b
-                |> Maybe.withDefault dungeon
+                |> Maybe.withDefault (Random.constant dungeon)
     in
     roomPoints
         |> sampleRoomA aFaces
         |> Random.andThen sampleRoomB
-        |> Random.map connectIfValid
+        |> Random.andThen connectIfValid
 
 
 samplerWithDefault : a -> List a -> Generator a
@@ -277,11 +277,9 @@ possibleMoves faces =
 
 
 {-| -}
-connectPoints : Dungeon -> List Direction -> ( Room, Room ) -> DirectedVector -> DirectedVector -> Dungeon
+connectPoints : Dungeon -> List Direction -> ( Room, Room ) -> DirectedVector -> DirectedVector -> Generator Dungeon
 connectPoints dungeon faces ( room1, room2 ) start end =
     let
-        --        _ =
-        --            Debug.log "Between" ( startVector, end, faces )
         room1WithDoor =
             Room.makeDoor room1 (Tuple.first start)
 
@@ -310,6 +308,15 @@ connectPoints dungeon faces ( room1, room2 ) start end =
 
         hashFn { currentPosition } =
             currentPosition
+
+        generateAndAddRooms dungeon =
+            Random.map2 (,) room1WithDoor room2WithDoor
+                |> Random.map (\( r1, r2 ) -> addRooms r1 r2 dungeon)
+
+        addRooms r1 r2 dungeon =
+            dungeon
+                |> addConnectedRoom r1
+                |> addConnectedRoom r2
     in
     AStar.findPath costFn (moveFn dungeon) hashFn pathData goalData
         |> Maybe.map
@@ -317,10 +324,9 @@ connectPoints dungeon faces ( room1, room2 ) start end =
                 >> (::) startVector
                 >> Corridor.init
                 >> flip addCorridor dungeon
-                >> addConnectedRoom room1WithDoor
-                >> addConnectedRoom room2WithDoor
+                >> generateAndAddRooms
             )
-        |> Maybe.withDefault dungeon
+        |> Maybe.withDefault (Random.constant dungeon)
 
 
 addConnectedRoom : Room -> Dungeon -> Dungeon

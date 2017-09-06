@@ -168,24 +168,35 @@ generate config =
             )
 
 
-makeDoor : Room -> Vector -> Room
+makeDoor : Room -> Vector -> Generator Room
 makeDoor room position =
+    let
+        doorTypeGen =
+            Random.frequency [ ( 0.9, Random.constant Tile.Types.DoorClosed ), ( 0.1, Random.constant Tile.Types.DoorBroken ) ]
+
+        removeCandidateEntrance position =
+            room.candidateEntrancesByDirection
+                |> EveryDict.values
+                |> List.concat
+                |> List.filter (Tuple.first >> (/=) position)
+                |> List.foldl (\( vector, direction ) dict -> addToDictOfList direction ( vector, direction ) dict) EveryDict.empty
+    in
     case List.member position room.walls of
         False ->
-            room
+            Random.constant room
 
         True ->
-            { room
-                | entrances = Entrance.init Entrance.Door position :: room.entrances
-                , walls = List.filter ((/=) position) room.walls
-                , candidateEntrancesByDirection =
-                    room.candidateEntrancesByDirection
-                        |> EveryDict.values
-                        |> List.concat
-                        |> List.filter (Tuple.first >> (/=) position)
-                        |> List.foldl (\( vector, direction ) dict -> addToDictOfList direction ( vector, direction ) dict) EveryDict.empty
-                , tiles = Dict.insert position (Tile.toTile position Tile.Types.DoorClosed) room.tiles
-            }
+            doorTypeGen
+                |> Random.map
+                    (\doorType ->
+                        { room
+                            | entrances = Entrance.init Entrance.Door position :: room.entrances
+                            , walls = List.filter ((/=) position) room.walls
+                            , candidateEntrancesByDirection =
+                                removeCandidateEntrance position
+                            , tiles = Dict.insert position (Tile.toTile position doorType) room.tiles
+                        }
+                    )
 
 
 entrancesFromFaces : Room -> List Direction -> List DirectedVector
