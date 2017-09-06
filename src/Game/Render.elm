@@ -16,6 +16,7 @@ import Item.Pack
 import Message
 import Monster exposing (Monster)
 import Stats exposing (Stats)
+import Time.DateTime as DateTime
 import Types exposing (..)
 import UI
 import Utils.Vector as Vector exposing (Vector)
@@ -288,7 +289,7 @@ viewStatus model =
     in
     div [ HA.class "game-bottom-hud" ]
         [ viewMessages model
-        , viewStats model.hero.expLevel model.hero.stats
+        , viewStats model.hero.expLevel model.hero.stats model.turn
         ]
 
 
@@ -312,8 +313,8 @@ viewMessages_ level messages =
             List.map viewMessage msgs ++ viewMessages_ (level + 1) rest
 
 
-viewStats : Int -> Stats -> Html Msg
-viewStats expLevel stats =
+viewStats : Int -> Stats -> Int -> Html Msg
+viewStats expLevel stats turn =
     let
         hpStyles =
             if Stats.hpLow stats then
@@ -329,13 +330,19 @@ viewStats expLevel stats =
 
         ( ppHP, ppSP ) =
             ( Stats.printHP stats, Stats.printSP stats )
+
+        formattedTime =
+            DateTime.fromTimestamp (toFloat turn * 1000)
+                |> (\time -> [ DateTime.hour time, DateTime.minute time, DateTime.second time ])
+                |> List.map (toString >> String.padLeft 2 '0')
+                |> String.join ":"
     in
     div [ HA.class "game-bottom-hud__stats" ]
         [ viewStat [] "Level" (toString expLevel)
         , viewStat hpStyles "HP" ppHP
         , viewStat spStyles "Mana" ppSP
         , viewStat [] "Speed" "100% / 200%"
-        , viewStat [] "Time" "0d, 00:02:57"
+        , viewStat [] "Time" ("0d, " ++ formattedTime)
         , div [] [ Html.text "A Tiny Hamlet" ]
         ]
 
