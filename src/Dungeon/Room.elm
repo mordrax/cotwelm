@@ -180,23 +180,19 @@ makeDoor room position =
                 |> List.concat
                 |> List.filter (Tuple.first >> (/=) position)
                 |> List.foldl (\( vector, direction ) dict -> addToDictOfList direction ( vector, direction ) dict) EveryDict.empty
-    in
-    case List.member position room.walls of
-        False ->
-            Random.constant room
 
-        True ->
-            doorTypeGen
-                |> Random.map
-                    (\doorType ->
-                        { room
-                            | entrances = Entrance.init Entrance.Door position :: room.entrances
-                            , walls = List.filter ((/=) position) room.walls
-                            , candidateEntrancesByDirection =
-                                removeCandidateEntrance position
-                            , tiles = Dict.insert position (Tile.toTile position doorType) room.tiles
-                        }
-                    )
+        setDoor doorType =
+            { room
+                | entrances = Entrance.init Entrance.Door position :: room.entrances
+                , walls = List.filter ((/=) position) room.walls
+                , candidateEntrancesByDirection = removeCandidateEntrance position
+                , tiles = Dict.insert position (Tile.toTile position doorType) room.tiles
+            }
+    in
+    if List.member position room.walls then
+        Random.map setDoor doorTypeGen
+    else
+        Random.constant room
 
 
 entrancesFromFaces : Room -> List Direction -> List DirectedVector

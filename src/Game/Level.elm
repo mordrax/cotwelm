@@ -41,6 +41,7 @@ import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Generator)
 import Set
 import Tile exposing (Tile)
+import Tile.Model
 import Tile.Types
 import Types exposing (..)
 import Utils.FieldOfView
@@ -270,7 +271,7 @@ floors { map } =
 
 {-| Work out if there is a (solid tile, building, monster) at the given position on the level.
 -}
-queryPosition : Vector -> Level -> ( Bool, Maybe Building, Maybe Monster )
+queryPosition : Vector -> Level -> ( Maybe Tile, Bool, Maybe Building, Maybe Monster )
 queryPosition position ({ monsters, buildings, map } as level) =
     let
         maybeBuilding =
@@ -281,19 +282,16 @@ queryPosition position ({ monsters, buildings, map } as level) =
                 |> List.filter (.position >> (==) position)
                 |> List.head
 
-        tileObstruction =
-            level
-                |> getTile position
-                |> Maybe.map .solid
-                |> Maybe.withDefault True
+        tile =
+            getTile position level
     in
-    ( tileObstruction, maybeBuilding, maybeMonster )
+    ( tile, tile |> Maybe.map .solid |> Maybe.withDefault True, maybeBuilding, maybeMonster )
 
 
 obstructed : Vector -> Level -> Bool
 obstructed position level =
     case queryPosition position level of
-        ( False, Nothing, Nothing ) ->
+        ( _, False, Nothing, Nothing ) ->
             False
 
         _ ->

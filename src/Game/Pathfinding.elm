@@ -58,7 +58,7 @@ neighbours level filter position =
 creaturesAllowedFilter : Level -> Vector -> Bool
 creaturesAllowedFilter level position =
     case Level.queryPosition position level of
-        ( False, Nothing, _ ) ->
+        ( _, False, Nothing, _ ) ->
             True
 
         _ ->
@@ -68,7 +68,7 @@ creaturesAllowedFilter level position =
 buildingsAllowedFilter : Level -> Vector -> Bool
 buildingsAllowedFilter level position =
     case Level.queryPosition position level of
-        ( False, _, _ ) ->
+        ( _, False, _, _ ) ->
             True
 
         _ ->
@@ -78,7 +78,7 @@ buildingsAllowedFilter level position =
 obstructionFilter : Level -> Vector -> Bool
 obstructionFilter level position =
     case Level.queryPosition position level of
-        ( False, Nothing, Nothing ) ->
+        ( _, False, Nothing, Nothing ) ->
             True
 
         _ ->

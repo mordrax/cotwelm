@@ -47,19 +47,19 @@ move dir ({ level } as game) =
             Hero.move dir game.hero
     in
     case Level.queryPosition heroMoved.position level of
-        ( _, _, Just monster ) ->
+        ( _, _, _, Just monster ) ->
             attack monster game
 
         -- entering a building
-        ( _, Just building, _ ) ->
+        ( _, _, Just building, _ ) ->
             enterBuilding building game
 
         -- path blocked
-        ( True, _, _ ) ->
+        ( _, True, _, _ ) ->
             game
 
         -- path free, moved
-        ( False, _, _ ) ->
+        ( _, False, _, _ ) ->
             { game | hero = heroMoved }
 
 
@@ -230,13 +230,13 @@ moveMonster monster ({ hero } as game) =
         attackHero monster game
     else
         case obstructed monster of
-            ( True, _, _ ) ->
+            ( _, True, _, _ ) ->
                 game
 
-            ( _, Just _, _ ) ->
+            ( _, _, Just _, _ ) ->
                 game
 
-            ( _, _, Just _ ) ->
+            ( _, _, _, Just _ ) ->
                 game
 
             _ ->

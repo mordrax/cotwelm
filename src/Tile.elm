@@ -99,7 +99,7 @@ toTile ( x, y ) tileType =
         container =
             Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-    Tile tileType solid [] Empty ( x, y ) container Hidden False
+    Tile tileType solid Empty ( x, y ) container Hidden False
 
 
 asciiToTileType : Char -> TileType

@@ -14,12 +14,23 @@ import Utils.Vector as Vector exposing (Vector)
 type alias Tile =
     { type_ : TileType
     , solid : Bool
-    , items : List Item
     , occupant : Occupant
     , position : Vector
     , ground : Container Item
     , visible : Visibility
     , isLit : Bool
+    }
+
+
+init : Tile
+init =
+    { type_ = Rock
+    , solid = True
+    , occupant = Empty
+    , position = ( 0, 0 )
+    , ground = Container.init { maxBulk = 0, maxWeight = 0 } (\_ -> { weight = 0, bulk = 0 }) (\_ _ -> True)
+    , visible = Types.Hidden
+    , isLit = False
     }
 
 

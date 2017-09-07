@@ -9,6 +9,7 @@ module Game
 
 import Building exposing (Building)
 import Comms
+import Container
 import Equipment exposing (Equipment)
 import Game.Collision as Collision
 import Game.Level as Level exposing (Level)
@@ -296,19 +297,20 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> Render.viewport
                 |> (\game_ -> ( game_, waitCmd, False ))
 
+        -- we walk by first taking a step then working out if we will take another
+        -- if we do take another step, then walk again, otherwise, do nothing
         GameAction (Walk dir) ->
-            if isNewArea game then
-                noCmd game
-            else
-                game
-                    |> tick
-                    |> Collision.move dir
-                    |> Collision.autoOpenAnyDoorHeroIsOn
-                    |> updateFOV
-                    |> Collision.moveMonsters
-                    |> updatePreviousState
-                    |> Render.viewport
-                    |> actionKeepOnWalking dir
+            let
+                ( nextStep, _, _ ) =
+                    update (GameAction (Move dir)) game
+
+                cmd =
+                    if heroInterrupted nextStep dir then
+                        Cmd.none
+                    else
+                        Task.perform GameAction (Task.succeed (Walk dir))
+            in
+            ( nextStep, cmd, False )
 
         GameAction (GoToScreen MapScreen) ->
             let
@@ -467,6 +469,46 @@ isNewArea game =
 
         _ ->
             False
+
+
+
+-- Interruptions
+
+
+heroInterrupted : Game -> Direction -> Bool
+heroInterrupted game direction =
+    let
+        nextPosition =
+            Vector.add game.hero.position (Vector.fromDirection direction)
+    in
+    Debug.log "Tile has loot" (tileHasLoot game)
+        || Debug.log "Monsters in sight" (monstersInSight game)
+        || Debug.log "Next tile has obstruction" (Level.obstructed nextPosition game.level)
+
+
+tileHasLoot : Game -> Bool
+tileHasLoot ({ hero, level } as game) =
+    let
+        ( tile, _, _, _ ) =
+            Level.queryPosition hero.position level
+    in
+    tile
+        |> Maybe.map
+            (.ground
+                >> Container.list
+                >> List.length
+                >> (\x -> x > 0)
+            )
+        |> Maybe.withDefault False
+
+
+monstersInSight : Game -> Bool
+monstersInSight ({ hero, level } as game) =
+    let
+        inLineOfSight =
+            (==) LineOfSight
+    in
+    List.any (.visible >> inLineOfSight) level.monsters
 
 
 
