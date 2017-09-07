@@ -126,7 +126,7 @@ view model =
             , mapSizeView model
             ]
         , div [ HA.style [ ( "left", "300px" ), ( "position", "absolute" ), ( "top", "30px" ), ( "width", "100%" ), ( "height", "100%" ) ] ]
-            (Level.draw
+            (Level.drawForEditor
                 { start = ( 0, 0 )
                 , size = viewportSize
                 }

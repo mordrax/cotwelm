@@ -75,7 +75,7 @@ generate config =
 
 toLevel : Dungeon -> Level
 toLevel dungeon =
-    Level dungeon.map dungeon.buildings [] (Dict.values dungeon.rooms) dungeon.corridors Dict.empty
+    Level dungeon.map dungeon.buildings [] (Dict.values dungeon.connectedRooms) dungeon.corridors Dict.empty
 
 
 generateRooms : Int -> Config -> Generator Dungeon -> Generator Dungeon

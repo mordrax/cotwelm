@@ -4,6 +4,7 @@ module Game.Level
         , Map
         , downstairs
         , draw
+        , drawForEditor
         , drop
         , drops
         , fromTiles
@@ -336,6 +337,32 @@ draw :
     -> (Vector -> a)
     -> List (Html a)
 draw viewport map scale onClick =
+    let
+        mapTiles =
+            Dict.toList map
+                |> List.map Tuple.second
+
+        toHtml tile =
+            tile
+                |> Tile.view scale (cardinalTileNeighbours map tile.position) onClick
+
+        withinViewport tile =
+            tile.position
+                |> flip Vector.boxIntersectVector ( viewport.start, Vector.add viewport.start viewport.size )
+    in
+    mapTiles
+        |> List.filter withinViewport
+        |> List.map toHtml
+        |> List.concat
+
+
+drawForEditor :
+    { viewport | start : Vector, size : Vector }
+    -> Map
+    -> Float
+    -> (Vector -> a)
+    -> List (Html a)
+drawForEditor viewport map scale onClick =
     let
         mapTiles =
             Dict.toList map

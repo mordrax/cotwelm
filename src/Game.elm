@@ -200,7 +200,9 @@ checkHeroAlive ({ hero } as game) =
 
 updateFOV : Game -> Game
 updateFOV ({ level, hero } as game) =
-    Game.Model.setLevel (Level.updateFOV hero.position level) game
+    level
+        |> Level.updateFOV hero.position
+        |> flip Game.Model.setLevel game
 
 
 tick : Game -> Game
@@ -260,13 +262,8 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
 
         updatePreviousState newGameState =
             { newGameState | previousState = Game.Model.State game }
-    in
-    case msg of
-        InputMsg inputMsg ->
-            Input.update inputMsg game.input
-                |> (\( input, action ) -> update (GameAction action) { game | input = input })
 
-        GameAction (Move dir) ->
+        move dir game =
             game
                 |> tick
                 |> Collision.move dir
@@ -276,6 +273,14 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> checkHeroAlive
                 |> updatePreviousState
                 |> Render.viewport
+    in
+    case msg of
+        InputMsg inputMsg ->
+            Input.update inputMsg game.input
+                |> (\( input, action ) -> update (GameAction action) { game | input = input })
+
+        GameAction (Move dir) ->
+            move dir game
                 |> noCmd
 
         GameAction (WaitATurn keepWaiting) ->
@@ -301,8 +306,8 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
         -- if we do take another step, then walk again, otherwise, do nothing
         GameAction (Walk dir) ->
             let
-                ( nextStep, _, _ ) =
-                    update (GameAction (Move dir)) game
+                nextStep =
+                    move dir game
 
                 cmd =
                     if heroInterrupted nextStep dir then
@@ -481,18 +486,14 @@ heroInterrupted game direction =
         nextPosition =
             Vector.add game.hero.position (Vector.fromDirection direction)
     in
-    Debug.log "Tile has loot" (tileHasLoot game)
-        || Debug.log "Monsters in sight" (monstersInSight game)
-        || Debug.log "Next tile has obstruction" (Level.obstructed nextPosition game.level)
+    tileHasLoot game
+        || monstersInSight game
+        || Level.obstructed nextPosition game.level
 
 
 tileHasLoot : Game -> Bool
 tileHasLoot ({ hero, level } as game) =
-    let
-        ( tile, _, _, _ ) =
-            Level.queryPosition hero.position level
-    in
-    tile
+    Level.getTile hero.position level
         |> Maybe.map
             (.ground
                 >> Container.list
