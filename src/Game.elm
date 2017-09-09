@@ -277,7 +277,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
     in
     case msg of
         InputMsg inputMsg ->
-            Input.update inputMsg game.input
+            Input.update inputMsg game.input game.currentScreen
                 |> (\( input, action ) -> update (GameAction action) { game | input = input })
 
         GameAction (Move dir) ->
