@@ -268,8 +268,8 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> tick
                 |> Collision.move dir
                 |> Collision.autoOpenAnyDoorHeroIsOn
-                |> updateFOV
                 |> Collision.moveMonsters
+                |> updateFOV
                 |> checkHeroAlive
                 |> updatePreviousState
                 |> Render.viewport
