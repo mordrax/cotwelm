@@ -50,36 +50,31 @@ type alias Maps =
 init : Item -> Maps
 init armour =
     let
-        areaToTiles area =
-            area
-                |> getASCIIMap
-                |> Tile.mapToTiles
-                |> makeVisible
+        areaToTiles =
+            getASCIIMap >> Tile.mapToTiles
 
-        levelOfArea area =
-            Level.initNonDungeon (areaToTiles area) (buildingsOfArea area) []
-
-        mineEntryLevel =
-            levelOfArea DungeonLevelOne
+        levelOfArea area tiles =
+            Level.initNonDungeon tiles (buildingsOfArea area) []
 
         mineEntryLevelWithArmour =
-            Level.drop ( ( 13, 19 ), armour ) mineEntryLevel
+            areaToTiles DungeonLevelOne
+                |> levelOfArea DungeonLevelOne
+                |> Level.drop ( ( 13, 19 ), armour )
                 |> Level.setMonsters
                     [ Monster.make Monsters.Types.Goblin ( 26, 4 )
                     , Monster.make Monsters.Types.GiantRat ( 34, 23 )
                     , Monster.make Monsters.Types.Kobold ( 14, 19 )
                     ]
 
-        makeVisible tilesDict =
-            tilesDict
-                |> Dict.toList
-                |> List.map (Tuple.mapSecond (Tile.setVisibility Known))
-                |> Dict.fromList
+        makeVisible =
+            Dict.toList
+                >> List.map (Tuple.mapSecond (Tile.setVisibility Known))
+                >> Dict.fromList
     in
     { currentArea = Village
     , abandonedMines = Array.fromList []
-    , village = levelOfArea Village
-    , farm = levelOfArea Farm
+    , village = levelOfArea Village (areaToTiles Village |> makeVisible)
+    , farm = levelOfArea Farm (areaToTiles Farm |> makeVisible)
     , abandonedMinesEntry = mineEntryLevelWithArmour
     }
 
