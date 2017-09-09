@@ -410,7 +410,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> updatePreviousState
                 |> noCmd
 
-        ClickTile targetPosition ->
+        ClickPosition targetPosition ->
             let
                 path =
                     Debug.log "Path: " (Pathfinding.findPathForClickNavigation hero.position targetPosition level)

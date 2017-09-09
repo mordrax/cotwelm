@@ -30,7 +30,7 @@ findPath from to level =
 
 findPathForClickNavigation : Vector -> Vector -> Level -> List Vector
 findPathForClickNavigation from to level =
-    AStar.findPath heuristic (neighbours level buildingsAllowedFilter) from to
+    AStar.findPath heuristic (neighbours level buildingAndCreaturesAllowedFilter) from to
         |> Maybe.withDefault []
 
 
@@ -55,18 +55,8 @@ neighbours level filter position =
         |> Set.fromList
 
 
-creaturesAllowedFilter : Level -> Vector -> Bool
-creaturesAllowedFilter level position =
-    case Level.queryPosition position level of
-        ( _, False, Nothing, _ ) ->
-            True
-
-        _ ->
-            False
-
-
-buildingsAllowedFilter : Level -> Vector -> Bool
-buildingsAllowedFilter level position =
+buildingAndCreaturesAllowedFilter : Level -> Vector -> Bool
+buildingAndCreaturesAllowedFilter level position =
     case Level.queryPosition position level of
         ( _, False, _, _ ) ->
             True

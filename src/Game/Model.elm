@@ -19,7 +19,7 @@ type Msg
     = InputMsg Input.Msg
     | InventoryMsg Inventory.Msg
     | WindowSize Window.Size
-    | ClickTile Vector
+    | ClickPosition Vector
     | PathTo (List Vector) ClickedStairs
     | GameAction GameAction
     | Died

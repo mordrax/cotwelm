@@ -10,6 +10,7 @@ import Game.Types
 import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
+import Html.Events as HE
 import Html.Lazy
 import Inventory exposing (Inventory)
 import Item.Pack
@@ -114,12 +115,15 @@ game model =
             viewCharInfo model
 
 
-viewMonsters : Game -> Html Msg
+viewMonsters : Game -> List (Html Msg)
 viewMonsters { level } =
+    let
+        clickPosition position body =
+            div [ HE.onClick (ClickPosition position) ] [ body ]
+    in
     level.monsters
         |> List.filter (.visible >> (==) LineOfSight)
-        |> List.map Monster.view
-        |> div []
+        |> List.map (\monster -> clickPosition monster.position (Monster.view monster))
 
 
 viewCharInfo : Game -> Html Msg
@@ -264,17 +268,17 @@ viewMap ({ windowSize, viewport } as model) =
                 |> tupleMap2 abs
 
         lazyLevelView =
-            Html.Lazy.lazy3 Level.view ( viewStart, viewSize ) ClickTile model.level
+            Html.Lazy.lazy3 Level.view ( viewStart, viewSize ) ClickPosition model.level
     in
     div []
         [ viewTitle
         , viewMenu
         , viewQuickMenu
         , adjustViewport
-            [ lazyLevelView
-            , Hero.view model.hero
-            , viewMonsters model
-            ]
+            (lazyLevelView
+                :: Hero.view model.hero
+                :: viewMonsters model
+            )
         ]
 
 
