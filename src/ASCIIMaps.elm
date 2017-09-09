@@ -43,7 +43,7 @@ villageMap =
 
       -- 0    5    1    5    2
       ]
-    , [ ( ( 12, 21 ), "Temple of Odin: Wise Odin, healer of ailments." )
+    , [ ( ( 12, 21 ), "Temple of Odin: Wise Old Odin, healer of ailments." )
       , ( ( 9, 17 ), "Weaponsmith: If anyone's seen Barg, he still owes me 5 silvers for the daggers!" )
       , ( ( 13, 17 ), "General store: Get ye supplies here, best prices in town!" )
       , ( ( 9, 14 ), "Kael's scholarly scrolls and identification services." )

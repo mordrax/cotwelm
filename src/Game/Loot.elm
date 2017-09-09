@@ -22,8 +22,8 @@ generate : Generator Item
 generate =
     Random.frequency
         [ ( 1, coinLoot 30 20 )
-        , ( 1, weaponLoot Item.Weapon.listTypes )
-        , ( 1, armourLoot Item.Wearable.armourTypes )
+        , ( 1, weaponLoot )
+        , ( 1, armourLoot )
         ]
 
 
@@ -63,17 +63,19 @@ coinLoot average range =
     Random.map2 makeCoins coinTypeGenerator coinQuantityGenerator
 
 
-weaponLoot : List WeaponType -> Generator Item
+weaponLoot : Generator Item
 weaponLoot =
-    Random.sample
-        >> Random.map (Maybe.withDefault Dagger)
-        >> Random.map ItemTypeWeapon
-        >> Random.map Item.new
+    Item.Weapon.usableWeapons
+        |> Random.sample
+        |> Random.map (Maybe.withDefault Dagger)
+        |> Random.map ItemTypeWeapon
+        |> Random.map Item.new
 
 
-armourLoot : List ArmourType -> Generator Item
+armourLoot : Generator Item
 armourLoot =
-    Random.sample
-        >> Random.map (Maybe.withDefault LeatherArmour)
-        >> Random.map ItemTypeArmour
-        >> Random.map Item.new
+    Item.Wearable.armourTypes
+        |> Random.sample
+        |> Random.map (Maybe.withDefault LeatherArmour)
+        |> Random.map ItemTypeArmour
+        |> Random.map Item.new

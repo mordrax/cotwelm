@@ -5,6 +5,7 @@ module Item.Weapon
         , init
         , initBasic
         , listTypes
+        , usableWeapons
         )
 
 {-|
@@ -163,8 +164,8 @@ init weaponType status idStatus =
             makeMonsterWeapon "Giant Maul" (d 4 6 10)
 
 
-listTypes : List WeaponType
-listTypes =
+usableWeapons : List WeaponType
+usableWeapons =
     [ BrokenSword
     , Club
     , Dagger
@@ -183,22 +184,27 @@ listTypes =
     , MorningStar
     , BastardSword
     , TwoHandedSword
-
-    -- monster weapons
-    , SmallClaws
-    , SmallBite
-    , Crossbow
-    , Fangs
-    , Pincers
-    , Bow
-    , LargeClaws
-    , Pike
-    , LargeClub
-    , StoneClub
-    , GiantAxe
-    , Boulder
-    , GiantMaul
     ]
+
+
+listTypes : List WeaponType
+listTypes =
+    usableWeapons
+        ++ [ -- monster weapons
+             SmallClaws
+           , SmallBite
+           , Crossbow
+           , Fangs
+           , Pincers
+           , Bow
+           , LargeClaws
+           , Pike
+           , LargeClub
+           , StoneClub
+           , GiantAxe
+           , Boulder
+           , GiantMaul
+           ]
 
 
 encode : WeaponType -> String
