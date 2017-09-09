@@ -29,6 +29,8 @@ import Dungeon.DungeonGenerator as DungeonGenerator
 import Dungeon.Rooms.Config as Config
 import Game.Level as Level exposing (Level)
 import Item.Data exposing (Item)
+import Monster
+import Monsters.Types
 import Random.Pcg as Random exposing (Generator)
 import Shops
 import Tile exposing (Tile)
@@ -62,6 +64,11 @@ init armour =
 
         mineEntryLevelWithArmour =
             Level.drop ( ( 13, 19 ), armour ) mineEntryLevel
+                |> Level.setMonsters
+                    [ Monster.make Monsters.Types.Goblin ( 26, 4 )
+                    , Monster.make Monsters.Types.GiantRat ( 34, 23 )
+                    , Monster.make Monsters.Types.Kobold ( 14, 19 )
+                    ]
 
         makeVisible tilesDict =
             tilesDict
