@@ -24,6 +24,7 @@
 }
 .sign {
     background: url('/assets/original/tiles.png') -160px 0;
+    background-color: green;
 }
 .favicon {
     background: url('/assets/original/tiles.png') -192px 0;

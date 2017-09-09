@@ -3,6 +3,7 @@ module Game.Collision
         ( autoOpenAnyDoorHeroIsOn
         , move
         , moveMonsters
+        , triggerTileEffects
         )
 
 import Building exposing (Building)
@@ -20,6 +21,8 @@ import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Seed)
 import Shops exposing (Shops)
 import Stats
+import Tile.Model exposing (Tile)
+import Tile.Types
 import Types exposing (..)
 import Utils.Direction exposing (Direction)
 import Utils.Vector as Vector exposing (Vector)
@@ -271,3 +274,22 @@ attackHero monster ({ hero, seed, messages } as game) =
         , seed = seed_
         , lastMonsterToAttackHero = Just monster
     }
+
+
+triggerTileEffects : Game -> Game
+triggerTileEffects ({ hero, level } as game) =
+    let
+        ( maybeTile, _, maybeBuilding, maybeMonster ) =
+            Level.queryPosition hero.position level
+    in
+    maybeTile
+        |> Maybe.map (flip tileEffect game)
+        |> Maybe.withDefault game
+
+
+tileEffect : Tile -> Game -> Game
+tileEffect tile game =
+    if tile.type_ == Tile.Types.Sign then
+        { game | messages = Message.addNeutral (Debug.log "tile description: " tile).description game.messages }
+    else
+        game

@@ -24,6 +24,7 @@ Mines lvl 1 - 8
 import ASCIIMaps exposing (..)
 import Array.Hamt as Array exposing (Array)
 import Building exposing (Building)
+import Dict
 import Dungeon.DungeonGenerator as DungeonGenerator
 import Dungeon.Rooms.Config as Config
 import Game.Level as Level exposing (Level)
@@ -32,6 +33,7 @@ import Random.Pcg as Random exposing (Generator)
 import Shops
 import Tile exposing (Tile)
 import Types exposing (..)
+import Utils.Vector exposing (Vector)
 
 
 type alias Maps =
@@ -46,25 +48,31 @@ type alias Maps =
 init : Item -> Maps
 init armour =
     let
-        areaToTiles area visibility =
+        areaToTiles area =
             area
                 |> getASCIIMap
                 |> Tile.mapToTiles
-                |> List.map (Tile.setVisibility visibility)
+                |> makeVisible
 
-        levelOfArea area visibility =
-            Level.initNonDungeon (areaToTiles area visibility) (buildingsOfArea area) []
+        levelOfArea area =
+            Level.initNonDungeon (areaToTiles area) (buildingsOfArea area) []
 
         mineEntryLevel =
-            levelOfArea DungeonLevelOne Hidden
+            levelOfArea DungeonLevelOne
 
         mineEntryLevelWithArmour =
             Level.drop ( ( 13, 19 ), armour ) mineEntryLevel
+
+        makeVisible tilesDict =
+            tilesDict
+                |> Dict.toList
+                |> List.map (Tuple.mapSecond (Tile.setVisibility Known))
+                |> Dict.fromList
     in
     { currentArea = Village
     , abandonedMines = Array.fromList []
-    , village = levelOfArea Village Known
-    , farm = levelOfArea Farm Known
+    , village = levelOfArea Village
+    , farm = levelOfArea Farm
     , abandonedMinesEntry = mineEntryLevelWithArmour
     }
 
@@ -190,7 +198,7 @@ getCurrentLevel model =
 This is used to create a map and not during gameplay so it doesn't
 make sense to ask for it for the current area.
 -}
-getASCIIMap : Area -> List String
+getASCIIMap : Area -> ( List String, List ( Vector, String ) )
 getASCIIMap area =
     case area of
         Village ->
@@ -203,7 +211,7 @@ getASCIIMap area =
             dungeonLevelOneMap
 
         _ ->
-            []
+            ( [], [] )
 
 
 

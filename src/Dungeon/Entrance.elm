@@ -8,7 +8,6 @@ module Dungeon.Entrance
         , toTile
         )
 
-import Dungeon.Rooms.Type
 import Tile exposing (..)
 import Tile.Types exposing (..)
 import Utils.Vector exposing (..)

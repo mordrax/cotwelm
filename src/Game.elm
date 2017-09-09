@@ -268,6 +268,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> tick
                 |> Collision.move dir
                 |> Collision.autoOpenAnyDoorHeroIsOn
+                |> Collision.triggerTileEffects
                 |> Collision.moveMonsters
                 |> updateFOV
                 |> checkHeroAlive

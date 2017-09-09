@@ -42,7 +42,6 @@ import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Generator)
 import Set
 import Tile exposing (Tile)
-import Tile.Model
 import Tile.Types
 import Types exposing (..)
 import Utils.FieldOfView
@@ -95,9 +94,9 @@ setMonsters monsters level =
     { level | monsters = monsters }
 
 
-initNonDungeon : List Tile -> List Building -> List Monster -> Level
+initNonDungeon : Dict Vector Tile -> List Building -> List Monster -> Level
 initNonDungeon tiles buildings monsters =
-    { map = fromTiles tiles
+    { map = tiles
     , buildings = buildings
     , monsters = monsters
     , rooms = []

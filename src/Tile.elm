@@ -74,18 +74,32 @@ setVisibility visibility tile =
     { tile | visible = visibility }
 
 
+setDescription : String -> Tile -> Tile
+setDescription description tile =
+    { tile | description = description }
+
+
 {-| Given a ASCII list of strings representing tiles, output a list of tiles
 -}
-mapToTiles : List String -> List Tile
-mapToTiles asciiMap =
+mapToTiles : ( List String, List ( Vector, String ) ) -> Dict Vector Tile
+mapToTiles ( asciiMap, tileDescriptions ) =
     let
         rowToTiles y asciiRow =
             List.indexedMap (\x char -> toTile ( x, y ) (asciiToTileType char)) (String.toList asciiRow)
 
-        tiles =
+        tilesDict =
             List.indexedMap rowToTiles asciiMap
+                |> List.concat
+                |> List.map (\tile -> ( tile.position, tile ))
+                |> Dict.fromList
+
+        updateTileDescription ( tilePosition, description ) dict =
+            Dict.get tilePosition dict
+                |> Maybe.map (setDescription description)
+                |> Maybe.map (\v -> Dict.insert tilePosition v dict)
+                |> Maybe.withDefault dict
     in
-    List.concat tiles
+    List.foldl updateTileDescription tilesDict tileDescriptions
 
 
 {-| Create a Tile from some x,y coordinates and a tile type
@@ -99,7 +113,7 @@ toTile ( x, y ) tileType =
         container =
             Item.containerBuilder <| Capacity Random.maxInt Random.maxInt
     in
-    Tile tileType solid Empty ( x, y ) container Hidden False
+    Tile tileType solid Empty ( x, y ) container Hidden False ""
 
 
 asciiToTileType : Char -> TileType

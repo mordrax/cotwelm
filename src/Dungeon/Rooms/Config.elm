@@ -8,7 +8,6 @@ dungeon generator to create random dungeon levels.
 
 -}
 
-import Dice
 import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Rooms.Type exposing (..)
 import Html exposing (..)
