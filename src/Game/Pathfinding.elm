@@ -18,7 +18,7 @@ findPath : Vector -> Vector -> Level -> ( Level, List Vector )
 findPath from to level =
     let
         astar =
-            AStar.findPath heuristic (neighbours level creaturesAllowedFilter)
+            AStar.findPath heuristic (neighbours level obstructionFilter)
     in
     case Level.getPath from to level of
         Just path ->
