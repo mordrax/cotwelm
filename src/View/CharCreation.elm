@@ -8,8 +8,8 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
 import Types exposing (..)
-import UI
 import View.Difficulty
+import View.UI as UI
 
 
 styles : List Mixin -> Attribute msg

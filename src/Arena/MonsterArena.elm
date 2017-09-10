@@ -26,8 +26,8 @@ import Monster exposing (Monster)
 import Monsters.Types
 import Random.Pcg as Random exposing (Generator)
 import Time exposing (Time)
-import UI
 import Utils.Misc as Misc
+import View.UI as UI
 
 
 type Msg

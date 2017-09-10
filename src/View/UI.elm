@@ -1,4 +1,4 @@
-module UI exposing (..)
+module View.UI exposing (..)
 
 import Colors
 import Css exposing (..)
@@ -248,3 +248,13 @@ viewBarScale yOffset =
             ]
         ]
         []
+
+
+viewMenu : List ( String, msg ) -> Html msg
+viewMenu buttons =
+    let
+        viewMenuItem ( label, msg ) =
+            div [ HA.class "file-menu__item", HE.onClick msg ] [ Html.text label ]
+    in
+    div [ HA.class "file-menu" ]
+        (List.map viewMenuItem buttons)

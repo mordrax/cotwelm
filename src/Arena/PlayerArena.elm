@@ -20,7 +20,7 @@ import Process
 import Random.Pcg as Random exposing (Generator)
 import Task
 import Types exposing (..)
-import UI
+import View.UI as UI
 
 
 type alias Model =

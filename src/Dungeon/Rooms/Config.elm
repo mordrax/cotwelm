@@ -12,8 +12,8 @@ import Dungeon.Entrance as Entrance exposing (Entrance)
 import Dungeon.Rooms.Type exposing (..)
 import Html exposing (..)
 import Random.Pcg as Random exposing (Generator, constant)
-import UI exposing (..)
 import Utils.Vector as Vector exposing (Vector)
+import View.UI as UI exposing (..)
 
 
 type alias Config =

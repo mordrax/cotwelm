@@ -26,7 +26,7 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
 import Task
-import UI
+import View.UI as UI
 
 
 styles : List Mixin -> Html.Attribute msg

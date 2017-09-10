@@ -4,12 +4,13 @@ import Colors
 import Css exposing (..)
 import Equipment
 import Game.Model exposing (..)
+import Game.Types
 import Html exposing (..)
 import Html.Attributes as HA
 import Item.Pack
 import Types exposing (..)
-import UI
 import View.Difficulty
+import View.UI as UI
 
 
 styles : List Css.Mixin -> Html.Attribute a
@@ -47,9 +48,7 @@ view { hero, difficulty } =
                     View.Difficulty.impossible
     in
     div [ HA.class " column", styles [ maxWidth (px 640), margin auto ] ]
-        [ div [ HA.class "window__title" ]
-            [ Html.text "Character Info" ]
-        , div [ HA.class "container", styles [ backgroundColor Colors.white ] ]
+        [ div [ HA.class "container", styles [ backgroundColor Colors.white ] ]
             [ div [ HA.class "row", styles [ margin2 (px 15) zero ] ]
                 [ Html.span [] [ Html.text ("Character Name:" ++ UI.nbsp) ]
                 , Html.span [] [ Html.text hero.name ]

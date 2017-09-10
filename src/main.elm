@@ -6,7 +6,6 @@ import CharCreation exposing (CharCreation)
 import Dungeon.Editor as Editor exposing (..)
 import Game
 import Game.Model exposing (Game)
-import Game.Render
 import Game.Types
 import Hero exposing (Hero)
 import Html exposing (..)
@@ -16,6 +15,7 @@ import SplashView
 import Task exposing (perform)
 import Time exposing (inSeconds, now)
 import View.CharCreation
+import View.Game
 
 
 type Msg
@@ -55,8 +55,11 @@ init location =
       , charCreation = charCreation
       , game = Nothing
       , editor = Editor.init
-      , arena = Just PlayerArena.init
-      , pit = Just MonsterArena.init
+
+      --      , arena = Just PlayerArena.init
+      --      , pit = Just MonsterArena.init
+      , arena = Nothing
+      , pit = Nothing
       }
     , Cmd.batch [ Cmd.map CharCreationMsg charCreationCmds, newGameMsg ]
     )
@@ -210,7 +213,7 @@ view model =
                     h1 [] [ text "There is no game state. A possible reason is that you have not created a character." ]
 
                 Just game ->
-                    Html.map GameMsg (Game.Render.view game)
+                    Html.map GameMsg (View.Game.view game)
 
         InventoryPage ->
             case model.game of
@@ -220,7 +223,7 @@ view model =
                 Just game ->
                     game
                         |> (\game -> { game | currentScreen = Game.Types.InventoryScreen })
-                        |> (\game -> Html.map GameMsg (Game.Render.view game))
+                        |> (\game -> Html.map GameMsg (View.Game.view game))
 
         EditorPage ->
             Html.map EditorMsg (Editor.view model.editor)

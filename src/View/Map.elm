@@ -4,6 +4,7 @@ import Colors
 import Css exposing (..)
 import Game.Level as Level
 import Game.Model exposing (..)
+import Game.Types
 import Hero exposing (Hero)
 import Html exposing (..)
 import Html.Attributes as HA
@@ -11,7 +12,7 @@ import Html.Events as HE
 import Html.Lazy
 import Monster exposing (Monster)
 import Types exposing (..)
-import UI
+import View.UI as UI
 import Window
 
 
@@ -71,9 +72,7 @@ view ({ windowSize, viewport } as model) =
             Html.Lazy.lazy3 Level.view ( viewStart, viewSize ) ClickPosition model.level
     in
     div []
-        [ viewTitle
-        , viewMenu
-        , viewQuickMenu
+        [ viewQuickMenu
         , adjustViewport
             (lazyLevelView
                 :: Hero.view model.hero
@@ -93,44 +92,17 @@ viewMonsters { level } =
         |> List.map (\monster -> clickPosition monster.position (Monster.view monster))
 
 
-viewTitle : Html never
-viewTitle =
-    div [ HA.class "window__title" ] [ Html.text "Castle of the Winds" ]
-
-
-viewMenu : Html Msg
-viewMenu =
-    let
-        viewMenuItem label =
-            div [ HA.class "file-menu__item" ] [ Html.text label ]
-    in
-    div [ HA.class "file-menu" ]
-        (List.map viewMenuItem
-            [ "File"
-            , "Character!"
-            , "Inventory!"
-            , "Map!"
-            , "Spells"
-            , "Activate"
-            , "Verbs"
-            , "Options"
-            , "Window"
-            , "Help"
-            ]
-        )
-
-
 viewQuickMenu : Html Msg
 viewQuickMenu =
     div [ HA.class "game-top-hud__quick-menu" ]
         [ div [ HA.class "quick-menu__quick-buttons" ]
-            (List.map (\lbl -> UI.btn lbl Died)
-                [ "Get"
-                , "Free Hand"
-                , "Search"
-                , "Disarm"
-                , "Rest"
-                , "Save"
+            (List.map (\( lbl, msg ) -> UI.btn lbl msg)
+                [ ( "Get", GameAction Game.Types.Pickup )
+                , ( "Free Hand", GameAction Game.Types.Pickup )
+                , ( "Search", GameAction Game.Types.Pickup )
+                , ( "Disarm", GameAction Game.Types.Pickup )
+                , ( "Rest", GameAction Game.Types.WaitUntilHealed )
+                , ( "Save", GameAction Game.Types.Pickup )
                 ]
             )
         , div [ HA.class "quick-menu__quick-spells" ]
