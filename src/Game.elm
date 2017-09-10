@@ -1,10 +1,8 @@
 module Game
     exposing
-        ( Game
-        , init
+        ( init
         , subscription
         , update
-        , view
         )
 
 import Building exposing (Building)
@@ -14,12 +12,10 @@ import Equipment exposing (Equipment)
 import Game.Collision as Collision
 import Game.Level as Level exposing (Level)
 import Game.Maps as Maps
-import Game.Model exposing (Msg(..))
+import Game.Model exposing (Game, Msg(..))
 import Game.Pathfinding as Pathfinding
-import Game.Render as Render
 import Game.Types exposing (..)
 import Hero exposing (Hero)
-import Html exposing (Html)
 import Input exposing (Input)
 import Inventory exposing (Inventory)
 import Item
@@ -33,19 +29,6 @@ import Types exposing (..)
 import Utils.Direction as Direction exposing (Direction)
 import Utils.Vector as Vector exposing (Vector)
 import Window exposing (Size)
-
-
-type alias Game =
-    Game.Model.Game
-
-
-type alias Msg =
-    Game.Model.Msg
-
-
-view : Game -> Html Msg
-view =
-    Render.game
 
 
 init : Random.Seed -> Hero -> Difficulty -> ( Game, Cmd Msg )
@@ -273,7 +256,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> updateFOV
                 |> checkHeroAlive
                 |> updatePreviousState
-                |> Render.viewport
+                |> viewport
     in
     case msg of
         InputMsg inputMsg ->
@@ -300,7 +283,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> Collision.moveMonsters
                 |> checkHeroAlive
                 |> updatePreviousState
-                |> Render.viewport
+                |> viewport
                 |> (\game_ -> ( game_, waitCmd, False ))
 
         -- we walk by first taking a step then working out if we will take another
@@ -387,7 +370,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> tick
                 |> actionTakeStairs
                 |> updateFOV
-                |> Render.viewport
+                |> viewport
                 |> updatePreviousState
                 |> noCmd
 
@@ -396,7 +379,7 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 |> tick
                 |> actionTakeStairs
                 |> updateFOV
-                |> Render.viewport
+                |> viewport
                 |> updatePreviousState
                 |> noCmd
 
@@ -511,6 +494,56 @@ monstersInSight ({ hero, level } as game) =
             (==) LineOfSight
     in
     List.any (.visible >> inLineOfSight) level.monsters
+
+
+screenWidth : Window.Size -> Int
+screenWidth windowSize =
+    min windowSize.width 768
+
+
+{-| Handles all logic and rendering of the game to screen.
+-}
+viewport : Game -> Game
+viewport ({ windowSize, viewport, hero, level } as model) =
+    let
+        tileSize =
+            32
+
+        width =
+            screenWidth windowSize
+
+        ( curX, curY ) =
+            Vector.scale tileSize hero.position
+
+        ( xOff, yOff ) =
+            ( width // 2, windowSize.height // 2 )
+
+        tolerance =
+            tileSize * 4
+
+        scroll =
+            { up = viewport.y + curY <= tolerance
+            , down = viewport.y + curY >= (windowSize.height * 4 // 5) - tolerance
+            , left = viewport.x + curX <= tolerance
+            , right = viewport.x + curX >= width - tolerance
+            }
+
+        ( mapWidth, mapHeight ) =
+            Level.size level
+
+        newX =
+            if scroll.left || scroll.right then
+                clamp (width - mapWidth * tileSize) 0 (xOff - curX)
+            else
+                viewport.x
+
+        newY =
+            if scroll.up || scroll.down then
+                clamp (windowSize.height * 4 // 5 - mapHeight * tileSize) 0 (yOff - curY)
+            else
+                viewport.y
+    in
+    { model | viewport = { x = newX, y = newY } }
 
 
 

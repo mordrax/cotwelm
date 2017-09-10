@@ -6,6 +6,7 @@ import CharCreation exposing (CharCreation)
 import Dungeon.Editor as Editor exposing (..)
 import Game
 import Game.Model exposing (Game)
+import Game.Render
 import Game.Types
 import Hero exposing (Hero)
 import Html exposing (..)
@@ -209,7 +210,7 @@ view model =
                     h1 [] [ text "There is no game state. A possible reason is that you have not created a character." ]
 
                 Just game ->
-                    Html.map GameMsg (Game.view game)
+                    Html.map GameMsg (Game.Render.view game)
 
         InventoryPage ->
             case model.game of
@@ -219,7 +220,7 @@ view model =
                 Just game ->
                     game
                         |> (\game -> { game | currentScreen = Game.Types.InventoryScreen })
-                        |> (\game -> Html.map GameMsg (Game.view game))
+                        |> (\game -> Html.map GameMsg (Game.Render.view game))
 
         EditorPage ->
             Html.map EditorMsg (Editor.view model.editor)
