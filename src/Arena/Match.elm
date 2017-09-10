@@ -15,7 +15,7 @@ A match consists of a number of rounds, each round will have a victor with stats
 import Arena.Round as Round exposing (RoundResult)
 import Arena.View
 import Attributes exposing (Attributes)
-import Equipment exposing (Equipment)
+import Equipment
 import Game.Combat as Combat
 import Html exposing (..)
 import Random.Pcg as Random exposing (Generator)
@@ -60,7 +60,7 @@ fightSingleRound ({ blue, red } as match) =
 
 
 fight : Model a b -> Generator (Model a b)
-fight ({ blue, red } as match) =
+fight match =
     if match.rounds >= maxRounds then
         Random.constant match
     else
@@ -71,23 +71,23 @@ fight ({ blue, red } as match) =
 updateMatch : RoundResult a b -> Model a b -> Model a b
 updateMatch { blueTurns, redTurns, hpRemaining, blueHitRed, redHitBlue } match =
     let
-        addWin match =
+        addWin model =
             if hpRemaining > 0 then
-                { match | blueWins = match.blueWins + 1 }
+                { model | blueWins = model.blueWins + 1 }
             else
-                match
+                model
 
-        addResult match =
-            { match
-                | hpRemaining = hpRemaining :: match.hpRemaining
-                , blueTurnsInRounds = blueTurns :: match.blueTurnsInRounds
-                , redTurnsInRounds = redTurns :: match.redTurnsInRounds
-                , blueHitRed = blueHitRed :: match.blueHitRed
-                , redHitBlue = redHitBlue :: match.redHitBlue
+        addResult model =
+            { model
+                | hpRemaining = hpRemaining :: model.hpRemaining
+                , blueTurnsInRounds = blueTurns :: model.blueTurnsInRounds
+                , redTurnsInRounds = redTurns :: model.redTurnsInRounds
+                , blueHitRed = blueHitRed :: model.blueHitRed
+                , redHitBlue = redHitBlue :: model.redHitBlue
             }
 
-        incBattle match =
-            { match | rounds = match.rounds + 1 }
+        incBattle model =
+            { model | rounds = model.rounds + 1 }
     in
     match
         |> addWin
@@ -96,11 +96,8 @@ updateMatch { blueTurns, redTurns, hpRemaining, blueHitRed, redHitBlue } match =
 
 
 view : Model a b -> Html msg
-view ({ red, hpRemaining, blueTurnsInRounds, redTurnsInRounds, rounds, blueWins, blue, blueHitRed, redHitBlue } as match) =
+view { red, hpRemaining, blueTurnsInRounds, redTurnsInRounds, rounds, blueWins, blue, blueHitRed, redHitBlue } =
     let
-        over a b =
-            toString a ++ " / " ++ toString b
-
         percent a =
             toString a ++ "%"
 

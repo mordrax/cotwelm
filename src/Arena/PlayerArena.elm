@@ -5,7 +5,7 @@ import Arena.View as View
 import Attributes exposing (Attributes)
 import Char
 import Dict exposing (Dict)
-import Equipment exposing (Equipment)
+import Equipment
 import Game.Combat as Combat
 import Hero exposing (Hero)
 import Html exposing (..)
@@ -17,7 +17,7 @@ import Item.Weapon as Weapon
 import Item.Wearable as Wearable
 import Monster exposing (Monster)
 import Process
-import Random.Pcg as Random exposing (Generator)
+import Random.Pcg as Random
 import Task
 import Types exposing (..)
 import View.UI as UI
@@ -95,7 +95,7 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        StartFight [] resetCounter ->
+        StartFight [] _ ->
             let
                 _ =
                     Debug.log "starting a fight with no one" 1
@@ -416,7 +416,7 @@ equipHero hero ( customWeaponType, customArmourType ) =
 initHeroLookup : Hero -> Dict Int Hero
 initHeroLookup hero =
     let
-        reducer dict hero lvl =
+        reducer dict hero_ lvl =
             case lvl of
                 500 ->
                     dict
@@ -424,9 +424,9 @@ initHeroLookup hero =
                 n ->
                     let
                         nextLvlHero =
-                            Hero.levelUp hero
+                            Hero.levelUp hero_
                     in
-                    reducer (Dict.insert n hero dict) nextLvlHero (n + 1)
+                    reducer (Dict.insert n hero_ dict) nextLvlHero (n + 1)
     in
     reducer Dict.empty hero 1
 
@@ -434,9 +434,6 @@ initHeroLookup hero =
 initMatches : Dict Int Hero -> CustomEquipment -> List ArenaMatch
 initMatches heroLookup ( weaponType, armourType ) =
     let
-        newMonster monsterType =
-            Monster.makeForArena monsterType
-
         customEquipment =
             Equipment.setMany_
                 [ ( Equipment.WeaponSlot, makeWeapon weaponType )
@@ -457,9 +454,6 @@ initMatches heroLookup ( weaponType, armourType ) =
                             Debug.crash "Could not look up a hero with exp level: " monster.expLevel
             in
             Match.init hero monster
-
-        monstersHigherThanLevel x =
-            .expLevel >> flip (>=) x
     in
     Monster.types
         |> List.take 20

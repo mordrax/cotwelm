@@ -279,7 +279,7 @@ attackHero monster ({ hero, seed, messages } as game) =
 triggerTileEffects : Game -> Game
 triggerTileEffects ({ hero, level } as game) =
     let
-        ( maybeTile, _, maybeBuilding, maybeMonster ) =
+        ( maybeTile, _, _, _ ) =
             Level.queryPosition hero.position level
     in
     maybeTile

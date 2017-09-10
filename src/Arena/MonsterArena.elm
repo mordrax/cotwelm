@@ -102,7 +102,7 @@ initMatch ( monsterType1, monsterType2 ) =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Fight time ->
+        Fight _ ->
             ( model, Random.generate FightResult (fight model) )
 
         FightResult matches ->
@@ -248,7 +248,7 @@ viewMatches { matches, ranking } contestant =
 
 
 viewMatch : Match -> Html msg
-viewMatch { blueWins, red, rounds } =
+viewMatch { blueWins, rounds } =
     let
         pickHue x =
             if x > 128 then

@@ -98,7 +98,7 @@ viewQuickMenu =
         [ div [ HA.class "quick-menu__quick-buttons" ]
             (List.map (\( lbl, msg ) -> UI.btn lbl msg)
                 [ ( "Get", GameAction Game.Types.Pickup )
-                , ( "Free Hand", GameAction Game.Types.Pickup )
+                , ( "Free" ++ UI.nbsp ++ "Hand", GameAction Game.Types.Pickup )
                 , ( "Search", GameAction Game.Types.Pickup )
                 , ( "Disarm", GameAction Game.Types.Pickup )
                 , ( "Rest", GameAction Game.Types.WaitUntilHealed )

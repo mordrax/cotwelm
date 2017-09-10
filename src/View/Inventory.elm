@@ -1,8 +1,6 @@
 module View.Inventory exposing (view)
 
 import Equipment exposing (Equipment, EquipmentSlot(PackSlot))
-import Game.Model
-import Game.Types
 import Html exposing (..)
 import Html.Attributes as HA exposing (..)
 import Inventory exposing (..)
@@ -12,7 +10,6 @@ import Item.Pack as Pack
 import Item.Purse as Purse
 import Shops exposing (Store)
 import Utils.DragDrop as DragDrop exposing (DragDrop)
-import View.UI
 
 
 view : Inventory -> Html Msg

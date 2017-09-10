@@ -21,11 +21,8 @@ to know about hero equipment, items, containers etc...
 
 import Comms exposing (Comms)
 import Equipment exposing (..)
-import Html exposing (..)
-import Html.Attributes as HA
 import Item exposing (..)
 import Item.Data exposing (..)
-import Item.Pack as Pack
 import Item.Purse as Purse
 import Message
 import Shops exposing (Shops, Store)
