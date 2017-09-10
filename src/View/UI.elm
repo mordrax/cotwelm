@@ -258,3 +258,11 @@ viewMenu buttons =
     in
     div [ HA.class "file-menu" ]
         (List.map viewMenuItem buttons)
+
+
+viewWithTooltip : String -> Html msg -> Html msg
+viewWithTooltip tooltip body =
+    div [ HA.class "tooltip" ]
+        [ span [ HA.class "tooltiptext" ] [ Html.text tooltip ]
+        , body
+        ]

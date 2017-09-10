@@ -29,6 +29,7 @@ import Item.Purse as Purse
 import Item.Weapon
 import Item.Wearable
 import Utils.Mass as Mass exposing (Mass)
+import View.UI
 
 
 type alias Items =
@@ -126,11 +127,12 @@ viewSlot (Item base specific) extraContent =
                 _ ->
                     base.name
     in
-    div [ HA.class "item tooltip" ]
-        [ span [ HA.class "tooltiptext" ] [ text (itemName ++ " !!!") ]
-        , div [ HA.class "item__img" ] [ itemImg ]
-        , div [ HA.class "item__name" ] [ text itemName ]
-        ]
+    View.UI.viewWithTooltip (itemName ++ "!!!")
+        (div [ HA.class "item" ]
+            [ div [ HA.class "item__img" ] [ itemImg ]
+            , div [ HA.class "item__name" ] [ text itemName ]
+            ]
+        )
 
 
 containerBuilder : Mass.Capacity -> Container Item

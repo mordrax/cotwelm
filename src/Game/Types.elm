@@ -23,4 +23,4 @@ type GameAction
     | WaitUntilHealed
     | KillHero
     | GoToScreen Screen
-    | NoOp
+    | Look

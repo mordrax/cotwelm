@@ -32,11 +32,11 @@ view model =
         subMenu =
             [ ( "Exit!", Game.Model.GameAction (Game.Types.GoToScreen Game.Types.MapScreen) )
             , ( "Character!", Game.Model.GameAction (Game.Types.GoToScreen Game.Types.CharacterInfoScreen) )
-            , ( "Sort Pack!", Game.Model.GameAction (Game.Types.GoToScreen Game.Types.MapScreen) )
-            , ( "Name Object", Game.Model.GameAction (Game.Types.GoToScreen Game.Types.MapScreen) )
-            , ( "Window", Game.Model.GameAction (Game.Types.GoToScreen Game.Types.MapScreen) )
-            , ( "Activate", Game.Model.GameAction (Game.Types.GoToScreen Game.Types.MapScreen) )
-            , ( "Help", Game.Model.GameAction (Game.Types.GoToScreen Game.Types.MapScreen) )
+            , ( "Sort Pack!", NoOp )
+            , ( "Name Object", NoOp )
+            , ( "Window", NoOp )
+            , ( "Activate", NoOp )
+            , ( "Help", NoOp )
             ]
 
         viewGame title menu child =
@@ -48,16 +48,16 @@ view model =
                 ]
 
         mainMenu =
-            [ ( "File", GameAction Game.Types.OpenInventory )
+            [ ( "File", NoOp )
             , ( "Character!", GameAction (Game.Types.GoToScreen Game.Types.CharacterInfoScreen) )
             , ( "Inventory!", GameAction Game.Types.OpenInventory )
-            , ( "Map!", GameAction Game.Types.OpenInventory )
-            , ( "Spells", GameAction Game.Types.OpenInventory )
-            , ( "Activate", GameAction Game.Types.OpenInventory )
-            , ( "Verbs", GameAction Game.Types.OpenInventory )
-            , ( "Options", GameAction Game.Types.OpenInventory )
-            , ( "Window", GameAction Game.Types.OpenInventory )
-            , ( "Help", GameAction Game.Types.OpenInventory )
+            , ( "Map!", NoOp )
+            , ( "Spells", NoOp )
+            , ( "Activate", NoOp )
+            , ( "Verbs", NoOp )
+            , ( "Options", NoOp )
+            , ( "Window", NoOp )
+            , ( "Help", NoOp )
             ]
     in
     case model.currentScreen of

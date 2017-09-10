@@ -48,7 +48,7 @@ update msg input screen =
                 gameAction =
                     maybeKeyChange
                         |> Maybe.map (mapKeyboardEventToAction screen keyboardXState_)
-                        |> Maybe.withDefault Game.Types.NoOp
+                        |> Maybe.withDefault (Game.Types.WaitATurn False)
             in
             ( { input | keyboardState = keyboardXState_ }, gameAction )
 
@@ -60,7 +60,7 @@ mapKeyboardEventToAction screen state keyChange =
             KeyboardX.isPressed KeyboardX.Shift state
     in
     EveryDict.get (Debug.log "Keypress: " ( keyChange, isShiftPressed )) (playerKeymap screen)
-        |> Maybe.withDefault Game.Types.NoOp
+        |> Maybe.withDefault (Game.Types.WaitATurn False)
 
 
 playerKeymap : Game.Types.Screen -> KeyboardXToGameActionMap
@@ -120,6 +120,7 @@ playerKeymap screen =
 
                 -- general
                 , ( ( KeyDown CharC, False ), Game.Types.GoToScreen Game.Types.CharacterInfoScreen )
+                , ( ( KeyDown CharL, False ), Game.Types.Look )
                 ]
 
         Game.Types.InventoryScreen ->

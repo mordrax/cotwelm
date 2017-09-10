@@ -68,6 +68,7 @@ init seed hero difficulty =
       , previousState = Game.Model.Empty
       , input = Input.init
       , lastMonsterToAttackHero = Nothing
+      , looking = False
       }
     , cmd
     )
@@ -300,6 +301,10 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                         Task.perform GameAction (Task.succeed (Walk dir))
             in
             ( nextStep, cmd, False )
+
+        GameAction Look ->
+            { game | looking = not game.looking }
+                |> noCmd
 
         GameAction (GoToScreen MapScreen) ->
             let

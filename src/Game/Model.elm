@@ -23,6 +23,7 @@ type Msg
     | PathTo (List Vector) ClickedStairs
     | GameAction GameAction
     | Died
+    | NoOp
 
 
 type alias ClickedStairs =
@@ -46,6 +47,7 @@ type alias Game =
     , previousState : GameState
     , input : Input
     , lastMonsterToAttackHero : Maybe Monster
+    , looking : Bool
     }
 
 
