@@ -4,7 +4,6 @@ import Colors
 import Css exposing (..)
 import Equipment
 import Game.Model exposing (..)
-import Game.Types
 import Html exposing (..)
 import Html.Attributes as HA
 import Item.Pack
