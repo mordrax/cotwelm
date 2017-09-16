@@ -44,7 +44,6 @@ type alias Game =
     , difficulty : Difficulty
     , inventory : Inventory
     , turn : Turn
-    , previousState : GameState
     , input : Input
     , lastMonsterToAttackHero : Maybe Monster
     , looking : Bool
@@ -116,11 +115,6 @@ setTurn turn game =
     { game | turn = turn }
 
 
-setPreviousState : GameState -> Game -> Game
-setPreviousState previousState game =
-    { game | previousState = previousState }
-
-
 type GameState
     = Empty
     | State Game
@@ -140,17 +134,3 @@ type alias Turn =
 initTurn : Turn
 initTurn =
     0
-
-
-hasHeroMoved : Game -> Bool
-hasHeroMoved ({ previousState, hero } as game) =
-    let
-        heroPosition game =
-            game.hero.position
-    in
-    case previousState of
-        Empty ->
-            False
-
-        State previousGame ->
-            heroPosition previousGame /= heroPosition game

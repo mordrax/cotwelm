@@ -37,7 +37,7 @@ type alias KeyboardXToGameActionMap =
     EveryDict ( KeyboardX.KeyChange, Bool ) Game.Types.GameAction
 
 
-update : Msg -> Input -> Game.Types.Screen -> ( Input, Game.Types.GameAction )
+update : Msg -> Input -> Game.Types.Screen -> ( Input, Maybe Game.Types.GameAction )
 update msg input screen =
     case msg of
         KeyboardExtraMsg keyboardXMsg ->
@@ -47,20 +47,18 @@ update msg input screen =
 
                 gameAction =
                     maybeKeyChange
-                        |> Maybe.map (mapKeyboardEventToAction screen keyboardXState_)
-                        |> Maybe.withDefault (Game.Types.WaitATurn False)
+                        |> Maybe.andThen (mapKeyboardEventToAction screen keyboardXState_)
             in
             ( { input | keyboardState = keyboardXState_ }, gameAction )
 
 
-mapKeyboardEventToAction : Game.Types.Screen -> KeyboardX.State -> KeyboardX.KeyChange -> Game.Types.GameAction
+mapKeyboardEventToAction : Game.Types.Screen -> KeyboardX.State -> KeyboardX.KeyChange -> Maybe Game.Types.GameAction
 mapKeyboardEventToAction screen state keyChange =
     let
         isShiftPressed =
             KeyboardX.isPressed KeyboardX.Shift state
     in
     EveryDict.get (Debug.log "Keypress: " ( keyChange, isShiftPressed )) (playerKeymap screen)
-        |> Maybe.withDefault (Game.Types.WaitATurn False)
 
 
 playerKeymap : Game.Types.Screen -> KeyboardXToGameActionMap

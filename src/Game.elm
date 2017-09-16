@@ -65,7 +65,6 @@ init seed hero difficulty =
       , windowSize = { width = 640, height = 640 }
       , viewport = { x = 0, y = 0 }
       , turn = Game.Model.initTurn
-      , previousState = Game.Model.Empty
       , input = Input.init
       , lastMonsterToAttackHero = Nothing
       , looking = False
@@ -108,16 +107,6 @@ isOnStairs upOrDownStairs position level =
 -- Game loop functions work on the game, so they must at the minimum take in
 -- the current game state and return the new game state.
 ---------------
-
-
-actionKeepOnWalking : Direction -> Game -> ( Game, Cmd Msg, Quit )
-actionKeepOnWalking walkDirection game =
-    case Game.Model.hasHeroMoved game of
-        False ->
-            ( game, Cmd.none, False )
-
-        True ->
-            update (GameAction (Walk walkDirection)) game
 
 
 actionTakeStairs : Game -> Game
@@ -244,28 +233,43 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
         withComms comms game =
             ( game, Comms.attempt comms, False )
 
-        updatePreviousState newGameState =
-            { newGameState | previousState = Game.Model.State game }
+        move dir =
+            Collision.move dir
+                >> Collision.autoOpenAnyDoorHeroIsOn
+                >> Collision.triggerTileEffects
+                >> Collision.moveMonsters
 
-        move dir game =
-            game
-                |> Collision.move dir
-                |> Collision.autoOpenAnyDoorHeroIsOn
-                |> Collision.triggerTileEffects
-                |> Collision.moveMonsters
-                |> tick
-                |> updateFOV
-                |> checkHeroAlive
-                |> updatePreviousState
-                |> viewport
+        refreshScreen =
+            updateFOV >> viewport
+
+        startTurn =
+            tick
+
+        endTurn =
+            checkHeroAlive
     in
     case msg of
         InputMsg inputMsg ->
-            Input.update inputMsg game.input game.currentScreen
-                |> (\( input, action ) -> update (GameAction action) { game | input = input })
+            let
+                ( input, maybeAction ) =
+                    Input.update inputMsg game.input game.currentScreen
+
+                game_ =
+                    { game | input = input }
+            in
+            case maybeAction of
+                Just action ->
+                    update (GameAction action) game_
+
+                Nothing ->
+                    noCmd game_
 
         GameAction (Move dir) ->
-            move dir game
+            game
+                |> startTurn
+                |> move dir
+                |> refreshScreen
+                |> endTurn
                 |> noCmd
 
         GameAction (WaitATurn keepWaiting) ->
@@ -280,11 +284,10 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                         Cmd.none
             in
             game
-                |> tick
+                |> startTurn
                 |> Collision.moveMonsters
-                |> checkHeroAlive
-                |> updatePreviousState
-                |> viewport
+                |> refreshScreen
+                |> endTurn
                 |> (\game_ -> ( game_, waitCmd, False ))
 
         -- we walk by first taking a step then working out if we will take another
@@ -292,7 +295,10 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
         GameAction (Walk dir) ->
             let
                 nextStep =
-                    move dir game
+                    game
+                        |> startTurn
+                        |> move dir
+                        |> endTurn
 
                 cmd =
                     if heroInterrupted nextStep dir then
@@ -318,25 +324,20 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
 
                 backToMapScreen model =
                     { model | currentScreen = MapScreen }
+                        |> noCmd
             in
             case game.currentScreen of
                 MapScreen ->
                     game
-                        |> updatePreviousState
                         |> backToMapScreen
-                        |> noCmd
 
                 BuildingScreen _ ->
                     updatedGameFromInventory game.inventory
-                        |> updatePreviousState
                         |> backToMapScreen
-                        |> noCmd
 
                 InventoryScreen ->
                     updatedGameFromInventory game.inventory
-                        |> updatePreviousState
                         |> backToMapScreen
-                        |> noCmd
 
                 RipScreen ->
                     ( game, Cmd.none, True )
@@ -344,7 +345,6 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 CharacterInfoScreen ->
                     game
                         |> backToMapScreen
-                        |> noCmd
 
         InventoryMsg msg ->
             let
@@ -355,7 +355,6 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                 | inventory = inventory_
                 , messages = List.foldl Message.add game.messages comms.messages
             }
-                |> updatePreviousState
                 |> withComms (Comms.map InventoryMsg comms)
 
         GameAction OpenInventory ->
@@ -367,36 +366,36 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
             game
                 |> Game.Model.setCurrentScreen InventoryScreen
                 |> Game.Model.setInventory (Inventory.init newInventory hero.equipment)
-                |> updatePreviousState
                 |> noCmd
 
         GameAction GoUpstairs ->
             game
-                |> tick
+                |> startTurn
                 |> actionTakeStairs
-                |> updateFOV
-                |> viewport
-                |> updatePreviousState
+                |> Collision.moveMonsters
+                |> refreshScreen
+                |> endTurn
                 |> noCmd
 
         GameAction GoDownstairs ->
             game
-                |> tick
+                |> startTurn
                 |> actionTakeStairs
-                |> updateFOV
-                |> viewport
-                |> updatePreviousState
+                |> Collision.moveMonsters
+                |> refreshScreen
+                |> endTurn
                 |> noCmd
 
         GameAction Pickup ->
             game
+                |> startTurn
                 |> actionPickup
-                |> updatePreviousState
+                |> Collision.moveMonsters
+                |> endTurn
                 |> noCmd
 
         WindowSize size ->
             { game | windowSize = size }
-                |> updatePreviousState
                 |> noCmd
 
         ClickPosition targetPosition ->
@@ -453,16 +452,6 @@ update msg ({ hero, level, inventory, currentScreen } as game) =
                     Debug.log "This combo of screen and msg has no effect" other
             in
             noCmd game
-
-
-isNewArea : Game -> Bool
-isNewArea game =
-    case game.previousState of
-        Game.Model.State prevGame ->
-            prevGame.maps.currentArea /= game.maps.currentArea
-
-        _ ->
-            False
 
 
 

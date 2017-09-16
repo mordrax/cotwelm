@@ -149,15 +149,21 @@ Drop
 -}
 handleDragDrop : Draggable -> Droppable -> Inventory -> ( Inventory, Comms msg )
 handleDragDrop dragSource dropTarget inventory =
+    let
+        resolveDragDropResult res =
+            case res of
+                Result.Ok value ->
+                    value
+
+                Result.Err msg ->
+                    ( inventory, Comms.init |> Comms.addMessage (Message.bad msg) )
+    in
     if dragSourceSameAsDropTarget dragSource dropTarget then
         ( inventory, Comms.init )
     else
-        case handleDrag dragSource inventory of
-            Result.Ok ( inv, item ) ->
-                handleDrop dropTarget item inv
-
-            Result.Err errMsg ->
-                ( inventory, Comms.init |> Comms.addMessage (Message.bad errMsg) )
+        handleDrag dragSource inventory
+            |> Result.andThen (\( inv, item ) -> handleDrop dropTarget item inv)
+            |> resolveDragDropResult
 
 
 {-| handleDrag
@@ -240,7 +246,7 @@ transactWithMerchant item ({ merchant, equipment } as model) =
       - Check pack capacity
 
 -}
-handleDrop : Droppable -> Item -> Inventory -> ( Inventory, Comms msg )
+handleDrop : Droppable -> Item -> Inventory -> Result String ( Inventory, Comms msg )
 handleDrop droppable item inventory =
     let
         resultToReturn originalInv res =
@@ -254,28 +260,24 @@ handleDrop droppable item inventory =
     case droppable of
         DropPack pack ->
             Equipment.putInPack item inventory.equipment
-                |> Result.mapError (\errMsg -> Comms.init |> Comms.addMessage (Message.bad errMsg))
-                |> Result.map (\eq -> { inventory | equipment = eq })
-                |> resultToReturn inventory
+                |> Result.map (\eq -> ( { inventory | equipment = eq }, Comms.init ))
 
         DropEquipment slot ->
-            case Equipment.equip ( slot, item ) inventory.equipment of
-                Result.Ok ( equipment_, Nothing, msg ) ->
-                    ( { inventory | equipment = equipment_ }
-                    , Comms.init
-                        |> Comms.addMessage (Message.bad msg)
-                    )
+            Equipment.equip ( slot, item ) inventory.equipment
+                |> Result.map
+                    (\( equipment_, returnedItem, msg ) ->
+                        case returnedItem of
+                            Nothing ->
+                                ( { inventory | equipment = equipment_ }
+                                , Comms.init
+                                    |> Comms.addMessage (Message.good msg)
+                                )
 
-                Result.Ok ( _, Just _, _ ) ->
-                    ( inventory
-                    , Comms.init
-                        |> Comms.addMessage (Message.bad "The slot is not empty!")
-                    )
-
-                Result.Err err ->
-                    ( inventory
-                    , Comms.init
-                        |> Comms.addMessage (Message.bad (toString err))
+                            Just _ ->
+                                ( inventory
+                                , Comms.init
+                                    |> Comms.addMessage (Message.bad "The slot is not empty!")
+                                )
                     )
 
         DropMerchant merchant ->
@@ -297,13 +299,10 @@ handleDrop droppable item inventory =
                     inventory.equipment
                         |> Equipment.getPurse
                         |> Maybe.map (sellTo shop)
-                        |> Maybe.withDefault
-                            ( inventory
-                            , Comms.addMessage (Message.bad "No purse to hold coins!") Comms.init
-                            )
+                        |> Result.fromMaybe "No purse to hold coins!"
 
                 Ground items ->
-                    ( { inventory | merchant = Ground (item :: items) }, Comms.init )
+                    Result.Ok ( { inventory | merchant = Ground (item :: items) }, Comms.init )
 
 
 
