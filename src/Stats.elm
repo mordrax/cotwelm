@@ -2,6 +2,7 @@ module Stats
     exposing
         ( Msg(..)
         , Stats
+        , healthDescription
         , hpLow
         , incLevel
         , init
@@ -203,3 +204,39 @@ printSP model =
 printAOverB : a -> b -> String
 printAOverB a b =
     toString a ++ " [" ++ toString b ++ "]"
+
+
+healthDescription : Stats -> String
+healthDescription stats =
+    let
+        healthPercent =
+            toFloat stats.currentHP / toFloat stats.hardMaxHP
+    in
+    if healthPercent == 1 then
+        "Still in top shape!"
+    else if healthPercent >= 0.9 then
+        "It is slightly injured."
+    else if healthPercent >= 0.8 then
+        "It's looking a little worried."
+    else if healthPercent >= 0.7 then
+        "It is taking the fight seriously now."
+    else if healthPercent >= 0.6 then
+        "It has a few decent wounds."
+    else if healthPercent >= 0.5 then
+        "It has seen better days."
+    else if healthPercent >= 0.4 then
+        "It looks bruised and battered, shoulders drooping."
+    else if healthPercent >= 0.3 then
+        "It doesn't look like it can handle much more."
+    else if healthPercent >= 0.2 then
+        "It saying it's prayers."
+    else if healthPercent >= 0.1 then
+        "It is bleeding from critical wounds."
+    else if healthPercent >= 0.0 then
+        "It seems to be mortally wounded."
+    else if healthPercent >= -0.5 then
+        "It is clinically dead."
+    else if healthPercent >= -1 then
+        "It has been well and truly put down. Well done!"
+    else
+        "It has been pummeled into an unrecognisable heap."

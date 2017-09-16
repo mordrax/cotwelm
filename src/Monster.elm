@@ -9,7 +9,6 @@ module Monster
         , replaceMoved
         , tick
         , types
-        , view
         )
 
 {-| Monsters are the main ways to advance in the game. They exist in the dungeon levels only and get progressively more dangerous
@@ -67,11 +66,6 @@ make =
 
 
 -- view
-
-
-view : Monster -> Html a
-view =
-    Monsters.View.view
 
 
 tick : Monster -> Monster

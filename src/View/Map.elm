@@ -11,6 +11,7 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Html.Lazy
 import Monster exposing (Monster)
+import Monsters.View
 import Types exposing (..)
 import View.UI as UI
 import Window
@@ -82,14 +83,20 @@ view ({ windowSize, viewport } as model) =
 
 
 viewMonsters : Game -> List (Html Msg)
-viewMonsters { level } =
+viewMonsters { level, looking } =
     let
         clickPosition position body =
             div [ HE.onClick (ClickPosition position) ] [ body ]
+
+        monsterView monster =
+            if looking then
+                Monsters.View.viewWithTooltip monster
+            else
+                Monsters.View.view monster
     in
     level.monsters
         |> List.filter (.visible >> (==) LineOfSight)
-        |> List.map (\monster -> clickPosition monster.position (Monster.view monster))
+        |> List.map (\monster -> clickPosition monster.position (monsterView monster))
 
 
 viewQuickMenu : Html Msg

@@ -1,15 +1,34 @@
-module Monsters.View exposing (view)
+module Monsters.View exposing (view, viewWithTooltip)
 
 import Html exposing (..)
 import Html.Attributes as HA
 import Monsters.Model exposing (Monster)
 import Monsters.Types exposing (..)
+import Stats
 import Utils.Vector exposing (Vector)
 
 
 view : Monster -> Html a
 view { monsterType, position } =
-    div [ HA.style (vectorToHtmlStyle position), HA.class ("tile monster " ++ monsterTypeToCSS monsterType) ] []
+    div
+        [ HA.style (vectorToHtmlStyle position)
+        , HA.class ("tile monster " ++ monsterTypeToCSS monsterType)
+        ]
+        []
+
+
+viewWithTooltip : Monster -> Html a
+viewWithTooltip { monsterType, position, name, stats } =
+    div
+        [ HA.style (vectorToHtmlStyle position)
+        , HA.class ("tooltip tile monster " ++ monsterTypeToCSS monsterType)
+        ]
+        [ span
+            [ HA.class "tooltiptext"
+            , HA.style [ ( "bottom", "-35px" ) ]
+            ]
+            [ text <| name ++ " - " ++ Stats.healthDescription stats ]
+        ]
 
 
 vectorToHtmlStyle : Vector -> List ( String, String )
