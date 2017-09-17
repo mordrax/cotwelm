@@ -23,11 +23,9 @@ size and type.
 
 -}
 
-import Html exposing (Html)
 import Monsters.Factory exposing (make)
 import Monsters.Model
 import Monsters.Types exposing (..)
-import Monsters.View
 import Random.Pcg exposing (Generator)
 import Stats exposing (Stats)
 import Utils.Vector exposing (Vector)

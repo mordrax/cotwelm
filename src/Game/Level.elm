@@ -42,7 +42,6 @@ import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Generator)
 import Set
 import Tile exposing (Tile)
-import Tile.Types
 import Types exposing (..)
 import Utils.FieldOfView
 import Utils.Misc as Misc
@@ -326,16 +325,15 @@ view ( start, size ) onClick level =
                 |> List.filter onVisibleTile
                 |> List.map Building.view
     in
-    div [] (draw viewport level.map 1.0 onClick ++ buildingsHtml)
+    div [] (draw viewport level.map onClick ++ buildingsHtml)
 
 
 draw :
     { viewport | start : Vector, size : Vector }
     -> Map
-    -> Float
     -> (Vector -> a)
     -> List (Html a)
-draw viewport map scale onClick =
+draw viewport map onClick =
     let
         mapTiles =
             Dict.toList map
@@ -343,7 +341,7 @@ draw viewport map scale onClick =
 
         toHtml tile =
             tile
-                |> Tile.view scale (cardinalTileNeighbours map tile.position) onClick
+                |> Tile.viewWithTooltip (cardinalTileNeighbours map tile.position) onClick
 
         withinViewport tile =
             tile.position
@@ -370,7 +368,7 @@ drawForEditor viewport map scale onClick =
         toHtml tile =
             tile
                 |> Tile.setVisibility Types.LineOfSight
-                |> Tile.view scale (cardinalTileNeighbours map tile.position) onClick
+                |> Tile.viewScaled scale (cardinalTileNeighbours map tile.position) onClick
 
         withinViewport tile =
             tile.position
@@ -422,7 +420,7 @@ isSeeThrough ({ map, rooms } as level) position =
             .solid >> not
 
         notClosedDoor =
-            .type_ >> (/=) Tile.Types.DoorClosed
+            .type_ >> (/=) Tile.DoorClosed
 
         notDarkRoom =
             isDarkRoom rooms >> not
@@ -536,8 +534,8 @@ openDoor : Vector -> Level -> Level
 openDoor pos level =
     let
         ifDoorThenOpen tile =
-            if tile.type_ == Tile.Types.DoorClosed then
-                { tile | type_ = Tile.Types.DoorOpen }
+            if tile.type_ == Tile.DoorClosed then
+                { tile | type_ = Tile.DoorOpen }
             else
                 tile
     in

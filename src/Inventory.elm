@@ -16,6 +16,7 @@ It handles equipping, buy/sell, identification, moving items into packs and othe
 
 The module subscribes to mouse events for item interactions and is generally high level because it needs
 to know about hero equipment, items, containers etc...
+i
 
 -}
 

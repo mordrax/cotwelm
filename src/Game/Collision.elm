@@ -21,8 +21,7 @@ import Monster exposing (Monster)
 import Random.Pcg as Random exposing (Seed)
 import Shops exposing (Shops)
 import Stats
-import Tile.Model exposing (Tile)
-import Tile.Types
+import Tile exposing (Tile)
 import Types exposing (..)
 import Utils.Direction exposing (Direction)
 import Utils.Vector as Vector exposing (Vector)
@@ -289,7 +288,7 @@ triggerTileEffects ({ hero, level } as game) =
 
 tileEffect : Tile -> Game -> Game
 tileEffect tile game =
-    if tile.type_ == Tile.Types.Sign then
+    if tile.type_ == Tile.Sign then
         { game | messages = Message.addNeutral (Debug.log "tile description: " tile).description game.messages }
     else
         game

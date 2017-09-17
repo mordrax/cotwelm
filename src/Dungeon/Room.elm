@@ -35,7 +35,6 @@ import List
 import Random.Pcg as Random exposing (Generator, andThen, constant)
 import Set exposing (Set)
 import Tile exposing (Tile)
-import Tile.Types
 import Types exposing (..)
 import Utils.Direction as Direction exposing (..)
 import Utils.Vector as Vector exposing (DirectedVector, Vector)
@@ -118,17 +117,17 @@ new roomType (( sizeX, sizeY ) as roomSize) lightSource (( minX, minY ) as roomP
         floorType =
             case lightSource of
                 Dark ->
-                    Tile.Types.DarkDgn
+                    Tile.DarkDgn
 
                 _ ->
-                    Tile.Types.LitDgn
+                    Tile.LitDgn
 
         addFloorTile : Vector -> Dict Vector Tile -> Dict Vector Tile
         addFloorTile (tileVector as tileWorldVector) dict =
             Dict.insert tileWorldVector (Tile.toTile tileVector floorType) dict
 
         addWallTile (tileVector as tileWorldVector) dict =
-            Dict.insert tileWorldVector (Tile.toTile tileVector Tile.Types.Rock) dict
+            Dict.insert tileWorldVector (Tile.toTile tileVector Tile.Rock) dict
 
         tiles =
             List.foldl addFloorTile Dict.empty floors
@@ -172,7 +171,7 @@ makeDoor : Room -> Vector -> Generator Room
 makeDoor room position =
     let
         doorTypeGen =
-            Random.frequency [ ( 0.9, Random.constant Tile.Types.DoorClosed ), ( 0.1, Random.constant Tile.Types.DoorBroken ) ]
+            Random.frequency [ ( 0.9, Random.constant Tile.DoorClosed ), ( 0.1, Random.constant Tile.DoorBroken ) ]
 
         removeCandidateEntrance position =
             room.candidateEntrancesByDirection

@@ -12,7 +12,6 @@ game.
 import Dict exposing (Dict)
 import Set exposing (Set)
 import Tile exposing (Tile)
-import Tile.Types
 import Types exposing (..)
 import Utils.Vector as Vector exposing (DirectedVector, Vector)
 
@@ -32,7 +31,7 @@ init pathPoints =
             paths (Debug.log "corridor" pathPoints)
 
         floorTiles =
-            List.map (flip Tile.toTile Tile.Types.DarkDgn) path
+            List.map (flip Tile.toTile Tile.DarkDgn) path
 
         headAsList list =
             list
@@ -44,7 +43,7 @@ init pathPoints =
             adjacent path
 
         wallTiles =
-            List.map (flip Tile.toTile Tile.Types.Rock) walls
+            List.map (flip Tile.toTile Tile.Rock) walls
 
         tiles =
             (floorTiles ++ wallTiles)

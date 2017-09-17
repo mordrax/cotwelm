@@ -10,7 +10,6 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
 import Html.Lazy
-import Monster exposing (Monster)
 import Monsters.View
 import Types exposing (..)
 import View.UI as UI

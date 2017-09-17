@@ -38,9 +38,7 @@ import EverySet as Set exposing (EverySet)
 import Game.Level exposing (Level)
 import Maybe.Extra
 import Random.Pcg as Random exposing (Generator)
-import Tile
-import Tile.Model exposing (Tile)
-import Tile.Types
+import Tile exposing (Tile)
 import Utils.AStarCustom as AStar
 import Utils.Direction as Direction exposing (Direction(..))
 import Utils.Vector as Vector exposing (DirectedVector, Vector)
@@ -135,9 +133,9 @@ addBuilding building dungeon =
     let
         tileType =
             if building.buildingType == Building.StairUp then
-                Tile.Types.StairsUp
+                Tile.StairsUp
             else
-                Tile.Types.StairsDown
+                Tile.StairsDown
     in
     { dungeon
         | buildings = building :: dungeon.buildings
@@ -506,7 +504,7 @@ clean dungeon =
                 |> (\newTile -> Dict.insert newTile.position newTile dict)
     in
     Dict.values dungeon.map
-        |> List.filter (.type_ >> (==) Tile.Types.Rock)
+        |> List.filter (.type_ >> (==) Tile.Rock)
         |> List.foldl replaceTile dungeon.map
         |> (\newMap -> { dungeon | map = newMap })
 
@@ -515,13 +513,13 @@ calculateTypeOfWall : Dict Vector Tile -> Vector -> Tile
 calculateTypeOfWall map position =
     case ( hasAdjacentFloors position map, hasThreeOrMoreNeighbourFloors position map ) of
         ( True, True ) ->
-            Tile.toTile position Tile.Types.DarkDgn
+            Tile.toTile position Tile.DarkDgn
 
         ( True, False ) ->
-            Tile.toTile position Tile.Types.WallDarkDgn
+            Tile.toTile position Tile.WallDarkDgn
 
         _ ->
-            Tile.toTile position Tile.Types.Rock
+            Tile.toTile position Tile.Rock
 
 
 adjacentNeighbourPairs : List (List Direction)
@@ -563,7 +561,7 @@ allDirectionsAreFloors neighbourDirections position map =
 
         isFloorTiles maybeTiles =
             maybeTiles
-                |> List.map (Maybe.Extra.filter (\x -> x.type_ == Tile.Types.DarkDgn))
+                |> List.map (Maybe.Extra.filter (\x -> x.type_ == Tile.DarkDgn))
                 |> List.all ((/=) Nothing)
     in
     neighbourDirections
