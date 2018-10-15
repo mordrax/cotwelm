@@ -4,7 +4,7 @@ echo '====================================================='
 echo '============           elm make          ============'
 echo '====================================================='
 rm -rf elm-stuff/build-artifacts/
-elm make src/main.elm --output dist/js/cotw.js
+elm-make src/main.elm --output dist/js/cotw.js
 
 if [[ $# -eq 0 ]]
 then
